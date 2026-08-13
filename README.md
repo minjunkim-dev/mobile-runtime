@@ -11,3 +11,13 @@ mobile up
 North Star: `git clone → mobile up`.
 
 Status: charting phase — see the wayfinder map in Issues.
+
+## Building
+
+```
+swift build
+swift test
+.build/debug/mobile doctor        # host checks; --json for machines, -v for detail
+```
+
+Exit codes: `0` no errors, `1` domain failure, `2` tool failure, `64` usage error.
