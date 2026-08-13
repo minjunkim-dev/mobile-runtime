@@ -3,22 +3,22 @@ import Foundation
 
 /// The one injection seam the doctor tests use. Keyed by the full command line so
 /// a test that changes the arguments fails loudly instead of silently matching.
-struct FakeProcessRunner: ProcessRunner {
-    struct Response {
-        var status: TerminationStatus = .exited(0)
-        var standardOutput: String = ""
-        var standardError: String = ""
+public struct FakeProcessRunner: ProcessRunner {
+    public struct Response: Sendable {
+        public var status: TerminationStatus = .exited(0)
+        public var standardOutput: String = ""
+        public var standardError: String = ""
 
-        static func ok(_ standardOutput: String) -> Response {
+        public static func ok(_ standardOutput: String) -> Response {
             Response(status: .exited(0), standardOutput: standardOutput)
         }
 
-        static func failed(_ code: Int32, _ standardError: String) -> Response {
+        public static func failed(_ code: Int32, _ standardError: String) -> Response {
             Response(status: .exited(code), standardError: standardError)
         }
     }
 
-    final class CallLog: @unchecked Sendable {
+    public final class CallLog: @unchecked Sendable {
         private let lock = NSLock()
         private var commands: [ProcessCommand] = []
 
@@ -26,19 +26,24 @@ struct FakeProcessRunner: ProcessRunner {
             lock.withLock { commands.append(command) }
         }
 
-        var all: [ProcessCommand] { lock.withLock { commands } }
+        public var all: [ProcessCommand] { lock.withLock { commands } }
 
-        func first(matching description: String) -> ProcessCommand? {
+        public func first(matching description: String) -> ProcessCommand? {
             all.first { $0.description == description }
         }
     }
 
-    var responses: [String: Response]
+    public var responses: [String: Response]
     /// Thrown instead of answering, to exercise the infrastructure-failure path.
-    var failures: [String: any Error] = [:]
-    let log = CallLog()
+    public var failures: [String: any Error] = [:]
+    public let log = CallLog()
 
-    func run(_ command: ProcessCommand) async throws -> ProcessResult {
+    public init(responses: [String: Response] = [:], failures: [String: any Error] = [:]) {
+        self.responses = responses
+        self.failures = failures
+    }
+
+    public func run(_ command: ProcessCommand) async throws -> ProcessResult {
         log.record(command)
         if let failure = failures[command.description] { throw failure }
         guard let response = responses[command.description] else {
@@ -55,15 +60,11 @@ struct FakeProcessRunner: ProcessRunner {
     }
 }
 
-struct FixtureMiss: Error, CustomStringConvertible {
-    let command: String
-    var description: String { "no canned response for `\(command)`" }
-}
+public struct FixtureMiss: Error, CustomStringConvertible {
+    public let command: String
+    public var description: String { "no canned response for `\(command)`" }
 
-enum Fixture {
-    /// Real captured tool output — see Fixtures/README.md for provenance.
-    static func text(_ name: String) throws -> String {
-        let url = Bundle.module.resourceURL!.appendingPathComponent("Fixtures/\(name)")
-        return try String(contentsOf: url, encoding: .utf8)
+    public init(command: String) {
+        self.command = command
     }
 }

@@ -41,10 +41,13 @@ let package = Package(
                 .product(name: "Logging", package: "swift-log"),
             ]
         ),
-        .testTarget(name: "CoreTests", dependencies: ["Core"]),
+        // The fake ProcessRunner is the project's one injection seam, so both test
+        // targets share a single copy of it rather than drifting apart.
+        .target(name: "TestSupport", dependencies: ["Core"], path: "Tests/TestSupport"),
+        .testTarget(name: "CoreTests", dependencies: ["Core", "TestSupport"]),
         .testTarget(
             name: "SimulatorKitTests",
-            dependencies: ["SimulatorKit", "Core"],
+            dependencies: ["SimulatorKit", "Core", "TestSupport"],
             resources: [.copy("Fixtures")]
         ),
     ]

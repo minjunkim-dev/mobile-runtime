@@ -43,13 +43,19 @@ struct Doctor: AsyncParsableCommand {
 
         let runner = SystemProcessRunner(logger: Logger(label: "mobile.process"))
         let locator = XcodeLocator(runner: runner)
-        let engine = DoctorEngine(checks: [
+        let hostChecks: [any Check] = [
             XcodeInstalledCheck(locator: locator),
             SimulatorDaemonCheck(runner: runner, locator: locator),
-        ])
+        ]
 
-        // Project detection lands with the project checks; until then every run is host-only.
-        writeError("note: no project detected — host checks only")
+        // Standing outside a project is a legitimate use — a new machine has nothing
+        // cloned yet — so it is a note, never an error.
+        let anchor = ProjectAnchor.detect(
+            from: URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        )
+        if anchor == nil { writeError("note: no project detected — host checks only") }
+
+        let engine = DoctorEngine(checks: hostChecks + (anchor?.checks(runner: runner) ?? []))
 
         let report = await engine.run()
         for failure in report.toolFailures { writeError("tool failure: \(failure)") }

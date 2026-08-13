@@ -1,4 +1,5 @@
 import Core
+import TestSupport
 import Testing
 
 @testable import SimulatorKit

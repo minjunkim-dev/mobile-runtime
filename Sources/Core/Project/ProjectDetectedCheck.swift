@@ -1,0 +1,57 @@
+import Foundation
+
+/// `project.detected` — which React Native project this is, and whether the two
+/// things every later check reads (`ios/`, `node_modules`) are there.
+public struct ProjectDetectedCheck: Check {
+    public let id = "project.detected"
+    public let category = "Project"
+    public let title = "React Native project detected"
+
+    private static let source = CheckSource(tier: 1, origin: "package.json")
+    private static let required = "a React Native project with an ios/ directory and installed dependencies"
+
+    private let anchor: ProjectAnchor
+
+    public init(anchor: ProjectAnchor) {
+        self.anchor = anchor
+    }
+
+    public func run() async throws -> CheckOutcome {
+        let version = anchor.installedReactNativeVersion ?? anchor.declaredReactNativeVersion
+        // Without node_modules the installed React Native version cannot be measured.
+        // That fact is what later turns the Tier 2 checks into `unknown`, so it is
+        // stated whichever branch answers.
+        let dependencies = anchor.hasNodeModules ? "" : ", no node_modules"
+
+        // A managed project generates `ios/` on demand. Its absence says the native
+        // checks have nothing to read — it does not say the project is broken.
+        guard anchor.hasIOSDirectory else {
+            let uninstalled = anchor.hasNodeModules
+                ? ""
+                : "; node_modules is missing too, so the installed React Native version could not be measured"
+            return .unknown(
+                reason: "no `ios/` directory — a managed project generates it on demand, "
+                    + "so the native checks have nothing to read\(uninstalled)",
+                observed: "React Native \(version), no ios/\(dependencies)",
+                required: Self.required,
+                source: Self.source
+            )
+        }
+        guard anchor.hasNodeModules else {
+            return .warning(
+                observed: "React Native \(version) declared, node_modules missing",
+                required: Self.required,
+                source: Self.source,
+                remediation: Remediation(
+                    summary: "Install the project's dependencies — doctor never installs them for you.",
+                    command: anchor.installCommand
+                )
+            )
+        }
+        return .pass(
+            observed: "React Native \(version) at \(anchor.directory.lastPathComponent)/",
+            required: Self.required,
+            source: Self.source
+        )
+    }
+}
