@@ -1,0 +1,38 @@
+# ADR-0002: swift-subprocess를 채택하되 ProcessRunner 한 파일에 가둔다
+
+- 상태: 채택
+- 날짜: 2026-08-13
+- 관련: #8(SpikeIOS), #9(패키지 구조), #15(Core 계약), #16(tracer bullet)
+
+## 배경
+
+mobile이 하는 일의 대부분은 외부 도구 호출이다 — `xcodebuild`, `xcrun simctl`, 나중에는 `node`·`pod`·`gradle`. 이 층의 품질이 도구 전체의 품질을 결정한다.
+
+SpikeIOS(#8)에서 swift-subprocess 1.0.0을 실측했고, 결과는 양면이었다:
+
+- **좋다**: async/await 기반 API가 깔끔하고, non-zero exit이 throw가 아니라 `terminationStatus` 검사다. simctl은 정상적으로 non-zero를 내는 경우가 많아서 이 성질이 orchestration에 정확히 맞는다.
+- **얇다**: 레퍼런스가 부족해 문서보다 소스를 읽어야 했다. 제안서 시절 타입명 `CollectedResult`가 1.0에서 `ExecutionResult`로 바뀌어 있었다. 타임아웃은 아예 없다.
+
+즉 정식 1.0 태그이긴 하나 생태계 성숙도가 낮은 의존이다. 대안인 Foundation `Process`는 async/취소 처리가 더 나쁘다.
+
+## 결정
+
+**swift-subprocess를 채택하되, 그 타입이 `Sources/Core/ProcessRunner.swift` 밖으로 나가지 않게 한다.**
+
+- `ProcessCommand` / `ProcessResult` / `TerminationStatus` / `ProcessError`는 우리 타입이다. swift-subprocess의 `ExecutionResult`·`Environment`·`Arguments`·`Executable`은 이 파일 안에서만 존재한다.
+- 호출자는 `ProcessRunner` 프로토콜만 본다. 테스트는 이 프로토콜을 fake로 갈아끼운다 — 도구 전체가 결정적으로 테스트되는 유일한 seam이다.
+- 라이브러리에 없는 것은 우리 층에서 만든다: **타임아웃**은 Task cancel 조합(spike 검증 패턴). 취소는 자식 프로세스를 죽이지만 그 결과가 평범한 `signaled` 결과로 돌아오므로, 마감 시각이 지났다는 사실을 래치로 따로 들고 판정한다.
+- **에러 2층**을 타입으로 가른다. `ProcessError`(spawn 실패·타임아웃)는 인프라 장애이고, 도메인 실패는 exit code + stderr를 해석해 만드는 `DomainError`이며 Remediation을 필드로 갖는다. 이 구분이 exit code 1과 2를 가른다(#15 user story 52).
+- 계약은 **collected output만**. streaming 메서드는 넣지 않는다 — `up`의 xcodebuild가 실제로 요구할 때 추가한다.
+
+## 결과
+
+- 의존이 바뀌거나 버려질 때 수정 범위가 한 파일이다. 이것이 미성숙한 의존을 받아들인 대가로 산 것이다.
+- 대신 얇은 wrapper 하나가 영구히 존재한다. `ProcessRunner`가 단순 위임처럼 보인다는 지적은 이 ADR을 근거로 기각한다 — 위임이 목적이 아니라 격리가 목적이다.
+- 플랫폼 차이도 이 파일이 흡수한다. `standardOutput`이 Darwin에서 `String?`, Linux에서 `String`인 차이가 헬퍼 하나로 여기서 끝난다(ADR-0001 참조).
+- 절대경로 실행은 지원하지 않는다. `Executable.path(_:)`가 `System.FilePath`를 요구하고, 그것을 import하면 ADR-0001이 깨진다.
+
+## 대안
+
+- **Foundation `Process` 직접 사용.** 취소·async 처리가 나쁘고, 결국 같은 wrapper를 우리가 더 많이 써야 한다.
+- **wrapper 없이 swift-subprocess를 직접 호출.** 코드는 줄지만 테스트 seam이 사라지고, 의존 교체 비용이 호출 지점 전체로 퍼진다. 미성숙한 의존에 대해 정확히 하면 안 되는 선택이다.
