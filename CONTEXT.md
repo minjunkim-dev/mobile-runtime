@@ -1,0 +1,93 @@
+# mobile (working name)
+
+Reproducible mobile development runtime. 프로젝트가 요구하는 환경을 추론·검증·기동한다 — North Star는 `git clone → mobile up`.
+
+## Language
+
+### 요구사항 계층
+
+**Tier 1 (선언 파일)**:
+앱 repo에 이미 존재하는 선언 파일(.nvmrc, package.json engines, Gemfile.lock 등)에서 파싱한 요구사항.
+_Avoid_: 설정 파일 추론
+
+**Tier 2 (호환성 매트릭스)**:
+어디에도 선언되지 않는 요구사항(Xcode, JDK 상한 등)을 프레임워크 버전에서 도출하는 실측 데이터.
+_Avoid_: 하드코딩 버전 표
+
+**Tier 3 (mobile.yml)**:
+추론 불가능해서 사용자가 직접 선언하는 정보. 추론 가능한 것은 넣지 않는다.
+
+**Override**:
+Tier 2 추론과 mobile.yml이 충돌할 때 mobile.yml이 이기는 규칙. Tier 2 전용 — Tier 1은 정본 파일 수정이 올바른 경로라 override 대상이 아니다. 충돌 사실은 숨기지 않는다.
+
+**Matrix (매트릭스)**:
+Tier 2의 데이터 그 자체. 프레임워크 버전 → 요구 도구 버전 매핑.
+
+### doctor
+
+**Check (검사)**:
+doctor가 실행하는 단위 검증. 안정적인 id가 계약이다.
+_Avoid_: health check, validation item
+
+**Status (상태)**:
+Check의 결과. `pass` / `warning`(동작하지만 어긋남) / `error`(빌드·실행 실패 예상) / `unknown`(판단 불가) 4단계.
+
+**unknown**:
+"모른다"를 침묵 대신 명시하는 1급 상태. 판단 근거 소스가 없을 때 쓴다.
+_Avoid_: skipped, N/A
+
+**Remediation**:
+warning/error에 반드시 붙는 복구 안내. 설명 + 복붙 가능한 명령(가능한 경우) + 문서 URL(선택).
+_Avoid_: fix suggestion, hint
+
+**Host check**:
+프로젝트와 무관하게 머신 상태만 보는 Check (Xcode 설치, CoreSimulator 데몬 등).
+
+**Project check**:
+프로젝트 선언을 읽어야 성립하는 Check. 프로젝트 미탐지 시 실행되지 않는다.
+
+### CLI
+
+**Envelope**:
+모든 `--json` 문서가 공유하는 공통 필드 집합(스키마 버전·도구 버전·명령·종합 상태). 명령별 본문은 envelope 위에 얹힌다.
+
+**도메인 실패 / 도구 장애**:
+exit code로 구분되는 실패 2종. 도메인 실패는 사용자 프로젝트·환경의 문제(remediation 동반), 도구 장애는 mobile 자체의 인프라 문제. 도메인 에러의 2층 구분(#9)과 같은 축.
+
+### up
+
+**Stage (단계)**:
+up 파이프라인의 실행 단위. doctor의 Check처럼 안정적인 id가 계약이다. 직렬 실행, fail-fast.
+
+**프로젝트 의존성 (Project dependencies)**:
+앱 repo 자신의 의존성(node_modules, Pods). up이 설치하는 정상 단계 — "자동 설치 금지" 원칙의 대상이 아니다.
+
+**도구 프로비저닝 (Tool provisioning)**:
+호스트 도구(Xcode, iOS runtime 등)의 설치. V1은 detect/validate만, 설치는 V2. "자동 설치 금지" 원칙이 가리키는 대상.
+
+**Settle**:
+launch 리턴 ≠ UI 렌더 완료라서 두는 설정형 고정 대기(기본 3s). 폴링 가능한 신호가 생기면 교체 대상.
+
+### Dogfooding
+
+**파손 시나리오 (Fault scenario)**:
+doctor의 error 경로를 검증하기 위해 호스트를 의도적으로 깨뜨리는 재현 절차. 호스트 파손이라 검증 repo와 무관하다.
+_Avoid_: failure injection, chaos test
+
+**미탐 / 오탐**:
+doctor 정확성의 두 실패 축. 미탐 = 실재 문제를 pass로 통과(치명 — doctor 신뢰의 근간), 오탐 = 멀쩡한데 warning/error(경고 — 개선 대상).
+
+**Go/No-Go 게이트**:
+다음 단계 진입 전 사전에 박아둔 기준으로 내리는 판정. #1 = feasibility(spike), #2 = 유용성(dogfooding). 기준은 판정 시점이 아니라 계획 시점에 잠근다.
+
+### 구조
+
+**Adapter**:
+프레임워크별 프로젝트 해석기. MVP는 RN adapter 하나.
+_Avoid_: plugin, provider(→ 플랫폼 쪽 용어)
+
+**앵커 (Anchor)**:
+프로젝트 탐지의 기준점 — RN에서는 react-native를 의존성으로 가진 package.json. adapter 활성화와 mobile.yml 탐색이 같은 앵커를 공유한다.
+
+**도메인 에러**:
+외부 도구의 exit code + stderr를 해석해 만든 의미 있는 실패(복구 힌트 포함). 인프라 에러(spawn 실패·타임아웃)와 구분된다.
