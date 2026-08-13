@@ -10,10 +10,10 @@ private func runProjectChecks(
     _ repo: FixtureRepo,
     at subdirectory: String? = nil,
     node: FakeProcessRunner.Response? = .ok("v20.11.1\n"),
-    packageManager: [String: FakeProcessRunner.Response] = [:],
+    tools: [String: FakeProcessRunner.Response] = [:],
     failures: [String: any Error] = [:]
 ) async -> (DoctorReport, FakeProcessRunner) {
-    var responses = packageManager
+    var responses = tools
     if let node { responses["node --version"] = node }
     let runner = FakeProcessRunner(responses: responses, failures: failures)
 
@@ -67,7 +67,7 @@ struct ProjectDetectedCheckTests {
         )
         try repo.directory("ios")
 
-        let (report, _) = await runProjectChecks(repo, packageManager: ["yarn --version": .ok("3.6.4\n")])
+        let (report, _) = await runProjectChecks(repo, tools: ["yarn --version": .ok("3.6.4\n")])
         let check = try #require(report.checks.first { $0.id == "project.detected" })
 
         #expect(check.status == .warning)
@@ -304,7 +304,7 @@ struct PackageManagerCheckTests {
             packageJSON: #"{"dependencies": {"react-native": "0.76.5"}, "packageManager": "yarn@3.6.4"}"#
         )
 
-        let (report, runner) = await runProjectChecks(repo, packageManager: ["yarn --version": .ok("3.6.4\n")])
+        let (report, runner) = await runProjectChecks(repo, tools: ["yarn --version": .ok("3.6.4\n")])
         let check = try #require(report.checks.first { $0.id == "package-manager.version" })
 
         #expect(check.status == .pass)
@@ -319,7 +319,7 @@ struct PackageManagerCheckTests {
             packageJSON: #"{"dependencies": {"react-native": "0.76.5"}, "packageManager": "pnpm@8.15.0"}"#
         )
 
-        let (report, _) = await runProjectChecks(repo, packageManager: ["pnpm --version": .ok("9.1.0\n")])
+        let (report, _) = await runProjectChecks(repo, tools: ["pnpm --version": .ok("9.1.0\n")])
         let check = try #require(report.checks.first { $0.id == "package-manager.version" })
 
         #expect(check.status == .warning)
@@ -360,6 +360,226 @@ struct PackageManagerCheckTests {
     }
 }
 
+/// A real RN `Gemfile.lock`: the locked version sits under `specs:`, while
+/// `DEPENDENCIES` repeats the name with the range the Gemfile asked for.
+private let gemfileLock = """
+GEM
+  remote: https://rubygems.org/
+  specs:
+    CFPropertyList (3.0.6)
+    activesupport (7.1.3)
+    cocoapods (1.15.2)
+      addressable (~> 2.8)
+      cocoapods-core (= 1.15.2)
+    cocoapods-core (1.15.2)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  activesupport (>= 6.1.7.5, != 7.1.0)
+  cocoapods (>= 1.13, != 1.15.0, != 1.15.1)
+
+BUNDLED WITH
+   2.5.6
+"""
+
+@Suite("cocoapods.version")
+struct CocoaPodsVersionCheckTests {
+    @Test("passes when the installed CocoaPods is the one Gemfile.lock locks")
+    func matchesLock() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
+        try repo.write("Gemfile.lock", gemfileLock)
+
+        let (report, _) = await runProjectChecks(repo, tools: ["pod --version": .ok("1.15.2\n")])
+        let check = try #require(report.checks.first { $0.id == "cocoapods.version" })
+
+        #expect(check.status == .pass)
+        #expect(check.outcome.source.tier == 1)
+    }
+
+    @Test("a version other than the locked one is a warning — Podfile.lock gets rewritten")
+    func versionMismatch() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
+        try repo.write("Gemfile.lock", gemfileLock)
+
+        let (report, _) = await runProjectChecks(repo, tools: ["pod --version": .ok("1.14.3\n")])
+        let check = try #require(report.checks.first { $0.id == "cocoapods.version" })
+
+        #expect(check.status == .warning)
+        #expect(check.outcome.observed?.contains("1.14.3") == true)
+        #expect(check.outcome.required?.contains("1.15.2") == true)
+        #expect(check.outcome.remediation != nil)
+    }
+
+    @Test("CocoaPods missing while the project locks it is an error")
+    func notInstalled() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
+        try repo.write("Gemfile.lock", gemfileLock)
+
+        let (report, _) = await runProjectChecks(repo)
+        let check = try #require(report.checks.first { $0.id == "cocoapods.version" })
+
+        #expect(check.status == .error)
+        #expect(check.outcome.remediation != nil)
+        #expect(report.exitCode == 1)
+    }
+
+    @Test("no Gemfile.lock means no check at all — absence, not a quiet pass")
+    func withoutGemfileLock() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
+
+        let (report, runner) = await runProjectChecks(repo)
+
+        #expect(report.checks.contains { $0.id == "cocoapods.version" } == false)
+        #expect(runner.log.first(matching: "pod --version") == nil)
+    }
+
+    @Test("a Gemfile.lock that locks no CocoaPods still judges whether it is installed")
+    func lockWithoutCocoaPods() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
+        try repo.write("Gemfile.lock", "GEM\n  specs:\n    xcodeproj (1.24.0)\n")
+
+        let (report, _) = await runProjectChecks(repo, tools: ["pod --version": .ok("1.15.2\n")])
+        let check = try #require(report.checks.first { $0.id == "cocoapods.version" })
+
+        #expect(check.status == .pass)
+        #expect(check.outcome.observed?.contains("1.15.2") == true)
+    }
+
+    @Test("a lock that never asked for CocoaPods does not error over it missing")
+    func lockWithoutCocoaPodsAndNotInstalled() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
+        try repo.write("Gemfile.lock", "GEM\n  specs:\n    fastlane (2.219.0)\n")
+
+        let (report, _) = await runProjectChecks(repo)
+        let check = try #require(report.checks.first { $0.id == "cocoapods.version" })
+
+        #expect(check.status == .unknown)
+        #expect(check.outcome.reason?.contains("Gemfile.lock") == true)
+        #expect(report.exitCode == 0)
+    }
+
+    @Test("a locked version mobile cannot resolve is unknown with a reason, never a silent pass")
+    func unresolvableLockedVersion() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
+        try repo.write("Gemfile.lock", "GEM\n  specs:\n    cocoapods (1.16.0.beta.1)\n")
+
+        let (report, _) = await runProjectChecks(repo, tools: ["pod --version": .ok("1.15.2\n")])
+        let check = try #require(report.checks.first { $0.id == "cocoapods.version" })
+
+        #expect(check.status == .unknown)
+        #expect(check.outcome.reason?.contains("1.16.0.beta.1") == true)
+    }
+
+    @Test("a pod probe that fails is unknown, and the reason quotes what the tool said")
+    func probeFails() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
+        try repo.write("Gemfile.lock", gemfileLock)
+
+        let (report, _) = await runProjectChecks(
+            repo,
+            tools: ["pod --version": .failed(1, "Ignoring ffi-1.16.3 because its extensions are not built\n")]
+        )
+        let check = try #require(report.checks.first { $0.id == "cocoapods.version" })
+
+        #expect(check.status == .unknown)
+        #expect(check.outcome.reason?.contains("extensions are not built") == true)
+    }
+}
+
+@Suite("ruby.version")
+struct RubyVersionCheckTests {
+    private static let installed = FakeProcessRunner.Response.ok(
+        "ruby 3.2.2 (2023-03-30 revision e51014f9c0) [arm64-darwin23]\n"
+    )
+
+    @Test("passes when the installed Ruby matches the pin")
+    func matchesPin() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
+        try repo.write(".ruby-version", "3.2.2\n")
+
+        let (report, _) = await runProjectChecks(repo, tools: ["ruby --version": Self.installed])
+        let check = try #require(report.checks.first { $0.id == "ruby.version" })
+
+        #expect(check.status == .pass)
+        #expect(check.outcome.observed?.contains("3.2.2") == true)
+    }
+
+    @Test("the RVM spelling of the pin resolves to the same version")
+    func rvmSpelling() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
+        try repo.write(".ruby-version", "ruby-3.2.2\n")
+
+        let (report, _) = await runProjectChecks(repo, tools: ["ruby --version": Self.installed])
+        let check = try #require(report.checks.first { $0.id == "ruby.version" })
+
+        #expect(check.status == .pass)
+    }
+
+    @Test("a pin mismatch is a warning — team convention, not a contract")
+    func pinMismatch() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
+        try repo.write(".ruby-version", "3.3.0\n")
+
+        let (report, _) = await runProjectChecks(repo, tools: ["ruby --version": Self.installed])
+        let check = try #require(report.checks.first { $0.id == "ruby.version" })
+
+        #expect(check.status == .warning)
+        #expect(check.outcome.required?.contains("3.3.0") == true)
+        #expect(check.outcome.remediation != nil)
+        #expect(report.exitCode == 0)
+    }
+
+    @Test("no .ruby-version means no check at all — not even an unknown")
+    func withoutPin() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
+
+        let (report, runner) = await runProjectChecks(repo)
+
+        #expect(report.checks.contains { $0.id == "ruby.version" } == false)
+        #expect(runner.log.first(matching: "ruby --version") == nil)
+    }
+
+    @Test("Ruby missing from PATH while the project pins it is an error")
+    func notInstalled() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
+        try repo.write(".ruby-version", "3.2.2\n")
+
+        let (report, _) = await runProjectChecks(repo)
+        let check = try #require(report.checks.first { $0.id == "ruby.version" })
+
+        #expect(check.status == .error)
+        #expect(check.outcome.remediation != nil)
+    }
+
+    @Test("a pin mobile cannot resolve is unknown with a reason, never a silent pass")
+    func unresolvablePin() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
+        try repo.write(".ruby-version", "truffleruby+graalvm-23.1.1\n")
+
+        let (report, _) = await runProjectChecks(repo, tools: ["ruby --version": Self.installed])
+        let check = try #require(report.checks.first { $0.id == "ruby.version" })
+
+        #expect(check.status == .unknown)
+        #expect(check.outcome.reason?.contains("truffleruby") == true)
+    }
+}
+
 @Suite("project checks in the --json document")
 struct ProjectChecksJSONTests {
     @Test("every project check lands in checks[] under its stable id")
@@ -375,15 +595,26 @@ struct ProjectChecksJSONTests {
             }
             """
         )
+        try repo.write("Gemfile.lock", gemfileLock)
+        try repo.write(".ruby-version", "3.2.2\n")
 
-        let (report, _) = await runProjectChecks(repo, packageManager: ["yarn --version": .ok("3.6.4\n")])
+        let (report, _) = await runProjectChecks(
+            repo,
+            tools: [
+                "yarn --version": .ok("3.6.4\n"),
+                "pod --version": .ok("1.15.2\n"),
+                "ruby --version": .ok("ruby 3.2.2 (2023-03-30 revision e51014f9c0) [arm64-darwin23]\n"),
+            ]
+        )
         let text = try DoctorJSONDocument(report: report, toolVersion: "9.9.9").encoded()
         let json = try #require(try JSONSerialization.jsonObject(with: Data(text.utf8)) as? [String: Any])
         let checks = try #require(json["checks"] as? [[String: Any]])
 
         #expect(
-            checks.compactMap { $0["id"] as? String }
-                == ["project.detected", "node.version", "package-manager.version"]
+            checks.compactMap { $0["id"] as? String } == [
+                "project.detected", "node.version", "package-manager.version",
+                "cocoapods.version", "ruby.version",
+            ]
         )
         for check in checks {
             #expect((check["source"] as? [String: Any])?["tier"] as? Int == 1)

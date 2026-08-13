@@ -24,7 +24,13 @@ func probeVersion(of executable: String, using runner: any ProcessRunner) async 
         return .notOnPath
     }
 
-    guard result.terminationStatus.isSuccess, let version = SemanticVersion(result.standardOutput) else {
+    // Not every tool answers with the bare number — `ruby --version` says
+    // "ruby 3.2.2 (2023-03-30 …)" — so the first word that reads as a version wins
+    // rather than the whole line.
+    guard result.terminationStatus.isSuccess,
+        let version = result.standardOutput.split(whereSeparator: \.isWhitespace)
+            .lazy.compactMap({ SemanticVersion(String($0)) }).first
+    else {
         // The tool's own words, so an `unknown` says why it could not tell.
         let complaint = result.standardError.split(separator: "\n").first
             .map { " — \($0.trimmingCharacters(in: .whitespaces))" } ?? ""
