@@ -140,8 +140,8 @@ public struct SystemProcessRunner: ProcessRunner {
             log("ran subprocess", ("status", "\(status)"))
             return ProcessResult(
                 terminationStatus: status,
-                standardOutput: result.standardOutput ?? "",
-                standardError: result.standardError ?? ""
+                standardOutput: Self.collected(result.standardOutput),
+                standardError: Self.collected(result.standardError)
             )
         } catch let error as ProcessError {
             throw error
@@ -153,6 +153,10 @@ public struct SystemProcessRunner: ProcessRunner {
             throw ProcessError.spawnFailed(command: command.description, underlying: error)
         }
     }
+
+    /// swift-subprocess hands back `String?` on Darwin and `String` on Linux;
+    /// the implicit promotion makes one signature serve both.
+    private static func collected(_ output: String?) -> String { output ?? "" }
 
     /// One-way latch shared between the work task and its deadline.
     private final class Flag: @unchecked Sendable {

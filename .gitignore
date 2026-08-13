@@ -8,3 +8,6 @@
 # where the leftovers keep showing up as untracked.
 spike/**/build-dummy/
 spike/**/Dummy.app/
+
+# Linux verification scratch path (scripts/verify-core-linux.sh).
+.build-linux/

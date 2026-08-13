@@ -21,3 +21,7 @@ swift test
 ```
 
 Exit codes: `0` no errors, `1` domain failure, `2` tool failure, `64` usage error.
+
+`Core` may not depend on Apple frameworks. Linux has none, so compiling it there
+is that boundary — run `scripts/verify-core-linux.sh` (Docker) after touching
+`Sources/Core`.

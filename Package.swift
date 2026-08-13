@@ -3,6 +3,8 @@ import PackageDescription
 
 let package = Package(
     name: "mobile",
+    // Floor set by swift-subprocess (.macOS(.v13)); nothing here needs more. Only
+    // the host Xcode decides what we build with — this is the deployment target.
     platforms: [.macOS(.v14)],
     products: [
         .executable(name: "mobile", targets: ["mobile"])
