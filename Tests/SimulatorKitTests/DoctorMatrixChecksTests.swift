@@ -135,6 +135,28 @@ struct XcodeVersionCheckTests {
         #expect(check.outcome.source.tier == 2)
     }
 
+    /// Getting here means `xcode.installed` passed and the matrix (or `.xcode-version`)
+    /// already settled a floor, so the requirement is not in doubt — only the Xcode is.
+    /// An Xcode that cannot say what version it is cannot be built with, and ADR-0004
+    /// grades an unusable tool the project requires as an error.
+    @Test("an Xcode whose version cannot be read is an error, not a shrug")
+    func unreadableVersion() async throws {
+        let runner = FakeProcessRunner(
+            responses: hostResponses(
+                xcodebuild: "Xcode beta\nBuild version 17F113\n",
+                runtimes: try Fixture.text("simctl-list-runtimes.stdout.json")
+            )
+        )
+
+        let report = await engine(runner, requirements(xcode: "16.1", runtime: "15.1"))
+            .run(only: ["xcode.version"])
+        let check = try #require(report.checks.first { $0.id == "xcode.version" })
+
+        #expect(check.status == .error)
+        #expect(check.outcome.observed?.contains("`beta`") == true)
+        #expect(check.outcome.remediation?.command == "xcodebuild -version")
+    }
+
     @Test("is unknown — not a second error — when Xcode could not be located")
     func xcodeMissing() async throws {
         let runner = FakeProcessRunner(responses: [

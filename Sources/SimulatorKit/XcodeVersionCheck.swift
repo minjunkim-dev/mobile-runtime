@@ -30,11 +30,21 @@ public struct XcodeVersionCheck: Check {
         // xcode.installed passed, so locating cannot fail here — but reading the
         // version string still can.
         let installation = try await locator.locate()
+        // The requirement is settled by the time this runs — the unavailable case
+        // returned above — so an Xcode that cannot say what version it is is an
+        // unusable tool the project requires, which ADR-0004 grades as an error. An
+        // `error` carries no reason, so what xcodebuild printed rides in `observed`.
         guard let installed = SemanticVersion(installation.version) else {
-            return .unknown(
-                reason: "`xcodebuild -version` reported `\(installation.version)`, "
+            return .error(
+                observed: "`xcodebuild -version` reported `\(installation.version)`, "
                     + "which mobile cannot resolve to a version",
-                observed: installation.summary, required: required, source: source
+                required: required,
+                source: source,
+                remediation: Remediation(
+                    summary: "Check that `xcodebuild -version` prints a version — "
+                        + "an Xcode that cannot report one cannot be built with either.",
+                    command: "xcodebuild -version"
+                )
             )
         }
 
