@@ -28,6 +28,14 @@ private func standardApp(_ repo: FixtureRepo, packageJSON: String) throws {
     try repo.directory("ios")
 }
 
+/// The same app one level down, for the scenarios where the anchor and the
+/// workspace root are different places.
+private func monorepoApp(_ repo: FixtureRepo, packageJSON: String) throws {
+    try repo.write("packages/app/package.json", packageJSON)
+    try repo.write("packages/app/node_modules/react-native/package.json", #"{"version": "0.81.6"}"#)
+    try repo.directory("packages/app/ios")
+}
+
 @Suite("project.detected")
 struct ProjectDetectedCheckTests {
     @Test("passes with the installed react-native version when ios/ and node_modules are there")
@@ -73,6 +81,24 @@ struct ProjectDetectedCheckTests {
         #expect(check.status == .warning)
         #expect(check.outcome.observed?.contains("node_modules") == true)
         #expect(check.outcome.remediation?.command == "yarn install")
+    }
+
+    /// The lockfile is what picked `yarn` over `npm` and the workspace root over the
+    /// sub-package. A command a user is asked to paste has to say what chose it.
+    @Test("the install remediation names the lockfile it read the command from")
+    func installCommandNamesItsEvidence() async throws {
+        let repo = try FixtureRepo()
+        try repo.write("package.json", "{}")
+        try repo.write("yarn.lock", "")
+        try repo.write("packages/app/package.json", #"{"dependencies": {"react-native": "0.81.6"}}"#)
+        try repo.directory("packages/app/ios")
+
+        let (report, _) = await runProjectChecks(repo, at: "packages/app")
+        let check = try #require(report.checks.first { $0.id == "project.detected" })
+
+        #expect(check.status == .warning)
+        #expect(check.outcome.remediation?.command == "cd \(repo.root.path) && yarn install")
+        #expect(check.outcome.remediation?.summary.contains("yarn.lock") == true)
     }
 
     @Test("with neither ios/ nor node_modules, both facts survive into the one verdict")
@@ -181,6 +207,45 @@ struct NodeVersionCheckTests {
         let check = try #require(report.checks.first { $0.id == "node.version" })
 
         #expect(check.status == .error)
+    }
+
+    /// joplin: the root asks for `>=22.12` and the sub-package for `>=20`. Reading
+    /// only the anchor passed a host the workspace would have refused.
+    @Test("the workspace root's engines binds the sub-package — the stricter range decides")
+    func workspaceRootEngines() async throws {
+        let repo = try FixtureRepo()
+        try repo.write("package.json", #"{"engines": {"node": ">=22.12"}}"#)
+        try repo.write("yarn.lock", "")
+        try monorepoApp(
+            repo,
+            packageJSON: #"{"dependencies": {"react-native": "0.81.6"}, "engines": {"node": ">=20"}}"#
+        )
+
+        let (report, _) = await runProjectChecks(repo, at: "packages/app")
+        let check = try #require(report.checks.first { $0.id == "node.version" })
+
+        #expect(check.status == .error)
+        #expect(check.outcome.required?.contains(">=22.12") == true)
+        #expect(check.outcome.source.origin == "workspace root package.json engines")
+    }
+
+    /// Reading the anchor first must not mean judging only the anchor: a range
+    /// mobile cannot parse is one requirement going unanswered, not all of them.
+    @Test("an unreadable range in the sub-package does not swallow the workspace root's contract")
+    func unreadableAnchorEnginesKeepsTheRootJudged() async throws {
+        let repo = try FixtureRepo()
+        try repo.write("package.json", #"{"engines": {"node": ">=22.12"}}"#)
+        try repo.write("yarn.lock", "")
+        try monorepoApp(
+            repo,
+            packageJSON: #"{"dependencies": {"react-native": "0.81.6"}, "engines": {"node": "18 - 20"}}"#
+        )
+
+        let (report, _) = await runProjectChecks(repo, at: "packages/app")
+        let check = try #require(report.checks.first { $0.id == "node.version" })
+
+        #expect(check.status == .error)
+        #expect(check.outcome.required?.contains(">=22.12") == true)
     }
 
     @Test("Node missing from PATH is a domain error, not a tool failure")
@@ -357,6 +422,31 @@ struct PackageManagerCheckTests {
         let (report, _) = await runProjectChecks(repo)
 
         #expect(report.checks.contains { $0.id == "package-manager.version" } == false)
+    }
+
+    /// The monorepo silence from #21: the root declared the manager, the anchor did
+    /// not, and the Check disappeared on a host that had no yarn at all.
+    @Test("a workspace root declaration keeps the check alive in a sub-package")
+    func declaredAtWorkspaceRoot() async throws {
+        let repo = try FixtureRepo()
+        try repo.write("package.json", #"{"packageManager": "yarn@4.16.0"}"#)
+        try repo.write("yarn.lock", "")
+        try monorepoApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.81.6"}}"#)
+
+        let (report, _) = await runProjectChecks(
+            repo,
+            at: "packages/app",
+            failures: [
+                "yarn --version": ProcessError.spawnFailed(
+                    command: "yarn --version", underlying: FixtureMiss(command: "yarn --version")
+                )
+            ]
+        )
+        let check = try #require(report.checks.first { $0.id == "package-manager.version" })
+
+        #expect(check.status == .error)
+        #expect(check.outcome.required?.contains("yarn 4.16.0") == true)
+        #expect(check.outcome.source.origin == "workspace root package.json packageManager")
     }
 }
 

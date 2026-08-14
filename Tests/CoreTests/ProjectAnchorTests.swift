@@ -107,7 +107,7 @@ struct ProjectAnchorTests {
 
         #expect(anchor.nodePin?.value == "v20.11.1")
         #expect(anchor.nodePin?.file == ".nvmrc")
-        #expect(anchor.nodeEngines == ">=18")
+        #expect(anchor.nodeEngines == [NodeEngines(range: ">=18")])
         // The corepack hash is not part of the version being compared.
         #expect(anchor.packageManager == PackageManagerRequirement(name: "yarn", version: "3.6.4"))
     }
@@ -144,6 +144,55 @@ struct ProjectAnchorTests {
 
         try repo.write(".xcode-version", "\n")
         #expect(try #require(ProjectAnchor.detect(from: repo.root)).declaredXcodeVersion == nil)
+    }
+
+    @Test("the workspace root is the first lockfile above the anchor, and it names the package manager")
+    func workspaceRootFromLockfile() throws {
+        let repo = try FixtureRepo()
+        try repo.write("package.json", #"{"workspaces": ["packages/*"]}"#)
+        try repo.write("yarn.lock", "# yarn lockfile v1\n")
+        try repo.write("packages/app/package.json", #"{"dependencies": {"react-native": "0.81.6"}}"#)
+
+        let anchor = try #require(ProjectAnchor.detect(from: repo.url("packages/app")))
+        let workspaceRoot = try #require(anchor.workspaceRoot)
+
+        #expect(workspaceRoot.directory.path == repo.root.path)
+        #expect(workspaceRoot.lockfile == "yarn.lock")
+        #expect(workspaceRoot.packageManagerName == "yarn")
+        // Copy-pasting `yarn install` from the sub-package is what breaks a
+        // workspace: the install belongs where the lockfile is.
+        #expect(anchor.installCommand == "cd \(repo.root.path) && yarn install")
+    }
+
+    /// In a single repo the anchor is the workspace root, and an install that already
+    /// runs in the right place does not need to be told where to run.
+    @Test("a lockfile beside the anchor makes the install command a plain one")
+    func lockfileBesideTheAnchor() throws {
+        let repo = try FixtureRepo()
+        try repo.write("package.json", #"{"dependencies": {"react-native": "0.76.5"}}"#)
+        try repo.write("pnpm-lock.yaml", "lockfileVersion: '9.0'\n")
+
+        let anchor = try #require(ProjectAnchor.detect(from: repo.root))
+
+        #expect(anchor.workspaceRoot?.directory.path == repo.root.path)
+        #expect(anchor.installCommand == "pnpm install")
+    }
+
+    /// `packageManager` is a workspace-wide contract: a sub-package that does not
+    /// repeat it is still bound by it. Reading only the anchor made the Check vanish.
+    @Test("packageManager is read from the workspace root when the anchor does not declare one")
+    func workspaceRootPackageManager() throws {
+        let repo = try FixtureRepo()
+        try repo.write("package.json", #"{"packageManager": "yarn@4.16.0"}"#)
+        try repo.write("yarn.lock", "")
+        try repo.write("packages/app/package.json", #"{"dependencies": {"react-native": "0.81.6"}}"#)
+
+        let anchor = try #require(ProjectAnchor.detect(from: repo.url("packages/app")))
+        let requirement = try #require(anchor.packageManager)
+
+        #expect(requirement.name == "yarn")
+        #expect(requirement.version == "4.16.0")
+        #expect(requirement.origin == "workspace root package.json packageManager")
     }
 
     @Test("unparsable package.json is not an anchor")

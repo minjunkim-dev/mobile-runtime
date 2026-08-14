@@ -36,29 +36,47 @@ public struct NodeVersionCheck: Check {
         }
         let observed = "Node \(installed)"
 
-        if let engines = anchor.nodeEngines {
-            let source = CheckSource(tier: 1, origin: "package.json engines")
-            guard let range = VersionRange(engines) else {
-                // Say that the pin went unjudged too, rather than letting the second
-                // requirement disappear behind the first one's failure.
-                let pin = anchor.nodePin.map { ", so the `\($0.file)` pin was not checked either" } ?? ""
-                return .unknown(
-                    reason: "could not read `engines.node` (\(engines))\(pin)",
-                    observed: observed, required: engines, source: source
-                )
+        // Every declaration binds, so the requirement is whichever ones the installed
+        // Node breaks — that is the stricter side without having to order two ranges
+        // against each other (ADR-0003). Each is judged on its own: one range mobile
+        // cannot parse must not take the others' verdicts down with it, which is the
+        // monorepo silence #26 was filed for, one level in.
+        var violated: [NodeEngines] = []
+        var unreadable: [NodeEngines] = []
+        for engines in anchor.nodeEngines {
+            guard let range = VersionRange(engines.range) else {
+                unreadable.append(engines)
+                continue
             }
-            guard range.contains(installed) else {
-                return .error(
-                    observed: observed,
-                    required: "\(engines) (package.json engines)",
-                    source: source,
-                    remediation: Remediation(
-                        summary: "Switch to a Node version that satisfies `engines.node` — "
-                            + "the project declares it as a contract, so the build is entitled to refuse.",
-                        url: "https://nodejs.org/"
-                    )
+            if !range.contains(installed) { violated.append(engines) }
+        }
+
+        // A broken contract outranks an unreadable one: it is a judgement, not a gap.
+        if !violated.isEmpty {
+            return .error(
+                observed: observed,
+                required: violated.map(\.described).joined(separator: ", "),
+                source: source(of: violated),
+                remediation: Remediation(
+                    summary: "Switch to a Node version that satisfies `engines.node` — "
+                        + "the project declares it as a contract, so the build is entitled to refuse.",
+                    url: "https://nodejs.org/"
                 )
-            }
+            )
+        }
+        if !unreadable.isEmpty {
+            // Say that the pin went unjudged too, rather than letting the second
+            // requirement disappear behind the first one's failure.
+            let pin = anchor.nodePin.map { ", so the `\($0.file)` pin was not checked either" } ?? ""
+            let ranges = unreadable
+                .map { "`engines.node` (\($0.range)) in \($0.origin)" }
+                .joined(separator: " and ")
+            return .unknown(
+                reason: "could not read \(ranges)\(pin)",
+                observed: observed,
+                required: unreadable.map(\.described).joined(separator: ", "),
+                source: source(of: unreadable)
+            )
         }
 
         if let pin = anchor.nodePin {
@@ -90,17 +108,21 @@ public struct NodeVersionCheck: Check {
     /// one specific declaration. A project that declared nothing still gets this
     /// Check: "is Node installed at all" is a verdict on its own.
     private var requirement: String {
-        let declarations = [
-            anchor.nodeEngines.map { "\($0) (package.json engines)" },
-            anchor.nodePin.map { "\($0.value) (\($0.file))" },
-        ].compactMap { $0 }
+        let declarations = anchor.nodeEngines.map(\.described)
+            + [anchor.nodePin.map { "\($0.value) (\($0.file))" }].compactMap { $0 }
         return declarations.isEmpty ? "no Node version declared" : declarations.joined(separator: ", ")
     }
 
+    /// Every declaration that produced the verdict, not just the nearest one: with a
+    /// workspace root in play two `package.json` files answer, and naming one of them
+    /// would misreport which was read (ADR-0003).
+    private func source(of engines: [NodeEngines]) -> CheckSource {
+        CheckSource(tier: 1, origin: engines.map(\.origin).joined(separator: ", "))
+    }
+
     private var source: CheckSource {
-        CheckSource(
-            tier: 1,
-            origin: anchor.nodeEngines != nil ? "package.json engines" : (anchor.nodePin?.file ?? "package.json")
-        )
+        anchor.nodeEngines.isEmpty
+            ? CheckSource(tier: 1, origin: anchor.nodePin?.file ?? "package.json")
+            : source(of: anchor.nodeEngines)
     }
 }

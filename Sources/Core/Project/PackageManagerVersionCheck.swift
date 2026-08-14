@@ -11,10 +11,13 @@ public struct PackageManagerVersionCheck: Check {
     /// repo, so it is checked against the managers corepack knows rather than
     /// executed as written.
     private static let known: Set<String> = ["npm", "yarn", "pnpm", "bun"]
-    private static let source = CheckSource(tier: 1, origin: "package.json packageManager")
 
     private let requirement: PackageManagerRequirement
     private let runner: any ProcessRunner
+
+    /// The declaration can come from the workspace root rather than the anchor, so
+    /// the origin travels with the requirement instead of being fixed here.
+    private var source: CheckSource { CheckSource(tier: 1, origin: requirement.origin) }
 
     public init(requirement: PackageManagerRequirement, runner: any ProcessRunner) {
         self.requirement = requirement
@@ -27,13 +30,13 @@ public struct PackageManagerVersionCheck: Check {
         guard Self.known.contains(requirement.name) else {
             return .unknown(
                 reason: "`packageManager` names `\(requirement.name)`, which mobile does not know how to measure",
-                required: required, source: Self.source
+                required: required, source: source
             )
         }
         guard let declared = SemanticVersion(requirement.version) else {
             return .unknown(
                 reason: "could not read the declared version `\(requirement.version)`",
-                required: required, source: Self.source
+                required: required, source: source
             )
         }
 
@@ -45,27 +48,27 @@ public struct PackageManagerVersionCheck: Check {
             return .error(
                 observed: "\(requirement.name) is not on PATH",
                 required: required,
-                source: Self.source,
+                source: source,
                 remediation: Remediation(
                     summary: "Enable corepack so the declared package manager is the one that runs.",
                     command: "corepack enable"
                 )
             )
         case .unreadable(let reason):
-            return .unknown(reason: reason, required: required, source: Self.source)
+            return .unknown(reason: reason, required: required, source: source)
         }
 
         guard installed == declared else {
             return .warning(
                 observed: "\(requirement.name) \(installed)",
                 required: required,
-                source: Self.source,
+                source: source,
                 remediation: Remediation(
                     summary: "Run the declared package manager — a different one rewrites the lockfile.",
                     command: "corepack use \(requirement.name)@\(requirement.version)"
                 )
             )
         }
-        return .pass(observed: "\(requirement.name) \(installed)", required: required, source: Self.source)
+        return .pass(observed: "\(requirement.name) \(installed)", required: required, source: source)
     }
 }

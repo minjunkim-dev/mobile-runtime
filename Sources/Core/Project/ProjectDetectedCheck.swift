@@ -43,7 +43,8 @@ public struct ProjectDetectedCheck: Check {
                 required: Self.required,
                 source: Self.source,
                 remediation: Remediation(
-                    summary: "Install the project's dependencies — doctor never installs them for you.",
+                    summary: "Install the project's dependencies — doctor never installs them for you."
+                        + installEvidence,
                     command: anchor.installCommand
                 )
             )
@@ -53,5 +54,14 @@ public struct ProjectDetectedCheck: Check {
             required: Self.required,
             source: Self.source
         )
+    }
+
+    /// Why this command and not another one. The manager and the directory both come
+    /// from the lockfile, and a command a human is asked to paste — `npm install` in a
+    /// yarn workspace breaks it — has to carry the evidence that chose it (ADR-0003).
+    private var installEvidence: String {
+        guard let root = anchor.workspaceRoot else { return "" }
+        let place = root.directory == anchor.directory ? "" : " at the workspace root"
+        return " `\(root.lockfile)`\(place) is what picks it."
     }
 }

@@ -93,5 +93,9 @@ _Avoid_: plugin, provider(→ 플랫폼 쪽 용어)
 **앵커 (Anchor)**:
 프로젝트 탐지의 기준점 — RN에서는 react-native를 의존성으로 가진 package.json. adapter 활성화와 mobile.yml 탐색이 같은 앵커를 공유한다.
 
+**워크스페이스 루트 (Workspace root)**:
+앵커에서 위로 올라가 만나는 첫 락파일의 위치. 패키지 매니저와 install 실행 위치가 여기서 나오고, 루트가 선언한 `packageManager`·`engines`도 앵커의 것과 함께 요구가 된다. 단일 repo에서는 앵커와 같은 자리다. `workspaces` 필드는 파싱하지 않는다 — ADR-0003.
+_Avoid_: monorepo root(모노레포가 아닌 단일 repo에도 있다)
+
 **도메인 에러**:
 외부 도구의 exit code + stderr를 해석해 만든 의미 있는 실패(복구 힌트 포함). 인프라 에러(spawn 실패·타임아웃)와 구분된다.
