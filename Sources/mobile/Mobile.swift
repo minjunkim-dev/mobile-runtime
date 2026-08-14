@@ -43,10 +43,6 @@ struct Doctor: AsyncParsableCommand {
 
         let runner = SystemProcessRunner(logger: Logger(label: "mobile.process"))
         let locator = XcodeLocator(runner: runner)
-        let hostChecks: [any Check] = [
-            XcodeInstalledCheck(locator: locator),
-            SimulatorDaemonCheck(runner: runner, locator: locator),
-        ]
 
         // Standing outside a project is a legitimate use — a new machine has nothing
         // cloned yet — so it is a note, never an error.
@@ -55,7 +51,11 @@ struct Doctor: AsyncParsableCommand {
         )
         if anchor == nil { writeError("note: no project detected — host checks only") }
 
-        let engine = DoctorEngine(checks: hostChecks + (anchor?.checks(runner: runner) ?? []))
+        let lookup = anchor.map { MatrixLookup.resolve(anchor: $0) }
+        let engine = DoctorEngine(
+            checks: iOSChecks(lookup: lookup, runner: runner, locator: locator)
+                + (anchor?.checks(runner: runner) ?? [])
+        )
 
         let report = await engine.run()
         for failure in report.toolFailures { writeError("tool failure: \(failure)") }

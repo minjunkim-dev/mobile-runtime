@@ -22,7 +22,10 @@ let package = Package(
             dependencies: [
                 .product(name: "Subprocess", package: "swift-subprocess"),
                 .product(name: "Logging", package: "swift-log"),
-            ]
+            ],
+            // The Tier 2 matrix ships inside the binary: doctor works offline, and a
+            // mobile version always carries exactly one matrix.
+            resources: [.copy("Resources/matrix.json")]
         ),
         // iOS domain knowledge: Xcode location, simctl, iOS checks.
         .target(

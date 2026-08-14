@@ -44,6 +44,41 @@ public struct VersionPin: Sendable, Equatable {
     }
 }
 
+/// A Tier 2 requirement value, written at whatever precision the source used:
+/// `"26"` reads as 26.0, `"16.1"` as 16.1, and anything from there up satisfies it.
+/// Matrix rows and `mobile.yml` overrides share this one comparator — there is no
+/// second way to state a tool version requirement.
+///
+/// A floor, not a prefix match: every value the matrix carries is a minimum, and a
+/// prefix match would fail Xcode 26 against a `16.1` requirement. Written to a
+/// major only, `"26"` therefore also accepts 27 — an override saying "26 works
+/// here" is a statement about the floor, not a ceiling.
+public struct MinimumVersion: Sendable, Equatable, Decodable, CustomStringConvertible {
+    /// As written in the source, so `required:` can quote it back verbatim.
+    public let text: String
+    private let floor: SemanticVersion
+
+    public init?(_ text: String) {
+        guard let components = VersionComponents(text) else { return nil }
+        self.text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.floor = components.lowerBound
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let text = try decoder.singleValueContainer().decode(String.self)
+        guard let parsed = MinimumVersion(text) else {
+            throw DecodingError.dataCorrupted(
+                .init(codingPath: decoder.codingPath, debugDescription: "`\(text)` is not a version")
+            )
+        }
+        self = parsed
+    }
+
+    public func isSatisfied(by version: SemanticVersion) -> Bool { version >= floor }
+
+    public var description: String { text }
+}
+
 /// The subset of npm range syntax that appears in `engines`: comparators, `^`, `~`,
 /// x-ranges, whitespace as AND and `||` as OR. Anything else fails to parse on
 /// purpose — the caller answers `unknown` rather than guessing a pass.

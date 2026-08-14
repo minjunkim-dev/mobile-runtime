@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "updated": "2026-08-14",
+  "sources": [
+    "https://github.com/reactwg/react-native-releases/blob/main/docs/support.md",
+    "https://github.com/facebook/react-native (per-tag packages/react-native/scripts/cocoapods/helpers.rb)"
+  ],
+  "frameworks": [
+    {
+      "framework": "react-native",
+      "rows": [
+        { "version": "0.73", "ios": { "xcode": "15.1", "runtime": "13.4" } },
+        { "version": "0.74", "ios": { "xcode": "15.1", "runtime": "13.4" } },
+        { "version": "0.75", "ios": { "xcode": "15.1", "runtime": "13.4" } },
+        { "version": "0.76", "ios": { "xcode": "15.1", "runtime": "15.1" } },
+        { "version": "0.77", "ios": { "xcode": "15.1", "runtime": "15.1" } },
+        { "version": "0.78", "ios": { "xcode": "15.1", "runtime": "15.1" } },
+        { "version": "0.79", "ios": { "xcode": "15.1", "runtime": "15.1" } },
+        { "version": "0.80", "ios": { "xcode": "15.1", "runtime": "15.1" } },
+        { "version": "0.81", "ios": { "xcode": "16.1", "runtime": "15.1" } },
+        { "version": "0.82", "ios": { "xcode": "16.1", "runtime": "15.1" } },
+        { "version": "0.83", "ios": { "xcode": "16.1", "runtime": "15.1" } },
+        { "version": "0.84", "ios": { "xcode": "16.1", "runtime": "15.1" } },
+        { "version": "0.85", "ios": { "xcode": "16.1", "runtime": "15.1" } },
+        { "version": "0.86", "ios": { "xcode": "16.1", "runtime": "15.1" } },
+        { "version": "0.87", "ios": { "xcode": "26.0", "runtime": "15.1" } }
+      ]
+    }
+  ]
+}

@@ -1,17 +1,6 @@
 import Core
 import Foundation
 
-/// Shape of `xcrun simctl list runtimes -j`. Only the fields this ticket needs;
-/// runtime matching arrives with `simulator.runtime`.
-struct SimctlRuntimeList: Decodable {
-    struct Runtime: Decodable {
-        let identifier: String
-        let isAvailable: Bool
-    }
-
-    let runtimes: [Runtime]
-}
-
 /// `simulator.daemon` — is CoreSimulator answering? When the daemon is wedged
 /// every simctl call below it fails without saying why.
 public struct SimulatorDaemonCheck: Check {
@@ -35,11 +24,7 @@ public struct SimulatorDaemonCheck: Check {
 
     public func run() async throws -> CheckOutcome {
         let result = try await runner.run(
-            ProcessCommand(
-                "xcrun", ["simctl", "list", "runtimes", "-j"],
-                environment: await locator.pinnedEnvironment(),
-                timeout: .seconds(60)
-            )
+            SimctlRuntimeList.command(environment: await locator.pinnedEnvironment())
         )
 
         guard result.terminationStatus.isSuccess else {
@@ -49,7 +34,7 @@ public struct SimulatorDaemonCheck: Check {
                 remediation: Self.restart
             )
         }
-        guard let list = try? JSONDecoder().decode(SimctlRuntimeList.self, from: Data(result.standardOutput.utf8)) else {
+        guard let list = SimctlRuntimeList.decode(result.standardOutput) else {
             return .error(
                 observed: "simctl returned output that is not a runtime list",
                 required: "simctl responds to `simctl list runtimes -j`",
