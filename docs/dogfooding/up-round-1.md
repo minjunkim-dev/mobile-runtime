@@ -1,12 +1,12 @@
 # Dogfooding: up 라운드 1
 
-`mobile up`의 관통 실측 (#44). doctor 라운드 1(#21)·2(#38 이전)과 같은 호스트·같은 세 repo·같은 커밋이다 — 비교 가능성을 위해 표본을 바꾸지 않았다. 판정이 아니라 자료다.
+`mobile up`의 관통 실측 (#44). doctor 라운드 1(#21)·라운드 2(`round-2.md`)와 같은 호스트·같은 세 repo·같은 커밋이다 — 비교 가능성을 위해 표본을 바꾸지 않았다. 판정이 아니라 자료다 — Go/No-Go #2는 별도 이슈에서 내린다.
 
 기록의 초점은 성공 여부가 아니라 **어디서 멈췄고 그 메시지로 다음 행동을 알 수 있었는가**다.
 
 ## 실행 환경
 
-측정 시점: 2026-08-14.
+측정 시점: 2026-08-14 ~ 08-15(자정을 넘겨 이어 돌렸다).
 
 | 항목 | 값 |
 | --- | --- |
@@ -27,7 +27,7 @@
 | `rainbow-me/rainbow` | `29eade9a` | yarn 4.13.0 |
 | `laurent22/joplin` (`packages/app-mobile`) | `2654b336` | yarn 4.16.0 (workspaces) |
 
-아래 출력에서 clone 절대경로는 `$REPO`로 줄였다. 그 외는 그대로다.
+아래 출력에서 clone 절대경로는 `$REPO`로, 다른 repo의 clone을 가리켜야 할 때는 `$REPO(mattermost)`처럼 줄였다. 그 외는 그대로다.
 
 ## 이 라운드가 어떻게 굴러갔나
 
@@ -90,13 +90,16 @@ up(과 doctor)이 싣는 것은 첫 줄뿐이다. 남은 화면은 "파싱 오�
 validate      5 of 9 checks need attention  1.1s
 dependencies  failed — installing node_modules failed  57.1s
 
-[✗] dependencies — installing node_modules failed — npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. …
-npm warn deprecated glob@7.2.3: Old versions of glob are not supported, …
+[✗] dependencies — installing node_modules failed — npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 npm warn deprecated rimraf@2.7.1: Rimraf versions prior to v4 are no longer supported
-(node:30215) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true …
+(node:30215) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
 npm error code 2
+npm error path $REPO
 npm error command failed
 npm error command sh -c ./scripts/preinstall.sh && npx solidarity
+npm error A complete log of this run can be found in: /Users/swifty/.npm/_logs/2026-08-14T14_21_50_209Z-debug-0.log
     → Run the install by hand to see the whole output — an installer that fails usually says why in more lines than fit here.
       npm install
 ```
@@ -132,13 +135,20 @@ dependencies  failed — installing Pods failed  8.8s
 [✗] dependencies — installing Pods failed — #  -------------------------------------------
 mise node@24.15.0            [1/3] install
 mise node@24.15.0            [1/3] download node-v24.15.0-darwin-arm64.tar.gz
-…
+mise node@24.15.0            [2/3] checksum node-v24.15.0-darwin-arm64.tar.gz
+mise node@24.15.0            [3/3] extract node-v24.15.0-darwin-arm64.tar.gz
+mise node@24.15.0            [3/3] node -v
+mise node@24.15.0            [3/3] v24.15.0
+mise node@24.15.0            [3/3] npm -v
+mise node@24.15.0            [3/3] 11.12.1
 mise node@24.15.0          ✓ installed
-    → Run the install by hand to see the whole output …
+    → Run the install by hand to see the whole output — an installer that fails usually says why in more lines than fit here.
       cd $REPO/ios && pod install
 ```
 
 `pod install`이 도는 동안 mise가 `.nvmrc`의 node를 자동 설치했고, 그 진행 로그가 tail 창을 밀어냈다. B와 같은 뿌리다.
+
+**다음 행동을 알 수 있었나 — 아니오.** 화면의 10줄 중 실패에 대한 것은 첫 줄의 `#  ----` 하나뿐이다. remediation의 복붙 명령을 손으로 돌리기 전에는 무엇이 잘못됐는지 알 수 없고, 그 복붙 명령마저 아래 3차에서 같은 이유로 실패한다.
 
 ### 3차 — `pod install`에 프로젝트가 선언한 env가 빠져 있다
 
@@ -156,6 +166,8 @@ remediation이 시킨 대로 `cd $REPO/ios && pod install`을 손으로 돌리�
 ```
 
 up의 `dependencies`는 언제나 맨 `pod install`을 돈다. 프로젝트가 선언한 스크립트를 읽지 않으므로 **이 repo에서는 up이 Pods를 영원히 설치하지 못한다**. remediation이 시키는 복붙 명령(`cd $REPO/ios && pod install`)도 같은 이유로 실패한다 — 사람이 따라 해도 같은 벽에 부딪힌다. → 후속 티켓 **D**(#48)
+
+**다음 행동을 알 수 있었나 — 아니오.** 화면이 준 명령을 그대로 따라도 같은 벽이다. 답은 `package.json`의 `pod-install` 스크립트에 있는데 up도 화면도 그 존재를 말하지 않는다.
 
 `RCT_NEW_ARCH_ENABLED=1 pod install`을 손으로 돌려(4분 남짓) 다음 차수로 갔다.
 
@@ -240,7 +252,28 @@ exit **0**, 총 361초. 시뮬레이터에 Mattermost 로그인 화면(앱 버�
 
 ## `--json` 소비 확인 (AC 3)
 
-세 가지 종료 상태를 실제로 `jq`로 파싱했다. **stdout에는 JSON만** 나온다 — 진행 줄과 doctor 렌더링은 전부 stderr로 갔고, `jq -e .`가 세 경우 모두 통과한다.
+세 repo에서 나온 문서 여섯 개(mattermost 2건, joplin 1건, rainbow 3건)를 실제로 `jq`로 파싱했다. **stdout에는 JSON만** 나온다 — 진행 줄과 doctor 렌더링은 전부 stderr로 갔고, `jq -e .`가 여섯 건 모두 통과한다.
+
+envelope 4필드와 비어 있지 않은 `stages`를 여섯 문서에 한 번에 물었다:
+
+```
+jq -e 'has("schemaVersion") and has("toolVersion") and has("command")
+       and has("status") and has("stages") and ((.stages|length)>0)' *.out
+→ 전부 true
+```
+
+repo별 키 구성(성공에는 `error`가 없고, 실패에는 `result`가 있을 수도 없을 수도 있다):
+
+| 문서 | `status` | 키 |
+| --- | --- | --- |
+| mattermost 관통 | `warning` | `command, result, schemaVersion, stages, status, toolVersion` |
+| mattermost scheme 실패 | `error` | 위 + `error` |
+| joplin 관통 | `warning` | `command, result, schemaVersion, stages, status, toolVersion` |
+| rainbow `validate` 실패 | `error` | `command, error, schemaVersion, stages, status, toolVersion` — **`result` 없음** |
+| rainbow scheme 실패 | `error` | `command, error, result, …` |
+| rainbow build 실패 | `error` | `command, error, result, …` |
+
+rainbow의 `validate` 실패만 `result`가 통째로 없다 — 아무 Stage도 아직 아무것도 확보하지 못했기 때문이고, 스펙대로다("Stage가 무언가를 넣기 전까지는 없다").
 
 ### 성공 (exit 0)
 
@@ -308,7 +341,9 @@ exit **0**, 총 361초. 시뮬레이터에 Mattermost 로그인 화면(앱 버�
 
 mattermost 5차가 exit 2다(사람용 출력으로 관측). `--json`으로 같은 상태를 다시 만들려고 clean 후 재빌드했지만 그때는 출력이 한도 아래로 내려가 통과해 버렸다 — 한도를 넘는 것은 **Pods까지 처음부터 컴파일하는 최초 빌드**뿐이다. 따라서 exit 2의 JSON 문서는 이 라운드에서 실측하지 못했다. 사람용 출력에서 확인된 것은 remediation이 도메인 문장이 아니라 "도구나 머신 문제"라는 고정 문장이라는 점이다(스펙대로).
 
-exit code는 관측된 범위에서 스펙대로 갈린다 — 0(관통), 1(도메인: scheme 미선언·빌드 실패·validate 실패), 2(도구: 출력 한도). `stages`·`result`·`error`도 스펙대로다. **AC 3은 통과**다 — 발견은 위 G 한 건.
+exit code는 관측된 범위에서 스펙대로 갈린다 — 0(관통), 1(도메인: scheme 미선언·빌드 실패·validate 실패), 2(도구: 출력 한도). `stages`·`result`·`error`도 스펙대로다.
+
+**AC 3의 상태: 0과 1은 JSON 문서로 확인, 2는 사람용 출력으로만 확인.** exit 2를 JSON으로 다시 만들려면 "Pods까지 처음부터 컴파일하는 최초 빌드"를 한 번 더 만들어야 하는데, 그 조건은 clone을 새로 받는 것과 같다. 다음 라운드에서 새 clone의 첫 실행을 `--json`으로 돌리면 공짜로 얻는다. 발견은 위 G 한 건.
 
 ## joplin (`packages/app-mobile`)
 
@@ -353,11 +388,19 @@ exit **0**, 103초. 그런데 시뮬레이터 화면은 이랬다:
 
 ```
 Unable to resolve module ./.expo/.virtual-metro-entry from
-  $REPO_MATTERMOST/.:
-None of these files exist: …
+  $REPO(mattermost)/.:
+
+None of these files exist:
+  * .expo/.virtual-metro-entry(.ios.js|.native.js|.js|.ios.jsx|.native.jsx|.jsx|.ios.json|
+    .native.json|.json|.ios.ts|.native.ts|.ts|.ios.tsx|.native.tsx|.tsx)
+  * .expo/.virtual-metro-entry
 ```
 
+(빨간 화면 전문. 줄바꿈만 폭에 맞춰 접었다.)
+
 8081을 잡고 있던 것은 **mattermost-mobile의 Metro**였다. `metro` Stage는 `/status`가 `packager-status:running`을 답하면 재사용한다 — 그 Metro가 **어느 프로젝트의 것인지는 묻지 않는다**. joplin 앱이 mattermost의 번들러에 붙어 빨간 화면을 띄웠고, up은 `launch pass`, `exit 0`, `status: warning`으로 끝났다.
+
+**다음 행동을 알 수 있었나 — 물어볼 기회조차 없었다.** up은 성공을 말했다. 화면을 직접 보지 않았다면 이 실행은 관통으로 기록됐을 것이다.
 
 CONTEXT.md가 relaunch를 두는 이유("up이 끝나면 화면에 방금 빌드한 코드가 있다")가 여기서 **디스크에서만 참**이 된다. 도구가 성공을 보고하는데 화면이 틀린 것 — 가장 나쁜 모양이다. → 후속 티켓 **H**(#45) (미탐, 이 라운드에서 가장 치명)
 
@@ -377,6 +420,8 @@ launch        net.cozic.joplin — pid 66430  3.6s
 
 exit 0, 27초. 화면은 이번엔 joplin이다 — 다만 up이 끝난 시점의 화면은 `Loading from Metro…`였고, 그 뒤 흰 화면으로 약 **90초**를 더 보낸 다음에야 노트 목록이 떴다. Metro의 첫 번들이 4050 모듈을 도는 동안이다(`metro.log`의 `BUNDLE ./index.js ▓▓▓… 84.7% (3728/4050)`).
 
+**다음 행동을 알 수 있었나 — 해당 없음(멈추지 않았다).** 대신 끝난 뒤가 문제였다.
+
 `launch`의 settle 3초는 "앱이 그렸는가"를 재지 않는다 — 벽시계 추측이고, LaunchStage 주석이 스스로 그렇게 적어 두었다. 실측으로 그 추측이 첫 실행에서 30배 어긋난다. **폴링할 신호는 바로 옆에 있다** — 방금 이 Stage가 spawn한 Metro의 로그가 번들 진행률을 퍼센트로 적고 있다. → 후속 티켓 **I**(#47)
 
 ### 4차 — 재실행 (AC 2)
@@ -388,7 +433,7 @@ exit 0, 27초. 화면은 이번엔 joplin이다 — 다만 up이 끝난 시점�
 | 3차 (자기 Metro) | 27s | skipped 0.0s | started 0.0s | 22.0s | 0.6s | 3.6s | 0 |
 | 4차 | 14s | skipped 0.0s | skipped(자기 것) | 8.4s | 0.4s | 3.4s | 0 |
 
-booted 스킵·deps 스킵·Metro 재사용 모두 작동한다. 4차의 14초 중 절반이 up 자신의 고정비(validate 1.0s + settle 3.4s)다.
+booted 스킵·deps 스킵·Metro 재사용 모두 작동한다. 4차의 14초 중 4.4초(31%)가 up 자신의 고정비다 — `validate` 1.0s와 `launch`의 settle 3.4s.
 
 ## rainbow
 
@@ -434,6 +479,8 @@ Declare the scheme in mobile.yml: `ios:` on one line, `  scheme: ImageNotificati
 $REPO/ios/Rainbow.xcodeproj:1:1: error: Unable to open base configuration reference file '$REPO/ios/debug.xcconfig'.
 ```
 
+**다음 행동을 알 수 있었나 — 예, 다만 한 단계 건너서.** 화면만으로는 알 수 없고, remediation이 준 로그 경로를 열어야 안다.
+
 `build`는 `dependencies`와 달리 전체 로그를 파일로 남기고 그 경로를 remediation에 싣는다 — 그래서 `grep error: <경로>` 한 번으로 원인에 도달한다. 설계가 의도한 대로 작동했다. 다만 **화면에 뿌리는 20줄이 xcodebuild에서는 거의 언제나 경고**라는 것이 실측이다. tail 대신 `error:` 줄을 우선 뽑았다면 이 화면이 그대로 답이었다. → 후속 티켓 **K**(#51)
 
 ### rainbow는 clone 직후 빌드할 수 없는 repo다
@@ -452,14 +499,17 @@ Usage Error: The 'yarn global' commands have been removed in 2.x
 | | mattermost-mobile | joplin | rainbow |
 | --- | --- | --- | --- |
 | 도달한 최종 Stage | `launch` ✅ | `launch` ✅ | `build` ❌ |
-| clone 직후 첫 실행이 멈춘 곳 | `dependencies`(npm preinstall) | `build`(scheme) | `validate`(mise trust) |
+| 0차(호스트 그대로) 멈춘 곳 | `validate` | `validate` | `validate` |
+| 호스트 준비 후 첫 실행이 멈춘 곳 | `dependencies`(npm preinstall) | `build`(scheme) | `validate`(mise trust) |
 | 관통까지 필요한 사람의 개입 | pod 버전 고정, `RCT_NEW_ARCH_ENABLED=1 pod install` 수동, `mobile.yml` scheme, 출력 한도 상향 | `mobile.yml` scheme, 8081의 남의 Metro 종료 | `mise trust`, `mobile.yml` scheme, (그리고 `.env` — 해결 못 함) |
 | 최초 관통 시간 | 361s (build 348s) | 103s (build 97.8s) | — |
 | 재실행 | 138s → 18s | 27s → 14s | — |
 
 ## 발견 (AC 5)
 
-**미탐**(실패해야 할 것이 통과) 3건이 먼저다. 도구가 성공을 말하는데 사실이 아닌 것이 가장 비싸다.
+CONTEXT.md의 두 축을 그대로 쓴다 — **미탐**(실재 문제를 pass로 통과, 치명), **오탐**(멀쩡한데 warning/error). 미탐 3건이 먼저다. 도구가 성공을 말하는데 사실이 아닌 것이 가장 비싸다.
+
+`오탐`으로 분류한 F는 등급만 다르다: 축은 오탐(멀쩡한 프로젝트에 error)이 맞지만, 나타나는 방식이 `exit 2`(도구 장애)라 심각도는 경고가 아니라 치명이다. 이슈 제목이 "치명"이라고 부르는 이유다.
 
 | | 발견 | 분류 | 자리 |
 | --- | --- | --- | --- |
@@ -490,7 +540,8 @@ ADR-0002(collected output)를 `build`에 한해 다시 여는 근거가 실측�
 ### 2. device boot ∥ build 병렬화: **아니오, 승격하지 않음**
 
 - 모든 차수에서 `device`는 0.1~0.2초였다(`already booted`). 361초짜리 실행에서 0.05%다.
-- 이 호스트에는 시뮬레이터가 이미 부팅돼 있어 **cold boot을 한 번도 재지 못했다**. 그래도 `simctl bootstatus`의 통상 시간(수십 초)을 348초 빌드와 병렬화해 얻는 것은 최대 10% 안쪽이고, 얻는 대신 "빌드가 아직 없는 기기를 향해 시작된다"는 순서 보장을 잃는다.
+- 이 호스트에는 시뮬레이터가 이미 부팅돼 있어 **cold boot을 한 번도 재지 못했다**. 따라서 아래는 실측이 아니라 **추정**이다: `simctl bootstatus`가 통상 수십 초라면 348초 빌드와 병렬화해 얻는 것은 10% 안쪽이고, 얻는 대신 "빌드가 아직 없는 기기를 향해 시작된다"는 순서 보장을 잃는다.
+- 즉 이 트리거만은 **실측으로 대조하지 못했고**, 그래서 승격하지 않는다 — 승격의 근거가 없는 것이지 반증이 있는 것이 아니다.
 - 재판정 조건: 부팅되지 않은 호스트에서 `device`가 빌드 시간의 20%를 넘게 먹는 것이 관측되면 다시 연다.
 
 ### 3. `down`·`stop` 동사 + Metro 수명 관리: **예, 승격**
@@ -503,21 +554,25 @@ ADR-0002(collected output)를 `build`에 한해 다시 여는 근거가 실측�
 
 ## 후속 티켓 (AC 5)
 
-| 티켓 | 분류 | 제목 |
-| --- | --- | --- |
-| #45 | **미탐** | up 미탐: 8081의 Metro가 다른 프로젝트의 것이어도 재사용하고 exit 0을 보고한다 |
-| #46 | **미탐** | up 미탐: 실패한 설치가 남긴 부분 node_modules를 '설치됨'으로 보고 건너뛴다 |
-| #47 | **미탐** | up 미탐: launch의 settle 3초가 '화면이 그려졌다'를 재지 않는다 |
-| #55 | **오탐** | up 치명: build 출력이 4 MiB 한도를 넘어 최초 빌드가 exit 2로 죽는다 |
-| #48 | 미지원 | up: 프로젝트가 선언한 pod 설치 명령을 무시하고 맨 pod install을 돈다 |
-| #49 | 메시지 | up: dependencies 실패가 전체 로그를 남기지 않아 tail 10줄이 경고로 채워진다 |
-| #50 | 메시지 | up·doctor: 도구 stderr의 첫 줄만 실어 실제 조치 문장이 잘린다 |
-| #51 | 메시지 | up: build 실패의 tail 20줄이 거의 언제나 경고다 — error: 줄을 우선한다 |
-| #52 | 메시지 | up: scheme 후보를 알파벳 첫 번째로 제안해 확장 타깃을 권한다 |
-| #53 | 순서 | up: validate가 이미 아는 scheme 미선언 때문에 metro를 띄운 뒤 build에서 멈춘다 |
-| #54 | 문서 | docs: up --json의 status는 warning이어도 exit 0 |
-| #56 | fog 승격 | build 출력 스트리밍 — ADR-0002를 build 한 단계에 한해 다시 연다 |
-| #57 | fog 승격 | down·stop 동사와 Metro 수명 관리 |
+각 발견의 내용은 위 표에 있다. 여기서는 어느 티켓이 되었는지만 적는다.
+
+| 티켓 | 발견 | 라벨 | 제목 |
+| --- | --- | --- | --- |
+| #45 | H | `미탐` | up 미탐: 8081의 Metro가 다른 프로젝트의 것이어도 재사용하고 exit 0을 보고한다 |
+| #46 | C | `미탐` | up 미탐: 실패한 설치가 남긴 부분 node_modules를 '설치됨'으로 보고 건너뛴다 |
+| #47 | I | `미탐` | up 미탐: launch의 settle 3초가 '화면이 그려졌다'를 재지 않는다 |
+| #55 | F | `오탐` | up 치명: build 출력이 4 MiB 한도를 넘어 최초 빌드가 exit 2로 죽는다 |
+| #48 | D | — | up: 프로젝트가 선언한 pod 설치 명령을 무시하고 맨 pod install을 돈다 |
+| #49 | B | — | up: dependencies 실패가 전체 로그를 남기지 않아 tail 10줄이 경고로 채워진다 |
+| #50 | A | — | up·doctor: 도구 stderr의 첫 줄만 실어 실제 조치 문장이 잘린다 |
+| #51 | K | — | up: build 실패의 tail 20줄이 거의 언제나 경고다 — error: 줄을 우선한다 |
+| #52 | J | — | up: scheme 후보를 알파벳 첫 번째로 제안해 확장 타깃을 권한다 |
+| #53 | E | — | up: validate가 이미 아는 scheme 미선언 때문에 metro를 띄운 뒤 build에서 멈춘다 |
+| #54 | G | — | docs: up --json의 status는 warning이어도 exit 0 |
+| #56 | — | `wayfinder:grilling` | build 출력 스트리밍 — ADR-0002를 build 한 단계에 한해 다시 연다 |
+| #57 | — | `wayfinder:grilling` | down·stop 동사와 Metro 수명 관리 |
+
+미탐 3건에는 `미탐`, 오탐 1건에는 `오탐` 라벨을 트래커에 새로 만들어 붙였다 — 나머지는 정확성 축의 문제가 아니라 메시지·순서·문서다.
 
 doctor 라운드 1이 8건, 라운드 2가 3건을 낳았다. up 라운드 1은 11건 + fog 승격 2건이다.
 
