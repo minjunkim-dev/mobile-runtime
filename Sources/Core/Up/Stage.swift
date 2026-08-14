@@ -114,6 +114,11 @@ public struct UpContext: Sendable {
     /// Set by `build`, consumed by `install` and `launch`.
     public var product: BuiltProduct?
 
+    /// Set by `launch` — the app's pid inside the simulator. Read by nothing else in
+    /// the pipeline: it is there so whatever runs after `up` can address the process
+    /// without going looking for it.
+    public var appPid: Int32?
+
     public init() {}
 }
 

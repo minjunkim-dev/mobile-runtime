@@ -106,6 +106,9 @@ up이 남긴 Metro의 보고. `state`(reused/spawned)와, spawn했을 때만 PID
 **Settle**:
 launch 리턴 ≠ UI 렌더 완료라서 두는 설정형 고정 대기(기본 3s). 폴링 가능한 신호가 생기면 교체 대상.
 
+**Relaunch**:
+launch Stage가 매 실행에서 terminate 후 다시 띄우는 것. `simctl launch`는 이미 떠 있는 앱에 대해 재시작 없이 옛 인스턴스의 PID를 돌려주므로, terminate 없이는 "up이 끝나면 화면에 방금 빌드한 코드가 있다"는 보장이 디스크에서만 참이 된다. terminate 실패는 무시한다 — 안 떠 있던 앱을 못 끈 것은 실패가 아니다.
+
 ### Dogfooding
 
 **파손 시나리오 (Fault scenario)**:

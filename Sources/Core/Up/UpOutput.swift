@@ -30,6 +30,9 @@ public struct UpJSONDocument: Encodable, Sendable {
         /// So a CI job can tail the bundler's log, and kill the process it started —
         /// and only that one.
         public let metro: MetroProcess?
+        /// The app's pid in the simulator. With the four fields together, whatever
+        /// runs after `up` never has to ask the machine what this run did.
+        public let appPid: Int32?
     }
 
     public let schemaVersion: Int
@@ -51,9 +54,10 @@ public struct UpJSONDocument: Encodable, Sendable {
         let device = report.context.device
         let bundleId = report.context.product?.bundleIdentifier
         let metro = report.context.metro
-        self.result = device == nil && bundleId == nil && metro == nil
+        let appPid = report.context.appPid
+        self.result = device == nil && bundleId == nil && metro == nil && appPid == nil
             ? nil
-            : Outcome(device: device, bundleId: bundleId, metro: metro)
+            : Outcome(device: device, bundleId: bundleId, metro: metro, appPid: appPid)
         self.error = report.failure.map {
             Failure(message: $0.message, remediation: $0.remediation)
         }

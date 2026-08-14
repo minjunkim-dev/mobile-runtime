@@ -157,6 +157,29 @@ struct UpJSONTests {
         #expect(metro["logPath"] == nil)
     }
 
+    /// The four fields together are the point of `result`: with the device, the
+    /// bundle id, the bundler and the app's pid in one document, whatever runs after
+    /// `up` never has to ask the machine what this run did.
+    @Test("a finished run describes the device, the app, the bundler and the app's pid")
+    func resultIsComplete() throws {
+        var context = UpContext()
+        context.device = SelectedDevice(
+            name: "iPhone 17 Pro", udid: "61DECACB-3D94-4748-B5A2-E7A1EB97E6D5", runtime: "26.5"
+        )
+        context.product = BuiltProduct(path: "/derived/MyApp.app", bundleIdentifier: "com.example.MyApp")
+        context.metro = MetroProcess(state: .spawned, pid: 4242, logPath: "/tmp/mobile/MyApp/metro.log")
+        context.appPid = 3538
+
+        let json = try decode(UpReport(stages: [result("launch", .pass)], context: context))
+        let outcome = try #require(json["result"] as? [String: Any])
+        let device = try #require(outcome["device"] as? [String: Any])
+
+        #expect(device["udid"] as? String == "61DECACB-3D94-4748-B5A2-E7A1EB97E6D5")
+        #expect(outcome["bundleId"] as? String == "com.example.MyApp")
+        #expect((outcome["metro"] as? [String: Any])?["pid"] as? Int == 4242)
+        #expect(outcome["appPid"] as? Int == 3538)
+    }
+
     /// No stage produced anything worth naming, so the key is absent rather than an
     /// empty object a consumer has to interpret.
     @Test("result is absent when no stage produced one")

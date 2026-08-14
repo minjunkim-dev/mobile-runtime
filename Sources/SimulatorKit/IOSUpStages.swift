@@ -5,6 +5,8 @@ import Core
 /// Stage is never a CLI edit.
 /// - Parameter note: where a Stage that is still working writes its elapsed line.
 ///   Only `build` takes long enough to need one.
+/// - Parameter settle: how long `launch` waits for the app to draw. A parameter so a
+///   test does not spend three seconds per run on it.
 public func iOSUpStages(
     anchor: ProjectAnchor,
     doctor: DoctorEngine,
@@ -12,6 +14,7 @@ public func iOSUpStages(
     lookup: MatrixLookup?,
     runner: any ProcessRunner,
     locator: XcodeLocator,
+    settle: Duration = LaunchStage.defaultSettle,
     note: @escaping @Sendable (String) -> Void
 ) -> [any Stage] {
     [
@@ -23,6 +26,8 @@ public func iOSUpStages(
         // Before build on purpose: Metro warms up while xcodebuild spends its minutes.
         MetroStage(anchor: anchor, runner: runner),
         BuildStage(config: config, runner: runner, locator: locator, note: note),
+        InstallStage(runner: runner, locator: locator),
+        LaunchStage(runner: runner, locator: locator, settle: settle),
     ]
 }
 

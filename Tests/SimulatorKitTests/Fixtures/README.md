@@ -16,6 +16,10 @@ machine as the SpikeIOS run in `spike/ios`.
 | `simctl-list-devicetypes.stdout.json` | `xcrun simctl list devicetypes -j` (exit 0) |
 | `simctl-commandlinetools.stderr.txt` | `DEVELOPER_DIR=/Library/Developer/CommandLineTools xcrun simctl list runtimes -j` (exit 72) |
 | `xcodebuild-showbuildsettings.stdout.json` | `xcodebuild -showBuildSettings -json -project MyApp.xcodeproj -scheme MyApp -configuration Debug -destination platform=iOS Simulator,id=<udid>` (exit 0) |
+| `simctl-launch.stdout.txt` | `xcrun simctl launch <udid> com.spike.dummy` (exit 0) |
+| `simctl-launch-missing.stderr.txt` | `xcrun simctl launch <udid> com.example.nope` (exit 4) |
+| `simctl-terminate-none.stderr.txt` | `xcrun simctl terminate <udid> com.spike.dummy`, with the app not installed (exit 3) |
+| `simctl-install-missing.stderr.txt` | `xcrun simctl install <udid> /tmp/nope.app` (exit 2) |
 
 One substitution: the home directory in the device lists' `dataPath` / `logPath`
 is written `/Users/USER`, the way `docs/dogfooding/` shortens clone paths to
@@ -27,6 +31,12 @@ machine, which has one simulator of its own and had it booted — `iPhone 16` an
 `iPhone 16 Pro` were created with `simctl create` for the capture and deleted
 afterwards. The search term is how a list with nothing booted, and a list with
 nothing at all, were captured without shutting down or deleting that device.
+
+The four simctl install/launch/terminate captures were taken 2026-08-14 on the
+same machine, against its own booted device and `spike/SpikeIOS/Dummy.app` — the
+minimal app bundle the iOS spike built, bundle id `com.spike.dummy`. It was
+installed for the capture and uninstalled afterwards. The successful launch's pid
+is whatever that run got; nothing else is edited.
 
 The build settings were captured 2026-08-14 from a throwaway iOS app project —
 one app target and one app extension, generated with XcodeGen in a temporary
