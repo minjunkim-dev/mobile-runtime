@@ -1,4 +1,5 @@
 import Testing
+import TestSupport
 
 @testable import Core
 
@@ -142,11 +143,6 @@ struct DoctorEngineTests {
         ]).run()
         #expect(broken.exitCode == 2)
     }
-}
-
-private final class Mutable<Value: Sendable>: @unchecked Sendable {
-    var value: Value
-    init(_ value: Value) { self.value = value }
 }
 
 private actor Counter {

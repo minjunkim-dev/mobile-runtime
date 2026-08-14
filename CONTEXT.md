@@ -63,6 +63,15 @@ exit code로 구분되는 실패 2종. 도메인 실패는 사용자 프로젝�
 **Stage (단계)**:
 up 파이프라인의 실행 단위. doctor의 Check처럼 안정적인 id가 계약이다. 직렬 실행, fail-fast.
 
+**Stage status**:
+Stage의 결과. `pass` / `skipped`(이미 되어 있어 할 일이 없었다) / `failed` 3단계. Check의 Status와 다른 어휘다 — Check는 머신에 대한 판정을 내리고 Stage는 자기가 무엇을 했는지 보고한다. 여기서의 `skipped`는 doctor가 금지한 그 `skipped`(판단 불가를 침묵으로 덮는 말)가 아니라 수행된 작업에 대한 사실이라 예외로 둔다.
+
+**Stage 컨텍스트 (Stage context)**:
+Stage가 다음 Stage에 넘기는 값의 명시적 타입. 앞 Stage가 실제로 넣은 것만 뒤가 읽는다 — 전역 가변 상태 없음.
+
+**UpReport / 파이프라인 status**:
+up의 종합 결과. envelope의 `status`는 doctor와 같은 어휘를 쓴다 — 실패는 `error`, 그 외에는 Stage들이 관측한 것(validate의 warning은 up에서도 warning)이다. exit code 규칙(0/1/2)은 `DoctorReport`와 같다.
+
 **프로젝트 의존성 (Project dependencies)**:
 앱 repo 자신의 의존성(node_modules, Pods). up이 설치하는 정상 단계 — "자동 설치 금지" 원칙의 대상이 아니다.
 

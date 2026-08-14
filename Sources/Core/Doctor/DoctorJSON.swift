@@ -3,7 +3,7 @@ import Foundation
 /// The `--json` document: envelope + doctor body. Consumers key off `id`, so the
 /// shape is a contract.
 public struct DoctorJSONDocument: Encodable, Sendable {
-    public static let schemaVersion = 1
+    public static let schemaVersion = JSONOutput.schemaVersion
 
     public struct Item: Encodable, Sendable {
         public let id: String
@@ -45,11 +45,5 @@ public struct DoctorJSONDocument: Encodable, Sendable {
         }
     }
 
-    public func encoded() throws -> String {
-        let encoder = JSONEncoder()
-        // sortedKeys so the same machine state always produces byte-identical output.
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-        let data = try encoder.encode(self)
-        return String(decoding: data, as: UTF8.self)
-    }
+    public func encoded() throws -> String { try JSONOutput.encode(self) }
 }
