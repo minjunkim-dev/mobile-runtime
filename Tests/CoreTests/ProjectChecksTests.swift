@@ -306,7 +306,10 @@ struct NodeVersionCheckTests {
         #expect(report.exitCode == 2)
     }
 
-    @Test("a Node probe that fails is unknown, and the reason quotes what the tool said")
+    /// Nothing was declared about Node, so "is it installed" is the whole question and
+    /// a Node that cannot answer leaves it open. The grade follows the requirement,
+    /// and there is none (ADR-0004).
+    @Test("a Node probe that fails is unknown when the project declared nothing")
     func nodeProbeFails() async throws {
         let repo = try FixtureRepo()
         try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
@@ -319,6 +322,42 @@ struct NodeVersionCheckTests {
 
         #expect(check.status == .unknown)
         #expect(check.outcome.reason?.contains("No version is set for shim: node") == true)
+    }
+
+    /// The same mute Node against a project that pinned one: a Node that cannot report
+    /// its version cannot be checked against the pin and cannot run the build either.
+    /// Absent and mute are the same state once something asks (ADR-0004).
+    @Test("a Node probe that fails is an error once the project declared a version")
+    func nodeProbeFailsWithDeclaration() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
+        try repo.write(".nvmrc", "24.15.0\n")
+
+        let (report, _) = await runProjectChecks(
+            repo,
+            node: .failed(1, "No version is set for shim: node\n"),
+            tools: ["mise --version": .ok("2026.8.1\n")]
+        )
+        let check = try #require(report.checks.first { $0.id == "node.version" })
+
+        #expect(check.status == .error)
+        #expect(check.outcome.observed?.contains("No version is set for shim: node") == true)
+        #expect(check.outcome.remediation?.command == "mise use node@24.15.0")
+    }
+
+    /// A range cannot be handed to a version manager, so this branch has a verdict
+    /// but no command — the declaration still settles that the Node here is unusable.
+    @Test("engines alone is enough of a declaration to make a mute Node an error")
+    func nodeProbeFailsWithEngines() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(
+            repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}, "engines": {"node": ">=20"}}"#
+        )
+
+        let (report, _) = await runProjectChecks(repo, node: .failed(1, "shim has no version\n"))
+        let check = try #require(report.checks.first { $0.id == "node.version" })
+
+        #expect(check.status == .error)
     }
 
     /// The dogfooding host ran mise and was told to run `nvm use`. The remediation
@@ -449,6 +488,45 @@ struct PackageManagerCheckTests {
 
         #expect(check.status == .error)
         #expect(check.outcome.remediation?.command == "corepack enable")
+    }
+
+    /// `packageManager` is the declaration, so the requirement is settled the moment
+    /// this Check exists. A manager that runs and reports nothing cannot install the
+    /// dependencies (ADR-0004).
+    @Test("a package manager that runs but reports nothing is an error")
+    func packageManagerProbeFails() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(
+            repo,
+            packageJSON: #"{"dependencies": {"react-native": "0.76.5"}, "packageManager": "yarn@3.6.4"}"#
+        )
+
+        let (report, _) = await runProjectChecks(
+            repo, tools: ["yarn --version": .failed(1, "mise ERROR No version is set for shim: yarn\n")]
+        )
+        let check = try #require(report.checks.first { $0.id == "package-manager.version" })
+
+        #expect(check.status == .error)
+        #expect(check.outcome.observed?.contains("No version is set for shim: yarn") == true)
+        #expect(check.outcome.remediation?.command == "corepack enable")
+    }
+
+    /// corepack does not carry bun, so `corepack enable` would be a line that cannot do
+    /// what it says — the same fault #27 fixed for nvm and rbenv.
+    @Test("bun gets no corepack command, because corepack does not manage it")
+    func bunGetsNoCorepackCommand() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(
+            repo,
+            packageJSON: #"{"dependencies": {"react-native": "0.76.5"}, "packageManager": "bun@1.1.30"}"#
+        )
+
+        let (report, _) = await runProjectChecks(repo)
+        let check = try #require(report.checks.first { $0.id == "package-manager.version" })
+
+        #expect(check.status == .error)
+        #expect(check.outcome.remediation?.command == nil)
+        #expect(check.outcome.remediation?.summary.contains("bun") == true)
     }
 
     @Test("no packageManager field means no check — nothing was declared to compare against")
@@ -709,6 +787,29 @@ struct RubyVersionCheckTests {
 
         #expect(check.status == .pass)
         #expect(check.outcome.observed?.contains("3.2.2") == true)
+    }
+
+    /// `.ruby-version` is what makes this Check exist, so the requirement is settled
+    /// whenever it runs. The dogfooding host's mise shim reports no version, and gems
+    /// cannot be built by a Ruby that cannot say what it is (ADR-0004).
+    @Test("a Ruby that runs but reports nothing is an error")
+    func rubyProbeFails() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
+        try repo.write(".ruby-version", "3.2.2\n")
+
+        let (report, _) = await runProjectChecks(
+            repo,
+            tools: [
+                "ruby --version": .failed(1, "mise ERROR No version is set for shim: ruby\n"),
+                "rbenv --version": .ok("rbenv 1.2.0\n"),
+            ]
+        )
+        let check = try #require(report.checks.first { $0.id == "ruby.version" })
+
+        #expect(check.status == .error)
+        #expect(check.outcome.observed?.contains("No version is set for shim: ruby") == true)
+        #expect(check.outcome.remediation?.command == "rbenv install 3.2.2")
     }
 
     @Test("the RVM spelling of the pin resolves to the same version")

@@ -31,8 +31,39 @@ public struct NodeVersionCheck: Check {
                     url: "https://nodejs.org/"
                 )
             )
-        case .unreadable(let reason):
-            return .unknown(reason: reason, required: requirement, source: source)
+        case .unreadable(let complaint):
+            // Node is the one tool judged even when nothing was declared — "is it
+            // installed" stands on its own — so this is the only Check where the
+            // requirement has to be looked up rather than assumed. Declared: a mute
+            // Node is as unusable as an absent one, and that is an error. Undeclared:
+            // there is nothing it could be failing, so the question stays open
+            // (ADR-0004).
+            guard anchor.nodePin != nil || !anchor.nodeEngines.isEmpty else {
+                return .unknown(
+                    reason: "\(complaint), and this project declares no Node version — "
+                        + "mobile cannot tell whether the one here would do",
+                    observed: complaint, required: requirement, source: source
+                )
+            }
+            // Only a pin names a version to switch to; `engines` is a range, and no
+            // manager takes one.
+            var command: String?
+            if let pin = anchor.nodePin {
+                command = try await VersionManagerCommand.detect(
+                    for: .node, version: pin.value, runner: runner
+                )
+            }
+            return .error(
+                observed: complaint,
+                required: requirement,
+                source: source,
+                remediation: Remediation(
+                    summary: "Switch to a Node the project can be measured against, "
+                        + "then re-run mobile doctor.",
+                    command: command,
+                    url: "https://nodejs.org/"
+                )
+            )
         }
         let observed = "Node \(installed)"
 

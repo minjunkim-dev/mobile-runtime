@@ -40,27 +40,30 @@ public struct PackageManagerVersionCheck: Check {
             )
         }
 
-        let installed: SemanticVersion
+        // `packageManager` is the declaration, so the requirement is settled the moment
+        // this Check exists: a manager that runs and cannot report its version cannot
+        // install the dependencies either — the state of one that is not there at all
+        // (ADR-0004). An `error` carries no reason, so the tool's own words ride in
+        // `observed`.
+        let unusable: String
         switch try await probeVersion(of: requirement.name, using: runner) {
-        case .reported(let version):
-            installed = version
+        case .reported(let installed):
+            return judge(installed: installed, declared: declared, required: required)
         case .notOnPath:
-            return .error(
-                observed: "\(requirement.name) is not on PATH",
-                required: required,
-                source: source,
-                remediation: Remediation(
-                    summary: "Enable corepack so the declared package manager is the one that runs.",
-                    command: "corepack enable"
-                )
-            )
-        case .unreadable(let reason):
-            return .unknown(reason: reason, required: required, source: source)
+            unusable = "\(requirement.name) is not on PATH"
+        case .unreadable(let complaint):
+            unusable = complaint
         }
+        return .error(observed: unusable, required: required, source: source, remediation: remediation)
+    }
 
+    private func judge(
+        installed: SemanticVersion, declared: SemanticVersion, required: String
+    ) -> CheckOutcome {
+        let observed = "\(requirement.name) \(installed)"
         guard installed == declared else {
             return .warning(
-                observed: "\(requirement.name) \(installed)",
+                observed: observed,
                 required: required,
                 source: source,
                 remediation: Remediation(
@@ -69,6 +72,22 @@ public struct PackageManagerVersionCheck: Check {
                 )
             )
         }
-        return .pass(observed: "\(requirement.name) \(installed)", required: required, source: source)
+        return .pass(observed: observed, required: required, source: source)
+    }
+
+    /// corepack is how the managers it ships with get onto a machine, and pasting
+    /// `corepack enable` for one it does not carry is the same mistake #27 fixed
+    /// elsewhere — a command that cannot do what the line says it does.
+    private var remediation: Remediation {
+        guard requirement.name != "bun" else {
+            return Remediation(
+                summary: "Install bun, then re-run mobile doctor.",
+                url: "https://bun.sh/"
+            )
+        }
+        return Remediation(
+            summary: "Enable corepack so the declared package manager is the one that runs.",
+            command: "corepack enable"
+        )
     }
 }
