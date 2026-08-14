@@ -72,6 +72,18 @@ Stage가 다음 Stage에 넘기는 값의 명시적 타입. 앞 Stage가 실제�
 **기기 선택 (Device selection)**:
 어느 시뮬레이터를 쓸지 정하는 순서 — `mobile.yml`의 `ios.device` → 이미 booted된 기기 → 사용 가능한 최신 runtime의 최신 iPhone(세대가 높은 쪽, 같으면 이름이 가장 단순한 모델). doctor의 `config.values`와 up의 `device` Stage가 **같은 셀렉터**를 쓴다 — 판정과 실행이 갈리면 doctor가 쓸 수 있다고 한 기기를 up이 안 쓰는 일이 생긴다. 후보가 없으면 `simctl create` 명령을 주고 멈춘다. 시뮬레이터를 만들어 주지는 않는다.
 
+**scheme 결정 (Scheme selection)**:
+어느 scheme을 빌드할지 정하는 순서 — `mobile.yml`의 `ios.scheme` → 프로젝트에 하나뿐이면 그것. 여럿인데 선언이 없으면 고르지 않는다. doctor의 `config.values`와 up의 `build` Stage가 **같은 셀렉터**를 쓰고, 등급만 다르다 — doctor는 warning(아직 아무도 고르지 않았을 뿐 머신은 멀쩡하다, ADR-0004), up은 error(고르지 않으면 빌드할 수 없다). scheme 목록은 언제나 `.xcodeproj`에서 읽는다 — workspace를 읽으면 Pod scheme이 쏟아진다.
+
+**빌드 대상 (Build target)**:
+xcodebuild가 겨누는 것 — `ios/*.xcworkspace`가 정확히 하나면 그것, 하나도 없으면 `ios/*.xcodeproj`. CocoaPods는 workspace로만 링크되므로 이 순서가 뒤집히면 링크 실패로 끝난다. workspace가 여럿이면 "없음"이 아니라 모호함이라 project로 내려가지 않고 멈춘다. "scheme 목록을 어디서 읽는가"와는 다른 질문이다.
+
+**빌드 산출물 (Built product)**:
+build Stage가 확정해 install·launch에 넘기는 `.app` 경로와 bundle id. 빌드 로그 파싱이 아니라 `xcodebuild -showBuildSettings`가 근거다 — 로그 포맷은 Xcode 버전마다 움직인다.
+
+**실행 로그 (Run log)**:
+Stage의 전체 출력을 담는 파일. 앱 repo가 아니라 시스템 임시 디렉터리 아래 프로젝트별 경로에 쓴다(앱 repo에 `.gitignore` 항목을 요구하지 않기 위해). 경로는 언제나 실패와 함께 출력된다 — 사람이 찾을 수 없는 로그는 없는 로그다.
+
 **UpReport / 파이프라인 status**:
 up의 종합 결과. envelope의 `status`는 doctor와 같은 어휘를 쓴다 — 실패는 `error`, 그 외에는 Stage들이 관측한 것(validate의 warning은 up에서도 warning)이다. exit code 규칙(0/1/2)은 `DoctorReport`와 같다.
 

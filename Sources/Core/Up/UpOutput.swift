@@ -23,6 +23,10 @@ public struct UpJSONDocument: Encodable, Sendable {
     /// something here — an empty object would be one more thing to interpret.
     public struct Outcome: Encodable, Sendable {
         public let device: SelectedDevice?
+        /// What install and launch address the app by. The `.app` path build also
+        /// settled on stays inside the pipeline — it is derived data, true for one
+        /// machine until the next clean, and nothing outside a run can use it.
+        public let bundleId: String?
     }
 
     public let schemaVersion: Int
@@ -41,7 +45,11 @@ public struct UpJSONDocument: Encodable, Sendable {
         self.stages = report.stages.map {
             Item(id: $0.id, status: $0.status, durationMs: $0.durationMs, detail: $0.detail)
         }
-        self.result = report.context.device.map { Outcome(device: $0) }
+        let device = report.context.device
+        let bundleId = report.context.product?.bundleIdentifier
+        self.result = device == nil && bundleId == nil
+            ? nil
+            : Outcome(device: device, bundleId: bundleId)
         self.error = report.failure.map {
             Failure(message: $0.message, remediation: $0.remediation)
         }
@@ -67,9 +75,20 @@ public struct StageLineRenderer: Sendable {
         case .skipped, .failed:
             result.detail.map { "\(result.status.rawValue) — \($0)" } ?? result.status.rawValue
         }
-        return column(result.id, Self.nameWidth)
+        return row(result.id, outcome, result.duration)
+    }
+
+    /// A Stage that has not landed yet. `build` is the only step long enough to make
+    /// a reader wonder whether the tool died, and the answer to that is the same row
+    /// it will become, printed early.
+    public func waiting(_ id: String, elapsed: Duration) -> String {
+        row(id, "running…", elapsed)
+    }
+
+    private func row(_ id: String, _ outcome: String, _ elapsed: Duration) -> String {
+        column(id, Self.nameWidth)
             + column(outcome, Self.outcomeWidth)
-            + String(format: "%.1fs", result.duration.seconds)
+            + String(format: "%.1fs", elapsed.seconds)
     }
 
     /// Always at least two spaces: a long detail pushes the elapsed time right rather
@@ -110,6 +129,13 @@ public struct UpWriter: Sendable {
     /// for it. Never stdout, whatever the mode.
     public func progress(_ result: StageResult) {
         standardError(lines.line(result))
+    }
+
+    /// A line from a Stage that is still working. Same door as everything else a
+    /// human reads — `--json` has not written its document yet, and one stray line
+    /// on stdout is all it takes to make it unparseable.
+    public func note(_ line: String) {
+        standardError(line)
     }
 
     public func finish(_ report: UpReport) throws {

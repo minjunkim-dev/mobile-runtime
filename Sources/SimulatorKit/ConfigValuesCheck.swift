@@ -194,48 +194,49 @@ public struct ConfigValuesCheck: Check {
             )
         }
 
-        guard let declared else {
-            // The point of the whole file: one scheme needs no declaration, and
-            // several cannot be guessed between.
-            guard schemes.count > 1 else {
-                return .ok("no scheme declared — \(schemes[0]) is the only one")
+        // The same selector `up`'s build stage runs, so a scheme doctor approves is
+        // the scheme that gets built.
+        switch SchemeSelector(schemes: schemes).resolve(declared: declared) {
+        case .success(let resolved):
+            return .ok(
+                declared == nil
+                    ? "no scheme declared — \(resolved) is the only one"
+                    : "scheme \(resolved)"
+            )
+        case .failure(let miss):
+            let remediation = miss.remediation(
+                configFile: context.display(
+                    anchor.directory.appendingPathComponent(MobileConfig.fileName)
+                ),
+                project: context.display(project)
+            )
+            switch miss {
+            case .noSchemeNamed:
+                return .verdict(
+                    .error(
+                        observed: miss.observed,
+                        required: "a scheme this project defines",
+                        source: source,
+                        remediation: remediation
+                    )
+                )
+            case .undecided:
+                // A warning, not an error: doctor answers "can this machine build the
+                // project", and an unpicked scheme is a choice nobody has made yet
+                // rather than a broken machine. App extensions make several schemes
+                // the norm — all three dogfooding repos have them — so exit 1 would
+                // fail CI on healthy repos. `up` cannot proceed on it, and that grade
+                // belongs to the stage that has to pick one (ADR-0004).
+                return .verdict(
+                    .warning(
+                        observed: miss.observed,
+                        required: "ios.scheme, because this project has more than one scheme",
+                        source: source,
+                        remediation: remediation
+                    )
+                )
             }
-            // A warning, not an error: doctor answers "can this machine build the
-            // project", and an unpicked scheme is a choice nobody has made yet rather
-            // than a broken machine. App extensions make several schemes the norm —
-            // all three dogfooding repos have them — so exit 1 would fail CI on
-            // healthy repos. `up` cannot proceed on it, and that grade belongs to the
-            // stage that has to pick one (ADR-0004).
-            return .verdict(
-                .warning(
-                    observed: "\(schemes.count) schemes — \(schemes.joined(separator: ", ")) — "
-                        + "and nothing declares which one to build",
-                    required: "ios.scheme, because this project has more than one scheme",
-                    source: source,
-                    remediation: Remediation(
-                        summary: "Declare the scheme in "
-                            + "\(context.display(anchor.directory.appendingPathComponent(MobileConfig.fileName))): "
-                            + "`ios:` on one line, `  scheme: \(schemes[0])` on the next.",
-                        command: "xcodebuild -list -project \(context.display(project))"
-                    )
-                )
-            )
         }
-        guard schemes.contains(declared) else {
-            return .verdict(
-                .error(
-                    observed: "no scheme named \(declared) — this project has "
-                        + schemes.joined(separator: ", "),
-                    required: "a scheme this project defines",
-                    source: source,
-                    remediation: Remediation(
-                        summary: "Set ios.scheme to one of them.",
-                        command: "xcodebuild -list -project \(context.display(project))"
-                    )
-                )
-            )
-        }
-        return .ok("scheme \(declared)")
     }
 
     /// `iPhone 16 Pro (26.0)`, `iPhone 16 Pro (iOS 26.0)`, `name,OS=26.0`. Apple's

@@ -1,12 +1,6 @@
 import Core
 import Foundation
 
-/// simctl could not be asked. Not a `DomainError`: nothing about the project is
-/// wrong, so it must not land on the project's exit code.
-struct SimctlUnavailable: Error, CustomStringConvertible {
-    let description: String
-}
-
 /// `device` — pick a simulator and make sure it is running. What mobile.yml declared,
 /// else whatever is already booted, else the newest iPhone this machine has.
 ///
@@ -77,7 +71,7 @@ public struct DeviceStage: Stage {
         let command = SimctlDeviceList.command(environment: environment)
         let result = try await runner.run(command)
         guard result.terminationStatus.isSuccess, let list = SimctlDeviceList.decode(result.standardOutput) else {
-            throw SimctlUnavailable(
+            throw ToolUnavailable(
                 description: "`\(command.description)` did not list the simulators — "
                     + (result.standardError.firstLine ?? "its output was not a device list")
             )

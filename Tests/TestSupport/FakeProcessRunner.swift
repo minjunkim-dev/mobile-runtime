@@ -9,6 +9,16 @@ public struct FakeProcessRunner: ProcessRunner {
         public var standardOutput: String = ""
         public var standardError: String = ""
 
+        public init(
+            status: TerminationStatus = .exited(0),
+            standardOutput: String = "",
+            standardError: String = ""
+        ) {
+            self.status = status
+            self.standardOutput = standardOutput
+            self.standardError = standardError
+        }
+
         public static func ok(_ standardOutput: String) -> Response {
             Response(status: .exited(0), standardOutput: standardOutput)
         }

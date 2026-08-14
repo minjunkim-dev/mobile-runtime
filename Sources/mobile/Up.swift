@@ -42,7 +42,8 @@ struct Up: AsyncParsableCommand {
             config: wiring.config,
             lookup: wiring.lookup,
             runner: wiring.runner,
-            locator: wiring.locator
+            locator: wiring.locator,
+            note: { writer.note($0) }
         )
         return await UpPipeline(stages: stages).run { writer.progress($0) }
     }

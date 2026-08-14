@@ -3,18 +3,22 @@ import Core
 /// The Stages `up` runs on iOS, in pipeline order. Assembling them lives next to
 /// the Stages themselves — the way `iOSChecks` owns doctor's list — so adding a
 /// Stage is never a CLI edit.
+/// - Parameter note: where a Stage that is still working writes its elapsed line.
+///   Only `build` takes long enough to need one.
 public func iOSUpStages(
     doctor: DoctorEngine,
     config: ConfigContext,
     lookup: MatrixLookup?,
     runner: any ProcessRunner,
-    locator: XcodeLocator
+    locator: XcodeLocator,
+    note: @escaping @Sendable (String) -> Void
 ) -> [any Stage] {
     [
         ValidateStage(engine: doctor, checkIDs: IOSUpValidation.checkIDs),
         DeviceStage(
             declared: config.configuration?.device, lookup: lookup, runner: runner, locator: locator
         ),
+        BuildStage(config: config, runner: runner, locator: locator, note: note),
     ]
 }
 

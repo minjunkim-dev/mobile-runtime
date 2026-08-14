@@ -221,7 +221,7 @@ struct DeviceStageTests {
         )
         var context = UpContext()
 
-        let error = await #expect(throws: SimctlUnavailable.self) {
+        let error = await #expect(throws: ToolUnavailable.self) {
             try await run(runner, context: &context)
         }
 

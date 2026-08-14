@@ -60,6 +60,20 @@ public struct SelectedDevice: Sendable, Equatable, Encodable {
     }
 }
 
+/// What `build` produced, read out of `xcodebuild -showBuildSettings` rather than
+/// out of the build log — log formats move between Xcode versions, and install must
+/// pick up the exact bundle this run made.
+public struct BuiltProduct: Sendable, Equatable, Encodable {
+    /// The `.app` itself, in whatever derived data directory Xcode chose.
+    public let path: String
+    public let bundleIdentifier: String
+
+    public init(path: String, bundleIdentifier: String) {
+        self.path = path
+        self.bundleIdentifier = bundleIdentifier
+    }
+}
+
 /// What the Stages hand each other. Explicit and passed through the pipeline, so a
 /// Stage can only read what an earlier one actually put here — no global state, and
 /// no Stage reaching sideways into another's internals.
@@ -71,6 +85,9 @@ public struct UpContext: Sendable {
     /// Set by `device`, read by everything that has to name a simulator afterwards —
     /// build, install and launch all address the same udid.
     public var device: SelectedDevice?
+
+    /// Set by `build`, consumed by `install` and `launch`.
+    public var product: BuiltProduct?
 
     public init() {}
 }

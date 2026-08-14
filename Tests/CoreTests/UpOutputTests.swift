@@ -108,6 +108,25 @@ struct UpJSONTests {
         #expect(device["runtime"] as? String == "26.5")
     }
 
+    /// What a script can act on after the run. The `.app` path build also settled on
+    /// is derived data — true for one machine until the next clean — so it stays
+    /// inside the pipeline and the bundle id is what comes out.
+    @Test("the bundle id of what was built reaches result")
+    func resultBundleID() throws {
+        var context = UpContext()
+        context.product = BuiltProduct(
+            path: "/Users/USER/Library/Developer/Xcode/DerivedData/MyApp-abc/Build/Products/"
+                + "Debug-iphonesimulator/MyApp.app",
+            bundleIdentifier: "com.example.MyApp"
+        )
+
+        let json = try decode(UpReport(stages: [result("build", .pass)], context: context))
+        let outcome = try #require(json["result"] as? [String: Any])
+
+        #expect(outcome["bundleId"] as? String == "com.example.MyApp")
+        #expect(outcome["app"] == nil)
+    }
+
     /// No stage produced anything worth naming, so the key is absent rather than an
     /// empty object a consumer has to interpret.
     @Test("result is absent when no stage produced one")
@@ -158,6 +177,14 @@ struct StageLineRendererTests {
                 == "validate      failed — 2 checks failed  3.0s"
         )
     }
+
+    /// A build takes minutes and says nothing while it does. The same columns as a
+    /// finished stage, so the wait reads as the row it will eventually become rather
+    /// than as a different kind of message.
+    @Test("a stage that has not landed yet prints its elapsed time in the same columns")
+    func waitingLine() {
+        #expect(renderer.waiting("build", elapsed: .seconds(45)) == "build         running…                45.0s")
+    }
 }
 
 @Suite("up streams")
@@ -196,6 +223,17 @@ struct UpWriterTests {
         #expect(error.value.contains { $0.contains("validate") })
         // The warning is in the document; --json does not also render it for a human.
         #expect(error.value.contains { $0.contains("switch node") } == false)
+    }
+
+    /// A stage that is still working writes through the same door as everything else
+    /// a human reads. `--json` is exactly when this matters: the document has not
+    /// been written yet, and one stray line would make stdout unparseable.
+    @Test("a note from a running stage goes to stderr in either mode")
+    func notesStayOnStderr() {
+        writer(json: true).note("build         running…                45.0s")
+
+        #expect(out.value.isEmpty)
+        #expect(error.value == ["build         running…                45.0s"])
     }
 
     @Test("without --json nothing goes to stdout at all")

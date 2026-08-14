@@ -34,7 +34,6 @@ struct XcodeSchemeList: Decodable {
         // paths resolved against the real file system, and the command line should
         // read as the path the project is actually rooted at.
         let names = (try? fileManager.contentsOfDirectory(atPath: ios.path)) ?? []
-        let projects = names.filter { $0.hasSuffix(".xcodeproj") }
-        return projects.count == 1 ? ios.appendingPathComponent(projects[0]) : nil
+        return names.filter { $0.hasSuffix(".xcodeproj") }.only.map(ios.appendingPathComponent)
     }
 }
