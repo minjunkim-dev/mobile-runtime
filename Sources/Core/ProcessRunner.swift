@@ -18,17 +18,24 @@ public struct ProcessCommand: Sendable, CustomStringConvertible {
     public var executable: String
     public var arguments: [String]
     public var environment: [String: String]
+    /// Where the child runs. nil inherits ours — most tools do not care, and the two
+    /// installs and Metro are the ones that do. Deliberately absent from
+    /// `description`: the description is what a human would type, and a fixture keyed
+    /// by it should not change spelling because a caller named a directory.
+    public var workingDirectory: URL?
     public var timeout: Duration?
 
     public init(
         _ executable: String,
         _ arguments: [String] = [],
         environment: [String: String] = [:],
+        workingDirectory: URL? = nil,
         timeout: Duration? = .seconds(30)
     ) {
         self.executable = executable
         self.arguments = arguments
         self.environment = environment
+        self.workingDirectory = workingDirectory
         self.timeout = timeout
     }
 
@@ -46,6 +53,25 @@ public struct ProcessResult: Sendable {
         self.terminationStatus = terminationStatus
         self.standardOutput = standardOutput
         self.standardError = standardError
+    }
+
+    /// Both streams as one text. Which stream a tool puts its diagnostics on is its
+    /// own business — xcodebuild prints `error:` on stdout and keeps stderr for its
+    /// noise, npm does the opposite — so anything reading a failure reads both.
+    public var combinedOutput: String {
+        [standardOutput, standardError].filter { !$0.isEmpty }.joined(separator: "\n")
+    }
+}
+
+extension String {
+    /// The last lines that say something, because a failed tool's news is at the
+    /// bottom. Blank lines are dropped so the limit is spent on content.
+    public func lastLines(_ limit: Int) -> String {
+        split(separator: "\n", omittingEmptySubsequences: false)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+            .suffix(limit)
+            .joined(separator: "\n")
     }
 }
 
@@ -65,10 +91,17 @@ public enum ProcessError: Error, CustomStringConvertible {
     }
 }
 
-/// Collected-output process execution. Streaming is deliberately absent until
-/// `up`'s xcodebuild needs it.
+/// Collected-output process execution. Streaming is deliberately absent — that
+/// decision is about watching a child's output as it runs, and it still stands
+/// (ADR-0002). `spawnDetached` is a different question: not how output is read, but
+/// whether the child outlives us.
 public protocol ProcessRunner: Sendable {
     func run(_ command: ProcessCommand) async throws -> ProcessResult
+
+    /// Starts `command` and returns as soon as it is running: both its streams go to
+    /// `logFile`, and its pid comes back so a caller can report or kill it. Metro has
+    /// to survive the `up` that started it, which is the one thing `run` cannot do.
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32
 }
 
 public struct SystemProcessRunner: ProcessRunner {
@@ -90,10 +123,11 @@ public struct SystemProcessRunner: ProcessRunner {
         }
         let environment = Subprocess.Environment.inherit.updating(overrides)
 
+        let invocation = Self.invocation(command)
         let work = Task {
             try await Subprocess.run(
-                .name(command.executable),
-                arguments: Arguments(command.arguments),
+                .name(invocation.executable),
+                arguments: Arguments(invocation.arguments),
                 environment: environment,
                 output: .string(limit: Self.outputLimit),
                 error: .string(limit: Self.errorLimit)
@@ -153,6 +187,76 @@ public struct SystemProcessRunner: ProcessRunner {
             throw ProcessError.spawnFailed(command: command.description, underlying: error)
         }
     }
+
+    /// Foundation's `Process` rather than swift-subprocess: that library's whole API
+    /// runs a child to completion, and this child has to outlive us. The choice stays
+    /// in this file for the same reason swift-subprocess does (ADR-0002) — one place
+    /// knows how a process is started.
+    ///
+    /// Detached as far as a process can be taken without `setsid`, which macOS ships
+    /// no binary for and Foundation does not expose: the child survives us exiting,
+    /// which is the case the spec names, but it stays in our process group, so a
+    /// Ctrl-C in the terminal still reaches it.
+    public func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+        let process = Process()
+        process.executableURL = Self.env
+        process.arguments = [command.executable] + command.arguments
+        process.currentDirectoryURL = command.workingDirectory
+        process.environment = ProcessInfo.processInfo.environment
+            .merging(command.environment) { _, override in override }
+        // Not the terminal we were started from: a background child that reads stdin
+        // is stopped with SIGTTIN the moment `up` hands the terminal back, and Metro's
+        // interactive prompt reads stdin.
+        process.standardInput = FileHandle.nullDevice
+
+        do {
+            try FileManager.default.createDirectory(
+                at: logFile.deletingLastPathComponent(), withIntermediateDirectories: true
+            )
+            try Data().write(to: logFile)
+            let sink = try FileHandle(forWritingTo: logFile)
+            process.standardOutput = sink
+            process.standardError = sink
+            try process.run()
+        } catch {
+            throw ProcessError.spawnFailed(command: command.description, underlying: error)
+        }
+
+        logger.debug(
+            "spawned detached subprocess",
+            metadata: [
+                "command": .string(command.description),
+                "pid": .string("\(process.processIdentifier)"),
+                "log": .string(logFile.path),
+            ]
+        )
+        return process.processIdentifier
+    }
+
+    /// A working directory is the one thing `ProcessCommand` asks for that
+    /// swift-subprocess will not take without a `SystemPackage.FilePath`, and
+    /// importing that module is what ADR-0001's Linux gate exists to catch. So the
+    /// shell does the `cd`.
+    ///
+    /// Not `env -C`, which reads better and is too new: it arrived in FreeBSD 14.2,
+    /// well after the macOS 14 this package declares as its floor. Every argument is
+    /// passed as an argument here — nothing is interpolated into the script — so a
+    /// directory or a scheme with a space in it cannot become two words.
+    private static func invocation(_ command: ProcessCommand) -> (executable: String, arguments: [String]) {
+        guard let directory = command.workingDirectory else {
+            return (command.executable, command.arguments)
+        }
+        return (
+            "sh",
+            ["-c", #"cd -- "$1" && shift 1 && exec "$@""#, "sh", directory.path, command.executable]
+                + command.arguments
+        )
+    }
+
+    /// How `spawnDetached` resolves a PATH name: Foundation's `Process` wants an
+    /// absolute executable, and `ProcessCommand.executable` promises a PATH lookup.
+    /// The absolute path is `env`'s own, never the caller's (ADR-0001).
+    private static let env = URL(fileURLWithPath: "/usr/bin/env")
 
     /// swift-subprocess hands back `String?` on Darwin and `String` on Linux;
     /// the implicit promotion makes one signature serve both.

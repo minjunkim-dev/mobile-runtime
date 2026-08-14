@@ -90,6 +90,16 @@ up의 종합 결과. envelope의 `status`는 doctor와 같은 어휘를 쓴다 �
 **프로젝트 의존성 (Project dependencies)**:
 앱 repo 자신의 의존성(node_modules, Pods). up이 설치하는 정상 단계 — "자동 설치 금지" 원칙의 대상이 아니다.
 
+**Metro 판정 (Metro verdict)**:
+8081 포트 한 번의 질의(`/status`)가 내는 세 갈래. **재사용(reused)** = Metro가 응답했다, **점유(held)** = 응답은 있으나 Metro가 아니다(연결 자체가 실패한 것과 구분된다 — 연결이 됐는데 말을 끝내지 않은 것도 점유다), **비어 있음** = 연결 실패, 그때만 띄운다. 포트는 8081 고정이다.
+
+**Detached spawn**:
+자식을 띄우고 기다리지 않는 실행. 출력은 실행 로그로 리다이렉트되고 PID만 돌아온다. up이 종료해도 Metro가 따라 죽지 않게 하려는 것 — 프로세스 그룹까지 떼지는 않으므로 터미널의 Ctrl-C는 아직 닿는다.
+_Avoid_: daemon, background job
+
+**MetroProcess**:
+up이 남긴 Metro의 보고. `state`(reused/spawned)와, spawn했을 때만 PID·로그 경로. 재사용에는 PID가 없다 — 그 프로세스는 남의 것이고, CI는 자기가 띄운 것만 정리해야 한다.
+
 **도구 프로비저닝 (Tool provisioning)**:
 호스트 도구(Xcode, iOS runtime 등)의 설치. V1은 detect/validate만, 설치는 V2. "자동 설치 금지" 원칙이 가리키는 대상.
 

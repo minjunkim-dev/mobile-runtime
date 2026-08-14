@@ -33,11 +33,12 @@ struct Up: AsyncParsableCommand {
 
     private func runPipeline(_ wiring: Wiring, _ writer: UpWriter) async -> UpReport {
         // Unlike doctor, up outside a project is an error: there is nothing to build.
-        guard wiring.anchor != nil else {
+        guard let anchor = wiring.anchor else {
             return UpReport(stages: [], failure: .domain(Self.noProject))
         }
 
         let stages = iOSUpStages(
+            anchor: anchor,
             doctor: wiring.engine,
             config: wiring.config,
             lookup: wiring.lookup,

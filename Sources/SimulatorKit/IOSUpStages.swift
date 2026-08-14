@@ -6,6 +6,7 @@ import Core
 /// - Parameter note: where a Stage that is still working writes its elapsed line.
 ///   Only `build` takes long enough to need one.
 public func iOSUpStages(
+    anchor: ProjectAnchor,
     doctor: DoctorEngine,
     config: ConfigContext,
     lookup: MatrixLookup?,
@@ -15,9 +16,12 @@ public func iOSUpStages(
 ) -> [any Stage] {
     [
         ValidateStage(engine: doctor, checkIDs: IOSUpValidation.checkIDs),
+        DependenciesStage(anchor: anchor, runner: runner),
         DeviceStage(
             declared: config.configuration?.device, lookup: lookup, runner: runner, locator: locator
         ),
+        // Before build on purpose: Metro warms up while xcodebuild spends its minutes.
+        MetroStage(anchor: anchor, runner: runner),
         BuildStage(config: config, runner: runner, locator: locator, note: note),
     ]
 }

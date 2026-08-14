@@ -25,6 +25,10 @@ SpikeIOS(#8)에서 swift-subprocess 1.0.0을 실측했고, 결과는 양면이�
 - **에러 2층**을 타입으로 가른다. `ProcessError`(spawn 실패·타임아웃)는 인프라 장애이고, 도메인 실패는 exit code + stderr를 해석해 만드는 `DomainError`이며 Remediation을 필드로 갖는다. 이 구분이 exit code 1과 2를 가른다(#15 user story 52).
 - 계약은 **collected output만**. streaming 메서드는 넣지 않는다 — `up`의 xcodebuild가 실제로 요구할 때 추가한다.
 
+### 후속 노트 (#13, #42)
+
+**collected-only는 streaming에 대한 결정이다.** `spawnDetached`는 출력을 어떻게 읽느냐가 아니라 자식이 우리보다 오래 사느냐의 문제이고, Metro가 `up` 종료 후에도 살아 있어야 한다는 #13의 요구로 추가했다. **streaming 금지는 그대로다.** 구현은 Foundation `Process`이며(swift-subprocess의 API는 전부 자식을 끝까지 돌리는 형태라 detached를 낼 수 없다), 격리 원칙대로 그 사실도 `ProcessRunner.swift` 안에서 끝난다.
+
 ## 결과
 
 - 의존이 바뀌거나 버려질 때 수정 범위가 한 파일이다. 이것이 미성숙한 의존을 받아들인 대가로 산 것이다.

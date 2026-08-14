@@ -92,6 +92,10 @@ private struct BlockingRunner: ProcessRunner {
         }
         return try await inner.run(command)
     }
+
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+        try await inner.spawnDetached(command, logFile: logFile)
+    }
 }
 
 /// A context as the pipeline hands it to `build`: `device` has already run.

@@ -74,6 +74,27 @@ public struct BuiltProduct: Sendable, Equatable, Encodable {
     }
 }
 
+/// The Metro bundler this run left behind. `pid` and `logPath` are absent on a reuse
+/// on purpose: that process belongs to whoever started it, and a CI job has to be
+/// able to clean up only what it started itself.
+public struct MetroProcess: Sendable, Equatable, Encodable {
+    public enum State: String, Sendable, Equatable, Encodable {
+        case reused
+        case spawned
+    }
+
+    public let state: State
+    public let pid: Int32?
+    /// Where the detached child's two streams went — the only place its output is.
+    public let logPath: String?
+
+    public init(state: State, pid: Int32? = nil, logPath: String? = nil) {
+        self.state = state
+        self.pid = pid
+        self.logPath = logPath
+    }
+}
+
 /// What the Stages hand each other. Explicit and passed through the pipeline, so a
 /// Stage can only read what an earlier one actually put here — no global state, and
 /// no Stage reaching sideways into another's internals.
@@ -85,6 +106,10 @@ public struct UpContext: Sendable {
     /// Set by `device`, read by everything that has to name a simulator afterwards —
     /// build, install and launch all address the same udid.
     public var device: SelectedDevice?
+
+    /// Set by `metro`. Read by nothing else in the pipeline — it is there for the
+    /// reader and for `--json`, which is the whole point of reporting a pid.
+    public var metro: MetroProcess?
 
     /// Set by `build`, consumed by `install` and `launch`.
     public var product: BuiltProduct?

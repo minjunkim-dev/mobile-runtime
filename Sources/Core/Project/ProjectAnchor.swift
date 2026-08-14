@@ -82,8 +82,17 @@ public struct WorkspaceRoot: Sendable, Equatable {
     /// workspace gets broken, so the `cd` is part of the command whenever the anchor
     /// is somewhere else.
     public func installCommand(from anchor: URL) -> String {
-        let install = "\(packageManagerName) install"
+        let install = installProcess.description
         return directory == anchor ? install : "cd \(directory.path) && \(install)"
+    }
+
+    /// The same install, as something to run rather than something to print. The `cd`
+    /// above and this working directory are one decision written once — the line
+    /// doctor hands a human and the command `up` executes must not be able to drift.
+    ///
+    /// No timeout: a cold install is minutes of network, and 30 seconds would kill it.
+    public var installProcess: ProcessCommand {
+        ProcessCommand(packageManagerName, ["install"], workingDirectory: directory, timeout: nil)
     }
 }
 
@@ -131,7 +140,22 @@ public struct ProjectAnchor: Sendable, Equatable {
     /// measured to go on, so the declaration is the next best evidence and npm the
     /// last resort — a guess, but the one a repo that declared nothing behaves like.
     public var installCommand: String {
-        workspaceRoot?.installCommand(from: directory) ?? "\(packageManager?.name ?? "npm") install"
+        workspaceRoot?.installCommand(from: directory) ?? installProcess.description
+    }
+
+    /// The manager this project is run with — the one its lockfile named, else the one
+    /// it declared, else npm. `dependencies` installs with it and `metro` calls the
+    /// project's start script with it, off one answer.
+    public var packageManagerName: String { installProcess.executable }
+
+    /// What `up` runs where `installCommand` is what doctor prints. Same evidence and
+    /// same fallback, so the two can never name different managers.
+    public var installProcess: ProcessCommand {
+        workspaceRoot?.installProcess
+            ?? ProcessCommand(
+                packageManager?.name ?? "npm", ["install"],
+                workingDirectory: directory, timeout: nil
+            )
     }
 
     /// The Project checks this anchor can answer. A Check that needs a declaration

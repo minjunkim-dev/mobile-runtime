@@ -28,15 +28,34 @@ public struct FakeProcessRunner: ProcessRunner {
         }
     }
 
+    /// A detached child, with the file its output was pointed at. The command is in
+    /// `all` as well — one log, so a test that asks what ran gets the whole answer.
+    public struct Spawn: Sendable {
+        public let command: ProcessCommand
+        public let logFile: URL
+    }
+
     public final class CallLog: @unchecked Sendable {
         private let lock = NSLock()
         private var commands: [ProcessCommand] = []
+        private var spawns: [Spawn] = []
 
         func record(_ command: ProcessCommand) {
             lock.withLock { commands.append(command) }
         }
 
+        func record(_ spawn: Spawn) {
+            lock.withLock {
+                commands.append(spawn.command)
+                spawns.append(spawn)
+            }
+        }
+
         public var all: [ProcessCommand] { lock.withLock { commands } }
+
+        /// Only the detached ones. Spawning is what a test verifies about `metro`, and
+        /// a command that was awaited instead would be a different bug.
+        public var spawned: [Spawn] { lock.withLock { spawns } }
 
         public func first(matching description: String) -> ProcessCommand? {
             all.first { $0.description == description }
@@ -46,6 +65,8 @@ public struct FakeProcessRunner: ProcessRunner {
     public var responses: [String: Response]
     /// Thrown instead of answering, to exercise the infrastructure-failure path.
     public var failures: [String: any Error] = [:]
+    /// What a spawn reports back. One value — no scenario has two live children.
+    public var spawnedPID: Int32 = 4242
     public let log = CallLog()
 
     public init(responses: [String: Response] = [:], failures: [String: any Error] = [:]) {
@@ -67,6 +88,14 @@ public struct FakeProcessRunner: ProcessRunner {
             standardOutput: response.standardOutput,
             standardError: response.standardError
         )
+    }
+
+    /// No canned response to look up: a spawn has no output to answer with, and the
+    /// record of it *is* the assertion.
+    public func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+        log.record(Spawn(command: command, logFile: logFile))
+        if let failure = failures[command.description] { throw failure }
+        return spawnedPID
     }
 }
 

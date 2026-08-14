@@ -27,6 +27,9 @@ public struct UpJSONDocument: Encodable, Sendable {
         /// settled on stays inside the pipeline — it is derived data, true for one
         /// machine until the next clean, and nothing outside a run can use it.
         public let bundleId: String?
+        /// So a CI job can tail the bundler's log, and kill the process it started —
+        /// and only that one.
+        public let metro: MetroProcess?
     }
 
     public let schemaVersion: Int
@@ -47,9 +50,10 @@ public struct UpJSONDocument: Encodable, Sendable {
         }
         let device = report.context.device
         let bundleId = report.context.product?.bundleIdentifier
-        self.result = device == nil && bundleId == nil
+        let metro = report.context.metro
+        self.result = device == nil && bundleId == nil && metro == nil
             ? nil
-            : Outcome(device: device, bundleId: bundleId)
+            : Outcome(device: device, bundleId: bundleId, metro: metro)
         self.error = report.failure.map {
             Failure(message: $0.message, remediation: $0.remediation)
         }

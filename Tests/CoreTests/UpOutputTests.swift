@@ -127,6 +127,36 @@ struct UpJSONTests {
         #expect(outcome["app"] == nil)
     }
 
+    /// So CI can tail the bundler's log and kill the process — the pid is there
+    /// precisely because a job has to be able to clean up after itself.
+    @Test("a spawned Metro reaches result with its pid and log path")
+    func resultMetroSpawned() throws {
+        var context = UpContext()
+        context.metro = MetroProcess(state: .spawned, pid: 4242, logPath: "/tmp/mobile/MyApp/metro.log")
+
+        let json = try decode(UpReport(stages: [result("metro", .pass)], context: context))
+        let metro = try #require((json["result"] as? [String: Any])?["metro"] as? [String: Any])
+
+        #expect(metro["state"] as? String == "spawned")
+        #expect(metro["pid"] as? Int == 4242)
+        #expect(metro["logPath"] as? String == "/tmp/mobile/MyApp/metro.log")
+    }
+
+    /// The other half of the same promise: a reused Metro is somebody else's process,
+    /// so there is no pid to report and a job must not find one to kill.
+    @Test("a reused Metro reports its state and nothing to clean up")
+    func resultMetroReused() throws {
+        var context = UpContext()
+        context.metro = MetroProcess(state: .reused)
+
+        let json = try decode(UpReport(stages: [result("metro", .skipped)], context: context))
+        let metro = try #require((json["result"] as? [String: Any])?["metro"] as? [String: Any])
+
+        #expect(metro["state"] as? String == "reused")
+        #expect(metro["pid"] == nil)
+        #expect(metro["logPath"] == nil)
+    }
+
     /// No stage produced anything worth naming, so the key is absent rather than an
     /// empty object a consumer has to interpret.
     @Test("result is absent when no stage produced one")

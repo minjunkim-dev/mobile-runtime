@@ -112,13 +112,11 @@ public struct BuildStage: Stage {
         // Both streams together, and the tail taken from the same text: xcodebuild
         // prints its `error:` lines on stdout and keeps stderr for its own noise, so
         // a tail that preferred stderr would show the least useful twenty lines.
-        let output = [result.standardOutput, result.standardError]
-            .filter { !$0.isEmpty }
-            .joined(separator: "\n")
+        let output = result.combinedOutput
         let file = logs.write(output, to: "build.log")
         throw DomainError(
             summary: "the build failed",
-            observed: Self.tail(output),
+            observed: output.lastLines(20),
             remediation: Remediation(
                 summary: file.map { "The whole build log is at \($0.path)." }
                     ?? "Run the build by hand to see the whole log — mobile could not write one.",
@@ -175,15 +173,6 @@ public struct BuildStage: Stage {
         ([command.executable] + command.arguments)
             .map { $0.contains(" ") ? "'\($0)'" : $0 }
             .joined(separator: " ")
-    }
-
-    /// The last lines, because a build failure's news is at the bottom. The rest is
-    /// in the file whose path goes out with it.
-    private static func tail(_ output: String, lines limit: Int = 20) -> String {
-        output.split(separator: "\n", omittingEmptySubsequences: false)
-            .filter { !String($0).trimmed.isEmpty }
-            .suffix(limit)
-            .joined(separator: "\n")
     }
 
     private static let noTarget = DomainError(
