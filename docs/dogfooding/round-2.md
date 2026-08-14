@@ -109,6 +109,8 @@ exit code는 3/3 모두 `1`. 라운드 1과 같은 숫자지만 **원인이 바�
 
 ## 라운드 2에서 새로 보이는 것
 
+세 건 모두 같은 자리에서 고쳤다 — #33(`8039462`), #34(`ff8be98`), #35(`022ab6f`). 아래 관측은 고치기 **전** 상태이고, 각 항목 끝에 고친 뒤 출력을 붙였다.
+
 ### 1. mise 설정 오류가 3개 Check에 같은 문장으로 복제된다 (rainbow)
 
 rainbow는 `mise.toml`을 커밋해 두는데 이 호스트에서 trust되지 않아 mise가 거부한다. 세 Check가 같은 원인을 각자 보고한다:
@@ -123,13 +125,38 @@ rainbow는 `mise.toml`을 커밋해 두는데 이 호스트에서 trust되지 �
 
 라운드 1에서도 같은 mise 원문이 실렸지만 그때는 `unknown` 한 줄이라 이 중복이 드러나지 않았다. 등급이 올라가면서 보이게 된 문제다.
 
+**고친 뒤(#33).** mise 문자열을 파싱하지 않았다. `unreadable`은 도구가 PATH에 있다는 뜻이므로 "설치하라" 계열 명령은 원인이 무엇이든 틀렸다 — 그 분기에서 명령을 뺐다.
+
+```
+[✗] CocoaPods — `pod --version` did not report a version — mise ERROR error parsing config file: $REPO/mise.toml → CocoaPods 1.16.2 (Gemfile.lock)
+    → `pod` is on PATH but reports no version, so it cannot be used. Fix whatever provides it — the line above is what it said — then re-run mobile doctor.
+```
+
+세 줄이 여전히 셋인 것은 그대로다(원인 하나에 Check 셋). 다만 셋 다 이제 틀린 곳을 가리키지 않고, 원문이 바로 윗줄에 있다.
+
 ### 2. `[✓] Xcode` 한 줄이 Tier 2 판정을 접어버린다
 
 `xcode.installed`(host)와 `xcode.version`(tier 2)이 한 카테고리라 둘 다 pass면 헤드라인은 `xcode.installed`의 observed만 보인다. 이번에 가장 값어치 있게 바뀐 판정(`Xcode 26.3 or newer` — rainbow의 `.xcode-version`이 매트릭스를 이긴 것)이 기본 출력에는 한 글자도 안 나온다. 라운드 1의 "카테고리 접기는 납득된다"는 관찰은 **최악 상태만 보이면 된다**는 전제였는데, pass끼리 접힐 때는 더 흥미로운 쪽이 사라진다.
 
+**고친 뒤(#34).** 동률이면 tier 높은 쪽이 헤드라인을 가진다.
+
+```
+[✓] Xcode — Xcode 26.6 (17F113)
+[✓] iOS Simulator — iOS 26.5 installed and available
+```
+
+상태가 갈릴 때 최악이 이기는 규칙은 그대로다.
+
 ### 3. remediation의 절대경로가 길다
 
 `Declare the scheme in $REPO/mobile.yml:` 줄이 실제로는 120자가 넘는 절대경로를 싣는다. 라운드 1에도 있던 성질이지만, #29로 헤드라인이 길어지면서 화면당 줄바꿈이 늘었다.
+
+**고친 뒤(#35).** 작업 디렉터리 아래면 상대경로다. joplin의 `cd <워크스페이스 루트>`는 작업 디렉터리 밖이라 절대경로로 남는다.
+
+```
+    → Declare the scheme in mobile.yml: `ios:` on one line, `  scheme: Mattermost` on the next.
+      xcodebuild -list -project ios/Mattermost.xcodeproj
+```
 
 ### 4. Remediation 복붙 검증
 
