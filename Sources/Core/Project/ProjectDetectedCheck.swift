@@ -8,7 +8,12 @@ public struct ProjectDetectedCheck: Check {
     public let title = "React Native project detected"
 
     private static let source = CheckSource(tier: 1, origin: "package.json")
-    private static let required = "a React Native project with an ios/ directory and installed dependencies"
+    /// What this Check judges, and no more. It used to say "and installed
+    /// dependencies", which a single stubbed `node_modules/react-native/package.json`
+    /// was enough to pass — a claim about an install that had never run (ADR-0004).
+    /// Checking it for real would mean sampling the lockfile against `node_modules`,
+    /// and hoisting makes that its own miss. So the claim is dropped, not faked.
+    private static let required = "a React Native project with an ios/ directory"
 
     private let anchor: ProjectAnchor
 

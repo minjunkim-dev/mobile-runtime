@@ -52,6 +52,25 @@ struct ProjectDetectedCheckTests {
         #expect(check.outcome.remediation == nil)
     }
 
+    /// The miss #22 reports: stubbing `node_modules/react-native/package.json` was
+    /// enough to be told the dependencies were installed, on a repo where `npm install`
+    /// had never run. The Check judges that a React Native project is here — nothing
+    /// it can see proves an install finished, so it no longer says one did.
+    @Test("a pass never claims the dependencies are installed")
+    func passClaimsOnlyDetection() async throws {
+        let repo = try FixtureRepo()
+        try repo.write("package.json", #"{"dependencies": {"react-native": "0.83.9"}}"#)
+        try repo.write("node_modules/react-native/package.json", #"{"version": "0.83.9"}"#)
+        try repo.directory("ios")
+
+        let (report, _) = await runProjectChecks(repo)
+        let check = try #require(report.checks.first { $0.id == "project.detected" })
+
+        #expect(check.status == .pass)
+        #expect(check.outcome.required?.contains("dependencies") == false)
+        #expect(check.outcome.observed?.contains("installed") == false)
+    }
+
     @Test("a project without ios/ is unknown with a reason, never an error")
     func managedProjectWithoutIOS() async throws {
         let repo = try FixtureRepo()
