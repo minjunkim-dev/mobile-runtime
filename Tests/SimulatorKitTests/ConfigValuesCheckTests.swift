@@ -190,8 +190,12 @@ struct ConfigValuesCheckTests {
         #expect(check.outcome.required == "a simulator name")
     }
 
-    /// The reason mobile.yml exists at all.
-    @Test("errors when the project has several schemes and nothing declares one")
+    /// The reason mobile.yml exists at all — but a warning, not an error. doctor
+    /// answers "can this machine build the project", and an unpicked scheme is a
+    /// choice nobody has made yet, not a broken machine. All three dogfooding repos
+    /// ship several schemes because app extensions are normal, and exit 1 in CI is
+    /// too strong a word for that (ADR-0004). `up` is where it stops the work.
+    @Test("warns when the project has several schemes and nothing declares one")
     func schemeAmbiguous() async throws {
         let repo = try project(nil)
 
@@ -199,7 +203,7 @@ struct ConfigValuesCheckTests {
             try await check(repo, schemes: ["MyApp", "MyApp-tvOS"]).result
         )
 
-        #expect(check.status == .error)
+        #expect(check.status == .warning)
         #expect(check.outcome.observed?.contains("MyApp, MyApp-tvOS") == true)
         #expect(check.outcome.required?.contains("ios.scheme") == true)
         #expect(check.outcome.remediation?.summary.contains("mobile.yml") == true)

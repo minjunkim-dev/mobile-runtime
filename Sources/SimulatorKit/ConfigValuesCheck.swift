@@ -210,8 +210,14 @@ public struct ConfigValuesCheck: Check {
             guard schemes.count > 1 else {
                 return .ok("no scheme declared — \(schemes[0]) is the only one")
             }
+            // A warning, not an error: doctor answers "can this machine build the
+            // project", and an unpicked scheme is a choice nobody has made yet rather
+            // than a broken machine. App extensions make several schemes the norm —
+            // all three dogfooding repos have them — so exit 1 would fail CI on
+            // healthy repos. `up` cannot proceed on it, and that grade belongs to the
+            // stage that has to pick one (ADR-0004).
             return .verdict(
-                .error(
+                .warning(
                     observed: "\(schemes.count) schemes — \(schemes.joined(separator: ", ")) — "
                         + "and nothing declares which one to build",
                     required: "ios.scheme, because this project has more than one scheme",
