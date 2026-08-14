@@ -17,14 +17,21 @@ public struct ConfigContext: Sendable {
     /// nil when there is no `file` to read.
     public let parse: MobileConfigParse?
 
+    /// Where the command was run. Paths in a verdict are written relative to it when
+    /// they sit underneath — a pasteable line should not carry the reader's whole home
+    /// directory (#35).
+    public let workingDirectory: URL
+
     public init(
         anchor: ProjectAnchor?,
+        workingDirectory: URL,
         file: URL?,
         misspelledFile: URL?,
         strayFile: URL?,
         parse: MobileConfigParse?
     ) {
         self.anchor = anchor
+        self.workingDirectory = workingDirectory
         self.file = file
         self.misspelledFile = misspelledFile
         self.strayFile = strayFile
@@ -32,6 +39,17 @@ public struct ConfigContext: Sendable {
     }
 
     public var anchorDirectory: URL? { anchor?.directory }
+
+    /// How a verdict spells a path: relative to where the command was run when it is
+    /// under it, absolute otherwise. A `cd` to the workspace root is above the working
+    /// directory, and a line that gets pasted somewhere else has to keep pointing at
+    /// the same place.
+    public func display(_ url: URL) -> String {
+        let base = workingDirectory.path
+        let path = url.resolvingSymlinksInPath().path
+        guard path.hasPrefix(base + "/") else { return url.path }
+        return String(path.dropFirst(base.count + 1))
+    }
 
     /// The declarations to act on. nil when there is no file, and nil when the file
     /// did not parse — a broken file never degrades into a partial configuration.
@@ -67,6 +85,7 @@ public struct ConfigContext: Sendable {
 
         return ConfigContext(
             anchor: anchor,
+            workingDirectory: working,
             file: file,
             misspelledFile: misspelled,
             strayFile: stray,

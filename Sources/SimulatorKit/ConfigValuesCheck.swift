@@ -82,12 +82,13 @@ public struct ConfigValuesCheck: Check {
     private func strayOutcome(_ stray: URL) -> CheckOutcome {
         let destination = context.anchorDirectory
         return .warning(
-            observed: "\(stray.path) is not next to a React Native project, so mobile never reads it",
+            observed: "\(context.display(stray)) is not next to a React Native project, "
+                + "so mobile never reads it",
             required: "\(MobileConfig.fileName) beside the package.json that depends on react-native",
             source: source,
             remediation: Remediation(
                 summary: destination.map {
-                    "Move it to \($0.appendingPathComponent(MobileConfig.fileName).path) — "
+                    "Move it to \(context.display($0.appendingPathComponent(MobileConfig.fileName))) — "
                         + "mobile reads mobile.yml beside the project's package.json and nowhere else."
                 }
                     ?? "mobile found no React Native project here. Move the file beside the "
@@ -224,9 +225,9 @@ public struct ConfigValuesCheck: Check {
                     source: source,
                     remediation: Remediation(
                         summary: "Declare the scheme in "
-                            + "\(anchor.directory.appendingPathComponent(MobileConfig.fileName).path): "
+                            + "\(context.display(anchor.directory.appendingPathComponent(MobileConfig.fileName))): "
                             + "`ios:` on one line, `  scheme: \(schemes[0])` on the next.",
-                        command: "xcodebuild -list -project \(project.path)"
+                        command: "xcodebuild -list -project \(context.display(project))"
                     )
                 )
             )
@@ -240,7 +241,7 @@ public struct ConfigValuesCheck: Check {
                     source: source,
                     remediation: Remediation(
                         summary: "Set ios.scheme to one of them.",
-                        command: "xcodebuild -list -project \(project.path)"
+                        command: "xcodebuild -list -project \(context.display(project))"
                     )
                 )
             )

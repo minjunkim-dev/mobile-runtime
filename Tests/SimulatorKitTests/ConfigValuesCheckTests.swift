@@ -207,6 +207,10 @@ struct ConfigValuesCheckTests {
         #expect(check.outcome.observed?.contains("MyApp, MyApp-tvOS") == true)
         #expect(check.outcome.required?.contains("ios.scheme") == true)
         #expect(check.outcome.remediation?.summary.contains("mobile.yml") == true)
+        // Paths under the working directory are written relative to it: the reader's
+        // home directory is not part of the instruction (#35).
+        #expect(check.outcome.remediation?.command == "xcodebuild -list -project ios/MyApp.xcodeproj")
+        #expect(check.outcome.remediation?.summary.contains(repo.root.path) == false)
     }
 
     @Test("a single scheme needs no declaration")
