@@ -15,8 +15,18 @@ public struct DoctorReport: Sendable {
     public var hasToolFailure: Bool { !toolFailures.isEmpty }
 
     /// The check whose status decides the aggregate — what the human sees first.
+    ///
+    /// Ties go to the most project-specific one. Folding a category to its worst check
+    /// answers nothing when they all pass, and letting order decide put "Xcode is
+    /// installed" where the verdict that took a lockfile and a `.xcode-version` to
+    /// reach should have been: a host fact is the least interesting thing a passing
+    /// category can say. Equal severity and equal tier keep the order they were
+    /// registered in.
     public var worstCheck: CheckResult? {
-        checks.max { $0.status.severity < $1.status.severity }
+        checks.max {
+            ($0.status.severity, $0.outcome.source.tier ?? 0)
+                < ($1.status.severity, $1.outcome.source.tier ?? 0)
+        }
     }
 
     /// 0 = no errors (warnings and unknowns still pass), 1 = domain failure,

@@ -142,6 +142,49 @@ struct HumanReportRendererTests {
         #expect(lines.contains("[✓] Xcode — Xcode 26.6"))
     }
 
+    /// Folding a category to its worst check answers nothing when every check passes,
+    /// and order decided it: `[✓] Xcode` showed "Xcode is installed" while the verdict
+    /// that took a lockfile and a `.xcode-version` to reach stayed behind `-v` (#34).
+    @Test("an all-pass category leads with its most project-specific check")
+    func headlinePrefersTheProjectVerdict() {
+        let report = DoctorReport(checks: [
+            result("xcode.installed", category: "Xcode", .pass(observed: "Xcode 26.6 at /Applications")),
+            result(
+                "xcode.version",
+                category: "Xcode",
+                .pass(
+                    observed: "Xcode 26.6 (17F113)", required: "Xcode 26.3 or newer",
+                    source: CheckSource(tier: 1, origin: ".xcode-version")
+                )
+            ),
+        ])
+
+        #expect(renderer.render(report).split(separator: "\n").first == "[✓] Xcode — Xcode 26.6 (17F113)")
+    }
+
+    /// The fold itself is unchanged: a status that stands out still wins, whichever
+    /// tier it came from.
+    @Test("a failing host check still leads over a passing project one")
+    func headlineStillPrefersTheWorstStatus() {
+        let report = DoctorReport(checks: [
+            result(
+                "simulator.daemon",
+                category: "iOS Simulator",
+                .error(observed: "simctl did not respond", remediation: Remediation(summary: "Restart it."))
+            ),
+            result(
+                "simulator.runtime",
+                category: "iOS Simulator",
+                .pass(observed: "iOS 26.5 installed", source: CheckSource(tier: 1, origin: "ios/Podfile"))
+            ),
+        ])
+
+        #expect(
+            renderer.render(report).split(separator: "\n").first
+                == "[✗] iOS Simulator — simctl did not respond"
+        )
+    }
+
     /// A Check can be a warning with nothing to compare against — the fact is the
     /// whole verdict. The arrow appears only when there is something after it.
     @Test("a warning with no required value keeps its plain headline")
