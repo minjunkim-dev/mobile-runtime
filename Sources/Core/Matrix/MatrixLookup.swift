@@ -15,9 +15,9 @@ public enum RequirementLookup: Sendable, Equatable {
     }
 }
 
-/// What the matrix — corrected by any `mobile.yml` override — can say about this
-/// project right now. Resolved per field, because an override names one Tier 2
-/// value and leaves the other alone.
+/// What the matrix — composed with what the repo declared, corrected by any
+/// `mobile.yml` override — can say about this project right now. Resolved per field,
+/// because an override names one Tier 2 value and leaves the other alone.
 public struct MatrixLookup: Sendable, Equatable {
     public let xcode: RequirementLookup
     public let runtime: RequirementLookup
@@ -43,11 +43,14 @@ public struct MatrixLookup: Sendable, Equatable {
         return MatrixLookup(
             xcode: requirement(
                 override: config?.xcode, field: MobileConfig.Key.xcode,
+                declared: anchor.declaredXcodeVersion.map {
+                    (value: $0, file: ProjectAnchor.xcodeVersionFile)
+                },
                 matrix: answer, value: \.xcode
             ),
             runtime: requirement(
                 override: config?.iosRuntime, field: MobileConfig.Key.iosRuntime,
-                matrix: answer, value: \.runtime
+                declared: nil, matrix: answer, value: \.runtime
             )
         )
     }
@@ -60,13 +63,19 @@ public struct MatrixLookup: Sendable, Equatable {
 
     private static let matrixOrigin = "compatibility matrix"
 
+    /// - Parameter declared: what the repo wrote down for this field, when a Tier 1
+    ///   file carries it. `mobile.yml` outranks it: an override exists to stop the
+    ///   tool from blocking the work, so composing it with a repo file would take
+    ///   that escape hatch back.
     private static func requirement(
         override: MinimumVersion?,
         field: String,
+        declared: (value: String, file: String)?,
         matrix: Answer,
         value: KeyPath<CompatibilityMatrix.IOSRequirements, MinimumVersion>
     ) -> RequirementLookup {
         guard let override else {
+            if let declared { return composed(declared, matrix: matrix, value: value) }
             switch matrix {
             case .requirements(let requirements, let origin):
                 return .requirement(requirements[keyPath: value], source: CheckSource(tier: 2, origin: origin))
@@ -83,6 +92,61 @@ public struct MatrixLookup: Sendable, Equatable {
             origin += " — the \(matrixOrigin) says \(requirements[keyPath: value])"
         }
         return .requirement(override, source: CheckSource(tier: 3, origin: origin))
+    }
+
+    /// `max(matrix floor, project declaration)` — ADR-0003. The matrix carries the
+    /// framework's floor and the repo carries the toolchain it actually builds on, so
+    /// neither replaces the other: the stricter one becomes the requirement and the
+    /// loser is named in the source, because `-v` is the audit log of the verdict.
+    ///
+    /// A tie goes to the repo — Tier 1 is the stronger evidence, and it stays the
+    /// answer when the matrix has none at all. That is the miss this closes: a
+    /// pristine clone used to end at `unknown` with the answer sitting in a file.
+    ///
+    /// The declaration is read as a floor (`MinimumVersion`), not as the prefix pin
+    /// ADR-0003 names: `max` and "the winner" need one ordered scale, and `VersionPin`
+    /// has no order. The visible difference is a host newer than the declaration —
+    /// `.xcode-version` 26.3 against Xcode 27 passes here, where a prefix pin would
+    /// fail it. Both readings catch the miss #25 reports; this one is the weaker
+    /// claim, which is the side to be wrong on.
+    private static func composed(
+        _ declared: (value: String, file: String),
+        matrix: Answer,
+        value: KeyPath<CompatibilityMatrix.IOSRequirements, MinimumVersion>
+    ) -> RequirementLookup {
+        let declaration = MinimumVersion(declared.value)
+        let unreadable = "\(declared.file) declares \(declared.value), "
+            + "which mobile cannot resolve to a version"
+
+        switch matrix {
+        case .requirements(let requirements, let origin):
+            let floor = requirements[keyPath: value]
+            guard let declaration else {
+                return .requirement(floor, source: CheckSource(tier: 2, origin: "\(origin) — \(unreadable)"))
+            }
+            guard !floor.exceeds(declaration) else {
+                return .requirement(
+                    floor,
+                    source: CheckSource(tier: 2, origin: "\(origin) — \(declared.file) declares \(declaration)")
+                )
+            }
+            return .requirement(
+                declaration,
+                source: CheckSource(tier: 1, origin: "\(declared.file) — the \(origin) says \(floor)")
+            )
+        case .unavailable(let reason):
+            guard let declaration else {
+                return .unavailable(
+                    reason: "\(reason); \(unreadable)", source: CheckSource(tier: 2, origin: matrixOrigin)
+                )
+            }
+            // The matrix lost by silence rather than by a lower floor, and a verdict
+            // standing on one leg says which leg is missing.
+            return .requirement(
+                declaration,
+                source: CheckSource(tier: 1, origin: "\(declared.file) — the \(matrixOrigin) could not answer")
+            )
+        }
     }
 
     private static func answer(

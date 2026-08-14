@@ -1,8 +1,9 @@
 import Core
 
-/// `xcode.version` — the installed Xcode against what this React Native version
-/// needs. No repo file declares that requirement, so this is the first verdict a
-/// host-only or project-only tool cannot reach.
+/// `xcode.version` — the installed Xcode against what this project needs: the
+/// framework floor from the matrix, raised by `.xcode-version` when the repo asks
+/// for more. Composing the two is a verdict a host-only or project-only tool
+/// cannot reach; which evidence won is in the source.
 public struct XcodeVersionCheck: Check {
     public let id = "xcode.version"
     public let category = "Xcode"
@@ -44,8 +45,10 @@ public struct XcodeVersionCheck: Check {
                 required: required,
                 source: source,
                 remediation: Remediation(
+                    // Which evidence set the floor is in `source`; the fix is the same
+                    // either way, so the summary does not guess at the cause.
                     summary: "Install Xcode \(minimum) or newer and select it — "
-                        + "this React Native version does not build with an older toolchain.",
+                        + "this project does not build with an older toolchain.",
                     command: "sudo xcode-select -s /Applications/Xcode.app/Contents/Developer",
                     url: "https://developer.apple.com/xcode/"
                 )

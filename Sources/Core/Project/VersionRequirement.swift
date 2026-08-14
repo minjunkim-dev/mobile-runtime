@@ -80,6 +80,10 @@ public struct MinimumVersion: Sendable, Equatable, Decodable, CustomStringConver
     /// are not a disagreement worth reporting.
     public func agrees(with other: MinimumVersion) -> Bool { floor == other.floor }
 
+    /// The stricter of two requirements, for composing a matrix floor with what the
+    /// project declared. Precision is not strictness: `"26"` does not exceed `"26.0"`.
+    public func exceeds(_ other: MinimumVersion) -> Bool { floor > other.floor }
+
     public var description: String { text }
 }
 

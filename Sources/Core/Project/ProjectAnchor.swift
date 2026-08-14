@@ -57,6 +57,10 @@ public struct ProjectAnchor: Sendable, Equatable {
     public let gemfileLock: GemfileLock?
     /// From `.ruby-version`. nil means no Ruby Check — absence, not `unknown`.
     public let rubyPin: String?
+    /// From `.xcode-version`, the file xcodes and fastlane already read. Tier 1
+    /// evidence for a requirement the matrix only knows a framework floor for;
+    /// nil is silence, not a missing answer.
+    public let declaredXcodeVersion: String?
 
     /// What a human would run to install the project's dependencies. doctor prints
     /// it and never runs it.
@@ -120,8 +124,23 @@ public struct ProjectAnchor: Sendable, Equatable {
             nodeEngines: (manifest["engines"] as? [String: Any])?["node"] as? String,
             packageManager: (manifest["packageManager"] as? String).flatMap(packageManager),
             gemfileLock: gemfileLock(in: directory, fileManager: fileManager),
-            rubyPin: rubyPin(in: directory, fileManager: fileManager)
+            rubyPin: rubyPin(in: directory, fileManager: fileManager),
+            declaredXcodeVersion: declaration(
+                at: directory.appending("/\(xcodeVersionFile)"), fileManager: fileManager
+            )
         )
+    }
+
+    /// Named here because the origin string in a verdict has to quote it back.
+    public static let xcodeVersionFile = ".xcode-version"
+
+    /// A one-line declaration file — `.nvmrc`, `.ruby-version`, `.xcode-version`.
+    /// A blank file declares nothing, the same as no file at all.
+    private static func declaration(at path: String, fileManager: FileManager) -> String? {
+        guard let data = fileManager.contents(atPath: path) else { return nil }
+        let value = String(decoding: data, as: UTF8.self)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return value.isEmpty ? nil : value
     }
 
     private static let lockedCocoaPodsPrefix = "    cocoapods ("
@@ -143,10 +162,8 @@ public struct ProjectAnchor: Sendable, Equatable {
     /// RVM writes `ruby-3.2.2` where rbenv writes `3.2.2` — the prefix is the version
     /// manager's, not part of the version.
     private static func rubyPin(in directory: String, fileManager: FileManager) -> String? {
-        guard let data = fileManager.contents(atPath: directory.appending("/.ruby-version")) else { return nil }
-        let value = String(decoding: data, as: UTF8.self)
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !value.isEmpty else { return nil }
+        guard let value = declaration(at: directory.appending("/.ruby-version"), fileManager: fileManager)
+        else { return nil }
         return value.hasPrefix("ruby-") ? String(value.dropFirst(5)) : value
     }
 
@@ -162,10 +179,8 @@ public struct ProjectAnchor: Sendable, Equatable {
 
     private static func pin(in directory: String, fileManager: FileManager) -> NodePin? {
         for file in pinFiles {
-            guard let data = fileManager.contents(atPath: directory.appending("/\(file)")) else { continue }
-            let value = String(decoding: data, as: UTF8.self)
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !value.isEmpty else { continue }
+            guard let value = declaration(at: directory.appending("/\(file)"), fileManager: fileManager)
+            else { continue }
             return NodePin(value: value, file: file)
         }
         return nil

@@ -249,3 +249,112 @@ struct MatrixOverrideTests {
         #expect(source.tier == 2)
     }
 }
+
+/// Tier 1 composing with Tier 2: the matrix carries the framework's floor, the repo's
+/// `.xcode-version` carries the one this project actually builds on. The requirement
+/// is `max` of the two, and the loser is still named — see ADR-0003.
+@Suite(".xcode-version declaration")
+struct XcodeDeclarationTests {
+    private func lookup(
+        installed: String? = "0.81.4",
+        declares: String?,
+        config: MobileConfig? = nil
+    ) throws -> MatrixLookup {
+        let repo = try FixtureRepo()
+        try repo.write("package.json", #"{"dependencies": {"react-native": "^0.81.0"}}"#)
+        if let installed {
+            try repo.write("node_modules/react-native/package.json", #"{"version": "\#(installed)"}"#)
+        }
+        if let declares {
+            try repo.write(".xcode-version", "\(declares)\n")
+        }
+        return MatrixLookup.resolve(
+            anchor: try #require(ProjectAnchor.detect(from: repo.root)), config: config
+        )
+    }
+
+    private func requirement(_ lookup: RequirementLookup) -> (MinimumVersion, CheckSource)? {
+        guard case .requirement(let version, let source) = lookup else {
+            Issue.record("expected a requirement, got \(lookup)")
+            return nil
+        }
+        return (version, source)
+    }
+
+    /// The miss #25 reports: the matrix floor for RN 0.81 is Xcode 16.1, the repo says
+    /// 26.3, and a host with 16.1 must not be told it is fine.
+    @Test("the declaration wins when it asks for more than the matrix floor")
+    func declarationWins() throws {
+        let (xcode, source) = try #require(requirement(try lookup(declares: "26.3").xcode))
+
+        #expect(xcode.text == "26.3")
+        #expect(source.tier == 1)
+        #expect(source.origin == ".xcode-version — the compatibility matrix (react-native 0.81) says 16.1")
+    }
+
+    @Test("the matrix floor wins when it is the stricter one, and the declaration is still named")
+    func matrixWins() throws {
+        let (xcode, source) = try #require(requirement(try lookup(installed: "0.87.2", declares: "16.2").xcode))
+
+        #expect(xcode.text == "26.0")
+        #expect(source.tier == 2)
+        #expect(source.origin == "compatibility matrix (react-native 0.87) — .xcode-version declares 16.2")
+    }
+
+    /// The pristine-clone case: no node_modules, so the matrix cannot answer — but the
+    /// repo already wrote the answer down. `unknown` is no longer the end of it.
+    @Test("the declaration answers even when the matrix cannot")
+    func declarationWithoutMatrix() throws {
+        let lookup = try lookup(installed: nil, declares: "26.3")
+
+        let (xcode, source) = try #require(requirement(lookup.xcode))
+        #expect(xcode.text == "26.3")
+        #expect(source.tier == 1)
+        // The matrix lost by silence, and the source says so rather than implying
+        // there was only ever one ground.
+        #expect(source.origin == ".xcode-version — the compatibility matrix could not answer")
+        // The runtime axis declares nothing here, so it stays unmeasured.
+        #expect(lookup.runtime.isUnavailable)
+    }
+
+    /// `mobile.yml` is the user correcting the tool, so it settles the requirement on
+    /// its own — composing it with a file in the repo would take that escape hatch back.
+    @Test("mobile.yml still outranks the file")
+    func overrideOutranksDeclaration() throws {
+        let (xcode, source) = try #require(
+            requirement(try lookup(declares: "26.3", config: MobileConfig(xcode: MinimumVersion("16.1"))).xcode)
+        )
+
+        #expect(xcode.text == "16.1")
+        #expect(source.tier == 3)
+        #expect(source.origin == "mobile.yml overrides.xcode")
+    }
+
+    @Test("a declaration mobile cannot read falls back to the matrix and says so")
+    func unreadableDeclaration() throws {
+        let (xcode, source) = try #require(requirement(try lookup(declares: "latest").xcode))
+
+        #expect(xcode.text == "16.1")
+        #expect(source.tier == 2)
+        #expect(source.origin.contains(".xcode-version declares latest, which mobile cannot resolve"))
+    }
+
+    @Test("an unreadable declaration with no matrix answer is unknown, not a pass")
+    func unreadableDeclarationWithoutMatrix() throws {
+        let lookup = try lookup(installed: nil, declares: "latest")
+
+        guard case .unavailable(let reason, _) = lookup.xcode else {
+            Issue.record("expected unavailable, got \(lookup.xcode)")
+            return
+        }
+        #expect(reason.contains("node_modules is absent"))
+        #expect(reason.contains(".xcode-version declares latest"))
+    }
+}
+
+extension RequirementLookup {
+    fileprivate var isUnavailable: Bool {
+        if case .unavailable = self { return true }
+        return false
+    }
+}

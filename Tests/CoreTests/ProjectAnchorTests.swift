@@ -123,6 +123,29 @@ struct ProjectAnchorTests {
         #expect(anchor.nodePin?.file == ".node-version")
     }
 
+    @Test(".xcode-version is the project's own Xcode declaration")
+    func xcodeVersionFile() throws {
+        let repo = try FixtureRepo()
+        try repo.write("package.json", #"{"dependencies": {"react-native": "0.76.5"}}"#)
+        try repo.write(".xcode-version", "26.3\n")
+
+        let anchor = try #require(ProjectAnchor.detect(from: repo.root))
+
+        #expect(anchor.declaredXcodeVersion == "26.3")
+    }
+
+    /// Absence is silence: a repo that never picked an Xcode has nothing to say,
+    /// and neither has one that left the file empty.
+    @Test("a missing or blank .xcode-version declares nothing")
+    func noXcodeVersionFile() throws {
+        let repo = try FixtureRepo()
+        try repo.write("package.json", #"{"dependencies": {"react-native": "0.76.5"}}"#)
+        #expect(try #require(ProjectAnchor.detect(from: repo.root)).declaredXcodeVersion == nil)
+
+        try repo.write(".xcode-version", "\n")
+        #expect(try #require(ProjectAnchor.detect(from: repo.root)).declaredXcodeVersion == nil)
+    }
+
     @Test("unparsable package.json is not an anchor")
     func brokenManifest() throws {
         let repo = try FixtureRepo()
