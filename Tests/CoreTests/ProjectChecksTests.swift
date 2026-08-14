@@ -321,6 +321,24 @@ struct NodeVersionCheckTests {
         #expect(check.outcome.reason?.contains("No version is set for shim: node") == true)
     }
 
+    /// The dogfooding host ran mise and was told to run `nvm use`. The remediation
+    /// names the manager this machine has, and mise leads the search, so a host with
+    /// it installed gets its command whatever else is around.
+    @Test("the pin remediation is the command this host can actually run")
+    func pinRemediationFollowsTheHost() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
+        try repo.write(".nvmrc", "24.15.0\n")
+
+        let (report, _) = await runProjectChecks(
+            repo, node: .ok("v24.19.0\n"), tools: ["mise --version": .ok("2026.8.1\n")]
+        )
+        let check = try #require(report.checks.first { $0.id == "node.version" })
+
+        #expect(check.status == .warning)
+        #expect(check.outcome.remediation?.command == "mise use node@24.15.0")
+    }
+
     @Test("a pin mobile cannot resolve is unknown with a reason, never a silent pass")
     func unresolvablePin() async throws {
         let repo = try FixtureRepo()

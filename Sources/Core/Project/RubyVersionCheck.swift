@@ -32,7 +32,9 @@ public struct RubyVersionCheck: Check {
                 source: Self.source,
                 remediation: Remediation(
                     summary: "Install the pinned Ruby, then re-run mobile doctor.",
-                    command: "rbenv install \(pin)  # or your version manager's equivalent",
+                    command: try await VersionManagerCommand.detect(
+                        for: .ruby, version: pin, runner: runner
+                    ),
                     url: "https://www.ruby-lang.org/"
                 )
             )
@@ -54,7 +56,9 @@ public struct RubyVersionCheck: Check {
                 source: Self.source,
                 remediation: Remediation(
                     summary: "Switch to the pinned Ruby version — the project's gems are built against it.",
-                    command: "rbenv install \(pin)"
+                    command: try await VersionManagerCommand.detect(
+                        for: .ruby, version: pin, runner: runner
+                    )
                 )
             )
         }

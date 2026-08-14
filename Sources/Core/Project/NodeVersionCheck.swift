@@ -95,7 +95,9 @@ public struct NodeVersionCheck: Check {
                     source: source,
                     remediation: Remediation(
                         summary: "Switch to the pinned Node version — the team runs on it.",
-                        command: "nvm use"
+                        command: try await VersionManagerCommand.detect(
+                            for: .node, version: pin.value, runner: runner
+                        )
                     )
                 )
             }
