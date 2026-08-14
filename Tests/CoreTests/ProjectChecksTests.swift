@@ -518,8 +518,8 @@ struct CocoaPodsVersionCheckTests {
         #expect(report.exitCode == 1)
     }
 
-    @Test("no Gemfile.lock means no check at all — absence, not a quiet pass")
-    func withoutGemfileLock() async throws {
+    @Test("no gem files at all means no check — absence, not a quiet pass")
+    func withoutGemFiles() async throws {
         let repo = try FixtureRepo()
         try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
 
@@ -527,6 +527,51 @@ struct CocoaPodsVersionCheckTests {
 
         #expect(report.checks.contains { $0.id == "cocoapods.version" } == false)
         #expect(runner.log.first(matching: "pod --version") == nil)
+    }
+
+    /// joplin: a `Gemfile` asking for CocoaPods, no lock committed. The Check used to
+    /// vanish, which is the silence ADR-0004 forbids — `gem 'cocoapods'` is a
+    /// declaration, so whether it is installed is a settled question.
+    @Test("a Gemfile that declares cocoapods requires it even with no lock")
+    func gemfileWithoutLock() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
+        try repo.write("Gemfile", "source 'https://rubygems.org'\ngem 'cocoapods'\n")
+
+        let (report, _) = await runProjectChecks(repo)
+        let check = try #require(report.checks.first { $0.id == "cocoapods.version" })
+
+        #expect(check.status == .error)
+        #expect(check.outcome.source.origin == "Gemfile")
+        #expect(check.outcome.remediation != nil)
+    }
+
+    @Test("a declared but unlocked CocoaPods passes on any installed version")
+    func gemfileWithoutLockInstalled() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
+        try repo.write("Gemfile", "gem \"cocoapods\", \"~> 1.15\"\n")
+
+        let (report, _) = await runProjectChecks(repo, tools: ["pod --version": .ok("1.15.2\n")])
+        let check = try #require(report.checks.first { $0.id == "cocoapods.version" })
+
+        #expect(check.status == .pass)
+        #expect(check.outcome.observed?.contains("1.15.2") == true)
+    }
+
+    /// `cocoapods-core` is a different gem, and a project that manages gems without
+    /// asking for CocoaPods has not asked for it.
+    @Test("a Gemfile that never names cocoapods confirms no requirement")
+    func gemfileWithoutCocoaPods() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
+        try repo.write("Gemfile", "gem 'fastlane'\ngem 'cocoapods-core'\n")
+
+        let (report, _) = await runProjectChecks(repo)
+        let check = try #require(report.checks.first { $0.id == "cocoapods.version" })
+
+        #expect(check.status == .unknown)
+        #expect(report.exitCode == 0)
     }
 
     @Test("a Gemfile.lock that locks no CocoaPods still judges whether it is installed")
@@ -569,7 +614,11 @@ struct CocoaPodsVersionCheckTests {
         #expect(check.outcome.reason?.contains("1.16.0.beta.1") == true)
     }
 
-    @Test("a pod probe that fails is unknown, and the reason quotes what the tool said")
+    /// mattermost-mobile on the dogfooding host: `pod` was on PATH as a mise shim
+    /// with no version set, so it ran and said nothing. A tool that cannot report a
+    /// version cannot run `pod install` either — with the requirement settled, that
+    /// is an error, not a shrug (ADR-0004). The tool's own words carry the cause.
+    @Test("a pod that runs but reports nothing is an error when the project locks it")
     func probeFails() async throws {
         let repo = try FixtureRepo()
         try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
@@ -577,12 +626,32 @@ struct CocoaPodsVersionCheckTests {
 
         let (report, _) = await runProjectChecks(
             repo,
-            tools: ["pod --version": .failed(1, "Ignoring ffi-1.16.3 because its extensions are not built\n")]
+            tools: ["pod --version": .failed(1, "mise ERROR No version is set for shim: pod\n")]
+        )
+        let check = try #require(report.checks.first { $0.id == "cocoapods.version" })
+
+        #expect(check.status == .error)
+        #expect(check.outcome.observed?.contains("No version is set for shim") == true)
+        #expect(check.outcome.remediation != nil)
+    }
+
+    /// Same failure, no requirement behind it: the grade follows the requirement, not
+    /// the reason the measurement failed.
+    @Test("the same unreadable pod is unknown when nothing asked for CocoaPods")
+    func probeFailsWithoutRequirement() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
+        try repo.write("Gemfile.lock", "GEM\n  specs:\n    fastlane (2.219.0)\n")
+
+        let (report, _) = await runProjectChecks(
+            repo,
+            tools: ["pod --version": .failed(1, "mise ERROR No version is set for shim: pod\n")]
         )
         let check = try #require(report.checks.first { $0.id == "cocoapods.version" })
 
         #expect(check.status == .unknown)
-        #expect(check.outcome.reason?.contains("extensions are not built") == true)
+        #expect(check.outcome.reason?.contains("No version is set for shim") == true)
+        #expect(report.exitCode == 0)
     }
 }
 

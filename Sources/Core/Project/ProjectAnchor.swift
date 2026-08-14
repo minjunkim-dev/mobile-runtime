@@ -52,17 +52,6 @@ public struct NodeEngines: Sendable, Equatable {
     public var described: String { "\(range) (\(origin))" }
 }
 
-/// A `Gemfile.lock` next to the anchor. Its existence is what makes the CocoaPods
-/// Check exist at all; `cocoapodsVersion` is nil when the lock pins no CocoaPods —
-/// a different thing from having no lock, and the two lead to different verdicts.
-public struct GemfileLock: Sendable, Equatable {
-    public let cocoapodsVersion: String?
-
-    public init(cocoapodsVersion: String?) {
-        self.cocoapodsVersion = cocoapodsVersion
-    }
-}
-
 /// The workspace root: the first lockfile at or above the anchor. A lockfile is a
 /// measurement — it is where an install actually happened — so it answers both
 /// "which package manager" and "where does install run", which is what a sub-package
@@ -121,7 +110,7 @@ public struct ProjectAnchor: Sendable, Equatable {
     public let nodeEngines: [NodeEngines]
     public let packageManager: PackageManagerRequirement?
     /// nil when the project manages no gems — then there is no CocoaPods Check.
-    public let gemfileLock: GemfileLock?
+    public let cocoapods: CocoaPodsRequirement?
     /// From `.ruby-version`. nil means no Ruby Check — absence, not `unknown`.
     public let rubyPin: String?
     /// From `.xcode-version`, the file xcodes and fastlane already read. Tier 1
@@ -156,8 +145,8 @@ public struct ProjectAnchor: Sendable, Equatable {
         if let packageManager {
             checks.append(PackageManagerVersionCheck(requirement: packageManager, runner: runner))
         }
-        if let gemfileLock {
-            checks.append(CocoaPodsVersionCheck(lockedVersion: gemfileLock.cocoapodsVersion, runner: runner))
+        if let cocoapods {
+            checks.append(CocoaPodsVersionCheck(requirement: cocoapods, runner: runner))
         }
         if let rubyPin {
             checks.append(RubyVersionCheck(pin: rubyPin, runner: runner))
@@ -224,7 +213,9 @@ public struct ProjectAnchor: Sendable, Equatable {
             nodePin: pin(in: directory, fileManager: fileManager),
             nodeEngines: nodeEngines(anchor: manifest, root: root),
             packageManager: packageManagerRequirement(anchor: manifest, root: root),
-            gemfileLock: gemfileLock(in: directory, fileManager: fileManager),
+            cocoapods: CocoaPodsRequirement.resolve(
+                anchorDirectory: directory, fileManager: fileManager
+            ),
             rubyPin: rubyPin(in: directory, fileManager: fileManager),
             declaredXcodeVersion: declaration(
                 at: directory.appending("/\(xcodeVersionFile)"), fileManager: fileManager
@@ -303,22 +294,6 @@ public struct ProjectAnchor: Sendable, Equatable {
         let value = String(decoding: data, as: UTF8.self)
             .trimmingCharacters(in: .whitespacesAndNewlines)
         return value.isEmpty ? nil : value
-    }
-
-    private static let lockedCocoaPodsPrefix = "    cocoapods ("
-
-    /// Reads the CocoaPods version out of the `specs:` section, not the
-    /// `DEPENDENCIES` one: both name cocoapods, and the four-space indent is what
-    /// tells the locked version apart from the range the Gemfile asked for.
-    /// `cocoapods-core` fails the prefix, as it should.
-    private static func gemfileLock(in directory: String, fileManager: FileManager) -> GemfileLock? {
-        guard let data = fileManager.contents(atPath: directory.appending("/Gemfile.lock")) else { return nil }
-        let line = String(decoding: data, as: UTF8.self).split(separator: "\n").first {
-            $0.hasPrefix(lockedCocoaPodsPrefix) && $0.hasSuffix(")")
-        }
-        return GemfileLock(
-            cocoapodsVersion: line.map { String($0.dropFirst(lockedCocoaPodsPrefix.count).dropLast()) }
-        )
     }
 
     /// RVM writes `ruby-3.2.2` where rbenv writes `3.2.2` — the prefix is the version
