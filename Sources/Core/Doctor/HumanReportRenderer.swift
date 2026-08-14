@@ -48,6 +48,9 @@ public struct HumanReportRenderer: Sendable {
             if let required = check.outcome.required { lines.append("      required: \(required)") }
             let tier = check.outcome.source.tier.map { " (tier \($0))" } ?? ""
             lines.append("      source:   \(check.outcome.source.origin)\(tier)")
+            // Detail must never say less than the summary does: without this, an
+            // `unknown` loses the one thing it has to say the moment `-v` is passed.
+            if let reason = check.outcome.reason { lines.append("      reason:   \(reason)") }
         }
 
         if let remediation = check.outcome.remediation {

@@ -6,12 +6,22 @@ import Testing
 
 private let developerDirectory = "/Applications/Xcode.app/Contents/Developer"
 
+private let matrixSource = CheckSource(tier: 2, origin: "compatibility matrix (react-native 0.81)")
+
 private func requirements(xcode: String, runtime: String) -> MatrixLookup {
-    .requirements(
-        CompatibilityMatrix.IOSRequirements(
-            xcode: MinimumVersion(xcode)!, runtime: MinimumVersion(runtime)!
-        ),
-        origin: "compatibility matrix (react-native 0.81)"
+    MatrixLookup(
+        xcode: .requirement(MinimumVersion(xcode)!, source: matrixSource),
+        runtime: .requirement(MinimumVersion(runtime)!, source: matrixSource)
+    )
+}
+
+/// The matrix could not answer either question — the shape every "no measurement,
+/// no verdict" scenario starts from.
+private func unavailable(_ reason: String) -> MatrixLookup {
+    let source = CheckSource(tier: 2, origin: "compatibility matrix")
+    return MatrixLookup(
+        xcode: .unavailable(reason: reason, source: source),
+        runtime: .unavailable(reason: reason, source: source)
     )
 }
 
@@ -116,7 +126,7 @@ struct XcodeVersionCheckTests {
             responses: hostResponses(runtimes: try Fixture.text("simctl-list-runtimes.stdout.json"))
         )
 
-        let report = await engine(runner, .unavailable(reason: reason)).run(only: ["xcode.version"])
+        let report = await engine(runner, unavailable(reason)).run(only: ["xcode.version"])
         let check = try #require(report.checks.first { $0.id == "xcode.version" })
 
         #expect(check.status == .unknown)
@@ -205,7 +215,7 @@ struct SimulatorRuntimeCheckTests {
             responses: hostResponses(runtimes: try Fixture.text("simctl-list-runtimes.stdout.json"))
         )
 
-        let report = await engine(runner, .unavailable(reason: "node_modules is absent"))
+        let report = await engine(runner, unavailable("node_modules is absent"))
             .run(only: ["simulator.runtime"])
         let check = try #require(report.checks.first { $0.id == "simulator.runtime" })
 

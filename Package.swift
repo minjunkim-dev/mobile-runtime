@@ -13,6 +13,7 @@ let package = Package(
         .package(url: "https://github.com/swiftlang/swift-subprocess", from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-log", from: "1.6.0"),
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.5.0"),
+        .package(url: "https://github.com/jpsim/Yams", from: "5.1.0"),
     ],
     targets: [
         // Foundation-only. No Apple frameworks — the boundary that keeps Android
@@ -22,6 +23,9 @@ let package = Package(
             dependencies: [
                 .product(name: "Subprocess", package: "swift-subprocess"),
                 .product(name: "Logging", package: "swift-log"),
+                // mobile.yml is hand-written, so a real YAML parser is what keeps a
+                // legal file from being reported as broken.
+                .product(name: "Yams", package: "Yams"),
             ],
             // The Tier 2 matrix ships inside the binary: doctor works offline, and a
             // mobile version always carries exactly one matrix.

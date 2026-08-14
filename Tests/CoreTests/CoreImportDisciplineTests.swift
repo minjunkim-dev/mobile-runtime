@@ -6,7 +6,7 @@ import Testing
 /// enforced here instead: adding a forbidden import fails the suite.
 @Suite("Core import discipline")
 struct CoreImportDisciplineTests {
-    private static let allowed: Set<String> = ["Foundation", "Subprocess", "System", "Logging"]
+    private static let allowed: Set<String> = ["Foundation", "Subprocess", "System", "Logging", "Yams"]
 
     @Test("Core imports nothing outside Foundation and its package dependencies")
     func onlyAllowedImports() throws {

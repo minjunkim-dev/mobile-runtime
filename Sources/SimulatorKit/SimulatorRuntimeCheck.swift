@@ -31,12 +31,13 @@ public struct SimulatorRuntimeCheck: Check {
     }
 
     public func run() async throws -> CheckOutcome {
-        let requirements: CompatibilityMatrix.IOSRequirements
-        switch lookup {
-        case .requirements(let resolved, _): requirements = resolved
-        case .unavailable(let reason): return .unknown(reason: reason, source: lookup.source)
+        let minimum: MinimumVersion
+        switch lookup.runtime {
+        case .requirement(let version, _): minimum = version
+        case .unavailable(let reason, let source): return .unknown(reason: reason, source: source)
         }
-        let required = "an iOS \(requirements.runtime) or newer simulator runtime, available"
+        let source = lookup.runtime.source
+        let required = "an iOS \(minimum) or newer simulator runtime, available"
 
         let result = try await runner.run(
             SimctlRuntimeList.command(environment: await locator.pinnedEnvironment())
@@ -47,7 +48,7 @@ public struct SimulatorRuntimeCheck: Check {
             return .unknown(
                 reason: "simctl stopped listing runtimes — "
                     + (result.standardError.firstLine ?? "its output was not a runtime list"),
-                required: required, source: lookup.source
+                required: required, source: source
             )
         }
 
@@ -55,7 +56,7 @@ public struct SimulatorRuntimeCheck: Check {
         // a string one — `"9.0"` sorts above `"26.5"` as text.
         let matching = list.runtimes.compactMap { runtime -> (runtime: SimctlRuntimeList.Runtime, version: SemanticVersion)? in
             guard runtime.isIOS, let version = SemanticVersion(runtime.version),
-                requirements.runtime.isSatisfied(by: version)
+                minimum.isSatisfied(by: version)
             else { return nil }
             return (runtime, version)
         }
@@ -63,7 +64,7 @@ public struct SimulatorRuntimeCheck: Check {
             return .pass(
                 observed: "\(usable.name) installed and available",
                 required: required,
-                source: lookup.source
+                source: source
             )
         }
         // Installed but unusable is a different problem — and a different fix —
@@ -72,7 +73,7 @@ public struct SimulatorRuntimeCheck: Check {
             return .error(
                 observed: matching.map(\.runtime.name).joined(separator: ", ") + " installed but unavailable",
                 required: required,
-                source: lookup.source,
+                source: source,
                 remediation: Self.remount
             )
         }
@@ -82,9 +83,9 @@ public struct SimulatorRuntimeCheck: Check {
                 ? "no iOS runtime installed"
                 : "installed iOS runtimes: \(present.joined(separator: ", "))",
             required: required,
-            source: lookup.source,
+            source: source,
             remediation: Remediation(
-                summary: "Install an iOS \(requirements.runtime) or newer simulator runtime.",
+                summary: "Install an iOS \(minimum) or newer simulator runtime.",
                 command: "xcodebuild -downloadPlatform iOS",
                 url: "https://developer.apple.com/documentation/xcode/installing-additional-simulator-runtimes"
             )

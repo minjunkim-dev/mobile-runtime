@@ -18,13 +18,14 @@ public struct XcodeVersionCheck: Check {
     }
 
     public func run() async throws -> CheckOutcome {
-        let requirements: CompatibilityMatrix.IOSRequirements
-        switch lookup {
-        case .requirements(let resolved, _): requirements = resolved
-        case .unavailable(let reason): return .unknown(reason: reason, source: lookup.source)
+        let minimum: MinimumVersion
+        switch lookup.xcode {
+        case .requirement(let version, _): minimum = version
+        case .unavailable(let reason, let source): return .unknown(reason: reason, source: source)
         }
+        let source = lookup.xcode.source
 
-        let required = "Xcode \(requirements.xcode) or newer"
+        let required = "Xcode \(minimum) or newer"
         // xcode.installed passed, so locating cannot fail here — but reading the
         // version string still can.
         let installation = try await locator.locate()
@@ -32,24 +33,24 @@ public struct XcodeVersionCheck: Check {
             return .unknown(
                 reason: "`xcodebuild -version` reported `\(installation.version)`, "
                     + "which mobile cannot resolve to a version",
-                observed: installation.summary, required: required, source: lookup.source
+                observed: installation.summary, required: required, source: source
             )
         }
 
         let observed = "Xcode \(installation.version) (\(installation.build))"
-        guard requirements.xcode.isSatisfied(by: installed) else {
+        guard minimum.isSatisfied(by: installed) else {
             return .error(
                 observed: observed,
                 required: required,
-                source: lookup.source,
+                source: source,
                 remediation: Remediation(
-                    summary: "Install Xcode \(requirements.xcode) or newer and select it — "
+                    summary: "Install Xcode \(minimum) or newer and select it — "
                         + "this React Native version does not build with an older toolchain.",
                     command: "sudo xcode-select -s /Applications/Xcode.app/Contents/Developer",
                     url: "https://developer.apple.com/xcode/"
                 )
             )
         }
-        return .pass(observed: observed, required: required, source: lookup.source)
+        return .pass(observed: observed, required: required, source: source)
     }
 }

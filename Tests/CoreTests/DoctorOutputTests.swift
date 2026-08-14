@@ -140,6 +140,12 @@ struct HumanReportRendererTests {
         ])
 
         #expect(renderer.render(report).contains("? Xcode not located"))
+        // -v is meant to say more, and once said less: the reason was the only
+        // thing an unknown had, and detail dropped it.
+        #expect(
+            HumanReportRenderer(useColor: false, verbose: true).render(report)
+                .contains("reason:   Xcode not located")
+        )
     }
 
     @Test("colour is opt-in")

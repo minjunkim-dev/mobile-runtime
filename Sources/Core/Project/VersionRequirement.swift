@@ -76,6 +76,10 @@ public struct MinimumVersion: Sendable, Equatable, Decodable, CustomStringConver
 
     public func isSatisfied(by version: SemanticVersion) -> Bool { version >= floor }
 
+    /// Two requirements agree when they demand the same thing: `"26"` and `"26.0"`
+    /// are not a disagreement worth reporting.
+    public func agrees(with other: MinimumVersion) -> Bool { floor == other.floor }
+
     public var description: String { text }
 }
 

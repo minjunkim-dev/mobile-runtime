@@ -19,3 +19,22 @@ public func iOSChecks(
     if let lookup { checks.append(SimulatorRuntimeCheck(lookup: lookup, runner: runner, locator: locator)) }
     return checks
 }
+
+/// The mobile.yml Checks. `config.syntax` comes from Core — parsing a config file
+/// is not iOS knowledge — while `config.values` lives here, because a device is a
+/// simulator and a scheme is Xcode's. Both are absent when there is nothing to
+/// say: zero-config means zero noise.
+public func configChecks(
+    context: ConfigContext,
+    lookup: MatrixLookup?,
+    runner: any ProcessRunner,
+    locator: XcodeLocator
+) -> [any Check] {
+    var checks = context.checks()
+    if ConfigValuesCheck.applies(to: context) {
+        checks.append(
+            ConfigValuesCheck(context: context, lookup: lookup, runner: runner, locator: locator)
+        )
+    }
+    return checks
+}

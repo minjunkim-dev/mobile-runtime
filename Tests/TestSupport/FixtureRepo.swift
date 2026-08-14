@@ -3,10 +3,10 @@ import Foundation
 /// A real repo laid out in a temp directory. The file system is never mocked —
 /// a throwaway directory is cheaper than a fake and tells the truth about
 /// symlinks, missing files and nesting.
-final class FixtureRepo {
-    let root: URL
+public final class FixtureRepo {
+    public let root: URL
 
-    init() throws {
+    public init() throws {
         root = FileManager.default.temporaryDirectory
             .appendingPathComponent("mobile-fixture-\(UUID().uuidString)")
             .resolvingSymlinksInPath()
@@ -19,14 +19,14 @@ final class FixtureRepo {
 
     deinit { try? FileManager.default.removeItem(at: root) }
 
-    func url(_ relativePath: String) -> URL {
+    public func url(_ relativePath: String) -> URL {
         root.appendingPathComponent(relativePath)
     }
 
     /// Creates the intermediate directories, so `write("packages/app/package.json", …)`
     /// is all a scenario needs to say.
     @discardableResult
-    func write(_ relativePath: String, _ contents: String) throws -> URL {
+    public func write(_ relativePath: String, _ contents: String) throws -> URL {
         let file = url(relativePath)
         try FileManager.default.createDirectory(
             at: file.deletingLastPathComponent(), withIntermediateDirectories: true
@@ -36,7 +36,7 @@ final class FixtureRepo {
     }
 
     @discardableResult
-    func directory(_ relativePath: String) throws -> URL {
+    public func directory(_ relativePath: String) throws -> URL {
         let directory = url(relativePath)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         return directory

@@ -46,14 +46,17 @@ struct Doctor: AsyncParsableCommand {
 
         // Standing outside a project is a legitimate use — a new machine has nothing
         // cloned yet — so it is a note, never an error.
-        let anchor = ProjectAnchor.detect(
-            from: URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-        )
+        let workingDirectory = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        let anchor = ProjectAnchor.detect(from: workingDirectory)
         if anchor == nil { writeError("note: no project detected — host checks only") }
 
-        let lookup = anchor.map { MatrixLookup.resolve(anchor: $0) }
+        // mobile.yml is read before the matrix: its overrides are part of what the
+        // Tier 2 checks compare against.
+        let config = ConfigContext.detect(anchor: anchor, workingDirectory: workingDirectory)
+        let lookup = anchor.map { MatrixLookup.resolve(anchor: $0, config: config.configuration) }
         let engine = DoctorEngine(
             checks: iOSChecks(lookup: lookup, runner: runner, locator: locator)
+                + configChecks(context: config, lookup: lookup, runner: runner, locator: locator)
                 + (anchor?.checks(runner: runner) ?? [])
         )
 

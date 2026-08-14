@@ -20,7 +20,7 @@ Android provider는 Phase 4로 예고돼 있다. iOS 도메인 코드가 Core에
 - 게이트 범위는 **Core 타깃 하나**로 좁힌다. 전체 `swift test`로 넓히지 않는다. SimulatorKit은 설계상 Apple 전용이어도 되는 타깃이라, 언젠가 Apple API를 쓰는 순간 게이트가 잘못 실패한다. 영원히 참이어야 하는 불변식만 게이트에 건다.
 - `Tests/CoreTests/CoreImportDisciplineTests.swift`의 import 스캔은 폐기하지 않는다. Docker 없이 즉시 도는 **빠른 메아리**로 남긴다 — 도구가 없는 환경에서도 규율이 보이게 하기 위해서다.
 
-허용 목록: Foundation, 그리고 Core가 선언한 패키지 의존성(Subprocess, Logging).
+허용 목록: Foundation, 그리고 Core가 선언한 패키지 의존성(Subprocess, Logging, Yams).
 
 ## 결과
 
