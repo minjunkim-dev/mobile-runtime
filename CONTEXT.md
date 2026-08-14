@@ -7,7 +7,7 @@ Reproducible mobile development runtime. 프로젝트가 요구하는 환경을 
 ### 요구사항 계층
 
 **Tier 1 (선언 파일)**:
-앱 repo에 이미 존재하는 선언 파일(.nvmrc, package.json engines, Gemfile.lock 등)에서 파싱한 요구사항.
+앱 repo에 이미 존재하는 선언 파일(.nvmrc, package.json engines, Gemfile.lock, .xcode-version, Podfile의 deployment target, 락파일 등)에서 파싱한 요구사항.
 _Avoid_: 설정 파일 추론
 
 **Tier 2 (호환성 매트릭스)**:
@@ -39,6 +39,10 @@ _Avoid_: skipped, N/A
 **Remediation**:
 warning/error에 반드시 붙는 복구 안내. 설명 + 복붙 가능한 명령(가능한 경우) + 문서 URL(선택).
 _Avoid_: fix suggestion, hint
+
+**근거 체인 (Evidence chain)**:
+하나의 요구에 대해 같은 Tier 안에서 경합하는 근거들의 우선순위. 먼저 답하는 근거를 쓰되 어느 것이었는지 결과에 싣는다. Tier가 "요구가 어느 계층에서 오는가"라면 근거 체인은 "그 계층 안에서 무엇을 먼저 믿는가"다. ADR-0003 참조.
+_Avoid_: fallback(조용히 내려앉는다는 뜻이 섞인다)
 
 **Host check**:
 프로젝트와 무관하게 머신 상태만 보는 Check (Xcode 설치, CoreSimulator 데몬 등).
