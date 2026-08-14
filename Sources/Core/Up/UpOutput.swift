@@ -19,11 +19,18 @@ public struct UpJSONDocument: Encodable, Sendable {
         public let remediation: Remediation?
     }
 
+    /// What the run produced, as opposed to what it did. Absent until a stage puts
+    /// something here — an empty object would be one more thing to interpret.
+    public struct Outcome: Encodable, Sendable {
+        public let device: SelectedDevice?
+    }
+
     public let schemaVersion: Int
     public let toolVersion: String
     public let command: String
     public let status: CheckStatus
     public let stages: [Item]
+    public let result: Outcome?
     public let error: Failure?
 
     public init(report: UpReport, toolVersion: String, command: String = "up") {
@@ -34,6 +41,7 @@ public struct UpJSONDocument: Encodable, Sendable {
         self.stages = report.stages.map {
             Item(id: $0.id, status: $0.status, durationMs: $0.durationMs, detail: $0.detail)
         }
+        self.result = report.context.device.map { Outcome(device: $0) }
         self.error = report.failure.map {
             Failure(message: $0.message, remediation: $0.remediation)
         }

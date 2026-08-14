@@ -44,6 +44,22 @@ public struct StageResult: Sendable, Equatable {
     public var durationMs: Int { Int((duration.seconds * 1000).rounded()) }
 }
 
+/// The simulator `device` settled on. Lives here rather than in SimulatorKit because
+/// the context and the JSON envelope are Core's, and Core knows nothing about simctl
+/// — a name, a udid and a runtime is all the later stages and a script need.
+public struct SelectedDevice: Sendable, Equatable, Encodable {
+    public let name: String
+    public let udid: String
+    /// As the runtime writes it — `26.5`, not `26.5.0`.
+    public let runtime: String
+
+    public init(name: String, udid: String, runtime: String) {
+        self.name = name
+        self.udid = udid
+        self.runtime = runtime
+    }
+}
+
 /// What the Stages hand each other. Explicit and passed through the pipeline, so a
 /// Stage can only read what an earlier one actually put here — no global state, and
 /// no Stage reaching sideways into another's internals.
@@ -51,6 +67,10 @@ public struct UpContext: Sendable {
     /// `validate`'s report, kept past the stage that produced it: a failure renders
     /// through doctor's renderer, and warnings still have to be shown.
     public var validation: DoctorReport?
+
+    /// Set by `device`, read by everything that has to name a simulator afterwards —
+    /// build, install and launch all address the same udid.
+    public var device: SelectedDevice?
 
     public init() {}
 }

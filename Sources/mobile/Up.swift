@@ -37,8 +37,14 @@ struct Up: AsyncParsableCommand {
             return UpReport(stages: [], failure: .domain(Self.noProject))
         }
 
-        return await UpPipeline(stages: iOSUpStages(doctor: wiring.engine))
-            .run { writer.progress($0) }
+        let stages = iOSUpStages(
+            doctor: wiring.engine,
+            config: wiring.config,
+            lookup: wiring.lookup,
+            runner: wiring.runner,
+            locator: wiring.locator
+        )
+        return await UpPipeline(stages: stages).run { writer.progress($0) }
     }
 
     private static let noProject = DomainError(

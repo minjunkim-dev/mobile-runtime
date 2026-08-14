@@ -1,0 +1,38 @@
+{
+  "devices" : {
+    "com.apple.CoreSimulator.SimRuntime.iOS-26-5" : [
+      {
+        "lastBootedAt" : "2026-08-14T11:46:26Z",
+        "dataPath" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/61DECACB-3D94-4748-B5A2-E7A1EB97E6D5\/data",
+        "dataPathSize" : 5156225024,
+        "logPath" : "\/Users\/USER\/Library\/Logs\/CoreSimulator\/61DECACB-3D94-4748-B5A2-E7A1EB97E6D5",
+        "udid" : "61DECACB-3D94-4748-B5A2-E7A1EB97E6D5",
+        "isAvailable" : true,
+        "logPathSize" : 520192,
+        "deviceTypeIdentifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro",
+        "state" : "Booted",
+        "name" : "iPhone 17 Pro - iOS 26.5"
+      },
+      {
+        "dataPath" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/941E5DDD-2930-4CEE-8872-F89BE6B99B2A\/data",
+        "dataPathSize" : 18337792,
+        "logPath" : "\/Users\/USER\/Library\/Logs\/CoreSimulator\/941E5DDD-2930-4CEE-8872-F89BE6B99B2A",
+        "udid" : "941E5DDD-2930-4CEE-8872-F89BE6B99B2A",
+        "isAvailable" : true,
+        "deviceTypeIdentifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro",
+        "state" : "Shutdown",
+        "name" : "iPhone 16 Pro"
+      },
+      {
+        "dataPath" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/3E344D06-2008-4FD0-903D-A8205582DB5A\/data",
+        "dataPathSize" : 18337792,
+        "logPath" : "\/Users\/USER\/Library\/Logs\/CoreSimulator\/3E344D06-2008-4FD0-903D-A8205582DB5A",
+        "udid" : "3E344D06-2008-4FD0-903D-A8205582DB5A",
+        "isAvailable" : true,
+        "deviceTypeIdentifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-16",
+        "state" : "Shutdown",
+        "name" : "iPhone 16"
+      }
+    ]
+  }
+}

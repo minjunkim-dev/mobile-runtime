@@ -7,6 +7,12 @@ import Foundation
 struct SimctlDeviceList: Decodable {
     struct Device: Decodable {
         let name: String
+        /// The only handle that survives a rename, and what every later simctl call
+        /// addresses the device by.
+        let udid: String
+        /// `Booted`, `Shutdown`, `Creating`. Compared case-insensitively — the word is
+        /// simctl's, not a contract.
+        let state: String
         /// False for a device whose runtime the system unmounted. It is still
         /// listed, and it still cannot be booted.
         let isAvailable: Bool
@@ -18,11 +24,37 @@ struct SimctlDeviceList: Decodable {
     /// A device the project could actually name, paired with the runtime it sits on.
     struct Simulator {
         let name: String
+        let udid: String
         /// For ordering — `"9.0"` sorts above `"26.5"` as text.
         let runtime: SemanticVersion
         /// As the runtime writes it, so a report says `iOS 18.2` and not `18.2.0`.
         let runtimeText: String
+        /// `com.apple.CoreSimulator.SimRuntime.iOS-26-5` — what `simctl create` wants.
+        let runtimeIdentifier: String
         let isAvailable: Bool
+        let isBooted: Bool
+    }
+
+    /// The runtime a `simctl create` line should name. simctl lists a runtime even
+    /// when it holds no devices, which is what makes that command possible on a
+    /// machine with none.
+    ///
+    /// - Parameter clearing: the project's floor. The newest runtime that clears it
+    ///   wins; if none does, the newest one does — telling someone to create a device
+    ///   they cannot boot at all is worse than one `simulator.runtime` already grades.
+    func newestRuntime(clearing lookup: MatrixLookup?) -> (identifier: String, version: SemanticVersion)? {
+        let runtimes = devices.keys
+            .compactMap { identifier -> (identifier: String, version: SemanticVersion)? in
+                guard let text = Self.iOSVersionText(of: identifier), let version = SemanticVersion(text) else {
+                    return nil
+                }
+                return (identifier, version)
+            }
+        if case .requirement(let minimum, _) = lookup?.runtime {
+            let compatible = runtimes.filter { minimum.isSatisfied(by: $0.version) }
+            if !compatible.isEmpty { return compatible.max { $0.version < $1.version } }
+        }
+        return runtimes.max { $0.version < $1.version }
     }
 
     static func command(environment: [String: String]) -> ProcessCommand {
@@ -45,7 +77,15 @@ struct SimctlDeviceList: Decodable {
                 return []
             }
             return devices.map {
-                Simulator(name: $0.name, runtime: runtime, runtimeText: text, isAvailable: $0.isAvailable)
+                Simulator(
+                    name: $0.name,
+                    udid: $0.udid,
+                    runtime: runtime,
+                    runtimeText: text,
+                    runtimeIdentifier: identifier,
+                    isAvailable: $0.isAvailable,
+                    isBooted: $0.state.caseInsensitiveCompare("Booted") == .orderedSame
+                )
             }
         }
     }

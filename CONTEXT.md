@@ -69,6 +69,9 @@ Stage의 결과. `pass` / `skipped`(이미 되어 있어 할 일이 없었다) /
 **Stage 컨텍스트 (Stage context)**:
 Stage가 다음 Stage에 넘기는 값의 명시적 타입. 앞 Stage가 실제로 넣은 것만 뒤가 읽는다 — 전역 가변 상태 없음.
 
+**기기 선택 (Device selection)**:
+어느 시뮬레이터를 쓸지 정하는 순서 — `mobile.yml`의 `ios.device` → 이미 booted된 기기 → 사용 가능한 최신 runtime의 최신 iPhone(세대가 높은 쪽, 같으면 이름이 가장 단순한 모델). doctor의 `config.values`와 up의 `device` Stage가 **같은 셀렉터**를 쓴다 — 판정과 실행이 갈리면 doctor가 쓸 수 있다고 한 기기를 up이 안 쓰는 일이 생긴다. 후보가 없으면 `simctl create` 명령을 주고 멈춘다. 시뮬레이터를 만들어 주지는 않는다.
+
 **UpReport / 파이프라인 status**:
 up의 종합 결과. envelope의 `status`는 doctor와 같은 어휘를 쓴다 — 실패는 `error`, 그 외에는 Stage들이 관측한 것(validate의 warning은 up에서도 warning)이다. exit code 규칙(0/1/2)은 `DoctorReport`와 같다.
 

@@ -12,11 +12,15 @@ private let packageJSON = #"{"dependencies": {"react-native": "0.81.0"}}"#
 /// on two runtimes" a real question.
 private func deviceList(_ devices: (name: String, runtime: String, available: Bool)...) -> String {
     var byRuntime: [String: [String]] = [:]
-    for device in devices {
+    for (index, device) in devices.enumerated() {
         let identifier = "com.apple.CoreSimulator.SimRuntime.iOS-"
             + device.runtime.replacingOccurrences(of: ".", with: "-")
+        // udid and state are fields simctl always prints; `config.values` reads
+        // neither, and `up`'s device stage cannot work without them.
+        let udid = "00000000-0000-0000-0000-\(String(format: "%012d", index))"
         byRuntime[identifier, default: []].append(
-            #"{"name": "\#(device.name)", "isAvailable": \#(device.available)}"#
+            #"{"name": "\#(device.name)", "udid": "\#(udid)", "state": "Shutdown", "#
+                + #""isAvailable": \#(device.available)}"#
         )
     }
     let entries = byRuntime.map { #""\#($0)": [\#($1.joined(separator: ","))]"# }

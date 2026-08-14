@@ -11,6 +11,12 @@ struct Wiring {
     /// doctor says so and carries on with host checks, up has nothing to do.
     let anchor: ProjectAnchor?
     let engine: DoctorEngine
+    /// What the Stages need and the Checks already had: up reads the same mobile.yml,
+    /// through the same runner, against the same Xcode.
+    let config: ConfigContext
+    let lookup: MatrixLookup?
+    let runner: any ProcessRunner
+    let locator: XcodeLocator
 
     static func bootstrap(verbose: Bool) -> Wiring {
         LoggingSystem.bootstrap { label in
@@ -35,7 +41,11 @@ struct Wiring {
                 checks: iOSChecks(lookup: lookup, runner: runner, locator: locator)
                     + configChecks(context: config, lookup: lookup, runner: runner, locator: locator)
                     + (anchor?.checks(runner: runner) ?? [])
-            )
+            ),
+            config: config,
+            lookup: lookup,
+            runner: runner,
+            locator: locator
         )
     }
 }

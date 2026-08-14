@@ -91,6 +91,30 @@ struct UpJSONTests {
         #expect(remediation["url"] as? String == "https://example.test")
     }
 
+    /// What the run produced, as opposed to what it did: the stages say a device was
+    /// picked, `result` says which one, and a script needs the udid to talk to it.
+    @Test("the device a stage selected reaches result.device")
+    func resultDevice() throws {
+        var context = UpContext()
+        context.device = SelectedDevice(
+            name: "iPhone 17 Pro", udid: "61DECACB-3D94-4748-B5A2-E7A1EB97E6D5", runtime: "26.5"
+        )
+
+        let json = try decode(UpReport(stages: [result("device", .pass)], context: context))
+        let device = try #require((json["result"] as? [String: Any])?["device"] as? [String: Any])
+
+        #expect(device["name"] as? String == "iPhone 17 Pro")
+        #expect(device["udid"] as? String == "61DECACB-3D94-4748-B5A2-E7A1EB97E6D5")
+        #expect(device["runtime"] as? String == "26.5")
+    }
+
+    /// No stage produced anything worth naming, so the key is absent rather than an
+    /// empty object a consumer has to interpret.
+    @Test("result is absent when no stage produced one")
+    func noResult() throws {
+        #expect(try decode(UpReport(stages: [result("validate", .pass)]))["result"] == nil)
+    }
+
     /// exit 2 promises no JSON, but when there is one it still says what broke.
     @Test("a tool failure has a message and no remediation")
     func toolFailure() throws {

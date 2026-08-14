@@ -146,34 +146,23 @@ public struct ConfigValuesCheck: Check {
             )
         }
 
-        let named = list.simulators.filter { $0.name == declared }
-        let available = named.filter(\.isAvailable)
-        guard let resolved = Self.preferred(available, lookup: lookup) else {
+        // The same selector `up`'s device stage runs. Judging a declaration with one
+        // rule and booting with another is how doctor comes to bless a device that up
+        // then refuses.
+        let selector = SimulatorSelector(simulators: list.simulators, lookup: lookup)
+        switch selector.named(declared) {
+        case .success(let resolved):
+            return .ok("device \(declared) on iOS \(resolved.runtimeText)")
+        case .failure(let miss):
             return .verdict(
-                named.isEmpty
-                    ? .error(
-                        observed: "no simulator named \(declared)",
-                        required: "a simulator installed on this machine",
-                        source: source,
-                        remediation: Remediation(
-                            summary: "Set ios.device to one of the simulators on this machine: "
-                                + Self.summarise(list.simulators.filter(\.isAvailable).map(\.name)),
-                            command: "xcrun simctl list devices available"
-                        )
-                    )
-                    : .error(
-                        observed: "\(declared) exists only on runtimes macOS has made unavailable",
-                        required: "a simulator installed on this machine",
-                        source: source,
-                        remediation: Remediation(
-                            summary: "Re-mount the runtime images macOS unmounted, then re-run mobile doctor.",
-                            command: "xcrun simctl shutdown all; xcrun simctl delete unavailable; "
-                                + "xcrun simctl runtime scan-and-mount"
-                        )
-                    )
+                .error(
+                    observed: miss.observed,
+                    required: "a simulator installed on this machine",
+                    source: source,
+                    remediation: miss.remediation(availableNames: selector.availableNames)
+                )
             )
         }
-        return .ok("device \(declared) on iOS \(resolved.runtimeText)")
     }
 
     private func judgeScheme() async throws -> Judgement {
@@ -247,28 +236,6 @@ public struct ConfigValuesCheck: Check {
             )
         }
         return .ok("scheme \(declared)")
-    }
-
-    /// The newest simulator the project can run on. Where one name exists on
-    /// several runtimes the matrix breaks the tie; without it, newest wins.
-    private static func preferred(
-        _ simulators: [SimctlDeviceList.Simulator],
-        lookup: MatrixLookup?
-    ) -> SimctlDeviceList.Simulator? {
-        var candidates = simulators
-        if case .requirement(let minimum, _) = lookup?.runtime {
-            let compatible = simulators.filter { minimum.isSatisfied(by: $0.runtime) }
-            // Falling back to an incompatible runtime is not this Check's error to
-            // raise — `simulator.runtime` already says the machine has none.
-            if !compatible.isEmpty { candidates = compatible }
-        }
-        return candidates.max { $0.runtime < $1.runtime }
-    }
-
-    private static func summarise(_ names: [String], limit: Int = 8) -> String {
-        let unique = Set(names).sorted()
-        guard unique.count > limit else { return unique.joined(separator: ", ") }
-        return unique.prefix(limit).joined(separator: ", ") + " and \(unique.count - limit) more"
     }
 
     /// `iPhone 16 Pro (26.0)`, `iPhone 16 Pro (iOS 26.0)`, `name,OS=26.0`. Apple's
