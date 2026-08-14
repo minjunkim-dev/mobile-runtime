@@ -50,7 +50,8 @@ public struct MatrixLookup: Sendable, Equatable {
             ),
             runtime: requirement(
                 override: config?.iosRuntime, field: MobileConfig.Key.iosRuntime,
-                declared: nil, matrix: answer, value: \.runtime
+                declared: anchor.deploymentTarget.map { (value: $0.value, file: $0.file) },
+                matrix: answer, value: \.runtime
             )
         )
     }

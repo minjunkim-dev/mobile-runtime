@@ -105,21 +105,13 @@ struct MatrixLookupTests {
         return reason
     }
 
-    private func requirement(_ lookup: RequirementLookup) -> (MinimumVersion, CheckSource)? {
-        guard case .requirement(let version, let source) = lookup else {
-            Issue.record("expected a requirement, got \(lookup)")
-            return nil
-        }
-        return (version, source)
-    }
-
     @Test("resolves against the installed version, not the declared range")
     func resolvesFromInstalled() throws {
         let repo = try FixtureRepo()
         let lookup = MatrixLookup.resolve(
             anchor: try anchor(repo, installed: "0.87.2"))
 
-        let (xcode, source) = try #require(requirement(lookup.xcode))
+        let (xcode, source) = try #require(lookup.xcode.requirement)
         // The declared `^0.81.0` would have answered 16.1 — the installed 0.87 is what counts.
         #expect(xcode.text == "26.0")
         #expect(source.origin == "compatibility matrix (react-native 0.87.2 from node_modules/react-native)")
@@ -140,7 +132,7 @@ struct MatrixLookupTests {
 
         let lookup = MatrixLookup.resolve(anchor: try #require(ProjectAnchor.detect(from: repo.root)))
 
-        let (xcode, source) = try #require(requirement(lookup.xcode))
+        let (xcode, source) = try #require(lookup.xcode.requirement)
         #expect(xcode.text == "26.0")
         #expect(source.origin == "compatibility matrix (react-native 0.87.2 from package-lock.json)")
     }
@@ -152,7 +144,7 @@ struct MatrixLookupTests {
 
         let lookup = MatrixLookup.resolve(anchor: try #require(ProjectAnchor.detect(from: repo.root)))
 
-        let (xcode, source) = try #require(requirement(lookup.xcode))
+        let (xcode, source) = try #require(lookup.xcode.requirement)
         #expect(xcode.text == "16.1")
         #expect(source.origin.contains("package.json dependencies.react-native"))
     }
@@ -186,7 +178,7 @@ struct MatrixLookupTests {
 
         let lookup = MatrixLookup.resolve(anchor: try #require(ProjectAnchor.detect(from: repo.root)))
 
-        let (xcode, source) = try #require(requirement(lookup.xcode))
+        let (xcode, source) = try #require(lookup.xcode.requirement)
         // 0.87's floor, not 0.81's: the measurement is what the app runs on.
         #expect(xcode.text == "26.0")
         #expect(source.origin.contains("but package-lock.json resolves 0.81.4"))
@@ -325,19 +317,11 @@ struct XcodeDeclarationTests {
         )
     }
 
-    private func requirement(_ lookup: RequirementLookup) -> (MinimumVersion, CheckSource)? {
-        guard case .requirement(let version, let source) = lookup else {
-            Issue.record("expected a requirement, got \(lookup)")
-            return nil
-        }
-        return (version, source)
-    }
-
     /// The miss #25 reports: the matrix floor for RN 0.81 is Xcode 16.1, the repo says
     /// 26.3, and a host with 16.1 must not be told it is fine.
     @Test("the declaration wins when it asks for more than the matrix floor")
     func declarationWins() throws {
-        let (xcode, source) = try #require(requirement(try lookup(declares: "26.3").xcode))
+        let (xcode, source) = try #require(try lookup(declares: "26.3").xcode.requirement)
 
         #expect(xcode.text == "26.3")
         #expect(source.tier == 1)
@@ -349,7 +333,7 @@ struct XcodeDeclarationTests {
 
     @Test("the matrix floor wins when it is the stricter one, and the declaration is still named")
     func matrixWins() throws {
-        let (xcode, source) = try #require(requirement(try lookup(installed: "0.87.2", declares: "16.2").xcode))
+        let (xcode, source) = try #require(try lookup(installed: "0.87.2", declares: "16.2").xcode.requirement)
 
         #expect(xcode.text == "26.0")
         #expect(source.tier == 2)
@@ -365,7 +349,7 @@ struct XcodeDeclarationTests {
     func declarationWithoutMatrix() throws {
         let lookup = try lookup(installed: nil, declares: "26.3")
 
-        let (xcode, source) = try #require(requirement(lookup.xcode))
+        let (xcode, source) = try #require(lookup.xcode.requirement)
         #expect(xcode.text == "26.3")
         #expect(source.tier == 1)
         // The matrix lost by silence, and the source says so rather than implying
@@ -380,7 +364,7 @@ struct XcodeDeclarationTests {
     @Test("mobile.yml still outranks the file")
     func overrideOutranksDeclaration() throws {
         let (xcode, source) = try #require(
-            requirement(try lookup(declares: "26.3", config: MobileConfig(xcode: MinimumVersion("16.1"))).xcode)
+            try lookup(declares: "26.3", config: MobileConfig(xcode: MinimumVersion("16.1"))).xcode.requirement
         )
 
         #expect(xcode.text == "16.1")
@@ -390,7 +374,7 @@ struct XcodeDeclarationTests {
 
     @Test("a declaration mobile cannot read falls back to the matrix and says so")
     func unreadableDeclaration() throws {
-        let (xcode, source) = try #require(requirement(try lookup(declares: "latest").xcode))
+        let (xcode, source) = try #require(try lookup(declares: "latest").xcode.requirement)
 
         #expect(xcode.text == "16.1")
         #expect(source.tier == 2)
@@ -410,7 +394,90 @@ struct XcodeDeclarationTests {
     }
 }
 
+/// The runtime axis of the same composition. The matrix knows what React Native
+/// needs; only the repo knows what this app was built to run on — see ADR-0003.
+@Suite("deployment target declaration")
+struct DeploymentTargetDeclarationTests {
+    /// mattermost-mobile's own version, so the numbers below are the ones #23 reports:
+    /// react-native 0.83 asks for an iOS 15.1 runtime and Xcode 16.1.
+    private func lookup(podfile: String?) throws -> MatrixLookup {
+        let repo = try FixtureRepo()
+        try repo.write("package.json", #"{"dependencies": {"react-native": "^0.81.0"}}"#)
+        try repo.write("node_modules/react-native/package.json", #"{"version": "0.83.9"}"#)
+        if let podfile {
+            try repo.write("ios/Podfile", podfile)
+        }
+        return MatrixLookup.resolve(anchor: try #require(ProjectAnchor.detect(from: repo.root)))
+    }
+
+    /// The miss #23 reports: mattermost-mobile builds for iOS 16.4 while the matrix
+    /// floor for its React Native is 15.1. On a host with only 15.x runtimes the old
+    /// verdict was `pass`, and the app would not even install.
+    @Test("the deployment target wins when it asks for more than the matrix floor")
+    func declarationWins() throws {
+        let (runtime, source) = try #require(
+            try lookup(podfile: "platform :ios, '16.4'").runtime.requirement
+        )
+
+        #expect(runtime.text == "16.4")
+        #expect(source.tier == 1)
+        #expect(source.origin.hasPrefix("ios/Podfile — the compatibility matrix"))
+        #expect(source.origin.hasSuffix("says 15.1"))
+    }
+
+    /// joplin and rainbow both declare exactly the matrix floor. A tie is not a
+    /// conflict, and the verdict is the same either way.
+    @Test("a declaration at the matrix floor changes nothing but is still named")
+    func declarationTiesTheFloor() throws {
+        let (runtime, _) = try #require(
+            try lookup(podfile: "platform :ios, '15.1'").runtime.requirement
+        )
+
+        #expect(runtime.text == "15.1")
+    }
+
+    @Test("the matrix floor wins when the project declares less, and the declaration is still named")
+    func matrixWins() throws {
+        let (runtime, source) = try #require(
+            try lookup(podfile: "platform :ios, '13.0'").runtime.requirement
+        )
+
+        #expect(runtime.text == "15.1")
+        #expect(source.tier == 2)
+        #expect(source.origin.hasSuffix("ios/Podfile declares 13.0"))
+    }
+
+    /// The Xcode axis reads a different file, so the two must not leak into each other.
+    @Test("declaring a deployment target leaves the Xcode requirement on the matrix")
+    func perAxis() throws {
+        let lookup = try lookup(podfile: "platform :ios, '16.4'")
+
+        let (xcode, source) = try #require(lookup.xcode.requirement)
+        #expect(xcode.text == "16.1")
+        #expect(source.tier == 2)
+    }
+
+    @Test("no Podfile leaves the matrix floor alone")
+    func noDeclaration() throws {
+        let (runtime, source) = try #require(try lookup(podfile: nil).runtime.requirement)
+
+        #expect(runtime.text == "15.1")
+        #expect(source.tier == 2)
+        #expect(source.origin.contains("Podfile") == false)
+    }
+}
+
 extension RequirementLookup {
+    /// The requirement and the source behind it, or a recorded failure — every suite
+    /// in this file asks the same question of a lookup.
+    fileprivate var requirement: (MinimumVersion, CheckSource)? {
+        guard case .requirement(let version, let source) = self else {
+            Issue.record("expected a requirement, got \(self)")
+            return nil
+        }
+        return (version, source)
+    }
+
     fileprivate var isUnavailable: Bool {
         if case .unavailable = self { return true }
         return false

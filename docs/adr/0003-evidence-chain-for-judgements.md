@@ -40,6 +40,8 @@ Tier 1/2/3 계층(#1에서 잠긴 원칙)은 **요구가 어디서 오는가**�
   - 최초 문안은 여기서 prefix 매칭 비교기(`VersionPin`)를 재사용하라고 적었다. `VersionPin`에는 순서가 없어 `max`도 "승자"도 성립하지 않으므로, 같은 문단의 합성 규칙을 따라 하한으로 정정한다(#25 구현에서 드러남). 순서 비교 한 줄(`MinimumVersion.exceeds`)만 늘었다.
   - 차이가 보이는 곳은 선언보다 새 호스트뿐이다: `.xcode-version` 26.3 + Xcode 27은 `pass`이고, prefix 핀이었다면 `error`다. 두 해석 모두 #25의 미탐(16.1 호스트가 26.3 선언을 통과하던 것)은 막는다. 선언보다 새 Xcode를 막는 것은 이 Check가 아니라 별도 판정의 일이다.
 - runtime의 프로젝트 선언은 deployment target이고, 소스 체인은 `ios/Podfile.properties.json`의 `deploymentTarget` → Podfile `platform :ios` 리터럴 → 없음이다. 검증 repo 3개가 이 체인으로 전부 정확히 풀린다(16.4 / 15.1 / 15.1).
+  - properties의 **키 이름은 고정하지 않고 Podfile이 읽는 키를 그대로 쓴다**로 정정한다(#23 구현에서 드러남). 키를 정하는 것은 Podfile이다 — mattermost-mobile은 `deploymentTarget`을, Expo가 생성한 Podfile은 `ios.deploymentTarget`을 읽는다. 틀린 키를 보면 선언을 못 보고 Podfile의 **fallback 리터럴**로 조용히 내려앉는데, 그 리터럴은 구조상 항상 더 낮은 값이라 이 이슈가 지적한 미탐이 그대로 재현된다.
+  - 같은 이유로 `platform` 줄의 따옴표 밖 `#` 뒤는 읽지 않는다. 주석 속 버전을 믿으면 근거 없이 요구가 올라가 오탐(false error)이 된다 — 미탐보다 나쁘다.
 - **`project.pbxproj`는 읽지 않는다.** 타깃마다 값이 달라(joplin 15.6/18.6, rainbow 15.1/17.5) 어느 것이 앱인지 알려면 scheme 선택이 필요한데, ADR-0004에서 그 선택은 미확정으로 남을 수 있는 상태로 정했다. 모호한 소스를 근거로 삼지 않는다.
 - **`mise.toml`·`.tool-versions`는 읽지 않는다.** rainbow조차 `mise.toml`에는 maestro·foundry만 두고 node/ruby는 `.node-version`/`.ruby-version`에 위임한다 — 관례 파일이 이미 정본이다. 관리자별 포맷을 하나 열면 asdf·proto·volta로 끝없이 늘어난다.
 

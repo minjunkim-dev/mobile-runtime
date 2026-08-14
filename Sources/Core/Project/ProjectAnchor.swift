@@ -128,6 +128,9 @@ public struct ProjectAnchor: Sendable, Equatable {
     /// evidence for a requirement the matrix only knows a framework floor for;
     /// nil is silence, not a missing answer.
     public let declaredXcodeVersion: String?
+    /// The lowest iOS this app runs on, read from the iOS project. The same kind of
+    /// evidence as `declaredXcodeVersion` for the other Tier 2 requirement.
+    public let deploymentTarget: DeploymentTarget?
     /// nil when no lockfile sits at or above the anchor — nothing has ever been
     /// installed from this tree, so there is no measured manager to name.
     public let workspaceRoot: WorkspaceRoot?
@@ -225,6 +228,9 @@ public struct ProjectAnchor: Sendable, Equatable {
             rubyPin: rubyPin(in: directory, fileManager: fileManager),
             declaredXcodeVersion: declaration(
                 at: directory.appending("/\(xcodeVersionFile)"), fileManager: fileManager
+            ),
+            deploymentTarget: DeploymentTarget.resolve(
+                anchorDirectory: directory, fileManager: fileManager
             ),
             workspaceRoot: workspaceRoot
         )
