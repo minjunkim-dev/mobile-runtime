@@ -39,6 +39,7 @@ public struct CocoaPodsVersionCheck: Check {
         // What the tool is, before what it says: a `pod` that cannot report a version
         // cannot run `pod install` either, so absent and mute are the same state.
         let unusable: String
+        var advice = Self.remediation
         switch try await probeVersion(of: "pod", using: runner) {
         case .reported(let installed):
             return judge(installed: installed)
@@ -46,6 +47,7 @@ public struct CocoaPodsVersionCheck: Check {
             unusable = "pod is not on PATH"
         case .unreadable(let complaint):
             unusable = complaint
+            advice = muteToolRemediation("pod")
         }
 
         // The requirement picks the grade, not the reason the measurement failed
@@ -60,9 +62,7 @@ public struct CocoaPodsVersionCheck: Check {
         // An `error` carries no `reason`, so the tool's own words — the sentence that
         // named mise's unset shim in dogfooding — ride in `observed` instead. They are
         // what makes this verdict actionable, and they are not dropped.
-        return .error(
-            observed: unusable, required: required, source: source, remediation: Self.remediation
-        )
+        return .error(observed: unusable, required: required, source: source, remediation: advice)
     }
 
     private func judge(installed: SemanticVersion) -> CheckOutcome {

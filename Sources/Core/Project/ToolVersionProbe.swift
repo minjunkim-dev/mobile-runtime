@@ -38,3 +38,14 @@ func probeVersion(of executable: String, using runner: any ProcessRunner) async 
     }
     return .reported(version)
 }
+
+/// What to say when a tool ran and reported no version. It is on PATH — it answered —
+/// so every "install it" command is advice for a different fault: the thing to fix is
+/// whatever provides it, and only the tool's own words (carried in `observed`) know
+/// which that is. No command beats a wrong one, the rule #27 settled.
+func muteToolRemediation(_ executable: String) -> Remediation {
+    Remediation(
+        summary: "`\(executable)` is on PATH but reports no version, so it cannot be used. "
+            + "Fix whatever provides it — the line above is what it said — then re-run mobile doctor."
+    )
+}

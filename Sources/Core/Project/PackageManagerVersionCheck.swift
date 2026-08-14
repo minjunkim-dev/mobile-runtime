@@ -46,15 +46,18 @@ public struct PackageManagerVersionCheck: Check {
         // (ADR-0004). An `error` carries no reason, so the tool's own words ride in
         // `observed`.
         let unusable: String
+        let advice: Remediation
         switch try await probeVersion(of: requirement.name, using: runner) {
         case .reported(let installed):
             return judge(installed: installed, declared: declared, required: required)
         case .notOnPath:
             unusable = "\(requirement.name) is not on PATH"
+            advice = remediation
         case .unreadable(let complaint):
             unusable = complaint
+            advice = muteToolRemediation(requirement.name)
         }
-        return .error(observed: unusable, required: required, source: source, remediation: remediation)
+        return .error(observed: unusable, required: required, source: source, remediation: advice)
     }
 
     private func judge(

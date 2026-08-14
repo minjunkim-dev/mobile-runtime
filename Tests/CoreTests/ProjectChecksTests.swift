@@ -342,7 +342,11 @@ struct NodeVersionCheckTests {
 
         #expect(check.status == .error)
         #expect(check.outcome.observed?.contains("No version is set for shim: node") == true)
-        #expect(check.outcome.remediation?.command == "mise use node@24.15.0")
+        // node is on PATH — it answered — so "install Node" would be advice for a
+        // different fault. What provides it is the thing to fix, and only the tool's
+        // own words know which that is (#33).
+        #expect(check.outcome.remediation?.command == nil)
+        #expect(check.outcome.remediation?.summary.contains("reports no version") == true)
     }
 
     /// A range cannot be handed to a version manager, so this branch has a verdict
@@ -508,7 +512,7 @@ struct PackageManagerCheckTests {
 
         #expect(check.status == .error)
         #expect(check.outcome.observed?.contains("No version is set for shim: yarn") == true)
-        #expect(check.outcome.remediation?.command == "corepack enable")
+        #expect(check.outcome.remediation?.command == nil)
     }
 
     /// corepack does not carry bun, so `corepack enable` would be a line that cannot do
@@ -747,7 +751,7 @@ struct CocoaPodsVersionCheckTests {
 
         #expect(check.status == .error)
         #expect(check.outcome.observed?.contains("No version is set for shim") == true)
-        #expect(check.outcome.remediation != nil)
+        #expect(check.outcome.remediation?.command == nil)
     }
 
     /// Same failure, no requirement behind it: the grade follows the requirement, not
@@ -809,7 +813,7 @@ struct RubyVersionCheckTests {
 
         #expect(check.status == .error)
         #expect(check.outcome.observed?.contains("No version is set for shim: ruby") == true)
-        #expect(check.outcome.remediation?.command == "rbenv install 3.2.2")
+        #expect(check.outcome.remediation?.command == nil)
     }
 
     @Test("the RVM spelling of the pin resolves to the same version")

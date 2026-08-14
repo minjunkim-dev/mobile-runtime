@@ -27,24 +27,22 @@ public struct RubyVersionCheck: Check {
         // (ADR-0004). An `error` carries no reason, so the tool's own words ride in
         // `observed`.
         let unusable: String
+        let remediation: Remediation
         switch try await probeVersion(of: "ruby", using: runner) {
         case .reported(let installed):
             return try await judge(installed: installed, required: required)
         case .notOnPath:
             unusable = "ruby is not on PATH"
-        case .unreadable(let complaint):
-            unusable = complaint
-        }
-        return .error(
-            observed: unusable,
-            required: required,
-            source: Self.source,
-            remediation: Remediation(
+            remediation = Remediation(
                 summary: "Install the pinned Ruby, then re-run mobile doctor.",
                 command: try await VersionManagerCommand.detect(for: .ruby, version: pin, runner: runner),
                 url: "https://www.ruby-lang.org/"
             )
-        )
+        case .unreadable(let complaint):
+            unusable = complaint
+            remediation = muteToolRemediation("ruby")
+        }
+        return .error(observed: unusable, required: required, source: Self.source, remediation: remediation)
     }
 
     private func judge(installed: SemanticVersion, required: String) async throws -> CheckOutcome {

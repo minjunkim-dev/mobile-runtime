@@ -45,24 +45,11 @@ public struct NodeVersionCheck: Check {
                     observed: complaint, required: requirement, source: source
                 )
             }
-            // Only a pin names a version to switch to; `engines` is a range, and no
-            // manager takes one.
-            var command: String?
-            if let pin = anchor.nodePin {
-                command = try await VersionManagerCommand.detect(
-                    for: .node, version: pin.value, runner: runner
-                )
-            }
             return .error(
                 observed: complaint,
                 required: requirement,
                 source: source,
-                remediation: Remediation(
-                    summary: "Switch to a Node the project can be measured against, "
-                        + "then re-run mobile doctor.",
-                    command: command,
-                    url: "https://nodejs.org/"
-                )
+                remediation: muteToolRemediation("node")
             )
         }
         let observed = "Node \(installed)"
