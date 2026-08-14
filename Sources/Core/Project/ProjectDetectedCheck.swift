@@ -17,18 +17,16 @@ public struct ProjectDetectedCheck: Check {
     }
 
     public func run() async throws -> CheckOutcome {
-        let version = anchor.installedReactNativeVersion ?? anchor.declaredReactNativeVersion
-        // Without node_modules the installed React Native version cannot be measured.
-        // That fact is what later turns the Tier 2 checks into `unknown`, so it is
-        // stated whichever branch answers.
+        // Whatever the evidence chain settled on, so this line and the Tier 2 checks
+        // cannot describe the same project with two different versions. The declared
+        // range is the last resort: it is the only thing left when nothing answered.
+        let version = anchor.reactNativeVersion?.value ?? anchor.declaredReactNativeVersion
         let dependencies = anchor.hasNodeModules ? "" : ", no node_modules"
 
         // A managed project generates `ios/` on demand. Its absence says the native
         // checks have nothing to read — it does not say the project is broken.
         guard anchor.hasIOSDirectory else {
-            let uninstalled = anchor.hasNodeModules
-                ? ""
-                : "; node_modules is missing too, so the installed React Native version could not be measured"
+            let uninstalled = anchor.hasNodeModules ? "" : "; node_modules is missing too"
             return .unknown(
                 reason: "no `ios/` directory — a managed project generates it on demand, "
                     + "so the native checks have nothing to read\(uninstalled)",
@@ -39,7 +37,7 @@ public struct ProjectDetectedCheck: Check {
         }
         guard anchor.hasNodeModules else {
             return .warning(
-                observed: "React Native \(version) declared, node_modules missing",
+                observed: "React Native \(version), node_modules missing",
                 required: Self.required,
                 source: Self.source,
                 remediation: Remediation(

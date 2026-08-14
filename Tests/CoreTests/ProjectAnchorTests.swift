@@ -71,7 +71,8 @@ struct ProjectAnchorTests {
         let anchor = try #require(ProjectAnchor.detect(from: repo.root))
 
         #expect(anchor.declaredReactNativeVersion == "^0.76.0")
-        #expect(anchor.installedReactNativeVersion == "0.76.5")
+        #expect(anchor.reactNativeVersion?.value == "0.76.5")
+        #expect(anchor.reactNativeVersion?.origin == "node_modules/react-native")
         #expect(anchor.hasIOSDirectory)
         #expect(anchor.hasNodeModules)
     }
@@ -83,7 +84,9 @@ struct ProjectAnchorTests {
 
         let anchor = try #require(ProjectAnchor.detect(from: repo.root))
 
-        #expect(anchor.installedReactNativeVersion == nil)
+        // Nothing is installed, so the version cannot have been measured — it is the
+        // declaration that answers here.
+        #expect(anchor.reactNativeVersion?.origin == "package.json dependencies.react-native")
         #expect(anchor.hasIOSDirectory == false)
         #expect(anchor.hasNodeModules == false)
     }

@@ -28,6 +28,7 @@ Tier 1/2/3 계층(#1에서 잠긴 원칙)은 **요구가 어디서 오는가**�
 
 - 락파일은 `package-lock.json`(lockfileVersion 2/3)과 `yarn.lock`(berry) 둘만 읽는다. `pnpm-lock.yaml`·`bun.lock`은 한 단계 약한 근거로 폴백할 뿐 미탐이 되지 않는다.
 - yarn berry는 **앵커의 선언 range를 descriptor 키로 매칭**한다(`react-native@npm:0.81.6`). joplin의 `yarn.lock`에는 react-native 항목이 둘이고(`@joplin/app-mobile` 0.81.6, `@joplin/react-native-alarm-notification` 0.70.6), 단순 스캔은 틀린 버전을 집는다.
+- npm 락은 설치 경로를 키로 쓰는 `packages` 맵을 읽는다(lockfileVersion 1은 이 맵이 없어 다음 근거로 내려간다). 버전 충돌이 나면 npm이 앵커 옆에 사본을 남기므로, **앵커 아래의 중첩 항목이 호이스팅된 항목을 이긴다** — 앵커가 실제로 빌드하는 쪽이 그것이다(#30 구현에서 정한 세부).
 - "선언 range는 측정이 아니다"라는 기존 규율은 유지된다. 락파일은 range가 아니라 해석된 결과이고, 정확한 핀은 range가 아니다.
 - 실측과 락파일이 어긋나면 **실측이 이기고, 불일치를 `-v`에 노출한다**. `mobile.yml` Override 충돌과 같은 규율이다 — 충돌은 숨기지 않는다.
 

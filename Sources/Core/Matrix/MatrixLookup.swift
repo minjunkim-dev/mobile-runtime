@@ -159,24 +159,28 @@ public struct MatrixLookup: Sendable, Equatable {
         } catch {
             return .unavailable(reason: "the bundled compatibility matrix could not be read — \(error)")
         }
-        // The declared range in package.json is not a measurement: `^0.81.0` says
-        // nothing about which minor is installed, and the matrix rows differ by minor.
-        guard let installed = anchor.installedReactNativeVersion else {
+        // Every link of the evidence chain came up empty: nothing installed, no
+        // lockfile that resolves react-native, and a declared range — which is not a
+        // measurement, since `^0.81.0` says nothing about which minor is installed and
+        // the matrix rows differ by minor.
+        guard let resolved = anchor.reactNativeVersion else {
             return .unavailable(
-                reason: "node_modules is absent, so the installed React Native version could not be "
-                    + "measured — run `\(anchor.installCommand)` first, then re-run mobile doctor"
+                reason: "the React Native version could not be resolved — nothing is installed at "
+                    + "`node_modules/react-native`, no lockfile mobile reads resolves it, and "
+                    + "`\(anchor.declaredReactNativeVersion)` is not a single version. Run "
+                    + "`\(anchor.installCommand)` first, then re-run mobile doctor"
             )
         }
-        guard let version = SemanticVersion(installed) else {
+        guard let version = SemanticVersion(resolved.value) else {
             return .unavailable(
-                reason: "`node_modules/react-native` reports version `\(installed)`, "
-                    + "which mobile cannot resolve to a version"
+                reason: "react-native \(resolved.described) is not something mobile can resolve to a version"
             )
         }
         guard let row = matrix.row(framework: reactNative, version: version) else {
             let coverage = matrix.coverage(framework: reactNative).map { " (it covers \($0))" } ?? ""
             return .unavailable(
-                reason: "the compatibility matrix has no row for react-native \(installed)\(coverage)"
+                reason: "the compatibility matrix has no row for react-native "
+                    + "\(resolved.described)\(coverage)"
             )
         }
         guard let ios = row.ios else {
@@ -184,6 +188,9 @@ public struct MatrixLookup: Sendable, Equatable {
                 reason: "the compatibility matrix row for react-native \(row.version) states no iOS requirements"
             )
         }
-        return .requirements(ios, origin: "\(matrixOrigin) (react-native \(row.version))")
+        // The version carries its evidence, because a Tier 2 verdict now stands on a
+        // chain and `-v` is where that chain is auditable (ADR-0003). The row is not
+        // named separately — it is this version's minor, so it would only repeat it.
+        return .requirements(ios, origin: "\(matrixOrigin) (react-native \(resolved.described))")
     }
 }

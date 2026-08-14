@@ -122,23 +122,74 @@ struct MatrixLookupTests {
         let (xcode, source) = try #require(requirement(lookup.xcode))
         // The declared `^0.81.0` would have answered 16.1 — the installed 0.87 is what counts.
         #expect(xcode.text == "26.0")
-        #expect(source.origin == "compatibility matrix (react-native 0.87)")
+        #expect(source.origin == "compatibility matrix (react-native 0.87.2 from node_modules/react-native)")
         #expect(source.tier == 2)
     }
 
-    @Test("without node_modules there is no measurement — and the install command says so")
-    func dependenciesMissing() throws {
+    /// The miss #30 reports: a pristine clone is the North Star's first moment, and
+    /// the two most valuable verdicts used to be empty there. The lockfile is
+    /// committed, so it answers before anything is installed.
+    @Test("a pristine clone answers from the lockfile")
+    func resolvesFromLockfile() throws {
+        let repo = try FixtureRepo()
+        try repo.write("package.json", #"{"dependencies": {"react-native": "^0.81.0"}}"#)
+        try repo.write(
+            "package-lock.json",
+            #"{"lockfileVersion": 3, "packages": {"node_modules/react-native": {"version": "0.87.2"}}}"#
+        )
+
+        let lookup = MatrixLookup.resolve(anchor: try #require(ProjectAnchor.detect(from: repo.root)))
+
+        let (xcode, source) = try #require(requirement(lookup.xcode))
+        #expect(xcode.text == "26.0")
+        #expect(source.origin == "compatibility matrix (react-native 0.87.2 from package-lock.json)")
+    }
+
+    @Test("an exact pin answers when nothing is installed and no lockfile is read")
+    func resolvesFromExactPin() throws {
+        let repo = try FixtureRepo()
+        try repo.write("package.json", #"{"dependencies": {"react-native": "0.81.0"}}"#)
+
+        let lookup = MatrixLookup.resolve(anchor: try #require(ProjectAnchor.detect(from: repo.root)))
+
+        let (xcode, source) = try #require(requirement(lookup.xcode))
+        #expect(xcode.text == "16.1")
+        #expect(source.origin.contains("package.json dependencies.react-native"))
+    }
+
+    @Test("with no link of the chain answering, the install command says what to do")
+    func noEvidence() throws {
         let repo = try FixtureRepo()
         try repo.write(
             "package.json",
-            #"{"dependencies": {"react-native": "0.81.0"}, "packageManager": "yarn@3.6.4"}"#
+            #"{"dependencies": {"react-native": "^0.81.0"}, "packageManager": "yarn@3.6.4"}"#
         )
         let anchor = try #require(ProjectAnchor.detect(from: repo.root))
 
         let lookup = MatrixLookup.resolve(anchor: anchor)
 
-        #expect(reason(lookup.xcode).contains("node_modules is absent"))
+        #expect(reason(lookup.xcode).contains("`^0.81.0` is not a single version"))
         #expect(reason(lookup.runtime).contains("yarn install"))
+    }
+
+    /// The measurement wins over the lockfile, and the conflict is not swallowed —
+    /// the same discipline a `mobile.yml` override follows.
+    @Test("a lockfile that disagrees with node_modules is named in the source")
+    func lockfileDisagreement() throws {
+        let repo = try FixtureRepo()
+        try repo.write("package.json", #"{"dependencies": {"react-native": "^0.81.0"}}"#)
+        try repo.write("node_modules/react-native/package.json", #"{"version": "0.87.2"}"#)
+        try repo.write(
+            "package-lock.json",
+            #"{"lockfileVersion": 3, "packages": {"node_modules/react-native": {"version": "0.81.4"}}}"#
+        )
+
+        let lookup = MatrixLookup.resolve(anchor: try #require(ProjectAnchor.detect(from: repo.root)))
+
+        let (xcode, source) = try #require(requirement(lookup.xcode))
+        // 0.87's floor, not 0.81's: the measurement is what the app runs on.
+        #expect(xcode.text == "26.0")
+        #expect(source.origin.contains("but package-lock.json resolves 0.81.4"))
     }
 
     @Test("a React Native version outside the matrix is unavailable, not a pass")
@@ -231,8 +282,9 @@ struct MatrixOverrideTests {
         #expect(source.origin == "mobile.yml overrides.iosRuntime")
         // The field nobody declared still has nothing to stand on.
         #expect(lookup.xcode == .unavailable(
-            reason: "node_modules is absent, so the installed React Native version could not be "
-                + "measured — run `npm install` first, then re-run mobile doctor",
+            reason: "the React Native version could not be resolved — nothing is installed at "
+                + "`node_modules/react-native`, no lockfile mobile reads resolves it, and `^0.81.0` "
+                + "is not a single version. Run `npm install` first, then re-run mobile doctor",
             source: CheckSource(tier: 2, origin: "compatibility matrix")
         ))
     }
@@ -289,7 +341,10 @@ struct XcodeDeclarationTests {
 
         #expect(xcode.text == "26.3")
         #expect(source.tier == 1)
-        #expect(source.origin == ".xcode-version — the compatibility matrix (react-native 0.81) says 16.1")
+        #expect(
+            source.origin == ".xcode-version — the compatibility matrix "
+                + "(react-native 0.81.4 from node_modules/react-native) says 16.1"
+        )
     }
 
     @Test("the matrix floor wins when it is the stricter one, and the declaration is still named")
@@ -298,7 +353,10 @@ struct XcodeDeclarationTests {
 
         #expect(xcode.text == "26.0")
         #expect(source.tier == 2)
-        #expect(source.origin == "compatibility matrix (react-native 0.87) — .xcode-version declares 16.2")
+        #expect(
+            source.origin == "compatibility matrix (react-native 0.87.2 from node_modules/react-native)"
+                + " — .xcode-version declares 16.2"
+        )
     }
 
     /// The pristine-clone case: no node_modules, so the matrix cannot answer — but the
@@ -347,7 +405,7 @@ struct XcodeDeclarationTests {
             Issue.record("expected unavailable, got \(lookup.xcode)")
             return
         }
-        #expect(reason.contains("node_modules is absent"))
+        #expect(reason.contains("nothing is installed at `node_modules/react-native`"))
         #expect(reason.contains(".xcode-version declares latest"))
     }
 }

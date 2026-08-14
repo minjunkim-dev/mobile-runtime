@@ -107,10 +107,12 @@ public struct ProjectAnchor: Sendable, Equatable {
     public let directory: URL
     /// From `dependencies.react-native` — a declared range, not a measurement.
     public let declaredReactNativeVersion: String
-    /// From `node_modules/react-native/package.json` — what is really installed.
-    /// nil when dependencies are not installed, which is what makes the Tier 2
-    /// checks `unknown` rather than wrong.
-    public let installedReactNativeVersion: String?
+    /// The version every judgement about this project runs on, picked along the
+    /// evidence chain and carrying which link answered. nil when none of them did —
+    /// then, and only then, Tier 2 is `unknown`. There is one resolved version per
+    /// anchor for the same reason there is one detection rule: two readers picking
+    /// their own evidence is how a single run starts contradicting itself.
+    public let reactNativeVersion: ReactNativeVersion?
     public let hasIOSDirectory: Bool
     public let hasNodeModules: Bool
     public let nodePin: NodePin?
@@ -207,7 +209,13 @@ public struct ProjectAnchor: Sendable, Equatable {
         return ProjectAnchor(
             directory: URL(fileURLWithPath: directory),
             declaredReactNativeVersion: declared,
-            installedReactNativeVersion: installedReactNative(in: directory, fileManager: fileManager),
+            reactNativeVersion: ReactNativeVersion.resolve(
+                anchorDirectory: directory,
+                declared: declared,
+                installed: installedReactNative(in: directory, fileManager: fileManager),
+                workspaceRoot: workspaceRoot,
+                fileManager: fileManager
+            ),
             hasIOSDirectory: isDirectory(directory.appending("/ios"), fileManager),
             hasNodeModules: isDirectory(directory.appending("/node_modules"), fileManager),
             nodePin: pin(in: directory, fileManager: fileManager),
