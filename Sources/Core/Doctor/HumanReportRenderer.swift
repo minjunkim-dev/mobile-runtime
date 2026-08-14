@@ -19,7 +19,7 @@ public struct HumanReportRenderer: Sendable {
             let checks = group.checks
             let status = group.status
             // The reason for an unknown belongs on its own indented line, not here.
-            let headline = group.worstCheck?.outcome.observed
+            let headline = group.worstCheck?.outcome.headline
 
             lines.append(
                 "[\(paint(symbol(status), status))] \(category)"

@@ -77,6 +77,17 @@ public struct CheckOutcome: Sendable, Equatable {
         self.reason = reason
     }
 
+    /// The one line a category summary can afford. A `warning` or an `error` is
+    /// unreadable without its target — "Node 24.19.0" does not say what is wrong with
+    /// 24.19.0, and the remediation under it says how to change versions without
+    /// saying to which. `pass` has nothing to move towards, and `unknown` carries its
+    /// reason instead. Source and tier stay behind `-v`.
+    var headline: String? {
+        guard let observed else { return nil }
+        guard status == .warning || status == .error, let required else { return observed }
+        return "\(observed) → \(required)"
+    }
+
     public static func pass(
         observed: String? = nil,
         required: String? = nil,

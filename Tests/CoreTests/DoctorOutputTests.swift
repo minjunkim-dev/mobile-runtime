@@ -114,6 +114,55 @@ struct HumanReportRendererTests {
         #expect(lines[3] == "      killall -9 x")
     }
 
+    /// An observed value with nothing to compare it against cannot be read: "Node
+    /// 24.19.0" does not say why it is a problem, and the remediation underneath says
+    /// how to change it without saying to what. Only warning and error need the
+    /// target — a `pass` has nothing to move towards.
+    @Test("warning and error name the target on the same line")
+    func headlineNamesTheTarget() {
+        let report = DoctorReport(checks: [
+            result(
+                "node.version",
+                category: "Node",
+                .warning(
+                    observed: "Node 24.19.0",
+                    required: "24.15.0 (.nvmrc)",
+                    remediation: Remediation(summary: "Switch to the pinned Node version.")
+                )
+            ),
+            result("xcode.version", category: "Xcode", .pass(observed: "Xcode 26.6", required: "16.1")),
+        ])
+
+        let lines = renderer.render(report).split(separator: "\n").map(String.init)
+
+        #expect(lines[0] == "[!] Node — Node 24.19.0 → 24.15.0 (.nvmrc)")
+        // source and tier stay behind -v; the headline gains one comparison, not a
+        // second line.
+        #expect(lines[0].contains(".nvmrc)") == true)
+        #expect(lines.contains("[✓] Xcode — Xcode 26.6"))
+    }
+
+    /// A Check can be a warning with nothing to compare against — the fact is the
+    /// whole verdict. The arrow appears only when there is something after it.
+    @Test("a warning with no required value keeps its plain headline")
+    func headlineWithoutRequired() {
+        let report = DoctorReport(checks: [
+            result(
+                "project.detected",
+                category: "Project",
+                .warning(
+                    observed: "React Native 0.83.9, node_modules missing",
+                    remediation: Remediation(summary: "Install the dependencies.")
+                )
+            )
+        ])
+
+        #expect(
+            renderer.render(report).split(separator: "\n").first
+                == "[!] Project — React Native 0.83.9, node_modules missing"
+        )
+    }
+
     @Test("verbose adds observed, required and source; plain output does not")
     func verboseDetail() {
         let report = DoctorReport(checks: [

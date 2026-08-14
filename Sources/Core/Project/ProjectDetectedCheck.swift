@@ -43,7 +43,10 @@ public struct ProjectDetectedCheck: Check {
         guard anchor.hasNodeModules else {
             return .warning(
                 observed: "React Native \(version), node_modules missing",
-                required: Self.required,
+                // The one branch with a target to name: a warning says what to move
+                // towards, and here that is the install this Check can see has not
+                // happened. Saying it on a `pass` would be the claim #22 removed.
+                required: "the project's dependencies installed",
                 source: Self.source,
                 remediation: Remediation(
                     summary: "Install the project's dependencies — doctor never installs them for you."
