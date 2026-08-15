@@ -11,6 +11,18 @@ public enum TerminationStatus: Sendable, Hashable {
     public var isSuccess: Bool { self == .exited(0) }
 }
 
+/// Where a command's output goes. The axis is the destination, not what flows — which
+/// is why streaming costs the protocol no second method (ADR-0002, note on #44/#56).
+public enum ProcessOutput: Sendable, Hashable {
+    /// Held in memory under a limit and handed back on `ProcessResult`. The limit is a
+    /// backstop, and every remaining caller of it measures in tens of kilobytes.
+    case collected
+    /// Written to `file` as it arrives, with no limit, and absent from `ProcessResult`.
+    /// Both streams land in the one file in arrival order — the exact interleaving is
+    /// not promised, for the same reason `combinedOutput` does not promise one.
+    case streamed(to: URL)
+}
+
 /// A subprocess invocation. `environment` is applied on top of the inherited
 /// environment; the runner has no policy of its own (no `DEVELOPER_DIR` opinion).
 public struct ProcessCommand: Sendable, CustomStringConvertible {
@@ -24,19 +36,24 @@ public struct ProcessCommand: Sendable, CustomStringConvertible {
     /// by it should not change spelling because a caller named a directory.
     public var workingDirectory: URL?
     public var timeout: Duration?
+    /// Deliberately absent from `description` for the same reason `workingDirectory`
+    /// is: the description is what a human would type, and it keys the test fixtures.
+    public var output: ProcessOutput
 
     public init(
         _ executable: String,
         _ arguments: [String] = [],
         environment: [String: String] = [:],
         workingDirectory: URL? = nil,
-        timeout: Duration? = .seconds(30)
+        timeout: Duration? = .seconds(30),
+        output: ProcessOutput = .collected
     ) {
         self.executable = executable
         self.arguments = arguments
         self.environment = environment
         self.workingDirectory = workingDirectory
         self.timeout = timeout
+        self.output = output
     }
 
     public var description: String {
@@ -91,17 +108,34 @@ public enum ProcessError: Error, CustomStringConvertible {
     }
 }
 
-/// Collected-output process execution. Streaming is deliberately absent — that
-/// decision is about watching a child's output as it runs, and it still stands
-/// (ADR-0002). `spawnDetached` is a different question: not how output is read, but
+/// Process execution, with the output destination on the command and the line
+/// callback on the call. One requirement, so a fake implements one method
+/// (ADR-0002 and its note on #44/#56).
+///
+/// `spawnDetached` is a different question again: not where the output goes, but
 /// whether the child outlives us.
 public protocol ProcessRunner: Sendable {
-    func run(_ command: ProcessCommand) async throws -> ProcessResult
+    /// - Parameter onLine: called with complete lines as they arrive, for a command
+    ///   whose output is `.streamed`. Splitting is the runner's job — a pipe delivers
+    ///   chunks that end mid-line, and every caller and every fake would otherwise
+    ///   reproduce the same bug. A `.collected` command never calls it: its output was
+    ///   held rather than watched, and it is all there on the result to read.
+    func run(
+        _ command: ProcessCommand,
+        onLine: (@Sendable (String) -> Void)?
+    ) async throws -> ProcessResult
 
     /// Starts `command` and returns as soon as it is running: both its streams go to
     /// `logFile`, and its pid comes back so a caller can report or kill it. Metro has
     /// to survive the `up` that started it, which is the one thing `run` cannot do.
     func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32
+}
+
+extension ProcessRunner {
+    /// What almost every caller wants: run it, read the result. Nothing to watch.
+    public func run(_ command: ProcessCommand) async throws -> ProcessResult {
+        try await run(command, onLine: nil)
+    }
 }
 
 public struct SystemProcessRunner: ProcessRunner {
@@ -114,7 +148,10 @@ public struct SystemProcessRunner: ProcessRunner {
         self.logger = logger
     }
 
-    public func run(_ command: ProcessCommand) async throws -> ProcessResult {
+    public func run(
+        _ command: ProcessCommand,
+        onLine: (@Sendable (String) -> Void)?
+    ) async throws -> ProcessResult {
         let start = ContinuousClock.now
         var overrides: [Subprocess.Environment.Key: String?] = [:]
         for (name, value) in command.environment {
@@ -124,14 +161,45 @@ public struct SystemProcessRunner: ProcessRunner {
         let environment = Subprocess.Environment.inherit.updating(overrides)
 
         let invocation = Self.invocation(command)
-        let work = Task {
-            try await Subprocess.run(
-                .name(invocation.executable),
-                arguments: Arguments(invocation.arguments),
-                environment: environment,
-                output: .string(limit: Self.outputLimit),
-                error: .string(limit: Self.errorLimit)
-            )
+        let work = Task { () async throws -> ProcessResult in
+            switch command.output {
+            case .collected:
+                let result = try await Subprocess.run(
+                    .name(invocation.executable),
+                    arguments: Arguments(invocation.arguments),
+                    environment: environment,
+                    output: .string(limit: Self.outputLimit),
+                    error: .string(limit: Self.errorLimit)
+                )
+                return ProcessResult(
+                    terminationStatus: Self.translate(result.terminationStatus),
+                    standardOutput: Self.collected(result.standardOutput),
+                    standardError: Self.collected(result.standardError)
+                )
+
+            case .streamed(let file):
+                let sink = try LogWriter(file: file, onLine: onLine)
+                defer { sink.close() }
+                let result = try await Subprocess.run(
+                    .name(invocation.executable),
+                    arguments: Arguments(invocation.arguments),
+                    environment: environment,
+                    input: .none,
+                    output: .sequence,
+                    error: .sequence
+                ) { execution in
+                    try await withThrowingTaskGroup(of: Void.self) { group in
+                        group.addTask { try await Self.pump(execution.standardOutput, into: sink) }
+                        group.addTask { try await Self.pump(execution.standardError, into: sink) }
+                        try await group.waitForAll()
+                    }
+                }
+                return ProcessResult(
+                    terminationStatus: Self.translate(result.terminationStatus),
+                    standardOutput: "",
+                    standardError: ""
+                )
+            }
         }
 
         // swift-subprocess has no timeout of its own; cancelling the task kills the
@@ -165,18 +233,13 @@ public struct SystemProcessRunner: ProcessRunner {
 
         do {
             let result = try await work.value
-            let status = Self.translate(result.terminationStatus)
             // The deadline kills the child, so a killed process that also raced to
             // the finish line still counts as a real result.
-            if expired.isRaised, !status.isSuccess {
+            if expired.isRaised, !result.terminationStatus.isSuccess {
                 throw timedOut()
             }
-            log("ran subprocess", ("status", "\(status)"))
-            return ProcessResult(
-                terminationStatus: status,
-                standardOutput: Self.collected(result.standardOutput),
-                standardError: Self.collected(result.standardError)
-            )
+            log("ran subprocess", ("status", "\(result.terminationStatus)"))
+            return result
         } catch let error as ProcessError {
             throw error
         } catch is CancellationError where expired.isRaised {
@@ -261,6 +324,85 @@ public struct SystemProcessRunner: ProcessRunner {
     /// swift-subprocess hands back `String?` on Darwin and `String` on Linux;
     /// the implicit promotion makes one signature serve both.
     private static func collected(_ output: String?) -> String { output ?? "" }
+
+    /// Drains one of the child's streams: the bytes as they came to the file, the
+    /// complete lines to the callback.
+    private static func pump(_ stream: SubprocessOutputSequence, into sink: LogWriter) async throws {
+        var splitter = LineSplitter()
+        for try await buffer in stream {
+            let bytes = buffer.withUnsafeBytes { Array($0) }
+            sink.write(bytes, lines: splitter.take(bytes))
+        }
+        sink.write([], lines: splitter.flush())
+    }
+
+    /// Both of a child's streams into one file, and complete lines out to the caller.
+    /// The lock is what makes "arrival order" mean anything with two streams running:
+    /// a chunk lands whole, and `onLine` is never re-entered.
+    ///
+    /// Not `LogSink`: "sink" is the domain's word for the destination a command names
+    /// (CONTEXT.md), and spending it on the thing that does the writing would leave the
+    /// concept without one.
+    private final class LogWriter: @unchecked Sendable {
+        private let lock = NSLock()
+        private let handle: FileHandle
+        private let onLine: (@Sendable (String) -> Void)?
+
+        init(file: URL, onLine: (@Sendable (String) -> Void)?) throws {
+            try FileManager.default.createDirectory(
+                at: file.deletingLastPathComponent(), withIntermediateDirectories: true
+            )
+            try Data().write(to: file)
+            self.handle = try FileHandle(forWritingTo: file)
+            self.onLine = onLine
+        }
+
+        func write(_ bytes: [UInt8], lines: [String]) {
+            lock.withLock {
+                // A log that could not be written must not become the failure the
+                // caller reports — the exit status is the news, as it always was.
+                if !bytes.isEmpty { try? handle.write(contentsOf: bytes) }
+                for line in lines { onLine?(line) }
+            }
+        }
+
+        func close() { try? handle.close() }
+    }
+
+    /// Chunks in, whole lines out. A pipe ends a chunk wherever the kernel decided,
+    /// so the tail of one chunk is the head of the next line.
+    private struct LineSplitter {
+        private var carry: [UInt8] = []
+
+        /// - Returns: every line the chunk completed. A line still in progress stays.
+        mutating func take(_ chunk: [UInt8]) -> [String] {
+            var lines: [String] = []
+            for byte in chunk {
+                if byte == UInt8(ascii: "\n") {
+                    lines.append(Self.decode(carry))
+                    carry.removeAll(keepingCapacity: true)
+                } else {
+                    carry.append(byte)
+                }
+            }
+            return lines
+        }
+
+        /// The last line of output whose author forgot the newline. Nothing when the
+        /// stream ended on one.
+        mutating func flush() -> [String] {
+            guard !carry.isEmpty else { return [] }
+            defer { carry.removeAll() }
+            return [Self.decode(carry)]
+        }
+
+        /// Trailing CR dropped so a tool that writes CRLF does not hand every caller a
+        /// line ending it has to strip again.
+        private static func decode(_ bytes: [UInt8]) -> String {
+            let line = bytes.last == UInt8(ascii: "\r") ? bytes.dropLast() : bytes[...]
+            return String(decoding: line, as: UTF8.self)
+        }
+    }
 
     /// One-way latch shared between the work task and its deadline.
     private final class Flag: @unchecked Sendable {

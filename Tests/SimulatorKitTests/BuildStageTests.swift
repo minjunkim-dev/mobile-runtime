@@ -83,14 +83,17 @@ private struct BlockingRunner: ProcessRunner {
     let notes: Mutable<[String]>
     let until: Int
 
-    func run(_ command: ProcessCommand) async throws -> ProcessResult {
+    func run(
+        _ command: ProcessCommand,
+        onLine: (@Sendable (String) -> Void)?
+    ) async throws -> ProcessResult {
         if command.arguments.last == "build" {
             let deadline = ContinuousClock.now + .seconds(5)
             while notes.value.count < until, ContinuousClock.now < deadline {
                 try await Task.sleep(for: .milliseconds(5))
             }
         }
-        return try await inner.run(command)
+        return try await inner.run(command, onLine: onLine)
     }
 
     func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
@@ -296,15 +299,16 @@ struct BuildStageTests {
         #expect(context.product?.bundleIdentifier == "com.example.MyApp")
     }
 
-    /// The whole point of writing the log: the reader gets the last lines on screen
-    /// and a path to the rest, instead of a terminal buffer to scroll through.
-    @Test("a failed build writes the full log and names the file")
+    /// The whole point of the log file: the reader gets the lines that matter on
+    /// screen and a path to the rest, instead of a terminal buffer to scroll through.
+    /// The file is the runner's to write, so what this asserts is the path.
+    @Test("a failed build names the log file the whole output was streamed to")
     func failureWritesLog() async throws {
         let repo = try project(workspace: false)
         let runner = try runner(
             repo, workspace: false, schemes: ["MyApp"], scheme: "MyApp",
             // xcodebuild's diagnostics go to stdout and its own noise to stderr,
-            // which is why the tail cannot be taken from stderr alone.
+            // which is why nothing here may prefer one stream over the other.
             build: FakeProcessRunner.Response(
                 status: .exited(65),
                 standardOutput: "AppDelegate.swift:9:1: error: cannot find 'Foo' in scope\n"
@@ -319,8 +323,10 @@ struct BuildStageTests {
             try await run(repo, runner, context: &context, logs: logs)
         }
 
-        let file = logs.directory.appendingPathComponent("build.log")
+        let file = logs.url("build.log")
         #expect(error?.remediation.summary.contains(file.path) == true)
+        let build = try #require(runner.log.first(matching: buildCommand(repo, workspace: false, scheme: "MyApp")))
+        #expect(build.output == .streamed(to: file))
         // Pasteable as printed: the destination carries a space, and a line that has
         // to be repaired before it runs is not a remediation.
         #expect(
@@ -328,10 +334,108 @@ struct BuildStageTests {
                 == true
         )
         #expect(error?.observed?.contains("cannot find 'Foo' in scope") == true)
-        let written = try String(contentsOf: file, encoding: .utf8)
-        #expect(written.contains("** BUILD FAILED **"))
-        #expect(written.contains("cannot find 'Foo' in scope"))
         #expect(context.product == nil)
+    }
+
+    /// xcodebuild writes the cause in the middle of the log and piles warnings on the
+    /// end, so the last twenty lines were almost always twenty warnings (#51).
+    @Test("a failure shows the error lines rather than whatever came last")
+    func observedPrefersErrorLines() async throws {
+        let repo = try project(workspace: false)
+        let warnings = (1...30)
+            .map { "warning: IPHONEOS_DEPLOYMENT_TARGET is set to 11.0 (\($0))" }
+            .joined(separator: "\n")
+        let runner = try runner(
+            repo, workspace: false, schemes: ["MyApp"], scheme: "MyApp",
+            build: FakeProcessRunner.Response(
+                status: .exited(65),
+                standardOutput: "Prepare build\n"
+                    + "MyApp.xcodeproj:1:1: error: Unable to open base configuration reference file\n"
+                    + warnings + "\n** BUILD FAILED **\n"
+            )
+        )
+        var context = afterDevice()
+
+        let error = await #expect(throws: DomainError.self) {
+            try await run(repo, runner, context: &context)
+        }
+
+        let observed = try #require(error?.observed)
+        #expect(observed.contains("Unable to open base configuration reference file"))
+        #expect(observed.contains("** BUILD FAILED **"))
+        #expect(observed.contains("IPHONEOS_DEPLOYMENT_TARGET") == false)
+    }
+
+    /// The fallback is the old behaviour, and it has to stay: a build can die without
+    /// ever printing a line this stage recognises.
+    @Test("a failure with nothing notable in it falls back to the last lines")
+    func observedFallsBackToTail() async throws {
+        let repo = try project(workspace: false)
+        let noise = (1...30).map { "note: step \($0)" }.joined(separator: "\n")
+        let runner = try runner(
+            repo, workspace: false, schemes: ["MyApp"], scheme: "MyApp",
+            build: FakeProcessRunner.Response(status: .exited(65), standardOutput: noise + "\n")
+        )
+        var context = afterDevice()
+
+        let error = await #expect(throws: DomainError.self) {
+            try await run(repo, runner, context: &context)
+        }
+
+        let observed = try #require(error?.observed)
+        #expect(observed.split(separator: "\n").count == 20)
+        #expect(observed.hasSuffix("note: step 30"))
+        #expect(observed.contains("note: step 10") == false)
+    }
+
+    /// A cascade of a hundred errors is not twenty screens of terminal — it is twenty
+    /// lines and the path to the rest.
+    @Test("the lines shown while building stop at twenty and say where the rest is")
+    func screenLinesAreCapped() async throws {
+        let repo = try project(workspace: false)
+        let errors = (1...25).map { "File\($0).swift:1:1: error: boom \($0)" }.joined(separator: "\n")
+        let runner = try runner(
+            repo, workspace: false, schemes: ["MyApp"], scheme: "MyApp",
+            build: FakeProcessRunner.Response(
+                status: .exited(65), standardOutput: errors + "\n** BUILD FAILED **\n"
+            )
+        )
+        let logs = try temporaryLogs()
+        let notes = Mutable<[String]>([])
+        let configuration = ConfigContext.detect(
+            anchor: ProjectAnchor.detect(from: repo.root), workingDirectory: repo.root
+        )
+        let stage = BuildStage(
+            config: configuration,
+            runner: runner,
+            locator: XcodeLocator(runner: runner, developerDirOverride: nil),
+            logs: logs,
+            note: { line in notes.mutate { $0.append(line) } }
+        )
+        var context = afterDevice()
+
+        _ = await #expect(throws: DomainError.self) { try await stage.run(&context) }
+
+        // Twenty notable lines, then one line saying how many were left out.
+        #expect(notes.value.count == 21)
+        #expect(notes.value.first == "File1.swift:1:1: error: boom 1")
+        #expect(notes.value[19] == "File20.swift:1:1: error: boom 20")
+        // 25 errors and the BUILD FAILED line are 26 notable lines; 6 went unshown.
+        #expect(notes.value.last == "…and 6 more — full log: \(logs.url("build.log").path)")
+    }
+
+    /// The log is worth keeping when the build worked too — a green build still prints
+    /// the warnings someone will want to read.
+    @Test("a successful build reports where its log is")
+    func successReportsLog() async throws {
+        let repo = try project(workspace: false)
+        let runner = try runner(repo, workspace: false, schemes: ["MyApp"], scheme: "MyApp")
+        let logs = try temporaryLogs()
+        var context = afterDevice()
+
+        try await run(repo, runner, context: &context, logs: logs)
+
+        #expect(context.buildLog == logs.url("build.log").path)
     }
 
     /// A failed build has no product to describe, and asking for one would only add
@@ -381,14 +485,15 @@ struct BuildStageTests {
             locator: XcodeLocator(runner: runner, developerDirOverride: nil),
             logs: try temporaryLogs(),
             heartbeat: .milliseconds(10),
-            note: { line in notes.value.append(line) }
+            note: { line in notes.mutate { $0.append(line) } }
         )
         var context = afterDevice()
 
         try await stage.run(&context)
 
-        #expect(notes.value.count >= 2)
-        #expect(notes.value.allSatisfy { $0.hasPrefix("build") && $0.contains("running…") })
+        // The build's own notable lines share this channel, so the elapsed lines are
+        // counted rather than assumed to be everything on it.
+        #expect(notes.value.filter { $0.hasPrefix("build") && $0.contains("running…") }.count >= 2)
     }
 
     /// `-showBuildSettings` answers for every target the scheme builds, and a scheme

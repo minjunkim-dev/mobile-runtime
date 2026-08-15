@@ -33,6 +33,10 @@ public struct UpJSONDocument: Encodable, Sendable {
         /// The app's pid in the simulator. With the four fields together, whatever
         /// runs after `up` never has to ask the machine what this run did.
         public let appPid: Int32?
+        /// xcodebuild's whole output, on disk. Unlike the `.app` path this survives
+        /// being read from another machine's terminal — it is what a build's warnings
+        /// are in, and a failure puts the same path in its remediation.
+        public let buildLog: String?
     }
 
     public let schemaVersion: Int
@@ -55,9 +59,13 @@ public struct UpJSONDocument: Encodable, Sendable {
         let bundleId = report.context.product?.bundleIdentifier
         let metro = report.context.metro
         let appPid = report.context.appPid
+        let buildLog = report.context.buildLog
         self.result = device == nil && bundleId == nil && metro == nil && appPid == nil
+            && buildLog == nil
             ? nil
-            : Outcome(device: device, bundleId: bundleId, metro: metro, appPid: appPid)
+            : Outcome(
+                device: device, bundleId: bundleId, metro: metro, appPid: appPid, buildLog: buildLog
+            )
         self.error = report.failure.map {
             Failure(message: $0.message, remediation: $0.remediation)
         }

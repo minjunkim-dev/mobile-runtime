@@ -21,10 +21,16 @@ public struct RunLogs: Sendable {
             .appendingPathComponent("\(resolved.lastPathComponent)-\(Self.digest(resolved.path))")
     }
 
+    /// Where a log by this name goes, without creating anything. For output something
+    /// else writes — a `ProcessCommand` streamed straight to its file.
+    public func url(_ name: String) -> URL {
+        directory.appendingPathComponent(name)
+    }
+
     /// - Returns: the file written, or nil when it could not be. A log that failed to
     ///   save must not become the failure the caller reports — it had one already.
     public func write(_ contents: String, to name: String) -> URL? {
-        let file = directory.appendingPathComponent(name)
+        let file = url(name)
         do {
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
             try Data(contents.utf8).write(to: file)

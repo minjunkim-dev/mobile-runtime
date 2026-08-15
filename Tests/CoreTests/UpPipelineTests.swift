@@ -123,7 +123,7 @@ struct UpPipelineTests {
                 throw DomainError(summary: "no", remediation: Remediation(summary: "fix it"))
             },
         ]).run { result in
-            seen.value.append("\(result.id) \(result.status.rawValue)")
+            seen.mutate { $0.append("\(result.id) \(result.status.rawValue)") }
         }
 
         #expect(seen.value == ["validate pass", "dependencies failed"])

@@ -108,6 +108,19 @@ struct UpJSONTests {
         #expect(device["runtime"] as? String == "26.5")
     }
 
+    /// The build's output is on disk rather than on the screen now, so the path has to
+    /// come out of a run that worked — otherwise only a failure could ever find it.
+    @Test("a successful build's log path reaches result.buildLog")
+    func resultBuildLog() throws {
+        var context = UpContext()
+        context.buildLog = "/var/folders/T/mobile/MyApp-1a2b3c4d/build.log"
+
+        let json = try decode(UpReport(stages: [result("build", .pass)], context: context))
+        let outcome = try #require(json["result"] as? [String: Any])
+
+        #expect(outcome["buildLog"] as? String == "/var/folders/T/mobile/MyApp-1a2b3c4d/build.log")
+    }
+
     /// What a script can act on after the run. The `.app` path build also settled on
     /// is derived data — true for one machine until the next clean — so it stays
     /// inside the pipeline and the bundle id is what comes out.

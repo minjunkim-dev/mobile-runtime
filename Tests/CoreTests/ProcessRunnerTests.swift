@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import TestSupport
 
 @testable import Core
 
@@ -124,6 +125,89 @@ struct SystemProcessRunnerTests {
             try await runner.spawnDetached(
                 ProcessCommand("echo", ["hi"]),
                 logFile: URL(fileURLWithPath: "/dev/null/not-a-directory/out.log")
+            )
+        }
+    }
+
+    /// The point of the streamed destination: the output is in the file and nowhere in
+    /// memory. A caller that wants to remember something says so in `onLine`.
+    @Test("a streamed command keeps nothing in its result and everything in its file")
+    func streamedResultIsEmpty() async throws {
+        let logFile = try temporaryDirectory().appendingPathComponent("nested/run.log")
+        let lines = Mutable<[String]>([])
+
+        let result = try await runner.run(
+            ProcessCommand(
+                "sh", ["-c", "echo out; echo err >&2; exit 3"], output: .streamed(to: logFile)
+            ),
+            onLine: { line in lines.mutate { $0.append(line) } }
+        )
+
+        #expect(result.terminationStatus == .exited(3))
+        #expect(result.standardOutput.isEmpty)
+        #expect(result.standardError.isEmpty)
+        // Both streams, in one file, and the same lines through the callback.
+        let written = try String(contentsOf: logFile, encoding: .utf8)
+        #expect(written.contains("out\n"))
+        #expect(written.contains("err\n"))
+        #expect(lines.value.sorted() == ["err", "out"])
+    }
+
+    /// A pipe hands over chunks and a chunk ends where the kernel decided, which for a
+    /// line this long is somewhere in the middle of it. The callback must not see that.
+    @Test("a line split across chunks reaches the callback whole")
+    func linesSurviveChunkBoundaries() async throws {
+        let logFile = try temporaryDirectory().appendingPathComponent("long.log")
+        let lines = Mutable<[String]>([])
+        let width = 400_000
+
+        _ = try await runner.run(
+            ProcessCommand(
+                "sh",
+                ["-c", "head -c \(width) /dev/zero | tr '\\0' 'a'; echo; echo tail"],
+                output: .streamed(to: logFile)
+            ),
+            onLine: { line in lines.mutate { $0.append(line) } }
+        )
+
+        #expect(lines.value.count == 2)
+        #expect(lines.value.first?.count == width)
+        #expect(lines.value.last == "tail")
+    }
+
+    /// The accident this destination exists for: a healthy first build of a real app
+    /// printed about 39 MiB and the 4 MiB collected limit killed it (#55). Five is
+    /// enough to prove the limit is not on this path — forty would only prove it
+    /// slower.
+    @Test("a streamed command has no output limit")
+    func streamedOutputIsUnbounded() async throws {
+        let logFile = try temporaryDirectory().appendingPathComponent("big.log")
+        let bytes = 5 * 1024 * 1024
+
+        let result = try await runner.run(
+            ProcessCommand(
+                "sh",
+                ["-c", "head -c \(bytes) /dev/zero | tr '\\0' 'a' | fold -w 100"],
+                timeout: nil,
+                output: .streamed(to: logFile)
+            )
+        )
+
+        #expect(result.terminationStatus.isSuccess)
+        let written = try FileManager.default.attributesOfItem(atPath: logFile.path)[.size] as? Int
+        #expect(written ?? 0 >= bytes)
+    }
+
+    /// A log file that cannot be opened loses the whole output, so it stops the run
+    /// rather than leaving a build to fail with nothing to read.
+    @Test("a stream destination that cannot be written is an infrastructure error")
+    func streamLogFailure() async throws {
+        await #expect(throws: ProcessError.self) {
+            try await runner.run(
+                ProcessCommand(
+                    "echo", ["hi"],
+                    output: .streamed(to: URL(fileURLWithPath: "/dev/null/not-a-directory/out.log"))
+                )
             )
         }
     }

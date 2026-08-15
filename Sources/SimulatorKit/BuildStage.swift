@@ -3,10 +3,12 @@ import Foundation
 
 /// `build` — xcodebuild, Debug, on the simulator `device` chose.
 ///
-/// The one step of `up` that takes minutes, which decides three of its rules: no
+/// The one step of `up` that takes minutes, which decides four of its rules: no
 /// timeout (a slow machine's first clean build must not be killed by its own tool),
-/// an elapsed line on stderr while it runs (so nobody wonders whether it died), and
-/// on failure the whole log written to a file whose path goes in the remediation.
+/// output streamed straight to a file rather than held (a first clean build of a real
+/// app is tens of megabytes — ADR-0002's note on #44/#56), an elapsed line on stderr
+/// while it runs plus the lines worth reading as they arrive, and a failure that names
+/// the log file it has already written.
 public struct BuildStage: Stage {
     public let id = "build"
 
@@ -15,7 +17,7 @@ public struct BuildStage: Stage {
     private let config: ConfigContext
     private let runner: any ProcessRunner
     private let locator: XcodeLocator
-    /// Where a failed build's output goes.
+    /// Where the build's output goes — every run, not just a failed one.
     private let logs: RunLogs
     private let note: @Sendable (String) -> Void
     /// How often the elapsed line is printed. Long enough not to fill the terminal,
@@ -61,7 +63,7 @@ public struct BuildStage: Stage {
                 "-destination", "platform=iOS Simulator,id=\(device.udid)",
             ]
 
-        try await build(arguments, environment)
+        context.buildLog = try await build(arguments, environment).path
         context.product = try await product(arguments, scheme: scheme, environment: environment)
         return .pass(scheme)
     }
@@ -100,26 +102,30 @@ public struct BuildStage: Stage {
         }
     }
 
-    private func build(_ arguments: [String], _ environment: [String: String]) async throws {
+    /// - Returns: the log file the whole build was streamed to, kept on a success too.
+    private func build(_ arguments: [String], _ environment: [String: String]) async throws -> URL {
+        let file = logs.url("build.log")
         // No `-derivedDataPath`: Xcode's own location is the point, so opening the
         // project in Xcode shares this build's cache rather than doing it all again.
+        //
+        // Streamed rather than collected: a real app's first clean build runs to tens
+        // of megabytes, and the 4 MiB collected limit killed a healthy one (#55).
         let command = ProcessCommand(
-            "xcodebuild", arguments + ["build"], environment: environment, timeout: nil
+            "xcodebuild", arguments + ["build"], environment: environment, timeout: nil,
+            output: .streamed(to: file)
         )
-        let result = try await elapsing { try await runner.run(command) }
-        guard !result.terminationStatus.isSuccess else { return }
+        let watch = BuildWatch(logFile: file, note: note)
+        // Deferred, not called after: a build that dies on its way out has printed the
+        // same lines, and the reader needs the path to the rest of them either way.
+        defer { watch.finish() }
+        let result = try await elapsing { try await runner.run(command, onLine: { watch.saw($0) }) }
+        guard !result.terminationStatus.isSuccess else { return file }
 
-        // Both streams together, and the tail taken from the same text: xcodebuild
-        // prints its `error:` lines on stdout and keeps stderr for its own noise, so
-        // a tail that preferred stderr would show the least useful twenty lines.
-        let output = result.combinedOutput
-        let file = logs.write(output, to: "build.log")
         throw DomainError(
             summary: "the build failed",
-            observed: output.lastLines(20),
+            observed: watch.observed,
             remediation: Remediation(
-                summary: file.map { "The whole build log is at \($0.path)." }
-                    ?? "Run the build by hand to see the whole log — mobile could not write one.",
+                summary: "The whole build log is at \(file.path).",
                 command: Self.pasteable(command)
             )
         )
@@ -150,9 +156,9 @@ public struct BuildStage: Stage {
         return product
     }
 
-    /// An elapsed line on stderr for as long as the work takes. Collected output is
-    /// still the contract (ADR-0002) — this says the tool is alive, not what
-    /// xcodebuild is doing.
+    /// An elapsed line on stderr for as long as the work takes. It says the tool is
+    /// alive; what xcodebuild is doing comes from `BuildWatch`, and only for the lines
+    /// worth a reader's attention.
     private func elapsing<T: Sendable>(_ work: () async throws -> T) async rethrows -> T {
         let start = ContinuousClock.now
         let ticker = Task { [id, note, heartbeat] in
@@ -173,6 +179,68 @@ public struct BuildStage: Stage {
         ([command.executable] + command.arguments)
             .map { $0.contains(" ") ? "'\($0)'" : $0 }
             .joined(separator: " ")
+    }
+
+    /// What `build` chooses to remember from an output it no longer holds. Which lines
+    /// matter is xcodebuild knowledge, so it lives here and not in the runner — the
+    /// day a gradle filter belongs somewhere, it will not be in `ProcessRunner`.
+    ///
+    /// Two things come out of it: the lines shown while the build runs, and the
+    /// `observed` of a failure. Both prefer the notable lines, because xcodebuild
+    /// writes the cause in the middle of the log and piles warnings on the end — a
+    /// tail of twenty was almost always twenty warnings (#51).
+    private final class BuildWatch: @unchecked Sendable {
+        /// Enough to see a cascade of errors, few enough not to bury the run's own
+        /// progress lines. The same number bounds the failure's `observed`.
+        private static let limit = 20
+
+        private let lock = NSLock()
+        private let logFile: URL
+        private let note: @Sendable (String) -> Void
+        private var notable: [String] = []
+        private var shown = 0
+        /// The last lines of anything, for a build that failed without saying `error:`.
+        private var tail: [String] = []
+
+        init(logFile: URL, note: @escaping @Sendable (String) -> Void) {
+            self.logFile = logFile
+            self.note = note
+        }
+
+        func saw(_ line: String) {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            guard !trimmed.isEmpty else { return }
+            lock.withLock {
+                tail.append(trimmed)
+                if tail.count > Self.limit { tail.removeFirst() }
+                guard Self.isNotable(trimmed) else { return }
+                notable.append(trimmed)
+                if shown < Self.limit {
+                    shown += 1
+                    note(trimmed)
+                }
+            }
+        }
+
+        /// The one line that says the screen stopped short, printed once the count is
+        /// known. Nothing when everything notable was already shown.
+        func finish() {
+            lock.withLock {
+                guard notable.count > shown else { return }
+                note("…and \(notable.count - shown) more — full log: \(logFile.path)")
+            }
+        }
+
+        var observed: String {
+            lock.withLock { (notable.isEmpty ? tail : Array(notable.prefix(Self.limit))) }
+                .joined(separator: "\n")
+        }
+
+        /// `error:` covers `fatal error:` and the clang and Swift spellings alike; the
+        /// starred lines are how xcodebuild announces that it is done, either way.
+        private static func isNotable(_ line: String) -> Bool {
+            line.contains("error:") || (line.hasPrefix("** ") && line.hasSuffix(" **"))
+        }
     }
 
     private static let noTarget = DomainError(

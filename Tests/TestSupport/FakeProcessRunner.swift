@@ -74,7 +74,13 @@ public struct FakeProcessRunner: ProcessRunner {
         self.failures = failures
     }
 
-    public func run(_ command: ProcessCommand) async throws -> ProcessResult {
+    /// The canned output goes out line by line, the way a real stream would — but no
+    /// file is ever written. A test that cares about the log asserts on the path the
+    /// command carries, which is the only part of it a fake can honestly own.
+    public func run(
+        _ command: ProcessCommand,
+        onLine: (@Sendable (String) -> Void)?
+    ) async throws -> ProcessResult {
         log.record(command)
         if let failure = failures[command.description] { throw failure }
         guard let response = responses[command.description] else {
@@ -83,11 +89,17 @@ public struct FakeProcessRunner: ProcessRunner {
                 underlying: FixtureMiss(command: command.description)
             )
         }
-        return ProcessResult(
+        let result = ProcessResult(
             terminationStatus: response.status,
             standardOutput: response.standardOutput,
             standardError: response.standardError
         )
+        guard case .streamed = command.output else { return result }
+        for line in result.combinedOutput.split(separator: "\n") {
+            onLine?(String(line))
+        }
+        // Streamed output is in the file, so the result holds none of it.
+        return ProcessResult(terminationStatus: response.status, standardOutput: "", standardError: "")
     }
 
     /// No canned response to look up: a spawn has no output to answer with, and the
