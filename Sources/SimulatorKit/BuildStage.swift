@@ -200,7 +200,7 @@ public struct BuildStage: Stage {
         private var notable: [String] = []
         private var shown = 0
         /// The last lines of anything, for a build that failed without saying `error:`.
-        private var tail: [String] = []
+        private let tail = LineTail(limit: limit)
 
         init(logFile: URL, note: @escaping @Sendable (String) -> Void) {
             self.logFile = logFile
@@ -212,7 +212,6 @@ public struct BuildStage: Stage {
             guard !trimmed.isEmpty else { return }
             lock.withLock {
                 tail.append(trimmed)
-                if tail.count > Self.limit { tail.removeFirst() }
                 guard Self.isNotable(trimmed) else { return }
                 notable.append(trimmed)
                 if shown < Self.limit {
@@ -232,8 +231,9 @@ public struct BuildStage: Stage {
         }
 
         var observed: String {
-            lock.withLock { (notable.isEmpty ? tail : Array(notable.prefix(Self.limit))) }
-                .joined(separator: "\n")
+            lock.withLock {
+                notable.isEmpty ? tail.text : notable.prefix(Self.limit).joined(separator: "\n")
+            }
         }
 
         /// `error:` covers `fatal error:` and the clang and Swift spellings alike; the

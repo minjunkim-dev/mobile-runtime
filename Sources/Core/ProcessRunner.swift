@@ -92,6 +92,35 @@ extension String {
     }
 }
 
+/// The last `limit` lines of an output nobody is holding — `lastLines(_:)` for a
+/// caller watching a stream on its way to a file. Same rule about blank lines, for
+/// the same reason: the limit is there to be spent on content.
+///
+/// A locked class rather than a struct because it is fed from `run(_:onLine:)`, whose
+/// callback is `@Sendable` and outlives no scope a value could live in. Every stage
+/// that streams needs exactly this, so the lock lives here once instead of in a
+/// wrapper per stage.
+public final class LineTail: @unchecked Sendable {
+    private let lock = NSLock()
+    private let limit: Int
+    private var lines: [String] = []
+
+    public init(limit: Int) {
+        self.limit = limit
+    }
+
+    public func append(_ line: String) {
+        let trimmed = line.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return }
+        lock.withLock {
+            lines.append(trimmed)
+            if lines.count > limit { lines.removeFirst() }
+        }
+    }
+
+    public var text: String { lock.withLock { lines.joined(separator: "\n") } }
+}
+
 /// Infrastructure failure — the process could not be run to completion. Distinct
 /// from a domain failure, which is carried by the exit status of a `ProcessResult`.
 public enum ProcessError: Error, CustomStringConvertible {

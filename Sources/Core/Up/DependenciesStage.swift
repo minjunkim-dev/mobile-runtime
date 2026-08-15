@@ -14,10 +14,14 @@ public struct DependenciesStage: Stage {
 
     private let anchor: ProjectAnchor
     private let runner: any ProcessRunner
+    /// Where each install's whole output goes — a failed one's ten lines are almost
+    /// always the deprecation warnings the installer piled on after the reason (#49).
+    private let logs: RunLogs
 
-    public init(anchor: ProjectAnchor, runner: any ProcessRunner) {
+    public init(anchor: ProjectAnchor, runner: any ProcessRunner, logs: RunLogs? = nil) {
         self.anchor = anchor
         self.runner = runner
+        self.logs = logs ?? RunLogs(project: anchor.directory)
     }
 
     public func run(_ context: inout UpContext) async throws -> StageOutcome {
@@ -86,15 +90,25 @@ public struct DependenciesStage: Stage {
     /// project's, so it lands on exit 1 next to a line the reader can paste. An
     /// install that could not be *started* throws `ProcessError` from the runner and
     /// goes out as exit 2 untouched.
+    ///
+    /// Streamed to a file for the reason `build` is (ADR-0002's note on #44/#56): an
+    /// installer that fails says why somewhere, and the ten lines that fit on screen
+    /// are the warnings it printed afterwards. The tail stays as the first thing to
+    /// read; the file is where the reason actually is.
     private func install(_ command: ProcessCommand, what: String, byHand: String) async throws {
-        let result = try await runner.run(command)
+        var streamed = command
+        let file = logs.url("\(command.executable)-install.log")
+        streamed.output = .streamed(to: file)
+
+        let tail = LineTail(limit: 10)
+        let result = try await runner.run(streamed, onLine: { tail.append($0) })
         guard !result.terminationStatus.isSuccess else { return }
         throw DomainError(
             summary: "installing \(what) failed",
-            observed: result.combinedOutput.lastLines(10),
+            observed: tail.text,
             remediation: Remediation(
-                summary: "Run the install by hand to see the whole output — an installer that "
-                    + "fails usually says why in more lines than fit here.",
+                summary: "The whole install log is at \(file.path). "
+                    + "An installer that fails usually says why in more lines than fit here.",
                 command: byHand
             )
         )

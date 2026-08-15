@@ -20,13 +20,21 @@ private func anchor(_ repo: FixtureRepo, at relativePath: String? = nil) throws 
     return try #require(ProjectAnchor.detect(from: directory))
 }
 
+private func temporaryLogs() throws -> RunLogs {
+    let temporary = FileManager.default.temporaryDirectory
+        .appendingPathComponent("mobile-dependencies-\(UUID().uuidString)")
+    try FileManager.default.createDirectory(at: temporary, withIntermediateDirectories: true)
+    return RunLogs(project: URL(fileURLWithPath: "/a/MyApp"), temporaryDirectory: temporary)
+}
+
 @discardableResult
 private func run(
     _ anchor: ProjectAnchor,
     _ runner: FakeProcessRunner,
-    context: inout UpContext
+    context: inout UpContext,
+    logs: RunLogs? = nil
 ) async throws -> StageOutcome {
-    try await DependenciesStage(anchor: anchor, runner: runner).run(&context)
+    try await DependenciesStage(anchor: anchor, runner: runner, logs: logs).run(&context)
 }
 
 @Suite("dependencies stage")
@@ -192,6 +200,58 @@ struct DependenciesStageTests {
         #expect(error?.summary.contains("node_modules") == true)
         #expect(error?.observed?.contains("ENOTFOUND") == true)
         #expect(error?.remediation.command == "yarn install")
+    }
+
+    /// The ten lines that fit are not the fix — the file is. Both measured failures
+    /// put the reason above a page of the installer's own noise: npm's `[failed]` line
+    /// under twenty deprecation warnings, and pod's under mise installing a node (#49).
+    @Test("a failed install names the log file its whole output was streamed to")
+    func failureNamesLog() async throws {
+        let repo = try app()
+        let warnings = (1...20).map { "npm warn deprecated thing@\($0)" }.joined(separator: "\n")
+        let runner = FakeProcessRunner(responses: [
+            "yarn install": FakeProcessRunner.Response(
+                status: .exited(1),
+                standardOutput: "'pod' binary 1.16.1 [failed]\n" + warnings + "\n"
+            )
+        ])
+        let logs = try temporaryLogs()
+        var context = UpContext()
+
+        let error = await #expect(throws: DomainError.self) {
+            try await run(try anchor(repo), runner, context: &context, logs: logs)
+        }
+
+        let file = logs.url("yarn-install.log")
+        #expect(error?.remediation.summary.contains(file.path) == true)
+        #expect(try #require(runner.log.first(matching: "yarn install")).output == .streamed(to: file))
+        // Still the last ten — and they are still the warnings, which is exactly why
+        // the path above them has to be there.
+        let observed = try #require(error?.observed)
+        #expect(observed.split(separator: "\n").count == 10)
+        #expect(observed.contains("[failed]") == false)
+    }
+
+    /// The log is named after the installer, not after the stage, so a run that does
+    /// both leaves two files rather than the second overwriting the first.
+    @Test("a failed pod install names the pod log, not the node one")
+    func podFailureNamesItsOwnLog() async throws {
+        let repo = try app()
+        try repo.directory("node_modules")
+        try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
+        let runner = FakeProcessRunner(responses: [
+            "pod install": .failed(1, "[!] CocoaPods could not find compatible versions for pod \"React\"\n")
+        ])
+        let logs = try temporaryLogs()
+        var context = UpContext()
+
+        let error = await #expect(throws: DomainError.self) {
+            try await run(try anchor(repo), runner, context: &context, logs: logs)
+        }
+
+        #expect(error?.remediation.summary.contains(logs.url("pod-install.log").path) == true)
+        #expect(error?.remediation.summary.contains("yarn-install.log") == false)
+        #expect(error?.observed?.contains("could not find compatible versions") == true)
     }
 
     /// The other exit code: a runner that could not start the install at all is the
