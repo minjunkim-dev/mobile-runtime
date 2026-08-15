@@ -205,4 +205,149 @@ struct ProjectAnchorTests {
 
         #expect(ProjectAnchor.detect(from: repo.root) == nil)
     }
+
+    /// mattermost-mobile's, byte for byte: a bare `pod install` in this repo dies on
+    /// the New Architecture flag the script sets, so the declaration is the only way
+    /// the Pods ever get installed (#48).
+    @Test("a declared pod install script is run through the project's package manager")
+    func declaredPodInstallScript() throws {
+        let repo = try FixtureRepo()
+        try repo.write(
+            "package.json",
+            #"""
+            {
+              "dependencies": {"react-native": "0.81.6"},
+              "scripts": {"pod-install": "cd ios && RCT_NEW_ARCH_ENABLED=1 pod install"}
+            }
+            """#
+        )
+        try repo.write("yarn.lock", "")
+
+        let anchor = try #require(ProjectAnchor.detect(from: repo.root))
+
+        #expect(anchor.podInstallScript == "pod-install")
+        #expect(anchor.podInstallProcess.description == "yarn run pod-install")
+        // At the anchor, not in `ios/`: the script does its own `cd`, and the
+        // manager has to be run where the `package.json` declaring it is.
+        #expect(anchor.podInstallProcess.workingDirectory?.path == repo.root.path)
+        #expect(anchor.podInstallCommand == "cd \(repo.root.path) && yarn run pod-install")
+    }
+
+    /// A repo that declares nothing keeps the behaviour it had — the bare install in
+    /// `ios/`, which is what two of the three dogfooding repos needed.
+    @Test("no declared script leaves pod install bare, in ios/")
+    func noPodInstallScript() throws {
+        let repo = try FixtureRepo()
+        try repo.write("package.json", #"{"dependencies": {"react-native": "0.81.6"}}"#)
+
+        let anchor = try #require(ProjectAnchor.detect(from: repo.root))
+
+        #expect(anchor.podInstallScript == nil)
+        #expect(anchor.podInstallProcess.description == "pod install")
+        #expect(anchor.podInstallProcess.workingDirectory?.path == repo.url("ios").path)
+        #expect(anchor.podInstallCommand == "cd \(repo.url("ios").path) && pod install")
+    }
+
+    /// Both halves have to agree. joplin's root `postinstall` does run `pod install`,
+    /// on its way through a dozen other things — running it as the Pods step would be
+    /// running the whole install again.
+    @Test("a script that installs Pods under an unconventional name is not the pod install")
+    func podInstallScriptNeedsAConventionalName() throws {
+        let repo = try FixtureRepo()
+        try repo.write(
+            "package.json",
+            #"""
+            {
+              "dependencies": {"react-native": "0.81.6"},
+              "scripts": {"postinstall": "npm run build && cd ios && pod install"}
+            }
+            """#
+        )
+
+        #expect(try #require(ProjectAnchor.detect(from: repo.root)).podInstallScript == nil)
+    }
+
+    /// And the other half: a conventional name whose body does something else is not
+    /// evidence either. `pods` is a common name for a lint or a cleanup.
+    @Test("a conventionally named script that does not run pod install is not the pod install")
+    func podInstallScriptNeedsAPodInstall() throws {
+        let repo = try FixtureRepo()
+        try repo.write(
+            "package.json",
+            #"""
+            {
+              "dependencies": {"react-native": "0.81.6"},
+              "scripts": {"pods": "rm -rf ios/Pods"}
+            }
+            """#
+        )
+
+        #expect(try #require(ProjectAnchor.detect(from: repo.root)).podInstallScript == nil)
+    }
+
+    /// `npx pod-install` is how a large share of React Native apps spell it — the npm
+    /// package, not the CocoaPods binary. Reading only the two-word spelling would put
+    /// those repos back on the bare command this whole chain exists to replace.
+    @Test("a script that runs the pod-install package counts as a declared pod install")
+    func podInstallScriptViaTheNPMPackage() throws {
+        let repo = try FixtureRepo()
+        try repo.write(
+            "package.json",
+            #"""
+            {
+              "dependencies": {"react-native": "0.81.6"},
+              "scripts": {"pod-install": "npx pod-install ios"}
+            }
+            """#
+        )
+
+        #expect(try #require(ProjectAnchor.detect(from: repo.root)).podInstallScript == "pod-install")
+    }
+
+    /// A manifest holding several is read in one order, not whichever the JSON
+    /// dictionary happens to hand back first — two runs picking different scripts is
+    /// the same class of bug as two readers picking their own evidence.
+    @Test("a manifest declaring several conventional names is read in a fixed order")
+    func podInstallScriptOrder() throws {
+        let repo = try FixtureRepo()
+        try repo.write(
+            "package.json",
+            #"""
+            {
+              "dependencies": {"react-native": "0.81.6"},
+              "scripts": {
+                "pods": "cd ios && pod install",
+                "install-pods": "bundle exec pod install",
+                "pod-install": "cd ios && RCT_NEW_ARCH_ENABLED=1 pod install"
+              }
+            }
+            """#
+        )
+
+        #expect(try #require(ProjectAnchor.detect(from: repo.root)).podInstallScript == "pod-install")
+    }
+
+    /// A pasted command has to carry what chose it (ADR-0003) — `yarn run pod-install`
+    /// says less about itself than the `pod install` it replaced.
+    @Test("the declared pod install names the declaration that picked it")
+    func podInstallEvidence() throws {
+        let repo = try FixtureRepo()
+        try repo.write(
+            "package.json",
+            #"""
+            {
+              "dependencies": {"react-native": "0.81.6"},
+              "scripts": {"pod-install": "cd ios && pod install"}
+            }
+            """#
+        )
+        try repo.write("yarn.lock", "")
+
+        let anchor = try #require(ProjectAnchor.detect(from: repo.root))
+
+        #expect(anchor.podInstallEvidence.contains("scripts.pod-install"))
+        // Nothing declared, nothing to name: a default is not evidence.
+        try repo.write("package.json", #"{"dependencies": {"react-native": "0.81.6"}}"#)
+        #expect(try #require(ProjectAnchor.detect(from: repo.root)).podInstallEvidence.isEmpty)
+    }
 }

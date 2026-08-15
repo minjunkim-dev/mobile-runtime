@@ -123,6 +123,69 @@ struct DependenciesStageTests {
         #expect(install.workingDirectory?.path == repo.url("ios").path)
     }
 
+    /// The repo that made this a ticket: mattermost-mobile's bare `pod install` dies
+    /// on the New Architecture flag its own script sets, so a bare one here means the
+    /// Pods never install at all (#48).
+    @Test("a project that declares its pod install has that run instead of the bare one")
+    func installsPodsWithTheDeclaredScript() async throws {
+        let repo = try FixtureRepo()
+        try repo.write(
+            "package.json",
+            #"""
+            {
+              "dependencies": {"react-native": "0.81.0"},
+              "scripts": {"pod-install": "cd ios && RCT_NEW_ARCH_ENABLED=1 pod install"}
+            }
+            """#
+        )
+        try repo.write("yarn.lock", "")
+        try repo.directory("node_modules")
+        try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
+        let runner = FakeProcessRunner(responses: ["yarn run pod-install": .ok("")])
+        var context = UpContext()
+
+        let outcome = try await run(try anchor(repo), runner, context: &context)
+
+        #expect(outcome.status == .pass)
+        let install = try #require(runner.log.first(matching: "yarn run pod-install"))
+        // The script does its own `cd ios`; the manager runs where the manifest is.
+        #expect(install.workingDirectory?.path == repo.root.path)
+        #expect(runner.log.first(matching: "pod install") == nil)
+    }
+
+    /// The command a failure hands a human has to be the one that works. The old line
+    /// (`cd ios && pod install`) hit the same wall `up` did, so following the screen
+    /// led nowhere.
+    @Test("a failed declared pod install hands back the declared command")
+    func declaredPodInstallFailureRepeatsTheScript() async throws {
+        let repo = try FixtureRepo()
+        try repo.write(
+            "package.json",
+            #"""
+            {
+              "dependencies": {"react-native": "0.81.0"},
+              "scripts": {"install-pods": "bundle exec pod install --repo-update"}
+            }
+            """#
+        )
+        try repo.write("yarn.lock", "")
+        try repo.directory("node_modules")
+        try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
+        let runner = FakeProcessRunner(responses: [
+            "yarn run install-pods": .failed(1, "[!] Invalid `Podfile` file\n")
+        ])
+        var context = UpContext()
+
+        let error = await #expect(throws: DomainError.self) {
+            try await run(try anchor(repo), runner, context: &context)
+        }
+
+        #expect(error?.remediation.command == "cd \(repo.root.path) && yarn run install-pods")
+        // And what chose it: `yarn run install-pods` says less about itself than the
+        // `pod install` it replaced, so the declaration comes with it (ADR-0003).
+        #expect(error?.remediation.summary.contains("scripts.install-pods") == true)
+    }
+
     /// CocoaPods' own rule, byte for byte: the manifest it wrote next to `Pods/` has
     /// to be the lock it was built from.
     @Test("a manifest that matches the lock skips pod install")
@@ -222,7 +285,7 @@ struct DependenciesStageTests {
             try await run(try anchor(repo), runner, context: &context, logs: logs)
         }
 
-        let file = logs.url("yarn-install.log")
+        let file = logs.url("node_modules-install.log")
         #expect(error?.remediation.summary.contains(file.path) == true)
         #expect(try #require(runner.log.first(matching: "yarn install")).output == .streamed(to: file))
         // Still the last ten — and they are still the warnings, which is exactly why
@@ -232,15 +295,29 @@ struct DependenciesStageTests {
         #expect(observed.contains("[failed]") == false)
     }
 
-    /// The log is named after the installer, not after the stage, so a run that does
-    /// both leaves two files rather than the second overwriting the first.
-    @Test("a failed pod install names the pod log, not the node one")
+    /// The log is named after what is being installed, not after the installer, so a
+    /// run that does both leaves two files rather than the second overwriting the
+    /// first. A declared pod install makes that the only naming that works: both
+    /// halves of this stage then run through the same `yarn`.
+    @Test("a failed pod install names the Pods log, not the node one")
     func podFailureNamesItsOwnLog() async throws {
-        let repo = try app()
+        let repo = try FixtureRepo()
+        try repo.write(
+            "package.json",
+            #"""
+            {
+              "dependencies": {"react-native": "0.81.0"},
+              "scripts": {"pod-install": "cd ios && pod install"}
+            }
+            """#
+        )
+        try repo.write("yarn.lock", "")
         try repo.directory("node_modules")
         try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
         let runner = FakeProcessRunner(responses: [
-            "pod install": .failed(1, "[!] CocoaPods could not find compatible versions for pod \"React\"\n")
+            "yarn run pod-install": .failed(
+                1, "[!] CocoaPods could not find compatible versions for pod \"React\"\n"
+            )
         ])
         let logs = try temporaryLogs()
         var context = UpContext()
@@ -249,8 +326,8 @@ struct DependenciesStageTests {
             try await run(try anchor(repo), runner, context: &context, logs: logs)
         }
 
-        #expect(error?.remediation.summary.contains(logs.url("pod-install.log").path) == true)
-        #expect(error?.remediation.summary.contains("yarn-install.log") == false)
+        #expect(error?.remediation.summary.contains(logs.url("Pods-install.log").path) == true)
+        #expect(error?.remediation.summary.contains("node_modules-install.log") == false)
         #expect(error?.observed?.contains("could not find compatible versions") == true)
     }
 

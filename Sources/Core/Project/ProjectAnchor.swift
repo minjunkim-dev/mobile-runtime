@@ -132,6 +132,10 @@ public struct ProjectAnchor: Sendable, Equatable {
     /// nil when no lockfile sits at or above the anchor — nothing has ever been
     /// installed from this tree, so there is no measured manager to name.
     public let workspaceRoot: WorkspaceRoot?
+    /// The name of the `package.json` script the project declared for installing its
+    /// Pods, when it declared one. nil is silence, and silence means the bare
+    /// `pod install` is all anybody said to run.
+    public let podInstallScript: String?
 
     /// What a human would run to install the project's dependencies. doctor prints
     /// it and never runs it.
@@ -156,6 +160,56 @@ public struct ProjectAnchor: Sendable, Equatable {
                 packageManager?.name ?? "npm", ["install"],
                 workingDirectory: directory, timeout: nil
             )
+    }
+
+    /// What `up` runs to install the Pods. The project's own script when it declared
+    /// one, else the bare `pod install` in `ios/`.
+    ///
+    /// A repo that declares the install declares it for a reason: mattermost-mobile's
+    /// script sets `RCT_NEW_ARCH_ENABLED=1`, without which its `Podfile` refuses to
+    /// evaluate — so a bare `pod install` there does not install slightly differently,
+    /// it never installs at all (#48). The script is run through the manager rather
+    /// than unpacked and re-run, because what it does is the project's business.
+    ///
+    /// The working directory follows the same logic: a declared script runs where the
+    /// `package.json` that declares it is (`cd ios` is usually the script's own first
+    /// word), a bare `pod install` runs where the `Podfile` is.
+    ///
+    /// No timeout, for the reason a Node install has none: a cold pod install is
+    /// minutes of network, and it was measured at eleven.
+    public var podInstallProcess: ProcessCommand {
+        guard let podInstallScript else {
+            return ProcessCommand(
+                "pod", ["install"],
+                workingDirectory: directory.appendingPathComponent("ios"), timeout: nil
+            )
+        }
+        return ProcessCommand(
+            packageManagerName, ["run", podInstallScript],
+            workingDirectory: directory, timeout: nil
+        )
+    }
+
+    /// The same install as a line to paste. One decision written once, like
+    /// `installCommand` and `installProcess` — a remediation that hands over a command
+    /// `up` did not run is the failure this ticket started as.
+    ///
+    /// Always with the `cd`: unlike the Node install, neither destination is where a
+    /// human is standing when they read the failure.
+    public var podInstallCommand: String {
+        let process = podInstallProcess
+        return "cd \((process.workingDirectory ?? directory).path) && \(process.description)"
+    }
+
+    /// Why this command and not another one. A pasted `yarn run pod-install` says less
+    /// about itself than the `pod install` it replaced, so the line that hands it over
+    /// carries the declaration that chose it (ADR-0003) — the same duty
+    /// `ProjectDetectedCheck` pays for the Node install with the lockfile's name.
+    ///
+    /// Empty when nothing was declared: there is no evidence to name, only a default.
+    public var podInstallEvidence: String {
+        guard let podInstallScript else { return "" }
+        return " `package.json` `scripts.\(podInstallScript)` is what picks it."
     }
 
     /// The Project checks this anchor can answer. A Check that needs a declaration
@@ -247,8 +301,39 @@ public struct ProjectAnchor: Sendable, Equatable {
             deploymentTarget: DeploymentTarget.resolve(
                 anchorDirectory: directory, fileManager: fileManager
             ),
-            workspaceRoot: workspaceRoot
+            workspaceRoot: workspaceRoot,
+            podInstallScript: podInstallScript(in: manifest)
         )
+    }
+
+    /// Names the ecosystem actually uses for "install the Pods", in the order a
+    /// manifest holding several is read.
+    private static let podInstallScriptNames = [
+        "pod-install", "pods-install", "install-pods", "install:pods", "pod:install", "pods",
+    ]
+
+    /// The declared pod install, read from the anchor's `scripts`. Both halves have to
+    /// agree — a conventional name **and** a body that runs `pod install`.
+    ///
+    /// Either half alone misreads one of the three dogfooding repos. On the name
+    /// alone, a `pods` script that cleans or lints gets run as an install. On the body
+    /// alone, joplin's root `postinstall` matches — it does run `pod install`, on its
+    /// way through a dozen other things, and running it as the Pods step would run the
+    /// whole install a second time.
+    ///
+    /// Only the anchor's manifest: the `ios/` directory belongs to the anchor, and a
+    /// workspace root's script would be some other package's install.
+    ///
+    /// `pod-install` counts as a body too — the npm package of that name is how a
+    /// large share of React Native apps spell the install (`npx pod-install`), and
+    /// missing it would put those repos back on the bare command this ticket exists
+    /// to stop.
+    private static func podInstallScript(in manifest: [String: Any]) -> String? {
+        guard let scripts = manifest["scripts"] as? [String: Any] else { return nil }
+        return podInstallScriptNames.first {
+            guard let body = scripts[$0] as? String else { return false }
+            return body.contains("pod install") || body.contains("pod-install")
+        }
     }
 
     private static func manifest(in directory: String, fileManager: FileManager) -> [String: Any]? {

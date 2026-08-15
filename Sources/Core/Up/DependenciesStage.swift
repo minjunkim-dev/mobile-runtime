@@ -57,6 +57,10 @@ public struct DependenciesStage: Stage {
 
     /// Only when there is a Podfile: a project that does not use CocoaPods is not
     /// punished for it with a stage that looks for files it will never have.
+    ///
+    /// *How* the Pods get installed is the anchor's answer, not this stage's — a repo
+    /// that declared its own pod install declared it because the bare one does not
+    /// work there (#48).
     private func installPods() async throws -> Bool {
         let ios = anchor.directory.appendingPathComponent("ios")
         guard FileManager.default.fileExists(atPath: ios.appendingPathComponent(Self.podfile).path),
@@ -64,9 +68,10 @@ public struct DependenciesStage: Stage {
         else { return false }
 
         try await install(
-            ProcessCommand("pod", ["install"], workingDirectory: ios, timeout: nil),
+            anchor.podInstallProcess,
             what: "Pods",
-            byHand: "cd \(ios.path) && pod install"
+            byHand: anchor.podInstallCommand,
+            chosenBy: anchor.podInstallEvidence
         )
         return true
     }
@@ -95,9 +100,19 @@ public struct DependenciesStage: Stage {
     /// installer that fails says why somewhere, and the ten lines that fit on screen
     /// are the warnings it printed afterwards. The tail stays as the first thing to
     /// read; the file is where the reason actually is.
-    private func install(_ command: ProcessCommand, what: String, byHand: String) async throws {
+    ///
+    /// The log is named after what is being installed, not after the installer that
+    /// ran: a declared pod install goes through the same `yarn` the Node install did,
+    /// and a name taken from the executable would have the second overwrite the first.
+    ///
+    /// - Parameter chosenBy: what picked `byHand`, when something did. A pasted
+    ///   command carries the evidence that chose it (ADR-0003); empty when the command
+    ///   is the default and there is no evidence to name.
+    private func install(
+        _ command: ProcessCommand, what: String, byHand: String, chosenBy: String = ""
+    ) async throws {
         var streamed = command
-        let file = logs.url("\(command.executable)-install.log")
+        let file = logs.url("\(what)-install.log")
         streamed.output = .streamed(to: file)
 
         let tail = LineTail(limit: 10)
@@ -108,7 +123,8 @@ public struct DependenciesStage: Stage {
             observed: tail.text,
             remediation: Remediation(
                 summary: "The whole install log is at \(file.path). "
-                    + "An installer that fails usually says why in more lines than fit here.",
+                    + "An installer that fails usually says why in more lines than fit here."
+                    + chosenBy,
                 command: byHand
             )
         )
