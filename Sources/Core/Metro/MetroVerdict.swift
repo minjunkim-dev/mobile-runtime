@@ -117,7 +117,11 @@ public enum MetroVerdict: Sendable, Equatable {
     /// Which process is listening is `lsof`'s answer in every stopping branch — even
     /// the one where the header already named a directory, and above all the one where
     /// nothing about the port is known beyond the fact that it answered.
-    private static let listenerCommand = "lsof -nP -iTCP:\(port) -sTCP:LISTEN"
+    ///
+    /// Public because `down` asks the same question for real, and a line a user is
+    /// told to paste must be the line the tool itself runs (ADR-0006).
+    public static let listenerArguments = ["-nP", "-iTCP:\(port)", "-sTCP:LISTEN"]
+    public static let listenerCommand = (["lsof"] + listenerArguments).joined(separator: " ")
 
     /// curl's `CURLE_COULDNT_CONNECT`.
     private static let couldNotConnect: Int32 = 7

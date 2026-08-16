@@ -37,6 +37,10 @@ private func locator(_ runner: FakeProcessRunner) -> XcodeLocator {
     XcodeLocator(runner: runner, developerDirOverride: nil)
 }
 
+private func install(_ runner: FakeProcessRunner, logs: RunLogs? = nil) throws -> InstallStage {
+    InstallStage(runner: runner, locator: locator(runner), logs: try logs ?? RunLogs.temporary())
+}
+
 @Suite("install stage")
 struct InstallStageTests {
     /// simctl replaces the bundle in place. Uninstalling first would take the app's
@@ -46,13 +50,28 @@ struct InstallStageTests {
         let runner = runner([installCommand: .ok("")])
         var context = afterBuild()
 
-        let outcome = try await InstallStage(runner: runner, locator: locator(runner)).run(&context)
+        let outcome = try await install(runner).run(&context)
 
         #expect(outcome.status == .pass)
         let install = try #require(runner.log.first(matching: installCommand))
         #expect(install.environment["DEVELOPER_DIR"] == developerDirectory)
         let sent = runner.log.all.map(\.description)
         #expect(sent.contains { $0.contains("uninstall") || $0.contains("erase") } == false)
+    }
+
+    /// The first moment both halves of "which app, on which device" are settled, and
+    /// the only path `down` has to them afterwards — a simulator cannot be asked.
+    @Test("a finished install leaves the record down reads")
+    func writesTheInstallRecord() async throws {
+        let runner = runner([installCommand: .ok("")])
+        let logs = try RunLogs.temporary()
+        var context = afterBuild()
+
+        _ = try await install(runner, logs: logs).run(&context)
+
+        let record = try #require(InstallRecord.read(from: logs))
+        #expect(record.udid == udid)
+        #expect(record.bundleId == bundleID)
     }
 
     @Test("a refused install stops the run with what simctl said and a line to repeat it")
@@ -63,7 +82,7 @@ struct InstallStageTests {
         var context = afterBuild()
 
         let error = await #expect(throws: DomainError.self) {
-            try await InstallStage(runner: runner, locator: locator(runner)).run(&context)
+            try await install(runner).run(&context)
         }
 
         #expect(error?.summary.contains("iPhone 17 Pro") == true)
@@ -79,7 +98,7 @@ struct InstallStageTests {
         var context = UpContext()
 
         await #expect(throws: ToolUnavailable.self) {
-            try await InstallStage(runner: runner, locator: locator(runner)).run(&context)
+            try await install(runner).run(&context)
         }
     }
 }

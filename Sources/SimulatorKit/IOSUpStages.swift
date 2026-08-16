@@ -17,16 +17,19 @@ public func iOSUpStages(
     settle: Duration = LaunchStage.defaultSettle,
     note: @escaping @Sendable (String) -> Void
 ) -> [any Stage] {
-    [
+    // One log directory per run of the pipeline, so the stage that streams into it
+    // and the stage that writes the install record next to it cannot disagree.
+    let logs = RunLogs(project: anchor.directory)
+    return [
         ValidateStage(engine: doctor, checkIDs: IOSUpValidation.checkIDs),
         DependenciesStage(anchor: anchor, runner: runner),
         DeviceStage(
             declared: config.configuration?.device, lookup: lookup, runner: runner, locator: locator
         ),
         // Before build on purpose: Metro warms up while xcodebuild spends its minutes.
-        MetroStage(anchor: anchor, runner: runner),
+        MetroStage(anchor: anchor, runner: runner, logs: logs),
         BuildStage(config: config, runner: runner, locator: locator, note: note),
-        InstallStage(runner: runner, locator: locator),
+        InstallStage(runner: runner, locator: locator, logs: logs),
         LaunchStage(runner: runner, locator: locator, settle: settle),
     ]
 }

@@ -173,6 +173,15 @@ public struct UpWriter: Sendable {
             standardError("")
             standardError(renderer.render(DoctorReport(checks: [Self.check(for: failure, in: report)])))
         }
+
+        // A failed run leaves its own Metro behind — `up` does not roll back (#13),
+        // so the line that cleans it up is worth printing. Only when this run started
+        // it: a reused Metro was there before, and telling a user to stop what they
+        // were already using is not a next step, it is a mess.
+        if report.failure != nil, report.context.metro?.state == .spawned {
+            standardError("")
+            standardError("The Metro this run started is still on \(MetroVerdict.port) — `mobile down` stops it.")
+        }
     }
 
     private func renderedAsValidation(_ failure: UpFailure, _ report: UpReport) -> Bool {

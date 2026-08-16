@@ -13,10 +13,13 @@ public struct InstallStage: Stage {
 
     private let runner: any ProcessRunner
     private let locator: XcodeLocator
+    /// Where the install record goes — next to this run's logs.
+    private let logs: RunLogs
 
-    public init(runner: any ProcessRunner, locator: XcodeLocator) {
+    public init(runner: any ProcessRunner, locator: XcodeLocator, logs: RunLogs) {
         self.runner = runner
         self.locator = locator
+        self.logs = logs
     }
 
     public func run(_ context: inout UpContext) async throws -> StageOutcome {
@@ -40,6 +43,12 @@ public struct InstallStage: Stage {
                 )
             )
         }
+        // The first moment both halves of "which app, on which device" are settled,
+        // and the only path `down` has to them later. Best effort: a record that
+        // could not be written costs a `down` that skips the app, and losing that is
+        // not worth failing an install that worked.
+        InstallRecord(udid: device.udid, bundleId: product.bundleIdentifier).write(to: logs)
+
         return .pass(product.bundleIdentifier)
     }
 }
