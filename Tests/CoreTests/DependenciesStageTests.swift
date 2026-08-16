@@ -123,6 +123,113 @@ struct DependenciesStageTests {
         #expect(install.workingDirectory?.path == repo.url("ios").path)
     }
 
+    /// The repo that made this a ticket: rainbow declares `bundle exec pod install`,
+    /// and bundler refuses to run anything at all while a gem in the lock is missing
+    /// — so on a fresh clone the pod install never starts (#59).
+    @Test("gems the project declared are installed before the Pods that need them")
+    func installsGemsBeforePods() async throws {
+        let repo = try app()
+        try repo.directory("node_modules")
+        try repo.write("Gemfile", "gem 'cocoapods', '1.16.1'\n")
+        try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
+        let runner = FakeProcessRunner(responses: [
+            "bundle check": .failed(1, "The following gems are missing"),
+            "bundle install": .ok(""),
+            "pod install": .ok(""),
+        ])
+        var context = UpContext()
+
+        let outcome = try await run(try anchor(repo), runner, context: &context)
+
+        #expect(outcome.status == .pass)
+        #expect(outcome.detail == "installed gems and Pods")
+        let sent = runner.log.all.map(\.description)
+        let gems = try #require(sent.firstIndex(of: "bundle install"))
+        let pods = try #require(sent.firstIndex(of: "pod install"))
+        #expect(gems < pods)
+        #expect(runner.log.first(matching: "bundle install")?.workingDirectory?.path == repo.root.path)
+    }
+
+    /// `bundle check` is bundler's own question about bundler's own files. When it
+    /// says the gems are there, a `bundle install` would be tens of seconds spent to
+    /// be told the same thing.
+    @Test("gems already installed are not reinstalled")
+    func skipsInstalledGems() async throws {
+        let repo = try app()
+        try repo.directory("node_modules")
+        try repo.write("Gemfile", "gem 'cocoapods', '1.16.1'\n")
+        try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
+        let runner = FakeProcessRunner(responses: [
+            "bundle check": .ok("The Gemfile's dependencies are satisfied"),
+            "pod install": .ok(""),
+        ])
+        var context = UpContext()
+
+        let outcome = try await run(try anchor(repo), runner, context: &context)
+
+        #expect(outcome.detail == "installed Pods")
+        #expect(runner.log.all.map(\.description).contains("bundle install") == false)
+    }
+
+    /// A project that declared no gems is never asked about them.
+    @Test("no Gemfile means bundler is never called")
+    func noGemfile() async throws {
+        let repo = try app()
+        try repo.directory("node_modules")
+        try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
+        let runner = FakeProcessRunner(responses: ["pod install": .ok("")])
+        var context = UpContext()
+
+        _ = try await run(try anchor(repo), runner, context: &context)
+
+        #expect(runner.log.all.map(\.description).contains { $0.hasPrefix("bundle") } == false)
+    }
+
+    /// The failure that started the ticket handed over a command that reproduced it.
+    /// This one hands over the command that fixes it.
+    @Test("a failed gem install stops the run with a line that actually installs them")
+    func failedGemInstall() async throws {
+        let repo = try app()
+        try repo.directory("node_modules")
+        try repo.write("Gemfile", "gem 'cocoapods', '1.16.1'\n")
+        try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
+        let runner = FakeProcessRunner(responses: [
+            "bundle check": .failed(1, "missing"),
+            "bundle install": .failed(
+                17, "Could not find fastlane-2.232.1 in locally installed gems"
+            ),
+        ])
+        var context = UpContext()
+
+        let error = await #expect(throws: DomainError.self) {
+            try await run(try anchor(repo), runner, context: &context)
+        }
+
+        #expect(error?.summary == "installing gems failed")
+        #expect(error?.remediation.command == "cd \(repo.root.path) && bundle install")
+        #expect(runner.log.all.map(\.description).contains("pod install") == false)
+    }
+
+    /// A `bundle` that cannot run at all is not this stage's news: the pod install is
+    /// about to run and says what it needs in its own words.
+    @Test("a bundler that cannot be run leaves the pod install to speak")
+    func bundlerMissing() async throws {
+        let repo = try app()
+        try repo.directory("node_modules")
+        try repo.write("Gemfile", "gem 'cocoapods', '1.16.1'\n")
+        try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
+        var runner = FakeProcessRunner(responses: ["pod install": .ok("")])
+        runner.failures["bundle check"] = ProcessError.spawnFailed(
+            command: "bundle check", underlying: FixtureMiss(command: "bundle")
+        )
+        var context = UpContext()
+
+        let outcome = try await run(try anchor(repo), runner, context: &context)
+
+        #expect(outcome.detail == "installed Pods")
+        #expect(runner.log.all.map(\.description).contains("bundle install") == false)
+    }
+
     /// The repo that made this a ticket: mattermost-mobile's bare `pod install` dies
     /// on the New Architecture flag its own script sets, so a bare one here means the
     /// Pods never install at all (#48).

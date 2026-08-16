@@ -201,6 +201,27 @@ public struct ProjectAnchor: Sendable, Equatable {
         return "cd \((process.workingDirectory ?? directory).path) && \(process.description)"
     }
 
+    /// What `up` runs to install the gems this project declared. nil when it declared
+    /// none — `cocoapods` is non-nil exactly when a `Gemfile` or a `Gemfile.lock` sits
+    /// at the anchor, which is the same question asked once.
+    ///
+    /// A declared pod install usually goes through `bundle exec`, and bundler refuses
+    /// to run anything at all until every gem in the lock is present — so on a fresh
+    /// clone the pod install cannot start (#59). The gems are the project's own
+    /// dependencies by the same test `node_modules` and `Pods` pass: gitignored,
+    /// reinstallable, and already described by a lockfile the project committed.
+    public var gemInstallProcess: ProcessCommand? {
+        guard cocoapods != nil else { return nil }
+        // No timeout, for the reason the other two installs have none: it is minutes
+        // of network on a cold machine.
+        return ProcessCommand("bundle", ["install"], workingDirectory: directory, timeout: nil)
+    }
+
+    /// The same install as a line to paste — always with the `cd`, like the pod one.
+    public var gemInstallCommand: String? {
+        gemInstallProcess.map { "cd \(($0.workingDirectory ?? directory).path) && \($0.description)" }
+    }
+
     /// Why this command and not another one. A pasted `yarn run pod-install` says less
     /// about itself than the `pod install` it replaced, so the line that hands it over
     /// carries the declaration that chose it (ADR-0003) — the same duty
