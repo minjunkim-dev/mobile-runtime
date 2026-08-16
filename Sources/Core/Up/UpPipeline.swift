@@ -9,10 +9,8 @@ public enum UpFailure: Sendable {
 
     public var message: String {
         switch self {
-        case .domain(let error):
-            [error.summary, error.observed].compactMap { $0 }.joined(separator: " — ")
-        case .tool(let description):
-            description
+        case .domain(let error): error.message
+        case .tool(let description): description
         }
     }
 
@@ -42,6 +40,17 @@ public struct UpReport: Sendable {
     /// pipeline's own word — the rest is whatever the Stages observed.
     public var status: CheckStatus {
         failure == nil ? (context.validation?.status ?? .pass) : .error
+    }
+
+    /// What a failed run leaves behind that a user can clean up in one line. Only
+    /// when this run started the Metro: a reused one was there before, and telling
+    /// someone to stop what they were already using is not a next step. `up` does
+    /// not roll back (#13), so the line is worth carrying — on both streams, which
+    /// is why it is written here rather than at one of them.
+    public var teardownHint: String? {
+        guard failure != nil, context.metro?.state == .spawned else { return nil }
+        return "The Metro this run started is still on \(MetroVerdict.port) — "
+            + "`mobile down` stops it."
     }
 
     /// The same split doctor makes: 1 is the project's problem, 2 is ours. 64 (usage)

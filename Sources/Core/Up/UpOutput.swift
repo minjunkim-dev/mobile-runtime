@@ -17,6 +17,9 @@ public struct UpJSONDocument: Encodable, Sendable {
         public let message: String
         /// Absent on a tool failure, which has no project-level next step.
         public let remediation: Remediation?
+        /// What this run left running, and the one line that stops it. Absent unless
+        /// this run started the Metro — see `UpReport.teardownHint`.
+        public let teardown: String?
     }
 
     /// What the run produced, as opposed to what it did. Absent until a stage puts
@@ -67,7 +70,9 @@ public struct UpJSONDocument: Encodable, Sendable {
                 device: device, bundleId: bundleId, metro: metro, appPid: appPid, buildLog: buildLog
             )
         self.error = report.failure.map {
-            Failure(message: $0.message, remediation: $0.remediation)
+            Failure(
+                message: $0.message, remediation: $0.remediation, teardown: report.teardownHint
+            )
         }
     }
 
@@ -174,13 +179,10 @@ public struct UpWriter: Sendable {
             standardError(renderer.render(DoctorReport(checks: [Self.check(for: failure, in: report)])))
         }
 
-        // A failed run leaves its own Metro behind — `up` does not roll back (#13),
-        // so the line that cleans it up is worth printing. Only when this run started
-        // it: a reused Metro was there before, and telling a user to stop what they
-        // were already using is not a next step, it is a mess.
-        if report.failure != nil, report.context.metro?.state == .spawned {
+        // The same sentence `--json` carries in its error, from the same place.
+        if let hint = report.teardownHint {
             standardError("")
-            standardError("The Metro this run started is still on \(MetroVerdict.port) — `mobile down` stops it.")
+            standardError(hint)
         }
     }
 

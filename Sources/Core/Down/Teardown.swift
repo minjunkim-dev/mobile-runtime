@@ -12,6 +12,11 @@ public enum TeardownStatus: String, Sendable, Codable {
     /// wrong with the run, but "nothing to stop" would be the wrong thing to read.
     case blocked
     case failed
+    /// The job could not be run, so nothing was observed about the thing it aimed
+    /// at. Doctor's word for the same state, for the same reason: covering a
+    /// judgement that could not be made with `skipped` is how a run reports an empty
+    /// machine it never looked at.
+    case unknown
 }
 
 /// One item of `down`'s report. `id` is `metro` or `app` — the same words `up`'s
@@ -22,7 +27,9 @@ public struct TeardownItem: Sendable, Equatable {
     /// What was stopped, or why nothing was. A `down` whose every line said only
     /// `skipped` would leave the reader to guess between "not mine" and "not there".
     public let detail: String?
-    /// Present on `failed`: what to do about the thing that would not stop.
+    /// What to do about a thing this run did not stop — carried by `failed` and by
+    /// `blocked` alike. A blocked port has a next step too, and it is the one the
+    /// verdict already wrote: the process holding 8081, by name.
     public let remediation: Remediation?
 
     public init(
@@ -42,16 +49,21 @@ public struct TeardownItem: Sendable, Equatable {
         TeardownItem(id: id, status: .skipped, detail: detail)
     }
 
-    public static func blocked(_ id: String, _ detail: String? = nil) -> TeardownItem {
-        TeardownItem(id: id, status: .blocked, detail: detail)
+    public static func unknown(_ id: String, _ detail: String? = nil) -> TeardownItem {
+        TeardownItem(id: id, status: .unknown, detail: detail)
+    }
+
+    /// The whole verdict, not its headline: which project the port is serving and
+    /// the line that names the process are exactly what a blocked run is for.
+    public static func blocked(_ id: String, _ error: DomainError) -> TeardownItem {
+        TeardownItem(
+            id: id, status: .blocked, detail: error.message, remediation: error.remediation
+        )
     }
 
     public static func failed(_ id: String, _ error: DomainError) -> TeardownItem {
         TeardownItem(
-            id: id,
-            status: .failed,
-            detail: [error.summary, error.observed].compactMap { $0 }.joined(separator: " — "),
-            remediation: error.remediation
+            id: id, status: .failed, detail: error.message, remediation: error.remediation
         )
     }
 }
@@ -75,9 +87,15 @@ public struct TeardownReport: Sendable {
         self.failure = failure
     }
 
-    /// Doctor's vocabulary again, so a consumer does not learn a second one.
+    /// Doctor's vocabulary again, so a consumer does not learn a second one — and a
+    /// run that could not ask must not answer `pass`: that is the envelope saying
+    /// the machine is clean while the exit code says the tool broke.
     public var status: CheckStatus {
-        failure != nil || items.contains { $0.status == .failed } ? .error : .pass
+        if failure != nil || items.contains(where: { $0.status == .failed }) { return .error }
+        if !toolFailures.isEmpty || items.contains(where: { $0.status == .unknown }) {
+            return .unknown
+        }
+        return .pass
     }
 
     /// Nothing of this project's was there to stop. A fact about the machine, not a
@@ -116,10 +134,11 @@ public struct Teardown: Sendable {
             do {
                 items.append(try await job.run())
             } catch {
-                // A job that could not run says nothing about the thing it aimed at,
-                // so it is not `failed` — that word is reserved for "it is still
-                // there". It lands on the exit code as the tool's problem instead.
-                items.append(.skipped(job.id, "could not run"))
+                // A job that could not run says nothing about the thing it aimed at.
+                // Not `failed` — that word is for "it is still there" — and above all
+                // not `skipped`, which would make a run that never looked report an
+                // empty machine. It lands on the exit code as the tool's problem.
+                items.append(.unknown(job.id, "could not run"))
                 toolFailures.append("\(job.id): \(error)")
             }
         }

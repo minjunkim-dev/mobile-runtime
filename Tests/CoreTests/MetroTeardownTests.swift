@@ -139,18 +139,17 @@ struct MetroTeardownTests {
         #expect(item.detail?.contains("no longer be confirmed stopped") == true)
     }
 
-    /// The port says one thing and lsof says another. Acting on that disagreement
-    /// means killing something nobody identified.
-    @Test("a Metro nobody is listening for is reported, not guessed at")
+    /// The port says one thing and lsof says another. Two of our own probes
+    /// disagreeing is our problem, not the project's — so it does not land on the
+    /// project's exit code, and nothing gets killed on a guess.
+    @Test("a Metro nobody is listening for is the tool's problem, not the project's")
     func noListener() async throws {
         let runner = FakeProcessRunner(responses: [
             MetroStatus.command: .ok(MetroStatus.running(projectRoot: anchor)),
             listCommand: .ok(""),
         ])
 
-        let item = try await teardown(runner)
-
-        #expect(item.status == .failed)
-        #expect(item.detail?.contains("no process was found listening") == true)
+        await #expect(throws: (any Error).self) { try await teardown(runner) }
+        #expect(runner.log.all.map(\.description).contains { $0.hasPrefix("kill") } == false)
     }
 }

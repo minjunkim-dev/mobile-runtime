@@ -30,36 +30,29 @@ public struct MetroTeardown: Sendable {
 
     public func run() async throws -> TeardownItem {
         let verdict = try await MetroVerdict.ask(anchor: anchor, runner: runner)
-        switch verdict {
-        case .empty:
+
+        // The three answers that stop `up` are the three that block `down`, and they
+        // arrive with the sentence already written — which project the port is
+        // serving, and the line that names the process holding it. `blocked` rather
+        // than `skipped`: something is there, and "nothing to stop" would report an
+        // empty machine.
+        if let blocker = verdict.blocker { return .blocked(Self.id, blocker) }
+
+        guard case .mine = verdict else {
             return .skipped(Self.id, "nothing on \(MetroVerdict.port)")
-
-        // Not ours to stop. `blocked` rather than `skipped` because something is on
-        // the port: "nothing to stop" would be a false report of an empty machine.
-        case .another, .unidentifiable, .notMetro:
-            return .blocked(Self.id, verdict.blocker?.summary ?? "not this project's Metro")
-
-        case .mine:
-            return try await stop()
         }
+        return try await stop()
     }
 
     private func stop() async throws -> TeardownItem {
         let pids = try await listeningPIDs()
         guard !pids.isEmpty else {
             // The port answered as this project's Metro a moment ago and lsof finds
-            // nobody holding it. Two tools disagreeing is not something to act on.
-            return .failed(
-                Self.id,
-                DomainError(
-                    summary: "\(MetroVerdict.port) answers as this project's Metro, but no process "
-                        + "was found listening on it",
-                    remediation: Remediation(
-                        summary: "Look at the port directly — this is the tool disagreeing with "
-                            + "itself, and what lsof says now is the thing to go on.",
-                        command: Self.listenerCommand
-                    )
-                )
+            // nobody holding it. Two of our own tools disagreeing is our problem, not
+            // the project's — it must not land on the project's exit code.
+            throw ToolsDisagree(
+                description: "\(MetroVerdict.port) answers as this project's Metro, but "
+                    + "`\(Self.listenerCommand)` found no process listening on it"
             )
         }
 
@@ -131,4 +124,10 @@ public struct MetroTeardown: Sendable {
     /// The judge's own spelling of the question, so the line a user is handed and the
     /// line `down` runs cannot drift apart.
     private static let listenerCommand = MetroVerdict.listenerCommand
+}
+
+/// Two of mobile's own probes contradicting each other. Infrastructure, like
+/// `ProcessError` — the project did nothing wrong and can do nothing about it.
+struct ToolsDisagree: Error, CustomStringConvertible {
+    let description: String
 }

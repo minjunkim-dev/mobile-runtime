@@ -91,6 +91,43 @@ struct UpJSONTests {
         #expect(remediation["url"] as? String == "https://example.test")
     }
 
+    /// `up` does not roll back, so a failed run leaves the Metro it started behind —
+    /// and the line that stops it goes to the machine as well as to the human.
+    @Test("a failed run that spawned Metro offers mobile down, on both streams")
+    func teardownHint() throws {
+        var context = UpContext()
+        context.metro = MetroProcess(state: .spawned, pid: 65260, logPath: "/tmp/metro.log")
+        let report = UpReport(
+            stages: [result("build", .failed)],
+            context: context,
+            failure: .domain(
+                DomainError(summary: "the build failed", remediation: Remediation(summary: "Read the log."))
+            )
+        )
+
+        let error = try #require(try decode(report)["error"] as? [String: Any])
+
+        #expect(error["teardown"] as? String == report.teardownHint)
+        #expect(report.teardownHint?.contains("mobile down") == true)
+    }
+
+    /// A reused Metro was there before this run. Telling a user to stop what they
+    /// were already using is not a next step.
+    @Test("a failed run that reused Metro offers nothing to stop")
+    func noTeardownHintOnReuse() throws {
+        var context = UpContext()
+        context.metro = MetroProcess(state: .reused)
+        let report = UpReport(
+            stages: [result("build", .failed)],
+            context: context,
+            failure: .tool("build: could not run")
+        )
+
+        #expect(report.teardownHint == nil)
+        let error = try #require(try decode(report)["error"] as? [String: Any])
+        #expect(error["teardown"] == nil)
+    }
+
     /// What the run produced, as opposed to what it did: the stages say a device was
     /// picked, `result` says which one, and a script needs the udid to talk to it.
     @Test("the device a stage selected reaches result.device")

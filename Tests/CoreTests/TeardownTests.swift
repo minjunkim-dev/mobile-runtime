@@ -61,7 +61,7 @@ struct TeardownTests {
             (id: "app", run: { .stopped("app", "net.cozic.joplin") }),
         ])
 
-        #expect(result.items.first?.status == .skipped)
+        #expect(result.items.first?.status == .unknown)
         #expect(result.toolFailures.count == 1)
         #expect(result.toolFailures.first?.hasPrefix("metro:") == true)
         #expect(result.exitCode == 2)
@@ -133,8 +133,14 @@ struct TeardownTests {
     /// stop" there would report the opposite of what the line above it just said.
     @Test("a blocked port is not nothing to stop")
     func blocked() async throws {
+        let blocker = DomainError(
+            summary: "port 8081 is held by another project's Metro",
+            observed: "it is serving /Users/me/mattermost-mobile",
+            remediation: Remediation(summary: "…", command: "lsof -nP -iTCP:8081 -sTCP:LISTEN")
+        )
+
         let result = await report([
-            (id: "metro", run: { .blocked("metro", "port 8081 is held by another project's Metro") }),
+            (id: "metro", run: { .blocked("metro", blocker) }),
             (id: "app", run: { .skipped("app", "no install record — nothing to stop") }),
         ])
 
@@ -142,6 +148,60 @@ struct TeardownTests {
         // Nothing of ours was there to stop, so nothing failed either.
         #expect(result.exitCode == 0)
         #expect(result.status == .pass)
+        // The path the header gave and the line that names the process both survive
+        // into the item — that identity is what ADR-0007 bought.
+        let metro = try #require(result.items.first)
+        #expect(metro.detail?.contains("mattermost-mobile") == true)
+        #expect(metro.remediation?.command == "lsof -nP -iTCP:8081 -sTCP:LISTEN")
+    }
+
+    /// A blocked port never reaches the error renderer — it is not an error — so the
+    /// line that names the process holding it has to come out here.
+    @Test("a blocked item prints the command that names what is holding the port")
+    func humanBlocked() async throws {
+        let err = Mutable<[String]>([])
+        let writer = DownWriter(
+            json: false,
+            toolVersion: "0.1.0",
+            renderer: HumanReportRenderer(useColor: false),
+            standardOutput: { _ in },
+            standardError: { line in err.mutate { $0.append(line) } }
+        )
+
+        try writer.finish(
+            TeardownReport(items: [
+                .blocked(
+                    "metro",
+                    DomainError(
+                        summary: "port 8081 is held by another project's Metro",
+                        observed: "it is serving /Users/me/mattermost-mobile",
+                        remediation: Remediation(summary: "…", command: "lsof -nP -iTCP:8081 -sTCP:LISTEN")
+                    )
+                )
+            ])
+        )
+
+        #expect(err.value.contains { $0.contains("mattermost-mobile") })
+        #expect(err.value.contains { $0.contains("lsof -nP -iTCP:8081 -sTCP:LISTEN") })
+        #expect(err.value.contains("nothing to stop") == false)
+    }
+
+    /// A run that could not ask must not answer `pass`, and must not be counted as
+    /// having found an empty machine.
+    @Test("a job that could not run is unknown, and is not nothing to stop")
+    func unknownIsNotEmpty() async throws {
+        let result = await report([
+            (id: "metro", run: { throw JobFailed() }),
+            (id: "app", run: { .skipped("app", "no install record — nothing to stop") }),
+        ])
+
+        #expect(result.items.first?.status == .unknown)
+        #expect(result.stoppedNothing == false)
+        #expect(result.status == .unknown)
+        #expect(result.exitCode == 2)
+        // Whatever the exit code says, the envelope says it too.
+        #expect(try DownJSONDocument(report: result, toolVersion: "0.1.0").encoded()
+            .contains("\"error\""))
     }
 
     /// Standing outside a project is a failure of the run, not of a job — so it does

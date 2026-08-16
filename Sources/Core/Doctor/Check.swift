@@ -183,4 +183,11 @@ public struct DomainError: Error, Sendable, Equatable {
         self.observed = observed
         self.remediation = remediation
     }
+
+    /// The verdict as one sentence: what happened, then what was seen. Written once
+    /// because three places print it — up's failure, down's items, both envelopes —
+    /// and the same failure must not read three ways.
+    public var message: String {
+        [summary, observed].compactMap { $0 }.joined(separator: " — ")
+    }
 }
