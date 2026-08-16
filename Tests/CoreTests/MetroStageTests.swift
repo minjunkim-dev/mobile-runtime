@@ -28,8 +28,11 @@ private func run(
     logs: RunLogs? = nil
 ) async throws -> StageOutcome {
     let anchor = try #require(ProjectAnchor.detect(from: repo.root))
-    return try await MetroStage(anchor: anchor, runner: runner, logs: try logs ?? temporaryLogs())
-        .run(&context)
+    // No wait for the port: a fake has no process to bind one, so the poll would
+    // only spend the real deadline finding that out.
+    return try await MetroStage(
+        anchor: anchor, runner: runner, logs: try logs ?? temporaryLogs(), bindWait: .zero
+    ).run(&context)
 }
 
 @Suite("metro stage")
@@ -131,6 +134,43 @@ struct MetroStageTests {
         #expect(context.metro?.state == .spawned)
         #expect(context.metro?.pid == runner.spawnedPID)
         #expect(context.metro?.logPath == spawn.logFile.path)
+    }
+
+    /// #61: the pid the spawn hands back is the start script's, and the bundler is
+    /// two links below it — killing the reported one left 8081 held. So the port is
+    /// asked who holds it, and that is the pid a reader is given.
+    @Test("the pid holding 8081 is reported next to the process up started")
+    func reportsTheListener() async throws {
+        let repo = try app()
+        let runner = FakeProcessRunner(responses: [
+            MetroStatus.command: .failed(7, ""),
+            "lsof -nP -iTCP:8081 -sTCP:LISTEN -t": .ok("70947\n"),
+        ])
+        var context = UpContext()
+
+        let outcome = try await run(repo, runner, context: &context)
+
+        #expect(context.metro?.pid == runner.spawnedPID)
+        #expect(context.metro?.listenerPid == 70947)
+        #expect(outcome.detail?.contains("pid 70947") == true)
+    }
+
+    /// A port that has not answered yet is a fact about the run, not a failure of it:
+    /// the bundler is up either way, and `mobile down` asks the port for itself.
+    @Test("a port that never answers leaves the listener unknown and the run passing")
+    func listenerUnknown() async throws {
+        let repo = try app()
+        let runner = FakeProcessRunner(responses: [
+            MetroStatus.command: .failed(7, ""),
+            "lsof -nP -iTCP:8081 -sTCP:LISTEN -t": .ok(""),
+        ])
+        var context = UpContext()
+
+        let outcome = try await run(repo, runner, context: &context)
+
+        #expect(outcome.status == .pass)
+        #expect(context.metro?.listenerPid == nil)
+        #expect(outcome.detail?.contains("pid \(runner.spawnedPID)") == true)
     }
 
     /// A port that accepts the connection and then says nothing is not an empty port.

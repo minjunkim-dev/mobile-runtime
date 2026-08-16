@@ -13,11 +13,24 @@ public struct MetroStage: Stage {
     private let anchor: ProjectAnchor
     private let runner: any ProcessRunner
     private let logs: RunLogs
+    /// How long the port is given to answer with the bundler's pid after the start
+    /// script is launched. Measured at ~2s on this project's dogfooding repos, so ten
+    /// is room for a cold machine rather than a guess. Injected for tests, which have
+    /// no real process to wait for.
+    private let bindWait: Duration
 
-    public init(anchor: ProjectAnchor, runner: any ProcessRunner, logs: RunLogs? = nil) {
+    public static let defaultBindWait: Duration = .seconds(10)
+
+    public init(
+        anchor: ProjectAnchor,
+        runner: any ProcessRunner,
+        logs: RunLogs? = nil,
+        bindWait: Duration = MetroStage.defaultBindWait
+    ) {
         self.anchor = anchor
         self.runner = runner
         self.logs = logs ?? RunLogs(project: anchor.directory)
+        self.bindWait = bindWait
     }
 
     public func run(_ context: inout UpContext) async throws -> StageOutcome {
@@ -41,7 +54,46 @@ public struct MetroStage: Stage {
         )
         let pid = try await runner.spawnDetached(command, logFile: logFile)
 
-        context.metro = MetroProcess(state: .spawned, pid: pid, logPath: logFile.path)
-        return .pass("started on \(MetroVerdict.port) — pid \(pid), log at \(logFile.path)")
+        // The pid that comes back is the start script's, and the bundler is two links
+        // below it — a `kill` there does not reach the port (#61). So the port is
+        // asked who holds it, the same way `down` asks.
+        let listener = await listeningPID()
+        context.metro = MetroProcess(
+            state: .spawned, pid: pid, listenerPid: listener, logPath: logFile.path
+        )
+        // The pid on screen is the one a human would type into `kill`: the bundler's
+        // when it has bound, and otherwise the only one there is to name.
+        return .pass(
+            "started on \(MetroVerdict.port) — pid \(listener ?? pid), log at \(logFile.path)"
+        )
+    }
+
+    /// Polled rather than asked once: the start script has to boot Node before
+    /// anything binds, and asking in the same breath as the spawn always answers
+    /// "nobody". Waiting is affordable here because it is bounded and because the
+    /// stage it delays — `build` — takes minutes.
+    ///
+    /// - Returns: the pid holding the port, or nil if it never answered in time.
+    ///   Reporting is not worth failing a run over: the bundler is up either way,
+    ///   and `mobile down` asks the port for itself.
+    private func listeningPID() async -> Int32? {
+        let deadline = ContinuousClock.now + bindWait
+        while true {
+            if let pid = (try? await currentListener()) ?? nil { return pid }
+            guard ContinuousClock.now < deadline else { return nil }
+            try? await Task.sleep(for: .milliseconds(250))
+        }
+    }
+
+    private func currentListener() async throws -> Int32? {
+        let result = try await runner.run(
+            ProcessCommand(
+                "lsof", MetroVerdict.listenerArguments + ["-t"], timeout: .seconds(10)
+            )
+        )
+        return result.standardOutput
+            .split(separator: "\n")
+            .compactMap { Int32($0.trimmingCharacters(in: .whitespaces)) }
+            .first
     }
 }

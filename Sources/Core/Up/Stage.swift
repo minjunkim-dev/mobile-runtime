@@ -83,14 +83,25 @@ public struct MetroProcess: Sendable, Equatable, Encodable {
         case spawned
     }
 
-    public let state: State
+    /// The process `up` started: the project's start script. **Not** the bundler —
+    /// that is its grandchild, and a `SIGTERM` here does not reach it. #61 measured
+    /// the chain: killing this pid left 8081 held by a process two links down.
     public let pid: Int32?
+    /// Who holds 8081, asked of the port once the bundler had bound it. This is the
+    /// pid a human or a CI job would kill, and the one `mobile down` finds for
+    /// itself. nil when the port had not answered in time — a fact about the run,
+    /// not a failure of it, so nothing stops for it.
+    public let listenerPid: Int32?
+    public let state: State
     /// Where the detached child's two streams went — the only place its output is.
     public let logPath: String?
 
-    public init(state: State, pid: Int32? = nil, logPath: String? = nil) {
+    public init(
+        state: State, pid: Int32? = nil, listenerPid: Int32? = nil, logPath: String? = nil
+    ) {
         self.state = state
         self.pid = pid
+        self.listenerPid = listenerPid
         self.logPath = logPath
     }
 }
