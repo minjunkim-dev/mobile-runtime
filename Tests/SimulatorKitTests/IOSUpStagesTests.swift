@@ -44,8 +44,8 @@ private func runner(_ repo: FixtureRepo) throws -> FakeProcessRunner {
         "yarn --version": .ok("1.22.22\n"),
         // device — the captured list has this machine's one simulator, booted
         "xcrun simctl list devices -j": .ok(try Fixture.text("simctl-list-devices.stdout.json")),
-        // metro
-        "curl -s -m 2 http://localhost:8081/status": .ok("packager-status:running"),
+        // metro — this project's own, named by the header `/status` carries
+        MetroStatus.command: .ok(MetroStatus.running(projectRoot: repo.root)),
         // build
         "xcodebuild -list -json -project \(repo.url("ios/MyApp.xcodeproj").path)": .ok(
             #"{"project": {"name": "MyApp", "schemes": ["MyApp"]}}"#

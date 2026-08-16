@@ -5,7 +5,6 @@ import Testing
 @testable import Core
 
 private let packageJSON = #"{"dependencies": {"react-native": "0.81.0"}}"#
-private let statusCommand = "curl -s -m 2 http://localhost:8081/status"
 
 private func app() throws -> FixtureRepo {
     let repo = try FixtureRepo()
@@ -37,10 +36,12 @@ private func run(
 struct MetroStageTests {
     /// Metro publishes this on `/status`, and two bundlers on one port is the thing
     /// this branch exists to prevent.
-    @Test("a Metro already on 8081 is reused, not restarted")
+    @Test("a Metro already on 8081 for this project is reused, not restarted")
     func reuses() async throws {
         let repo = try app()
-        let runner = FakeProcessRunner(responses: [statusCommand: .ok("packager-status:running")])
+        let runner = FakeProcessRunner(responses: [
+            MetroStatus.command: .ok(MetroStatus.running(projectRoot: repo.root))
+        ])
         var context = UpContext()
 
         let outcome = try await run(repo, runner, context: &context)
@@ -56,7 +57,9 @@ struct MetroStageTests {
     @Test("something else on 8081 stops the run with a way to find it")
     func occupied() async throws {
         let repo = try app()
-        let runner = FakeProcessRunner(responses: [statusCommand: .ok("<!DOCTYPE html><title>Grafana</title>")])
+        let runner = FakeProcessRunner(responses: [
+            MetroStatus.command: .ok(MetroStatus.reply(body: "<!DOCTYPE html><title>Grafana</title>"))
+        ])
         var context = UpContext()
 
         let error = await #expect(throws: DomainError.self) {
@@ -69,11 +72,51 @@ struct MetroStageTests {
         #expect(context.metro == nil)
     }
 
+    /// #45: the run that gave this project's app to another project's bundler and
+    /// reported success. Reuse is not "a Metro is up", it is "this project's Metro".
+    @Test("a Metro serving another project stops the run instead of being reused")
+    func anotherProjectsMetro() async throws {
+        let repo = try app()
+        let other = URL(fileURLWithPath: "/Users/me/mattermost-mobile")
+        let runner = FakeProcessRunner(responses: [
+            MetroStatus.command: .ok(MetroStatus.running(projectRoot: other))
+        ])
+        var context = UpContext()
+
+        let error = await #expect(throws: DomainError.self) {
+            try await run(repo, runner, context: &context)
+        }
+
+        #expect(error?.observed?.contains(other.path) == true)
+        #expect(runner.log.spawned.isEmpty)
+        #expect(context.metro == nil)
+    }
+
+    /// The stopping sentence a user reads has to be the one about not knowing, not
+    /// the one about somebody else — the port answering without a `/status` is what
+    /// a 0.76+ project's own Metro looks like from here.
+    @Test("a port that cannot say whose Metro it is stops the run saying that")
+    func unidentifiable() async throws {
+        let repo = try app()
+        let runner = FakeProcessRunner(responses: [
+            MetroStatus.command: .ok(MetroStatus.reply("HTTP/1.1 404 Not Found", body: "Not found"))
+        ])
+        var context = UpContext()
+
+        let error = await #expect(throws: DomainError.self) {
+            try await run(repo, runner, context: &context)
+        }
+
+        #expect(error?.summary.contains("could not be confirmed") == true)
+        #expect(runner.log.spawned.isEmpty)
+        #expect(context.metro == nil)
+    }
+
     /// curl's non-zero is "could not connect", which is exactly an empty port.
     @Test("an empty 8081 gets a detached Metro, reported by pid and log path")
     func spawns() async throws {
         let repo = try app()
-        let runner = FakeProcessRunner(responses: [statusCommand: .failed(7, "")])
+        let runner = FakeProcessRunner(responses: [MetroStatus.command: .failed(7, "")])
         let logs = try temporaryLogs()
         var context = UpContext()
 
@@ -96,7 +139,7 @@ struct MetroStageTests {
     func slowOccupant() async throws {
         let repo = try app()
         // curl 28: the `-m 2` deadline passed with the connection open.
-        let runner = FakeProcessRunner(responses: [statusCommand: .failed(28, "")])
+        let runner = FakeProcessRunner(responses: [MetroStatus.command: .failed(28, "")])
         var context = UpContext()
 
         let error = await #expect(throws: DomainError.self) {
@@ -113,7 +156,9 @@ struct MetroStageTests {
     func probeFailure() async throws {
         let repo = try app()
         let runner = FakeProcessRunner(failures: [
-            statusCommand: ProcessError.spawnFailed(command: statusCommand, underlying: FixtureMiss(command: "curl"))
+            MetroStatus.command: ProcessError.spawnFailed(
+                command: MetroStatus.command, underlying: FixtureMiss(command: "curl")
+            )
         ])
         var context = UpContext()
 
