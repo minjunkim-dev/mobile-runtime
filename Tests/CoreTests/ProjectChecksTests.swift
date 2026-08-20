@@ -508,17 +508,25 @@ struct PackageManagerCheckTests {
         let stderr = "mise ERROR error parsing config file: /tmp/app/mise.toml\r\n"
             + " \r\n"
             + "mise ERROR Config files in /tmp/app/mise.toml are not trusted.\r\n"
-            + "Trust them with `mise trust`. See https://mise.jdx.dev/cli/trust.html"
+            + "Trust them with `mise trust`. See https://mise.jdx.dev/cli/trust.html\r\n"
+            + "mise ERROR Run with --verbose for more information."
+        let failure = FakeProcessRunner.Response(
+            status: .exited(1),
+            standardOutput: "yarn ERROR version probe failed\r\n",
+            standardError: stderr
+        )
         let (report, _) = await runProjectChecks(
-            repo, tools: ["yarn --version": .failed(1, stderr)]
+            repo, tools: ["yarn --version": failure]
         )
         let check = try #require(report.checks.first { $0.id == "package-manager.version" })
 
         #expect(check.status == .error)
+        #expect(check.outcome.observed?.contains("yarn ERROR version probe failed") == true)
         #expect(check.outcome.observed?.contains("error parsing config file: /tmp/app/mise.toml") == true)
         #expect(check.outcome.observed?.contains("Config files in /tmp/app/mise.toml are not trusted.") == true)
         #expect(check.outcome.observed?.contains("Trust them with `mise trust`") == true)
-        #expect(check.outcome.observed?.contains("\r") == false)
+        #expect(check.outcome.observed?.contains("Run with --verbose for more information.") == true)
+        #expect(check.outcome.observed?.contains("\r\n") == true)
         #expect(check.outcome.headline?.contains("\n") == false)
         #expect(check.outcome.remediation?.command == nil)
     }
