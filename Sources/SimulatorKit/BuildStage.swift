@@ -197,26 +197,21 @@ public struct BuildStage: Stage {
         private let lock = NSLock()
         private let logFile: URL
         private let note: @Sendable (String) -> Void
-        private var notable: [String] = []
+        private let excerpt: LineExcerpt
         private var shown = 0
-        /// The last lines of anything, for a build that failed without saying `error:`.
-        private let tail = LineTail(limit: limit)
 
         init(logFile: URL, note: @escaping @Sendable (String) -> Void) {
             self.logFile = logFile
             self.note = note
+            self.excerpt = LineExcerpt(limit: Self.limit, notable: Self.isNotable)
         }
 
         func saw(_ line: String) {
-            let trimmed = line.trimmingCharacters(in: .whitespaces)
-            guard !trimmed.isEmpty else { return }
             lock.withLock {
-                tail.append(trimmed)
-                guard Self.isNotable(trimmed) else { return }
-                notable.append(trimmed)
+                guard let notable = excerpt.append(line) else { return }
                 if shown < Self.limit {
                     shown += 1
-                    note(trimmed)
+                    note(notable)
                 }
             }
         }
@@ -225,16 +220,13 @@ public struct BuildStage: Stage {
         /// known. Nothing when everything notable was already shown.
         func finish() {
             lock.withLock {
-                guard notable.count > shown else { return }
-                note("…and \(notable.count - shown) more — full log: \(logFile.path)")
+                let omitted = excerpt.notableCount - shown
+                guard omitted > 0 else { return }
+                note("…and \(omitted) more — full log: \(logFile.path)")
             }
         }
 
-        var observed: String {
-            lock.withLock {
-                notable.isEmpty ? tail.text : notable.prefix(Self.limit).joined(separator: "\n")
-            }
-        }
+        var observed: String { excerpt.text }
 
         /// `error:` covers `fatal error:` and the clang and Swift spellings alike; the
         /// starred lines are how xcodebuild announces that it is done, either way.

@@ -92,33 +92,47 @@ extension String {
     }
 }
 
-/// The last `limit` lines of an output nobody is holding — `lastLines(_:)` for a
-/// caller watching a stream on its way to a file. Same rule about blank lines, for
-/// the same reason: the limit is there to be spent on content.
+/// The first notable lines of an output nobody is holding, or its last lines when
+/// none match. Blank lines are dropped so the limit is spent on content.
 ///
 /// A locked class rather than a struct because it is fed from `run(_:onLine:)`, whose
 /// callback is `@Sendable` and outlives no scope a value could live in. Every stage
-/// that streams needs exactly this, so the lock lives here once instead of in a
-/// wrapper per stage.
-public final class LineTail: @unchecked Sendable {
+/// that streams and selects an excerpt needs exactly this, so the lock lives here
+/// once instead of in a wrapper per stage.
+public final class LineExcerpt: @unchecked Sendable {
     private let lock = NSLock()
     private let limit: Int
-    private var lines: [String] = []
+    private let isNotable: @Sendable (String) -> Bool
+    private var notable: [String] = []
+    private var totalNotable = 0
+    private var tail: [String] = []
 
-    public init(limit: Int) {
+    public init(limit: Int, notable isNotable: @escaping @Sendable (String) -> Bool) {
         self.limit = limit
+        self.isNotable = isNotable
     }
 
-    public func append(_ line: String) {
+    @discardableResult
+    public func append(_ line: String) -> String? {
         let trimmed = line.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else { return }
-        lock.withLock {
-            lines.append(trimmed)
-            if lines.count > limit { lines.removeFirst() }
+        guard !trimmed.isEmpty else { return nil }
+        return lock.withLock {
+            tail.append(trimmed)
+            if tail.count > limit { tail.removeFirst() }
+            guard isNotable(trimmed) else { return nil }
+            totalNotable += 1
+            if notable.count < limit { notable.append(trimmed) }
+            return trimmed
         }
     }
 
-    public var text: String { lock.withLock { lines.joined(separator: "\n") } }
+    public var text: String {
+        lock.withLock {
+            (notable.isEmpty ? tail : notable).joined(separator: "\n")
+        }
+    }
+
+    public var notableCount: Int { lock.withLock { totalNotable } }
 }
 
 /// Infrastructure failure — the process could not be run to completion. Distinct
