@@ -132,9 +132,9 @@ public struct DependenciesStage: Stage {
     /// goes out as exit 2 untouched.
     ///
     /// Streamed to a file for the reason `build` is (ADR-0002's note on #44/#56): an
-    /// installer that fails says why somewhere, and the ten lines that fit on screen
-    /// are the warnings it printed afterwards. The tail stays as the first thing to
-    /// read; the file is where the reason actually is.
+    /// installer that fails says why somewhere. Its known error spelling is preferred
+    /// for the screen excerpt; the tail remains the fallback and the whole file stays
+    /// available when no known spelling matches.
     ///
     /// The log is named after what is being installed, not after the installer that
     /// ran: a declared pod install goes through the same `yarn` the Node install did,
@@ -150,12 +150,12 @@ public struct DependenciesStage: Stage {
         let file = logs.url("\(what)-install.log")
         streamed.output = .streamed(to: file)
 
-        let tail = LineTail(limit: 10)
-        let result = try await runner.run(streamed, onLine: { tail.append($0) })
+        let excerpt = LineExcerpt(limit: 10, notable: Self.isNotableInstallFailure)
+        let result = try await runner.run(streamed, onLine: { excerpt.append($0) })
         guard !result.terminationStatus.isSuccess else { return }
         throw DomainError(
             summary: "installing \(what) failed",
-            observed: tail.text,
+            observed: excerpt.text,
             remediation: Remediation(
                 summary: "The whole install log is at \(file.path). "
                     + "An installer that fails usually says why in more lines than fit here."
@@ -163,6 +163,16 @@ public struct DependenciesStage: Stage {
                 command: byHand
             )
         )
+    }
+
+    private static func isNotableInstallFailure(_ line: String) -> Bool {
+        if line.hasPrefix("npm error ") { return true }
+        if line.hasPrefix("➤ YN0000:"), line.contains("Error") { return true }
+        guard !line.hasPrefix("from ") else { return false }
+        return line.range(
+            of: #"\([A-Z][A-Za-z0-9]*(?:::[A-Z][A-Za-z0-9]*)*\)$"#,
+            options: .regularExpression
+        ) != nil
     }
 
     private static let podfile = "Podfile"

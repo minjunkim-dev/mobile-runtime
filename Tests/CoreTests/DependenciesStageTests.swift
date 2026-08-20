@@ -193,11 +193,14 @@ struct DependenciesStageTests {
         try repo.directory("node_modules")
         try repo.write("Gemfile", "gem 'cocoapods', '1.16.1'\n")
         try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
+        let cause = "/bundler/definition.rb:599:in `materialize': "
+            + "Could not find fastlane-2.232.1 in locally installed gems (Bundler::GemNotFound)"
+        let backtrace = (1...13)
+            .map { "from /bundler/setup.rb:\($0):in `setup'" }
+            .joined(separator: "\n")
         let runner = FakeProcessRunner(responses: [
             "bundle check": .failed(1, "missing"),
-            "bundle install": .failed(
-                17, "Could not find fastlane-2.232.1 in locally installed gems"
-            ),
+            "bundle install": .failed(17, cause + "\n" + backtrace + "\n"),
         ])
         var context = UpContext()
 
@@ -206,6 +209,7 @@ struct DependenciesStageTests {
         }
 
         #expect(error?.summary == "installing gems failed")
+        #expect(error?.observed == cause)
         #expect(error?.remediation.command == "cd \(repo.root.path) && bundle install")
         #expect(runner.log.all.map(\.description).contains("pod install") == false)
     }
@@ -358,8 +362,10 @@ struct DependenciesStageTests {
     @Test("an install that fails is a domain failure with the command to repeat")
     func installFailure() async throws {
         let repo = try app()
+        let cause = "➤ YN0000: Error: Couldn't find package"
+        let status = (1...13).map { "➤ YN0000: Completed step \($0)" }.joined(separator: "\n")
         let runner = FakeProcessRunner(responses: [
-            "yarn install": .failed(1, "error An unexpected error occurred: ENOTFOUND registry.yarnpkg.com\n")
+            "yarn install": .failed(1, cause + "\n" + status + "\n")
         ])
         var context = UpContext()
 
@@ -368,8 +374,27 @@ struct DependenciesStageTests {
         }
 
         #expect(error?.summary.contains("node_modules") == true)
-        #expect(error?.observed?.contains("ENOTFOUND") == true)
+        #expect(error?.observed == cause)
         #expect(error?.remediation.command == "yarn install")
+    }
+
+    @Test("an npm failure shows its error rather than later warnings")
+    func observedPrefersNPMError() async throws {
+        let repo = try FixtureRepo()
+        try repo.write("package.json", packageJSON)
+        try repo.write("package-lock.json", "")
+        let cause = "npm error code ENOTFOUND"
+        let warnings = (1...13).map { "npm warn deprecated thing@\($0)" }.joined(separator: "\n")
+        let runner = FakeProcessRunner(responses: [
+            "npm install": .failed(1, cause + "\n" + warnings + "\n")
+        ])
+        var context = UpContext()
+
+        let error = await #expect(throws: DomainError.self) {
+            try await run(try anchor(repo), runner, context: &context)
+        }
+
+        #expect(error?.observed == cause)
     }
 
     /// The ten lines that fit are not the fix — the file is. Both measured failures
