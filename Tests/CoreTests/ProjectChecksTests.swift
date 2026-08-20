@@ -505,13 +505,21 @@ struct PackageManagerCheckTests {
             packageJSON: #"{"dependencies": {"react-native": "0.76.5"}, "packageManager": "yarn@3.6.4"}"#
         )
 
+        let stderr = "mise ERROR error parsing config file: /tmp/app/mise.toml\r\n"
+            + " \r\n"
+            + "mise ERROR Config files in /tmp/app/mise.toml are not trusted.\r\n"
+            + "Trust them with `mise trust`. See https://mise.jdx.dev/cli/trust.html"
         let (report, _) = await runProjectChecks(
-            repo, tools: ["yarn --version": .failed(1, "mise ERROR No version is set for shim: yarn\n")]
+            repo, tools: ["yarn --version": .failed(1, stderr)]
         )
         let check = try #require(report.checks.first { $0.id == "package-manager.version" })
 
         #expect(check.status == .error)
-        #expect(check.outcome.observed?.contains("No version is set for shim: yarn") == true)
+        #expect(check.outcome.observed?.contains("error parsing config file: /tmp/app/mise.toml") == true)
+        #expect(check.outcome.observed?.contains("Config files in /tmp/app/mise.toml are not trusted.") == true)
+        #expect(check.outcome.observed?.contains("Trust them with `mise trust`") == true)
+        #expect(check.outcome.observed?.contains("\r") == false)
+        #expect(check.outcome.headline?.contains("\n") == false)
         #expect(check.outcome.remediation?.command == nil)
     }
 

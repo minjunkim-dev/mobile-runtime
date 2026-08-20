@@ -9,7 +9,7 @@ enum ToolVersion {
     /// failure of doctor.
     case notOnPath
     /// It ran and said something else. The string is a ready-to-use `reason`,
-    /// including the tool's own first line of complaint.
+    /// including the tool's own first few lines of complaint.
     case unreadable(String)
 }
 
@@ -32,9 +32,14 @@ func probeVersion(of executable: String, using runner: any ProcessRunner) async 
             .lazy.compactMap({ SemanticVersion(String($0)) }).first
     else {
         // The tool's own words, so an `unknown` says why it could not tell.
-        let complaint = result.standardError.split(separator: "\n").first
-            .map { " — \($0.trimmingCharacters(in: .whitespaces))" } ?? ""
-        return .unreadable("`\(executable) --version` did not report a version\(complaint)")
+        let complaint = result.standardError
+            .split(whereSeparator: \.isNewline)
+            .filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+            .prefix(3)
+            .map(String.init)
+            .joined(separator: " | ")
+        let detail = complaint.isEmpty ? "" : " — \(complaint)"
+        return .unreadable("`\(executable) --version` did not report a version\(detail)")
     }
     return .reported(version)
 }
