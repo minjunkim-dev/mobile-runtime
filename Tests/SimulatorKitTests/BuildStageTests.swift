@@ -230,11 +230,11 @@ struct BuildStageTests {
 
     /// doctor warns about this and carries on; up cannot. The tool does not pick one
     /// of a project's schemes on the developer's behalf (ADR-0004).
-    @Test("several schemes and no declaration stops the run")
+    @Test("several schemes suggest the one matching the project name")
     func undecidedScheme() async throws {
         let repo = try project(workspace: false)
         let runner = try runner(
-            repo, workspace: false, schemes: ["MyApp", "MyApp-tvOS"], scheme: "MyApp"
+            repo, workspace: false, schemes: ["ImageNotification", "MyApp"], scheme: "MyApp"
         )
         var context = afterDevice()
 
@@ -242,12 +242,28 @@ struct BuildStageTests {
             try await run(repo, runner, context: &context)
         }
 
-        #expect(error?.summary.contains("MyApp, MyApp-tvOS") == true)
-        #expect(error?.remediation.summary.contains("mobile.yml") == true)
+        #expect(error?.summary.contains("ImageNotification, MyApp") == true)
+        #expect(error?.remediation.summary.contains("scheme: MyApp") == true)
         #expect(error?.remediation.command == "xcodebuild -list -project ios/MyApp.xcodeproj")
         // Nothing was built, so nothing may claim to have been.
         #expect(context.product == nil)
         #expect(runner.log.all.map(\.description).contains { $0.hasSuffix("build") } == false)
+    }
+
+    @Test("several schemes without a project-name match omit the example")
+    func undecidedSchemeWithoutSafeSuggestion() async throws {
+        let repo = try project(workspace: false)
+        let runner = try runner(
+            repo, workspace: false, schemes: ["ImageNotification", "PriceWidget"], scheme: "MyApp"
+        )
+        var context = afterDevice()
+
+        let error = await #expect(throws: DomainError.self) {
+            try await run(repo, runner, context: &context)
+        }
+
+        #expect(error?.remediation.summary.contains("mobile.yml") == true)
+        #expect(error?.remediation.summary.contains("scheme:") == false)
     }
 
     /// `config.values` grades this first, so up only reaches it when mobile.yml
