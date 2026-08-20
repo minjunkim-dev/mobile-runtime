@@ -84,8 +84,9 @@ public struct CheckOutcome: Sendable, Equatable {
     /// reason instead. Source and tier stay behind `-v`.
     var headline: String? {
         guard let observed else { return nil }
-        guard status == .warning || status == .error, let required else { return observed }
-        return "\(observed) → \(required)"
+        let summary = observed.split(whereSeparator: \.isNewline).joined(separator: " | ")
+        guard status == .warning || status == .error, let required else { return summary }
+        return "\(summary) → \(required)"
     }
 
     public static func pass(
