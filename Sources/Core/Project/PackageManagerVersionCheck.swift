@@ -13,14 +13,23 @@ public struct PackageManagerVersionCheck: Check {
     private static let known: Set<String> = ["npm", "yarn", "pnpm", "bun"]
 
     private let requirement: PackageManagerRequirement
+    private let anchor: ProjectAnchor
+    private let context: ConfigContext
     private let runner: any ProcessRunner
 
     /// The declaration can come from the workspace root rather than the anchor, so
     /// the origin travels with the requirement instead of being fixed here.
     private var source: CheckSource { CheckSource(tier: 1, origin: requirement.origin) }
 
-    public init(requirement: PackageManagerRequirement, runner: any ProcessRunner) {
+    public init(
+        requirement: PackageManagerRequirement,
+        anchor: ProjectAnchor,
+        context: ConfigContext,
+        runner: any ProcessRunner
+    ) {
         self.requirement = requirement
+        self.anchor = anchor
+        self.context = context
         self.runner = runner
     }
 
@@ -55,7 +64,9 @@ public struct PackageManagerVersionCheck: Check {
             advice = remediation
         case .unreadable(let complaint):
             unusable = complaint
-            advice = muteToolRemediation(requirement.name)
+            advice = await muteToolRemediation(
+                requirement.name, anchor: anchor, context: context, using: runner
+            )
         }
         return .error(observed: unusable, required: required, source: source, remediation: advice)
     }

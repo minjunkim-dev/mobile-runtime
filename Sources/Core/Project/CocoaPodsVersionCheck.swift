@@ -11,10 +11,19 @@ public struct CocoaPodsVersionCheck: Check {
     public let title = "CocoaPods is installed at the version the project asks for"
 
     private let requirement: CocoaPodsRequirement
+    private let anchor: ProjectAnchor
+    private let context: ConfigContext
     private let runner: any ProcessRunner
 
-    public init(requirement: CocoaPodsRequirement, runner: any ProcessRunner) {
+    public init(
+        requirement: CocoaPodsRequirement,
+        anchor: ProjectAnchor,
+        context: ConfigContext,
+        runner: any ProcessRunner
+    ) {
         self.requirement = requirement
+        self.anchor = anchor
+        self.context = context
         self.runner = runner
     }
 
@@ -47,7 +56,9 @@ public struct CocoaPodsVersionCheck: Check {
             unusable = "pod is not on PATH"
         case .unreadable(let complaint):
             unusable = complaint
-            advice = muteToolRemediation("pod")
+            advice = await muteToolRemediation(
+                "pod", anchor: anchor, context: context, using: runner
+            )
         }
 
         // The requirement picks the grade, not the reason the measurement failed

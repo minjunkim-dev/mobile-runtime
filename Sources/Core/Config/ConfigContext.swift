@@ -47,6 +47,7 @@ public struct ConfigContext: Sendable {
     public func display(_ url: URL) -> String {
         let base = workingDirectory.path
         let path = url.resolvingSymlinksInPath().path
+        if path == base { return "." }
         guard path.hasPrefix(base + "/") else { return url.path }
         return String(path.dropFirst(base.count + 1))
     }

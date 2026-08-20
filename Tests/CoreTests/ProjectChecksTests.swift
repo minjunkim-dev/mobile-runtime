@@ -18,7 +18,9 @@ private func runProjectChecks(
     let runner = FakeProcessRunner(responses: responses, failures: failures)
 
     let directory = subdirectory.map { repo.url($0) } ?? repo.root
-    let checks = ProjectAnchor.detect(from: directory)?.checks(runner: runner) ?? []
+    let anchor = ProjectAnchor.detect(from: directory)
+    let context = ConfigContext.detect(anchor: anchor, workingDirectory: directory)
+    let checks = anchor?.checks(runner: runner, context: context) ?? []
     return (await DoctorEngine(checks: checks).run(), runner)
 }
 
@@ -436,6 +438,142 @@ struct NodeVersionCheckTests {
 
         #expect(check.status == .pass)
         #expect(check.outcome.required == "no Node version declared")
+    }
+}
+
+@Suite("unreadable tool remediation")
+struct UnreadableToolRemediationTests {
+    @Test("mise shims point every unreadable required tool at the committed config")
+    func miseConfig() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(
+            repo,
+            packageJSON: #"{"dependencies": {"react-native": "0.76.5"}, "packageManager": "yarn@3.6.4"}"#
+        )
+        try repo.write(".nvmrc", "20.11.1\n")
+        try repo.write(".ruby-version", "3.2.2\n")
+        try repo.write("Gemfile.lock", gemfileLock)
+        try repo.write("mise.toml", "")
+
+        let unreadable = FakeProcessRunner.Response.failed(1, "mise ERROR config is not trusted\n")
+        let shims = "/Users/example/.local/share/mise/shims"
+        let trackedConfig = "git -C \(repo.root.path) ls-files --error-unmatch -- mise.toml"
+        let (report, runner) = await runProjectChecks(
+            repo,
+            node: unreadable,
+            tools: [
+                "which node": .ok("\(shims)/node\n"),
+                "yarn --version": unreadable,
+                "which yarn": .ok("\(shims)/yarn\n"),
+                "pod --version": unreadable,
+                "which pod": .ok("\(shims)/pod\n"),
+                "ruby --version": unreadable,
+                "which ruby": .ok("\(shims)/ruby\n"),
+                trackedConfig: .ok("mise.toml\n"),
+            ]
+        )
+
+        for id in ["node.version", "package-manager.version", "cocoapods.version", "ruby.version"] {
+            let check = try #require(report.checks.first { $0.id == id })
+            #expect(check.status == .error)
+            #expect(check.outcome.remediation?.summary.contains("provided by mise") == true)
+            #expect(check.outcome.remediation?.command == "mise trust .")
+        }
+        for executable in ["node", "yarn", "pod", "ruby"] {
+            #expect(runner.log.all.count { $0.description == "which \(executable)" } == 1)
+        }
+    }
+
+    @Test("mise without a tracked config recommends mise doctor")
+    func miseWithoutTrackedConfig() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
+        try repo.write("Gemfile.lock", gemfileLock)
+        try repo.write(".tool-versions", "ruby 3.2.2\n")
+        try repo.write("mise.toml", "")
+
+        let (report, _) = await runProjectChecks(
+            repo,
+            tools: [
+                "pod --version": .failed(1, "mise ERROR No version is set for shim: pod\n"),
+                "which pod": .ok("/Users/example/.local/share/mise/shims/pod\n"),
+            ]
+        )
+        let check = try #require(report.checks.first { $0.id == "cocoapods.version" })
+
+        #expect(check.outcome.remediation?.summary.contains("provided by mise") == true)
+        #expect(check.outcome.remediation?.command == "mise doctor")
+    }
+
+    @Test("mise trust quotes a config directory that contains spaces")
+    func miseConfigPathWithSpaces() async throws {
+        let repo = try FixtureRepo()
+        let app = "app space"
+        try repo.write(
+            "\(app)/package.json",
+            #"{"dependencies": {"react-native": "0.76.5"}}"#
+        )
+        try repo.write("\(app)/node_modules/react-native/package.json", #"{"version": "0.76.5"}"#)
+        try repo.directory("\(app)/ios")
+        try repo.write("\(app)/Gemfile.lock", gemfileLock)
+        try repo.write("\(app)/mise.toml", "")
+
+        let appDirectory = repo.url(app)
+        let trackedConfig = "git -C \(appDirectory.path) ls-files --error-unmatch -- mise.toml"
+        let (report, _) = await runProjectChecks(
+            repo,
+            at: "\(app)/ios",
+            tools: [
+                "pod --version": .failed(1, "mise ERROR config is not trusted\n"),
+                "which pod": .ok("/Users/example/.local/share/mise/shims/pod\n"),
+                trackedConfig: .ok("mise.toml\n"),
+            ]
+        )
+        let check = try #require(report.checks.first { $0.id == "cocoapods.version" })
+
+        #expect(check.outcome.remediation?.command == "mise trust '\(appDirectory.path)'")
+    }
+
+    @Test("an asdf shim names asdf without inventing a command")
+    func asdfShim() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
+        try repo.write("Gemfile.lock", gemfileLock)
+
+        let (report, _) = await runProjectChecks(
+            repo,
+            tools: [
+                "pod --version": .failed(1, "asdf rejected the shim\n"),
+                "which pod": .ok("/Users/example/.asdf/shims/pod\n"),
+            ]
+        )
+        let check = try #require(report.checks.first { $0.id == "cocoapods.version" })
+
+        #expect(check.outcome.remediation?.summary.contains("provided by asdf") == true)
+        #expect(check.outcome.remediation?.command == nil)
+    }
+
+    @Test("an unowned executable keeps the generic remediation")
+    func unknownOwner() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
+        try repo.write("Gemfile.lock", gemfileLock)
+
+        let (report, _) = await runProjectChecks(
+            repo,
+            tools: [
+                "pod --version": .failed(1, "pod failed\n"),
+                "which pod": .ok("/usr/local/bin/pod\n"),
+            ]
+        )
+        let check = try #require(report.checks.first { $0.id == "cocoapods.version" })
+
+        #expect(
+            check.outcome.remediation?.summary
+                == "`pod` is on PATH but reports no version, so it cannot be used. "
+                    + "Fix whatever provides it — the diagnostic above is what it said — then re-run mobile doctor."
+        )
+        #expect(check.outcome.remediation?.command == nil)
     }
 }
 

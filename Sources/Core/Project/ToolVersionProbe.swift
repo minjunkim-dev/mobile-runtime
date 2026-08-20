@@ -44,9 +44,110 @@ func probeVersion(of executable: String, using runner: any ProcessRunner) async 
 /// so every "install it" command is advice for a different fault: the thing to fix is
 /// whatever provides it, and only the tool's own words (carried in `observed`) know
 /// which that is. No command beats a wrong one, the rule #27 settled.
-func muteToolRemediation(_ executable: String) -> Remediation {
-    Remediation(
+func muteToolRemediation(
+    _ executable: String,
+    anchor: ProjectAnchor,
+    context: ConfigContext,
+    using runner: any ProcessRunner,
+    fileManager: FileManager = .default
+) async -> Remediation {
+    let generic = Remediation(
         summary: "`\(executable)` is on PATH but reports no version, so it cannot be used. "
             + "Fix whatever provides it — the diagnostic above is what it said — then re-run mobile doctor."
     )
+    guard
+        let result = try? await runner.run(
+            ProcessCommand("which", [executable], timeout: .seconds(15))
+        ),
+        result.terminationStatus.isSuccess,
+        let path = result.standardOutput.split(whereSeparator: \.isNewline).first,
+        let owner = shimOwner(of: String(path))
+    else { return generic }
+
+    guard owner == .mise else {
+        return Remediation(
+            summary: "`\(executable)` is a shim provided by \(owner.rawValue), and it reports no version. "
+                + "Fix \(owner.rawValue) — the diagnostic above is what it said — then re-run mobile doctor."
+        )
+    }
+    guard
+        let directory = await miseConfigDirectory(
+            for: anchor, using: runner, fileManager: fileManager
+        )
+    else {
+        return Remediation(
+            summary: "`\(executable)` is a shim provided by mise, and mise refused it. "
+                + "Ask mise to diagnose its setup — the diagnostic above is what mise said.",
+            command: "mise doctor"
+        )
+    }
+    return Remediation(
+        summary: "`\(executable)` is a shim provided by mise, and mise refused it. "
+            + "This repo commits a mise config, so trust it first — the diagnostic above is what mise said.",
+        command: "mise trust \(shellArgument(context.display(directory)))"
+    )
+}
+
+private enum ShimOwner: String {
+    case mise, asdf, rbenv, rvm
+}
+
+private func shimOwner(of path: String) -> ShimOwner? {
+    let components = URL(fileURLWithPath: path).pathComponents.map { $0.lowercased() }
+    let dots = CharacterSet(charactersIn: ".")
+    func hasShims(_ owner: ShimOwner) -> Bool {
+        components.indices.dropLast().contains { index in
+            components[index].trimmingCharacters(in: dots) == owner.rawValue
+                && components[index + 1] == "shims"
+        }
+    }
+
+    for owner in [ShimOwner.mise, .asdf, .rbenv] where hasShims(owner) {
+        return owner
+    }
+    return components.contains(".rvm") ? .rvm : nil
+}
+
+private func miseConfigDirectory(
+    for anchor: ProjectAnchor,
+    using runner: any ProcessRunner,
+    fileManager: FileManager
+) async -> URL? {
+    var directories = [anchor.directory]
+    if let workspace = anchor.workspaceRoot?.directory, workspace != anchor.directory {
+        directories.append(workspace)
+    }
+    let files = ["mise.toml", ".mise.toml", ".config/mise/config.toml"]
+
+    for directory in directories {
+        for file in files {
+            let candidate = directory.appendingPathComponent(file)
+            var isDirectory: ObjCBool = false
+            if fileManager.fileExists(atPath: candidate.path, isDirectory: &isDirectory),
+                !isDirectory.boolValue
+            {
+                let tracked = try? await runner.run(
+                    ProcessCommand(
+                        "git",
+                        ["-C", directory.path, "ls-files", "--error-unmatch", "--", file],
+                        timeout: .seconds(15)
+                    )
+                )
+                if tracked?.terminationStatus.isSuccess == true {
+                    return candidate.deletingLastPathComponent()
+                }
+            }
+        }
+    }
+    return nil
+}
+
+private func shellArgument(_ value: String) -> String {
+    let safe = CharacterSet(
+        charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._/"
+    )
+    guard value.unicodeScalars.allSatisfy({ safe.contains($0) }) else {
+        return "'\(value.replacingOccurrences(of: "'", with: "'\"'\"'"))'"
+    }
+    return value
 }

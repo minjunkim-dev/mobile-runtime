@@ -72,7 +72,7 @@ private func pipeline(_ repo: FixtureRepo, _ runner: FakeProcessRunner) -> UpPip
             doctor: DoctorEngine(
                 checks: iOSChecks(lookup: lookup, runner: runner, locator: locator)
                     + configChecks(context: config, lookup: lookup, runner: runner, locator: locator)
-                    + anchor.checks(runner: runner)
+                    + anchor.checks(runner: runner, context: config)
             ),
             config: config,
             lookup: lookup,

@@ -236,19 +236,29 @@ public struct ProjectAnchor: Sendable, Equatable {
     /// The Project checks this anchor can answer. A Check that needs a declaration
     /// to compare against is absent when the declaration is — a project that never
     /// pinned Ruby gets no Ruby line at all, rather than a permanent `unknown`.
-    public func checks(runner: any ProcessRunner) -> [any Check] {
+    public func checks(runner: any ProcessRunner, context: ConfigContext) -> [any Check] {
         var checks: [any Check] = [
             ProjectDetectedCheck(anchor: self),
-            NodeVersionCheck(anchor: self, runner: runner),
+            NodeVersionCheck(anchor: self, context: context, runner: runner),
         ]
         if let packageManager {
-            checks.append(PackageManagerVersionCheck(requirement: packageManager, runner: runner))
+            checks.append(
+                PackageManagerVersionCheck(
+                    requirement: packageManager, anchor: self, context: context, runner: runner
+                )
+            )
         }
         if let cocoapods {
-            checks.append(CocoaPodsVersionCheck(requirement: cocoapods, runner: runner))
+            checks.append(
+                CocoaPodsVersionCheck(
+                    requirement: cocoapods, anchor: self, context: context, runner: runner
+                )
+            )
         }
         if let rubyPin {
-            checks.append(RubyVersionCheck(pin: rubyPin, runner: runner))
+            checks.append(
+                RubyVersionCheck(pin: rubyPin, anchor: self, context: context, runner: runner)
+            )
         }
         return checks
     }

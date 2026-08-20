@@ -11,10 +11,19 @@ public struct RubyVersionCheck: Check {
     private static let source = CheckSource(tier: 1, origin: ".ruby-version")
 
     private let pin: String
+    private let anchor: ProjectAnchor
+    private let context: ConfigContext
     private let runner: any ProcessRunner
 
-    public init(pin: String, runner: any ProcessRunner) {
+    public init(
+        pin: String,
+        anchor: ProjectAnchor,
+        context: ConfigContext,
+        runner: any ProcessRunner
+    ) {
         self.pin = pin
+        self.anchor = anchor
+        self.context = context
         self.runner = runner
     }
 
@@ -40,7 +49,9 @@ public struct RubyVersionCheck: Check {
             )
         case .unreadable(let complaint):
             unusable = complaint
-            remediation = muteToolRemediation("ruby")
+            remediation = await muteToolRemediation(
+                "ruby", anchor: anchor, context: context, using: runner
+            )
         }
         return .error(observed: unusable, required: required, source: Self.source, remediation: remediation)
     }

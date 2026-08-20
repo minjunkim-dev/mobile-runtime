@@ -9,10 +9,12 @@ public struct NodeVersionCheck: Check {
     public let title = "Node version matches what the project requires"
 
     private let anchor: ProjectAnchor
+    private let context: ConfigContext
     private let runner: any ProcessRunner
 
-    public init(anchor: ProjectAnchor, runner: any ProcessRunner) {
+    public init(anchor: ProjectAnchor, context: ConfigContext, runner: any ProcessRunner) {
         self.anchor = anchor
+        self.context = context
         self.runner = runner
     }
 
@@ -49,7 +51,9 @@ public struct NodeVersionCheck: Check {
                 observed: complaint,
                 required: requirement,
                 source: source,
-                remediation: muteToolRemediation("node")
+                remediation: await muteToolRemediation(
+                    "node", anchor: anchor, context: context, using: runner
+                )
             )
         }
         let observed = "Node \(installed)"
