@@ -38,9 +38,19 @@ struct SchemeSelector {
             case .noSchemeNamed:
                 return Remediation(summary: "Set ios.scheme to one of them.", command: list)
             case .undecided(let schemes):
+                let projectName = project.split(separator: "/").last.flatMap { component -> String? in
+                    guard component.hasSuffix(".xcodeproj") else { return nil }
+                    return String(component.dropLast(".xcodeproj".count))
+                }
+                guard let projectName, schemes.contains(projectName) else {
+                    return Remediation(
+                        summary: "Declare ios.scheme in \(configFile) after reviewing the listed schemes.",
+                        command: list
+                    )
+                }
                 return Remediation(
                     summary: "Declare the scheme in \(configFile): "
-                        + "`ios:` on one line, `  scheme: \(schemes[0])` on the next.",
+                        + "`ios:` on one line, `  scheme: \(projectName)` on the next.",
                     command: list
                 )
             }
