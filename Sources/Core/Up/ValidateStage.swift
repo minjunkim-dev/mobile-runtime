@@ -18,14 +18,39 @@ public struct ValidateStage: Stage {
 
     private let engine: DoctorEngine
     private let checkIDs: Set<String>
+    private let promoteToError: @Sendable (CheckResult) -> Bool
 
-    public init(engine: DoctorEngine, checkIDs: Set<String>) {
+    public init(
+        engine: DoctorEngine,
+        checkIDs: Set<String>,
+        promoteToError: @escaping @Sendable (CheckResult) -> Bool = { _ in false }
+    ) {
         self.engine = engine
         self.checkIDs = checkIDs
+        self.promoteToError = promoteToError
     }
 
     public func run(_ context: inout UpContext) async throws -> StageOutcome {
-        let report = await engine.run(only: checkIDs)
+        let doctorReport = await engine.run(only: checkIDs)
+        let report = DoctorReport(
+            checks: doctorReport.checks.map { result in
+                guard result.status == .warning, promoteToError(result),
+                    let remediation = result.outcome.remediation
+                else { return result }
+                return CheckResult(
+                    id: result.id,
+                    category: result.category,
+                    title: result.title,
+                    outcome: .error(
+                        observed: result.outcome.observed,
+                        required: result.outcome.required,
+                        source: result.outcome.source,
+                        remediation: remediation
+                    )
+                )
+            },
+            toolFailures: doctorReport.toolFailures
+        )
         // Kept before any throw: the report is what gets rendered, pass or fail.
         context.validation = report
 

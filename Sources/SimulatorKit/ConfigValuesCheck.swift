@@ -9,6 +9,8 @@ public struct ConfigValuesCheck: Check {
     public let id = "config.values"
     public let category = "mobile.yml"
     public let title = "mobile.yml names a simulator and a scheme that exist"
+    private static let undecidedSchemeRequirement =
+        "ios.scheme, because this project has more than one scheme"
 
     private let context: ConfigContext
     /// Used only to prefer a runtime the project can actually run on when one
@@ -33,6 +35,11 @@ public struct ConfigValuesCheck: Check {
     /// never reads it, or when the project has schemes to choose between.
     public static func applies(to context: ConfigContext) -> Bool {
         context.file != nil || context.strayFile != nil || context.anchor?.hasIOSDirectory == true
+    }
+
+    static func isUndecidedScheme(_ result: CheckResult) -> Bool {
+        result.id == "config.values"
+            && result.outcome.required == undecidedSchemeRequirement
     }
 
     /// What one half of the file's values amounts to.
@@ -230,7 +237,7 @@ public struct ConfigValuesCheck: Check {
                 return .verdict(
                     .warning(
                         observed: miss.observed,
-                        required: "ios.scheme, because this project has more than one scheme",
+                        required: Self.undecidedSchemeRequirement,
                         source: source,
                         remediation: remediation
                     )
