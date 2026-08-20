@@ -61,9 +61,14 @@ private func runner(_ repo: FixtureRepo) throws -> FakeProcessRunner {
     ])
 }
 
-private func pipeline(_ repo: FixtureRepo, _ runner: FakeProcessRunner) -> UpPipeline {
-    let anchor = ProjectAnchor.detect(from: repo.root)!
-    let config = ConfigContext.detect(anchor: anchor, workingDirectory: repo.root)
+private func pipeline(
+    _ repo: FixtureRepo,
+    _ runner: FakeProcessRunner,
+    from workingDirectory: URL? = nil
+) -> UpPipeline {
+    let workingDirectory = workingDirectory ?? repo.root
+    let anchor = ProjectAnchor.detect(from: workingDirectory)!
+    let config = ConfigContext.detect(anchor: anchor, workingDirectory: workingDirectory)
     let lookup = MatrixLookup.resolve(anchor: anchor, config: config.configuration)
     let locator = XcodeLocator(runner: runner, developerDirOverride: nil)
     return UpPipeline(
@@ -113,6 +118,38 @@ struct IOSUpStagesTests {
         #expect(report.context.product?.bundleIdentifier == builtBundleID)
         #expect(report.context.metro?.state == .reused)
         #expect(report.context.appPid == 3538)
+    }
+
+    @Test("an undecided scheme fails validation before Metro starts")
+    func undecidedSchemeStopsAtValidation() async throws {
+        let repo = try settledProject()
+        var runner = try runner(repo)
+        let schemeList = "xcodebuild -list -json -project \(repo.url("ios/MyApp.xcodeproj").path)"
+        runner.responses[schemeList] = .ok(
+            #"{"project": {"name": "MyApp", "schemes": ["MyApp", "MyApp-tvOS"]}}"#
+        )
+        runner.responses[MetroStatus.command] = .failed(7, "")
+
+        let report = await pipeline(repo, runner).run()
+
+        #expect(report.exitCode == 1)
+        #expect(report.stages.map(\.id) == ["validate"])
+        #expect(report.context.validation?.checks.first { $0.id == "config.values" }?.status == .error)
+        #expect(runner.log.all.map(\.description).contains(MetroStatus.command) == false)
+        #expect(runner.log.spawned.isEmpty)
+    }
+
+    @Test("a misplaced mobile.yml warning does not stop up")
+    func strayConfigWarningPassesValidation() async throws {
+        let repo = try settledProject()
+        try repo.write("ios/mobile.yml", "ios:\n  scheme: MyApp\n")
+        let runner = try runner(repo)
+
+        let report = await pipeline(repo, runner, from: repo.url("ios")).run()
+
+        #expect(report.exitCode == 0)
+        #expect(report.context.validation?.checks.first { $0.id == "config.values" }?.status == .warning)
+        #expect(report.stages.map(\.id).last == "launch")
     }
 
     /// "Run it again" is the whole recovery procedure, so the second run has to be

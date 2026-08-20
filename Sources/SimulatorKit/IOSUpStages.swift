@@ -17,7 +17,11 @@ public func iOSUpStages(
     note: @escaping @Sendable (String) -> Void
 ) -> [any Stage] {
     [
-        ValidateStage(engine: doctor, checkIDs: IOSUpValidation.checkIDs),
+        ValidateStage(
+            engine: doctor,
+            checkIDs: IOSUpValidation.checkIDs,
+            promoteToError: IOSUpValidation.promotesToError
+        ),
         DependenciesStage(anchor: anchor, runner: runner),
         DeviceStage(
             declared: config.configuration?.device, lookup: lookup, runner: runner, locator: locator
@@ -39,6 +43,10 @@ public func iOSUpStages(
 /// simulator without anyone deciding that. A Check enters this list by being
 /// written into it.
 public enum IOSUpValidation {
+    static func promotesToError(_ result: CheckResult) -> Bool {
+        ConfigValuesCheck.isUndecidedScheme(result)
+    }
+
     public static let checkIDs: Set<String> = [
         // Host and matrix — can this machine build for iOS at all.
         "xcode.installed",
