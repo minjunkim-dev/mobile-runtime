@@ -13,31 +13,24 @@ public struct LaunchStage: Stage {
 
     private let runner: any ProcessRunner
     private let locator: XcodeLocator
-    /// The fixed wait after launch returns. `simctl launch` answers when the app has
-    /// been asked to start, not when it has drawn anything, and a command that hands
-    /// the terminal back with a blank simulator reads as a failure.
-    ///
-    /// A wall-clock guess is what one writes in the absence of a signal. Replace it
-    /// the day there is one to poll — a first frame, a bundle request Metro logs —
-    /// rather than by tuning the number. Injected, not a constant, so tests spend
-    /// nothing on it and a slow machine can be given more.
-    ///
-    /// It is served inside the stage, so `launch`'s elapsed time includes it. That is
-    /// the honest reading: the wait is work this stage does, and hiding it would make
-    /// the one number that says how long `up` took disagree with the clock.
-    private let settle: Duration
+    private let project: URL
+    /// The upper bound for observing the bundle after the app asks Metro for it.
+    /// Injected so tests do not wait, while a first bundle gets enough time on a cold
+    /// machine to finish honestly.
+    private let readinessWait: Duration
 
-    /// One source of truth for the wait, shared with `iOSUpStages`.
-    public static let defaultSettle: Duration = .seconds(3)
+    public static let defaultReadinessWait: Duration = .seconds(120)
 
     public init(
+        project: URL,
         runner: any ProcessRunner,
         locator: XcodeLocator,
-        settle: Duration = LaunchStage.defaultSettle
+        readinessWait: Duration = LaunchStage.defaultReadinessWait
     ) {
+        self.project = project
         self.runner = runner
         self.locator = locator
-        self.settle = settle
+        self.readinessWait = readinessWait
     }
 
     public func run(_ context: inout UpContext) async throws -> StageOutcome {
@@ -84,8 +77,16 @@ public struct LaunchStage: Stage {
         }
         context.appPid = pid
 
-        try await Task.sleep(for: settle)
-        return .pass("\(product.bundleIdentifier) — pid \(pid)")
+        let detail = "\(product.bundleIdentifier) — pid \(pid)"
+        guard let metro = context.metro else { return .pass(detail) }
+        let ready = await MetroReadiness(
+            project: project, runner: runner, timeout: readinessWait
+        ).wait(for: metro)
+        if ready { return .pass(detail) }
+
+        let hint = metro.logPath.map { " — Metro still bundling; log at \($0)" }
+            ?? " — Metro still bundling; check the Metro process on port 8081"
+        return .pass(detail + hint)
     }
 
     /// The pid is what a line ends with. Read from the end rather than by splitting on
@@ -96,5 +97,48 @@ public struct LaunchStage: Stage {
         output.split(separator: "\n").lazy
             .compactMap { $0.split(separator: " ").last.flatMap { Int32($0) } }
             .first
+    }
+}
+
+/// The signal differs by ownership: a Metro this run started has a log to read,
+/// while a reused one can answer the same `/status` question `up` already trusts.
+private struct MetroReadiness: Sendable {
+    private let project: URL
+    private let runner: any ProcessRunner
+    private let timeout: Duration
+
+    init(project: URL, runner: any ProcessRunner, timeout: Duration) {
+        self.project = project
+        self.runner = runner
+        self.timeout = timeout
+    }
+
+    func wait(for metro: MetroProcess) async -> Bool {
+        let deadline = ContinuousClock.now + timeout
+        while true {
+            if await isReady(metro) { return true }
+            let remaining = ContinuousClock.now.duration(to: deadline)
+            guard remaining > .zero else { return false }
+            try? await Task.sleep(for: min(.milliseconds(250), remaining))
+        }
+    }
+
+    private func isReady(_ metro: MetroProcess) async -> Bool {
+        switch metro.state {
+        case .spawned:
+            guard let logPath = metro.logPath,
+                  let log = try? String(contentsOfFile: logPath, encoding: .utf8)
+            else { return false }
+            return log.split(whereSeparator: \.isNewline).contains { line in
+                let line = String(line)
+                return line.localizedCaseInsensitiveContains("BUNDLE")
+                    && (line.contains("100.0%") || line.contains("100%"))
+            }
+        case .reused:
+            guard let verdict = try? await MetroVerdict.ask(anchor: project, runner: runner)
+            else { return false }
+            if case .mine = verdict { return true }
+            return false
+        }
     }
 }

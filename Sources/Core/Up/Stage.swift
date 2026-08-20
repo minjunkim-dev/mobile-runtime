@@ -118,8 +118,8 @@ public struct UpContext: Sendable {
     /// build, install and launch all address the same udid.
     public var device: SelectedDevice?
 
-    /// Set by `metro`. Read by nothing else in the pipeline — it is there for the
-    /// reader and for `--json`, which is the whole point of reporting a pid.
+    /// Set by `metro`. `launch` reads its ownership and log path to wait for the
+    /// bundle signal, and the reader and `--json` report the same process.
     public var metro: MetroProcess?
 
     /// Set by `build`, consumed by `install` and `launch`.

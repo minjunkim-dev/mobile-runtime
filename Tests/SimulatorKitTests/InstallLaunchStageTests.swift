@@ -105,8 +105,14 @@ struct InstallStageTests {
 
 @Suite("launch stage")
 struct LaunchStageTests {
-    private func stage(_ runner: FakeProcessRunner, settle: Duration = .zero) -> LaunchStage {
-        LaunchStage(runner: runner, locator: locator(runner), settle: settle)
+    private let project = URL(fileURLWithPath: "/Users/USER/MyApp")
+
+    private func stage(
+        _ runner: FakeProcessRunner, readinessWait: Duration = .zero
+    ) -> LaunchStage {
+        LaunchStage(
+            project: project, runner: runner, locator: locator(runner), readinessWait: readinessWait
+        )
     }
 
     private func launching(_ output: String = "com.example.MyApp: 3538\n") -> FakeProcessRunner {
@@ -208,17 +214,45 @@ struct LaunchStageTests {
         }
     }
 
-    /// `simctl launch` returns when the app has been asked to start, not when it has
-    /// drawn anything. The wait is injected rather than fixed so a test costs nothing
-    /// for it — and so the value can be raised on a machine that needs more.
-    @Test("the settle wait is served after the launch")
-    func settles() async throws {
+    @Test("a completed Metro bundle lets launch finish without a wall-clock wait")
+    func completedBundleIsReady() async throws {
         let runner = launching()
+        let logs = try RunLogs.temporary()
+        _ = logs.write(" BUNDLE ./index.js 100.0% (4050/4050)\n", to: "metro.log")
         var context = afterBuild()
+        context.metro = MetroProcess(state: .spawned, logPath: logs.url("metro.log").path)
 
-        let start = ContinuousClock.now
-        _ = try await stage(runner, settle: .milliseconds(50)).run(&context)
+        let outcome = try await stage(runner).run(&context)
 
-        #expect(start.duration(to: .now) >= .milliseconds(50))
+        #expect(outcome.detail?.contains("still bundling") == false)
+    }
+
+    @Test("an incomplete Metro bundle returns success with a visible readiness hint")
+    func incompleteBundleIsReported() async throws {
+        let runner = launching()
+        let logs = try RunLogs.temporary()
+        let logFile = try #require(logs.write(" BUNDLE ./index.js 84.7% (3728/4050)\n", to: "metro.log"))
+        var context = afterBuild()
+        context.metro = MetroProcess(state: .spawned, logPath: logFile.path)
+
+        let outcome = try await stage(runner, readinessWait: .milliseconds(10)).run(&context)
+
+        #expect(outcome.status == .pass)
+        #expect(outcome.detail?.contains("still bundling") == true)
+        #expect(outcome.detail?.contains(logFile.path) == true)
+    }
+
+    @Test("a reused Metro is checked through its status endpoint")
+    func reusedMetroIsReadyFromStatus() async throws {
+        var runner = launching()
+        runner.responses[MetroStatus.command] = .ok(MetroStatus.running(projectRoot: project))
+        var context = afterBuild()
+        context.metro = MetroProcess(state: .reused)
+
+        let outcome = try await stage(runner).run(&context)
+
+        #expect(outcome.status == .pass)
+        #expect(runner.log.first(matching: MetroStatus.command) != nil)
+        #expect(outcome.detail?.contains("still bundling") == false)
     }
 }

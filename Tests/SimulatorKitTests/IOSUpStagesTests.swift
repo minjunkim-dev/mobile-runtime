@@ -80,7 +80,7 @@ private func pipeline(_ repo: FixtureRepo, _ runner: FakeProcessRunner) -> UpPip
             locator: locator,
             // The wait exists for a human watching the screen; a test would only spend
             // three seconds per run on it.
-            settle: .zero,
+            readinessWait: .zero,
             note: { _ in }
         )
     )
