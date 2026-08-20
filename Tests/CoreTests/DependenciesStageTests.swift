@@ -378,6 +378,35 @@ struct DependenciesStageTests {
         #expect(error?.remediation.command == "yarn install")
     }
 
+    @Test("partial node_modules from a failed install is retried on the next run")
+    func retriesAfterPartialNodeInstall() async throws {
+        let repo = try FixtureRepo()
+        try repo.write("package.json", #"{"private": true}"#)
+        try repo.write("yarn.lock", "")
+        try repo.write("packages/one/package.json", packageJSON)
+        try repo.write("packages/two/package.json", packageJSON)
+        let first = try anchor(repo, at: "packages/one")
+        let sibling = try anchor(repo, at: "packages/two")
+        let failed = FakeProcessRunner(responses: [
+            "yarn install": .failed(2, "preinstall failed")
+        ])
+        var context = UpContext()
+
+        await #expect(throws: DomainError.self) {
+            try await run(first, failed, context: &context)
+        }
+        try repo.directory("node_modules")
+
+        let retry = FakeProcessRunner(responses: ["yarn install": .ok("")])
+        let outcome = try await run(sibling, retry, context: &context)
+
+        #expect(outcome.status == .pass)
+        #expect(retry.log.first(matching: "yarn install") != nil)
+
+        let settled = FakeProcessRunner()
+        #expect(try await run(first, settled, context: &context).status == .skipped)
+    }
+
     @Test("an npm failure shows its error rather than later warnings")
     func observedPrefersNPMError() async throws {
         let repo = try FixtureRepo()

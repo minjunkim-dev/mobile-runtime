@@ -36,9 +36,10 @@ public struct DependenciesStage: Stage {
             : .pass("installed \(installed.joined(separator: " and "))")
     }
 
-    /// Present or absent is the whole test. No comparison against the lockfile: it
-    /// costs tens of seconds on every run, and a `node_modules` that has drifted from
-    /// the lock is something the build says out loud anyway.
+    /// Presence is the normal test. No comparison against the lockfile: it costs tens
+    /// of seconds on every run, and a `node_modules` that has drifted from the lock is
+    /// something the build says out loud anyway. The one exception is an install this
+    /// stage saw fail: its marker stays behind until a later install succeeds.
     ///
     /// Looked for where the install runs, not at the anchor. A hoisted workspace puts
     /// the packages in the **root's** `node_modules` and can leave the member with
@@ -47,11 +48,26 @@ public struct DependenciesStage: Stage {
     private func installNode() async throws -> Bool {
         let command = anchor.installProcess
         let directory = command.workingDirectory ?? anchor.directory
-        guard !FileManager.default.fileExists(
-            atPath: directory.appendingPathComponent("node_modules").path
-        ) else { return false }
+        let files = FileManager.default
+        let nodeModules = directory.appendingPathComponent("node_modules")
+        let incomplete = nodeModules.appendingPathComponent(".mobile-install.incomplete")
+        guard !files.fileExists(atPath: nodeModules.path)
+            || files.fileExists(atPath: incomplete.path)
+        else { return false }
 
-        try await install(command, what: "node_modules", byHand: anchor.installCommand)
+        func markIncomplete() throws {
+            try files.createDirectory(at: nodeModules, withIntermediateDirectories: true)
+            try Data().write(to: incomplete, options: .atomic)
+        }
+
+        try markIncomplete()
+        do {
+            try await install(command, what: "node_modules", byHand: anchor.installCommand)
+        } catch let installError {
+            try markIncomplete()
+            throw installError
+        }
+        try? files.removeItem(at: incomplete)
         return true
     }
 
