@@ -21,7 +21,10 @@ struct Wiring {
     let projectRunner: any ProcessRunner
     let locator: XcodeLocator
 
-    static func bootstrap(verbose: Bool) async -> Wiring {
+    static func bootstrap(
+        verbose: Bool,
+        includeProjectEnvironment: Bool = true
+    ) async -> Wiring {
         LoggingSystem.bootstrap { label in
             var handler = StreamLogHandler.standardError(label: label)
             handler.logLevel = verbose ? .debug : .info
@@ -38,7 +41,7 @@ struct Wiring {
         let config = ConfigContext.detect(anchor: anchor, workingDirectory: workingDirectory)
         let lookup = anchor.map { MatrixLookup.resolve(anchor: $0, config: config.configuration) }
         let projectEnvironment: ProjectExecutionEnvironment?
-        if let anchor {
+        if includeProjectEnvironment, let anchor {
             projectEnvironment = await ProjectExecutionEnvironment.resolve(
                 anchor: anchor, hostRunner: runner
             )
