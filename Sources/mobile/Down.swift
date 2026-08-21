@@ -15,7 +15,7 @@ struct Down: AsyncParsableCommand {
     var verbose = false
 
     func run() async throws {
-        let wiring = Wiring.bootstrap(verbose: verbose)
+        let wiring = await Wiring.bootstrap(verbose: verbose)
         let writer = DownWriter(
             json: json,
             toolVersion: Tool.version,

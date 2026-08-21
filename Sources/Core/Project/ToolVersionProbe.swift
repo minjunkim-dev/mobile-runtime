@@ -70,11 +70,8 @@ func muteToolRemediation(
                 + "Fix \(owner.rawValue) — the diagnostic above is what it said — then re-run mobile doctor."
         )
     }
-    guard
-        let directory = await miseConfigDirectory(
-            for: anchor, using: runner, fileManager: fileManager
-        )
-    else {
+    let lookup = await trackedMiseConfig(for: anchor, using: runner, fileManager: fileManager)
+    guard case .found(let config) = lookup else {
         return Remediation(
             summary: "`\(executable)` is a shim provided by mise, and mise refused it. "
                 + "Ask mise to diagnose its setup — the diagnostic above is what mise said.",
@@ -84,7 +81,7 @@ func muteToolRemediation(
     return Remediation(
         summary: "`\(executable)` is a shim provided by mise, and mise refused it. "
             + "This repo commits a mise config, so trust it first — the diagnostic above is what mise said.",
-        command: "mise trust \(shellArgument(context.display(directory)))"
+        command: "mise trust \(shellArgument(context.display(config.root)))"
     )
 }
 
@@ -108,41 +105,7 @@ private func shimOwner(of path: String) -> ShimOwner? {
     return components.contains(".rvm") ? .rvm : nil
 }
 
-private func miseConfigDirectory(
-    for anchor: ProjectAnchor,
-    using runner: any ProcessRunner,
-    fileManager: FileManager
-) async -> URL? {
-    var directories = [anchor.directory]
-    if let workspace = anchor.workspaceRoot?.directory, workspace != anchor.directory {
-        directories.append(workspace)
-    }
-    let files = ["mise.toml", ".mise.toml", ".config/mise/config.toml"]
-
-    for directory in directories {
-        for file in files {
-            let candidate = directory.appendingPathComponent(file)
-            var isDirectory: ObjCBool = false
-            if fileManager.fileExists(atPath: candidate.path, isDirectory: &isDirectory),
-                !isDirectory.boolValue
-            {
-                let tracked = try? await runner.run(
-                    ProcessCommand(
-                        "git",
-                        ["-C", directory.path, "ls-files", "--error-unmatch", "--", file],
-                        timeout: .seconds(15)
-                    )
-                )
-                if tracked?.terminationStatus.isSuccess == true {
-                    return candidate.deletingLastPathComponent()
-                }
-            }
-        }
-    }
-    return nil
-}
-
-private func shellArgument(_ value: String) -> String {
+func shellArgument(_ value: String) -> String {
     let safe = CharacterSet(
         charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._/"
     )

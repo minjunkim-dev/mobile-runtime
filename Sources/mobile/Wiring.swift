@@ -15,10 +15,13 @@ struct Wiring {
     /// through the same runner, against the same Xcode.
     let config: ConfigContext
     let lookup: MatrixLookup?
+    /// Machine commands: Xcode discovery, simulator control, install, launch, down.
     let runner: any ProcessRunner
+    /// Project commands: version checks now; dependencies, Metro and build in #72.
+    let projectRunner: any ProcessRunner
     let locator: XcodeLocator
 
-    static func bootstrap(verbose: Bool) -> Wiring {
+    static func bootstrap(verbose: Bool) async -> Wiring {
         LoggingSystem.bootstrap { label in
             var handler = StreamLogHandler.standardError(label: label)
             handler.logLevel = verbose ? .debug : .info
@@ -34,17 +37,31 @@ struct Wiring {
         // Tier 2 checks compare against.
         let config = ConfigContext.detect(anchor: anchor, workingDirectory: workingDirectory)
         let lookup = anchor.map { MatrixLookup.resolve(anchor: $0, config: config.configuration) }
+        let projectEnvironment: ProjectExecutionEnvironment?
+        if let anchor {
+            projectEnvironment = await ProjectExecutionEnvironment.resolve(
+                anchor: anchor, hostRunner: runner
+            )
+        } else {
+            projectEnvironment = nil
+        }
+        let projectChecks = if let anchor, let projectEnvironment {
+            projectEnvironment.checks(anchor: anchor, context: config)
+        } else {
+            [any Check]()
+        }
 
         return Wiring(
             anchor: anchor,
             engine: DoctorEngine(
                 checks: iOSChecks(lookup: lookup, runner: runner, locator: locator)
                     + configChecks(context: config, lookup: lookup, runner: runner, locator: locator)
-                    + (anchor?.checks(runner: runner, context: config) ?? [])
+                    + projectChecks
             ),
             config: config,
             lookup: lookup,
             runner: runner,
+            projectRunner: projectEnvironment?.runner ?? runner,
             locator: locator
         )
     }

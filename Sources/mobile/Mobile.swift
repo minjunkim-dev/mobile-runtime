@@ -33,7 +33,7 @@ struct Doctor: AsyncParsableCommand {
     var verbose = false
 
     func run() async throws {
-        let wiring = Wiring.bootstrap(verbose: verbose)
+        let wiring = await Wiring.bootstrap(verbose: verbose)
 
         // Standing outside a project is a legitimate use — a new machine has nothing
         // cloned yet — so it is a note, never an error.
