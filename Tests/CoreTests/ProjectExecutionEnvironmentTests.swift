@@ -6,6 +6,39 @@ import Testing
 
 @Suite("project execution environment")
 struct ProjectExecutionEnvironmentTests {
+    @Test("a fresh clone validates its toolchain before installing dependencies")
+    func freshCloneValidatesActivation() async throws {
+        let repo = try FixtureRepo()
+        try repo.write(
+            "package.json",
+            #"{"dependencies":{"react-native":"0.83.10"},"engines":{"node":">=22"}}"#
+        )
+        try repo.directory("ios")
+        try repo.write("mise.toml", "[tools]\nnode = \"22.23.2\"\n")
+
+        let tracked = "git -C \(repo.root.path) ls-files --error-unmatch -- mise.toml"
+        let host = FakeProcessRunner(responses: [
+            tracked: .ok("mise.toml\n"),
+            "mise exec -- true": .failed(1, "mise ERROR tool node@22.23.2 is not installed"),
+        ])
+        let anchor = try #require(ProjectAnchor.detect(from: repo.root))
+        let environment = await ProjectExecutionEnvironment.resolve(
+            anchor: anchor, hostRunner: host
+        )
+        let context = ConfigContext.detect(anchor: anchor, workingDirectory: repo.root)
+
+        let report = await DoctorEngine(
+            checks: environment.checks(anchor: anchor, context: context)
+        ).run()
+
+        #expect(report.checks.first { $0.id == "project.detected" }?.status == .warning)
+        #expect(
+            report.checks.first { $0.id == "project.execution-environment" }?.status == .error
+        )
+        #expect(host.log.first(matching: "mise exec -- true") != nil)
+        #expect(host.log.first(matching: "mise exec -- node --version") == nil)
+    }
+
     @Test("mise activation preserves the command and disables automatic installation")
     func miseActivation() async throws {
         let repo = try FixtureRepo()

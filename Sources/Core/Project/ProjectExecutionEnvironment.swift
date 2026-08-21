@@ -9,7 +9,10 @@ public struct ProjectExecutionEnvironment: Check, Sendable {
     public let id = Self.checkID
     public let category = "Project environment"
     public let title = "Project commands use the repository's toolchain"
-    public let dependsOn = ["project.detected"]
+    // A fresh clone has no node_modules yet, but dependency alignment already needs
+    // this environment. The anchor exists before either Check, so activation stands
+    // on it directly rather than waiting for an install it is meant to enable.
+    public let dependsOn: [String] = []
     public let runner: any ProcessRunner
     private let activation: Activation
 
