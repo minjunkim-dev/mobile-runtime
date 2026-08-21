@@ -36,10 +36,11 @@ public struct DependenciesStage: Stage {
             : .pass("installed \(installed.joined(separator: " and "))")
     }
 
-    /// Presence is the normal test. No comparison against the lockfile: it costs tens
-    /// of seconds on every run, and a `node_modules` that has drifted from the lock is
-    /// something the build says out loud anyway. The one exception is an install this
-    /// stage saw fail: its marker stays behind until a later install succeeds.
+    /// A committed lockfile is checked by its own package manager every time. Merely
+    /// finding `node_modules` cannot prove that it still matches the lock, and the
+    /// manager already has the native algorithm for validating and repairing it.
+    /// Without a lockfile there is no alignment contract, so presence remains the
+    /// best non-destructive signal. A failed install's marker forces the next retry.
     ///
     /// Looked for where the install runs, not at the anchor. A hoisted workspace puts
     /// the packages in the **root's** `node_modules` and can leave the member with
@@ -51,7 +52,8 @@ public struct DependenciesStage: Stage {
         let files = FileManager.default
         let nodeModules = directory.appendingPathComponent("node_modules")
         let incomplete = nodeModules.appendingPathComponent(".mobile-install.incomplete")
-        guard !files.fileExists(atPath: nodeModules.path)
+        guard anchor.workspaceRoot != nil
+            || !files.fileExists(atPath: nodeModules.path)
             || files.fileExists(atPath: incomplete.path)
         else { return false }
 

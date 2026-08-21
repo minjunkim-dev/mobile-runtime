@@ -42,6 +42,8 @@ private func runner(_ repo: FixtureRepo) throws -> FakeProcessRunner {
         "xcrun simctl list runtimes -j": .ok(try Fixture.text("simctl-list-runtimes.stdout.json")),
         "node --version": .ok("v22.14.0\n"),
         "yarn --version": .ok("1.22.22\n"),
+        // dependencies — the lockfile is aligned even when node_modules exists
+        "yarn install --frozen-lockfile": .ok(""),
         // device — the captured list has this machine's one simulator, booted
         "xcrun simctl list devices -j": .ok(try Fixture.text("simctl-list-devices.stdout.json")),
         // metro — this project's own, named by the header `/status` carries
@@ -156,7 +158,7 @@ struct IOSUpStagesTests {
         let fixtures = try runner(repo)
         let host = FakeProcessRunner(responses: fixtures.responses)
         var project = FakeProcessRunner(responses: fixtures.responses)
-        project.responses["yarn install"] = .ok("")
+        project.responses["yarn install --frozen-lockfile"] = .ok("")
         project.responses[MetroStatus.command] = .failed(7, "")
         let listener = (["lsof"] + MetroVerdict.listenerArguments + ["-t"])
             .joined(separator: " ")
@@ -167,10 +169,10 @@ struct IOSUpStagesTests {
         #expect(report.exitCode == 0)
         let hostCommands = host.log.all.map(\.description)
         let projectCommands = project.log.all.map(\.description)
-        #expect(projectCommands.contains("yarn install"))
+        #expect(projectCommands.contains("yarn install --frozen-lockfile"))
         #expect(projectCommands.contains(MetroStatus.command))
         #expect(projectCommands.contains(buildCommand(repo)))
-        #expect(!hostCommands.contains("yarn install"))
+        #expect(!hostCommands.contains("yarn install --frozen-lockfile"))
         #expect(!hostCommands.contains(buildCommand(repo)))
         #expect(hostCommands.contains(installCommand))
         #expect(hostCommands.contains(launchCommand))
@@ -215,11 +217,10 @@ struct IOSUpStagesTests {
         #expect(report.stages.map(\.id).last == "launch")
     }
 
-    /// "Run it again" is the whole recovery procedure, so the second run has to be
-    /// cheap where the first was expensive — and still relaunch, because what is on
-    /// the screen when `up` returns is the code it just built.
-    @Test("a second run skips what is already done and launches the app again anyway")
-    func rerunSkipsButRelaunches() async throws {
+    /// "Run it again" revalidates the committed lockfile, but still avoids simulator
+    /// boot and a second Metro while relaunching the code it just built.
+    @Test("a second run realigns dependencies and launches the app again")
+    func rerunRealignsAndRelaunches() async throws {
         let repo = try settledProject()
         let runner = try runner(repo)
 
@@ -228,11 +229,11 @@ struct IOSUpStagesTests {
 
         #expect(second.exitCode == 0)
         let skipped = second.stages.filter { $0.status == .skipped }.map(\.id)
-        #expect(skipped == ["dependencies", "device", "metro"])
-        // Nothing was reinstalled, nothing was rebooted, no second bundler.
+        #expect(skipped == ["device", "metro"])
+        // Dependencies were checked twice; nothing was rebooted and no second Metro started.
         let sent = runner.log.all.map(\.description)
         #expect(sent.contains { $0.contains("bootstatus") } == false)
-        #expect(sent.contains { $0.hasPrefix("yarn install") } == false)
+        #expect(sent.filter { $0 == "yarn install --frozen-lockfile" }.count == 2)
         #expect(runner.log.spawned.isEmpty)
         // Launch, on the other hand, went out on both runs.
         #expect(sent.filter { $0 == launchCommand }.count == 2)

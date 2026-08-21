@@ -118,7 +118,10 @@ struct ProjectDetectedCheckTests {
         let check = try #require(report.checks.first { $0.id == "project.detected" })
 
         #expect(check.status == .warning)
-        #expect(check.outcome.remediation?.command == "cd \(repo.root.path) && yarn install")
+        #expect(
+            check.outcome.remediation?.command
+                == "cd \(repo.root.path) && yarn install --frozen-lockfile"
+        )
         #expect(check.outcome.remediation?.summary.contains("yarn.lock") == true)
     }
 

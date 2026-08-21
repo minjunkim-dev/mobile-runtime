@@ -76,7 +76,7 @@ public struct WorkspaceRoot: Sendable, Equatable {
         self.packageManagerName = packageManagerName
     }
 
-    /// What a human would run to install the project's dependencies, from the two
+    /// What a human would run to align the project's dependencies, from the two
     /// things the lockfile knows: its kind picks the manager, its directory picks
     /// where the install runs. Running an install from a sub-package is how a
     /// workspace gets broken, so the `cd` is part of the command whenever the anchor
@@ -90,9 +90,18 @@ public struct WorkspaceRoot: Sendable, Equatable {
     /// above and this working directory are one decision written once — the line
     /// doctor hands a human and the command `up` executes must not be able to drift.
     ///
+    /// The manager owns lockfile validation and repair. `mobile` does not duplicate
+    /// four dependency-tree formats or write the project's declarations itself.
+    ///
     /// No timeout: a cold install is minutes of network, and 30 seconds would kill it.
     public var installProcess: ProcessCommand {
-        ProcessCommand(packageManagerName, ["install"], workingDirectory: directory, timeout: nil)
+        let arguments: [String]
+        switch packageManagerName {
+        case "npm": arguments = ["ci"]
+        case "yarn", "pnpm", "bun": arguments = ["install", "--frozen-lockfile"]
+        default: arguments = ["install"]
+        }
+        return ProcessCommand(packageManagerName, arguments, workingDirectory: directory, timeout: nil)
     }
 }
 

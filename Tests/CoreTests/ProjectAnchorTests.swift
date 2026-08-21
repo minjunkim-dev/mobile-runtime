@@ -164,7 +164,7 @@ struct ProjectAnchorTests {
         #expect(workspaceRoot.packageManagerName == "yarn")
         // Copy-pasting `yarn install` from the sub-package is what breaks a
         // workspace: the install belongs where the lockfile is.
-        #expect(anchor.installCommand == "cd \(repo.root.path) && yarn install")
+        #expect(anchor.installCommand == "cd \(repo.root.path) && yarn install --frozen-lockfile")
     }
 
     /// In a single repo the anchor is the workspace root, and an install that already
@@ -178,7 +178,7 @@ struct ProjectAnchorTests {
         let anchor = try #require(ProjectAnchor.detect(from: repo.root))
 
         #expect(anchor.workspaceRoot?.directory.path == repo.root.path)
-        #expect(anchor.installCommand == "pnpm install")
+        #expect(anchor.installCommand == "pnpm install --frozen-lockfile")
     }
 
     /// `packageManager` is a workspace-wide contract: a sub-package that does not
