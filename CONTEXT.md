@@ -85,7 +85,7 @@ build Stage가 확정해 install·launch에 넘기는 `.app` 경로와 bundle id
 Stage의 전체 출력을 담는 파일. 앱 repo가 아니라 시스템 임시 디렉터리 아래 프로젝트별 경로에 쓴다(앱 repo에 `.gitignore` 항목을 요구하지 않기 위해). 경로는 언제나 실패와 함께 출력된다 — 사람이 찾을 수 없는 로그는 없는 로그다.
 
 **UpReport / 파이프라인 status**:
-up의 종합 결과. envelope의 `status`는 doctor와 같은 어휘를 쓴다 — 실패는 `error`, 그 외에는 Stage들이 관측한 것(validate의 warning은 up에서도 warning)이다. exit code 규칙(0/1/2)은 `DoctorReport`와 같다.
+up의 종합 결과. envelope의 `status`는 doctor와 같은 어휘를 쓴다 — 실패는 `error`, 그 외에는 Stage들이 관측한 것(validate의 warning은 up에서도 warning)이다. 실행의 성패는 `status`가 아니라 exit code로 판단한다. exit `0`이면 `status: warning`이어도 성공이다. JSON 문서만 보존한 소비자는 최상위 `error` 키의 부재로 성공을 판정한다 — 성공 문서에는 `error: null`이 아니라 키 자체가 없다. 실패 문서에도 실패 전까지 확보한 기기·Metro 같은 부분 `result`가 있을 수 있다. exit code 규칙(0/1/2)은 `DoctorReport`와 같다.
 
 **프로젝트 의존성 (Project dependencies)**:
 앱 repo 자신의 의존성(node_modules, Pods). up이 설치하는 정상 단계 — "자동 설치 금지" 원칙의 대상이 아니다.
