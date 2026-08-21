@@ -1,7 +1,7 @@
 # Dogfooding: 프로젝트 실행 환경 / build 경계 재검증
 
 - 날짜: 2026-08-21
-- mobile: `b417b20` (`codex/project-toolchain-context`, `main` `62fd149` 기반)
+- fresh-clone 실행 시점 mobile: `b417b20` (`codex/project-toolchain-context`, `main` `62fd149` 기반)
 - 호스트: Xcode 26.6 (17F113), iOS 26.5 simulator runtime
 - 자동 설치 방지: 모든 실물 명령에 `MISE_AUTO_INSTALL=false`
 
@@ -42,6 +42,8 @@ fresh clone에서 `project.detected`가 `node_modules missing` warning이면 프
 - mattermost-mobile: `packageManager` 선언이 없어 기존 직접 실행 경로를 유지했다.
 - 세 checkout 모두 실행 전후 Git 상태가 같았다. 설치·trust·프로젝트 파일 변경은 없었다.
 
+최종 리뷰에서는 선언과 lockfile이 서로 다른 package manager를 고르면 validation error로 막고, Corepack 자체 부재와 manager cache 부재를 구분하도록 보완했다. 복구 명령은 현재 PATH 또는 커밋된 mise 문맥을 그대로 보존해 표시만 한다. 보완 뒤 clean Joplin lab checkout에서 `doctor`를 다시 실행했고, Yarn 4.16.0 cache 부재가 workspace root의 `corepack install` 안내로 남는 것과 실행 전후 Git 상태가 같은 것을 확인했다.
+
 이 후속 확인은 package manager 실행 정책과 무설치 경계만 검증한다. 새 dependency alignment·build·launch·UI 증거가 아니므로 아래 3/3 No-Go 판정을 바꾸지 않는다.
 
 ## 증거 경계
@@ -49,7 +51,7 @@ fresh clone에서 `project.detected`가 `node_modules missing` warning이면 프
 - 세 repo 모두 validation에서 멈췄으므로 이번 라운드에는 실물 dependency alignment, xcodebuild 성공, app install, launch 또는 UI 기능 성공 근거가 없다.
 - `mobile build`의 `validate → dependencies → device → build` 구성과 Metro/install/launch/설치 기록 부재는 shared pipeline 테스트로 검증했다.
 - npm/Yarn/pnpm/Bun의 lockfile 보존 명령, 기존 `node_modules` 재정렬, manifest/lockfile byte 보존, 실패 marker는 Core 테스트로 검증했다.
-- 전체 결과는 macOS 405 tests / 52 suites 통과와 Linux Core build 통과다.
+- fresh-clone 라운드는 당시 macOS 405 tests / 52 suites를 통과했다. 최종 리뷰 보완까지 포함한 현재 branch는 macOS 411 tests / 52 suites와 Linux Core build를 통과했다.
 - Rainbow의 Firebase/ENS 접근 권한은 이 환경/validation 검증에 필요하지 않았다. 반대로 이번 결과를 Rainbow launch나 Firebase/ENS 기능 성공으로 해석할 수 없다.
 
 ## 게이트

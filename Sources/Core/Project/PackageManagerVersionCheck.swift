@@ -36,6 +36,18 @@ public struct PackageManagerVersionCheck: Check {
     public func run() async throws -> CheckOutcome {
         let required = "\(requirement.name) \(requirement.version)"
 
+        if let workspace = anchor.workspaceRoot,
+            workspace.packageManagerName != requirement.name
+        {
+            return .error(
+                observed: "\(workspace.lockfile) selects \(workspace.packageManagerName)",
+                required: "`packageManager` selects \(requirement.name)",
+                source: source,
+                remediation: Remediation(
+                    summary: "Make the committed lockfile and `packageManager` declaration select the same manager, then re-run mobile doctor."
+                )
+            )
+        }
         guard Self.known.contains(requirement.name) else {
             return .unknown(
                 reason: "`packageManager` names `\(requirement.name)`, which mobile does not know how to measure",
@@ -62,14 +74,19 @@ public struct PackageManagerVersionCheck: Check {
         let advice: Remediation
         switch try await probeVersion(versionCommand, using: runner) {
         case .reported(let installed):
-            return judge(installed: installed, declared: declared, required: required)
+            return judge(
+                installed: installed,
+                declared: declared,
+                required: required,
+                usesCorepack: versionCommand.executable == "corepack"
+            )
         case .notOnPath:
             unusable = "\(versionCommand.executable) is not on PATH"
             advice = missingExecutableRemediation(corepack: versionCommand.executable == "corepack")
         case .unreadable(let complaint):
             unusable = complaint
             if versionCommand.executable == "corepack" {
-                advice = corepackInstallRemediation
+                advice = await corepackFailureRemediation()
             } else {
                 advice = await muteToolRemediation(
                     requirement.name, anchor: anchor, context: context, using: runner
@@ -80,7 +97,10 @@ public struct PackageManagerVersionCheck: Check {
     }
 
     private func judge(
-        installed: SemanticVersion, declared: SemanticVersion, required: String
+        installed: SemanticVersion,
+        declared: SemanticVersion,
+        required: String,
+        usesCorepack: Bool
     ) -> CheckOutcome {
         let observed = "\(requirement.name) \(installed)"
         guard installed == declared else {
@@ -88,25 +108,37 @@ public struct PackageManagerVersionCheck: Check {
                 observed: observed,
                 required: required,
                 source: source,
-                remediation: versionMismatchRemediation
+                remediation: versionMismatchRemediation(usesCorepack: usesCorepack)
             )
         }
         return .pass(observed: observed, required: required, source: source)
     }
 
-    private var usesCorepack: Bool {
-        requirement.name == "yarn" || requirement.name == "pnpm"
-    }
-
-    private var corepackInstallRemediation: Remediation {
-        let directory = anchor.workspaceRoot?.directory ?? anchor.directory
+    private func corepackFailureRemediation() async -> Remediation {
+        let probe = ProcessCommand(
+            "which", ["corepack"], workingDirectory: anchor.directory, timeout: .seconds(15)
+        )
+        if let result = try? await runner.run(probe),
+            result.terminationStatus.isSuccess,
+            !result.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        {
+            return corepackInstallRemediation
+        }
         return Remediation(
-            summary: "Prepare the declared package manager, then re-run mobile doctor. mobile keeps Corepack offline.",
-            command: "cd \(shellArgument(directory.path)) && corepack install"
+            summary: "Install Corepack in this project's active Node toolchain, then re-run mobile doctor.",
+            command: projectRemediationCommand("npm", ["install", "--global", "corepack"]),
+            url: "https://github.com/nodejs/corepack#installation"
         )
     }
 
-    private var versionMismatchRemediation: Remediation {
+    private var corepackInstallRemediation: Remediation {
+        return Remediation(
+            summary: "Prepare the declared package manager, then re-run mobile doctor. mobile keeps Corepack offline.",
+            command: projectRemediationCommand("corepack", ["install"])
+        )
+    }
+
+    private func versionMismatchRemediation(usesCorepack: Bool) -> Remediation {
         if usesCorepack { return corepackInstallRemediation }
         if requirement.name == "bun" {
             return Remediation(
@@ -119,6 +151,28 @@ public struct PackageManagerVersionCheck: Check {
         )
     }
 
+    private func projectRemediationCommand(_ executable: String, _ arguments: [String]) -> String {
+        let command = ProcessCommand(
+            executable,
+            arguments,
+            workingDirectory: packageManagerDirectory,
+            timeout: nil
+        )
+        if let mise = runner as? MiseProcessRunner {
+            return mise.remediationCommand(command)
+        }
+        let invocation = ([command.executable] + command.arguments)
+            .map(shellArgument).joined(separator: " ")
+        return "cd \(shellArgument(packageManagerDirectory.path)) && \(invocation)"
+    }
+
+    private var packageManagerDirectory: URL {
+        if requirement.origin == DeclarationOrigin.workspaceRoot("packageManager") {
+            return anchor.workspaceRoot?.directory ?? anchor.directory
+        }
+        return anchor.directory
+    }
+
     private func missingExecutableRemediation(corepack: Bool) -> Remediation {
         if corepack {
             return Remediation(
@@ -126,6 +180,6 @@ public struct PackageManagerVersionCheck: Check {
                 url: "https://github.com/nodejs/corepack#installation"
             )
         }
-        return versionMismatchRemediation
+        return versionMismatchRemediation(usesCorepack: false)
     }
 }

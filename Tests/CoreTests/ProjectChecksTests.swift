@@ -469,6 +469,7 @@ struct UnreadableToolRemediationTests {
             tools: [
                 "which node": .ok("\(shims)/node\n"),
                 "corepack yarn --version": unreadable,
+                "which corepack": .ok("/usr/local/bin/corepack\n"),
                 "pod --version": unreadable,
                 "which pod": .ok("\(shims)/pod\n"),
                 "ruby --version": unreadable,
@@ -594,6 +595,26 @@ struct UnreadableToolRemediationTests {
 
 @Suite("package-manager.version")
 struct PackageManagerCheckTests {
+    @Test("a packageManager and lockfile disagreement is an error before probing either manager")
+    func declarationAndLockfileDisagree() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(
+            repo,
+            packageJSON: #"{"dependencies": {"react-native": "0.76.5"}, "packageManager": "yarn@4.16.0"}"#
+        )
+        try repo.write("pnpm-lock.yaml", "")
+
+        let (report, runner) = await runProjectChecks(repo)
+        let check = try #require(report.checks.first { $0.id == "package-manager.version" })
+
+        #expect(check.status == .error)
+        #expect(check.outcome.observed == "pnpm-lock.yaml selects pnpm")
+        #expect(check.outcome.required == "`packageManager` selects yarn")
+        #expect(check.outcome.remediation?.command == nil)
+        #expect(runner.log.all.contains { $0.description.contains("yarn") } == false)
+        #expect(runner.log.all.contains { $0.description.contains("pnpm") } == false)
+    }
+
     @Test("passes when the installed package manager matches the declaration")
     func matches() async throws {
         let repo = try FixtureRepo()
@@ -654,6 +675,28 @@ struct PackageManagerCheckTests {
         #expect(check.outcome.observed == "corepack is not on PATH")
         #expect(check.outcome.remediation?.command == nil)
         #expect(check.outcome.remediation?.url?.contains("corepack") == true)
+    }
+
+    @Test("an installed Corepack with a missing manager cache recommends only manager preparation")
+    func missingCorepackManagerCache() async throws {
+        let repo = try FixtureRepo()
+        try standardApp(
+            repo,
+            packageJSON: #"{"dependencies": {"react-native": "0.76.5"}, "packageManager": "yarn@4.16.0"}"#
+        )
+
+        let (report, _) = await runProjectChecks(
+            repo,
+            tools: [
+                "corepack yarn --version": .failed(1, "Corepack manager cache miss"),
+                "which corepack": .ok("/usr/local/bin/corepack\n"),
+            ]
+        )
+        let check = try #require(report.checks.first { $0.id == "package-manager.version" })
+
+        #expect(check.status == .error)
+        #expect(check.outcome.remediation?.command == "cd \(repo.root.path) && corepack install")
+        #expect(check.outcome.remediation?.summary.contains("package manager") == true)
     }
 
     /// `packageManager` is the declaration, so the requirement is settled the moment

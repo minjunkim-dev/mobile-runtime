@@ -236,6 +236,15 @@ struct MiseProcessRunner: ProcessRunner {
         try await base.spawnDetached(activated(command), logFile: logFile)
     }
 
+    /// Renders an explicit, human-run provisioning command through the same
+    /// committed mise context as normal project commands. Rendering does not run it.
+    func remediationCommand(_ command: ProcessCommand) -> String {
+        let activated = activated(command)
+        let invocation = ([activated.executable] + activated.arguments)
+            .map(shellArgument).joined(separator: " ")
+        return "cd \(shellArgument(configDirectory.path)) && MISE_AUTO_INSTALL=false \(invocation)"
+    }
+
     private func activated(_ command: ProcessCommand) -> ProcessCommand {
         var activated = command
         activated.executable = "mise"
