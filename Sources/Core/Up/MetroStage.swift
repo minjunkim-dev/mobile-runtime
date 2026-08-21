@@ -48,9 +48,8 @@ public struct MetroStage: Stage {
         let logFile = logs.directory.appendingPathComponent("metro.log")
         // The project's own start script, through the manager its lockfile named —
         // the same answer `dependencies` installs with.
-        let command = ProcessCommand(
-            anchor.packageManagerName, ["start"],
-            workingDirectory: anchor.directory, timeout: nil
+        let command = anchor.packageManagerProcess(
+            ["start"], workingDirectory: anchor.directory, timeout: nil
         )
         let pid = try await runner.spawnDetached(command, logFile: logFile)
 

@@ -76,33 +76,6 @@ public struct WorkspaceRoot: Sendable, Equatable {
         self.packageManagerName = packageManagerName
     }
 
-    /// What a human would run to align the project's dependencies, from the two
-    /// things the lockfile knows: its kind picks the manager, its directory picks
-    /// where the install runs. Running an install from a sub-package is how a
-    /// workspace gets broken, so the `cd` is part of the command whenever the anchor
-    /// is somewhere else.
-    public func installCommand(from anchor: URL) -> String {
-        let install = installProcess.description
-        return directory == anchor ? install : "cd \(directory.path) && \(install)"
-    }
-
-    /// The same install, as something to run rather than something to print. The `cd`
-    /// above and this working directory are one decision written once — the line
-    /// doctor hands a human and the command `up` executes must not be able to drift.
-    ///
-    /// The manager owns lockfile validation and repair. `mobile` does not duplicate
-    /// four dependency-tree formats or write the project's declarations itself.
-    ///
-    /// No timeout: a cold install is minutes of network, and 30 seconds would kill it.
-    public var installProcess: ProcessCommand {
-        let arguments: [String]
-        switch packageManagerName {
-        case "npm": arguments = ["ci"]
-        case "yarn", "pnpm", "bun": arguments = ["install", "--frozen-lockfile"]
-        default: arguments = ["install"]
-        }
-        return ProcessCommand(packageManagerName, arguments, workingDirectory: directory, timeout: nil)
-    }
 }
 
 /// The project's anchor: the nearest `package.json` that depends on react-native,
@@ -158,22 +131,58 @@ public struct ProjectAnchor: Sendable, Equatable {
     /// measured to go on, so the declaration is the next best evidence and npm the
     /// last resort — a guess, but the one a repo that declared nothing behaves like.
     public var installCommand: String {
-        workspaceRoot?.installCommand(from: directory) ?? installProcess.description
+        let install = installProcess.description
+        guard let root = workspaceRoot?.directory, root != directory else { return install }
+        return "cd \(root.path) && \(install)"
     }
 
     /// The manager this project is run with — the one its lockfile named, else the one
     /// it declared, else npm. `dependencies` installs with it and `metro` calls the
     /// project's start script with it, off one answer.
-    public var packageManagerName: String { installProcess.executable }
+    public var packageManagerName: String {
+        workspaceRoot?.packageManagerName ?? packageManager?.name ?? "npm"
+    }
 
     /// What `up` runs where `installCommand` is what doctor prints. Same evidence and
     /// same fallback, so the two can never name different managers.
     public var installProcess: ProcessCommand {
-        workspaceRoot?.installProcess
-            ?? ProcessCommand(
-                packageManager?.name ?? "npm", ["install"],
-                workingDirectory: directory, timeout: nil
-            )
+        let arguments: [String]
+        if workspaceRoot == nil {
+            arguments = ["install"]
+        } else {
+            switch packageManagerName {
+            case "npm": arguments = ["ci"]
+            case "yarn", "pnpm", "bun": arguments = ["install", "--frozen-lockfile"]
+            default: arguments = ["install"]
+            }
+        }
+        return packageManagerProcess(
+            arguments,
+            workingDirectory: workspaceRoot?.directory ?? directory,
+            timeout: nil
+        )
+    }
+
+    /// One package-manager invocation policy for version checks, dependency
+    /// alignment, declared Pod scripts and Metro. Yarn and pnpm declarations use
+    /// Corepack directly so they do not depend on a globally enabled shim. Corepack
+    /// stays offline: preparing a missing manager is provisioning, not `mobile up`.
+    func packageManagerProcess(
+        _ arguments: [String],
+        name: String? = nil,
+        workingDirectory: URL,
+        timeout: Duration?
+    ) -> ProcessCommand {
+        let manager = name ?? packageManagerName
+        let usesCorepack = packageManager?.name == manager
+            && (manager == "yarn" || manager == "pnpm")
+        return ProcessCommand(
+            usesCorepack ? "corepack" : manager,
+            usesCorepack ? [manager] + arguments : arguments,
+            environment: ["COREPACK_ENABLE_NETWORK": "0"],
+            workingDirectory: workingDirectory,
+            timeout: timeout
+        )
     }
 
     /// What `up` runs to install the Pods. The project's own script when it declared
@@ -204,9 +213,8 @@ public struct ProjectAnchor: Sendable, Equatable {
                 workingDirectory: directory.appendingPathComponent("ios"), timeout: nil
             )
         }
-        return ProcessCommand(
-            packageManagerName, ["run", podInstallScript],
-            workingDirectory: directory, timeout: nil
+        return packageManagerProcess(
+            ["run", podInstallScript], workingDirectory: directory, timeout: nil
         )
     }
 

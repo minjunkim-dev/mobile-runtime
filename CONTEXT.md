@@ -100,7 +100,7 @@ lockfile을 읽기 전용 정본으로 두고 node_modules·Bundle gems·Pods �
 프로젝트가 선언한 이미 설치된 Node·Ruby·JDK 등을 이번 실행이 사용하도록 고르는 비파괴적 Resolve 단계. 커밋된 도구 관리자 설정이 있으면 그것이 정본이며, 없을 때만 현재 셸의 도구를 쓴다.
 
 **프로젝트 실행 환경 (Project execution environment)**:
-도구체인 활성화 결과를 project check·의존성 정렬·Metro·build가 함께 쓰는 명령 환경. 호스트 capability를 다루는 명령 환경과 구분한다.
+도구체인 활성화 결과를 project check·의존성 정렬·Metro·build가 함께 쓰는 명령 환경. 호스트 capability를 다루는 명령 환경과 구분한다. `packageManager`가 Yarn/pnpm을 선언하면 세 package-manager 경로는 모두 Corepack을 오프라인으로 사용하며, cache에 없는 manager는 자동 다운로드하지 않고 validation에서 멈춘다.
 
 **선언된 pod 설치 (Declared pod install)**:
 Pods를 어떻게 설치하는가에 대한 근거 체인 — 앵커 `package.json`의 관행 이름 스크립트(`pod-install`, `install-pods` 등) → 맨 `pod install`. 스크립트로 인정하려면 **이름이 관행 목록에 있고 본문이 실제로 pod 설치를 돈다**는 두 조건이 함께 성립해야 한다. 한쪽만 보면 `pods`라는 이름의 청소 스크립트를 설치로 돌리거나(이름만), 루트 `postinstall` 전체를 pod 설치로 착각한다(본문만). repo가 설치 방법을 적어두는 것은 맨 `pod install`이 거기서 통하지 않기 때문이다 — mattermost-mobile의 `RCT_NEW_ARCH_ENABLED=1`이 없으면 `Podfile` 평가 자체가 거부된다. up이 돌리는 명령과 실패 remediation이 주는 복붙 명령은 언제나 같은 답에서 나오고, 그 명령을 무엇이 골랐는지도 함께 나간다. ADR-0006 참조.

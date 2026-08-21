@@ -196,6 +196,11 @@ struct ProjectAnchorTests {
         #expect(requirement.name == "yarn")
         #expect(requirement.version == "4.16.0")
         #expect(requirement.origin == "workspace root package.json packageManager")
+        #expect(
+            anchor.installCommand
+                == "cd \(repo.root.path) && corepack yarn install --frozen-lockfile"
+        )
+        #expect(anchor.installProcess.environment["COREPACK_ENABLE_NETWORK"] == "0")
     }
 
     @Test("unparsable package.json is not an anchor")
@@ -217,6 +222,7 @@ struct ProjectAnchorTests {
             #"""
             {
               "dependencies": {"react-native": "0.81.6"},
+              "packageManager": "yarn@4.16.0",
               "scripts": {"pod-install": "cd ios && RCT_NEW_ARCH_ENABLED=1 pod install"}
             }
             """#
@@ -227,11 +233,15 @@ struct ProjectAnchorTests {
         let anchor = try #require(ProjectAnchor.detect(from: repo.root))
 
         #expect(anchor.podInstallScript == "pod-install")
-        #expect(anchor.podInstallProcess.description == "yarn run pod-install")
+        #expect(anchor.podInstallProcess.description == "corepack yarn run pod-install")
+        #expect(anchor.podInstallProcess.environment["COREPACK_ENABLE_NETWORK"] == "0")
         // At the anchor, not in `ios/`: the script does its own `cd`, and the
         // manager has to be run where the `package.json` declaring it is.
         #expect(anchor.podInstallProcess.workingDirectory?.path == repo.root.path)
-        #expect(anchor.podInstallCommand == "cd \(repo.root.path) && yarn run pod-install")
+        #expect(
+            anchor.podInstallCommand
+                == "cd \(repo.root.path) && corepack yarn run pod-install"
+        )
         #expect(anchor.podVersionProcess.description == "pod --version")
         #expect(anchor.gemInstallProcess == nil)
     }

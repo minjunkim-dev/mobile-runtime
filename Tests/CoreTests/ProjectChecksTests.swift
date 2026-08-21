@@ -96,12 +96,14 @@ struct ProjectDetectedCheckTests {
         )
         try repo.directory("ios")
 
-        let (report, _) = await runProjectChecks(repo, tools: ["yarn --version": .ok("3.6.4\n")])
+        let (report, _) = await runProjectChecks(
+            repo, tools: ["corepack yarn --version": .ok("3.6.4\n")]
+        )
         let check = try #require(report.checks.first { $0.id == "project.detected" })
 
         #expect(check.status == .warning)
         #expect(check.outcome.observed?.contains("node_modules") == true)
-        #expect(check.outcome.remediation?.command == "yarn install")
+        #expect(check.outcome.remediation?.command == "corepack yarn install")
     }
 
     /// The lockfile is what picked `yarn` over `npm` and the workspace root over the
@@ -466,8 +468,7 @@ struct UnreadableToolRemediationTests {
             node: unreadable,
             tools: [
                 "which node": .ok("\(shims)/node\n"),
-                "yarn --version": unreadable,
-                "which yarn": .ok("\(shims)/yarn\n"),
+                "corepack yarn --version": unreadable,
                 "pod --version": unreadable,
                 "which pod": .ok("\(shims)/pod\n"),
                 "ruby --version": unreadable,
@@ -476,15 +477,26 @@ struct UnreadableToolRemediationTests {
             ]
         )
 
-        for id in ["node.version", "package-manager.version", "cocoapods.version", "ruby.version"] {
+        for id in ["node.version", "cocoapods.version", "ruby.version"] {
             let check = try #require(report.checks.first { $0.id == id })
             #expect(check.status == .error)
             #expect(check.outcome.remediation?.summary.contains("provided by mise") == true)
             #expect(check.outcome.remediation?.command == "mise trust .")
         }
-        for executable in ["node", "yarn", "pod", "ruby"] {
+        let packageManager = try #require(
+            report.checks.first { $0.id == "package-manager.version" }
+        )
+        #expect(packageManager.status == .error)
+        #expect(
+            packageManager.outcome.remediation?.command
+                == "cd \(repo.root.path) && corepack install"
+        )
+        let corepack = try #require(runner.log.first(matching: "corepack yarn --version"))
+        #expect(corepack.environment["COREPACK_ENABLE_NETWORK"] == "0")
+        for executable in ["node", "pod", "ruby"] {
             #expect(runner.log.all.count { $0.description == "which \(executable)" } == 1)
         }
+        #expect(runner.log.all.contains { $0.description == "which yarn" } == false)
     }
 
     @Test("mise without a tracked config recommends mise doctor")
@@ -590,11 +602,15 @@ struct PackageManagerCheckTests {
             packageJSON: #"{"dependencies": {"react-native": "0.76.5"}, "packageManager": "yarn@3.6.4"}"#
         )
 
-        let (report, runner) = await runProjectChecks(repo, tools: ["yarn --version": .ok("3.6.4\n")])
+        let (report, runner) = await runProjectChecks(
+            repo, tools: ["corepack yarn --version": .ok("3.6.4\n")]
+        )
         let check = try #require(report.checks.first { $0.id == "package-manager.version" })
 
         #expect(check.status == .pass)
-        #expect(runner.log.first(matching: "yarn --version") != nil)
+        let command = try #require(runner.log.first(matching: "corepack yarn --version"))
+        #expect(command.environment["COREPACK_ENABLE_NETWORK"] == "0")
+        #expect(command.workingDirectory?.path == repo.root.path)
     }
 
     @Test("a version mismatch is a warning that names the corepack fix")
@@ -605,12 +621,14 @@ struct PackageManagerCheckTests {
             packageJSON: #"{"dependencies": {"react-native": "0.76.5"}, "packageManager": "pnpm@8.15.0"}"#
         )
 
-        let (report, _) = await runProjectChecks(repo, tools: ["pnpm --version": .ok("9.1.0\n")])
+        let (report, _) = await runProjectChecks(
+            repo, tools: ["corepack pnpm --version": .ok("9.1.0\n")]
+        )
         let check = try #require(report.checks.first { $0.id == "package-manager.version" })
 
         #expect(check.status == .warning)
         #expect(check.outcome.observed?.contains("9.1.0") == true)
-        #expect(check.outcome.remediation?.command == "corepack use pnpm@8.15.0")
+        #expect(check.outcome.remediation?.command == "cd \(repo.root.path) && corepack install")
     }
 
     @Test("a declared package manager that is not installed is an error")
@@ -624,15 +642,18 @@ struct PackageManagerCheckTests {
         let (report, _) = await runProjectChecks(
             repo,
             failures: [
-                "yarn --version": ProcessError.spawnFailed(
-                    command: "yarn --version", underlying: FixtureMiss(command: "yarn --version")
+                "corepack yarn --version": ProcessError.spawnFailed(
+                    command: "corepack yarn --version",
+                    underlying: FixtureMiss(command: "corepack yarn --version")
                 )
             ]
         )
         let check = try #require(report.checks.first { $0.id == "package-manager.version" })
 
         #expect(check.status == .error)
-        #expect(check.outcome.remediation?.command == "corepack enable")
+        #expect(check.outcome.observed == "corepack is not on PATH")
+        #expect(check.outcome.remediation?.command == nil)
+        #expect(check.outcome.remediation?.url?.contains("corepack") == true)
     }
 
     /// `packageManager` is the declaration, so the requirement is settled the moment
@@ -643,7 +664,7 @@ struct PackageManagerCheckTests {
         let repo = try FixtureRepo()
         try standardApp(
             repo,
-            packageJSON: #"{"dependencies": {"react-native": "0.76.5"}, "packageManager": "yarn@3.6.4"}"#
+            packageJSON: #"{"dependencies": {"react-native": "0.76.5"}, "packageManager": "npm@10.8.2"}"#
         )
 
         let stderr = "mise ERROR error parsing config file: /tmp/app/mise.toml\r\n"
@@ -653,16 +674,16 @@ struct PackageManagerCheckTests {
             + "mise ERROR Run with --verbose for more information."
         let failure = FakeProcessRunner.Response(
             status: .exited(1),
-            standardOutput: "yarn ERROR version probe failed\r\n",
+            standardOutput: "npm ERROR version probe failed\r\n",
             standardError: stderr
         )
         let (report, _) = await runProjectChecks(
-            repo, tools: ["yarn --version": failure]
+            repo, tools: ["npm --version": failure]
         )
         let check = try #require(report.checks.first { $0.id == "package-manager.version" })
 
         #expect(check.status == .error)
-        #expect(check.outcome.observed?.contains("yarn ERROR version probe failed") == true)
+        #expect(check.outcome.observed?.contains("npm ERROR version probe failed") == true)
         #expect(check.outcome.observed?.contains("error parsing config file: /tmp/app/mise.toml") == true)
         #expect(check.outcome.observed?.contains("Config files in /tmp/app/mise.toml are not trusted.") == true)
         #expect(check.outcome.observed?.contains("Trust them with `mise trust`") == true)
@@ -713,8 +734,9 @@ struct PackageManagerCheckTests {
             repo,
             at: "packages/app",
             failures: [
-                "yarn --version": ProcessError.spawnFailed(
-                    command: "yarn --version", underlying: FixtureMiss(command: "yarn --version")
+                "corepack yarn --version": ProcessError.spawnFailed(
+                    command: "corepack yarn --version",
+                    underlying: FixtureMiss(command: "corepack yarn --version")
                 )
             ]
         )
@@ -723,6 +745,7 @@ struct PackageManagerCheckTests {
         #expect(check.status == .error)
         #expect(check.outcome.required?.contains("yarn 4.16.0") == true)
         #expect(check.outcome.source.origin == "workspace root package.json packageManager")
+        #expect(check.outcome.remediation?.url?.contains("corepack") == true)
     }
 }
 

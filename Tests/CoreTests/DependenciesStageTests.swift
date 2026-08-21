@@ -63,6 +63,29 @@ struct DependenciesStageTests {
         #expect(install.timeout == nil)
     }
 
+    @Test("a declared Corepack manager aligns dependencies offline")
+    func corepackInstall() async throws {
+        let repo = try FixtureRepo()
+        try repo.write(
+            "package.json",
+            #"{"dependencies":{"react-native":"0.81.0"},"packageManager":"yarn@4.16.0"}"#
+        )
+        try repo.write("yarn.lock", "")
+        let runner = FakeProcessRunner(
+            responses: ["corepack yarn install --frozen-lockfile": .ok("")]
+        )
+        var context = UpContext()
+
+        _ = try await run(try anchor(repo), runner, context: &context)
+
+        let install = try #require(
+            runner.log.first(matching: "corepack yarn install --frozen-lockfile")
+        )
+        #expect(install.environment["COREPACK_ENABLE_NETWORK"] == "0")
+        #expect(install.workingDirectory?.path == repo.root.path)
+        #expect(install.timeout == nil)
+    }
+
     @Test("existing node_modules is still aligned to the committed lockfile")
     func alignsExistingNode() async throws {
         let repo = try app()

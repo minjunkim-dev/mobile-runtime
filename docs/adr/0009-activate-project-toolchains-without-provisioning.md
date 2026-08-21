@@ -9,4 +9,6 @@ date: 2026-08-21
 
 `mobile build`와 `mobile up`은 `mise trust`, `mise install`, `mise use` 또는 Xcode·runtime 설치를 실행하지 않는다. `mise exec`는 기본적으로 누락된 도구를 자동 설치하므로 프로젝트 실행 환경은 `MISE_AUTO_INSTALL=false`를 강제한다. 이들은 사용자 동의가 필요한 도구 프로비저닝이다. 프로젝트 의존성은 활성화된 프로젝트 실행 환경에서 lockfile을 수정하지 않고 정렬하며, 앱 소스와 framework 버전을 바꾸는 마이그레이션은 범위 밖이다.
 
+`packageManager`가 Yarn이나 pnpm을 선언하면 version Check·의존성 정렬·Metro는 모두 Corepack을 통해 같은 선언을 실행한다. `COREPACK_ENABLE_NETWORK=0`을 모든 package-manager 명령에 강제해 이미 준비된 manager만 활성화하며, 누락된 manager를 Corepack이 자동으로 내려받지 못하게 한다. npm과 Bun, 그리고 `packageManager` 선언이 없는 lockfile은 기존 직접 실행 경로를 유지한다.
+
 이 결정은 부모 셸에 우연히 잡힌 도구와 프로젝트 선언의 불일치를 없애면서도, 자동 설치 금지와 관측된 근거만 사용하는 ADR-0003·ADR-0005의 규율을 유지한다.
