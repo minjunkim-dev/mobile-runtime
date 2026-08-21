@@ -125,7 +125,7 @@ up이 남긴 Metro의 보고. `state`(reused/spawned)와, spawn했을 때만 PID
 Xcode·iOS runtime·도구 관리자 자체 또는 누락된 Node·Ruby·JDK 버전을 설치하거나 저장소 설정을 trust하는 일. 명시적 사용자 동의가 필요한 별도 흐름이며 `up`은 수행하지 않는다.
 
 **앱 환경값 (App environment)**:
-Firebase·ENS·`.env`처럼 앱 기능 실행에 필요한 프로젝트별 설정과 비밀값. 일반 도구체인 활성화·프로젝트 의존성 정렬과 분리하며, 없으면 launch·기능 E2E를 막을 수 있지만 가능한 build 검증까지 막지는 않는다.
+Firebase·ENS·`.env`처럼 앱 기능 실행에 필요한 프로젝트별 설정과 비밀값. 일반 도구체인 활성화·프로젝트 의존성 정렬과 분리한다. build 입력 자체인 값이 없으면 build도 실패할 수 있지만, build 성공만으로 launch나 Firebase·ENS 기능 성공을 주장하지 않는다.
 
 **Settle**:
 launch 리턴 ≠ UI 렌더 완료라서 두는 설정형 고정 대기(기본 3s). 폴링 가능한 신호가 생기면 교체 대상.
