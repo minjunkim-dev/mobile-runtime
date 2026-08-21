@@ -2,7 +2,8 @@
 
 Reproducible mobile development runtime. North Star: `git clone → mobile up`.
 
-Status: charting phase. The wayfinder map lives in issue #1.
+Status: iOS React Native MVP implemented. Current decisions live in `CONTEXT.md`
+and `docs/adr/`; issue #1 is the closed historical wayfinder map.
 
 ## Agent skills
 

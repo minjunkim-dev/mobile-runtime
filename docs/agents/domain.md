@@ -36,4 +36,4 @@ If your output contradicts an existing ADR, surface it explicitly rather than si
 
 > _Contradicts ADR-0007 (event-sourced orders) — but worth reopening because…_
 
-The same applies to the locked principles in the wayfinder map (#1) — "Orchestrate, don't replace", the Tier 1/2/3 requirement layering, "V1 is detect/validate only", Rule of Two. Those were locked by explicit decision; contradicting one is a reopening, not an oversight.
+The same applies to the locked principles in the historical wayfinder map (#1) — "Orchestrate, don't replace", the Tier 1/2/3 requirement layering, no automatic provisioning, and Rule of Two. ADR-0009 clarifies that selecting an already-installed project toolchain is non-mutating Resolve work; installing missing tools or trusting configuration remains provisioning. Contradicting those decisions is a reopening, not an oversight.

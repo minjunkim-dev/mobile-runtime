@@ -10,7 +10,9 @@ mobile up
 
 North Star: `git clone → mobile up`.
 
-Status: charting phase — see the wayfinder map in Issues.
+Status: iOS React Native MVP implemented. Current contracts and limitations live
+in [CONTEXT.md](CONTEXT.md) and [the ADRs](docs/adr/); issue #1 is the closed
+historical wayfinder map.
 
 ## Building
 
