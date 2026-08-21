@@ -34,7 +34,15 @@ private func run(
     context: inout UpContext,
     logs: RunLogs? = nil
 ) async throws -> StageOutcome {
-    try await DependenciesStage(anchor: anchor, runner: runner, logs: logs).run(&context)
+    var runner = runner
+    let alignment = anchor.installProcess.description
+    if anchor.workspaceRoot != nil,
+        runner.responses[alignment] == nil,
+        runner.failures[alignment] == nil
+    {
+        runner.responses[alignment] = .ok("")
+    }
+    return try await DependenciesStage(anchor: anchor, runner: runner, logs: logs).run(&context)
 }
 
 @Suite("dependencies stage")
@@ -43,23 +51,90 @@ struct DependenciesStageTests {
     @Test("no node_modules is installed with the manager the lockfile named")
     func installsNode() async throws {
         let repo = try app()
-        let runner = FakeProcessRunner(responses: ["yarn install": .ok("")])
+        let runner = FakeProcessRunner(responses: ["yarn install --frozen-lockfile": .ok("")])
         var context = UpContext()
 
         let outcome = try await run(try anchor(repo), runner, context: &context)
 
         #expect(outcome.status == .pass)
-        let install = try #require(runner.log.first(matching: "yarn install"))
+        let install = try #require(runner.log.first(matching: "yarn install --frozen-lockfile"))
         #expect(install.workingDirectory?.path == repo.root.path)
         // A cold install is minutes of network, and the default 30s would kill it.
         #expect(install.timeout == nil)
     }
 
-    /// No comparison against the lockfile: it costs tens of seconds on every run, and
-    /// a mismatch is something the build says out loud anyway.
-    @Test("node_modules that exists is skipped without a staleness comparison")
-    func skipsNode() async throws {
+    @Test("a declared Corepack manager aligns dependencies offline")
+    func corepackInstall() async throws {
+        let repo = try FixtureRepo()
+        try repo.write(
+            "package.json",
+            #"{"dependencies":{"react-native":"0.81.0"},"packageManager":"yarn@4.16.0"}"#
+        )
+        try repo.write("yarn.lock", "")
+        let runner = FakeProcessRunner(
+            responses: ["corepack yarn install --frozen-lockfile": .ok("")]
+        )
+        var context = UpContext()
+
+        _ = try await run(try anchor(repo), runner, context: &context)
+
+        let install = try #require(
+            runner.log.first(matching: "corepack yarn install --frozen-lockfile")
+        )
+        #expect(install.environment["COREPACK_ENABLE_NETWORK"] == "0")
+        #expect(install.workingDirectory?.path == repo.root.path)
+        #expect(install.timeout == nil)
+    }
+
+    @Test("existing node_modules is still aligned to the committed lockfile")
+    func alignsExistingNode() async throws {
         let repo = try app()
+        try repo.directory("node_modules")
+        let runner = FakeProcessRunner()
+        var context = UpContext()
+
+        let outcome = try await run(try anchor(repo), runner, context: &context)
+
+        #expect(outcome.status == .pass)
+        #expect(runner.log.first(matching: "yarn install --frozen-lockfile") != nil)
+    }
+
+    @Test("each lockfile is aligned natively without rewriting project declarations")
+    func nativeLockfileAlignmentPreservesDeclarations() async throws {
+        let cases = [
+            ("package-lock.json", "npm ci"),
+            ("yarn.lock", "yarn install --frozen-lockfile"),
+            ("pnpm-lock.yaml", "pnpm install --frozen-lockfile"),
+            ("bun.lock", "bun install --frozen-lockfile"),
+            ("bun.lockb", "bun install --frozen-lockfile"),
+        ]
+
+        for (lockfile, command) in cases {
+            let repo = try FixtureRepo()
+            let manifest = packageJSON + "\n"
+            let lock = "locked by \(lockfile)\n"
+            try repo.write("package.json", manifest)
+            try repo.write(lockfile, lock)
+            try repo.directory("node_modules")
+            let runner = FakeProcessRunner(responses: [command: .ok("")])
+            var context = UpContext()
+
+            let outcome = try await run(try anchor(repo), runner, context: &context)
+
+            #expect(outcome.status == .pass)
+            #expect(runner.log.first(matching: command) != nil)
+            #expect(try String(contentsOf: repo.url("package.json"), encoding: .utf8) == manifest)
+            #expect(try String(contentsOf: repo.url(lockfile), encoding: .utf8) == lock)
+        }
+    }
+
+    @Test("without a lockfile an existing install keeps the presence fast path")
+    func noLockfileKeepsPresenceFastPath() async throws {
+        let repo = try FixtureRepo()
+        try repo.write(
+            "package.json",
+            #"{"dependencies": {"react-native": "0.81.0"}, "packageManager": "yarn@4.0.0"}"#
+        )
         try repo.directory("node_modules")
         let runner = FakeProcessRunner()
         var context = UpContext()
@@ -78,21 +153,19 @@ struct DependenciesStageTests {
         try repo.write("package.json", #"{"private": true}"#)
         try repo.write("pnpm-lock.yaml", "")
         try repo.write("packages/app/package.json", packageJSON)
-        let runner = FakeProcessRunner(responses: ["pnpm install": .ok("")])
+        let runner = FakeProcessRunner(responses: ["pnpm install --frozen-lockfile": .ok("")])
         var context = UpContext()
 
         try await run(try anchor(repo, at: "packages/app"), runner, context: &context)
 
-        let install = try #require(runner.log.first(matching: "pnpm install"))
+        let install = try #require(runner.log.first(matching: "pnpm install --frozen-lockfile"))
         #expect(install.workingDirectory?.path == repo.root.path)
     }
 
-    /// The other half of the same rule, and the one that costs minutes when it is
-    /// wrong: a hoisted workspace installs into the root and leaves the member with
-    /// no `node_modules` of its own. Asking the member would reinstall the whole
-    /// monorepo on every `up`.
-    @Test("a monorepo whose root is installed is skipped, member directory or not")
-    func monorepoSkipsOnRoot() async throws {
+    /// A hoisted workspace is aligned once at its lockfile root, never from the
+    /// member that may have no `node_modules` of its own.
+    @Test("an installed monorepo is aligned at its workspace root")
+    func monorepoAlignsAtRoot() async throws {
         let repo = try FixtureRepo()
         try repo.write("package.json", #"{"private": true}"#)
         try repo.write("pnpm-lock.yaml", "")
@@ -103,8 +176,9 @@ struct DependenciesStageTests {
 
         let outcome = try await run(try anchor(repo, at: "packages/app"), runner, context: &context)
 
-        #expect(outcome.status == .skipped)
-        #expect(runner.log.all.isEmpty)
+        #expect(outcome.status == .pass)
+        let install = try #require(runner.log.first(matching: "pnpm install --frozen-lockfile"))
+        #expect(install.workingDirectory?.path == repo.root.path)
     }
 
     @Test("no Pods directory means pod install runs in ios/")
@@ -135,17 +209,17 @@ struct DependenciesStageTests {
         let runner = FakeProcessRunner(responses: [
             "bundle check": .failed(1, "The following gems are missing"),
             "bundle install": .ok(""),
-            "pod install": .ok(""),
+            "bundle exec pod install": .ok(""),
         ])
         var context = UpContext()
 
         let outcome = try await run(try anchor(repo), runner, context: &context)
 
         #expect(outcome.status == .pass)
-        #expect(outcome.detail == "installed gems and Pods")
+        #expect(outcome.detail == "installed node_modules and gems and Pods")
         let sent = runner.log.all.map(\.description)
         let gems = try #require(sent.firstIndex(of: "bundle install"))
-        let pods = try #require(sent.firstIndex(of: "pod install"))
+        let pods = try #require(sent.firstIndex(of: "bundle exec pod install"))
         #expect(gems < pods)
         #expect(runner.log.first(matching: "bundle install")?.workingDirectory?.path == repo.root.path)
     }
@@ -161,13 +235,13 @@ struct DependenciesStageTests {
         try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
         let runner = FakeProcessRunner(responses: [
             "bundle check": .ok("The Gemfile's dependencies are satisfied"),
-            "pod install": .ok(""),
+            "bundle exec pod install": .ok(""),
         ])
         var context = UpContext()
 
         let outcome = try await run(try anchor(repo), runner, context: &context)
 
-        #expect(outcome.detail == "installed Pods")
+        #expect(outcome.detail == "installed node_modules and Pods")
         #expect(runner.log.all.map(\.description).contains("bundle install") == false)
     }
 
@@ -182,6 +256,21 @@ struct DependenciesStageTests {
 
         _ = try await run(try anchor(repo), runner, context: &context)
 
+        #expect(runner.log.all.map(\.description).contains { $0.hasPrefix("bundle") } == false)
+    }
+
+    @Test("a Gemfile without CocoaPods keeps the valid bare pod path")
+    func unconfirmedGemfileUsesBarePod() async throws {
+        let repo = try app()
+        try repo.directory("node_modules")
+        try repo.write("Gemfile", "gem 'fastlane'\n")
+        try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
+        let runner = FakeProcessRunner(responses: ["pod install": .ok("")])
+        var context = UpContext()
+
+        _ = try await run(try anchor(repo), runner, context: &context)
+
+        #expect(runner.log.first(matching: "pod install") != nil)
         #expect(runner.log.all.map(\.description).contains { $0.hasPrefix("bundle") } == false)
     }
 
@@ -211,7 +300,7 @@ struct DependenciesStageTests {
         #expect(error?.summary == "installing gems failed")
         #expect(error?.observed == cause)
         #expect(error?.remediation.command == "cd \(repo.root.path) && bundle install")
-        #expect(runner.log.all.map(\.description).contains("pod install") == false)
+        #expect(runner.log.all.map(\.description).contains("bundle exec pod install") == false)
     }
 
     /// A `bundle` that cannot run at all is not this stage's news: the pod install is
@@ -222,7 +311,7 @@ struct DependenciesStageTests {
         try repo.directory("node_modules")
         try repo.write("Gemfile", "gem 'cocoapods', '1.16.1'\n")
         try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
-        var runner = FakeProcessRunner(responses: ["pod install": .ok("")])
+        var runner = FakeProcessRunner(responses: ["bundle exec pod install": .ok("")])
         runner.failures["bundle check"] = ProcessError.spawnFailed(
             command: "bundle check", underlying: FixtureMiss(command: "bundle")
         )
@@ -230,7 +319,7 @@ struct DependenciesStageTests {
 
         let outcome = try await run(try anchor(repo), runner, context: &context)
 
-        #expect(outcome.detail == "installed Pods")
+        #expect(outcome.detail == "installed node_modules and Pods")
         #expect(runner.log.all.map(\.description).contains("bundle install") == false)
     }
 
@@ -311,8 +400,9 @@ struct DependenciesStageTests {
 
         let outcome = try await run(try anchor(repo), runner, context: &context)
 
-        #expect(outcome.status == .skipped)
-        #expect(runner.log.all.isEmpty)
+        #expect(outcome.status == .pass)
+        #expect(runner.log.first(matching: "yarn install --frozen-lockfile") != nil)
+        #expect(runner.log.first(matching: "pod install") == nil)
     }
 
     @Test("a manifest that disagrees with the lock reinstalls the Pods")
@@ -338,8 +428,9 @@ struct DependenciesStageTests {
         let runner = FakeProcessRunner()
         var context = UpContext()
 
-        #expect(try await run(try anchor(repo), runner, context: &context).status == .skipped)
-        #expect(runner.log.all.isEmpty)
+        #expect(try await run(try anchor(repo), runner, context: &context).status == .pass)
+        #expect(runner.log.first(matching: "yarn install --frozen-lockfile") != nil)
+        #expect(runner.log.all.map(\.description).contains { $0.contains("pod") } == false)
     }
 
     /// Both halves in one run, which is exactly what a fresh clone looks like.
@@ -348,13 +439,13 @@ struct DependenciesStageTests {
         let repo = try app()
         try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
         let runner = FakeProcessRunner(responses: [
-            "yarn install": .ok(""),
+            "yarn install --frozen-lockfile": .ok(""),
             "pod install": .ok(""),
         ])
         var context = UpContext()
 
         #expect(try await run(try anchor(repo), runner, context: &context).status == .pass)
-        #expect(runner.log.all.map(\.description) == ["yarn install", "pod install"])
+        #expect(runner.log.all.map(\.description) == ["yarn install --frozen-lockfile", "pod install"])
     }
 
     /// exit 1, not exit 2: a project whose dependencies will not install is the
@@ -365,7 +456,7 @@ struct DependenciesStageTests {
         let cause = "➤ YN0000: Error: Couldn't find package"
         let status = (1...13).map { "➤ YN0000: Completed step \($0)" }.joined(separator: "\n")
         let runner = FakeProcessRunner(responses: [
-            "yarn install": .failed(1, cause + "\n" + status + "\n")
+            "yarn install --frozen-lockfile": .failed(1, cause + "\n" + status + "\n")
         ])
         var context = UpContext()
 
@@ -375,7 +466,7 @@ struct DependenciesStageTests {
 
         #expect(error?.summary.contains("node_modules") == true)
         #expect(error?.observed == cause)
-        #expect(error?.remediation.command == "yarn install")
+        #expect(error?.remediation.command == "yarn install --frozen-lockfile")
     }
 
     @Test("partial node_modules from a failed install is retried on the next run")
@@ -388,7 +479,7 @@ struct DependenciesStageTests {
         let first = try anchor(repo, at: "packages/one")
         let sibling = try anchor(repo, at: "packages/two")
         let failed = FakeProcessRunner(responses: [
-            "yarn install": .failed(2, "preinstall failed")
+            "yarn install --frozen-lockfile": .failed(2, "preinstall failed")
         ])
         var context = UpContext()
 
@@ -397,14 +488,15 @@ struct DependenciesStageTests {
         }
         try repo.directory("node_modules")
 
-        let retry = FakeProcessRunner(responses: ["yarn install": .ok("")])
+        let retry = FakeProcessRunner(responses: ["yarn install --frozen-lockfile": .ok("")])
         let outcome = try await run(sibling, retry, context: &context)
 
         #expect(outcome.status == .pass)
-        #expect(retry.log.first(matching: "yarn install") != nil)
+        #expect(retry.log.first(matching: "yarn install --frozen-lockfile") != nil)
 
         let settled = FakeProcessRunner()
-        #expect(try await run(first, settled, context: &context).status == .skipped)
+        #expect(try await run(first, settled, context: &context).status == .pass)
+        #expect(settled.log.first(matching: "yarn install --frozen-lockfile") != nil)
     }
 
     @Test("an npm failure shows its error rather than later warnings")
@@ -415,7 +507,7 @@ struct DependenciesStageTests {
         let cause = "npm error code ENOTFOUND"
         let warnings = (1...13).map { "npm warn deprecated thing@\($0)" }.joined(separator: "\n")
         let runner = FakeProcessRunner(responses: [
-            "npm install": .failed(1, cause + "\n" + warnings + "\n")
+            "npm ci": .failed(1, cause + "\n" + warnings + "\n")
         ])
         var context = UpContext()
 
@@ -434,7 +526,7 @@ struct DependenciesStageTests {
         let repo = try app()
         let warnings = (1...20).map { "npm warn deprecated thing@\($0)" }.joined(separator: "\n")
         let runner = FakeProcessRunner(responses: [
-            "yarn install": FakeProcessRunner.Response(
+            "yarn install --frozen-lockfile": FakeProcessRunner.Response(
                 status: .exited(1),
                 standardOutput: "'pod' binary 1.16.1 [failed]\n" + warnings + "\n"
             )
@@ -448,7 +540,10 @@ struct DependenciesStageTests {
 
         let file = logs.url("node_modules-install.log")
         #expect(error?.remediation.summary.contains(file.path) == true)
-        #expect(try #require(runner.log.first(matching: "yarn install")).output == .streamed(to: file))
+        #expect(
+            try #require(runner.log.first(matching: "yarn install --frozen-lockfile")).output
+                == .streamed(to: file)
+        )
         // Still the last ten — and they are still the warnings, which is exactly why
         // the path above them has to be there.
         let observed = try #require(error?.observed)
@@ -498,7 +593,9 @@ struct DependenciesStageTests {
     func toolFailure() async throws {
         let repo = try app()
         let runner = FakeProcessRunner(failures: [
-            "yarn install": ProcessError.timedOut(command: "yarn install", timeout: .seconds(30))
+            "yarn install --frozen-lockfile": ProcessError.timedOut(
+                command: "yarn install --frozen-lockfile", timeout: .seconds(30)
+            )
         ])
         var context = UpContext()
 

@@ -2,7 +2,7 @@ import Core
 import Foundation
 
 /// What `down` aims at on iOS, assembled next to the jobs themselves the way
-/// `iOSUpStages` is — so adding one is never a CLI edit.
+/// `iOSStages` is — so adding one is never a CLI edit.
 ///
 /// Metro first: it is the half that can fail, and a reader watching two lines land
 /// should see the one with news first.

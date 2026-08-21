@@ -42,6 +42,8 @@ private func runner(_ repo: FixtureRepo) throws -> FakeProcessRunner {
         "xcrun simctl list runtimes -j": .ok(try Fixture.text("simctl-list-runtimes.stdout.json")),
         "node --version": .ok("v22.14.0\n"),
         "yarn --version": .ok("1.22.22\n"),
+        // dependencies — the lockfile is aligned even when node_modules exists
+        "yarn install --frozen-lockfile": .ok(""),
         // device — the captured list has this machine's one simulator, booted
         "xcrun simctl list devices -j": .ok(try Fixture.text("simctl-list-devices.stdout.json")),
         // metro — this project's own, named by the header `/status` carries
@@ -64,24 +66,29 @@ private func runner(_ repo: FixtureRepo) throws -> FakeProcessRunner {
 private func pipeline(
     _ repo: FixtureRepo,
     _ runner: FakeProcessRunner,
+    workflow: IOSWorkflow = .up,
+    projectRunner: FakeProcessRunner? = nil,
     from workingDirectory: URL? = nil
 ) -> UpPipeline {
+    let projectRunner = projectRunner ?? runner
     let workingDirectory = workingDirectory ?? repo.root
     let anchor = ProjectAnchor.detect(from: workingDirectory)!
     let config = ConfigContext.detect(anchor: anchor, workingDirectory: workingDirectory)
     let lookup = MatrixLookup.resolve(anchor: anchor, config: config.configuration)
     let locator = XcodeLocator(runner: runner, developerDirOverride: nil)
     return UpPipeline(
-        stages: iOSUpStages(
+        stages: iOSStages(
+            workflow: workflow,
             anchor: anchor,
             doctor: DoctorEngine(
                 checks: iOSChecks(lookup: lookup, runner: runner, locator: locator)
                     + configChecks(context: config, lookup: lookup, runner: runner, locator: locator)
-                    + anchor.checks(runner: runner, context: config)
+                    + anchor.checks(runner: projectRunner, context: config)
             ),
             config: config,
             lookup: lookup,
-            runner: runner,
+            hostRunner: runner,
+            projectRunner: projectRunner,
             locator: locator,
             // The wait exists for a human watching the screen; a test would only spend
             // three seconds per run on it.
@@ -120,6 +127,88 @@ struct IOSUpStagesTests {
         #expect(report.context.appPid == 3538)
     }
 
+    @Test("build is the shared pipeline without Metro, install, or launch")
+    func buildStopsAfterCompilation() async throws {
+        let repo = try settledProject()
+        let runner = try runner(repo)
+
+        let report = await pipeline(repo, runner, workflow: .build).run()
+
+        #expect(report.exitCode == 0)
+        #expect(report.stages.map(\.id) == ["validate", "dependencies", "device", "build"])
+        #expect(report.context.buildLog != nil)
+        #expect(report.context.product?.bundleIdentifier == builtBundleID)
+        #expect(report.context.metro == nil)
+        #expect(report.context.appPid == nil)
+        let sent = runner.log.all.map(\.description)
+        #expect(sent.contains(MetroStatus.command) == false)
+        #expect(sent.contains(installCommand) == false)
+        #expect(sent.contains(terminateCommand) == false)
+        #expect(sent.contains(launchCommand) == false)
+        #expect(runner.log.spawned.isEmpty)
+        #expect(InstallRecord.read(from: RunLogs(project: repo.root)) == nil)
+    }
+
+    @Test("Bundler repair runs after validation before Pods on a fresh checkout")
+    func bundlerRepairBeforePods() async throws {
+        let repo = try settledProject()
+        try repo.write("Gemfile", "gem 'cocoapods', '1.16.1'\n")
+        try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
+        var runner = try runner(repo)
+        runner.responses["bundle exec pod --version"] = .failed(
+            1, "Could not find cocoapods-1.16.1 in locally installed gems"
+        )
+        runner.responses["bundle check"] = .failed(1, "The following gems are missing")
+        runner.responses["bundle install"] = .ok("")
+        runner.responses["bundle exec pod install"] = .ok("")
+
+        let report = await pipeline(repo, runner).run()
+
+        #expect(report.exitCode == 0)
+        let validation = try #require(report.context.validation)
+        #expect(validation.checks.first { $0.id == "cocoapods.version" }?.status == .warning)
+        let sent = runner.log.all.map(\.description)
+        let check = try #require(sent.firstIndex(of: "bundle exec pod --version"))
+        let gems = try #require(sent.firstIndex(of: "bundle install"))
+        let pods = try #require(sent.firstIndex(of: "bundle exec pod install"))
+        #expect(check < gems)
+        #expect(gems < pods)
+    }
+
+    @Test("stage composition keeps host and project commands in their own environments")
+    func runnerSelection() async throws {
+        let repo = try settledProject()
+        try FileManager.default.removeItem(at: repo.url("node_modules"))
+        let fixtures = try runner(repo)
+        let host = FakeProcessRunner(responses: fixtures.responses)
+        var project = FakeProcessRunner(responses: fixtures.responses)
+        project.responses["yarn install --frozen-lockfile"] = .ok("")
+        project.responses[MetroStatus.command] = .failed(7, "")
+        let listener = (["lsof"] + MetroVerdict.listenerArguments + ["-t"])
+            .joined(separator: " ")
+        project.responses[listener] = .ok("9876\n")
+
+        let report = await pipeline(repo, host, projectRunner: project).run()
+
+        #expect(report.exitCode == 0)
+        let hostCommands = host.log.all.map(\.description)
+        let projectCommands = project.log.all.map(\.description)
+        #expect(projectCommands.contains("yarn install --frozen-lockfile"))
+        #expect(projectCommands.contains(MetroStatus.command))
+        #expect(projectCommands.contains(buildCommand(repo)))
+        #expect(!hostCommands.contains("yarn install --frozen-lockfile"))
+        #expect(!hostCommands.contains(buildCommand(repo)))
+        #expect(hostCommands.contains(installCommand))
+        #expect(hostCommands.contains(launchCommand))
+        #expect(!projectCommands.contains { $0.hasPrefix("xcrun simctl") })
+        #expect(host.log.spawned.isEmpty)
+        #expect(project.log.spawned.first?.command.description == "yarn start")
+        #expect(
+            project.log.first(matching: buildCommand(repo))?.environment["DEVELOPER_DIR"]
+                == developerDirectory
+        )
+    }
+
     @Test("an undecided scheme fails validation before Metro starts")
     func undecidedSchemeStopsAtValidation() async throws {
         let repo = try settledProject()
@@ -152,11 +241,10 @@ struct IOSUpStagesTests {
         #expect(report.stages.map(\.id).last == "launch")
     }
 
-    /// "Run it again" is the whole recovery procedure, so the second run has to be
-    /// cheap where the first was expensive — and still relaunch, because what is on
-    /// the screen when `up` returns is the code it just built.
-    @Test("a second run skips what is already done and launches the app again anyway")
-    func rerunSkipsButRelaunches() async throws {
+    /// "Run it again" revalidates the committed lockfile, but still avoids simulator
+    /// boot and a second Metro while relaunching the code it just built.
+    @Test("a second run realigns dependencies and launches the app again")
+    func rerunRealignsAndRelaunches() async throws {
         let repo = try settledProject()
         let runner = try runner(repo)
 
@@ -165,11 +253,11 @@ struct IOSUpStagesTests {
 
         #expect(second.exitCode == 0)
         let skipped = second.stages.filter { $0.status == .skipped }.map(\.id)
-        #expect(skipped == ["dependencies", "device", "metro"])
-        // Nothing was reinstalled, nothing was rebooted, no second bundler.
+        #expect(skipped == ["device", "metro"])
+        // Dependencies were checked twice; nothing was rebooted and no second Metro started.
         let sent = runner.log.all.map(\.description)
         #expect(sent.contains { $0.contains("bootstatus") } == false)
-        #expect(sent.contains { $0.hasPrefix("yarn install") } == false)
+        #expect(sent.filter { $0 == "yarn install --frozen-lockfile" }.count == 2)
         #expect(runner.log.spawned.isEmpty)
         // Launch, on the other hand, went out on both runs.
         #expect(sent.filter { $0 == launchCommand }.count == 2)

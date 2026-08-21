@@ -12,7 +12,7 @@ struct Mobile: AsyncParsableCommand {
         commandName: "mobile",
         abstract: "Reproducible mobile development runtime.",
         version: Tool.version,
-        subcommands: [Doctor.self, Up.self, Down.self]
+        subcommands: [Doctor.self, Build.self, Up.self, Down.self]
     )
 
     // Bare `mobile` is exploration, not an error: help on stdout, exit 0.
@@ -33,7 +33,7 @@ struct Doctor: AsyncParsableCommand {
     var verbose = false
 
     func run() async throws {
-        let wiring = Wiring.bootstrap(verbose: verbose)
+        let wiring = await Wiring.bootstrap(verbose: verbose)
 
         // Standing outside a project is a legitimate use — a new machine has nothing
         // cloned yet — so it is a note, never an error.

@@ -4,21 +4,27 @@ import Logging
 import SimulatorKit
 
 /// What every command stands on: one logging bootstrap, one anchor detection, one
-/// set of Checks. `up` reusing this is what keeps it from calling a project broken
-/// that `doctor` just called fine — the two read the same project the same way.
+/// set of Checks. `build` and `up` reusing this is what keeps either from calling a
+/// project broken that `doctor` just called fine — they read it the same way.
 struct Wiring {
     /// nil outside a React Native project. What that means is the command's call:
-    /// doctor says so and carries on with host checks, up has nothing to do.
+    /// doctor says so and carries on with host checks; build and up have nothing to do.
     let anchor: ProjectAnchor?
     let engine: DoctorEngine
-    /// What the Stages need and the Checks already had: up reads the same mobile.yml,
-    /// through the same runner, against the same Xcode.
+    /// What the Stages need and the Checks already had: workflows read the same
+    /// mobile.yml, through the same runner, against the same Xcode.
     let config: ConfigContext
     let lookup: MatrixLookup?
+    /// Machine commands: Xcode discovery, simulator control, install, launch, down.
     let runner: any ProcessRunner
+    /// Project commands: version checks now; dependencies, Metro and build in #72.
+    let projectRunner: any ProcessRunner
     let locator: XcodeLocator
 
-    static func bootstrap(verbose: Bool) -> Wiring {
+    static func bootstrap(
+        verbose: Bool,
+        includeProjectEnvironment: Bool = true
+    ) async -> Wiring {
         LoggingSystem.bootstrap { label in
             var handler = StreamLogHandler.standardError(label: label)
             handler.logLevel = verbose ? .debug : .info
@@ -34,17 +40,31 @@ struct Wiring {
         // Tier 2 checks compare against.
         let config = ConfigContext.detect(anchor: anchor, workingDirectory: workingDirectory)
         let lookup = anchor.map { MatrixLookup.resolve(anchor: $0, config: config.configuration) }
+        let projectEnvironment: ProjectExecutionEnvironment?
+        if includeProjectEnvironment, let anchor {
+            projectEnvironment = await ProjectExecutionEnvironment.resolve(
+                anchor: anchor, hostRunner: runner
+            )
+        } else {
+            projectEnvironment = nil
+        }
+        let projectChecks = if let anchor, let projectEnvironment {
+            projectEnvironment.checks(anchor: anchor, context: config)
+        } else {
+            [any Check]()
+        }
 
         return Wiring(
             anchor: anchor,
             engine: DoctorEngine(
                 checks: iOSChecks(lookup: lookup, runner: runner, locator: locator)
                     + configChecks(context: config, lookup: lookup, runner: runner, locator: locator)
-                    + (anchor?.checks(runner: runner, context: config) ?? [])
+                    + projectChecks
             ),
             config: config,
             lookup: lookup,
             runner: runner,
+            projectRunner: projectEnvironment?.runner ?? runner,
             locator: locator
         )
     }

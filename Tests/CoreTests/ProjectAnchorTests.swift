@@ -164,7 +164,7 @@ struct ProjectAnchorTests {
         #expect(workspaceRoot.packageManagerName == "yarn")
         // Copy-pasting `yarn install` from the sub-package is what breaks a
         // workspace: the install belongs where the lockfile is.
-        #expect(anchor.installCommand == "cd \(repo.root.path) && yarn install")
+        #expect(anchor.installCommand == "cd \(repo.root.path) && yarn install --frozen-lockfile")
     }
 
     /// In a single repo the anchor is the workspace root, and an install that already
@@ -178,7 +178,7 @@ struct ProjectAnchorTests {
         let anchor = try #require(ProjectAnchor.detect(from: repo.root))
 
         #expect(anchor.workspaceRoot?.directory.path == repo.root.path)
-        #expect(anchor.installCommand == "pnpm install")
+        #expect(anchor.installCommand == "pnpm install --frozen-lockfile")
     }
 
     /// `packageManager` is a workspace-wide contract: a sub-package that does not
@@ -196,6 +196,11 @@ struct ProjectAnchorTests {
         #expect(requirement.name == "yarn")
         #expect(requirement.version == "4.16.0")
         #expect(requirement.origin == "workspace root package.json packageManager")
+        #expect(
+            anchor.installCommand
+                == "cd \(repo.root.path) && corepack yarn install --frozen-lockfile"
+        )
+        #expect(anchor.installProcess.environment["COREPACK_ENABLE_NETWORK"] == "0")
     }
 
     @Test("unparsable package.json is not an anchor")
@@ -217,20 +222,28 @@ struct ProjectAnchorTests {
             #"""
             {
               "dependencies": {"react-native": "0.81.6"},
+              "packageManager": "yarn@4.16.0",
               "scripts": {"pod-install": "cd ios && RCT_NEW_ARCH_ENABLED=1 pod install"}
             }
             """#
         )
         try repo.write("yarn.lock", "")
+        try repo.write("Gemfile", "gem 'cocoapods', '1.16.1'\n")
 
         let anchor = try #require(ProjectAnchor.detect(from: repo.root))
 
         #expect(anchor.podInstallScript == "pod-install")
-        #expect(anchor.podInstallProcess.description == "yarn run pod-install")
+        #expect(anchor.podInstallProcess.description == "corepack yarn run pod-install")
+        #expect(anchor.podInstallProcess.environment["COREPACK_ENABLE_NETWORK"] == "0")
         // At the anchor, not in `ios/`: the script does its own `cd`, and the
         // manager has to be run where the `package.json` declaring it is.
         #expect(anchor.podInstallProcess.workingDirectory?.path == repo.root.path)
-        #expect(anchor.podInstallCommand == "cd \(repo.root.path) && yarn run pod-install")
+        #expect(
+            anchor.podInstallCommand
+                == "cd \(repo.root.path) && corepack yarn run pod-install"
+        )
+        #expect(anchor.podVersionProcess.description == "pod --version")
+        #expect(anchor.gemInstallProcess == nil)
     }
 
     /// A repo that declares nothing keeps the behaviour it had — the bare install in
@@ -246,6 +259,53 @@ struct ProjectAnchorTests {
         #expect(anchor.podInstallProcess.description == "pod install")
         #expect(anchor.podInstallProcess.workingDirectory?.path == repo.url("ios").path)
         #expect(anchor.podInstallCommand == "cd \(repo.url("ios").path) && pod install")
+    }
+
+    @Test("gem-managed CocoaPods uses Bundler for validation and the default install")
+    func bundledPodCommands() throws {
+        let repo = try FixtureRepo()
+        try repo.write("package.json", #"{"dependencies": {"react-native": "0.81.6"}}"#)
+        try repo.write("Gemfile", "gem 'cocoapods', '1.16.1'\n")
+
+        let anchor = try #require(ProjectAnchor.detect(from: repo.root))
+
+        #expect(anchor.podVersionProcess.description == "bundle exec pod --version")
+        #expect(anchor.podVersionProcess.workingDirectory?.path == repo.root.path)
+        #expect(anchor.podInstallProcess.description == "bundle exec pod install")
+        #expect(anchor.podInstallProcess.workingDirectory?.path == repo.url("ios").path)
+        #expect(
+            anchor.podInstallCommand
+                == "cd \(repo.url("ios").path) && bundle exec pod install"
+        )
+    }
+
+    @Test("a lock without a Gemfile keeps CocoaPods on the bare path")
+    func lockOnlyPodCommands() throws {
+        let repo = try FixtureRepo()
+        try repo.write("package.json", #"{"dependencies": {"react-native": "0.81.6"}}"#)
+        try repo.write("Gemfile.lock", "GEM\n  specs:\n    cocoapods (1.16.1)\n")
+
+        let anchor = try #require(ProjectAnchor.detect(from: repo.root))
+
+        #expect(anchor.podVersionProcess.description == "pod --version")
+        #expect(anchor.podInstallProcess.description == "pod install")
+        #expect(anchor.gemInstallProcess == nil)
+    }
+
+    @Test("a declared Bundler pod script is measured through Bundler")
+    func bundledPodScript() throws {
+        let repo = try FixtureRepo()
+        try repo.write(
+            "package.json",
+            #"{"dependencies":{"react-native":"0.81.6"},"scripts":{"install-pods":"cd ios && bundle exec pod install"}}"#
+        )
+        try repo.write("Gemfile", "gem 'cocoapods', '1.16.1'\n")
+
+        let anchor = try #require(ProjectAnchor.detect(from: repo.root))
+
+        #expect(anchor.podInstallProcess.description == "npm run install-pods")
+        #expect(anchor.podVersionProcess.description == "bundle exec pod --version")
+        #expect(anchor.gemInstallProcess?.description == "bundle install")
     }
 
     /// Both halves have to agree. joplin's root `postinstall` does run `pod install`,

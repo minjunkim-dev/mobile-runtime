@@ -76,24 +76,6 @@ public struct WorkspaceRoot: Sendable, Equatable {
         self.packageManagerName = packageManagerName
     }
 
-    /// What a human would run to install the project's dependencies, from the two
-    /// things the lockfile knows: its kind picks the manager, its directory picks
-    /// where the install runs. Running an install from a sub-package is how a
-    /// workspace gets broken, so the `cd` is part of the command whenever the anchor
-    /// is somewhere else.
-    public func installCommand(from anchor: URL) -> String {
-        let install = installProcess.description
-        return directory == anchor ? install : "cd \(directory.path) && \(install)"
-    }
-
-    /// The same install, as something to run rather than something to print. The `cd`
-    /// above and this working directory are one decision written once — the line
-    /// doctor hands a human and the command `up` executes must not be able to drift.
-    ///
-    /// No timeout: a cold install is minutes of network, and 30 seconds would kill it.
-    public var installProcess: ProcessCommand {
-        ProcessCommand(packageManagerName, ["install"], workingDirectory: directory, timeout: nil)
-    }
 }
 
 /// The project's anchor: the nearest `package.json` that depends on react-native,
@@ -120,6 +102,8 @@ public struct ProjectAnchor: Sendable, Equatable {
     public let packageManager: PackageManagerRequirement?
     /// nil when the project manages no gems — then there is no CocoaPods Check.
     public let cocoapods: CocoaPodsRequirement?
+    /// `bundle install` has a declaration to read only when this file exists.
+    public let hasGemfile: Bool
     /// From `.ruby-version`. nil means no Ruby Check — absence, not `unknown`.
     public let rubyPin: String?
     /// From `.xcode-version`, the file xcodes and fastlane already read. Tier 1
@@ -136,6 +120,9 @@ public struct ProjectAnchor: Sendable, Equatable {
     /// Pods, when it declared one. nil is silence, and silence means the bare
     /// `pod install` is all anybody said to run.
     public let podInstallScript: String?
+    /// Whether that script names Bundler as the path to `pod`. The Check follows
+    /// this instead of measuring an unrelated executable.
+    public let podInstallUsesBundler: Bool
 
     /// What a human would run to install the project's dependencies. doctor prints
     /// it and never runs it.
@@ -144,22 +131,58 @@ public struct ProjectAnchor: Sendable, Equatable {
     /// measured to go on, so the declaration is the next best evidence and npm the
     /// last resort — a guess, but the one a repo that declared nothing behaves like.
     public var installCommand: String {
-        workspaceRoot?.installCommand(from: directory) ?? installProcess.description
+        let install = installProcess.description
+        guard let root = workspaceRoot?.directory, root != directory else { return install }
+        return "cd \(root.path) && \(install)"
     }
 
     /// The manager this project is run with — the one its lockfile named, else the one
     /// it declared, else npm. `dependencies` installs with it and `metro` calls the
     /// project's start script with it, off one answer.
-    public var packageManagerName: String { installProcess.executable }
+    public var packageManagerName: String {
+        workspaceRoot?.packageManagerName ?? packageManager?.name ?? "npm"
+    }
 
     /// What `up` runs where `installCommand` is what doctor prints. Same evidence and
     /// same fallback, so the two can never name different managers.
     public var installProcess: ProcessCommand {
-        workspaceRoot?.installProcess
-            ?? ProcessCommand(
-                packageManager?.name ?? "npm", ["install"],
-                workingDirectory: directory, timeout: nil
-            )
+        let arguments: [String]
+        if workspaceRoot == nil {
+            arguments = ["install"]
+        } else {
+            switch packageManagerName {
+            case "npm": arguments = ["ci"]
+            case "yarn", "pnpm", "bun": arguments = ["install", "--frozen-lockfile"]
+            default: arguments = ["install"]
+            }
+        }
+        return packageManagerProcess(
+            arguments,
+            workingDirectory: workspaceRoot?.directory ?? directory,
+            timeout: nil
+        )
+    }
+
+    /// One package-manager invocation policy for version checks, dependency
+    /// alignment, declared Pod scripts and Metro. Yarn and pnpm declarations use
+    /// Corepack directly so they do not depend on a globally enabled shim. Corepack
+    /// stays offline: preparing a missing manager is provisioning, not `mobile up`.
+    func packageManagerProcess(
+        _ arguments: [String],
+        name: String? = nil,
+        workingDirectory: URL,
+        timeout: Duration?
+    ) -> ProcessCommand {
+        let manager = name ?? packageManagerName
+        let usesCorepack = packageManager?.name == manager
+            && (manager == "yarn" || manager == "pnpm")
+        return ProcessCommand(
+            usesCorepack ? "corepack" : manager,
+            usesCorepack ? [manager] + arguments : arguments,
+            environment: ["COREPACK_ENABLE_NETWORK": "0"],
+            workingDirectory: workingDirectory,
+            timeout: timeout
+        )
     }
 
     /// What `up` runs to install the Pods. The project's own script when it declared
@@ -179,15 +202,42 @@ public struct ProjectAnchor: Sendable, Equatable {
     /// minutes of network, and it was measured at eleven.
     public var podInstallProcess: ProcessCommand {
         guard let podInstallScript else {
+            if usesBundledCocoaPods {
+                return ProcessCommand(
+                    "bundle", ["exec", "pod", "install"],
+                    workingDirectory: directory.appendingPathComponent("ios"), timeout: nil
+                )
+            }
             return ProcessCommand(
                 "pod", ["install"],
                 workingDirectory: directory.appendingPathComponent("ios"), timeout: nil
             )
         }
-        return ProcessCommand(
-            packageManagerName, ["run", podInstallScript],
-            workingDirectory: directory, timeout: nil
+        return packageManagerProcess(
+            ["run", podInstallScript], workingDirectory: directory, timeout: nil
         )
+    }
+
+    /// What `doctor` measures when gem files own CocoaPods. It is deliberately the
+    /// same Bundler path the default install uses, not whichever global `pod` happens
+    /// to be on PATH.
+    public var podVersionProcess: ProcessCommand {
+        if !usesBundledCocoaPods {
+            return ProcessCommand("pod", ["--version"], workingDirectory: directory, timeout: .seconds(15))
+        }
+        return ProcessCommand(
+            "bundle", ["exec", "pod", "--version"],
+            workingDirectory: directory, timeout: .seconds(15)
+        )
+    }
+
+    private var usesBundledCocoaPods: Bool {
+        if podInstallScript != nil { return podInstallUsesBundler }
+        guard hasGemfile, let cocoapods else { return false }
+        switch cocoapods.level {
+        case .version, .installed: return true
+        case .unconfirmed: return false
+        }
     }
 
     /// The same install as a line to paste. One decision written once, like
@@ -211,7 +261,7 @@ public struct ProjectAnchor: Sendable, Equatable {
     /// dependencies by the same test `node_modules` and `Pods` pass: gitignored,
     /// reinstallable, and already described by a lockfile the project committed.
     public var gemInstallProcess: ProcessCommand? {
-        guard cocoapods != nil else { return nil }
+        guard hasGemfile, usesBundledCocoaPods else { return nil }
         // No timeout, for the reason the other two installs have none: it is minutes
         // of network on a cold machine.
         return ProcessCommand("bundle", ["install"], workingDirectory: directory, timeout: nil)
@@ -307,6 +357,7 @@ public struct ProjectAnchor: Sendable, Equatable {
             $0.directory.path == directory ? nil : Self.manifest(in: $0.directory.path, fileManager: fileManager)
         }
 
+        let podInstall = podInstallDeclaration(in: manifest)
         return ProjectAnchor(
             directory: URL(fileURLWithPath: directory),
             declaredReactNativeVersion: declared,
@@ -325,6 +376,7 @@ public struct ProjectAnchor: Sendable, Equatable {
             cocoapods: CocoaPodsRequirement.resolve(
                 anchorDirectory: directory, fileManager: fileManager
             ),
+            hasGemfile: fileManager.fileExists(atPath: directory.appending("/Gemfile")),
             rubyPin: rubyPin(in: directory, fileManager: fileManager),
             declaredXcodeVersion: declaration(
                 at: directory.appending("/\(xcodeVersionFile)"), fileManager: fileManager
@@ -333,7 +385,8 @@ public struct ProjectAnchor: Sendable, Equatable {
                 anchorDirectory: directory, fileManager: fileManager
             ),
             workspaceRoot: workspaceRoot,
-            podInstallScript: podInstallScript(in: manifest)
+            podInstallScript: podInstall?.name,
+            podInstallUsesBundler: podInstall?.usesBundler ?? false
         )
     }
 
@@ -359,12 +412,15 @@ public struct ProjectAnchor: Sendable, Equatable {
     /// large share of React Native apps spell the install (`npx pod-install`), and
     /// missing it would put those repos back on the bare command this ticket exists
     /// to stop.
-    private static func podInstallScript(in manifest: [String: Any]) -> String? {
+    private static func podInstallDeclaration(
+        in manifest: [String: Any]
+    ) -> (name: String, usesBundler: Bool)? {
         guard let scripts = manifest["scripts"] as? [String: Any] else { return nil }
-        return podInstallScriptNames.first {
+        guard let name = podInstallScriptNames.first(where: {
             guard let body = scripts[$0] as? String else { return false }
             return body.contains("pod install") || body.contains("pod-install")
-        }
+        }), let body = scripts[name] as? String else { return nil }
+        return (name, body.contains("bundle exec pod"))
     }
 
     private static func manifest(in directory: String, fileManager: FileManager) -> [String: Any]? {

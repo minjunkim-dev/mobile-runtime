@@ -15,7 +15,9 @@ struct Down: AsyncParsableCommand {
     var verbose = false
 
     func run() async throws {
-        let wiring = Wiring.bootstrap(verbose: verbose)
+        // Teardown uses only host capabilities. Resolving a project toolchain here
+        // would make the recovery command wait on or fail with an unrelated Git probe.
+        let wiring = await Wiring.bootstrap(verbose: verbose, includeProjectEnvironment: false)
         let writer = DownWriter(
             json: json,
             toolVersion: Tool.version,

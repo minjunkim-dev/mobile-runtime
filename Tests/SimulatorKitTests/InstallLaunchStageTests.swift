@@ -108,10 +108,16 @@ struct LaunchStageTests {
     private let project = URL(fileURLWithPath: "/Users/USER/MyApp")
 
     private func stage(
-        _ runner: FakeProcessRunner, readinessWait: Duration = .zero
+        _ runner: FakeProcessRunner,
+        metroRunner: FakeProcessRunner? = nil,
+        readinessWait: Duration = .zero
     ) -> LaunchStage {
         LaunchStage(
-            project: project, runner: runner, locator: locator(runner), readinessWait: readinessWait
+            project: project,
+            runner: runner,
+            metroRunner: metroRunner,
+            locator: locator(runner),
+            readinessWait: readinessWait
         )
     }
 
@@ -244,15 +250,18 @@ struct LaunchStageTests {
 
     @Test("a reused Metro is checked through its status endpoint")
     func reusedMetroIsReadyFromStatus() async throws {
-        var runner = launching()
-        runner.responses[MetroStatus.command] = .ok(MetroStatus.running(projectRoot: project))
+        let runner = launching()
+        let metroRunner = FakeProcessRunner(
+            responses: [MetroStatus.command: .ok(MetroStatus.running(projectRoot: project))]
+        )
         var context = afterBuild()
         context.metro = MetroProcess(state: .reused)
 
-        let outcome = try await stage(runner).run(&context)
+        let outcome = try await stage(runner, metroRunner: metroRunner).run(&context)
 
         #expect(outcome.status == .pass)
-        #expect(runner.log.first(matching: MetroStatus.command) != nil)
+        #expect(runner.log.first(matching: MetroStatus.command) == nil)
+        #expect(metroRunner.log.first(matching: MetroStatus.command) != nil)
         #expect(outcome.detail?.contains("still bundling") == false)
     }
 }

@@ -12,6 +12,7 @@ public struct LaunchStage: Stage {
     public let id = "launch"
 
     private let runner: any ProcessRunner
+    private let metroRunner: any ProcessRunner
     private let locator: XcodeLocator
     private let project: URL
     /// The upper bound for observing the bundle after the app asks Metro for it.
@@ -24,11 +25,13 @@ public struct LaunchStage: Stage {
     public init(
         project: URL,
         runner: any ProcessRunner,
+        metroRunner: (any ProcessRunner)? = nil,
         locator: XcodeLocator,
         readinessWait: Duration = LaunchStage.defaultReadinessWait
     ) {
         self.project = project
         self.runner = runner
+        self.metroRunner = metroRunner ?? runner
         self.locator = locator
         self.readinessWait = readinessWait
     }
@@ -80,7 +83,7 @@ public struct LaunchStage: Stage {
         let detail = "\(product.bundleIdentifier) — pid \(pid)"
         guard let metro = context.metro else { return .pass(detail) }
         let ready = await MetroReadiness(
-            project: project, runner: runner, timeout: readinessWait
+            project: project, runner: metroRunner, timeout: readinessWait
         ).wait(for: metro)
         if ready { return .pass(detail) }
 

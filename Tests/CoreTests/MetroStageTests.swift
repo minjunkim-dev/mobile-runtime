@@ -136,6 +136,25 @@ struct MetroStageTests {
         #expect(context.metro?.logPath == spawn.logFile.path)
     }
 
+    @Test("a declared Corepack manager starts Metro offline")
+    func corepackSpawns() async throws {
+        let repo = try FixtureRepo()
+        try repo.write(
+            "package.json",
+            #"{"dependencies":{"react-native":"0.81.0"},"packageManager":"yarn@4.16.0"}"#
+        )
+        try repo.write("yarn.lock", "")
+        let runner = FakeProcessRunner(responses: [MetroStatus.command: .failed(7, "")])
+        var context = UpContext()
+
+        _ = try await run(repo, runner, context: &context)
+
+        let spawn = try #require(runner.log.spawned.first)
+        #expect(spawn.command.description == "corepack yarn start")
+        #expect(spawn.command.environment["COREPACK_ENABLE_NETWORK"] == "0")
+        #expect(spawn.command.workingDirectory?.path == repo.root.path)
+    }
+
     /// #61: the pid the spawn hands back is the start script's, and the bundler is
     /// two links below it — killing the reported one left 8081 held. So the port is
     /// asked who holds it, and that is the pid a reader is given.
