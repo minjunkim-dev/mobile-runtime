@@ -11,7 +11,8 @@ public func iOSUpStages(
     doctor: DoctorEngine,
     config: ConfigContext,
     lookup: MatrixLookup?,
-    runner: any ProcessRunner,
+    hostRunner: any ProcessRunner,
+    projectRunner: any ProcessRunner,
     locator: XcodeLocator,
     readinessWait: Duration = LaunchStage.defaultReadinessWait,
     note: @escaping @Sendable (String) -> Void
@@ -22,16 +23,25 @@ public func iOSUpStages(
             checkIDs: IOSUpValidation.checkIDs,
             promoteToError: IOSUpValidation.promotesToError
         ),
-        DependenciesStage(anchor: anchor, runner: runner),
+        DependenciesStage(anchor: anchor, runner: projectRunner),
         DeviceStage(
-            declared: config.configuration?.device, lookup: lookup, runner: runner, locator: locator
+            declared: config.configuration?.device,
+            lookup: lookup,
+            runner: hostRunner,
+            locator: locator
         ),
         // Before build on purpose: Metro warms up while xcodebuild spends its minutes.
-        MetroStage(anchor: anchor, runner: runner),
-        BuildStage(config: config, runner: runner, locator: locator, note: note),
-        InstallStage(runner: runner, locator: locator, logs: RunLogs(project: anchor.directory)),
+        MetroStage(anchor: anchor, runner: projectRunner),
+        BuildStage(config: config, runner: projectRunner, locator: locator, note: note),
+        InstallStage(
+            runner: hostRunner, locator: locator, logs: RunLogs(project: anchor.directory)
+        ),
         LaunchStage(
-            project: anchor.directory, runner: runner, locator: locator, readinessWait: readinessWait
+            project: anchor.directory,
+            runner: hostRunner,
+            metroRunner: projectRunner,
+            locator: locator,
+            readinessWait: readinessWait
         ),
     ]
 }

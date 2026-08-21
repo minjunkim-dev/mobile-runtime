@@ -42,7 +42,8 @@ struct Up: AsyncParsableCommand {
             doctor: wiring.engine,
             config: wiring.config,
             lookup: wiring.lookup,
-            runner: wiring.runner,
+            hostRunner: wiring.runner,
+            projectRunner: wiring.projectRunner,
             locator: wiring.locator,
             note: { writer.note($0) }
         )

@@ -64,8 +64,10 @@ private func runner(_ repo: FixtureRepo) throws -> FakeProcessRunner {
 private func pipeline(
     _ repo: FixtureRepo,
     _ runner: FakeProcessRunner,
+    projectRunner: FakeProcessRunner? = nil,
     from workingDirectory: URL? = nil
 ) -> UpPipeline {
+    let projectRunner = projectRunner ?? runner
     let workingDirectory = workingDirectory ?? repo.root
     let anchor = ProjectAnchor.detect(from: workingDirectory)!
     let config = ConfigContext.detect(anchor: anchor, workingDirectory: workingDirectory)
@@ -77,11 +79,12 @@ private func pipeline(
             doctor: DoctorEngine(
                 checks: iOSChecks(lookup: lookup, runner: runner, locator: locator)
                     + configChecks(context: config, lookup: lookup, runner: runner, locator: locator)
-                    + anchor.checks(runner: runner, context: config)
+                    + anchor.checks(runner: projectRunner, context: config)
             ),
             config: config,
             lookup: lookup,
-            runner: runner,
+            hostRunner: runner,
+            projectRunner: projectRunner,
             locator: locator,
             // The wait exists for a human watching the screen; a test would only spend
             // three seconds per run on it.
@@ -118,6 +121,40 @@ struct IOSUpStagesTests {
         #expect(report.context.product?.bundleIdentifier == builtBundleID)
         #expect(report.context.metro?.state == .reused)
         #expect(report.context.appPid == 3538)
+    }
+
+    @Test("stage composition keeps host and project commands in their own environments")
+    func runnerSelection() async throws {
+        let repo = try settledProject()
+        try FileManager.default.removeItem(at: repo.url("node_modules"))
+        let fixtures = try runner(repo)
+        let host = FakeProcessRunner(responses: fixtures.responses)
+        var project = FakeProcessRunner(responses: fixtures.responses)
+        project.responses["yarn install"] = .ok("")
+        project.responses[MetroStatus.command] = .failed(7, "")
+        let listener = (["lsof"] + MetroVerdict.listenerArguments + ["-t"])
+            .joined(separator: " ")
+        project.responses[listener] = .ok("9876\n")
+
+        let report = await pipeline(repo, host, projectRunner: project).run()
+
+        #expect(report.exitCode == 0)
+        let hostCommands = host.log.all.map(\.description)
+        let projectCommands = project.log.all.map(\.description)
+        #expect(projectCommands.contains("yarn install"))
+        #expect(projectCommands.contains(MetroStatus.command))
+        #expect(projectCommands.contains(buildCommand(repo)))
+        #expect(!hostCommands.contains("yarn install"))
+        #expect(!hostCommands.contains(buildCommand(repo)))
+        #expect(hostCommands.contains(installCommand))
+        #expect(hostCommands.contains(launchCommand))
+        #expect(!projectCommands.contains { $0.hasPrefix("xcrun simctl") })
+        #expect(host.log.spawned.isEmpty)
+        #expect(project.log.spawned.first?.command.description == "yarn start")
+        #expect(
+            project.log.first(matching: buildCommand(repo))?.environment["DEVELOPER_DIR"]
+                == developerDirectory
+        )
     }
 
     @Test("an undecided scheme fails validation before Metro starts")
