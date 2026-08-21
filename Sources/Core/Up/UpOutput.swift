@@ -119,7 +119,7 @@ public struct StageLineRenderer: Sendable {
     }
 }
 
-/// up's two streams, in one place. stdout carries the `--json` document and nothing
+/// The build/up streams, in one place. stdout carries the `--json` document and nothing
 /// else; everything a human reads goes to stderr, so a piped run and a watched
 /// terminal are the same run. Progress printed while the pipeline runs is exactly
 /// how that rule gets broken, so both streams leave through here rather than
@@ -127,6 +127,7 @@ public struct StageLineRenderer: Sendable {
 public struct UpWriter: Sendable {
     private let json: Bool
     private let toolVersion: String
+    private let command: String
     private let renderer: HumanReportRenderer
     private let lines = StageLineRenderer()
     private let standardOutput: @Sendable (String) -> Void
@@ -135,12 +136,14 @@ public struct UpWriter: Sendable {
     public init(
         json: Bool,
         toolVersion: String,
+        command: String = "up",
         renderer: HumanReportRenderer,
         standardOutput: @escaping @Sendable (String) -> Void,
         standardError: @escaping @Sendable (String) -> Void
     ) {
         self.json = json
         self.toolVersion = toolVersion
+        self.command = command
         self.renderer = renderer
         self.standardOutput = standardOutput
         self.standardError = standardError
@@ -161,7 +164,9 @@ public struct UpWriter: Sendable {
 
     public func finish(_ report: UpReport) throws {
         if json {
-            return standardOutput(try UpJSONDocument(report: report, toolVersion: toolVersion).encoded())
+            return standardOutput(
+                try UpJSONDocument(report: report, toolVersion: toolVersion, command: command).encoded()
+            )
         }
 
         // Whatever validate found — the errors that stopped the run, and the warnings
@@ -176,7 +181,11 @@ public struct UpWriter: Sendable {
         // the errors would hide the reason the exit code disagrees with them.
         if let failure = report.failure, !renderedAsValidation(failure, report) {
             standardError("")
-            standardError(renderer.render(DoctorReport(checks: [Self.check(for: failure, in: report)])))
+            standardError(
+                renderer.render(
+                    DoctorReport(checks: [Self.check(for: failure, in: report, command: command)])
+                )
+            )
         }
 
         // The same sentence `--json` carries in its error, from the same place.
@@ -193,9 +202,11 @@ public struct UpWriter: Sendable {
 
     /// A failure, dressed as the one thing the renderer knows how to draw. Cheaper
     /// than a second output path, which would drift from doctor's.
-    private static func check(for failure: UpFailure, in report: UpReport) -> CheckResult {
+    private static func check(
+        for failure: UpFailure, in report: UpReport, command: String
+    ) -> CheckResult {
         // The stage names itself first: where it stopped is the first thing to know.
-        let stage = report.stages.last { $0.status == .failed }?.id ?? "up"
+        let stage = report.stages.last { $0.status == .failed }?.id ?? command
         return CheckResult(
             id: stage,
             category: stage,

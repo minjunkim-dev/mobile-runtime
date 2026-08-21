@@ -18,11 +18,13 @@ Status: charting phase — see the wayfinder map in Issues.
 swift build
 swift test
 .build/debug/mobile doctor        # host checks; --json for machines, -v for detail
+.build/debug/mobile build         # validate and compile; no Metro, install, or launch
+.build/debug/mobile up            # build, install, and launch on a simulator
 ```
 
 Exit codes: `0` no errors, `1` domain failure, `2` tool failure, `64` usage error.
 
-### `up --json`
+### `build --json` and `up --json`
 
 Machine consumers should use exit code `0`, or the absence of the top-level
 `error` key, to detect success. A successful document omits `error`; it does not

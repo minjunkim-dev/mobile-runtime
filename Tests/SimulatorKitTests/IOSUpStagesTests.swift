@@ -66,6 +66,7 @@ private func runner(_ repo: FixtureRepo) throws -> FakeProcessRunner {
 private func pipeline(
     _ repo: FixtureRepo,
     _ runner: FakeProcessRunner,
+    workflow: IOSWorkflow = .up,
     projectRunner: FakeProcessRunner? = nil,
     from workingDirectory: URL? = nil
 ) -> UpPipeline {
@@ -76,7 +77,8 @@ private func pipeline(
     let lookup = MatrixLookup.resolve(anchor: anchor, config: config.configuration)
     let locator = XcodeLocator(runner: runner, developerDirOverride: nil)
     return UpPipeline(
-        stages: iOSUpStages(
+        stages: iOSStages(
+            workflow: workflow,
             anchor: anchor,
             doctor: DoctorEngine(
                 checks: iOSChecks(lookup: lookup, runner: runner, locator: locator)
@@ -123,6 +125,28 @@ struct IOSUpStagesTests {
         #expect(report.context.product?.bundleIdentifier == builtBundleID)
         #expect(report.context.metro?.state == .reused)
         #expect(report.context.appPid == 3538)
+    }
+
+    @Test("build is the shared pipeline without Metro, install, or launch")
+    func buildStopsAfterCompilation() async throws {
+        let repo = try settledProject()
+        let runner = try runner(repo)
+
+        let report = await pipeline(repo, runner, workflow: .build).run()
+
+        #expect(report.exitCode == 0)
+        #expect(report.stages.map(\.id) == ["validate", "dependencies", "device", "build"])
+        #expect(report.context.buildLog != nil)
+        #expect(report.context.product?.bundleIdentifier == builtBundleID)
+        #expect(report.context.metro == nil)
+        #expect(report.context.appPid == nil)
+        let sent = runner.log.all.map(\.description)
+        #expect(sent.contains(MetroStatus.command) == false)
+        #expect(sent.contains(installCommand) == false)
+        #expect(sent.contains(terminateCommand) == false)
+        #expect(sent.contains(launchCommand) == false)
+        #expect(runner.log.spawned.isEmpty)
+        #expect(InstallRecord.read(from: RunLogs(project: repo.root)) == nil)
     }
 
     @Test("Bundler repair runs after validation before Pods on a fresh checkout")

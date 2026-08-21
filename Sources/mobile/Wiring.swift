@@ -4,15 +4,15 @@ import Logging
 import SimulatorKit
 
 /// What every command stands on: one logging bootstrap, one anchor detection, one
-/// set of Checks. `up` reusing this is what keeps it from calling a project broken
-/// that `doctor` just called fine — the two read the same project the same way.
+/// set of Checks. `build` and `up` reusing this is what keeps either from calling a
+/// project broken that `doctor` just called fine — they read it the same way.
 struct Wiring {
     /// nil outside a React Native project. What that means is the command's call:
-    /// doctor says so and carries on with host checks, up has nothing to do.
+    /// doctor says so and carries on with host checks; build and up have nothing to do.
     let anchor: ProjectAnchor?
     let engine: DoctorEngine
-    /// What the Stages need and the Checks already had: up reads the same mobile.yml,
-    /// through the same runner, against the same Xcode.
+    /// What the Stages need and the Checks already had: workflows read the same
+    /// mobile.yml, through the same runner, against the same Xcode.
     let config: ConfigContext
     let lookup: MatrixLookup?
     /// Machine commands: Xcode discovery, simulator control, install, launch, down.

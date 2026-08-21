@@ -295,12 +295,13 @@ struct UpWriterTests {
     private let out = Mutable<[String]>([])
     private let error = Mutable<[String]>([])
 
-    private func writer(json: Bool) -> UpWriter {
+    private func writer(json: Bool, command: String = "up") -> UpWriter {
         let out = out
         let error = error
         return UpWriter(
             json: json,
             toolVersion: "9.9.9",
+            command: command,
             renderer: HumanReportRenderer(useColor: false),
             standardOutput: { out.value.append($0) },
             standardError: { error.value.append($0) }
@@ -326,6 +327,19 @@ struct UpWriterTests {
         #expect(error.value.contains { $0.contains("validate") })
         // The warning is in the document; --json does not also render it for a human.
         #expect(error.value.contains { $0.contains("switch node") } == false)
+    }
+
+    @Test("build JSON uses the shared envelope with its own command")
+    func buildJSONCommand() throws {
+        let writer = writer(json: true, command: "build")
+        let report = UpReport(stages: [result("build", .pass)])
+
+        try writer.finish(report)
+
+        let document = try JSONSerialization.jsonObject(with: Data(out.value[0].utf8))
+            as? [String: Any]
+        #expect(document?["command"] as? String == "build")
+        #expect((document?["stages"] as? [[String: Any]])?.first?["id"] as? String == "build")
     }
 
     /// A stage that is still working writes through the same door as everything else

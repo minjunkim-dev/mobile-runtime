@@ -1,12 +1,17 @@
 import Core
 
-/// The Stages `up` runs on iOS, in pipeline order. Assembling them lives next to
-/// the Stages themselves — the way `iOSChecks` owns doctor's list — so adding a
-/// Stage is never a CLI edit.
+public enum IOSWorkflow: Sendable {
+    case build
+    case up
+}
+
+/// The Stages an iOS workflow runs, in pipeline order. Assembling both workflows
+/// here keeps `build` a strict subset of `up` instead of letting two CLI lists drift.
 /// - Parameter note: where a Stage that is still working writes its elapsed line.
 ///   Only `build` takes long enough to need one.
 /// - Parameter readinessWait: the upper bound for observing Metro after launch.
-public func iOSUpStages(
+public func iOSStages(
+    workflow: IOSWorkflow,
     anchor: ProjectAnchor,
     doctor: DoctorEngine,
     config: ConfigContext,
@@ -17,11 +22,11 @@ public func iOSUpStages(
     readinessWait: Duration = LaunchStage.defaultReadinessWait,
     note: @escaping @Sendable (String) -> Void
 ) -> [any Stage] {
-    [
+    var stages: [any Stage] = [
         ValidateStage(
             engine: doctor,
-            checkIDs: IOSUpValidation.checkIDs,
-            promoteToError: IOSUpValidation.promotesToError
+            checkIDs: IOSWorkflowValidation.checkIDs,
+            promoteToError: IOSWorkflowValidation.promotesToError
         ),
         DependenciesStage(anchor: anchor, runner: projectRunner),
         DeviceStage(
@@ -30,20 +35,25 @@ public func iOSUpStages(
             runner: hostRunner,
             locator: locator
         ),
+    ]
+    if case .up = workflow {
         // Before build on purpose: Metro warms up while xcodebuild spends its minutes.
-        MetroStage(anchor: anchor, runner: projectRunner),
-        BuildStage(config: config, runner: projectRunner, locator: locator, note: note),
-        InstallStage(
+        stages.append(MetroStage(anchor: anchor, runner: projectRunner))
+    }
+    stages.append(BuildStage(config: config, runner: projectRunner, locator: locator, note: note))
+    if case .up = workflow {
+        stages.append(InstallStage(
             runner: hostRunner, locator: locator, logs: RunLogs(project: anchor.directory)
-        ),
-        LaunchStage(
+        ))
+        stages.append(LaunchStage(
             project: anchor.directory,
             runner: hostRunner,
             metroRunner: projectRunner,
             locator: locator,
             readinessWait: readinessWait
-        ),
-    ]
+        ))
+    }
+    return stages
 }
 
 /// Which of doctor's Checks gate an iOS build, named one by one.
@@ -52,7 +62,7 @@ public func iOSUpStages(
 /// host or Android Check joins doctor, it would start gating `mobile up` on a
 /// simulator without anyone deciding that. A Check enters this list by being
 /// written into it.
-public enum IOSUpValidation {
+public enum IOSWorkflowValidation {
     static func promotesToError(_ result: CheckResult) -> Bool {
         ConfigValuesCheck.isUndecidedScheme(result)
     }
