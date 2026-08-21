@@ -123,6 +123,32 @@ struct IOSUpStagesTests {
         #expect(report.context.appPid == 3538)
     }
 
+    @Test("Bundler repair runs after validation before Pods on a fresh checkout")
+    func bundlerRepairBeforePods() async throws {
+        let repo = try settledProject()
+        try repo.write("Gemfile", "gem 'cocoapods', '1.16.1'\n")
+        try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
+        var runner = try runner(repo)
+        runner.responses["bundle exec pod --version"] = .failed(
+            1, "Could not find cocoapods-1.16.1 in locally installed gems"
+        )
+        runner.responses["bundle check"] = .failed(1, "The following gems are missing")
+        runner.responses["bundle install"] = .ok("")
+        runner.responses["bundle exec pod install"] = .ok("")
+
+        let report = await pipeline(repo, runner).run()
+
+        #expect(report.exitCode == 0)
+        let validation = try #require(report.context.validation)
+        #expect(validation.checks.first { $0.id == "cocoapods.version" }?.status == .warning)
+        let sent = runner.log.all.map(\.description)
+        let check = try #require(sent.firstIndex(of: "bundle exec pod --version"))
+        let gems = try #require(sent.firstIndex(of: "bundle install"))
+        let pods = try #require(sent.firstIndex(of: "bundle exec pod install"))
+        #expect(check < gems)
+        #expect(gems < pods)
+    }
+
     @Test("stage composition keeps host and project commands in their own environments")
     func runnerSelection() async throws {
         let repo = try settledProject()

@@ -1,8 +1,9 @@
 import Foundation
 
-/// `cocoapods.version` — the CocoaPods on PATH against what the project's gem files
-/// ask for. The Check exists wherever a `Gemfile` or a `Gemfile.lock` does: a project
-/// that manages no gems never asked, and inventing a verdict for it is noise.
+/// `cocoapods.version` — the CocoaPods reached by the project's declared install path
+/// against what its gem files ask for. The Check exists wherever a `Gemfile` or a
+/// `Gemfile.lock` does: a project that manages no gems never asked, and inventing a
+/// verdict for it is noise.
 public struct CocoaPodsVersionCheck: Check {
     public let id = "cocoapods.version"
     public let category = "CocoaPods"
@@ -39,26 +40,42 @@ public struct CocoaPodsVersionCheck: Check {
 
     /// Bundler owns the install either way: with a lock it installs the pinned
     /// version, without one the version the Gemfile's range resolves to.
-    private static let remediation = Remediation(
-        summary: "Install the gems the project declares — pod install runs out of them.",
-        command: "bundle install"
-    )
+    private var remediation: Remediation {
+        Remediation(
+            summary: "Install the gems the project declares — pod install runs out of them.",
+            command: anchor.gemInstallCommand ?? anchor.podInstallCommand
+        )
+    }
 
     public func run() async throws -> CheckOutcome {
         // What the tool is, before what it says: a `pod` that cannot report a version
         // cannot run `pod install` either, so absent and mute are the same state.
+        let version = anchor.podVersionProcess
         let unusable: String
-        var advice = Self.remediation
-        switch try await probeVersion(of: "pod", using: runner) {
+        var advice = remediation
+        switch try await probeVersion(version, using: runner) {
         case .reported(let installed):
             return judge(installed: installed)
         case .notOnPath:
-            unusable = "pod is not on PATH"
+            unusable = "\(version.executable) is not on PATH"
         case .unreadable(let complaint):
             unusable = complaint
-            advice = await muteToolRemediation(
-                "pod", anchor: anchor, context: context, using: runner
-            )
+            if version.executable == "bundle" {
+                if case .unconfirmed = requirement.level {
+                    break
+                } else {
+                    return .warning(
+                        observed: unusable,
+                        required: required,
+                        source: source,
+                        remediation: remediation
+                    )
+                }
+            } else {
+                advice = await muteToolRemediation(
+                    "pod", anchor: anchor, context: context, using: runner
+                )
+            }
         }
 
         // The requirement picks the grade, not the reason the measurement failed
@@ -73,7 +90,9 @@ public struct CocoaPodsVersionCheck: Check {
         // An `error` carries no `reason`, so the tool's own words — the sentence that
         // named mise's unset shim in dogfooding — ride in `observed` instead. They are
         // what makes this verdict actionable, and they are not dropped.
-        return .error(observed: unusable, required: required, source: source, remediation: advice)
+        return .error(
+            observed: unusable, required: required, source: source, remediation: advice
+        )
     }
 
     private func judge(installed: SemanticVersion) -> CheckOutcome {
@@ -96,7 +115,9 @@ public struct CocoaPodsVersionCheck: Check {
                 source: source,
                 remediation: Remediation(
                     summary: "Run pod through bundler — a different CocoaPods rewrites Podfile.lock.",
-                    command: "bundle install && bundle exec pod install"
+                    command: [anchor.gemInstallCommand, anchor.podInstallCommand]
+                        .compactMap { $0 }
+                        .joined(separator: " && ")
                 )
             )
         }

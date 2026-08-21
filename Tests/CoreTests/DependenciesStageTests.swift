@@ -135,7 +135,7 @@ struct DependenciesStageTests {
         let runner = FakeProcessRunner(responses: [
             "bundle check": .failed(1, "The following gems are missing"),
             "bundle install": .ok(""),
-            "pod install": .ok(""),
+            "bundle exec pod install": .ok(""),
         ])
         var context = UpContext()
 
@@ -145,7 +145,7 @@ struct DependenciesStageTests {
         #expect(outcome.detail == "installed gems and Pods")
         let sent = runner.log.all.map(\.description)
         let gems = try #require(sent.firstIndex(of: "bundle install"))
-        let pods = try #require(sent.firstIndex(of: "pod install"))
+        let pods = try #require(sent.firstIndex(of: "bundle exec pod install"))
         #expect(gems < pods)
         #expect(runner.log.first(matching: "bundle install")?.workingDirectory?.path == repo.root.path)
     }
@@ -161,7 +161,7 @@ struct DependenciesStageTests {
         try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
         let runner = FakeProcessRunner(responses: [
             "bundle check": .ok("The Gemfile's dependencies are satisfied"),
-            "pod install": .ok(""),
+            "bundle exec pod install": .ok(""),
         ])
         var context = UpContext()
 
@@ -182,6 +182,21 @@ struct DependenciesStageTests {
 
         _ = try await run(try anchor(repo), runner, context: &context)
 
+        #expect(runner.log.all.map(\.description).contains { $0.hasPrefix("bundle") } == false)
+    }
+
+    @Test("a Gemfile without CocoaPods keeps the valid bare pod path")
+    func unconfirmedGemfileUsesBarePod() async throws {
+        let repo = try app()
+        try repo.directory("node_modules")
+        try repo.write("Gemfile", "gem 'fastlane'\n")
+        try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
+        let runner = FakeProcessRunner(responses: ["pod install": .ok("")])
+        var context = UpContext()
+
+        _ = try await run(try anchor(repo), runner, context: &context)
+
+        #expect(runner.log.first(matching: "pod install") != nil)
         #expect(runner.log.all.map(\.description).contains { $0.hasPrefix("bundle") } == false)
     }
 
@@ -211,7 +226,7 @@ struct DependenciesStageTests {
         #expect(error?.summary == "installing gems failed")
         #expect(error?.observed == cause)
         #expect(error?.remediation.command == "cd \(repo.root.path) && bundle install")
-        #expect(runner.log.all.map(\.description).contains("pod install") == false)
+        #expect(runner.log.all.map(\.description).contains("bundle exec pod install") == false)
     }
 
     /// A `bundle` that cannot run at all is not this stage's news: the pod install is
@@ -222,7 +237,7 @@ struct DependenciesStageTests {
         try repo.directory("node_modules")
         try repo.write("Gemfile", "gem 'cocoapods', '1.16.1'\n")
         try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
-        var runner = FakeProcessRunner(responses: ["pod install": .ok("")])
+        var runner = FakeProcessRunner(responses: ["bundle exec pod install": .ok("")])
         runner.failures["bundle check"] = ProcessError.spawnFailed(
             command: "bundle check", underlying: FixtureMiss(command: "bundle")
         )

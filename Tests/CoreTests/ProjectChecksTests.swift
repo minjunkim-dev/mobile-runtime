@@ -755,7 +755,9 @@ struct CocoaPodsVersionCheckTests {
         try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
         try repo.write("Gemfile.lock", gemfileLock)
 
-        let (report, _) = await runProjectChecks(repo, tools: ["pod --version": .ok("1.15.2\n")])
+        let (report, _) = await runProjectChecks(
+            repo, tools: ["pod --version": .ok("1.15.2\n")]
+        )
         let check = try #require(report.checks.first { $0.id == "cocoapods.version" })
 
         #expect(check.status == .pass)
@@ -768,7 +770,9 @@ struct CocoaPodsVersionCheckTests {
         try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
         try repo.write("Gemfile.lock", gemfileLock)
 
-        let (report, _) = await runProjectChecks(repo, tools: ["pod --version": .ok("1.14.3\n")])
+        let (report, _) = await runProjectChecks(
+            repo, tools: ["pod --version": .ok("1.14.3\n")]
+        )
         let check = try #require(report.checks.first { $0.id == "cocoapods.version" })
 
         #expect(check.status == .warning)
@@ -825,7 +829,9 @@ struct CocoaPodsVersionCheckTests {
         try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
         try repo.write("Gemfile", "gem \"cocoapods\", \"~> 1.15\"\n")
 
-        let (report, _) = await runProjectChecks(repo, tools: ["pod --version": .ok("1.15.2\n")])
+        let (report, _) = await runProjectChecks(
+            repo, tools: ["bundle exec pod --version": .ok("1.15.2\n")]
+        )
         let check = try #require(report.checks.first { $0.id == "cocoapods.version" })
 
         #expect(check.status == .pass)
@@ -853,7 +859,9 @@ struct CocoaPodsVersionCheckTests {
         try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
         try repo.write("Gemfile.lock", "GEM\n  specs:\n    xcodeproj (1.24.0)\n")
 
-        let (report, _) = await runProjectChecks(repo, tools: ["pod --version": .ok("1.15.2\n")])
+        let (report, _) = await runProjectChecks(
+            repo, tools: ["pod --version": .ok("1.15.2\n")]
+        )
         let check = try #require(report.checks.first { $0.id == "cocoapods.version" })
 
         #expect(check.status == .pass)
@@ -880,7 +888,9 @@ struct CocoaPodsVersionCheckTests {
         try standardApp(repo, packageJSON: #"{"dependencies": {"react-native": "0.76.5"}}"#)
         try repo.write("Gemfile.lock", "GEM\n  specs:\n    cocoapods (1.16.0.beta.1)\n")
 
-        let (report, _) = await runProjectChecks(repo, tools: ["pod --version": .ok("1.15.2\n")])
+        let (report, _) = await runProjectChecks(
+            repo, tools: ["pod --version": .ok("1.15.2\n")]
+        )
         let check = try #require(report.checks.first { $0.id == "cocoapods.version" })
 
         #expect(check.status == .unknown)
@@ -899,7 +909,11 @@ struct CocoaPodsVersionCheckTests {
 
         let (report, _) = await runProjectChecks(
             repo,
-            tools: ["pod --version": .failed(1, "mise ERROR No version is set for shim: pod\n")]
+            tools: [
+                "pod --version": .failed(
+                    1, "mise ERROR No version is set for shim: pod\n"
+                )
+            ]
         )
         let check = try #require(report.checks.first { $0.id == "cocoapods.version" })
 
@@ -918,7 +932,11 @@ struct CocoaPodsVersionCheckTests {
 
         let (report, _) = await runProjectChecks(
             repo,
-            tools: ["pod --version": .failed(1, "mise ERROR No version is set for shim: pod\n")]
+            tools: [
+                "pod --version": .failed(
+                    1, "mise ERROR No version is set for shim: pod\n"
+                )
+            ]
         )
         let check = try #require(report.checks.first { $0.id == "cocoapods.version" })
 

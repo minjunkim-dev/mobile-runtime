@@ -120,6 +120,8 @@ public struct ProjectAnchor: Sendable, Equatable {
     public let packageManager: PackageManagerRequirement?
     /// nil when the project manages no gems — then there is no CocoaPods Check.
     public let cocoapods: CocoaPodsRequirement?
+    /// `bundle install` has a declaration to read only when this file exists.
+    public let hasGemfile: Bool
     /// From `.ruby-version`. nil means no Ruby Check — absence, not `unknown`.
     public let rubyPin: String?
     /// From `.xcode-version`, the file xcodes and fastlane already read. Tier 1
@@ -136,6 +138,9 @@ public struct ProjectAnchor: Sendable, Equatable {
     /// Pods, when it declared one. nil is silence, and silence means the bare
     /// `pod install` is all anybody said to run.
     public let podInstallScript: String?
+    /// Whether that script names Bundler as the path to `pod`. The Check follows
+    /// this instead of measuring an unrelated executable.
+    public let podInstallUsesBundler: Bool
 
     /// What a human would run to install the project's dependencies. doctor prints
     /// it and never runs it.
@@ -179,6 +184,12 @@ public struct ProjectAnchor: Sendable, Equatable {
     /// minutes of network, and it was measured at eleven.
     public var podInstallProcess: ProcessCommand {
         guard let podInstallScript else {
+            if usesBundledCocoaPods {
+                return ProcessCommand(
+                    "bundle", ["exec", "pod", "install"],
+                    workingDirectory: directory.appendingPathComponent("ios"), timeout: nil
+                )
+            }
             return ProcessCommand(
                 "pod", ["install"],
                 workingDirectory: directory.appendingPathComponent("ios"), timeout: nil
@@ -188,6 +199,28 @@ public struct ProjectAnchor: Sendable, Equatable {
             packageManagerName, ["run", podInstallScript],
             workingDirectory: directory, timeout: nil
         )
+    }
+
+    /// What `doctor` measures when gem files own CocoaPods. It is deliberately the
+    /// same Bundler path the default install uses, not whichever global `pod` happens
+    /// to be on PATH.
+    public var podVersionProcess: ProcessCommand {
+        if !usesBundledCocoaPods {
+            return ProcessCommand("pod", ["--version"], workingDirectory: directory, timeout: .seconds(15))
+        }
+        return ProcessCommand(
+            "bundle", ["exec", "pod", "--version"],
+            workingDirectory: directory, timeout: .seconds(15)
+        )
+    }
+
+    private var usesBundledCocoaPods: Bool {
+        if podInstallScript != nil { return podInstallUsesBundler }
+        guard hasGemfile, let cocoapods else { return false }
+        switch cocoapods.level {
+        case .version, .installed: return true
+        case .unconfirmed: return false
+        }
     }
 
     /// The same install as a line to paste. One decision written once, like
@@ -211,7 +244,7 @@ public struct ProjectAnchor: Sendable, Equatable {
     /// dependencies by the same test `node_modules` and `Pods` pass: gitignored,
     /// reinstallable, and already described by a lockfile the project committed.
     public var gemInstallProcess: ProcessCommand? {
-        guard cocoapods != nil else { return nil }
+        guard hasGemfile, usesBundledCocoaPods else { return nil }
         // No timeout, for the reason the other two installs have none: it is minutes
         // of network on a cold machine.
         return ProcessCommand("bundle", ["install"], workingDirectory: directory, timeout: nil)
@@ -307,6 +340,7 @@ public struct ProjectAnchor: Sendable, Equatable {
             $0.directory.path == directory ? nil : Self.manifest(in: $0.directory.path, fileManager: fileManager)
         }
 
+        let podInstall = podInstallDeclaration(in: manifest)
         return ProjectAnchor(
             directory: URL(fileURLWithPath: directory),
             declaredReactNativeVersion: declared,
@@ -325,6 +359,7 @@ public struct ProjectAnchor: Sendable, Equatable {
             cocoapods: CocoaPodsRequirement.resolve(
                 anchorDirectory: directory, fileManager: fileManager
             ),
+            hasGemfile: fileManager.fileExists(atPath: directory.appending("/Gemfile")),
             rubyPin: rubyPin(in: directory, fileManager: fileManager),
             declaredXcodeVersion: declaration(
                 at: directory.appending("/\(xcodeVersionFile)"), fileManager: fileManager
@@ -333,7 +368,8 @@ public struct ProjectAnchor: Sendable, Equatable {
                 anchorDirectory: directory, fileManager: fileManager
             ),
             workspaceRoot: workspaceRoot,
-            podInstallScript: podInstallScript(in: manifest)
+            podInstallScript: podInstall?.name,
+            podInstallUsesBundler: podInstall?.usesBundler ?? false
         )
     }
 
@@ -359,12 +395,15 @@ public struct ProjectAnchor: Sendable, Equatable {
     /// large share of React Native apps spell the install (`npx pod-install`), and
     /// missing it would put those repos back on the bare command this ticket exists
     /// to stop.
-    private static func podInstallScript(in manifest: [String: Any]) -> String? {
+    private static func podInstallDeclaration(
+        in manifest: [String: Any]
+    ) -> (name: String, usesBundler: Bool)? {
         guard let scripts = manifest["scripts"] as? [String: Any] else { return nil }
-        return podInstallScriptNames.first {
+        guard let name = podInstallScriptNames.first(where: {
             guard let body = scripts[$0] as? String else { return false }
             return body.contains("pod install") || body.contains("pod-install")
-        }
+        }), let body = scripts[name] as? String else { return nil }
+        return (name, body.contains("bundle exec pod"))
     }
 
     private static func manifest(in directory: String, fileManager: FileManager) -> [String: Any]? {

@@ -16,9 +16,15 @@ enum ToolVersion {
 /// - Throws: `ProcessError` for real infrastructure trouble (a timeout). A missing
 ///   executable is deliberately *not* thrown — it is an answer.
 func probeVersion(of executable: String, using runner: any ProcessRunner) async throws -> ToolVersion {
+    try await probeVersion(
+        ProcessCommand(executable, ["--version"], timeout: .seconds(15)), using: runner
+    )
+}
+
+func probeVersion(_ command: ProcessCommand, using runner: any ProcessRunner) async throws -> ToolVersion {
     let result: ProcessResult
     do {
-        result = try await runner.run(ProcessCommand(executable, ["--version"], timeout: .seconds(15)))
+        result = try await runner.run(command)
     } catch let error as ProcessError {
         guard case .spawnFailed = error else { throw error }
         return .notOnPath
@@ -35,7 +41,7 @@ func probeVersion(of executable: String, using runner: any ProcessRunner) async 
         let complaint = result.combinedOutput
         let detail = complaint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             ? "" : " — \(complaint)"
-        return .unreadable("`\(executable) --version` did not report a version\(detail)")
+        return .unreadable("`\(command.description)` did not report a version\(detail)")
     }
     return .reported(version)
 }
