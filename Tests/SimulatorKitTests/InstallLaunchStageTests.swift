@@ -224,11 +224,7 @@ struct LaunchStageTests {
     func completedBundleIsReady() async throws {
         let runner = launching()
         let logs = try RunLogs.temporary()
-        _ = logs.write(
-            " BUNDLE  ./index.js\n"
-                + " LOG  Running \"MyApp\" with {\"rootTag\":1,\"initialProps\":{}}\n",
-            to: "metro.log"
-        )
+        _ = logs.write(" BUNDLE ./index.js 100.0% (4050/4050)\n", to: "metro.log")
         var context = afterBuild()
         context.metro = MetroProcess(state: .spawned, logPath: logs.url("metro.log").path)
 
