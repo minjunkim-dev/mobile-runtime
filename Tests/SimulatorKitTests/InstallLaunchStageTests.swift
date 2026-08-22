@@ -224,7 +224,11 @@ struct LaunchStageTests {
     func completedBundleIsReady() async throws {
         let runner = launching()
         let logs = try RunLogs.temporary()
-        _ = logs.write(" BUNDLE  ./index.js\n", to: "metro.log")
+        _ = logs.write(
+            " BUNDLE  ./index.js\n"
+                + " LOG  Running \"MyApp\" with {\"rootTag\":1,\"initialProps\":{}}\n",
+            to: "metro.log"
+        )
         var context = afterBuild()
         context.metro = MetroProcess(state: .spawned, logPath: logs.url("metro.log").path)
 
@@ -247,6 +251,21 @@ struct LaunchStageTests {
         let outcome = try await stage(runner).run(&context)
 
         #expect(outcome.detail?.contains("still bundling") == false)
+    }
+
+    @Test("a progress-free failed bundle keeps the readiness hint")
+    func failedBundleIsReported() async throws {
+        let runner = launching()
+        let logs = try RunLogs.temporary()
+        let logFile = try #require(logs.write(" BUNDLE  ./index.js\n ERROR  transform failed\n", to: "metro.log"))
+        var context = afterBuild()
+        context.metro = MetroProcess(state: .spawned, logPath: logFile.path)
+
+        let outcome = try await stage(runner, readinessWait: .milliseconds(10)).run(&context)
+
+        #expect(outcome.status == .pass)
+        #expect(outcome.detail?.contains("still bundling") == true)
+        #expect(outcome.detail?.contains(logFile.path) == true)
     }
 
     @Test("an incomplete Metro bundle returns success with a visible readiness hint")
