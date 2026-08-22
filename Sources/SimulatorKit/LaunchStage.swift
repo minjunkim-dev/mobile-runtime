@@ -132,10 +132,12 @@ private struct MetroReadiness: Sendable {
             guard let logPath = metro.logPath,
                   let log = try? String(contentsOfFile: logPath, encoding: .utf8)
             else { return false }
-            return log.split(whereSeparator: \.isNewline).contains { line in
-                let line = String(line)
-                return line.localizedCaseInsensitiveContains("BUNDLE")
-                    && (line.contains("100.0%") || line.contains("100%"))
+            return log.split(whereSeparator: \.isNewline).contains { rawLine in
+                let line = rawLine.split(whereSeparator: \.isWhitespace).joined(separator: " ")
+                let completedBundle = line.uppercased().hasPrefix("BUNDLE ")
+                    && (line.contains("100.0%") || line.contains("100%") || !line.contains("%"))
+                let connectedApp = line.contains("Running \"") && line.contains(" with {")
+                return completedBundle || connectedApp
             }
         case .reused:
             guard let verdict = try? await MetroVerdict.ask(anchor: project, runner: runner)

@@ -220,11 +220,27 @@ struct LaunchStageTests {
         }
     }
 
-    @Test("a completed Metro bundle lets launch finish without a wall-clock wait")
+    @Test("a completed Metro bundle marker lets launch finish without a wall-clock wait")
     func completedBundleIsReady() async throws {
         let runner = launching()
         let logs = try RunLogs.temporary()
-        _ = logs.write(" BUNDLE ./index.js 100.0% (4050/4050)\n", to: "metro.log")
+        _ = logs.write(" BUNDLE  ./index.js\n", to: "metro.log")
+        var context = afterBuild()
+        context.metro = MetroProcess(state: .spawned, logPath: logs.url("metro.log").path)
+
+        let outcome = try await stage(runner).run(&context)
+
+        #expect(outcome.detail?.contains("still bundling") == false)
+    }
+
+    @Test("an app connection marker lets launch finish without a wall-clock wait")
+    func appConnectionIsReady() async throws {
+        let runner = launching()
+        let logs = try RunLogs.temporary()
+        _ = logs.write(
+            " LOG  Running \"MyApp\" with {\"rootTag\":1,\"initialProps\":{}}\n",
+            to: "metro.log"
+        )
         var context = afterBuild()
         context.metro = MetroProcess(state: .spawned, logPath: logs.url("metro.log").path)
 
