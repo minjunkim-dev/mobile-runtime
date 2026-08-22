@@ -7,8 +7,8 @@ import Foundation
 /// timeout (a slow machine's first clean build must not be killed by its own tool),
 /// output streamed straight to a file rather than held (a first clean build of a real
 /// app is tens of megabytes — ADR-0002's note on #44/#56), an elapsed line on stderr
-/// while it runs plus the lines worth reading as they arrive, and a failure that names
-/// the log file it has already written.
+/// with the latest Xcode target plus the lines worth reading as they arrive, and a
+/// failure that names the log file it has already written.
 public struct BuildStage: Stage {
     public let id = "build"
 
@@ -118,7 +118,9 @@ public struct BuildStage: Stage {
         // Deferred, not called after: a build that dies on its way out has printed the
         // same lines, and the reader needs the path to the rest of them either way.
         defer { watch.finish() }
-        let result = try await elapsing { try await runner.run(command, onLine: { watch.saw($0) }) }
+        let result = try await elapsing(detail: { watch.progress }) {
+            try await runner.run(command, onLine: { watch.saw($0) })
+        }
         guard !result.terminationStatus.isSuccess else { return file }
 
         throw DomainError(
@@ -159,13 +161,16 @@ public struct BuildStage: Stage {
     /// An elapsed line on stderr for as long as the work takes. It says the tool is
     /// alive; what xcodebuild is doing comes from `BuildWatch`, and only for the lines
     /// worth a reader's attention.
-    private func elapsing<T: Sendable>(_ work: () async throws -> T) async rethrows -> T {
+    private func elapsing<T: Sendable>(
+        detail: @escaping @Sendable () -> String?,
+        _ work: () async throws -> T
+    ) async rethrows -> T {
         let start = ContinuousClock.now
-        let ticker = Task { [id, note, heartbeat] in
+        let ticker = Task { [id, note, heartbeat, detail] in
             let lines = StageLineRenderer()
             while !Task.isCancelled {
                 try await Task.sleep(for: heartbeat)
-                note(lines.waiting(id, elapsed: start.duration(to: .now)))
+                note(lines.waiting(id, detail: detail(), elapsed: start.duration(to: .now)))
             }
         }
         defer { ticker.cancel() }
@@ -199,6 +204,7 @@ public struct BuildStage: Stage {
         private let note: @Sendable (String) -> Void
         private let excerpt: LineExcerpt
         private var shown = 0
+        private var latestTarget: String?
 
         init(logFile: URL, note: @escaping @Sendable (String) -> Void) {
             self.logFile = logFile
@@ -208,6 +214,9 @@ public struct BuildStage: Stage {
 
         func saw(_ line: String) {
             lock.withLock {
+                if let target = Self.target(in: line) {
+                    latestTarget = target
+                }
                 guard let notable = excerpt.append(line) else { return }
                 if shown < Self.limit {
                     shown += 1
@@ -226,7 +235,27 @@ public struct BuildStage: Stage {
             }
         }
 
+        var progress: String? { lock.withLock { latestTarget } }
         var observed: String { excerpt.text }
+
+        private static func target(in line: String) -> String? {
+            let targetMarker = "(in target '"
+            let projectMarker = "' from project '"
+            guard
+                let targetStart = line.range(of: targetMarker)?.upperBound,
+                let projectRange = line.range(
+                    of: projectMarker, range: targetStart..<line.endIndex
+                ),
+                let endRange = line.range(
+                    of: "')", range: projectRange.upperBound..<line.endIndex
+                )
+            else { return nil }
+
+            let target = line[targetStart..<projectRange.lowerBound]
+            let project = line[projectRange.upperBound..<endRange.lowerBound]
+            guard !target.isEmpty, !project.isEmpty else { return nil }
+            return "target \(target) (\(project))"
+        }
 
         /// `error:` covers `fatal error:` and the clang and Swift spellings alike; the
         /// starred lines are how xcodebuild announces that it is done, either way.
