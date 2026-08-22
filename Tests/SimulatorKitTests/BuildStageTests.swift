@@ -82,12 +82,14 @@ private struct BlockingRunner: ProcessRunner {
     let inner: FakeProcessRunner
     let notes: Mutable<[String]>
     let until: Int
+    let progressLine: String
 
     func run(
         _ command: ProcessCommand,
         onLine: (@Sendable (String) -> Void)?
     ) async throws -> ProcessResult {
         if command.arguments.last == "build" {
+            onLine?(progressLine)
             let deadline = ContinuousClock.now + .seconds(5)
             while notes.value.count < until, ContinuousClock.now < deadline {
                 try await Task.sleep(for: .milliseconds(5))
@@ -486,8 +488,8 @@ struct BuildStageTests {
     }
 
     /// The build is the one step long enough for silence to read as a hang. Output
-    /// stays collected (ADR-0002) — this line says the tool is alive, nothing more.
-    @Test("an elapsed line is printed while the build runs")
+    /// stays streamed to its run log (ADR-0002); this line says which target is alive.
+    @Test("an elapsed line includes the current Xcode target while the build runs")
     func elapsedWhileBuilding() async throws {
         let repo = try project(workspace: false)
         let runner = try runner(repo, workspace: false, schemes: ["MyApp"], scheme: "MyApp")
@@ -497,7 +499,12 @@ struct BuildStageTests {
         )
         let stage = BuildStage(
             config: configuration,
-            runner: BlockingRunner(inner: runner, notes: notes, until: 2),
+            runner: BlockingRunner(
+                inner: runner,
+                notes: notes,
+                until: 2,
+                progressLine: "CompileC /tmp/format.o /tmp/format.cc normal arm64 (in target 'fmt' from project 'Pods')"
+            ),
             locator: XcodeLocator(runner: runner, developerDirOverride: nil),
             logs: try temporaryLogs(),
             heartbeat: .milliseconds(10),
@@ -505,11 +512,13 @@ struct BuildStageTests {
         )
         var context = afterDevice()
 
-        try await stage.run(&context)
+        _ = try await stage.run(&context)
 
-        // The build's own notable lines share this channel, so the elapsed lines are
-        // counted rather than assumed to be everything on it.
-        #expect(notes.value.filter { $0.hasPrefix("build") && $0.contains("running…") }.count >= 2)
+        // The streamed build's notable lines share this channel, so the elapsed lines
+        // are counted rather than assumed to be everything on it.
+        let progress = notes.value.filter { $0.hasPrefix("build") && $0.contains("running…") }
+        #expect(progress.count >= 2)
+        #expect(progress.contains { $0.contains("target fmt (Pods)") })
     }
 
     /// `-showBuildSettings` answers for every target the scheme builds, and a scheme

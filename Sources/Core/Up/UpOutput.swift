@@ -102,8 +102,8 @@ public struct StageLineRenderer: Sendable {
     /// A Stage that has not landed yet. `build` is the only step long enough to make
     /// a reader wonder whether the tool died, and the answer to that is the same row
     /// it will become, printed early.
-    public func waiting(_ id: String, elapsed: Duration) -> String {
-        row(id, "running…", elapsed)
+    public func waiting(_ id: String, detail: String? = nil, elapsed: Duration) -> String {
+        row(id, detail.map { "running… — \($0)" } ?? "running…", elapsed)
     }
 
     private func row(_ id: String, _ outcome: String, _ elapsed: Duration) -> String {
