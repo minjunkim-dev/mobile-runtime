@@ -1,7 +1,8 @@
 # Private iOS 내부 alpha round 1
 
-이 기록은 issue #85의 저장소 게이트와 issue #86의 maintainer 실제 프로젝트
-실행 증거다. 초대 개발자 실행과 내부 alpha 완료는 아직 주장하지 않는다.
+이 기록은 issue #85의 저장소 게이트, issue #86의 maintainer 실제 프로젝트,
+issue #87의 초대 개발자 실제 프로젝트 실행 증거다. 내부 alpha 완료는 아직
+주장하지 않는다.
 
 ## Handoff
 
@@ -212,6 +213,86 @@ SHA에서 Metro가 없는 상태로 전체 matrix를 다시 실행했다.
 같았고 tracked-only 상태도 모든 명령 뒤 clean이었다. screenshot, raw log,
 환경값과 앱 데이터는 증거에 포함하지 않았다.
 
+## 초대 개발자 독립 실행 (#87)
+
+참여자는 private source와 위 SHA의 runbook만 사용했다. 후보 worktree의 `HEAD`를
+40자 SHA로 확인하고 `swift build`한 뒤에도 후보 tracked 상태가 clean임을
+확인했다. 세 실제 프로젝트를 순서대로 점검했지만, #86의 merged evidence와
+대조한 결과 A와 B는 maintainer가 사용한 표본과 같은 프로젝트였다. 따라서 A와
+B는 "maintainer와 다른 실제 프로젝트" 조건의 수용 증거에서 제외하고 최초 실패
+이력으로만 보존한다. C만 초대 개발자의 독립 표본으로 판정한다. 프로젝트 이름과
+경로, JSON·로그 원문, 환경값은 기록하지 않는다.
+
+### 제외된 선행 표본
+
+- A / project SHA `571e9e91c90d4d7dfb45a40b2db05b0ab18b94ec`:
+  #86의 최초 `maintainer-rn-ios-a`와 같은 표본이다. project-owned
+  `setup.sh --verify`는 통과했지만 RN 0.72.4가 matrix 범위 0.73–0.87 밖이라
+  `doctor --json`은 exit 0 / status `unknown` / required unknown으로 끝났다.
+  build와 up은 실행하지 않았고 tracked 상태와 ignored 15개, untracked 0개는
+  실행 전후 동일했다.
+- B / project SHA `d4d784df5c1589175a5baabdcd2a69b1194ab8fb`:
+  #86의 대체 `maintainer-rn-ios-b`와 같은 표본의 수정 전 SHA다. project-owned
+  `setup.sh --verify`는 통과했지만 Yarn 선언과 committed npm lockfile이 충돌해
+  `doctor --json`은 exit 1 / status `error`로 끝났다. 다중 scheme 미선택
+  warning도 남았고 이후 build 대상을 불명확하게 하므로 Alpha blocker로
+  분류했다. build와 up은 실행하지 않았고 tracked 상태와 ignored 25개, 기존
+  untracked 13개는 실행 전후 동일했다.
+
+```text
+## Participant evidence
+
+- Alpha round: `2026-08-22-1`
+- Role: invited developer
+- Independent run: yes
+- mobile full SHA: `0033d1cef951809cdd6de40604b53b8d47f43a42`
+- Project alias (민감한 repo 이름 불필요): invited-rn-ios-c
+- Project full SHA: `e17840395a8becbab3e81276adbc511abde38b9d`
+- Known-good 근거: 같은 SHA에서 project-owned `setup.sh --verify` PASS
+- Before tracked state: clean
+- Host: macOS 26.6.2 / arm64 / Xcode 26.6 (17F113)
+- Simulator: iPhone 17 Pro / iOS 26.5
+- Project-owned app environment ready: yes (값 제외)
+- Expected initial UI: branded splash
+
+### Command summary
+
+- `doctor --json`: exit 0 / status `pass` / 9/9 checks pass / tracked clean after
+- `build --json`: exit 1 / status `error` / validate·dependencies pass, 이미
+  booted device skip 뒤 build stage에서 `no Xcode project to build in ios/` /
+  tracked clean after / compile success no
+- `up --json`: 미실행 / launch success no
+- Stopped stage: build
+
+### Observation and state
+
+- Initial UI observed: no
+- Observed UI (짧은 텍스트): 없음
+- After tracked state: clean
+- Generated/ignored delta: none; 62→62
+- Untracked delta: none; 0→0
+- Unexpected tracked mutation: none
+
+### Feedback and decision
+
+- 질문, 마찰, 누락된 문서: 질문 없음. root `ios/*.xcworkspace`가 참조하는 nested
+  Xcode project는 `doctor`에서 통과하지만 build target 탐색에서는 거부됐다.
+- Maintainer intervention: none
+- Alpha blockers: build 실패와 `doctor`/build 판정 불일치; fail-fast로 `up`을
+  실행하지 않아 launch와 초기 UI 증거 없음
+- Non-blockers와 수용 근거 또는 issue 링크: 기존 ignored/untracked artifact는
+  수와 상태가 바뀌지 않아 명시적으로 수용
+- 수정 사항과 링크: project 편집 없음. 제품 Alpha blocker는
+  [#92](https://github.com/minjunkim-dev/mobile-runtime/issues/92)로 추적
+- 재실행 범위 / mobile SHA / project SHA / 결과: 위 mobile SHA와 project SHA로
+  doctor부터 독립 실행해 build에서 blocked. mobile SHA가 바뀌면 두 참여자의
+  전체 evidence matrix를 새 round로 재실행한다.
+- 알려진 제약: #86의 최종 `maintainer-rn-ios-b`와 다른 add-to-app 실제
+  프로젝트임을 확인했다. #92가 해소되기 전에는 build·up·초기 UI를 증명할 수
+  없다.
+- Participant result: blocked
+```
+
 ## 판정과 경계
 
 - 저장소 게이트 Alpha blocker: 없음
@@ -224,7 +305,11 @@ SHA에서 Metro가 없는 상태로 전체 matrix를 다시 실행했다.
   #93은 탈락한 첫 표본의 별도 호환성 조사로 남기되 현재 alpha의 blocker에서는
   제외한다. #94는 해소됐고 #95는 내부 alpha 완료를 막는 별도 native blocker,
   #96은 추적 중인 non-blocker다.
-- 초대 개발자 독립 실행은 #87에서 같은 SHA로 별도 기록한다.
+- 초대 개발자 실행은 서로 다른 add-to-app 표본 C의 doctor와 tracked 파일
+  무변경까지만 증명했다. build는 #92로 실패했고 `up`과 초기 UI 관측은 없으므로
+  #87 참여자 결과는 **blocked**다.
+- #92와 #95가 남아 있고 두 참여자의 성공 증거가 모두 갖춰지지 않았으므로 내부
+  alpha 완료를 선언하지 않는다. #96은 추적 중인 non-blocker다.
 - 내부 alpha 완료 판정과 ADR-0008의 3-repository Go/No-Go는 이 기록의 범위가
   아니다.
 
