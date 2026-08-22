@@ -23,16 +23,43 @@ private func temporaryLogs() throws -> RunLogs {
 @discardableResult
 private func run(
     _ repo: FixtureRepo,
-    _ runner: FakeProcessRunner,
+    _ runner: any ProcessRunner,
     context: inout UpContext,
-    logs: RunLogs? = nil
+    logs: RunLogs? = nil,
+    bindWait: Duration = .zero
 ) async throws -> StageOutcome {
     let anchor = try #require(ProjectAnchor.detect(from: repo.root))
-    // No wait for the port: a fake has no process to bind one, so the poll would
-    // only spend the real deadline finding that out.
     return try await MetroStage(
-        anchor: anchor, runner: runner, logs: try logs ?? temporaryLogs(), bindWait: .zero
+        anchor: anchor, runner: runner, logs: try logs ?? temporaryLogs(), bindWait: bindWait
     ).run(&context)
+}
+
+private actor DelayedListenerRunner: ProcessRunner {
+    private let inner: FakeProcessRunner
+    private var probes = 0
+
+    init(_ inner: FakeProcessRunner) {
+        self.inner = inner
+    }
+
+    func run(
+        _ command: ProcessCommand,
+        onLine: (@Sendable (String) -> Void)?
+    ) async throws -> ProcessResult {
+        guard command.description == "lsof -nP -iTCP:8081 -sTCP:LISTEN -t" else {
+            return try await inner.run(command, onLine: onLine)
+        }
+        probes += 1
+        return ProcessResult(
+            terminationStatus: .exited(probes == 1 ? 1 : 0),
+            standardOutput: probes == 1 ? "" : "70947\n",
+            standardError: ""
+        )
+    }
+
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+        try await inner.spawnDetached(command, logFile: logFile)
+    }
 }
 
 @Suite("metro stage")
@@ -119,10 +146,13 @@ struct MetroStageTests {
     @Test("an empty 8081 gets a detached Metro, reported by pid and log path")
     func spawns() async throws {
         let repo = try app()
-        let runner = FakeProcessRunner(responses: [MetroStatus.command: .failed(7, "")])
         let logs = try temporaryLogs()
         var context = UpContext()
 
+        let runner = FakeProcessRunner(responses: [
+            MetroStatus.command: .failed(7, ""),
+            "lsof -nP -iTCP:8081 -sTCP:LISTEN -t": .ok("70947\n"),
+        ])
         let outcome = try await run(repo, runner, context: &context, logs: logs)
 
         #expect(outcome.status == .pass)
@@ -144,7 +174,10 @@ struct MetroStageTests {
             #"{"dependencies":{"react-native":"0.81.0"},"packageManager":"yarn@4.16.0"}"#
         )
         try repo.write("yarn.lock", "")
-        let runner = FakeProcessRunner(responses: [MetroStatus.command: .failed(7, "")])
+        let runner = FakeProcessRunner(responses: [
+            MetroStatus.command: .failed(7, ""),
+            "lsof -nP -iTCP:8081 -sTCP:LISTEN -t": .ok("70947\n"),
+        ])
         var context = UpContext()
 
         _ = try await run(repo, runner, context: &context)
@@ -174,22 +207,60 @@ struct MetroStageTests {
         #expect(outcome.detail?.contains("pid 70947") == true)
     }
 
-    /// A port that has not answered yet is a fact about the run, not a failure of it:
-    /// the bundler is up either way, and `mobile down` asks the port for itself.
-    @Test("a port that never answers leaves the listener unknown and the run passing")
-    func listenerUnknown() async throws {
+    @Test("a start process that exits before binding stops before build")
+    func startExits() async throws {
+        let repo = try app()
+        let logs = try temporaryLogs()
+        let runner = FakeProcessRunner(responses: [
+            MetroStatus.command: .failed(7, ""),
+            "lsof -nP -iTCP:8081 -sTCP:LISTEN -t": .ok(""),
+            "kill -0 4242": .failed(1, "No such process"),
+        ])
+        var context = UpContext()
+
+        let error = await #expect(throws: DomainError.self) {
+            try await run(repo, runner, context: &context, logs: logs)
+        }
+
+        #expect(error?.observed?.contains("exited") == true)
+        #expect(error?.remediation.command == "yarn start")
+        #expect(error?.remediation.summary.contains(logs.directory.path) == true)
+        #expect(context.metro == nil)
+    }
+
+    @Test("a live start process that never binds times out before build")
+    func bindTimeout() async throws {
         let repo = try app()
         let runner = FakeProcessRunner(responses: [
             MetroStatus.command: .failed(7, ""),
             "lsof -nP -iTCP:8081 -sTCP:LISTEN -t": .ok(""),
+            "kill -0 4242": .ok(""),
         ])
         var context = UpContext()
 
-        let outcome = try await run(repo, runner, context: &context)
+        let error = await #expect(throws: DomainError.self) {
+            try await run(repo, runner, context: &context)
+        }
+
+        #expect(error?.observed?.contains("within") == true)
+        #expect(context.metro == nil)
+    }
+
+    @Test("a delayed listener passes once it binds within the deadline")
+    func delayedBind() async throws {
+        let repo = try app()
+        let runner = DelayedListenerRunner(FakeProcessRunner(responses: [
+            MetroStatus.command: .failed(7, ""),
+            "kill -0 4242": .ok(""),
+        ]))
+        var context = UpContext()
+
+        let outcome = try await run(
+            repo, runner, context: &context, bindWait: .seconds(1)
+        )
 
         #expect(outcome.status == .pass)
-        #expect(context.metro?.listenerPid == nil)
-        #expect(outcome.detail?.contains("pid \(runner.spawnedPID)") == true)
+        #expect(context.metro?.listenerPid == 70947)
     }
 
     /// A port that accepts the connection and then says nothing is not an empty port.

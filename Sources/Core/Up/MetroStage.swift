@@ -8,6 +8,12 @@ import Foundation
 /// exits when the app is on screen, and a bundler that died with it would take Fast
 /// Refresh along — and the three remaining answers stop the run with a sentence.
 public struct MetroStage: Stage {
+    private enum Readiness {
+        case listening(Int32)
+        case exited
+        case timedOut
+    }
+
     public let id = "metro"
 
     private let anchor: ProjectAnchor
@@ -56,14 +62,29 @@ public struct MetroStage: Stage {
         // The pid that comes back is the start script's, and the bundler is two links
         // below it — a `kill` there does not reach the port (#61). So the port is
         // asked who holds it, the same way `down` asks.
-        let listener = await listeningPID()
+        let readiness = try await readiness(startPID: pid)
+        let listener: Int32
+        switch readiness {
+        case .listening(let pid):
+            listener = pid
+        case .exited:
+            throw bindFailure(
+                "`\(command.description)` exited before anything listened on \(MetroVerdict.port)",
+                command: command,
+                logFile: logFile
+            )
+        case .timedOut:
+            throw bindFailure(
+                "nothing listened on \(MetroVerdict.port) within \(bindWait)",
+                command: command,
+                logFile: logFile
+            )
+        }
         context.metro = MetroProcess(
             state: .spawned, pid: pid, listenerPid: listener, logPath: logFile.path
         )
-        // The pid on screen is the one a human would type into `kill`: the bundler's
-        // when it has bound, and otherwise the only one there is to name.
         return .pass(
-            "started on \(MetroVerdict.port) — pid \(listener ?? pid), log at \(logFile.path)"
+            "started on \(MetroVerdict.port) — pid \(listener), log at \(logFile.path)"
         )
     }
 
@@ -72,16 +93,35 @@ public struct MetroStage: Stage {
     /// "nobody". Waiting is affordable here because it is bounded and because the
     /// stage it delays — `build` — takes minutes.
     ///
-    /// - Returns: the pid holding the port, or nil if it never answered in time.
-    ///   Reporting is not worth failing a run over: the bundler is up either way,
-    ///   and `mobile down` asks the port for itself.
-    private func listeningPID() async -> Int32? {
+    private func readiness(startPID: Int32) async throws -> Readiness {
         let deadline = ContinuousClock.now + bindWait
         while true {
-            if let pid = (try? await currentListener()) ?? nil { return pid }
-            guard ContinuousClock.now < deadline else { return nil }
-            try? await Task.sleep(for: .milliseconds(250))
+            if let pid = try await currentListener() { return .listening(pid) }
+            guard try await startProcessIsRunning(startPID) else { return .exited }
+            guard ContinuousClock.now < deadline else { return .timedOut }
+            try await Task.sleep(for: .milliseconds(250))
         }
+    }
+
+    private func startProcessIsRunning(_ pid: Int32) async throws -> Bool {
+        try await runner.run(
+            ProcessCommand("kill", ["-0", "\(pid)"], timeout: .seconds(10))
+        ).terminationStatus.isSuccess
+    }
+
+    private func bindFailure(
+        _ observed: String,
+        command: ProcessCommand,
+        logFile: URL
+    ) -> DomainError {
+        DomainError(
+            summary: "Metro did not start on \(MetroVerdict.port)",
+            observed: observed,
+            remediation: Remediation(
+                summary: "Run the project start command and inspect the log at \(logFile.path).",
+                command: command.description
+            )
+        )
     }
 
     private func currentListener() async throws -> Int32? {
