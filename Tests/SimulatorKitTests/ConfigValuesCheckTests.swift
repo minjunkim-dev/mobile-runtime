@@ -27,16 +27,27 @@ private func deviceList(_ devices: (name: String, runtime: String, available: Bo
     return #"{"devices": {\#(entries.joined(separator: ","))}}"#
 }
 
-private func schemeList(_ schemes: [String]) -> String {
-    #"{"project": {"name": "MyApp", "schemes": [\#(schemes.map { "\"\($0)\"" }.joined(separator: ","))]}}"#
+private func schemeList(_ schemes: [String], container: String = "project") -> String {
+    #"{"\#(container)": {"name": "MyApp", "schemes": [\#(schemes.map { "\"\($0)\"" }.joined(separator: ","))]}}"#
 }
 
 /// A React Native project with an Xcode project beside it — the shape every
 /// scheme question needs.
-private func project(_ mobileYML: String?, iOSDirectory: Bool = true) throws -> FixtureRepo {
+private func project(
+    _ mobileYML: String?,
+    iOSDirectory: Bool = true,
+    workspaceOnly: Bool = false
+) throws -> FixtureRepo {
     let repo = try FixtureRepo()
     try repo.write("package.json", packageJSON)
-    if iOSDirectory { try repo.directory("ios/MyApp.xcodeproj") }
+    if iOSDirectory {
+        if workspaceOnly {
+            try repo.directory("ios/MyApp.xcworkspace")
+            try repo.directory("ios/App/MyApp.xcodeproj")
+        } else {
+            try repo.directory("ios/MyApp.xcodeproj")
+        }
+    }
     if let mobileYML { try repo.write("mobile.yml", mobileYML) }
     return repo
 }
@@ -53,6 +64,8 @@ private func check(
         "xcodebuild -version": .ok("Xcode 26.6\nBuild version 17F113\n"),
         "xcrun simctl list devices -j": .ok(devices),
         "xcodebuild -list -json -project \(repo.url("ios/MyApp.xcodeproj").path)": .ok(schemeList(schemes)),
+        "xcodebuild -list -json -workspace \(repo.url("ios/MyApp.xcworkspace").path)":
+            .ok(schemeList(schemes, container: "workspace")),
     ])
     let workingDirectory = subdirectory.map { repo.url($0) } ?? repo.root
     let context = ConfigContext.detect(
@@ -220,6 +233,16 @@ struct ConfigValuesCheckTests {
     @Test("a single scheme needs no declaration")
     func schemeUnambiguous() async throws {
         let repo = try project(nil)
+
+        let check = try #require(try await check(repo).result)
+
+        #expect(check.status == .pass)
+        #expect(check.outcome.observed == "no scheme declared — MyApp is the only one")
+    }
+
+    @Test("a root workspace with only a nested project is checked before build")
+    func schemeInWorkspaceOnlyRoot() async throws {
+        let repo = try project(nil, workspaceOnly: true)
 
         let check = try #require(try await check(repo).result)
 

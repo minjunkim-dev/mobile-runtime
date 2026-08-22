@@ -175,22 +175,23 @@ public struct ConfigValuesCheck: Check {
     private func judgeScheme() async throws -> Judgement {
         let declared = context.configuration?.scheme
         guard let anchor = context.anchor, anchor.hasIOSDirectory,
-            let project = XcodeSchemeList.project(inIOSDirectoryOf: anchor)
+            let buildTarget = XcodeBuildTarget.locate(inIOSDirectoryOf: anchor)
         else {
             guard let declared else { return .silent }
             return .verdict(
                 .unknown(
-                    reason: "ios.scheme declares \(declared), and there is no single "
-                        + "ios/*.xcodeproj to check it against",
+                    reason: "ios.scheme declares \(declared), and there is no single root "
+                        + "ios/*.xcworkspace or ios/*.xcodeproj to check it against",
                     source: source
                 )
             )
         }
 
-        let list = XcodeSchemeList.command(project: project, environment: await locator.pinnedEnvironment())
+        let target = XcodeSchemeList.target(inIOSDirectoryOf: anchor, buildTarget: buildTarget)
+        let list = XcodeSchemeList.command(target: target, environment: await locator.pinnedEnvironment())
         let result = try await runner.run(list)
         guard result.terminationStatus.isSuccess,
-            let schemes = XcodeSchemeList.decode(result.standardOutput)?.project.schemes, !schemes.isEmpty
+            let schemes = XcodeSchemeList.decode(result.standardOutput)?.schemes, !schemes.isEmpty
         else {
             return .verdict(
                 .unknown(
@@ -215,7 +216,8 @@ public struct ConfigValuesCheck: Check {
                 configFile: context.display(
                     anchor.directory.appendingPathComponent(MobileConfig.fileName)
                 ),
-                project: context.display(project)
+                target: context.display(target.url),
+                kind: target.kind
             )
             switch miss {
             case .noSchemeNamed:

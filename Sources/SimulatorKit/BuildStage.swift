@@ -55,7 +55,7 @@ public struct BuildStage: Stage {
         }
 
         let environment = await locator.pinnedEnvironment()
-        let scheme = try await scheme(anchor, environment)
+        let scheme = try await scheme(anchor, target, environment)
         let arguments =
             target.arguments + [
                 "-scheme", scheme,
@@ -70,12 +70,16 @@ public struct BuildStage: Stage {
 
     /// mobile.yml's scheme, else the only one there is. Listed off the `.xcodeproj`
     /// even when the build target is a workspace — see `XcodeSchemeList`.
-    private func scheme(_ anchor: ProjectAnchor, _ environment: [String: String]) async throws -> String {
-        guard let project = XcodeSchemeList.project(inIOSDirectoryOf: anchor) else { throw Self.noTarget }
-        let list = XcodeSchemeList.command(project: project, environment: environment)
+    private func scheme(
+        _ anchor: ProjectAnchor,
+        _ buildTarget: XcodeBuildTarget,
+        _ environment: [String: String]
+    ) async throws -> String {
+        let target = XcodeSchemeList.target(inIOSDirectoryOf: anchor, buildTarget: buildTarget)
+        let list = XcodeSchemeList.command(target: target, environment: environment)
         let result = try await runner.run(list)
         guard result.terminationStatus.isSuccess,
-            let schemes = XcodeSchemeList.decode(result.standardOutput)?.project.schemes, !schemes.isEmpty
+            let schemes = XcodeSchemeList.decode(result.standardOutput)?.schemes, !schemes.isEmpty
         else {
             throw ToolUnavailable(
                 description: "`\(list.description)` listed no schemes — "
@@ -96,7 +100,8 @@ public struct BuildStage: Stage {
                     configFile: config.display(
                         anchor.directory.appendingPathComponent(MobileConfig.fileName)
                     ),
-                    project: config.display(project)
+                    target: config.display(target.url),
+                    kind: target.kind
                 )
             )
         }

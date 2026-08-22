@@ -5,15 +5,47 @@ import Foundation
 /// the workspace: a workspace's scheme list carries every Pod, which would turn
 /// "which scheme should I build" into a hundred wrong answers.
 struct XcodeSchemeList: Decodable {
-    struct Project: Decodable {
+    private struct Container: Decodable {
         let schemes: [String]?
     }
 
-    let project: Project
+    private enum CodingKeys: String, CodingKey {
+        case project
+        case workspace
+    }
+
+    let schemes: [String]
+
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let listing = try container.decodeIfPresent(Container.self, forKey: .project)
+            ?? container.decode(Container.self, forKey: .workspace)
+        schemes = listing.schemes ?? []
+    }
 
     static func command(project: URL, environment: [String: String]) -> ProcessCommand {
         ProcessCommand(
             "xcodebuild", ["-list", "-json", "-project", project.path],
+            environment: environment,
+            timeout: .seconds(120)
+        )
+    }
+
+    /// Prefer the shallow app project so a workspace does not add every Pod scheme.
+    /// A workspace-only root still has enough information to list its shared schemes.
+    static func target(
+        inIOSDirectoryOf anchor: ProjectAnchor,
+        buildTarget: XcodeBuildTarget,
+        fileManager: FileManager = .default
+    ) -> XcodeBuildTarget {
+        project(inIOSDirectoryOf: anchor, fileManager: fileManager).map {
+            XcodeBuildTarget(kind: .project, url: $0)
+        } ?? buildTarget
+    }
+
+    static func command(target: XcodeBuildTarget, environment: [String: String]) -> ProcessCommand {
+        ProcessCommand(
+            "xcodebuild", ["-list", "-json"] + target.arguments,
             environment: environment,
             timeout: .seconds(120)
         )

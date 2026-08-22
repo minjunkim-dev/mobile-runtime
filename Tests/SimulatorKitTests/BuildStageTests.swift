@@ -9,8 +9,8 @@ private let developerDirectory = "/Applications/Xcode.app/Contents/Developer"
 private let packageJSON = #"{"dependencies": {"react-native": "0.81.0"}}"#
 private let udid = "61DECACB-3D94-4748-B5A2-E7A1EB97E6D5"
 
-private func schemeList(_ schemes: [String]) -> String {
-    #"{"project": {"name": "MyApp", "schemes": [\#(schemes.map { "\"\($0)\"" }.joined(separator: ","))]}}"#
+private func schemeList(_ schemes: [String], container: String = "project") -> String {
+    #"{"\#(container)": {"name": "MyApp", "schemes": [\#(schemes.map { "\"\($0)\"" }.joined(separator: ","))]}}"#
 }
 
 /// The shape of `-showBuildSettings -json`, cut down to the four keys the decoder
@@ -157,6 +157,34 @@ struct BuildStageTests {
             runner.log.all.map(\.description).contains(
                 "xcodebuild -list -json -project \(repo.url("ios/MyApp.xcodeproj").path)"
             )
+        )
+    }
+
+    /// #92: an add-to-app workspace can reference its app project below `ios/`
+    /// without keeping a second, shallow project beside the workspace.
+    @Test("a root workspace with only a nested project lists and builds the workspace")
+    func workspaceWithNestedProject() async throws {
+        let repo = try FixtureRepo()
+        try repo.write("package.json", packageJSON)
+        try repo.directory("ios/MyApp.xcworkspace")
+        try repo.directory("ios/App/MyApp.xcodeproj")
+        let runner = FakeProcessRunner(responses: [
+            "xcode-select -p": .ok(developerDirectory + "\n"),
+            "xcodebuild -version": .ok("Xcode 26.6\nBuild version 17F113\n"),
+            "xcodebuild -list -json -workspace \(repo.url("ios/MyApp.xcworkspace").path)":
+                .ok(schemeList(["MyApp"], container: "workspace")),
+            buildCommand(repo, workspace: true, scheme: "MyApp"): .ok("** BUILD SUCCEEDED **\n"),
+            settingsCommand(repo, workspace: true, scheme: "MyApp"): .ok(
+                try Fixture.text("xcodebuild-showbuildsettings.stdout.json")
+            ),
+        ])
+        var context = afterDevice()
+
+        let outcome = try await run(repo, runner, context: &context)
+
+        #expect(outcome.status == .pass)
+        #expect(
+            runner.log.first(matching: buildCommand(repo, workspace: true, scheme: "MyApp")) != nil
         )
     }
 

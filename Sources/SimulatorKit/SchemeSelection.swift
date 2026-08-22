@@ -30,15 +30,19 @@ struct SchemeSelector {
 
         /// - Parameters:
         ///   - configFile: where mobile.yml goes, spelled the way the caller spells paths.
-        ///   - project: the `.xcodeproj` to list — never the workspace, which would
-        ///     answer with every Pod.
-        func remediation(configFile: String, project: String) -> Remediation {
-            let list = "xcodebuild -list -project \(project)"
+        ///   - target: the app project when one is shallowly available, otherwise
+        ///     the selected workspace.
+        func remediation(
+            configFile: String,
+            target: String,
+            kind: XcodeBuildTarget.Kind
+        ) -> Remediation {
+            let list = "xcodebuild -list \(kind.rawValue) \(target)"
             switch self {
             case .noSchemeNamed:
                 return Remediation(summary: "Set ios.scheme to one of them.", command: list)
             case .undecided(let schemes):
-                let projectName = project.split(separator: "/").last.flatMap { component -> String? in
+                let projectName = target.split(separator: "/").last.flatMap { component -> String? in
                     guard component.hasSuffix(".xcodeproj") else { return nil }
                     return String(component.dropLast(".xcodeproj".count))
                 }
