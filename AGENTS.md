@@ -2,8 +2,12 @@
 
 Reproducible mobile development runtime. North Star: `git clone → mobile up`.
 
-Status: iOS React Native MVP implemented. Current decisions live in `CONTEXT.md`
-and `docs/adr/`; issue #1 is the closed historical wayfinder map.
+Status: iOS React Native MVP implemented. Private iOS internal-alpha execution
+is specified in [issue #83](https://github.com/minjunkim-dev/mobile-runtime/issues/83),
+following the closed [decision map #79](https://github.com/minjunkim-dev/mobile-runtime/issues/79).
+Current decisions live in `CONTEXT.md` and `docs/adr/`.
+[Wayfinder Map: MVP 스펙 (Phase 0~3)](https://github.com/minjunkim-dev/mobile-runtime/issues/1)
+is the closed historical MVP map.
 
 ## Agent skills
 
