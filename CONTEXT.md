@@ -155,7 +155,14 @@ _Avoid_: failure injection, chaos test
 doctor 정확성의 두 실패 축. 미탐 = 실재 문제를 pass로 통과(치명 — doctor 신뢰의 근간), 오탐 = 멀쩡한데 warning/error(경고 — 개선 대상).
 
 **Go/No-Go 게이트**:
-다음 단계 진입 전 사전에 박아둔 기준으로 내리는 판정. #1 = feasibility(spike), #2 = 유용성(dogfooding). 기준은 판정 시점이 아니라 계획 시점에 잠근다.
+사전에 잠근 증거 기준으로 특정 전환 또는 주장을 허용할지 내리는 판정. 기준과 차단 범위는 계획 시점에 잠그며, No-Go는 그 경계를 통과하지 못했다는 뜻이지 프로젝트 전체 중단을 뜻하지 않는다. #1 = feasibility(spike), #2 = 유용성(dogfooding).
+
+**내부 alpha (Internal alpha)**:
+private 저장소 접근권이 있고 자기 프로젝트의 앱 환경값을 직접 준비하는 maintainer와 초대된 RN iOS 개발자가 MVP를 실제 프로젝트에 사용하는 단계. 외부 배포, 일반적인 React Native 지원 주장, Go 판정을 뜻하지 않는다.
+
+**Alpha blocker**:
+필수 증거·독립 실행·안전성·tracked 파일 무변경 중 하나를 깨뜨려 내부 alpha 완료를 막는 결함. 기록된 warning, 미관 문제, 초기 UI 이후의 프로젝트 고유 기능 문제는 포함하지 않는다.
+_Avoid_: release blocker, Go/No-Go blocker
 
 ### 구조
 
