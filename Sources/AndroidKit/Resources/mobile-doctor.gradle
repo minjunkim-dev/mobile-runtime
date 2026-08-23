@@ -1,0 +1,162 @@
+import groovy.json.JsonOutput
+
+def mobileModules = []
+
+def valueOf = { object, String name ->
+    if (object == null) return null
+    try {
+        def value = object."${name}"
+        if (value == null) return null
+        try {
+            if (value.metaClass.respondsTo(value, "getOrNull")) value = value.getOrNull()
+            else if (value.metaClass.respondsTo(value, "get")) value = value.get()
+        } catch (ignored) {}
+        return value
+    } catch (ignored) {
+        return null
+    }
+}
+
+def textOf = { value -> value == null ? null : value.toString() }
+def apiOf = { value ->
+    if (value == null) return null
+    def api = valueOf(value, "apiLevel")
+    return textOf(api ?: value).replaceFirst(/^android-/, "")
+}
+
+gradle.beforeProject { project ->
+    project.pluginManager.withPlugin("com.android.application") {
+        def variants = []
+        try {
+            def components = project.extensions.findByName("androidComponents")
+            components?.onVariants(components.selector().all()) { variant ->
+                def name = textOf(valueOf(variant, "name"))
+                def buildType = textOf(valueOf(variant, "buildType"))
+                def android = project.extensions.findByName("android")
+                def debuggable = buildType == null
+                    ? null
+                    : valueOf(android?.buildTypes?.findByName(buildType), "debuggable")
+                def variantAbis = valueOf(valueOf(variant, "externalNativeBuild"), "abiFilters")
+                if (name != null) {
+                    variants << [
+                        name: name,
+                        debuggable: debuggable == true,
+                        compileSdk: apiOf(valueOf(variant, "compileSdk")),
+                        minSdk: apiOf(valueOf(variant, "minSdk") ?: valueOf(variant, "minSdkVersion")),
+                        targetSdk: apiOf(valueOf(variant, "targetSdkVersion")),
+                        applicationId: textOf(valueOf(variant, "applicationId")),
+                        abiFilters: variantAbis == null
+                            ? null
+                            : variantAbis.collect { it.toString() }.sort(),
+                    ]
+                }
+            }
+        } catch (ignored) {}
+        project.extensions.extraProperties.set("mobileDoctorVariants", variants)
+    }
+}
+
+gradle.projectsEvaluated {
+    gradle.rootProject.allprojects.each { project ->
+        if (!project.plugins.hasPlugin("com.android.application")) return
+
+        def android = project.extensions.findByName("android")
+        def defaultConfig = valueOf(android, "defaultConfig")
+        def variants = []
+        if (project.extensions.extraProperties.has("mobileDoctorVariants")) {
+            variants.addAll(project.extensions.extraProperties.get("mobileDoctorVariants"))
+        }
+
+        // AGP 7/8 fallback. AGP 9 uses androidComponents above because it removes
+        // applicationVariants from the default DSL.
+        if (variants.isEmpty()) {
+            try {
+                android.applicationVariants.all { variant ->
+                    def merged = valueOf(variant, "mergedFlavor")
+                    def variantAbis = valueOf(valueOf(merged, "ndk"), "abiFilters")
+                    variants << [
+                        name: variant.name.toString(),
+                        debuggable: valueOf(valueOf(variant, "buildType"), "debuggable") == true,
+                        compileSdk: apiOf(valueOf(android, "compileSdk") ?: valueOf(android, "compileSdkVersion")),
+                        minSdk: apiOf(valueOf(merged, "minSdk") ?: valueOf(merged, "minSdkVersion")),
+                        targetSdk: apiOf(valueOf(merged, "targetSdk") ?: valueOf(merged, "targetSdkVersion")),
+                        applicationId: textOf(valueOf(variant, "applicationId")),
+                        abiFilters: variantAbis == null
+                            ? null
+                            : variantAbis.collect { it.toString() }.sort(),
+                    ]
+                }
+            } catch (ignored) {}
+        }
+
+        variants = variants.collect { variant ->
+            def capitalized = variant.name.substring(0, 1).toUpperCase() + variant.name.substring(1)
+            def assemble = "assemble${capitalized}"
+            def install = "install${capitalized}"
+            variant + [
+                assembleTask: project.tasks.findByName(assemble) == null ? null : "${project.path}:${assemble}".replace("::", ":"),
+                installTask: project.tasks.findByName(install) == null ? null : "${project.path}:${install}".replace("::", ":"),
+            ]
+        }.sort { it.name }
+
+        def buildTools = textOf(valueOf(android, "buildToolsVersion"))
+        def ndkVersion = textOf(valueOf(android, "ndkVersion"))
+        def cmake = valueOf(valueOf(android, "externalNativeBuild"), "cmake")
+        def ndkBuild = valueOf(valueOf(android, "externalNativeBuild"), "ndkBuild")
+        def cmakeVersion = textOf(valueOf(cmake, "version"))
+        def cmakeConfigured = valueOf(cmake, "path") != null
+        def ndkBuildConfigured = valueOf(ndkBuild, "path") != null
+        def nativeBuildConfigured = cmakeConfigured || ndkBuildConfigured
+        nativeBuildConfigured = nativeBuildConfigured
+            || project.findProperty("newArchEnabled")?.toString()?.toBoolean() == true
+            || project.tasks.any {
+                it.name.startsWith("externalNativeBuild") || it.name.startsWith("configureCMake")
+            }
+        cmakeConfigured = cmakeConfigured || project.tasks.any { it.name.startsWith("configureCMake") }
+
+        def abiFilters = []
+        try { abiFilters.addAll(valueOf(valueOf(defaultConfig, "ndk"), "abiFilters") ?: []) }
+        catch (ignored) {}
+        def rnArchitectures = project.findProperty("reactNativeArchitectures")
+        if (rnArchitectures != null) {
+            abiFilters = rnArchitectures.toString().split(",").collect { it.trim() }.findAll { !it.isEmpty() }
+        }
+
+        def plugin = project.plugins.findPlugin("com.android.application")
+        def agpVersion = plugin?.class?.package?.implementationVersion
+        if (agpVersion == null) {
+            try { agpVersion = Class.forName("com.android.Version").ANDROID_GRADLE_PLUGIN_VERSION }
+            catch (ignored) {}
+        }
+        def javaExtension = project.extensions.findByName("java")
+        def toolchainVersion = valueOf(valueOf(valueOf(javaExtension, "toolchain"), "languageVersion"), "asInt")
+        def compileOptions = valueOf(android, "compileOptions")
+        mobileModules << [
+            path: project.path,
+            agpVersion: textOf(agpVersion),
+            compileSdk: apiOf(valueOf(android, "compileSdk") ?: valueOf(android, "compileSdkVersion")),
+            buildToolsVersion: buildTools,
+            minSdk: apiOf(valueOf(defaultConfig, "minSdk") ?: valueOf(defaultConfig, "minSdkVersion")),
+            targetSdk: apiOf(valueOf(defaultConfig, "targetSdk") ?: valueOf(defaultConfig, "targetSdkVersion")),
+            ndkVersion: ndkVersion,
+            cmakeVersion: cmakeVersion,
+            nativeBuildConfigured: nativeBuildConfigured,
+            cmakeConfigured: cmakeConfigured,
+            ndkBuildConfigured: ndkBuildConfigured,
+            toolchainJavaVersion: textOf(toolchainVersion),
+            sourceCompatibility: textOf(valueOf(compileOptions, "sourceCompatibility")),
+            targetCompatibility: textOf(valueOf(compileOptions, "targetCompatibility")),
+            abiFilters: abiFilters.collect { it.toString() }.sort(),
+            variants: variants,
+        ]
+    }
+
+    def model = [
+        gradleVersion: gradle.gradleVersion,
+        daemonJavaVersion: System.getProperty("java.version"),
+        daemonJavaVendor: System.getProperty("java.vendor"),
+        daemonJavaHome: System.getProperty("java.home"),
+        modules: mobileModules.sort { it.path },
+    ]
+    println("MOBILE_ANDROID_MODEL=" + JsonOutput.toJson(model))
+}

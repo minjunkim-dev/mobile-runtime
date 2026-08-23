@@ -61,12 +61,13 @@ struct ProjectAnchorTests {
         #expect(ProjectAnchor.detect(from: repo.url("checkout/src")) == nil)
     }
 
-    @Test("reads the installed react-native version, ios/ and node_modules from disk")
+    @Test("reads the installed react-native version and native platform directories from disk")
     func readsProjectFacts() throws {
         let repo = try FixtureRepo()
         try repo.write("package.json", #"{"dependencies": {"react-native": "^0.76.0"}}"#)
         try repo.write("node_modules/react-native/package.json", #"{"version": "0.76.5"}"#)
         try repo.directory("ios")
+        try repo.directory("android")
 
         let anchor = try #require(ProjectAnchor.detect(from: repo.root))
 
@@ -74,6 +75,7 @@ struct ProjectAnchorTests {
         #expect(anchor.reactNativeVersion?.value == "0.76.5")
         #expect(anchor.reactNativeVersion?.origin == "node_modules/react-native")
         #expect(anchor.hasIOSDirectory)
+        #expect(anchor.hasAndroidDirectory)
         #expect(anchor.hasNodeModules)
     }
 
@@ -88,6 +90,7 @@ struct ProjectAnchorTests {
         // declaration that answers here.
         #expect(anchor.reactNativeVersion?.origin == "package.json dependencies.react-native")
         #expect(anchor.hasIOSDirectory == false)
+        #expect(anchor.hasAndroidDirectory == false)
         #expect(anchor.hasNodeModules == false)
     }
 

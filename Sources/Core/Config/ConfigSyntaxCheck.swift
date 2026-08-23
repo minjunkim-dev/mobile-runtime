@@ -43,7 +43,7 @@ public struct ConfigSyntaxCheck: Check {
                     "unknown \(unknownKeys.count == 1 ? "key" : "keys"): \(unknownKeys.joined(separator: ", "))",
                     Remediation(
                         summary: "Correct or remove them in \(path(context.file)) — mobile.yml declares "
-                            + "exactly four fields: \(Self.schema)."
+                            + "exactly \(MobileConfig.Key.all.count) fields: \(Self.schema)."
                     )
                 )
             )

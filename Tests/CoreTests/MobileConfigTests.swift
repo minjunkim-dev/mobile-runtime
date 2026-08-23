@@ -119,13 +119,18 @@ struct MobileConfigParsingTests {
         return try #require(try discover(repo).parse)
     }
 
-    @Test("reads the four v0 fields")
+    @Test("reads iOS fields, Android selectors, and compatibility overrides")
     func allFields() throws {
         let parsed = try parse(
             """
             ios:
               device: iPhone 16 Pro
               scheme: MyApp
+            android:
+              module: app
+              variant: stagingDebug
+              launcherActivity: com.example.MainActivity
+              avd: Pixel_API_35
             overrides:
               xcode: "26"
               iosRuntime: 18.0
@@ -138,6 +143,10 @@ struct MobileConfigParsingTests {
         }
         #expect(config.device == "iPhone 16 Pro")
         #expect(config.scheme == "MyApp")
+        #expect(config.androidModule == "app")
+        #expect(config.androidVariant == "stagingDebug")
+        #expect(config.androidLauncherActivity == "com.example.MainActivity")
+        #expect(config.androidAVD == "Pixel_API_35")
         #expect(config.xcode == MinimumVersion("26"))
         #expect(config.iosRuntime == MinimumVersion("18.0"))
         #expect(unknown.isEmpty)
@@ -155,6 +164,10 @@ struct MobileConfigParsingTests {
         #expect(config.device == nil)
         #expect(config.scheme == nil)
         #expect(config.iosRuntime == nil)
+        #expect(config.androidModule == nil)
+        #expect(config.androidVariant == nil)
+        #expect(config.androidLauncherActivity == nil)
+        #expect(config.androidAVD == nil)
         #expect(config.xcode == MinimumVersion("26.1"))
     }
 

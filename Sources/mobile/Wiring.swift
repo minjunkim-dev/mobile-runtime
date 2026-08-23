@@ -1,3 +1,4 @@
+import AndroidKit
 import Core
 import Foundation
 import Logging
@@ -23,6 +24,7 @@ struct Wiring {
 
     static func bootstrap(
         verbose: Bool,
+        platform: MobilePlatform = .ios,
         includeProjectEnvironment: Bool = true
     ) async -> Wiring {
         LoggingSystem.bootstrap { label in
@@ -48,19 +50,38 @@ struct Wiring {
         } else {
             projectEnvironment = nil
         }
-        let projectChecks = if let anchor, let projectEnvironment {
-            projectEnvironment.checks(anchor: anchor, context: config)
-        } else {
-            [any Check]()
+        let checks: [any Check]
+        switch platform {
+        case .ios:
+            let projectChecks = if let anchor, let projectEnvironment {
+                projectEnvironment.checks(anchor: anchor, context: config)
+            } else {
+                [any Check]()
+            }
+            checks = iOSChecks(lookup: lookup, runner: runner, locator: locator)
+                + configChecks(context: config, lookup: lookup, runner: runner, locator: locator)
+                + projectChecks
+        case .android:
+            var android = config.checks()
+            if let anchor, let projectEnvironment {
+                let platformChecks = androidChecks(
+                    anchor: anchor,
+                    config: config,
+                    hostRunner: runner,
+                    projectRunner: projectEnvironment.runner
+                )
+                // The project identity is the first Android fact; the shared tool
+                // environment and Node checks follow before Gradle requirements.
+                android.append(platformChecks[0])
+                android.append(contentsOf: projectEnvironment.commonChecks(anchor: anchor, context: config))
+                android.append(contentsOf: platformChecks.dropFirst())
+            }
+            checks = android
         }
 
         return Wiring(
             anchor: anchor,
-            engine: DoctorEngine(
-                checks: iOSChecks(lookup: lookup, runner: runner, locator: locator)
-                    + configChecks(context: config, lookup: lookup, runner: runner, locator: locator)
-                    + projectChecks
-            ),
+            engine: DoctorEngine(checks: checks),
             config: config,
             lookup: lookup,
             runner: runner,

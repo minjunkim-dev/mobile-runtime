@@ -94,6 +94,7 @@ public struct ProjectAnchor: Sendable, Equatable {
     /// their own evidence is how a single run starts contradicting itself.
     public let reactNativeVersion: ReactNativeVersion?
     public let hasIOSDirectory: Bool
+    public let hasAndroidDirectory: Bool
     public let hasNodeModules: Bool
     public let nodePin: NodePin?
     /// Every `engines.node` that binds this project, anchor first. Empty when nobody
@@ -287,17 +288,8 @@ public struct ProjectAnchor: Sendable, Equatable {
     /// to compare against is absent when the declaration is — a project that never
     /// pinned Ruby gets no Ruby line at all, rather than a permanent `unknown`.
     public func checks(runner: any ProcessRunner, context: ConfigContext) -> [any Check] {
-        var checks: [any Check] = [
-            ProjectDetectedCheck(anchor: self),
-            NodeVersionCheck(anchor: self, context: context, runner: runner),
-        ]
-        if let packageManager {
-            checks.append(
-                PackageManagerVersionCheck(
-                    requirement: packageManager, anchor: self, context: context, runner: runner
-                )
-            )
-        }
+        var checks: [any Check] = [ProjectDetectedCheck(anchor: self)]
+        checks.append(contentsOf: commonChecks(runner: runner, context: context))
         if let cocoapods {
             checks.append(
                 CocoaPodsVersionCheck(
@@ -308,6 +300,22 @@ public struct ProjectAnchor: Sendable, Equatable {
         if let rubyPin {
             checks.append(
                 RubyVersionCheck(pin: rubyPin, anchor: self, context: context, runner: runner)
+            )
+        }
+        return checks
+    }
+
+    /// Checks whose meaning is the same for both platform providers. Android does
+    /// not inherit the iOS-specific project/CocoaPods/Ruby checks just to reuse Node.
+    public func commonChecks(runner: any ProcessRunner, context: ConfigContext) -> [any Check] {
+        var checks: [any Check] = [
+            NodeVersionCheck(anchor: self, context: context, runner: runner)
+        ]
+        if let packageManager {
+            checks.append(
+                PackageManagerVersionCheck(
+                    requirement: packageManager, anchor: self, context: context, runner: runner
+                )
             )
         }
         return checks
@@ -369,6 +377,7 @@ public struct ProjectAnchor: Sendable, Equatable {
                 fileManager: fileManager
             ),
             hasIOSDirectory: isDirectory(directory.appending("/ios"), fileManager),
+            hasAndroidDirectory: isDirectory(directory.appending("/android"), fileManager),
             hasNodeModules: isDirectory(directory.appending("/node_modules"), fileManager),
             nodePin: pin(in: directory, fileManager: fileManager),
             nodeEngines: nodeEngines(anchor: manifest, root: root),

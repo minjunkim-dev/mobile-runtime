@@ -39,11 +39,17 @@ let package = Package(
                 .product(name: "Logging", package: "swift-log"),
             ]
         ),
+        .target(
+            name: "AndroidKit",
+            dependencies: ["Core"],
+            resources: [.copy("Resources/mobile-doctor.gradle")]
+        ),
         .executableTarget(
             name: "mobile",
             dependencies: [
                 "Core",
                 "SimulatorKit",
+                "AndroidKit",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 .product(name: "Logging", package: "swift-log"),
             ]
@@ -57,5 +63,6 @@ let package = Package(
             dependencies: ["SimulatorKit", "Core", "TestSupport"],
             resources: [.copy("Fixtures")]
         ),
+        .testTarget(name: "AndroidKitTests", dependencies: ["AndroidKit", "Core", "TestSupport"]),
     ]
 )

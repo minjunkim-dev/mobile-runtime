@@ -61,6 +61,16 @@ public struct ProjectExecutionEnvironment: Check, Sendable {
         return checks
     }
 
+    /// Platform-neutral project tool checks, activated through the same committed
+    /// toolchain as every later Gradle command.
+    public func commonChecks(anchor: ProjectAnchor, context: ConfigContext) -> [any Check] {
+        var checks: [any Check] = [self]
+        checks.append(contentsOf: anchor.commonChecks(runner: runner, context: context).map {
+            ActivationDependentCheck(base: $0)
+        })
+        return checks
+    }
+
     public func run() async throws -> CheckOutcome {
         switch activation {
         case .direct:

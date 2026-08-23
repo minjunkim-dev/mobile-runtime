@@ -26,6 +26,22 @@ struct DoctorJSONTests {
         #expect(json["toolVersion"] as? String == "9.9.9")
         #expect(json["command"] as? String == "doctor")
         #expect(json["status"] as? String == "pass")
+        #expect(json["platform"] == nil)
+    }
+
+    @Test("Android adds a platform discriminator without changing schema v1")
+    func androidPlatform() throws {
+        let document = DoctorJSONDocument(
+            report: DoctorReport(checks: []),
+            toolVersion: "9.9.9",
+            platform: "android"
+        )
+        let json = try #require(
+            try JSONSerialization.jsonObject(with: Data(document.encoded().utf8)) as? [String: Any]
+        )
+
+        #expect(json["schemaVersion"] as? Int == 1)
+        #expect(json["platform"] as? String == "android")
     }
 
     @Test("a warning check carries remediation and no reason")
