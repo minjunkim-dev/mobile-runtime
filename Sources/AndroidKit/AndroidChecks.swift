@@ -6,7 +6,8 @@ public func androidChecks(
     config: ConfigContext,
     hostRunner: any ProcessRunner,
     projectRunner: any ProcessRunner,
-    environment: AndroidEnvironment = AndroidEnvironment()
+    environment: AndroidEnvironment = AndroidEnvironment(),
+    includeRuntimeSDKTools: Bool = true
 ) -> [any Check] {
     let context = AndroidDoctorContext(
         anchor: anchor,
@@ -21,7 +22,7 @@ public func androidChecks(
         AndroidJDKCheck(context: context),
         AndroidTargetCheck(context: context),
         AndroidGradleCompatibilityCheck(context: context),
-        AndroidSDKCheck(context: context),
+        AndroidSDKCheck(context: context, includeRuntimeTools: includeRuntimeSDKTools),
         AndroidAVDCheck(context: context),
         AndroidEmulatorAccelerationCheck(context: context),
     ]
@@ -273,13 +274,13 @@ private struct AndroidJDKCheck: Check {
     }
 }
 
-private enum AndroidTargetResolution {
+enum AndroidTargetResolution {
     case selected(AndroidGradleModel.Module, AndroidGradleModel.Module.Variant, CheckSource)
     case warning(observed: String, required: String, remediation: Remediation, source: CheckSource)
     case error(observed: String, required: String, remediation: Remediation, source: CheckSource)
 }
 
-private enum AndroidTargetSelector {
+enum AndroidTargetSelector {
     static func resolve(
         model: AndroidGradleModel,
         configuration: MobileConfig?,
@@ -481,6 +482,7 @@ private struct AndroidSDKCheck: Check {
     let category = "Android SDK"
     let title = "The selected SDK root contains every package this variant requires"
     let context: AndroidDoctorContext
+    let includeRuntimeTools: Bool
 
     func run() async throws -> CheckOutcome {
         let (sdk, rootSource): (URL, CheckSource)
@@ -535,8 +537,10 @@ private struct AndroidSDKCheck: Check {
         }
         require("platforms/android-\(compileSDK)/android.jar", "SDK Platform android-\(compileSDK)", "platforms;android-\(compileSDK)")
         require("build-tools/\(buildTools)/aapt2", "Build Tools \(buildTools)", "build-tools;\(buildTools)", executable: true)
-        require("platform-tools/adb", "Platform-Tools/adb", "platform-tools", executable: true)
-        require("emulator/emulator", "Android Emulator", "emulator", executable: true)
+        if includeRuntimeTools {
+            require("platform-tools/adb", "Platform-Tools/adb", "platform-tools", executable: true)
+            require("emulator/emulator", "Android Emulator", "emulator", executable: true)
+        }
         if module.nativeBuildConfigured, let ndk = module.ndkVersion {
             require("ndk/\(ndk)", "NDK \(ndk)", "ndk;\(ndk)")
         }
@@ -565,7 +569,8 @@ private struct AndroidSDKCheck: Check {
             )
         }
         return .pass(
-            observed: "android-\(compileSDK), Build Tools \(buildTools), adb, Emulator"
+            observed: "android-\(compileSDK), Build Tools \(buildTools)"
+                + (includeRuntimeTools ? ", adb, Emulator" : "")
                 + (module.nativeBuildConfigured ? ", declared native tools" : ""),
             required: "variant SDK inventory",
             source: source

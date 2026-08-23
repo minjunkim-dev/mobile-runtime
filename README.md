@@ -21,6 +21,7 @@ swift build
 swift test
 .build/debug/mobile doctor        # host checks; --json for machines, -v for detail
 .build/debug/mobile build         # validate and compile; no Metro, install, or launch
+.build/debug/mobile build --platform android
 .build/debug/mobile up            # build, install, and launch on a simulator
 ```
 

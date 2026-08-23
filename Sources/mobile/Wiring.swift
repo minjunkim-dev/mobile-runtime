@@ -25,7 +25,8 @@ struct Wiring {
     static func bootstrap(
         verbose: Bool,
         platform: MobilePlatform = .ios,
-        includeProjectEnvironment: Bool = true
+        includeProjectEnvironment: Bool = true,
+        includeRuntimeSDKTools: Bool = true
     ) async -> Wiring {
         LoggingSystem.bootstrap { label in
             var handler = StreamLogHandler.standardError(label: label)
@@ -68,7 +69,8 @@ struct Wiring {
                     anchor: anchor,
                     config: config,
                     hostRunner: runner,
-                    projectRunner: projectEnvironment.runner
+                    projectRunner: projectEnvironment.runner,
+                    includeRuntimeSDKTools: includeRuntimeSDKTools
                 )
                 // The project identity is the first Android fact; the shared tool
                 // environment and Node checks follow before Gradle requirements.

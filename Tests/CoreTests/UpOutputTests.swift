@@ -30,6 +30,7 @@ struct UpJSONTests {
         #expect(json["schemaVersion"] as? Int == 1)
         #expect(json["toolVersion"] as? String == "9.9.9")
         #expect(json["command"] as? String == "up")
+        #expect(json["platform"] == nil)
         #expect(json["status"] as? String == "pass")
         #expect(json["error"] == nil)
     }
@@ -156,6 +157,38 @@ struct UpJSONTests {
         let outcome = try #require(json["result"] as? [String: Any])
 
         #expect(outcome["buildLog"] as? String == "/var/folders/T/mobile/MyApp-1a2b3c4d/build.log")
+    }
+
+    @Test("Android build adds its platform and result without exposing the APK path")
+    func androidBuildResult() throws {
+        var context = UpContext()
+        context.androidProduct = AndroidBuiltProduct(
+            apkPath: "/private/tmp/app-debug.apk",
+            module: ":app",
+            variant: "debug",
+            assembleTask: ":app:assembleDebug",
+            applicationId: "dev.mobile.fixture",
+            minSdk: "24",
+            targetSdk: "36",
+            abis: ["arm64-v8a"],
+            launcherActivity: "dev.mobile.fixture.MainActivity"
+        )
+        let document = UpJSONDocument(
+            report: UpReport(stages: [result("android.build", .pass)], context: context),
+            toolVersion: "9.9.9",
+            command: "build",
+            platform: "android"
+        )
+        let json = try #require(
+            try JSONSerialization.jsonObject(with: Data(document.encoded().utf8)) as? [String: Any]
+        )
+        let android = try #require((json["result"] as? [String: Any])?["android"] as? [String: Any])
+
+        #expect(json["platform"] as? String == "android")
+        #expect(android["module"] as? String == ":app")
+        #expect(android["assembleTask"] as? String == ":app:assembleDebug")
+        #expect(android["apkPath"] == nil)
+        #expect(android["path"] == nil)
     }
 
     /// What a script can act on after the run. The `.app` path build also settled on

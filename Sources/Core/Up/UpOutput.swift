@@ -40,20 +40,29 @@ public struct UpJSONDocument: Encodable, Sendable {
         /// being read from another machine's terminal — it is what a build's warnings
         /// are in, and a failure puts the same path in its remediation.
         public let buildLog: String?
+        public let android: AndroidBuiltProduct?
     }
 
     public let schemaVersion: Int
     public let toolVersion: String
     public let command: String
+    /// Additive schema-v1 discriminator. nil preserves the legacy iOS document.
+    public let platform: String?
     public let status: CheckStatus
     public let stages: [Item]
     public let result: Outcome?
     public let error: Failure?
 
-    public init(report: UpReport, toolVersion: String, command: String = "up") {
+    public init(
+        report: UpReport,
+        toolVersion: String,
+        command: String = "up",
+        platform: String? = nil
+    ) {
         self.schemaVersion = Self.schemaVersion
         self.toolVersion = toolVersion
         self.command = command
+        self.platform = platform
         self.status = report.status
         self.stages = report.stages.map {
             Item(id: $0.id, status: $0.status, durationMs: $0.durationMs, detail: $0.detail)
@@ -63,11 +72,17 @@ public struct UpJSONDocument: Encodable, Sendable {
         let metro = report.context.metro
         let appPid = report.context.appPid
         let buildLog = report.context.buildLog
+        let android = report.context.androidProduct
         self.result = device == nil && bundleId == nil && metro == nil && appPid == nil
-            && buildLog == nil
+            && buildLog == nil && android == nil
             ? nil
             : Outcome(
-                device: device, bundleId: bundleId, metro: metro, appPid: appPid, buildLog: buildLog
+                device: device,
+                bundleId: bundleId,
+                metro: metro,
+                appPid: appPid,
+                buildLog: buildLog,
+                android: android
             )
         self.error = report.failure.map {
             Failure(
@@ -128,6 +143,7 @@ public struct UpWriter: Sendable {
     private let json: Bool
     private let toolVersion: String
     private let command: String
+    private let platform: String?
     private let renderer: HumanReportRenderer
     private let lines = StageLineRenderer()
     private let standardOutput: @Sendable (String) -> Void
@@ -137,6 +153,7 @@ public struct UpWriter: Sendable {
         json: Bool,
         toolVersion: String,
         command: String = "up",
+        platform: String? = nil,
         renderer: HumanReportRenderer,
         standardOutput: @escaping @Sendable (String) -> Void,
         standardError: @escaping @Sendable (String) -> Void
@@ -144,6 +161,7 @@ public struct UpWriter: Sendable {
         self.json = json
         self.toolVersion = toolVersion
         self.command = command
+        self.platform = platform
         self.renderer = renderer
         self.standardOutput = standardOutput
         self.standardError = standardError
@@ -165,7 +183,12 @@ public struct UpWriter: Sendable {
     public func finish(_ report: UpReport) throws {
         if json {
             return standardOutput(
-                try UpJSONDocument(report: report, toolVersion: toolVersion, command: command).encoded()
+                try UpJSONDocument(
+                    report: report,
+                    toolVersion: toolVersion,
+                    command: command,
+                    platform: platform
+                ).encoded()
             )
         }
 

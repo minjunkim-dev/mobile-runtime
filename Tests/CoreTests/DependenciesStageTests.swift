@@ -197,6 +197,23 @@ struct DependenciesStageTests {
         #expect(install.workingDirectory?.path == repo.url("ios").path)
     }
 
+    @Test("Android dependency preparation never installs Pods or gems")
+    func androidSkipsAppleDependencies() async throws {
+        let repo = try app()
+        try repo.directory("node_modules")
+        try repo.write("Gemfile", "gem 'cocoapods', '1.16.1'\n")
+        try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
+        let runner = FakeProcessRunner(responses: ["yarn install --frozen-lockfile": .ok("")])
+        var context = UpContext()
+
+        let outcome = try await DependenciesStage(
+            anchor: try anchor(repo), runner: runner, includePods: false
+        ).run(&context)
+
+        #expect(outcome.status == .pass)
+        #expect(runner.log.all.map(\.description) == ["yarn install --frozen-lockfile"])
+    }
+
     /// The repo that made this a ticket: rainbow declares `bundle exec pod install`,
     /// and bundler refuses to run anything at all while a gem in the lock is missing
     /// — so on a fresh clone the pod install never starts (#59).
