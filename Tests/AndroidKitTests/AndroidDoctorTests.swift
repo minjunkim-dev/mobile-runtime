@@ -172,6 +172,27 @@ struct AndroidDoctorTests {
         } == false)
     }
 
+    @Test("build validation does not require adb or Emulator packages")
+    func buildSDKSubset() async throws {
+        let scenario = try scenario()
+        try FileManager.default.removeItem(at: scenario.repo.url("sdk/platform-tools/adb"))
+        try FileManager.default.removeItem(at: scenario.repo.url("sdk/emulator/emulator"))
+        let buildChecks = androidChecks(
+            anchor: scenario.anchor,
+            config: scenario.config,
+            hostRunner: scenario.runner,
+            projectRunner: scenario.runner,
+            environment: scenario.environment,
+            includeRuntimeSDKTools: false
+        )
+
+        let report = await DoctorEngine(checks: buildChecks).run(only: ["android.sdk"])
+
+        #expect(report.checks.first { $0.id == "android.sdk" }?.status == .pass)
+        #expect(scenario.runner.log.all.contains { $0.executable == "adb" } == false)
+        #expect(scenario.runner.log.all.contains { $0.executable == "emulator" } == false)
+    }
+
     @Test("a pinned wrapper that is not local warns and never runs Gradle")
     func wrapperNotMaterialized() async throws {
         let scenario = try scenario(materializedWrapper: false)

@@ -46,6 +46,8 @@ struct AndroidGradleModel: Sendable, Decodable, Equatable {
             let targetSdk: String?
             let applicationId: String?
             let abiFilters: [String]?
+            let apkDirectory: String?
+            let mergedManifest: String?
         }
 
         let path: String
@@ -272,38 +274,50 @@ actor AndroidDoctorContext {
 
     func model() async throws -> AndroidModelProbeOutcome {
         if let modelTask { return try await modelTask.value }
-        let directory = androidDirectory
-        let runner = projectRunner
         let task = Task<AndroidModelProbeOutcome, any Error> {
-            guard let command = AndroidGradleModelProbe.command(androidDirectory: directory) else {
-                return .failure("mobile's bundled Android model script is unavailable")
-            }
-            let result = try await runner.run(command)
-            let output = result.combinedOutput
-            guard result.terminationStatus.isSuccess else {
-                let detail = output.lastLines(12)
-                let missing = [
-                    "offline mode", "no cached version", "could not resolve", "not available for offline",
-                    "could not find", "plugin was not found",
-                ].contains { output.localizedCaseInsensitiveContains($0) }
-                return missing
-                    ? .unavailable(detail.isEmpty ? "Gradle inputs are not materialized locally" : detail)
-                    : .failure(detail.isEmpty ? "Gradle model query failed" : detail)
-            }
-            guard let marker = output.split(separator: "\n").last(where: {
-                $0.hasPrefix(AndroidGradleModelProbe.marker)
-            }) else {
-                return .failure("Gradle completed without returning the Android model")
-            }
-            let json = marker.dropFirst(AndroidGradleModelProbe.marker.count)
-            do {
-                return .model(try JSONDecoder().decode(AndroidGradleModel.self, from: Data(json.utf8)))
-            } catch {
-                return .failure("Gradle returned an unreadable Android model: \(error)")
-            }
+            try await probeModel(offline: true, timeout: .seconds(90))
         }
         modelTask = task
         return try await task.value
+    }
+
+    /// Build may materialize the wrapper distribution and Gradle project
+    /// dependencies, so it re-evaluates without doctor's offline restriction.
+    func buildModel() async throws -> AndroidModelProbeOutcome {
+        try await probeModel(offline: false, timeout: nil)
+    }
+
+    private func probeModel(offline: Bool, timeout: Duration?) async throws -> AndroidModelProbeOutcome {
+        guard let command = AndroidGradleModelProbe.command(
+            androidDirectory: androidDirectory,
+            offline: offline,
+            timeout: timeout
+        ) else {
+            return .failure("mobile's bundled Android model script is unavailable")
+        }
+        let result = try await projectRunner.run(command)
+        let output = result.combinedOutput
+        guard result.terminationStatus.isSuccess else {
+            let detail = output.lastLines(12)
+            let missing = offline && [
+                "offline mode", "no cached version", "could not resolve", "not available for offline",
+                "could not find", "plugin was not found",
+            ].contains { output.localizedCaseInsensitiveContains($0) }
+            return missing
+                ? .unavailable(detail.isEmpty ? "Gradle inputs are not materialized locally" : detail)
+                : .failure(detail.isEmpty ? "Gradle model query failed" : detail)
+        }
+        guard let marker = output.split(separator: "\n").last(where: {
+            $0.hasPrefix(AndroidGradleModelProbe.marker)
+        }) else {
+            return .failure("Gradle completed without returning the Android model")
+        }
+        let json = marker.dropFirst(AndroidGradleModelProbe.marker.count)
+        do {
+            return .model(try JSONDecoder().decode(AndroidGradleModel.self, from: Data(json.utf8)))
+        } catch {
+            return .failure("Gradle returned an unreadable Android model: \(error)")
+        }
     }
 
     nonisolated func sdkRoot() -> AndroidSDKRootResolution {
@@ -339,14 +353,16 @@ actor AndroidDoctorContext {
         _ executable: String,
         _ arguments: [String],
         sdk: URL,
+        buildToolsVersion: String? = nil,
         timeout: Duration = .seconds(15)
     ) -> ProcessCommand {
         let inherited = environment.values["PATH"] ?? ""
         let path = [
+            buildToolsVersion.map { sdk.appendingPathComponent("build-tools/\($0)").path },
             sdk.appendingPathComponent("platform-tools").path,
             sdk.appendingPathComponent("emulator").path,
             inherited,
-        ].filter { !$0.isEmpty }.joined(separator: ":")
+        ].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: ":")
         return ProcessCommand(
             executable, arguments, environment: ["PATH": path], timeout: timeout
         )
@@ -503,19 +519,24 @@ actor AndroidDoctorContext {
 enum AndroidGradleModelProbe {
     static let marker = "MOBILE_ANDROID_MODEL="
 
-    static func command(androidDirectory: URL) -> ProcessCommand? {
+    static func command(
+        androidDirectory: URL,
+        offline: Bool = true,
+        timeout: Duration? = .seconds(90)
+    ) -> ProcessCommand? {
         guard let script = Bundle.module.url(forResource: "mobile-doctor", withExtension: "gradle") else {
             return nil
         }
+        var arguments = [
+            "--no-daemon", "--no-configuration-cache", "--console=plain",
+            "--warning-mode=none", "-Porg.gradle.java.installations.auto-download=false",
+            "-q", "-I", script.path, "help",
+        ]
+        if offline { arguments.insert("--offline", at: 0) }
         return ProcessCommand(
-            "./gradlew",
-            [
-                "--offline", "--no-daemon", "--no-configuration-cache", "--console=plain",
-                "--warning-mode=none", "-Porg.gradle.java.installations.auto-download=false",
-                "-q", "-I", script.path, "help",
-            ],
+            "./gradlew", arguments,
             workingDirectory: androidDirectory,
-            timeout: .seconds(90)
+            timeout: timeout
         )
     }
 }

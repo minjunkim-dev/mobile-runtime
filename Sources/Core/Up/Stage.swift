@@ -74,6 +74,46 @@ public struct BuiltProduct: Sendable, Equatable, Encodable {
     }
 }
 
+/// The installable APK produced by an Android build. `apkPath` stays inside the
+/// typed pipeline context; the remaining fields are the stable schema-v1 result.
+public struct AndroidBuiltProduct: Sendable, Equatable, Encodable {
+    public let apkPath: String
+    public let module: String
+    public let variant: String
+    public let assembleTask: String
+    public let applicationId: String
+    public let minSdk: String
+    public let targetSdk: String
+    public let abis: [String]
+    public let launcherActivity: String
+
+    public init(
+        apkPath: String,
+        module: String,
+        variant: String,
+        assembleTask: String,
+        applicationId: String,
+        minSdk: String,
+        targetSdk: String,
+        abis: [String],
+        launcherActivity: String
+    ) {
+        self.apkPath = apkPath
+        self.module = module
+        self.variant = variant
+        self.assembleTask = assembleTask
+        self.applicationId = applicationId
+        self.minSdk = minSdk
+        self.targetSdk = targetSdk
+        self.abis = abis
+        self.launcherActivity = launcherActivity
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case module, variant, assembleTask, applicationId, minSdk, targetSdk, abis, launcherActivity
+    }
+}
+
 /// The Metro bundler this run left behind. `pid` and `logPath` are absent on a reuse
 /// on purpose: that process belongs to whoever started it, and a CI job has to be
 /// able to clean up only what it started itself.
@@ -124,6 +164,10 @@ public struct UpContext: Sendable {
 
     /// Set by `build`, consumed by `install` and `launch`.
     public var product: BuiltProduct?
+
+    /// Set by `android.build`. The APK path is retained for the later Android
+    /// install stage but omitted by `AndroidBuiltProduct`'s encoder.
+    public var androidProduct: AndroidBuiltProduct?
 
     /// Where `build` streamed xcodebuild's whole output. Kept on a success too — the
     /// warnings a build that worked still printed are in there, and a failure names

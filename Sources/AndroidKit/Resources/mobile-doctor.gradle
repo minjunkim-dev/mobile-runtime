@@ -23,6 +23,17 @@ def apiOf = { value ->
     def api = valueOf(value, "apiLevel")
     return textOf(api ?: value).replaceFirst(/^android-/, "")
 }
+def artifactPath = { variant, String name ->
+    try {
+        def loader = variant.class.classLoader
+        def type = Class.forName(
+            "com.android.build.api.artifact.SingleArtifact\$${name}", true, loader
+        ).getField("INSTANCE").get(null)
+        return variant.artifacts.get(type).get().asFile.absolutePath
+    } catch (ignored) {
+        return null
+    }
+}
 
 gradle.beforeProject { project ->
     project.pluginManager.withPlugin("com.android.application") {
@@ -48,6 +59,8 @@ gradle.beforeProject { project ->
                         abiFilters: variantAbis == null
                             ? null
                             : variantAbis.collect { it.toString() }.sort(),
+                        apkDirectory: artifactPath(variant, "APK"),
+                        mergedManifest: artifactPath(variant, "MERGED_MANIFEST"),
                     ]
                 }
             }
@@ -84,6 +97,8 @@ gradle.projectsEvaluated {
                         abiFilters: variantAbis == null
                             ? null
                             : variantAbis.collect { it.toString() }.sort(),
+                        apkDirectory: null,
+                        mergedManifest: null,
                     ]
                 }
             } catch (ignored) {}
