@@ -322,6 +322,8 @@ struct AndroidRuntimeTests {
         let responses: [String: [FakeProcessRunner.Response]] = [
             command("adb", ["devices"]): [
                 .ok("List of devices attached\n\(serial) device\n"),
+                .ok("List of devices attached\n\(serial) device\n"),
+                .ok("List of devices attached\n\(serial) device\n"),
                 .ok("List of devices attached\n"),
             ],
             command("adb", ["-s", serial, "emu", "avd", "name"]): [.ok("Pixel\n")],
