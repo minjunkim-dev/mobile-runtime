@@ -600,7 +600,7 @@ private struct AndroidAVDCheck: Check {
                 source: CheckSource(tier: 1, origin: "evaluated Gradle model")
             )
         }
-        let abiFilters = variant.abiFilters ?? module.abiFilters
+        let abiFilters = variant.abiFilters.flatMap { $0.isEmpty ? nil : $0 } ?? module.abiFilters
         guard !abiFilters.isEmpty else {
             return .unknown(
                 reason: "the evaluated variant exposes no pre-build ABI evidence; the APK will be authoritative after build",

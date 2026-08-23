@@ -140,8 +140,11 @@ gradle.projectsEvaluated {
         def plugin = project.plugins.findPlugin("com.android.application")
         def agpVersion = plugin?.class?.package?.implementationVersion
         if (agpVersion == null) {
-            try { agpVersion = Class.forName("com.android.Version").ANDROID_GRADLE_PLUGIN_VERSION }
-            catch (ignored) {}
+            try {
+                agpVersion = Class.forName(
+                    "com.android.Version", true, plugin.class.classLoader
+                ).ANDROID_GRADLE_PLUGIN_VERSION
+            } catch (ignored) {}
         }
         def javaExtension = project.extensions.findByName("java")
         def toolchainVersion = valueOf(valueOf(valueOf(javaExtension, "toolchain"), "languageVersion"), "asInt")
