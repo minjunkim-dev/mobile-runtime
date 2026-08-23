@@ -49,6 +49,16 @@ gradle.beforeProject { project ->
                     : valueOf(android?.buildTypes?.findByName(buildType), "debuggable")
                 def variantAbis = valueOf(valueOf(variant, "externalNativeBuild"), "abiFilters")
                 if (name != null) {
+                    def capitalized = name.substring(0, 1).toUpperCase() + name.substring(1)
+                    project.tasks.matching { it.name == "assemble${capitalized}" }.configureEach { task ->
+                        task.doLast {
+                            println("MOBILE_ANDROID_ARTIFACT=" + JsonOutput.toJson([
+                                variant: name,
+                                apkDirectory: artifactPath(variant, "APK"),
+                                mergedManifest: artifactPath(variant, "MERGED_MANIFEST"),
+                            ]))
+                        }
+                    }
                     variants << [
                         name: name,
                         debuggable: debuggable == true,

@@ -518,13 +518,17 @@ actor AndroidDoctorContext {
 
 enum AndroidGradleModelProbe {
     static let marker = "MOBILE_ANDROID_MODEL="
+    static let artifactMarker = "MOBILE_ANDROID_ARTIFACT="
+    static var scriptURL: URL? {
+        Bundle.module.url(forResource: "mobile-doctor", withExtension: "gradle")
+    }
 
     static func command(
         androidDirectory: URL,
         offline: Bool = true,
         timeout: Duration? = .seconds(90)
     ) -> ProcessCommand? {
-        guard let script = Bundle.module.url(forResource: "mobile-doctor", withExtension: "gradle") else {
+        guard let script = scriptURL else {
             return nil
         }
         var arguments = [

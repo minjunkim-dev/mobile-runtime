@@ -118,15 +118,19 @@ public struct AndroidBuildStage: Stage {
             let applicationId = variant.applicationId,
             let minSdk = variant.minSdk ?? module.minSdk,
             let targetSdk = variant.targetSdk ?? module.targetSdk,
-            let buildTools = module.buildToolsVersion,
-            let apkDirectory = variant.apkDirectory,
-            let mergedManifest = variant.mergedManifest
+            let buildTools = module.buildToolsVersion
         else {
             throw DomainError(
                 summary: "the selected Android variant did not expose complete build metadata",
                 remediation: Remediation(
-                    summary: "Fix the evaluated application variant so it exposes its task, metadata and public AGP artifacts."
+                    summary: "Fix the evaluated application variant so it exposes its task and metadata."
                 )
+            )
+        }
+        guard let modelScript = AndroidGradleModelProbe.scriptURL else {
+            throw DomainError(
+                summary: "mobile's bundled Android model script is unavailable",
+                remediation: Remediation(summary: "Rebuild or reinstall mobile from the candidate SHA.")
             )
         }
 
@@ -160,6 +164,8 @@ public struct AndroidBuildStage: Stage {
                 "--no-daemon",
                 "--console=plain",
                 "-Porg.gradle.java.installations.auto-download=false",
+                "-I",
+                modelScript.path,
             ],
             workingDirectory: anchor.directory.appendingPathComponent("android"),
             timeout: nil,
@@ -170,7 +176,13 @@ public struct AndroidBuildStage: Stage {
             line.hasPrefix("FAILURE:") || line.hasPrefix("* What went wrong:")
                 || line.localizedCaseInsensitiveContains("error:")
         }
-        let built = try await projectRunner.run(command, onLine: { excerpt.append($0) })
+        let artifactLine = LineExcerpt(limit: 1) {
+            $0.hasPrefix(AndroidGradleModelProbe.artifactMarker)
+        }
+        let built = try await projectRunner.run(command, onLine: {
+            excerpt.append($0)
+            artifactLine.append($0)
+        })
         guard built.terminationStatus.isSuccess else {
             throw DomainError(
                 summary: "the Android build failed",
@@ -178,6 +190,18 @@ public struct AndroidBuildStage: Stage {
                 remediation: Remediation(
                     summary: "The whole Gradle log is at \(log.path).",
                     command: pasteable(command)
+                )
+            )
+        }
+
+        let artifacts = GradleArtifactPaths.read(artifactLine.text, variant: variant.name)
+        guard let apkDirectory = artifacts?.apkDirectory ?? variant.apkDirectory,
+            let mergedManifest = artifacts?.mergedManifest ?? variant.mergedManifest
+        else {
+            throw DomainError(
+                summary: "the selected Android variant did not expose public AGP artifacts after build",
+                remediation: Remediation(
+                    summary: "Fix the selected variant so its assemble task publishes APK and merged-manifest artifacts."
                 )
             )
         }
@@ -217,7 +241,7 @@ public struct AndroidBuildStage: Stage {
         try require("targetSdk", targetSdk, manifest.targetSdk)
         try require("targetSdk", targetSdk, aapt.targetSdk)
 
-        let declaredABIs = Set(variant.abiFilters ?? module.abiFilters)
+        let declaredABIs = Set(variant.abiFilters.flatMap { $0.isEmpty ? nil : $0 } ?? module.abiFilters)
         guard !aapt.abis.isEmpty else {
             throw unsupportedOutput("the APK exposes no native ABI metadata")
         }
@@ -322,6 +346,23 @@ public struct AndroidBuildStage: Stage {
     }
 }
 
+private struct GradleArtifactPaths: Decodable {
+    let variant: String
+    let apkDirectory: String
+    let mergedManifest: String
+
+    static func read(_ output: String, variant: String) -> Self? {
+        guard let line = output.split(separator: "\n").last(where: {
+            $0.hasPrefix(AndroidGradleModelProbe.artifactMarker)
+        }) else { return nil }
+        let json = line.dropFirst(AndroidGradleModelProbe.artifactMarker.count)
+        guard let value = try? JSONDecoder().decode(Self.self, from: Data(json.utf8)),
+            value.variant == variant
+        else { return nil }
+        return value
+    }
+}
+
 private struct GradleOutputMetadata: Decodable {
     struct Element: Decodable {
         struct Filter: Decodable {}
@@ -378,7 +419,7 @@ private struct APKBadging {
 
     static func read(_ text: String) throws -> APKBadging {
         guard let applicationId = capture(#"(?m)^package: name='([^']+)'"#, in: text),
-            let minSdk = capture(#"(?m)^sdkVersion:'([^']+)'"#, in: text),
+            let minSdk = capture(#"(?m)^(?:sdkVersion|minSdkVersion):'([^']+)'"#, in: text),
             let targetSdk = capture(#"(?m)^targetSdkVersion:'([^']+)'"#, in: text),
             let launcher = capture(#"(?m)^launchable-activity: name='([^']+)'"#, in: text)
         else {
