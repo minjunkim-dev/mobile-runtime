@@ -133,6 +133,18 @@ launch 리턴 ≠ UI 렌더 완료라서 두는 설정형 고정 대기(기본 3
 **Relaunch**:
 launch Stage가 매 실행에서 terminate 후 다시 띄우는 것. `simctl launch`는 이미 떠 있는 앱에 대해 재시작 없이 옛 인스턴스의 PID를 돌려주므로, terminate 없이는 "up이 끝나면 화면에 방금 빌드한 코드가 있다"는 보장이 디스크에서만 참이 된다. terminate 실패는 무시한다 — 안 떠 있던 앱을 못 끈 것은 실패가 아니다.
 
+**Android 활성 실행 (Android active run)**:
+한 프로젝트의 Android `up`이 얻은 실행 자원을 `down`까지 이어서 식별하는 생명주기. 같은 대상을 향한 반복 `up`은 기존 활성 실행에 합류하며, 별개의 CLI 호출이나 앱 세션을 뜻하지 않는다.
+_Avoid_: Android 세션, `up` 호출
+
+**Android 소유 자원 (Android-owned resource)**:
+Android 활성 실행이 새로 시작·연결·launch했고 현재 identity까지 다시 확인할 수 있는 정리 대상. 실행 전부터 존재했거나 재사용한 Emulator·Metro·adb reverse는 포함하지 않는다.
+_Avoid_: Android 정리 대상, 프로젝트 자원
+
+**Android rollback**:
+Android `up` 실패 시 그 활성 실행의 소유 자원만 획득 역순으로 정리하는 best-effort 복구. 확인할 수 없거나 정리하지 못한 자원은 기록에 남아 후속 `down`이 재시도한다.
+_Avoid_: 초기화, 강제 정리
+
 ### down
 
 **정리 대상 (Teardown target)**:
