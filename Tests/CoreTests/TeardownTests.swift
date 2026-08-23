@@ -82,6 +82,21 @@ struct TeardownTests {
         #expect(document.contains("\"status\" : \"stopped\""))
         #expect(document.contains("\"status\" : \"skipped\""))
         #expect(document.contains("\"schemaVersion\" : \(JSONOutput.schemaVersion)"))
+        #expect(document.contains("\"platform\"") == false)
+    }
+
+    @Test("Android down adds only the platform discriminator")
+    func androidJSON() async throws {
+        let result = TeardownReport(
+            items: [.skipped("android.emulator", "pre-existing Emulator preserved")],
+            blockedIsFailure: true
+        )
+        let document = try DownJSONDocument(
+            report: result, toolVersion: "0.1.0", platform: "android"
+        ).encoded()
+
+        #expect(document.contains("\"platform\" : \"android\""))
+        #expect(document.contains("\"android.emulator\""))
     }
 
     /// stdout is the JSON document and nothing else, so a piped `down` stays

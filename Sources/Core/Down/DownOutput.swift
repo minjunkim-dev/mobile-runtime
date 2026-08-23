@@ -21,14 +21,22 @@ public struct DownJSONDocument: Encodable, Sendable {
     public let schemaVersion: Int
     public let toolVersion: String
     public let command: String
+    /// Additive schema-v1 discriminator. nil preserves the legacy iOS document.
+    public let platform: String?
     public let status: CheckStatus
     public let items: [Item]
     public let error: Failure?
 
-    public init(report: TeardownReport, toolVersion: String, command: String = "down") {
+    public init(
+        report: TeardownReport,
+        toolVersion: String,
+        command: String = "down",
+        platform: String? = nil
+    ) {
         self.schemaVersion = Self.schemaVersion
         self.toolVersion = toolVersion
         self.command = command
+        self.platform = platform
         self.status = report.status
         self.items = report.items.map {
             Item(id: $0.id, status: $0.status, detail: $0.detail, remediation: $0.remediation)
@@ -53,6 +61,7 @@ public struct DownWriter: Sendable {
 
     private let json: Bool
     private let toolVersion: String
+    private let platform: String?
     private let renderer: HumanReportRenderer
     private let standardOutput: @Sendable (String) -> Void
     private let standardError: @Sendable (String) -> Void
@@ -60,12 +69,14 @@ public struct DownWriter: Sendable {
     public init(
         json: Bool,
         toolVersion: String,
+        platform: String? = nil,
         renderer: HumanReportRenderer,
         standardOutput: @escaping @Sendable (String) -> Void,
         standardError: @escaping @Sendable (String) -> Void
     ) {
         self.json = json
         self.toolVersion = toolVersion
+        self.platform = platform
         self.renderer = renderer
         self.standardOutput = standardOutput
         self.standardError = standardError
@@ -78,14 +89,17 @@ public struct DownWriter: Sendable {
         for failure in report.toolFailures { standardError("tool failure: \(failure)") }
 
         if json {
-            return standardOutput(try DownJSONDocument(report: report, toolVersion: toolVersion).encoded())
+            return standardOutput(
+                try DownJSONDocument(
+                    report: report, toolVersion: toolVersion, platform: platform
+                ).encoded()
+            )
         }
 
         for item in report.items {
             standardError(line(item))
-            // A blocked item is not an error, so it never reaches the renderer below
-            // — but it has a next step, and a line a reader cannot act on is half a
-            // sentence. `failed` gets the full treatment down there instead.
+            // A blocked item uses its own line rather than the failed-item renderer,
+            // but it still needs its actionable command when one exists.
             if item.status == .blocked, let command = item.remediation?.command {
                 standardError("              → \(command)")
             }

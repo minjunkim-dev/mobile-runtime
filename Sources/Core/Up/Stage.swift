@@ -86,6 +86,10 @@ public struct AndroidBuiltProduct: Sendable, Equatable, Encodable {
     public let targetSdk: String
     public let abis: [String]
     public let launcherActivity: String
+    public var device: AndroidDevice?
+    public var reverse: AndroidReverse?
+    public var appPid: Int32?
+    public var rollback: [TeardownItem]?
 
     public init(
         apkPath: String,
@@ -96,7 +100,11 @@ public struct AndroidBuiltProduct: Sendable, Equatable, Encodable {
         minSdk: String,
         targetSdk: String,
         abis: [String],
-        launcherActivity: String
+        launcherActivity: String,
+        device: AndroidDevice? = nil,
+        reverse: AndroidReverse? = nil,
+        appPid: Int32? = nil,
+        rollback: [TeardownItem]? = nil
     ) {
         self.apkPath = apkPath
         self.module = module
@@ -107,10 +115,49 @@ public struct AndroidBuiltProduct: Sendable, Equatable, Encodable {
         self.targetSdk = targetSdk
         self.abis = abis
         self.launcherActivity = launcherActivity
+        self.device = device
+        self.reverse = reverse
+        self.appPid = appPid
+        self.rollback = rollback
     }
 
     private enum CodingKeys: String, CodingKey {
         case module, variant, assembleTask, applicationId, minSdk, targetSdk, abis, launcherActivity
+        case device, reverse, appPid, rollback
+    }
+}
+
+public struct AndroidDevice: Sendable, Equatable, Encodable {
+    public enum State: String, Sendable, Equatable, Codable {
+        case started
+        case reused
+    }
+
+    public let avd: String
+    public let serial: String
+    public let api: Int
+    public let abi: String
+    public let state: State
+
+    public init(avd: String, serial: String, api: Int, abi: String, state: State) {
+        self.avd = avd
+        self.serial = serial
+        self.api = api
+        self.abi = abi
+        self.state = state
+    }
+}
+
+public struct AndroidReverse: Sendable, Equatable, Encodable {
+    public enum State: String, Sendable, Equatable, Codable {
+        case created
+        case reused
+    }
+
+    public let state: State
+
+    public init(state: State) {
+        self.state = state
     }
 }
 
@@ -118,7 +165,7 @@ public struct AndroidBuiltProduct: Sendable, Equatable, Encodable {
 /// on purpose: that process belongs to whoever started it, and a CI job has to be
 /// able to clean up only what it started itself.
 public struct MetroProcess: Sendable, Equatable, Encodable {
-    public enum State: String, Sendable, Equatable, Encodable {
+    public enum State: String, Sendable, Equatable, Codable {
         case reused
         case spawned
     }
@@ -178,6 +225,14 @@ public struct UpContext: Sendable {
     /// the pipeline: it is there so whatever runs after `up` can address the process
     /// without going looking for it.
     public var appPid: Int32?
+
+    /// Android rollback can raise a domain failure to a tool failure. Kept out of
+    /// JSON; the item-level evidence is encoded under `result.android.rollback`.
+    public var androidRollbackExitCode: Int32?
+
+    /// True only while a valid Android active-run record still owns something a
+    /// later `down` can retry.
+    public var androidRequiresTeardown = false
 
     public init() {}
 }

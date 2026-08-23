@@ -164,6 +164,11 @@ public struct ProjectAnchor: Sendable, Equatable {
         )
     }
 
+    /// The project's declared package-manager path to its Metro start script.
+    public var startProcess: ProcessCommand {
+        packageManagerProcess(["start"], workingDirectory: directory, timeout: nil)
+    }
+
     /// One package-manager invocation policy for version checks, dependency
     /// alignment, declared Pod scripts and Metro. Yarn and pnpm declarations use
     /// Corepack directly so they do not depend on a globally enabled shim. Corepack
