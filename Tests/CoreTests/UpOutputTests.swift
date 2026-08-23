@@ -191,6 +191,61 @@ struct UpJSONTests {
         #expect(android["path"] == nil)
     }
 
+    @Test("Android up keeps runtime ownership and rollback inside the Android result")
+    func androidRuntimeResult() throws {
+        var product = AndroidBuiltProduct(
+            apkPath: "/private/tmp/app-debug.apk",
+            module: ":app",
+            variant: "debug",
+            assembleTask: ":app:assembleDebug",
+            applicationId: "dev.mobile.fixture",
+            minSdk: "24",
+            targetSdk: "36",
+            abis: ["arm64-v8a"],
+            launcherActivity: "dev.mobile.fixture.MainActivity"
+        )
+        product.device = AndroidDevice(
+            avd: "Pixel", serial: "emulator-5554", api: 35, abi: "arm64-v8a", state: .started
+        )
+        product.reverse = AndroidReverse(state: .created)
+        product.appPid = 8123
+        product.rollback = [
+            .stopped("android.app", "dev.mobile.fixture"),
+            .unknown("android.emulator", "could not observe"),
+        ]
+        var context = UpContext()
+        context.androidProduct = product
+        context.androidRollbackExitCode = 2
+        context.androidRequiresTeardown = true
+        let failure = DomainError(
+            summary: "launch failed",
+            remediation: Remediation(summary: "Fix the launch error.")
+        )
+        let report = UpReport(
+            stages: [result("android.launch", .failed)],
+            context: context,
+            failure: .domain(failure)
+        )
+        let document = UpJSONDocument(
+            report: report, toolVersion: "9.9.9", platform: "android"
+        )
+        let json = try #require(
+            try JSONSerialization.jsonObject(with: Data(document.encoded().utf8)) as? [String: Any]
+        )
+        let android = try #require((json["result"] as? [String: Any])?["android"] as? [String: Any])
+        let device = try #require(android["device"] as? [String: Any])
+        let reverse = try #require(android["reverse"] as? [String: Any])
+        let rollback = try #require(android["rollback"] as? [[String: Any]])
+
+        #expect(device["state"] as? String == "started")
+        #expect(device["serial"] as? String == "emulator-5554")
+        #expect(reverse["state"] as? String == "created")
+        #expect(android["appPid"] as? Int == 8123)
+        #expect(rollback.map { $0["id"] as? String } == ["android.app", "android.emulator"])
+        #expect(report.exitCode == 2)
+        #expect(report.teardownHint?.contains("down --platform android") == true)
+    }
+
     /// What a script can act on after the run. The `.app` path build also settled on
     /// is derived data — true for one machine until the next clean — so it stays
     /// inside the pipeline and the bundle id is what comes out.

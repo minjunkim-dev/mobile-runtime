@@ -42,12 +42,13 @@ public struct UpReport: Sendable {
         failure == nil ? (context.validation?.status ?? .pass) : .error
     }
 
-    /// What a failed run leaves behind that a user can clean up in one line. Only
-    /// when this run started the Metro: a reused one was there before, and telling
-    /// someone to stop what they were already using is not a next step. `up` does
-    /// not roll back (#13), so the line is worth carrying — on both streams, which
-    /// is why it is written here rather than at one of them.
+    /// What a failed run leaves behind that a user can clean up in one line. Android
+    /// names a valid residual ownership record; legacy iOS names only spawned Metro.
     public var teardownHint: String? {
+        if failure != nil, context.androidRequiresTeardown {
+            return "Android rollback left owned resources to retry — "
+                + "`mobile down --platform android` retries them."
+        }
         guard failure != nil, context.metro?.state == .spawned else { return nil }
         return "The Metro this run started is still on \(MetroVerdict.port) — "
             + "`mobile down` stops it."
@@ -56,11 +57,12 @@ public struct UpReport: Sendable {
     /// The same split doctor makes: 1 is the project's problem, 2 is ours. 64 (usage)
     /// is the CLI parser's.
     public var exitCode: Int32 {
-        switch failure {
+        let pipeline: Int32 = switch failure {
         case .none: 0
         case .domain: 1
         case .tool: 2
         }
+        return max(pipeline, context.androidRollbackExitCode ?? 0)
     }
 }
 

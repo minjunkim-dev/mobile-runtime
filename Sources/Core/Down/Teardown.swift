@@ -19,9 +19,8 @@ public enum TeardownStatus: String, Sendable, Codable {
     case unknown
 }
 
-/// One item of `down`'s report. `id` is `metro` or `app` — the same words `up`'s
-/// stages use, because they point at the same things.
-public struct TeardownItem: Sendable, Equatable {
+/// One item of `down`'s report. IDs match the `up` stage/resource they address.
+public struct TeardownItem: Sendable, Equatable, Encodable {
     public let id: String
     public let status: TeardownStatus
     /// What was stopped, or why nothing was. A `down` whose every line said only
@@ -76,22 +75,31 @@ public struct TeardownReport: Sendable {
     public let toolFailures: [String]
     /// A failure of the run itself rather than of one of its jobs — standing outside
     /// a project is the whole of it. Carried the way `up` carries one, so that no
-    /// item has to be invented to hold it: `metro` and `app` are the only item ids.
+    /// item has to be invented to hold it.
     public let failure: DomainError?
+    /// Android ownership cleanup treats an identity mismatch as a failed cleanup;
+    /// iOS keeps ADR-0007's legacy non-error `blocked` meaning.
+    public let blockedIsFailure: Bool
 
     public init(
-        items: [TeardownItem], toolFailures: [String] = [], failure: DomainError? = nil
+        items: [TeardownItem],
+        toolFailures: [String] = [],
+        failure: DomainError? = nil,
+        blockedIsFailure: Bool = false
     ) {
         self.items = items
         self.toolFailures = toolFailures
         self.failure = failure
+        self.blockedIsFailure = blockedIsFailure
     }
 
     /// Doctor's vocabulary again, so a consumer does not learn a second one — and a
     /// run that could not ask must not answer `pass`: that is the envelope saying
     /// the machine is clean while the exit code says the tool broke.
     public var status: CheckStatus {
-        if failure != nil || items.contains(where: { $0.status == .failed }) { return .error }
+        if failure != nil || items.contains(where: {
+            $0.status == .failed || (blockedIsFailure && $0.status == .blocked)
+        }) { return .error }
         if !toolFailures.isEmpty || items.contains(where: { $0.status == .unknown }) {
             return .unknown
         }

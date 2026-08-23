@@ -19,6 +19,10 @@ public enum AndroidWorkflowValidation {
     ]
 }
 
+public enum AndroidUpValidation {
+    public static let checkIDs = AndroidWorkflowValidation.checkIDs.union(["android.avd"])
+}
+
 /// The complete Phase 4A Android build pipeline. It deliberately ends at an APK:
 /// Emulator selection, install, Metro and launch belong to the later `up` stages.
 public func androidBuildStages(
@@ -28,10 +32,11 @@ public func androidBuildStages(
     hostRunner: any ProcessRunner,
     projectRunner: any ProcessRunner,
     environment: AndroidEnvironment = AndroidEnvironment(),
+    validationCheckIDs: Set<String> = AndroidWorkflowValidation.checkIDs,
     note: @escaping @Sendable (String) -> Void
 ) -> [any Stage] {
     [
-        ValidateStage(engine: doctor, checkIDs: AndroidWorkflowValidation.checkIDs),
+        ValidateStage(engine: doctor, checkIDs: validationCheckIDs),
         DependenciesStage(anchor: anchor, runner: projectRunner, includePods: false),
         AndroidBuildStage(
             anchor: anchor,
