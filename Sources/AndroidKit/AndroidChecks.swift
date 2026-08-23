@@ -600,7 +600,7 @@ private struct AndroidAVDCheck: Check {
                 source: CheckSource(tier: 1, origin: "evaluated Gradle model")
             )
         }
-        let abiFilters = variant.abiFilters ?? module.abiFilters
+        let abiFilters = variant.abiFilters.flatMap { $0.isEmpty ? nil : $0 } ?? module.abiFilters
         guard !abiFilters.isEmpty else {
             return .unknown(
                 reason: "the evaluated variant exposes no pre-build ABI evidence; the APK will be authoritative after build",
@@ -718,7 +718,7 @@ private struct AndroidAVDCheck: Check {
                 context.toolCommand("adb", ["-s", serial, "emu", "avd", "name"], sdk: sdk)
             )
             guard result.terminationStatus.isSuccess,
-                let name = result.standardOutput.split(separator: "\n").first.map(String.init),
+                let name = androidAVDName(from: result.standardOutput),
                 !name.isEmpty
             else {
                 throw DomainError(

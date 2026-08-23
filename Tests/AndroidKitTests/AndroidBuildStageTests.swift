@@ -39,13 +39,20 @@ private func buildExecutable(_ repo: FixtureRepo, _ path: String) throws {
     try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: repo.url(path).path)
 }
 
-private func buildModel(_ variants: String, apkDirectory: String, mergedManifest: String) -> String {
-    let variants = variants.replacingOccurrences(
-        of: "\"abiFilters\":[\"arm64-v8a\"]}",
-        with: "\"abiFilters\":[\"arm64-v8a\"],\"apkDirectory\":\"\(apkDirectory)\",\"mergedManifest\":\"\(mergedManifest)\"}"
-    )
+private func buildModel(
+    _ variants: String,
+    apkDirectory: String,
+    mergedManifest: String,
+    includeArtifacts: Bool
+) -> String {
+    let evaluatedVariants = includeArtifacts
+        ? variants.replacingOccurrences(
+            of: "\"abiFilters\":[\"arm64-v8a\"]}",
+            with: "\"abiFilters\":[\"arm64-v8a\"],\"apkDirectory\":\"\(apkDirectory)\",\"mergedManifest\":\"\(mergedManifest)\"}"
+        )
+        : variants
     return """
-    {"gradleVersion":"8.13","daemonJavaVersion":"17.0.12","daemonJavaVendor":"Temurin","daemonJavaHome":"/jdk/17","modules":[{"path":":app","agpVersion":"8.13.2","compileSdk":"36","buildToolsVersion":"35.0.0","minSdk":"24","targetSdk":"36","ndkVersion":null,"cmakeVersion":null,"nativeBuildConfigured":false,"abiFilters":["arm64-v8a"],"variants":\(variants)}]}
+    {"gradleVersion":"8.13","daemonJavaVersion":"17.0.12","daemonJavaVendor":"Temurin","daemonJavaHome":"/jdk/17","modules":[{"path":":app","agpVersion":"8.13.2","compileSdk":"36","buildToolsVersion":"35.0.0","minSdk":"24","targetSdk":"36","ndkVersion":null,"cmakeVersion":null,"nativeBuildConfigured":false,"abiFilters":["arm64-v8a"],"variants":\(evaluatedVariants)}]}
     """
 }
 
@@ -54,7 +61,7 @@ private let oneVariant =
 
 private let healthyBadging = """
 package: name='dev.mobile.fixture' versionCode='1' versionName='1.0'
-sdkVersion:'24'
+minSdkVersion:'24'
 targetSdkVersion:'36'
 launchable-activity: name='dev.mobile.fixture.MainActivity'  label='' icon=''
 native-code: 'arm64-v8a'
@@ -64,7 +71,9 @@ private func buildScenario(
     variants: String = oneVariant,
     apkElement: String = #"{"type":"SINGLE","filters":[],"outputFile":"app-debug.apk"}"#,
     badging: String = healthyBadging,
-    assembleResponse: FakeProcessRunner.Response = .ok("BUILD SUCCESSFUL\n")
+    assembleResponse: FakeProcessRunner.Response = .ok("BUILD SUCCESSFUL\n"),
+    modelArtifacts: Bool = true,
+    emitArtifacts: Bool = false
 ) throws -> BuildScenario {
     let repo = try FixtureRepo()
     try repo.write(
@@ -125,18 +134,26 @@ private func buildScenario(
     let mergedManifest = repo.url(
         "android/app/build/intermediates/merged_manifests/debug/processDebugManifest/AndroidManifest.xml"
     ).path
+    let modelScript = try #require(AndroidGradleModelProbe.scriptURL)
     let assemble = "./gradlew :app:assembleDebug --no-daemon --console=plain "
-        + "-Porg.gradle.java.installations.auto-download=false"
+        + "-Porg.gradle.java.installations.auto-download=false -I \(modelScript.path)"
+    let emittedArtifacts = AndroidGradleModelProbe.artifactMarker
+        + "{\"variant\":\"debug\",\"apkDirectory\":\"\(apkDirectory)\","
+        + "\"mergedManifest\":\"\(mergedManifest)\"}\n"
+    let buildResponse = emitArtifacts
+        ? .ok("BUILD SUCCESSFUL\n" + emittedArtifacts)
+        : assembleResponse
     let runner = FakeProcessRunner(responses: [
         modelCommand.description: .ok(
             AndroidGradleModelProbe.marker
                 + buildModel(
                     variants,
                     apkDirectory: apkDirectory,
-                    mergedManifest: mergedManifest
+                    mergedManifest: mergedManifest,
+                    includeArtifacts: modelArtifacts
                 ) + "\n"
         ),
-        assemble: assembleResponse,
+        assemble: buildResponse,
     ])
     let answering = AAPTAnsweringRunner(base: runner, badging: badging)
     let stage = AndroidBuildStage(
@@ -179,8 +196,20 @@ struct AndroidBuildStageTests {
         #expect(gradle[1].arguments.first == ":app:assembleDebug")
         #expect(gradle[1].arguments.contains("clean") == false)
         #expect(gradle[1].arguments.contains("--offline") == false)
+        #expect(gradle[1].arguments.contains("-I"))
         #expect(gradle[1].arguments.filter { $0.hasPrefix(":") }.count == 1)
         #expect(scenario.runner.log.all.contains { $0.executable == "gradle" } == false)
+    }
+
+    @Test("public AGP artifacts emitted by assemble replace unavailable configuration-time paths")
+    func readsPostBuildArtifacts() async throws {
+        let scenario = try buildScenario(modelArtifacts: false, emitArtifacts: true)
+        var context = UpContext()
+
+        let outcome = try await scenario.stage.run(&context)
+
+        #expect(outcome.status == .pass)
+        #expect(context.androidProduct?.applicationId == "dev.mobile.fixture")
     }
 
     @Test("multiple runnable variants fail before an assemble task is guessed")

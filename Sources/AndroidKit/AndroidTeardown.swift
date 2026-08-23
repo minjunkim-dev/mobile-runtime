@@ -333,17 +333,19 @@ struct AndroidCleanup: Sendable {
                         )
                     )
                 }
-                try await pause()
-                guard try await emulatorSerials(sdk: sdk).contains(serial) == false else {
-                    return .failed(
-                        "android.emulator",
-                        cleanupFailure(
-                            "the owned Emulator is still running",
-                            observed: serial
-                        )
-                    )
+                for _ in 0..<5 {
+                    try await pause()
+                    if try await emulatorSerials(sdk: sdk).contains(serial) == false {
+                        return .stopped("android.emulator", "\(device.avd) — \(serial)")
+                    }
                 }
-                return .stopped("android.emulator", "\(device.avd) — \(serial)")
+                return .failed(
+                    "android.emulator",
+                    cleanupFailure(
+                        "the owned Emulator is still running",
+                        observed: serial
+                    )
+                )
             }
         }
 
@@ -459,7 +461,7 @@ struct AndroidCleanup: Sendable {
             ["-s", serial, "emu", "avd", "name"], sdk: sdk
         ))
         guard result.terminationStatus.isSuccess,
-            let name = result.standardOutput.split(separator: "\n").first.map(String.init),
+            let name = androidAVDName(from: result.standardOutput),
             !name.isEmpty
         else {
             throw AndroidStateError("the recorded Emulator AVD identity could not be observed")

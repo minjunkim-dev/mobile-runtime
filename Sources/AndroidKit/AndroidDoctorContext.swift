@@ -81,6 +81,12 @@ enum AndroidModelProbeOutcome: Sendable, Equatable {
     case failure(String)
 }
 
+func androidAVDName(from output: String) -> String? {
+    guard let line = output.split(whereSeparator: \.isNewline).first else { return nil }
+    let name = String(line).trimmingCharacters(in: .whitespacesAndNewlines)
+    return name.isEmpty ? nil : name
+}
+
 struct AndroidJavaObservation: Sendable, Equatable {
     let version: SemanticVersion
     let versionText: String
@@ -518,13 +524,17 @@ actor AndroidDoctorContext {
 
 enum AndroidGradleModelProbe {
     static let marker = "MOBILE_ANDROID_MODEL="
+    static let artifactMarker = "MOBILE_ANDROID_ARTIFACT="
+    static var scriptURL: URL? {
+        Bundle.module.url(forResource: "mobile-doctor", withExtension: "gradle")
+    }
 
     static func command(
         androidDirectory: URL,
         offline: Bool = true,
         timeout: Duration? = .seconds(90)
     ) -> ProcessCommand? {
-        guard let script = Bundle.module.url(forResource: "mobile-doctor", withExtension: "gradle") else {
+        guard let script = scriptURL else {
             return nil
         }
         var arguments = [

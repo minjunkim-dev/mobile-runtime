@@ -330,6 +330,21 @@ struct AndroidDoctorTests {
         #expect(scenario.runner.log.all.contains { $0.arguments.contains("-list-avds") } == false)
     }
 
+    @Test("AVD compatibility falls back to a declared module ABI when the variant exposes none")
+    func avdModuleABIFallback() async throws {
+        let variants = #"[{"name":"debug","debuggable":true,"assembleTask":":app:assembleDebug","installTask":":app:installDebug","compileSdk":"36","minSdk":"24","targetSdk":"36","applicationId":"dev.mobile.fixture","abiFilters":[]}]"#
+        let response = FakeProcessRunner.Response.ok(
+            AndroidGradleModelProbe.marker + modelJSON(variants: variants) + "\n"
+        )
+        let scenario = try scenario(modelResponse: response)
+
+        let report = await DoctorEngine(checks: checks(scenario)).run(only: ["android.avd"])
+        let avd = try #require(report.checks.first { $0.id == "android.avd" })
+
+        #expect(avd.status == .pass)
+        #expect(avd.outcome.observed?.contains("arm64-v8a") == true)
+    }
+
     @Test("selected variant compileSdk outranks the module default")
     func variantCompileSDK() async throws {
         let variant = #"[{"name":"debug","debuggable":true,"assembleTask":":app:assembleDebug","installTask":":app:installDebug","compileSdk":"37","minSdk":"24","targetSdk":"37","applicationId":"dev.mobile.fixture","abiFilters":["arm64-v8a"]}]"#
