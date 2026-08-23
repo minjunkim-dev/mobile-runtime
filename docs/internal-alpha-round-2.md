@@ -116,10 +116,11 @@ clean임을 확인했다.
 - #95는 PR #102에서 Metro listener 또는 start process 종료를 readiness 판정에
   반영하고 회귀 테스트를 추가해 해결했다. 같은 두 CI gate가 통과했다.
 - #93은 최종 두 참여자 표본에 포함되지 않은 RN 0.72 탈락 표본의 호환성 조사다.
-  현재 성공 matrix의 필수 증거를 무효화하지 않으므로 Alpha blocker가 아니다.
-- #96은 실제 bundle과 예상 UI가 완료돼도 launch detail이 120초 동안
-  `Metro still bundling`으로 남을 수 있는 추적 중 non-blocker다. 실제 listener,
-  build, install, launch, 초기 UI를 모두 별도로 확인했으므로 이번 판정을 막지 않는다.
+  2026-08-23 `inconclusive`로 종료했으며 Matrix와 doctor의 `unknown`을 유지한다.
+  이 결정은 현재 성공 matrix의 필수 증거를 무효화하지 않는다(ADR-0012).
+- #96은 PR #104에서 Metro bundle 완료 신호를 인식하도록 수정하고 회귀 테스트를
+  추가해 해결했다. 당시 실제 listener, build, install, launch, 초기 UI를 별도로
+  확인했으므로 수정 전에도 이번 판정을 막지 않는 non-blocker였다.
 - development warning UI와 초기 UI 이후 project-specific prompt는 예상 초기
   화면과 필수 command flow를 막지 않아 명시적으로 수용한다.
 
@@ -131,7 +132,8 @@ clean임을 확인했다.
   전체 재실행 이력과 함께 보존했다.
 - 필수 `error`·`unknown`, build/up 실패, UI 미확인, tracked mutation,
   보안·데이터 손실 위험, undocumented intervention은 최종 matrix에 남지 않았다.
-- 모든 Alpha blocker는 해소됐고 남은 #93, #96은 위 사유로 non-blocker다.
+- 모든 Alpha blocker는 해소됐다. #93은 `inconclusive` 결정으로, #96은 PR #104로
+  각각 종료됐으며 private alpha 완료 판정은 바뀌지 않는다.
 - 따라서 **private iOS 내부 alpha를 완료로 선언한다.**
 - 이 판정은 private iOS 내부 alpha에만 적용된다. ADR-0008의 3-repository
   Go/No-Go를 변경하지 않으며 public, external, 일반 React Native 지원을

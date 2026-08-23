@@ -303,8 +303,10 @@ B는 "maintainer와 다른 실제 프로젝트" 조건의 수용 증거에서 �
 - 이 결과는 위 SHA의 Swift package 테스트와 Linux `Core` compile만 증명한다.
   Maintainer 대체 표본의 최종 실행은 별도로 전체 matrix와 초기 UI까지 증명한다.
   #93은 탈락한 첫 표본의 별도 호환성 조사로 남기되 현재 alpha의 blocker에서는
-  제외한다. #94는 해소됐고 #95는 내부 alpha 완료를 막는 별도 native blocker,
-  #96은 추적 중인 non-blocker다.
+  제외한다. 후속 #93은 2026-08-23 `inconclusive`로 종료했고 Matrix와 doctor의
+  `unknown`을 유지했다(ADR-0012). #94는 해소됐고 #95는 당시 내부 alpha 완료를
+  막는 별도 native blocker였다. #96은 당시 추적 중인 non-blocker였고 후속
+  PR #104로 해결됐다.
 - 초대 개발자 실행은 서로 다른 add-to-app 표본 C의 doctor와 tracked 파일
   무변경까지만 증명했다. build는 #92로 실패했고 `up`과 초기 UI 관측은 없으므로
   #87 참여자 결과는 **blocked**다.

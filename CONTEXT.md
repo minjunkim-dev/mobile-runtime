@@ -164,6 +164,34 @@ private 저장소 접근권이 있고 자기 프로젝트의 앱 환경값을 �
 필수 증거·독립 실행·안전성·tracked 파일 무변경 중 하나를 깨뜨려 내부 alpha 완료를 막는 결함. 기록된 warning, 미관 문제, 초기 UI 이후의 프로젝트 고유 기능 문제는 포함하지 않는다.
 _Avoid_: release blocker, Go/No-Go blocker
 
+**검증 조합 (Validation tuple)**:
+프레임워크·도구체인·플랫폼 런타임 버전을 함께 고정한 하나의 관측 단위다. 결과는 그 조합에만 귀속하며 더 넓은 버전 범위로 일반화하지 않는다.
+_Avoid_: 지원 범위, 호환성 정책
+
+**지원 범위 (Support envelope)**:
+공식 근거와 누적된 검증 조합으로 설정한 지원 경계다. 하나의 로컬 검증 조합만으로는 성립하지 않는다.
+_Avoid_: 검증 조합, tested on
+
+**Known-good 표본 (Known-good sample)**:
+고정된 프로젝트 revision이 같은 검증 조합에서 mobile 없이도 build·install·launch·초기 UI에 도달하고 tracked 파일을 바꾸지 않는 검증 표본이다. mobile SHA는 표본이 아니라 각 검증 실행에서 별도로 고정한다.
+_Avoid_: clean repo, test project
+
+**검증 결과 (Validation verdict)**:
+고정된 검증 실행의 결과로, 전체 증거 체인이 성공하면 `validated`, known-good baseline 이후 동일한 mobile/toolchain 실패가 재현되면 `failed`, 결과를 귀속할 수 없으면 `inconclusive`다. 검증 조합에만 귀속하며 doctor의 Status나 지원 판정으로 일반화하지 않는다.
+_Avoid_: support status, doctor status
+
+**조사 실행 (Investigation run)**:
+known-good 표본에서 `unknown`을 기록한 뒤 고정된 mobile SHA와 검증 조합으로 build·up·초기 UI까지 진행해 검증 결과를 얻는 실행이다. Internal alpha pass가 아니며 runbook이나 프로젝트 선언을 바꾸지 않는다.
+_Avoid_: alpha exception, override run
+
+**검증 실행 (Validation run)**:
+project SHA·mobile SHA·검증 조합을 함께 고정한 한 번의 증거 수집이다. 하나라도 바뀌면 새 실행이며 기존 결과는 변경된 입력으로 승계하지 않는다.
+_Avoid_: rerun, latest result
+
+**표본 교체 (Sample replacement)**:
+known-good baseline 전에 부적격 표본을 다른 프로젝트로 바꾸는 일이다. 검증 결과가 나온 뒤에는 교체하지 않고 추가 표본의 결과를 누적한다.
+_Avoid_: retry, failed sample replacement
+
 ### 구조
 
 **Adapter**:
