@@ -639,7 +639,7 @@ actor AndroidRuntime {
                 ["-s", serial, "emu", "avd", "name"], sdk: sdk
             ))
             guard identity.terminationStatus.isSuccess,
-                let avd = identity.standardOutput.split(separator: "\n").first.map(String.init),
+                let avd = androidAVDName(from: identity.standardOutput),
                 !avd.isEmpty
             else {
                 throw AndroidStateError("running emulator \(serial) has no readable AVD identity")

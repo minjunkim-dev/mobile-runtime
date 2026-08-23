@@ -459,7 +459,7 @@ struct AndroidCleanup: Sendable {
             ["-s", serial, "emu", "avd", "name"], sdk: sdk
         ))
         guard result.terminationStatus.isSuccess,
-            let name = result.standardOutput.split(separator: "\n").first.map(String.init),
+            let name = androidAVDName(from: result.standardOutput),
             !name.isEmpty
         else {
             throw AndroidStateError("the recorded Emulator AVD identity could not be observed")

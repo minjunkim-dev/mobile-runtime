@@ -232,6 +232,11 @@ struct AndroidRuntimeTests {
         #expect(state.all.contains { ["avdmanager", "sdkmanager"].contains($0.executable) } == false)
     }
 
+    @Test("ADB CRLF does not become part of the Emulator AVD identity")
+    func trimsAVDIdentity() {
+        #expect(androidAVDName(from: "Pixel\r\nOK\r\n") == "Pixel")
+    }
+
     @Test("down stops owned app and reverse but preserves reused Metro and Emulator")
     func cleanupPreservesReusedResources() async throws {
         let scenario = try runtimeScenario()
