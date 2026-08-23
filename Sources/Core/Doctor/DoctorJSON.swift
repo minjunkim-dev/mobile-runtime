@@ -22,13 +22,21 @@ public struct DoctorJSONDocument: Encodable, Sendable {
     public let schemaVersion: Int
     public let toolVersion: String
     public let command: String
+    /// Additive schema-v1 discriminator. nil preserves the legacy iOS document.
+    public let platform: String?
     public let status: CheckStatus
     public let checks: [Item]
 
-    public init(report: DoctorReport, toolVersion: String, command: String = "doctor") {
+    public init(
+        report: DoctorReport,
+        toolVersion: String,
+        command: String = "doctor",
+        platform: String? = nil
+    ) {
         self.schemaVersion = Self.schemaVersion
         self.toolVersion = toolVersion
         self.command = command
+        self.platform = platform
         self.status = report.status
         self.checks = report.checks.map { check in
             Item(

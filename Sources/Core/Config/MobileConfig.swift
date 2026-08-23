@@ -2,7 +2,7 @@ import Foundation
 import Yams
 
 /// Tier 3: the handful of things a project cannot infer, declared by hand next to
-/// the anchor. Four fields in v0, and the schema's shape is the boundary's
+/// the anchor. Its small schema is the boundary's
 /// documentation — the top level is genuinely-Tier-3 only, and anything mobile can
 /// infer is sayable only inside `overrides:`.
 ///
@@ -20,17 +20,31 @@ public struct MobileConfig: Sendable, Equatable {
     public let xcode: MinimumVersion?
     /// `overrides.iosRuntime` — Tier 2 only.
     public let iosRuntime: MinimumVersion?
+    /// Android selectors disambiguate valid Gradle/AVD candidates. They never
+    /// replace an evaluated project requirement.
+    public let androidModule: String?
+    public let androidVariant: String?
+    public let androidLauncherActivity: String?
+    public let androidAVD: String?
 
     public init(
         device: String? = nil,
         scheme: String? = nil,
         xcode: MinimumVersion? = nil,
-        iosRuntime: MinimumVersion? = nil
+        iosRuntime: MinimumVersion? = nil,
+        androidModule: String? = nil,
+        androidVariant: String? = nil,
+        androidLauncherActivity: String? = nil,
+        androidAVD: String? = nil
     ) {
         self.device = device
         self.scheme = scheme
         self.xcode = xcode
         self.iosRuntime = iosRuntime
+        self.androidModule = androidModule
+        self.androidVariant = androidVariant
+        self.androidLauncherActivity = androidLauncherActivity
+        self.androidAVD = androidAVD
     }
 
     /// The whole v0 schema, written once. Every other place that has to name a
@@ -39,10 +53,18 @@ public struct MobileConfig: Sendable, Equatable {
     public enum Key {
         public static let device = "ios.device"
         public static let scheme = "ios.scheme"
+        public static let androidModule = "android.module"
+        public static let androidVariant = "android.variant"
+        public static let androidLauncherActivity = "android.launcherActivity"
+        public static let androidAVD = "android.avd"
         public static let xcode = "overrides.xcode"
         public static let iosRuntime = "overrides.iosRuntime"
 
-        public static let all = [device, scheme, xcode, iosRuntime]
+        public static let all = [
+            device, scheme,
+            androidModule, androidVariant, androidLauncherActivity, androidAVD,
+            xcode, iosRuntime,
+        ]
 
         /// `["ios": ["device", "scheme"], …]` — the shape the parser walks.
         static let sections: [String: Set<String>] = all.reduce(into: [:]) { sections, path in
@@ -56,6 +78,10 @@ public struct MobileConfig: Sendable, Equatable {
         [
             (Key.device, device),
             (Key.scheme, scheme),
+            (Key.androidModule, androidModule),
+            (Key.androidVariant, androidVariant),
+            (Key.androidLauncherActivity, androidLauncherActivity),
+            (Key.androidAVD, androidAVD),
             (Key.xcode, xcode?.text),
             (Key.iosRuntime, iosRuntime?.text),
         ]
@@ -134,7 +160,11 @@ extension MobileConfig {
                 device: values[Key.device],
                 scheme: values[Key.scheme],
                 xcode: overrides[Key.xcode],
-                iosRuntime: overrides[Key.iosRuntime]
+                iosRuntime: overrides[Key.iosRuntime],
+                androidModule: values[Key.androidModule],
+                androidVariant: values[Key.androidVariant],
+                androidLauncherActivity: values[Key.androidLauncherActivity],
+                androidAVD: values[Key.androidAVD]
             ),
             // Dictionary order is not stable, and this text ends up in a report.
             unknownKeys: unknownKeys.sorted()

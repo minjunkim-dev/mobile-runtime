@@ -2,6 +2,11 @@ import ArgumentParser
 import Core
 import Foundation
 
+enum MobilePlatform: String, ExpressibleByArgument, Sendable {
+    case ios
+    case android
+}
+
 enum Tool {
     static let version = "0.1.0"
 }
@@ -32,8 +37,11 @@ struct Doctor: AsyncParsableCommand {
     @Flag(name: [.short, .long], help: "Show observed values, requirements and sources.")
     var verbose = false
 
+    @Option(name: .long, help: "Platform to diagnose: ios or android.")
+    var platform: MobilePlatform = .ios
+
     func run() async throws {
-        let wiring = await Wiring.bootstrap(verbose: verbose)
+        let wiring = await Wiring.bootstrap(verbose: verbose, platform: platform)
 
         // Standing outside a project is a legitimate use — a new machine has nothing
         // cloned yet — so it is a note, never an error.
@@ -43,7 +51,13 @@ struct Doctor: AsyncParsableCommand {
         for failure in report.toolFailures { writeError("tool failure: \(failure)") }
 
         if json {
-            print(try DoctorJSONDocument(report: report, toolVersion: Tool.version).encoded())
+            print(
+                try DoctorJSONDocument(
+                    report: report,
+                    toolVersion: Tool.version,
+                    platform: platform == .android ? platform.rawValue : nil
+                ).encoded()
+            )
         } else {
             let renderer = HumanReportRenderer(useColor: Terminal.supportsColor, verbose: verbose)
             print(renderer.render(report))
