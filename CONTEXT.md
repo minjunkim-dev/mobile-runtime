@@ -2,6 +2,11 @@
 
 Reproducible mobile development runtime. 프로젝트가 요구하는 환경을 추론·검증·기동한다 — North Star는 `git clone → mobile up`.
 
+현재 `main`은 iOS React Native MVP와 Android Phase 4A CLI provider를 제공한다.
+Android candidate runbook과 최소 Emulator smoke는 준비됐지만 maintainer 실제
+프로젝트 alpha는 별도 검증으로 남아 있다. CLI가 현재 실행 표면이며 SwiftUI
+macOS 앱은 같은 Core/provider 계약을 표현할 후속 표면이다.
+
 ## Language
 
 ### 요구사항 계층
@@ -148,7 +153,7 @@ _Avoid_: 초기화, 강제 정리
 ### down
 
 **정리 대상 (Teardown target)**:
-`down`이 겨누는 집합 — **이 프로젝트의** Metro와 이 프로젝트가 설치한 앱. 기준은 누가 띄웠는가가 아니라 **누구의 것인가**다. `down`은 소유를 추적하지 않으므로(Metro 판정이 정체성으로 답한다) 사용자가 손으로 띄운 Metro도 이 프로젝트의 것이면 대상이다 — 그것이 상태 파일을 두지 않는 대가이고, 받아들인 대가다. **시뮬레이터는 들어가지 않는다** — `up`이 부팅했더라도 머신의 자원이고, 끄는 것이 푸는 문제가 없다("Orchestrate, don't replace"는 만들지 않는 것과 같은 이유로 치우지도 않는다).
+`down`이 플랫폼 계약에 따라 겨누는 집합. 기준은 누가 띄웠는가가 아니라 **누구의 것인가**다. iOS에서는 이 프로젝트의 Metro와 설치 앱을 겨누며 시뮬레이터는 포함하지 않는다. Android에서는 Android active run이 identity를 기록한 이 프로젝트의 앱·adb reverse·Metro와 이번 실행이 부팅한 Emulator를 역순으로 겨눈다. 재사용했거나 identity를 확인할 수 없는 자원은 보존한다.
 _Avoid_: 띄운 것(누가 시작했는가라는 틀린 축을 가리킨다), 잔존물(치워야 할 쓰레기라는 뜻이 섞인다 — 살아 있는 Metro는 정상이고 의도된 상태다)
 
 **설치 기록 (Install record)**:
@@ -170,7 +175,11 @@ doctor 정확성의 두 실패 축. 미탐 = 실재 문제를 pass로 통과(치
 사전에 잠근 증거 기준으로 특정 전환 또는 주장을 허용할지 내리는 판정. 기준과 차단 범위는 계획 시점에 잠그며, No-Go는 그 경계를 통과하지 못했다는 뜻이지 프로젝트 전체 중단을 뜻하지 않는다. #1 = feasibility(spike), #2 = 유용성(dogfooding).
 
 **내부 alpha (Internal alpha)**:
-private 저장소 접근권이 있고 자기 프로젝트의 앱 환경값을 직접 준비하는 maintainer와 초대된 RN iOS 개발자가 MVP를 실제 프로젝트에 사용하는 단계. 외부 배포, 일반적인 React Native 지원 주장, Go 판정을 뜻하지 않는다.
+private 저장소 접근권이 있고 자기 프로젝트의 앱 환경값을 직접 준비하는 maintainer가
+실제 프로젝트에서 해당 플랫폼의 MVP/provider를 사용하는 단계다. iOS round는
+초대된 RN iOS 개발자를 별도 표본으로 포함할 수 있지만, Private Phase 4A Android의
+필수 표본은 maintainer 소유 실제 RN Android 프로젝트 한 개다. 외부 배포, 일반적인
+React Native 지원 주장, Go 판정을 뜻하지 않는다.
 
 **Alpha blocker**:
 필수 증거·독립 실행·안전성·tracked 파일 무변경 중 하나를 깨뜨려 내부 alpha 완료를 막는 결함. 기록된 warning, 미관 문제, 초기 UI 이후의 프로젝트 고유 기능 문제는 포함하지 않는다.

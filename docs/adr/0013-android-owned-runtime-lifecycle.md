@@ -2,7 +2,7 @@
 
 - 상태: 채택
 - 날짜: 2026-08-23
-- 관련: [Android Emulator up·down 소유권 계약 확정](https://github.com/minjunkim-dev/mobile-runtime/issues/113) · ADR-0007 · ADR-0010
+- 관련: [Android Emulator up·down 소유권 계약 확정](https://github.com/minjunkim-dev/mobile-runtime/issues/113) · [Private Android alpha runbook과 후보 SHA 검증](https://github.com/minjunkim-dev/mobile-runtime/issues/117) · PR [#124](https://github.com/minjunkim-dev/mobile-runtime/pull/124) · ADR-0007 · ADR-0010
 
 Android provider는 프로젝트·플랫폼별 활성 실행 기록에 Emulator, Metro, `adb reverse`, 앱의 `started|reused` 또는 `created|reused` 상태를 자원 획득 즉시 원자적으로 남긴다. 같은 대상을 향한 반복 `up`은 기존 실행에 합류하되 소유권을 낮추지 않고, 다른 대상이나 동시 lifecycle 명령은 멈춘다. PID만 믿지 않고 AVD 이름·serial·프로젝트 anchor·현재 mapping·application ID처럼 자원별 identity를 다시 확인한 뒤, 이번 활성 실행이 만든 자원만 정리한다.
 

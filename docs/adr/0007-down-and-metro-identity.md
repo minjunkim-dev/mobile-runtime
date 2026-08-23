@@ -4,6 +4,10 @@
 - 날짜: 2026-08-16
 - 관련: #57(fog 승격 티켓), #45(미탐), #44(dogfooding up 라운드 1), #13(up 파이프라인 스펙), #12(CLI 계약) · ADR-0004(등급 정책)
 
+이 ADR의 Simulator와 설치 기록 서술은 기존 iOS provider에 대한 결정이다. Android의
+Emulator·앱·adb reverse active-run 소유권은 [ADR-0013](0013-android-owned-runtime-lifecycle.md)이
+플랫폼별로 구체화하며, 공통 계약을 조용히 덮어쓰지 않는다.
+
 ## 배경
 
 #13이 계획 시점에 잠가 둔 fog 트리거 셋 중 세 번째(`down`·`stop` 동사 + Metro 수명 관리)가 #44 실측으로 승격 조건을 충족했다.
