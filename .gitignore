@@ -11,3 +11,4 @@ spike/**/Dummy.app/
 
 # Linux verification scratch path (scripts/verify-core-linux.sh).
 .build-linux/
+.build-linux-package-cache/
