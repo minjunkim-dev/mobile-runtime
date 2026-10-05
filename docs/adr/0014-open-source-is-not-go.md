@@ -16,3 +16,9 @@ ADR-0011은 3/3 Go 전에 public 저장소 전환을 막았지만, 이 도구는
 
 - **3/3 Go까지 private 유지**: 기각. 증거 기준과 무관한 소스 열람까지 막고, CI 비용이 private 과금에 묶인다.
 - **새 public 저장소로 이전·history 재작성**: 기각. issue·PR로 남긴 결정 기록을 잃고, 보안 감사에서 공개를 막는 secret이 없었다. 커밋 메타데이터의 개인 이메일은 maintainer가 공개를 수용했다.
+
+## 결과
+
+- public 저장소에서는 GitHub-hosted standard runner CI를 무료로 쓴다.
+- 현재 판정은 계속 **No-Go**다. 공개 사실을 Go·지원 근거로 인용하지 않는다.
+- 공개 뒤 이슈와 PR 기록, Actions 로그도 공개되므로 증거 기록의 sanitized 규칙을 계속 지킨다.
