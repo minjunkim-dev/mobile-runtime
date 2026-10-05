@@ -42,6 +42,7 @@ private func scenario(
     materializedWrapper: Bool = true,
     modelResponse: FakeProcessRunner.Response? = nil,
     variants: String? = nil,
+    mobileVariant: String? = nil,
     avdNames: [String] = ["Pixel_API_35"],
     sdkDir: String? = nil,
     androidHome: String? = nil,
@@ -112,6 +113,9 @@ private func scenario(
         "adb devices": adbResponse,
         "emulator -accel-check": .ok("accel:\n0\nHypervisor.Framework OS X Version 13+\n"),
     ])
+    if let mobileVariant {
+        try repo.write("mobile.yml", "android:\n  variant: \(mobileVariant)\n")
+    }
     let anchor = try #require(ProjectAnchor.detect(from: repo.root))
     return AndroidScenario(
         repo: repo,
@@ -266,7 +270,7 @@ struct AndroidDoctorTests {
 
     @Test("multiple runnable variants require the Android selector")
     func variantAmbiguity() async throws {
-        let variants = #"[{"name":"debug","debuggable":true,"assembleTask":":app:assembleDebug","installTask":":app:installDebug"},{"name":"stagingDebug","debuggable":true,"assembleTask":":app:assembleStagingDebug","installTask":":app:installStagingDebug"}]"#
+        let variants = #"[{"name":"stagingDebug","debuggable":true,"assembleTask":":app:assembleStagingDebug","installTask":":app:installStagingDebug"},{"name":"prodDebug","debuggable":true,"assembleTask":":app:assembleProdDebug","installTask":":app:installProdDebug"}]"#
         let scenario = try scenario(variants: variants)
 
         let report = await DoctorEngine(checks: checks(scenario)).run(only: ["android.target"])
@@ -275,6 +279,31 @@ struct AndroidDoctorTests {
         #expect(target.status == .warning)
         #expect(target.outcome.required == "android.variant in mobile.yml")
         #expect(target.outcome.observed?.contains("stagingDebug") == true)
+    }
+
+    @Test("a runnable variant named debug is selected ahead of debugOptimized")
+    func defaultDebugVariant() async throws {
+        let variants = #"[{"name":"debugOptimized","debuggable":true,"assembleTask":":app:assembleDebugOptimized","installTask":":app:installDebugOptimized"},{"name":"debug","debuggable":true,"assembleTask":":app:assembleDebug","installTask":":app:installDebug"}]"#
+        let scenario = try scenario(variants: variants)
+
+        let report = await DoctorEngine(checks: checks(scenario)).run(only: ["android.target"])
+        let target = try #require(report.checks.first { $0.id == "android.target" })
+
+        #expect(target.status == .pass)
+        #expect(target.outcome.observed?.contains(":app debug —") == true)
+        #expect(target.outcome.observed?.contains("debugOptimized") == false)
+    }
+
+    @Test("mobile.yml android.variant outranks the default debug name")
+    func configuredVariantOutranksDebug() async throws {
+        let variants = #"[{"name":"debug","debuggable":true,"assembleTask":":app:assembleDebug","installTask":":app:installDebug"},{"name":"debugOptimized","debuggable":true,"assembleTask":":app:assembleDebugOptimized","installTask":":app:installDebugOptimized"}]"#
+        let scenario = try scenario(variants: variants, mobileVariant: "debugOptimized")
+
+        let report = await DoctorEngine(checks: checks(scenario)).run(only: ["android.target"])
+        let target = try #require(report.checks.first { $0.id == "android.target" })
+
+        #expect(target.status == .pass)
+        #expect(target.outcome.observed?.contains(":app debugOptimized —") == true)
     }
 
     @Test("conflicting sdk.dir and ANDROID_HOME is an error instead of choosing one")

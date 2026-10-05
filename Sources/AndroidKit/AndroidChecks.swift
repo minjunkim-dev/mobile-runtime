@@ -339,6 +339,9 @@ enum AndroidTargetSelector {
                 )
             }
             variant = selected
+        } else if let debug = runnable.first(where: { $0.name == "debug" }) {
+            // RN's default mode. Flavor names such as stagingDebug stay ambiguous.
+            variant = debug
         } else if runnable.count == 1, let only = runnable.first {
             variant = only
         } else if runnable.isEmpty {

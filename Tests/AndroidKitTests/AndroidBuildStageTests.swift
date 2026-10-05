@@ -215,7 +215,7 @@ struct AndroidBuildStageTests {
     @Test("multiple runnable variants fail before an assemble task is guessed")
     func variantAmbiguity() async throws {
         let variants =
-            #"[{"name":"debug","debuggable":true,"assembleTask":":app:assembleDebug","installTask":":app:installDebug"},{"name":"stagingDebug","debuggable":true,"assembleTask":":app:assembleStagingDebug","installTask":":app:installStagingDebug"}]"#
+            #"[{"name":"stagingDebug","debuggable":true,"assembleTask":":app:assembleStagingDebug","installTask":":app:installStagingDebug"},{"name":"prodDebug","debuggable":true,"assembleTask":":app:assembleProdDebug","installTask":":app:installProdDebug"}]"#
         let scenario = try buildScenario(variants: variants)
         var context = UpContext()
 
@@ -226,6 +226,22 @@ struct AndroidBuildStageTests {
         #expect(error?.summary.contains("multiple runnable variants") == true)
         #expect(scenario.runner.log.all.filter { $0.executable == "./gradlew" }.count == 1)
         #expect(context.androidProduct == nil)
+    }
+
+    @Test("debug is assembled when debugOptimized is also runnable")
+    func defaultDebugVariantBuilds() async throws {
+        let variants =
+            #"[{"name":"debugOptimized","debuggable":true,"assembleTask":":app:assembleDebugOptimized","installTask":":app:installDebugOptimized"},{"name":"debug","debuggable":true,"assembleTask":":app:assembleDebug","installTask":":app:installDebug","compileSdk":"36","minSdk":"24","targetSdk":"36","applicationId":"dev.mobile.fixture","abiFilters":["arm64-v8a"]}]"#
+        let scenario = try buildScenario(variants: variants)
+        var context = UpContext()
+
+        let outcome = try await scenario.stage.run(&context)
+
+        #expect(outcome.status == .pass)
+        #expect(outcome.detail == ":app debug")
+        let gradle = scenario.runner.log.all.filter { $0.executable == "./gradlew" }
+        #expect(gradle.contains { $0.arguments.first == ":app:assembleDebug" })
+        #expect(gradle.contains { $0.arguments.first == ":app:assembleDebugOptimized" } == false)
     }
 
     @Test("split APK output is rejected after Gradle succeeds")
