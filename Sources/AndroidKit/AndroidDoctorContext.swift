@@ -355,6 +355,32 @@ actor AndroidDoctorContext {
         return .missing("neither android/local.properties sdk.dir nor ANDROID_HOME declares the SDK root")
     }
 
+    func cmakeDirectory() async throws -> URL? {
+        let local = androidDirectory.appendingPathComponent("local.properties")
+        let text: String
+        do {
+            text = try String(contentsOf: local, encoding: .utf8)
+        } catch let error as CocoaError where error.code == .fileReadNoSuchFile {
+            return nil
+        }
+        guard let path = Self.properties(text)["cmake.dir"].map(Self.unescapeProperty) else { return nil }
+        guard !path.isEmpty else { throw CocoaError(.fileReadCorruptFile) }
+        let directory = (path.hasPrefix("/") ? URL(fileURLWithPath: path) : androidDirectory.appendingPathComponent(path))
+            .standardizedFileURL.resolvingSymlinksInPath()
+        let cmake = directory.appendingPathComponent("bin/cmake")
+        guard FileManager.default.isReadableFile(atPath: cmake.path),
+            FileManager.default.isExecutableFile(atPath: cmake.path)
+        else { throw CocoaError(.fileReadNoPermission) }
+        let result = try await projectRunner.run(
+            ProcessCommand(cmake.path, ["--version"], workingDirectory: androidDirectory, timeout: .seconds(15))
+        )
+        guard result.terminationStatus.isSuccess,
+            let version = result.standardOutput.firstMatch(#"(?m)^cmake version (\S+)"#)?.last,
+            SemanticVersion(version) != nil
+        else { throw CocoaError(.fileReadCorruptFile) }
+        return directory
+    }
+
     nonisolated func toolCommand(
         _ executable: String,
         _ arguments: [String],
