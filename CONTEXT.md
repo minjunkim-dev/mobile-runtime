@@ -3,8 +3,8 @@
 Reproducible mobile development runtime. 프로젝트가 요구하는 환경을 추론·검증·기동한다 — North Star는 `git clone → mobile up`.
 
 현재 `main`은 iOS React Native MVP와 Android Phase 4A CLI provider를 제공한다.
-Android candidate runbook과 최소 Emulator smoke는 준비됐지만 maintainer 실제
-프로젝트 alpha는 별도 검증으로 남아 있다. CLI가 현재 실행 표면이며 SwiftUI
+Android candidate runbook과 최소 Emulator smoke는 준비됐지만 SHA를 고정한 공개
+OSS 실제 앱 표본의 alpha는 별도 검증으로 남아 있다. CLI가 현재 실행 표면이며 SwiftUI
 macOS 앱은 같은 Core/provider 계약을 표현할 후속 표면이다.
 
 ## Language
@@ -175,10 +175,11 @@ doctor 정확성의 두 실패 축. 미탐 = 실재 문제를 pass로 통과(치
 사전에 잠근 증거 기준으로 특정 전환 또는 주장을 허용할지 내리는 판정. 기준과 차단 범위는 계획 시점에 잠그며, No-Go는 그 경계를 통과하지 못했다는 뜻이지 프로젝트 전체 중단을 뜻하지 않는다. #1 = feasibility(spike), #2 = 유용성(dogfooding).
 
 **내부 alpha (Internal alpha)**:
-private 저장소 접근권이 있고 자기 프로젝트의 앱 환경값을 직접 준비하는 maintainer가
+private 저장소 접근권이 있고 검증 표본의 앱 환경값을 직접 준비하는 maintainer가
 실제 프로젝트에서 해당 플랫폼의 MVP/provider를 사용하는 단계다. iOS round는
 초대된 RN iOS 개발자를 별도 표본으로 포함할 수 있지만, Private Phase 4A Android의
-필수 표본은 maintainer 소유 실제 RN Android 프로젝트 한 개다. 외부 배포, 일반적인
+필수 표본은 SHA를 고정한 공개 OSS 실제 RN Android 앱 한 개다. maintainer 소유
+프로젝트 검증은 후속 milestone이다. 외부 배포, 일반적인
 React Native 지원 주장, Go 판정을 뜻하지 않는다.
 
 **Alpha blocker**:
