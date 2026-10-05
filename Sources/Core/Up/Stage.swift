@@ -234,6 +234,10 @@ public struct UpContext: Sendable {
     /// later `down` can retry.
     public var androidRequiresTeardown = false
 
+    /// Set by `dependencies` when this run reinstalled `node_modules`. A Metro
+    /// started right after can serve a stale file map, so `metro` resets its cache.
+    public var nodeModulesReinstalled = false
+
     public init() {}
 }
 

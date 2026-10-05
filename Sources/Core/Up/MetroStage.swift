@@ -54,7 +54,7 @@ public struct MetroStage: Stage {
         let logFile = logs.directory.appendingPathComponent("metro.log")
         // The project's own start script, through the manager its lockfile named —
         // the same answer `dependencies` installs with.
-        let command = anchor.startProcess
+        let command = anchor.startProcess(resettingCache: context.nodeModulesReinstalled)
         let pid = try await runner.spawnDetached(command, logFile: logFile)
 
         // The pid that comes back is the start script's, and the bundler is two links

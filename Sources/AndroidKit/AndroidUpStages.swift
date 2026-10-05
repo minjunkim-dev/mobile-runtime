@@ -199,7 +199,7 @@ actor AndroidRuntime {
         try await requireResolvedLauncher(product, serial: device.serial, sdk: sdk)
     }
 
-    func metro() async throws -> MetroProcess {
+    func metro(resettingCache: Bool = false) async throws -> MetroProcess {
         var value = try run()
         if let existing = value.metro {
             switch existing.state {
@@ -245,7 +245,7 @@ actor AndroidRuntime {
         }
 
         let log = logs.url("metro.log")
-        let command = anchor.startProcess
+        let command = anchor.startProcess(resettingCache: resettingCache)
         let startPID = try await projectRunner.spawnDetached(command, logFile: log)
         value = try run()
         value.metro = AndroidActiveRun.Metro(
@@ -815,7 +815,7 @@ public func androidUpStages(
             return .pass(product.applicationId)
         },
         AndroidRuntimeStage(id: "metro") { context in
-            let metro = try await runtime.metro()
+            let metro = try await runtime.metro(resettingCache: context.nodeModulesReinstalled)
             context.metro = metro
             return metro.state == .spawned
                 ? .pass("started on \(MetroVerdict.port) — pid \(metro.listenerPid ?? 0)")

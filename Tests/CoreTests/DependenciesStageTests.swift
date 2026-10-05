@@ -97,6 +97,8 @@ struct DependenciesStageTests {
 
         #expect(outcome.status == .pass)
         #expect(runner.log.first(matching: "yarn install --frozen-lockfile") != nil)
+        // A reinstall tells `metro` to reset its cache (#149).
+        #expect(context.nodeModulesReinstalled)
     }
 
     @Test("each lockfile is aligned natively without rewriting project declarations")
@@ -143,6 +145,7 @@ struct DependenciesStageTests {
 
         #expect(outcome.status == .skipped)
         #expect(runner.log.all.isEmpty)
+        #expect(!context.nodeModulesReinstalled)
     }
 
     /// Installing from a sub-package is how a workspace gets broken, so the lockfile's
@@ -619,5 +622,17 @@ struct DependenciesStageTests {
         await #expect(throws: ProcessError.self) {
             try await run(try anchor(repo), runner, context: &context)
         }
+    }
+
+    @Test("a reinstall starts Metro with --reset-cache through the start script")
+    func resetCacheStartProcess() throws {
+        let npm = try FixtureRepo()
+        try npm.write("package.json", packageJSON)
+        try npm.write("package-lock.json", "{}")
+        #expect(try anchor(npm).startProcess(resettingCache: true).description == "npm start -- --reset-cache")
+        #expect(try anchor(npm).startProcess.description == "npm start")
+
+        let yarn = try app()
+        #expect(try anchor(yarn).startProcess(resettingCache: true).description == "yarn start --reset-cache")
     }
 }

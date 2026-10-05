@@ -202,7 +202,8 @@ struct IOSUpStagesTests {
         #expect(hostCommands.contains(launchCommand))
         #expect(!projectCommands.contains { $0.hasPrefix("xcrun simctl") })
         #expect(host.log.spawned.isEmpty)
-        #expect(project.log.spawned.first?.command.description == "yarn start")
+        // `dependencies` just installed, so Metro starts with a fresh cache (#149).
+        #expect(project.log.spawned.first?.command.description == "yarn start --reset-cache")
         #expect(
             project.log.first(matching: buildCommand(repo))?.environment["DEVELOPER_DIR"]
                 == developerDirectory
