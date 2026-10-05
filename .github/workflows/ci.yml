@@ -129,7 +129,7 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .build-linux
-          key: ${{ env.CACHE_VERSION }}-build-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.fingerprint }}-${{ hashFiles('Package.swift', 'Sources/Core/**', 'scripts/verify-core-linux.sh', '.github/workflows/ci.yml') }}
+          key: ${{ env.CACHE_VERSION }}-build-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.fingerprint }}-${{ hashFiles('Package.resolved') }}-${{ hashFiles('Package.swift', 'Sources/Core/**', 'scripts/verify-core-linux.sh', '.github/workflows/ci.yml') }}
       - name: Compile Core with locked dependencies
         run: |
           scripts/verify-core-linux.sh --cache-path .build-linux-package-cache
