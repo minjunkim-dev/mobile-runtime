@@ -123,12 +123,12 @@ private func scenario(
     )
 }
 
-private func checks(_ scenario: AndroidScenario) -> [any Check] {
+private func checks(_ scenario: AndroidScenario, runner: FakeProcessRunner? = nil) -> [any Check] {
     androidChecks(
         anchor: scenario.anchor,
         config: scenario.config,
-        hostRunner: scenario.runner,
-        projectRunner: scenario.runner,
+        hostRunner: runner ?? scenario.runner,
+        projectRunner: runner ?? scenario.runner,
         environment: scenario.environment
     )
 }
@@ -430,7 +430,10 @@ struct AndroidDoctorTests {
         let scenario = try scenario(modelResponse: .ok(AndroidGradleModelProbe.marker + nativeModelJSON() + "\n"))
         try scenario.repo.directory("sdk/ndk/27.1.12297006")
         try executable(scenario.repo, "sdk/cmdline-tools/latest/bin/sdkmanager")
-        if installed { try scenario.repo.directory("sdk/cmake/3.22.1") }
+        if installed {
+            try scenario.repo.directory("sdk/cmake/3.22.1")
+            try FileManager.default.removeItem(at: scenario.repo.url("android/local.properties"))
+        }
 
         let report = await DoctorEngine(checks: checks(scenario)).run(only: ["android.sdk"])
         let sdk = try #require(report.checks.first { $0.id == "android.sdk" })
@@ -472,6 +475,71 @@ struct AndroidDoctorTests {
         #expect(sdk.status == .unknown)
         #expect(sdk.outcome.reason?.contains("no bundled AGP-to-CMake row") == true)
         #expect(sdk.outcome.source.tier == 2)
+    }
+
+    @Test("a readable cmake.dir outranks the AGP default", arguments: ["8.12.0", "99.0.0"])
+    func localCMakeDirectory(agp: String) async throws {
+        let model = nativeModelJSON(agp: agp)
+        let scenario = try scenario(modelResponse: .ok(AndroidGradleModelProbe.marker + model + "\n"))
+        try scenario.repo.directory("sdk/ndk/27.1.12297006")
+        try executable(scenario.repo, "custom cmake/bin/cmake")
+        try scenario.repo.write(
+            "android/local.properties",
+            "sdk.dir=\(scenario.repo.url("sdk").path)\ncmake.dir=../custom\\ cmake\n"
+        )
+        var runner = scenario.runner
+        let command = ProcessCommand(scenario.repo.url("custom cmake/bin/cmake").path, ["--version"])
+        runner.responses[command.description] = .ok("cmake version 3.18.1\n")
+
+        let report = await DoctorEngine(checks: checks(scenario, runner: runner)).run(only: ["android.sdk"])
+        let sdk = try #require(report.checks.first { $0.id == "android.sdk" })
+
+        #expect(sdk.status == .pass)
+        #expect(sdk.outcome.source.tier == 1)
+        #expect(sdk.outcome.source.origin.contains("android/local.properties cmake.dir"))
+        #expect(sdk.outcome.observed?.contains("CMake from cmake.dir") == true)
+        #expect(!FileManager.default.fileExists(atPath: scenario.repo.url("sdk/cmake/3.22.1").path))
+        #expect(runner.log.all.contains { $0.executable == command.executable && $0.arguments == ["--version"] })
+    }
+
+    @Test("an unreadable cmake.dir stays unknown instead of using the AGP default", arguments: ["missing", "nonExecutable", "unreadable", "invalidVersion", "failedCommand", "empty", "unreadableProperties"])
+    func unreadableLocalCMakeDirectory(failure: String) async throws {
+        let scenario = try scenario(modelResponse: .ok(AndroidGradleModelProbe.marker + nativeModelJSON() + "\n"))
+        try scenario.repo.directory("sdk/ndk/27.1.12297006")
+        try scenario.repo.directory("sdk/cmake/3.22.1")
+        let cmake = scenario.repo.url("custom-cmake/bin/cmake")
+        if failure != "missing" {
+            try executable(scenario.repo, "custom-cmake/bin/cmake")
+            if failure == "nonExecutable" || failure == "unreadable" {
+                try FileManager.default.setAttributes(
+                    [.posixPermissions: failure == "nonExecutable" ? 0o644 : 0o111], ofItemAtPath: cmake.path
+                )
+            }
+        }
+        try scenario.repo.write(
+            "android/local.properties",
+            "sdk.dir=\(scenario.repo.url("sdk").path)\ncmake.dir=\(failure == "empty" ? "" : cmake.deletingLastPathComponent().deletingLastPathComponent().path)\n"
+        )
+        if failure == "unreadableProperties" {
+            try FileManager.default.setAttributes(
+                [.posixPermissions: 0o000], ofItemAtPath: scenario.repo.url("android/local.properties").path
+            )
+        }
+        var runner = scenario.runner
+        let command = ProcessCommand(cmake.path, ["--version"])
+        switch failure {
+        case "failedCommand": runner.responses[command.description] = .failed(1, "unavailable")
+        case "invalidVersion": runner.responses[command.description] = .ok("not a CMake version\n")
+        default: runner.responses[command.description] = .ok("cmake version 3.18.1\n")
+        }
+
+        let report = await DoctorEngine(checks: checks(scenario, runner: runner)).run(only: ["android.sdk"])
+        let sdk = try #require(report.checks.first { $0.id == "android.sdk" })
+
+        #expect(sdk.status == .unknown)
+        #expect(sdk.outcome.reason?.contains("cmake.dir could not be read") == true)
+        #expect(sdk.outcome.source.tier == 1)
+        #expect(sdk.outcome.remediation == nil)
     }
 
     @Test("a native build without CMake does not require the AGP default")

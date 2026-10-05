@@ -522,8 +522,24 @@ private struct AndroidSDKCheck: Check {
             )
         }
         var cmakeVersion = module.cmakeVersion
+        var cmakeDirectory: URL?
         var source = CheckSource(tier: 1, origin: "evaluated Gradle model; \(rootSource.origin)")
         if module.cmakeConfigured == true, cmakeVersion == nil {
+            do {
+                cmakeDirectory = try await context.cmakeDirectory()
+            } catch {
+                return .unknown(
+                    reason: "android/local.properties cmake.dir could not be read or did not report a CMake version",
+                    source: CheckSource(tier: 1, origin: "android/local.properties cmake.dir")
+                )
+            }
+        }
+        if cmakeDirectory != nil {
+            source = CheckSource(
+                tier: 1,
+                origin: "evaluated Gradle model; android/local.properties cmake.dir + cmake --version; \(rootSource.origin)"
+            )
+        } else if module.cmakeConfigured == true, cmakeVersion == nil {
             guard let agpText = module.agpVersion, let agp = SemanticVersion(agpText),
                 let defaultCMake = AndroidCompatibility.defaultCMake(for: agp)
             else {
@@ -579,7 +595,8 @@ private struct AndroidSDKCheck: Check {
             observed: "android-\(compileSDK), Build Tools \(buildTools)"
                 + (includeRuntimeTools ? ", adb, Emulator" : "")
                 + (module.nativeBuildConfigured ? ", native tools" : "")
-                + (module.nativeBuildConfigured ? cmakeVersion.map { ", CMake \($0)" } ?? "" : ""),
+                + (module.nativeBuildConfigured ? cmakeVersion.map { ", CMake \($0)" } ?? "" : "")
+                + (cmakeDirectory != nil ? ", CMake from cmake.dir" : ""),
             required: "variant SDK inventory",
             source: source
         )
