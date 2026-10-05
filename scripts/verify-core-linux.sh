@@ -14,4 +14,4 @@ docker run --rm \
     --volume "$root:/workspace" \
     --workdir /workspace \
     "$image" \
-    swift build --scratch-path .build-linux --target Core "$@"
+    swift build --scratch-path .build-linux --target Core --force-resolved-versions "$@"
