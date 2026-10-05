@@ -138,6 +138,19 @@ private func composedChecks(_ scenario: AndroidScenario) async -> [any Check] {
 
 @Suite("Android doctor")
 struct AndroidDoctorTests {
+    @Test("Java versions with a fourth component or suffix order by the first three")
+    func javaVersionShapes() {
+        #expect(SemanticVersion(java: "21.0.12.1") == SemanticVersion("21.0.12"))
+        #expect(SemanticVersion(java: "21.0.12.1+7") == SemanticVersion("21.0.12"))
+        #expect(SemanticVersion(java: "21.0.12.1-ea") == SemanticVersion("21.0.12"))
+        #expect(SemanticVersion(java: "17.0.12") == SemanticVersion("17.0.12"))
+        #expect(SemanticVersion(java: "21.0.12.beta") == nil)
+        #expect(SemanticVersion(java: "21.0.12.") == nil)
+        #expect(SemanticVersion(java: "21.0.12..1") == nil)
+        // Lock files and declarations stay strict: a fourth component is not silently dropped.
+        #expect(SemanticVersion("1.16.0.1") == nil)
+    }
+
     @Test("a complete local tuple passes all eight stable Android checks without build or provisioning tasks")
     func healthyTuple() async throws {
         let scenario = try scenario()

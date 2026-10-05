@@ -265,7 +265,7 @@ actor AndroidDoctorContext {
         let output = result.combinedOutput
         let versionText = Self.property(named: "java.version", in: output)
             ?? output.firstMatch(#"(?:java|openjdk) version \"([^\"]+)\""#)?[1]
-        guard let versionText, let version = SemanticVersion(versionText) else {
+        guard let versionText, let version = SemanticVersion(java: versionText) else {
             return .failure(AndroidObservationFailure("java did not report a parseable version"))
         }
         return .success(
