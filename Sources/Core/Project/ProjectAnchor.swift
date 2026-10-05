@@ -165,12 +165,8 @@ public struct ProjectAnchor: Sendable, Equatable {
     }
 
     /// The project's declared package-manager path to its Metro start script.
-    public var startProcess: ProcessCommand { startProcess(resettingCache: false) }
-
-    /// `--reset-cache` reaches Metro through the start script; npm needs `--` to pass it on.
-    public func startProcess(resettingCache: Bool) -> ProcessCommand {
-        let reset = packageManagerName == "npm" ? ["--", "--reset-cache"] : ["--reset-cache"]
-        return packageManagerProcess(["start"] + (resettingCache ? reset : []), workingDirectory: directory, timeout: nil)
+    public var startProcess: ProcessCommand {
+        packageManagerProcess(["start"], workingDirectory: directory, timeout: nil)
     }
 
     /// One package-manager invocation policy for version checks, dependency
