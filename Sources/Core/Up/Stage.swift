@@ -234,6 +234,10 @@ public struct UpContext: Sendable {
     /// later `down` can retry.
     public var androidRequiresTeardown = false
 
+    /// Set by `dependencies` when this run reinstalled `node_modules`. watchman is
+    /// still recrawling then, so `metro` drops the project's watch first (#149).
+    public var nodeModulesReinstalled = false
+
     public init() {}
 }
 

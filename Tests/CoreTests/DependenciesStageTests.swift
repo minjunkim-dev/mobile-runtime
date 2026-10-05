@@ -97,6 +97,8 @@ struct DependenciesStageTests {
 
         #expect(outcome.status == .pass)
         #expect(runner.log.first(matching: "yarn install --frozen-lockfile") != nil)
+        // A reinstall tells `metro` to drop the watchman watch first (#149).
+        #expect(context.nodeModulesReinstalled)
     }
 
     @Test("each lockfile is aligned natively without rewriting project declarations")
@@ -143,6 +145,7 @@ struct DependenciesStageTests {
 
         #expect(outcome.status == .skipped)
         #expect(runner.log.all.isEmpty)
+        #expect(!context.nodeModulesReinstalled)
     }
 
     /// Installing from a sub-package is how a workspace gets broken, so the lockfile's

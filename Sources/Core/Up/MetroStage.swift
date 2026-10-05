@@ -54,6 +54,7 @@ public struct MetroStage: Stage {
         let logFile = logs.directory.appendingPathComponent("metro.log")
         // The project's own start script, through the manager its lockfile named —
         // the same answer `dependencies` installs with.
+        if context.nodeModulesReinstalled { await Self.dropWatchmanWatch(of: anchor.directory, runner: runner) }
         let command = anchor.startProcess
         let pid = try await runner.spawnDetached(command, logFile: logFile)
 
@@ -132,5 +133,25 @@ public struct MetroStage: Stage {
             .split(separator: "\n")
             .compactMap { Int32($0.trimmingCharacters(in: .whitespaces)) }
             .first
+    }
+}
+
+extension MetroStage {
+    /// A reinstall swaps thousands of files under watchman, which then recrawls, and a
+    /// Metro that queries mid-recrawl gets a partial file list: it fails to resolve
+    /// modules that are on disk (#149). Dropping the project's watch makes Metro's own
+    /// `watch-project` start a fresh one, which watchman answers only after its full
+    /// crawl. Without watchman there is nothing to drop, so every failure is ignored.
+    public static func dropWatchmanWatch(of directory: URL, runner: any ProcessRunner) async {
+        let probe = ProcessCommand(
+            "watchman", ["watch-project", directory.path], workingDirectory: directory, timeout: .seconds(15)
+        )
+        guard let result = try? await runner.run(probe), result.terminationStatus.isSuccess,
+            let reply = try? JSONSerialization.jsonObject(with: Data(result.standardOutput.utf8)) as? [String: Any],
+            let root = reply["watch"] as? String
+        else { return }
+        _ = try? await runner.run(
+            ProcessCommand("watchman", ["watch-del", root], workingDirectory: directory, timeout: .seconds(15))
+        )
     }
 }
