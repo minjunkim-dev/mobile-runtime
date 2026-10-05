@@ -7,29 +7,157 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      use-cache:
+        description: SwiftPM 의존성과 빌드 캐시 사용
+        type: boolean
+        default: true
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CACHE_VERSION: v1
+  CACHE_ENABLED: ${{ github.event_name != 'workflow_dispatch' || inputs.use-cache }}
 
 jobs:
-  macos-swift-tests:
-    name: macOS Swift tests
-    runs-on: macos-26
+  repository-hygiene:
+    name: Repository hygiene
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - run: swift test
+      - name: Check LICENSE and SPDX declaration
+        run: |
+          test -f LICENSE
+          grep -Fq 'Apache License' LICENSE
+          grep -Fq 'Version 2.0, January 2004' LICENSE
+          grep -Eq 'Copyright [0-9]{4} MINJUN KIM' README.md
+          grep -Fq 'SPDX-License-Identifier: Apache-2.0' README.md
+      - name: Validate workflows and shell scripts
+        run: |
+          curl --fail --silent --show-error --location \
+            --output "$RUNNER_TEMP/actionlint.tar.gz" \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+          echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  $RUNNER_TEMP/actionlint.tar.gz" | sha256sum --check -
+          tar --extract --gzip --file "$RUNNER_TEMP/actionlint.tar.gz" --directory "$RUNNER_TEMP" actionlint
+          "$RUNNER_TEMP/actionlint"
+          git ls-files -z '*.sh' | xargs -0 -r shellcheck
+
+  macos-swift-tests:
+    name: macOS Swift build and tests
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Record toolchain fingerprint
+        id: toolchain
+        run: |
+          xcode_version="$(xcodebuild -version)"
+          swift_version="$(swift --version 2>&1)"
+          sdk_version="$(xcrun --sdk macosx --show-sdk-build-version)"
+          fingerprint="$(printf '%s\n' "$xcode_version" "$swift_version" "$sdk_version" | shasum -a 256 | awk '{print $1}')"
+          echo "fingerprint=$fingerprint" >> "$GITHUB_OUTPUT"
+          printf '### macOS toolchain\n~~~text\n%s\n%s\n%s\n~~~\n' \
+            "$xcode_version" "$swift_version" "$sdk_version" >> "$GITHUB_STEP_SUMMARY"
+      - name: Restore pinned SwiftPM dependencies
+        id: packages-cache
+        if: env.CACHE_ENABLED == 'true'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/swiftpm
+          key: ${{ env.CACHE_VERSION }}-swiftpm-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.fingerprint }}-${{ hashFiles('Package.resolved') }}
+      - name: Restore matching build outputs
+        id: build-cache
+        if: env.CACHE_ENABLED == 'true'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .build
+          key: ${{ env.CACHE_VERSION }}-build-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.fingerprint }}-${{ hashFiles('Package.resolved') }}-${{ hashFiles('Package.swift', 'Sources/**', 'Tests/**', 'scripts/**', '.github/workflows/ci.yml') }}
+      - name: Build and test locked dependencies
+        run: |
+          swift build --force-resolved-versions --cache-path "$RUNNER_TEMP/swiftpm"
+          swift test --force-resolved-versions --cache-path "$RUNNER_TEMP/swiftpm"
+          git diff --exit-code -- Package.resolved
+      - name: Record cache state
+        if: always()
+        env:
+          PACKAGES_HIT: ${{ steps.packages-cache.outputs.cache-hit }}
+          BUILD_HIT: ${{ steps.build-cache.outputs.cache-hit }}
+        run: |
+          printf 'Cache enabled: %s; dependencies hit: %s; exact build hit: %s\n' \
+            "$CACHE_ENABLED" "${PACKAGES_HIT:-false}" "${BUILD_HIT:-false}" >> "$GITHUB_STEP_SUMMARY"
 
   linux-core-compile:
     name: Linux Core compile
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      SWIFT_IMAGE: swift@sha256:cd45c27b3abc42310c33cfaf3008b18156cbdc9187834c9617e8f43a26d2675c # 6.3-noble
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - run: scripts/verify-core-linux.sh
+      - name: Record container toolchain fingerprint
+        id: toolchain
+        run: |
+          docker pull "$SWIFT_IMAGE"
+          versions="$(docker run --rm "$SWIFT_IMAGE" swift --version)"
+          fingerprint="$(printf '%s\n%s\n' "$SWIFT_IMAGE" "$versions" | sha256sum | awk '{print $1}')"
+          echo "fingerprint=$fingerprint" >> "$GITHUB_OUTPUT"
+          printf '### Linux toolchain (Xcode: not applicable)\n~~~text\n%s\n%s\n~~~\n' \
+            "$SWIFT_IMAGE" "$versions" >> "$GITHUB_STEP_SUMMARY"
+      - name: Restore pinned SwiftPM dependencies
+        id: packages-cache
+        if: env.CACHE_ENABLED == 'true'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .build-linux-package-cache
+          key: ${{ env.CACHE_VERSION }}-swiftpm-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.fingerprint }}-${{ hashFiles('Package.resolved') }}
+      - name: Restore matching Core build outputs
+        id: build-cache
+        if: env.CACHE_ENABLED == 'true'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .build-linux
+          key: ${{ env.CACHE_VERSION }}-build-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.fingerprint }}-${{ hashFiles('Package.swift', 'Sources/Core/**', 'scripts/verify-core-linux.sh', '.github/workflows/ci.yml') }}
+      - name: Compile Core with locked dependencies
+        run: |
+          scripts/verify-core-linux.sh --cache-path .build-linux-package-cache
+          git diff --exit-code -- Package.resolved
+      - name: Record cache state
+        if: always()
+        env:
+          PACKAGES_HIT: ${{ steps.packages-cache.outputs.cache-hit }}
+          BUILD_HIT: ${{ steps.build-cache.outputs.cache-hit }}
+        run: |
+          printf 'Cache enabled: %s; dependencies hit: %s; exact build hit: %s\n' \
+            "$CACHE_ENABLED" "${PACKAGES_HIT:-false}" "${BUILD_HIT:-false}" >> "$GITHUB_STEP_SUMMARY"
+
+  ci:
+    name: CI
+    if: always()
+    needs: [repository-hygiene, macos-swift-tests, linux-core-compile]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Require every gate to succeed
+        env:
+          HYGIENE_RESULT: ${{ needs.repository-hygiene.result }}
+          MACOS_RESULT: ${{ needs.macos-swift-tests.result }}
+          LINUX_RESULT: ${{ needs.linux-core-compile.result }}
+        run: |
+          printf 'Hygiene: %s; macOS: %s; Linux Core: %s\n' \
+            "$HYGIENE_RESULT" "$MACOS_RESULT" "$LINUX_RESULT" >> "$GITHUB_STEP_SUMMARY"
+          for result in "$HYGIENE_RESULT" "$MACOS_RESULT" "$LINUX_RESULT"; do
+            test "$result" = success
+          done
