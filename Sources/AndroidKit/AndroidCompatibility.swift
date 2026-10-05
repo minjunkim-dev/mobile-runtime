@@ -147,6 +147,8 @@ extension SemanticVersion {
     /// files and declarations keep the stricter `SemanticVersion(_:)`.
     init?(java text: String) {
         let numeric = text.trimmingCharacters(in: .whitespacesAndNewlines).prefix { $0 != "+" && $0 != "-" }
-        self.init(numeric.split(separator: ".", omittingEmptySubsequences: false).prefix(3).joined(separator: "."))
+        let parts = numeric.split(separator: ".", omittingEmptySubsequences: false)
+        guard parts.dropFirst(3).allSatisfy({ Int($0) != nil }) else { return nil }
+        self.init(parts.prefix(3).joined(separator: "."))
     }
 }
