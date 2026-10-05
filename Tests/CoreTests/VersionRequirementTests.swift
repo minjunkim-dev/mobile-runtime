@@ -11,8 +11,6 @@ struct VersionRequirementTests {
         #expect(SemanticVersion("v20.11.1") == SemanticVersion("20.11.1"))
         #expect(SemanticVersion("3.6.4+sha224.abc") == SemanticVersion("3.6.4"))
         #expect(SemanticVersion("18") == SemanticVersion("18.0.0"))
-        #expect(SemanticVersion("21.0.12.1") == SemanticVersion("21.0.12"))
-        #expect(SemanticVersion("1.16.0.beta.1") == nil)
         #expect(SemanticVersion("not a version") == nil)
     }
 

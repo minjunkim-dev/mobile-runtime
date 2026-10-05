@@ -50,7 +50,7 @@ enum AndroidCompatibility {
             unknown.append("no bundled AGP-to-Gradle row matches AGP \(agpText)")
         }
 
-        guard let daemonJava = SemanticVersion(model.daemonJavaVersion) else {
+        guard let daemonJava = SemanticVersion(java: model.daemonJavaVersion) else {
             unknown.append("the Gradle daemon did not report a parseable JDK version")
             return AndroidCompatibilityEvaluation(required: required, violations: violations, unknown: unknown)
         }
@@ -103,7 +103,7 @@ enum AndroidCompatibility {
             ],
             9: [0: "9.1.0", 1: "9.3.1", 2: "9.4.1", 3: "9.5.0"],
         ]
-        return table[agp.major]?[agp.minor].flatMap(SemanticVersion.init)
+        return table[agp.major]?[agp.minor].flatMap(SemanticVersion.init(_:))
     }
 
     private static func minimumJDK(for agp: SemanticVersion) -> Int? {
@@ -121,7 +121,7 @@ enum AndroidCompatibility {
             20: "8.3", 21: "8.5", 22: "8.8", 23: "8.10", 24: "8.14",
             25: "9.1.0", 26: "9.4.0",
         ]
-        return table[java].flatMap(SemanticVersion.init)
+        return table[java].flatMap(SemanticVersion.init(_:))
     }
 
     private static func minimumAGP(for api: Double) -> SemanticVersion? {
@@ -138,5 +138,15 @@ enum AndroidCompatibility {
 
     private static func apiLevel(_ text: String) -> Double? {
         Double(text.replacingOccurrences(of: "android-", with: ""))
+    }
+}
+
+extension SemanticVersion {
+    /// Java's version string (JEP 322) can carry a fourth numeric component and a
+    /// `-pre`/`+build` suffix (`21.0.12.1+7`); ordering uses the first three. Lock
+    /// files and declarations keep the stricter `SemanticVersion(_:)`.
+    init?(java text: String) {
+        let numeric = text.trimmingCharacters(in: .whitespacesAndNewlines).prefix { $0 != "+" && $0 != "-" }
+        self.init(numeric.split(separator: ".", omittingEmptySubsequences: false).prefix(3).joined(separator: "."))
     }
 }

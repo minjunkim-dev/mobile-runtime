@@ -170,7 +170,7 @@ private struct AndroidJDKCheck: Check {
         let daemonRequirement = context.daemonJDKRequirement()
         switch try await context.model() {
         case .model(let model):
-            guard let daemon = SemanticVersion(model.daemonJavaVersion) else {
+            guard let daemon = SemanticVersion(java: model.daemonJavaVersion) else {
                 return .unknown(
                     reason: "the evaluated Gradle daemon reported an unreadable JDK version",
                     source: CheckSource(tier: 1, origin: daemonRequirement.origin)

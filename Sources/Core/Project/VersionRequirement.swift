@@ -14,13 +14,8 @@ public struct SemanticVersion: Sendable, Equatable, Comparable, CustomStringConv
     }
 
     /// Accepts `v20.11.1`, `3.6.4+sha224.…`, `1.0.0-rc.1` and partials like `18`.
-    /// Java prints extra numeric components (`21.0.12.1`); ordering uses the first three.
-    /// A dotted prerelease such as `1.16.0.beta.1` still does not parse.
     public init?(_ text: String) {
-        let parts = text.split(separator: ".", omittingEmptySubsequences: false)
-        let numericTail = parts.count > 3 && parts.dropFirst(3).allSatisfy { Int($0) != nil }
-        let leading = numericTail ? parts.prefix(3).joined(separator: ".") : text
-        guard let components = VersionComponents(leading), let first = components.values.first else { return nil }
+        guard let components = VersionComponents(text), let first = components.values.first else { return nil }
         self.init(
             major: first,
             minor: components.values.count > 1 ? components.values[1] : 0,
