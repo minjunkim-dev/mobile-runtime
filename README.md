@@ -16,8 +16,8 @@ mobile up
 North Star: `git clone → mobile up`.
 
 Status: iOS React Native MVP와 Android Phase 4A CLI provider 구현이 `main`에
-반영됐다. Android private alpha 후보와 runbook은 준비됐지만 maintainer 실제
-프로젝트 alpha는 아직 #110/#118에서 남아 있다. CLI가 현재 실행 표면이고,
+반영됐다. Android private alpha 후보와 runbook은 준비됐지만 SHA를 고정한
+공개 OSS 실제 앱 표본의 alpha는 아직 #126/#127에서 남아 있다. CLI가 현재 실행 표면이고,
 SwiftUI macOS 앱은 같은 Core/provider 계약을 표현할 후속 표면이다. 현재 계약과
 제약은 [CONTEXT.md](CONTEXT.md)와 [ADRs](docs/adr/)에 둔다.
 
