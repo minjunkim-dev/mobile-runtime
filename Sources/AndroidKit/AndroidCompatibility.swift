@@ -92,6 +92,17 @@ enum AndroidCompatibility {
         return AndroidCompatibilityEvaluation(required: required, violations: violations, unknown: unknown)
     }
 
+    static func defaultCMake(for agp: SemanticVersion) -> String? {
+        // Stable AGP 8.11–8.13 use CmakeLocator.DEFAULT = LATEST_WITH_FILE_API (3.22.1).
+        // https://android.googlesource.com/platform/tools/base/+/refs/tags/studio-2025.1.1/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/cxx/configure/CmakeLocator.kt
+        // https://android.googlesource.com/platform/tools/base/+/refs/tags/studio-2025.1.2/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/cxx/configure/CmakeLocator.kt
+        // https://android.googlesource.com/platform/tools/base/+/refs/tags/studio-2025.1.3/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/cxx/configure/CmakeLocator.kt
+        let table: [Int: [Int: String]] = [
+            8: [11: "3.22.1", 12: "3.22.1", 13: "3.22.1"],
+        ]
+        return table[agp.major]?[agp.minor]
+    }
+
     private static func minimumGradle(for agp: SemanticVersion) -> SemanticVersion? {
         guard agp.major >= 7 else { return nil }
         let table: [Int: [Int: String]] = [

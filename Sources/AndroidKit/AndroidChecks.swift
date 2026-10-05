@@ -521,10 +521,21 @@ private struct AndroidSDKCheck: Check {
                 source: CheckSource(tier: 1, origin: "evaluated Gradle model")
             )
         }
-        if module.cmakeConfigured == true, module.cmakeVersion == nil {
-            return .unknown(
-                reason: "the evaluated CMake build does not expose an exact CMake version",
-                source: CheckSource(tier: 1, origin: "evaluated Gradle model")
+        var cmakeVersion = module.cmakeVersion
+        var source = CheckSource(tier: 1, origin: "evaluated Gradle model; \(rootSource.origin)")
+        if module.cmakeConfigured == true, cmakeVersion == nil {
+            guard let agpText = module.agpVersion, let agp = SemanticVersion(agpText),
+                let defaultCMake = AndroidCompatibility.defaultCMake(for: agp)
+            else {
+                return .unknown(
+                    reason: "no bundled AGP-to-CMake row matches AGP \(module.agpVersion ?? "unknown")",
+                    source: CheckSource(tier: 2, origin: "bundled AGP default CMake table; evaluated Gradle model")
+                )
+            }
+            cmakeVersion = defaultCMake
+            source = CheckSource(
+                tier: 2,
+                origin: "bundled AGP default CMake table: AGP \(agpText) → CMake \(defaultCMake); evaluated Gradle model; \(rootSource.origin)"
             )
         }
 
@@ -544,14 +555,10 @@ private struct AndroidSDKCheck: Check {
         if module.nativeBuildConfigured, let ndk = module.ndkVersion {
             require("ndk/\(ndk)", "NDK \(ndk)", "ndk;\(ndk)")
         }
-        if module.nativeBuildConfigured, let cmake = module.cmakeVersion {
+        if module.nativeBuildConfigured, let cmake = cmakeVersion {
             require("cmake/\(cmake)", "CMake \(cmake)", "cmake;\(cmake)")
         }
 
-        let source = CheckSource(
-            tier: 1,
-            origin: "evaluated Gradle model; \(rootSource.origin)"
-        )
         guard missing.isEmpty else {
             let packages = Array(Set(missing.map(\.package))).sorted()
             let sdkmanager = findSDKManager(in: sdk)
@@ -571,7 +578,8 @@ private struct AndroidSDKCheck: Check {
         return .pass(
             observed: "android-\(compileSDK), Build Tools \(buildTools)"
                 + (includeRuntimeTools ? ", adb, Emulator" : "")
-                + (module.nativeBuildConfigured ? ", declared native tools" : ""),
+                + (module.nativeBuildConfigured ? ", native tools" : "")
+                + (module.nativeBuildConfigured ? cmakeVersion.map { ", CMake \($0)" } ?? "" : ""),
             required: "variant SDK inventory",
             source: source
         )

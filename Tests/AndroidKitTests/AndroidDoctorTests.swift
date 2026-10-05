@@ -29,6 +29,15 @@ private func modelJSON(variants: String? = nil, abiFilters: String = #"["arm64-v
     """
 }
 
+private func nativeModelJSON(agp: String? = "8.12.0", cmake: String? = nil, cmakeConfigured: Bool = true) -> String {
+    modelJSON()
+        .replacingOccurrences(of: #""agpVersion":"8.13.2""#, with: "\"agpVersion\":\(agp.map { "\"\($0)\"" } ?? "null")")
+        .replacingOccurrences(
+            of: #""ndkVersion":null,"cmakeVersion":null,"nativeBuildConfigured":false"#,
+            with: "\"ndkVersion\":\"27.1.12297006\",\"cmakeVersion\":\(cmake.map { "\"\($0)\"" } ?? "null"),\"nativeBuildConfigured\":true,\"cmakeConfigured\":\(cmakeConfigured)"
+        )
+}
+
 private func scenario(
     materializedWrapper: Bool = true,
     modelResponse: FakeProcessRunner.Response? = nil,
@@ -414,6 +423,68 @@ struct AndroidDoctorTests {
 
         #expect(sdk.status == .unknown)
         #expect(sdk.outcome.reason?.contains("exact NDK version") == true)
+    }
+
+    @Test("unspecified CMake uses the bundled AGP default without provisioning", arguments: [false, true])
+    func defaultCMakePackage(installed: Bool) async throws {
+        let scenario = try scenario(modelResponse: .ok(AndroidGradleModelProbe.marker + nativeModelJSON() + "\n"))
+        try scenario.repo.directory("sdk/ndk/27.1.12297006")
+        try executable(scenario.repo, "sdk/cmdline-tools/latest/bin/sdkmanager")
+        if installed { try scenario.repo.directory("sdk/cmake/3.22.1") }
+
+        let report = await DoctorEngine(checks: checks(scenario)).run(only: ["android.sdk"])
+        let sdk = try #require(report.checks.first { $0.id == "android.sdk" })
+
+        #expect(sdk.status == (installed ? .pass : .error))
+        #expect(sdk.outcome.observed?.contains("CMake 3.22.1") == true)
+        #expect(sdk.outcome.source.tier == 2)
+        #expect(sdk.outcome.source.origin.contains("AGP 8.12.0 → CMake 3.22.1"))
+        if !installed {
+            #expect(sdk.outcome.remediation?.command?.contains("cmake;3.22.1") == true)
+            #expect(!FileManager.default.fileExists(atPath: scenario.repo.url("sdk/cmake/3.22.1").path))
+        }
+    }
+
+    @Test("an explicit CMake version wins over the bundled default", arguments: ["8.12.0", "99.0.0"])
+    func explicitCMakePackage(agp: String) async throws {
+        let model = nativeModelJSON(agp: agp, cmake: "3.18.1")
+        let scenario = try scenario(modelResponse: .ok(AndroidGradleModelProbe.marker + model + "\n"))
+        try scenario.repo.directory("sdk/ndk/27.1.12297006")
+        try scenario.repo.directory("sdk/cmake/3.18.1")
+
+        let report = await DoctorEngine(checks: checks(scenario)).run(only: ["android.sdk"])
+        let sdk = try #require(report.checks.first { $0.id == "android.sdk" })
+
+        #expect(sdk.status == .pass)
+        #expect(sdk.outcome.observed?.contains("CMake 3.18.1") == true)
+        #expect(sdk.outcome.source.tier == 1)
+    }
+
+    @Test("unspecified CMake with an unbundled or unavailable AGP stays unknown", arguments: ["8.10.0", "99.0.0", "invalid", nil] as [String?])
+    func unknownDefaultCMake(agp: String?) async throws {
+        let scenario = try scenario(modelResponse: .ok(AndroidGradleModelProbe.marker + nativeModelJSON(agp: agp) + "\n"))
+        try scenario.repo.directory("sdk/ndk/27.1.12297006")
+        try scenario.repo.directory("sdk/cmake/3.22.1")
+
+        let report = await DoctorEngine(checks: checks(scenario)).run(only: ["android.sdk"])
+        let sdk = try #require(report.checks.first { $0.id == "android.sdk" })
+
+        #expect(sdk.status == .unknown)
+        #expect(sdk.outcome.reason?.contains("no bundled AGP-to-CMake row") == true)
+        #expect(sdk.outcome.source.tier == 2)
+    }
+
+    @Test("a native build without CMake does not require the AGP default")
+    func nativeBuildWithoutCMake() async throws {
+        let model = nativeModelJSON(cmakeConfigured: false)
+        let scenario = try scenario(modelResponse: .ok(AndroidGradleModelProbe.marker + model + "\n"))
+        try scenario.repo.directory("sdk/ndk/27.1.12297006")
+
+        let report = await DoctorEngine(checks: checks(scenario)).run(only: ["android.sdk"])
+        let sdk = try #require(report.checks.first { $0.id == "android.sdk" })
+
+        #expect(sdk.status == .pass)
+        #expect(sdk.outcome.source.tier == 1)
     }
 
     @Test("an unreadable adb inventory is an error instead of an installed-AVD guess")
