@@ -2,6 +2,11 @@
 
 Reproducible mobile development environments.
 
+`doctor`, `build`, `up`은 프로젝트의 Gradle, package manager, Podfile 코드를
+실행 사용자 권한과 상속된 환경으로 실행한다. `doctor`는 파일 검사에 그치지 않는다.
+신뢰한 프로젝트에서만 실행한다. 검토하지 않은 프로젝트는 민감한 환경값이 없는
+별도 환경에서 조사한다.
+
 ```
 git clone my-app
 cd my-app
@@ -31,11 +36,6 @@ swift test
 .build/debug/mobile up --platform android --json # build, install, and launch on an existing AVD
 .build/debug/mobile down --platform android --json
 ```
-
-`doctor`, `build`, `up`은 프로젝트의 Gradle, package manager, Podfile 코드를
-실행 사용자 권한과 상속된 환경으로 실행한다. `doctor`는 파일 검사에 그치지 않는다.
-신뢰한 프로젝트에서만 실행한다. 검토하지 않은 프로젝트는 민감한 환경값이 없는
-별도 환경에서 조사한다.
 
 원시 로그와 오류 JSON에는 프로젝트 도구 출력이 그대로 남을 수 있다. 원시
 로그는 민감정보로 보고, 공유하거나 이슈에 붙이기 전에 확인한다.
