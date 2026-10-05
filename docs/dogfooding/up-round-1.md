@@ -99,7 +99,7 @@ npm error code 2
 npm error path $REPO
 npm error command failed
 npm error command sh -c ./scripts/preinstall.sh && npx solidarity
-npm error A complete log of this run can be found in: /Users/swifty/.npm/_logs/2026-08-14T14_21_50_209Z-debug-0.log
+npm error A complete log of this run can be found in: <home>/.npm/_logs/<log>.log
     → Run the install by hand to see the whole output — an installer that fails usually says why in more lines than fit here.
       npm install
 ```
