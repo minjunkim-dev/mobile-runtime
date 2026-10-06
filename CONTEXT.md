@@ -3,8 +3,8 @@
 Reproducible mobile development runtime. 프로젝트가 요구하는 환경을 추론·검증·기동한다 — North Star는 `git clone → mobile up`.
 
 현재 `main`은 iOS React Native MVP와 Android Phase 4A CLI provider를 제공한다.
-Android candidate runbook과 최소 Emulator smoke는 준비됐지만 SHA를 고정한 공개
-OSS 실제 앱 표본의 alpha는 별도 검증으로 남아 있다. CLI가 현재 실행 표면이며 SwiftUI
+Private Phase 4A Android 내부 alpha는 SHA를 고정한 공개 OSS 실제 앱 표본 하나와
+macOS 검증 조합 하나에서 통과했다(`docs/private-android-alpha-runbook.md` 6절). CLI가 현재 실행 표면이며 SwiftUI
 macOS 앱은 같은 Core/provider 계약을 표현할 후속 표면이다.
 
 ## Language
