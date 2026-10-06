@@ -16,8 +16,9 @@ mobile up
 North Star: `git clone → mobile up`.
 
 Status: iOS React Native MVP와 Android Phase 4A CLI provider 구현이 `main`에
-반영됐다. Android private alpha 후보와 runbook은 준비됐지만 SHA를 고정한
-공개 OSS 실제 앱 표본의 alpha는 아직 #126/#127에서 남아 있다. CLI가 현재 실행 표면이고,
+반영됐다. Private Phase 4A Android 내부 alpha는 SHA를 고정한 공개 OSS 실제 앱
+표본 하나와 macOS 검증 조합 하나에서 통과했다(#128). 일반적인 React Native
+Android 지원을 뜻하지 않는다. CLI가 현재 실행 표면이고,
 SwiftUI macOS 앱은 같은 Core/provider 계약을 표현할 후속 표면이다. 현재 계약과
 제약은 [CONTEXT.md](CONTEXT.md)와 [ADRs](docs/adr/)에 둔다.
 
@@ -57,8 +58,8 @@ is that boundary — run `scripts/verify-core-linux.sh` (Docker) after touching
 `Sources/Core`.
 
 Android uses an already-installed compatible Emulator, SDK, and JDK; the provider
-does not provision them. The maintainer-only private alpha handoff, exact candidate
-SHA, validation tuple, and sanitized evidence contract are in
+does not provision them. The Android alpha handoff, public OSS sample, exact
+SHAs, validation tuple, and sanitized evidence are in
 [`docs/private-android-alpha-runbook.md`](docs/private-android-alpha-runbook.md).
 
 ## License
