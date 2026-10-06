@@ -245,7 +245,7 @@ SDK absolute path·홈 경로, complete logs·raw JSON·raw diff, screenshot, �
 | `doctor --json` | PASS (exit 0) | status pass, 10/10 checks pass, required error·unknown 0 |
 | `build --json` | PASS (exit 0) | validate, dependencies, android.build pass (53s) |
 | `up --json` | PASS (exit 0) | 8/8 stages pass (55s); owned Emulator와 Metro 시작 |
-| 초기 UI | PASS | bundle HTTP 200. 앱의 전체화면 안내와 위치 권한 dialog를 해제(거부)한 뒤 `FreeKiosk / Start Configuration` 직접 관측 |
+| 초기 UI | PASS | bundle HTTP 200. 시스템 전체화면 안내와 위치 권한 dialog를 해제(거부)한 뒤 `FreeKiosk / Start Configuration` 직접 관측 |
 | `down --json` | PASS (exit 0) | app, reverse, Metro, owned Emulator stopped; device 0, 8081 listener 0 |
 
 - Full status snapshot SHA-256 before/after:
@@ -257,8 +257,9 @@ SDK absolute path·홈 경로, complete logs·raw JSON·raw diff, screenshot, �
 
 ### 6.2 최초 실패와 수정
 
-최종 pass 전의 실패를 지우지 않는다. 각 수정은 merge 뒤 새 `mobile` SHA에서 runbook을
-처음부터 다시 실행했다.
+최종 pass 전의 실패를 지우지 않는다. #143·#146·#145는 `mobile` `c0a26fe`의 같은
+`doctor` 실행에서, #149는 `be19d4e`의 `up` 실행에서 발견했다. 네 건을 모두 merge한 뒤
+새 SHA `c6b1d19`에서 runbook을 처음부터 다시 실행해 통과했다.
 
 | Alpha blocker | 증상 | 수정 |
 | --- | --- | --- |
