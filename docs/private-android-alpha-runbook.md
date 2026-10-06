@@ -52,6 +52,15 @@ known-good baseline을 먼저 확인한다. 같은 host와 project SHA에서 `mo
 실행한다. 앱 환경값이나 secret이 필요한 표본은 고르지 않는다. 표본 교체는 known-good
 baseline 전에만 한다.
 
+native baseline이나 `mobile`을 처음 실행하기 전에 표본을 신뢰 검토한다. `npm ci`,
+Gradle, `doctor`·`build`·`up`은 프로젝트 코드를 실행 사용자 권한과 상속된 환경으로
+실행한다.
+
+1. 고정한 SHA에서 install script(`preinstall`·`postinstall` 등), patch, Gradle
+   build script와 plugin을 검토한다.
+2. 민감한 환경값·credential·token이 없는 환경에서 실행한다.
+3. 검토를 통과하지 못한 표본은 baseline 전에 교체한다.
+
 ```sh
 cd <react-native-project>
 PROJECT_SHA="$(git rev-parse HEAD)"
