@@ -22,3 +22,7 @@ The five canonical roles, each label string equal to its name. See `docs/agents/
 ### Domain docs
 
 Single-context — `CONTEXT.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+
+### Pull requests
+
+The agent merges its own pull request once the ticket's verification is done (tests, review, and any measurement the ticket asks for) and the required check `CI` is green. It does not wait for a separate human approval.
