@@ -8,24 +8,53 @@ maintainer는 Go 게이트의 host를 Xcode 27로 통일하기로 했다. 2027�
 
 잠긴 mattermost-mobile `10207015`은 Xcode 27.0에서 `mobile` 없이도 빌드되지 않는다(#155, [up 라운드 4](../dogfooding/up-round-4.md)). Pods resource bundle target의 deployment target이 Xcode 27의 허용 범위 밖이다. ADR-0016은 tracked 파일 수정을 금지한다. 따라서 이 표본은 Xcode 27 검증 조합에서 known-good 표본이 아니다. Rainbow `29eade9a`와 Joplin `2654b336`은 Xcode 27에서 측정하지 않았다.
 
-ADR-0008은 실패를 관측한 뒤 표본을 교체하면 게이트가 다른 질문이 된다고 보았다. ADR-0012는 known-good baseline 전의 부적격 표본은 교체할 수 있다고 정했다. 이 ADR은 두 결정을 함께 지킨다. 교체 대상을 실패한 표본 하나로 고르지 않는다. 실행 전에 정한 규칙 하나로 세 repo를 모두 다시 고정한다.
+이 결정은 mattermost-mobile의 실패를 관측한 뒤에 나왔다. 그래서 이 ADR은 ADR-0008의 기존 게이트를 그대로 지키지 않는다. ADR-0008은 표본 변경이 필요하면 별도 게이트와 별도 결정으로 다시 열라고 정했다. 이 ADR이 그 별도 결정이다. 검증 조합과 세 SHA를 함께 바꾸는 Xcode 27 게이트를 연다. 새 후보는 baseline 측정 전에 고정한다. 새 후보의 결과를 보고 SHA를 다시 고르는 일은 허용하지 않는다.
 
 ## 결정
 
 - Go 게이트의 검증 조합은 Xcode 27.0 / iOS 27.0 simulator runtime이다. React Native 버전은 각 표본의 선언을 따른다.
 - 세 repo(mattermost-mobile, Rainbow, Joplin)와 3/3 기준은 바꾸지 않는다. ADR-0016의 사람 준비 범위와 Go round 규칙도 그대로다.
-- 재고정 규칙: 각 repo의 default branch에서 first-parent를 따라 committer date가 `2026-10-06T00:00:00Z` 이하인 첫 commit을 고른다. repo마다 후보는 하나다.
-- 후보는 known-good baseline으로 확인한다. `mobile` 없이 repo가 문서화한 iOS 개발 절차로 build·install·launch·첫 화면에 도달하고 tracked 파일을 바꾸지 않아야 한다. 사람의 준비는 ADR-0016 범위만 허용한다.
-- baseline이 host 준비 누락으로 실패하면 준비를 보완하고 같은 후보로 다시 확인한다. 후보 자체가 실패하면 다른 commit을 찾지 않는다. 결과를 기록하고 그 repo의 처리는 maintainer가 별도 결정으로 정한다.
+- 후보 선정 규칙: 각 repo의 default branch에서 first-parent를 따라 committer date가 `2026-10-06T00:00:00Z` 이하인 첫 commit을 고른다. repo마다 후보는 하나다.
+- 아래 표의 SHA가 최종 입력이다. 실행자는 규칙을 다시 계산하지 않는다.
+- 후보는 아래 baseline 절차로 확인한다. `mobile` 없이 build·install·launch·첫 화면에 도달하고 tracked 파일을 바꾸지 않아야 known-good 표본이다.
+- 준비 목록에 있는 항목이 빠져 실패하면 준비 실패다. 준비를 보완하고 같은 후보로 다시 확인한다.
+- 선언된 의존성·빌드 설정이 Xcode 27과 맞지 않아 실패하면 후보 실패다. 다른 commit을 찾지 않는다. 결과를 기록하고 그 repo의 처리는 maintainer가 별도 결정으로 정한다.
+- 원인을 둘 중 하나로 정할 수 없으면 판정을 보류하고 maintainer에게 넘긴다.
+- baseline 실패는 `mobile`의 검증 결과 `failed`나 Go blocker로 분류하지 않는다.
 - 이 ADR이 고정한 SHA가 ADR-0008·ADR-0016의 잠긴 SHA를 대체한다. 옛 SHA의 실행 결과(라운드 1–4)는 새 Go round에 합산하지 않는다.
 
-## 후보 (규칙 적용 결과)
+## 후보
+
+선정 시점(2026-10-06)에 세 후보는 각 default branch의 tip이었다.
 
 | repo | default branch | 후보 SHA | committer date | baseline |
 | --- | --- | --- | --- | --- |
 | `mattermost/mattermost-mobile` | `main` | `62f18af38254a9acf74390b3815c2a11852b7bc5` | 2026-10-05T11:10:40Z | 미측정 |
 | `rainbow-me/rainbow` | `develop` | `a64ecce56fe1c41551d9eb1bf354a698114be4f0` | 2026-10-05T23:18:52Z | 미측정 |
 | `laurent22/joplin` | `dev` | `aaa6f8e3ae206555fc5de7dbd82a8bcfe0d2d5cc` | 2026-10-05T13:09:44Z | 미측정 |
+
+## baseline 절차
+
+공통 조건: host는 macOS 27.0.1 / Xcode 27.0 (27A266a) / iOS 27.0 runtime이다. 시뮬레이터는 booted `iPhone 18 Pro`다. shell은 `mise activate zsh` 상태이고 `MISE_AUTO_INSTALL=false`다. 각 후보는 새 디렉터리에 fresh clone한다.
+
+공통 실행 순서:
+
+1. repo별 준비와 의존성 설치를 한다(아래 표).
+2. repo별 Metro 명령을 실행한다.
+3. `xcodebuild -workspace <workspace> -scheme <scheme> -configuration Debug -destination 'platform=iOS Simulator,id=<booted id>' build`를 실행한다.
+4. 빌드한 `.app`을 `xcrun simctl install`로 설치하고 `xcrun simctl launch`로 실행한다.
+5. 첫 화면을 확인한다. RN red box·crash·흰 화면은 실패다. 네트워크·기능 오류는 판정에 넣지 않는다.
+6. `git status --porcelain`으로 tracked 파일 상태를 확인한다.
+
+| repo | 준비 목록 | 의존성 설치 | Metro | workspace / scheme |
+| --- | --- | --- | --- | --- |
+| mattermost-mobile | Node 24.15.0, Ruby 3.2.11에 CocoaPods 1.16.1, Android SDK(`ANDROID_HOME`, `emulator`; repo의 solidarity가 요구) | `npm ci`(postinstall이 `pod install` 실행) | `npm start` | `ios/Mattermost.xcworkspace` / `Mattermost` |
+| Rainbow | `mise trust`, Node 22·Ruby 3.4.8·Bundler 4.0.6, Corepack Yarn 4.13.0, `.env.example`을 복사한 `.env`(placeholder) | `yarn install && yarn setup`, `yarn install-bundle && yarn install-pods` | `yarn start` | `ios/Rainbow.xcworkspace` / `Rainbow` |
+| Joplin | Node 22, Corepack Yarn 4.16.0, PATH의 CocoaPods 1.16.2 | root에서 `yarn install`, `packages/app-mobile/ios`에서 `pod install` | `packages/app-mobile`에서 `yarn start` | `packages/app-mobile/ios/Joplin.xcworkspace` / `Joplin` |
+
+- 위 명령은 각 후보 SHA의 README·`readme/dev/BUILD.md`·`package.json`에서 가져왔다.
+- Rainbow의 내부 전용 단계(`yarn update-env`, `rainbow-scripts`)는 외부 기여자 절차를 따라 쓰지 않는다.
+- Rainbow 앱 환경값은 ADR-0016대로 placeholder로 먼저 시도한다. 첫 화면에 도달하지 못하면 maintainer가 실제 키를 준비한다. baseline과 Go round에 같은 준비 조건을 적용한다. 준비한 종류만 기록하고 값과 파일은 기록하지 않는다.
 
 ## 대안
 
@@ -37,4 +66,4 @@ ADR-0008은 실패를 관측한 뒤 표본을 교체하면 게이트가 다른 �
 ## 결과
 
 - 현재 판정은 계속 **No-Go**다. 이 ADR은 표본을 다시 고정할 뿐 새 성공 근거를 만들지 않는다.
-- 세 repo의 조사 실행은 새 SHA로 다시 한다.
+- baseline을 통과한 후보만 조사 실행한다.
