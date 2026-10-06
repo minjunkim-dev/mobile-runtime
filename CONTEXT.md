@@ -172,7 +172,11 @@ _Avoid_: failure injection, chaos test
 doctor 정확성의 두 실패 축. 미탐 = 실재 문제를 pass로 통과(치명 — doctor 신뢰의 근간), 오탐 = 멀쩡한데 warning/error(경고 — 개선 대상).
 
 **Go/No-Go 게이트**:
-사전에 잠근 증거 기준으로 특정 전환 또는 주장을 허용할지 내리는 판정. 기준과 차단 범위는 계획 시점에 잠그며, No-Go는 그 경계를 통과하지 못했다는 뜻이지 프로젝트 전체 중단을 뜻하지 않는다. #1 = feasibility(spike), #2 = 유용성(dogfooding).
+사전에 잠근 증거 기준으로 특정 전환 또는 주장을 허용할지 내리는 판정. 기준과 차단 범위는 계획 시점에 잠그며, No-Go는 그 경계를 통과하지 못했다는 뜻이지 프로젝트 전체 중단을 뜻하지 않는다. #1 = feasibility(spike), #2 = 유용성(dogfooding). 게이트는 플랫폼별로 잠근다. ADR-0008의 세 repo 게이트는 iOS 주장만 판정한다. 게이트의 fresh clone은 사람이 앱 환경값을 준비하는 것을 허용한다. `mobile`이 앱 환경값을 만들거나 입력하는 것은 허용하지 않는다(ADR-0016).
+
+**Go round**:
+Go/No-Go 게이트를 판정하는 단일 실행 묶음이다. 같은 `mobile` SHA와 같은 host로 잠긴 표본 전부를 한 번에 실행한다. 다른 round의 성공을 합산하지 않는다.
+_Avoid_: dogfooding round, 검증 실행
 
 **내부 alpha (Internal alpha)**:
 private 저장소 접근권이 있고 검증 표본의 앱 환경값을 직접 준비하는 maintainer가
@@ -185,6 +189,10 @@ React Native 지원 주장, Go 판정을 뜻하지 않는다.
 **Alpha blocker**:
 필수 증거·독립 실행·안전성·tracked 파일 무변경 중 하나를 깨뜨려 내부 alpha 완료를 막는 결함. 기록된 warning, 미관 문제, 초기 UI 이후의 프로젝트 고유 기능 문제는 포함하지 않는다.
 _Avoid_: release blocker, Go/No-Go blocker
+
+**Go blocker**:
+Go round에서 잠긴 표본의 앱 UI 도달을 막는 `mobile` 결함. 표본 고유 문제와 사람의 host 준비 누락은 포함하지 않는다.
+_Avoid_: Alpha blocker, release blocker
 
 **검증 조합 (Validation tuple)**:
 프레임워크·도구체인·플랫폼 런타임 버전을 함께 고정한 하나의 관측 단위다. 결과는 그 조합에만 귀속하며 더 넓은 버전 범위로 일반화하지 않는다.

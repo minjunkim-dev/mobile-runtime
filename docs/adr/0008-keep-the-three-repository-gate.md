@@ -44,3 +44,5 @@
 ### 2026-08-21 재검증 (#76)
 
 프로젝트 실행 환경과 `mobile build`를 반영해 잠긴 세 commit에서 `doctor`·`build`·`up`을 다시 실행했다. 세 fresh checkout 모두 validation에서 명시적인 repo/호스트 요구 불일치로 멈췄고, 자동 설치·trust·secret 변경은 없었다. 따라서 새 build·launch·UI 성공 근거는 생기지 않았으며 기존 2/3 성공 이력과 **No-Go** 판정은 그대로다. 상세 실측은 [up 라운드 3](../dogfooding/up-round-3.md)에 둔다.
+
+> 2026-10-06: fresh clone 해석(사람이 준비한 앱 환경값 허용)과 iOS 전용 범위는 [ADR-0016](0016-go-gate-allows-human-app-environment.md)이 보완한다. 세 repo·잠긴 SHA·3/3 기준은 그대로다.
