@@ -22,10 +22,15 @@ test ! -e "$archive"
 test ! -e "$archive.sha256"
 scratch=$(mktemp -d)
 trap 'rm -rf "$scratch"' EXIT
+revision=$(git rev-parse HEAD)
+mkdir "$scratch/source"
+git archive "$revision" | tar -x -C "$scratch/source"
+cp "$scratch/source/Package.resolved" "$scratch/resolved.json"
+cd "$scratch/source"
 
 # A disposable build path proves the archive cannot use a checkout resource fallback.
 swift build -c release --force-resolved-versions --scratch-path "$scratch/build"
-git diff --exit-code -- Package.resolved
+cmp Package.resolved "$scratch/resolved.json"
 products=$(swift build -c release --show-bin-path --scratch-path "$scratch/build")
 test "$(lipo -archs "$products/mobile")" = arm64
 stage="$scratch/$name"
@@ -38,7 +43,7 @@ done
 cp LICENSE "$stage/"
 cp docs/release-install.md "$stage/INSTALL.md"
 
-python3 - "$scratch/build/checkouts" "$stage" "$version" <<'PY'
+python3 - "$scratch/build/checkouts" "$stage" "$version" "$revision" <<'PY'
 import json
 from pathlib import Path
 import subprocess
@@ -67,7 +72,7 @@ notices.append('\n## libyaml (vendored by Yams)\n\n'
 (stage / 'THIRD_PARTY_NOTICES.md').write_text('\n'.join(notices))
 metadata = {
     'product': 'Runstir', 'releaseVersion': sys.argv[3], 'command': 'mobile',
-    'sourceRevision': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
+    'sourceRevision': sys.argv[4],
     'architecture': 'arm64',
     'toolVersion': subprocess.check_output([str(stage / 'mobile'), '--version'], text=True).strip(),
     'swift': subprocess.check_output(['swift', '--version'], text=True).strip(),

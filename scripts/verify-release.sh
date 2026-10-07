@@ -17,13 +17,16 @@ test -s "$package/LICENSE"
 test -s "$package/THIRD_PARTY_NOTICES.md"
 test -s "$package/INSTALL.md"
 test -s "$package/BUILD.json"
+mkdir "$scratch/bin"
+ln -s "$package/mobile" "$scratch/bin/mobile"
+mobile="$scratch/bin/mobile"
 cd "$scratch"
-"$package/mobile" --help > /dev/null
-"$package/mobile" doctor --platform android --help > /dev/null
+"$mobile" --help > /dev/null
+"$mobile" doctor --platform android --help > /dev/null
 for platform in ios android; do
   result="$scratch/$platform.json"
   status=0
-  "$package/mobile" doctor --platform "$platform" --json > "$result" || status=$?
+  "$mobile" doctor --platform "$platform" --json > "$result" || status=$?
   # Host requirements can fail outside a project; a tool failure cannot pass this smoke.
   test "$status" -le 1
   python3 - "$result" "$package/BUILD.json" <<'PY'
