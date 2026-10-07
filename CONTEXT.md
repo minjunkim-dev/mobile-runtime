@@ -172,7 +172,7 @@ _Avoid_: failure injection, chaos test
 doctor 정확성의 두 실패 축. 미탐 = 실재 문제를 pass로 통과(치명 — doctor 신뢰의 근간), 오탐 = 멀쩡한데 warning/error(경고 — 개선 대상).
 
 **Go/No-Go 게이트**:
-사전에 잠근 증거 기준으로 특정 전환 또는 주장을 허용할지 내리는 판정. 기준과 차단 범위는 계획 시점에 잠그며, No-Go는 그 경계를 통과하지 못했다는 뜻이지 프로젝트 전체 중단을 뜻하지 않는다. #1 = feasibility(spike), #2 = 유용성(dogfooding). 게이트는 플랫폼별로 잠근다. ADR-0008의 세 repo 게이트는 iOS 주장만 판정한다. 게이트의 fresh clone은 사람이 앱 환경값을 준비하는 것을 허용한다. `mobile`이 앱 환경값을 만들거나 입력하는 것은 허용하지 않는다(ADR-0016).
+사전에 잠근 증거 기준으로 특정 전환 또는 주장을 허용할지 내리는 판정. 기준과 차단 범위는 계획 시점에 잠그며, No-Go는 그 경계를 통과하지 못했다는 뜻이지 프로젝트 전체 중단을 뜻하지 않는다. #1 = feasibility(spike), #2 = 유용성(dogfooding). 게이트는 플랫폼별로 잠근다. 현재 iOS 게이트는 ADR-0018의 단일 표본 1/1이다. ADR-0008·ADR-0017의 세 repo 판정은 과거 기록으로 유지한다. 게이트의 fresh clone은 사람이 앱 환경값을 준비하는 것을 허용한다. `mobile`이 앱 환경값을 만들거나 입력하는 것은 허용하지 않는다(ADR-0016).
 
 **Go round**:
 Go/No-Go 게이트를 판정하는 단일 실행 묶음이다. 같은 `mobile` SHA와 같은 host로 잠긴 표본 전부를 한 번에 실행한다. 다른 round의 성공을 합산하지 않는다.
@@ -203,7 +203,7 @@ _Avoid_: 지원 범위, 호환성 정책
 _Avoid_: 검증 조합, tested on
 
 **Known-good 표본 (Known-good sample)**:
-고정된 프로젝트 revision이 같은 검증 조합에서 mobile 없이도 build·install·launch·초기 UI에 도달하고 tracked 파일을 바꾸지 않는 검증 표본이다. mobile SHA는 표본이 아니라 각 검증 실행에서 별도로 고정한다.
+고정된 프로젝트 revision이 같은 검증 조합에서 mobile 없이도 build·install·launch·초기 UI에 도달하고 tracked 파일을 바꾸지 않는 검증 표본이다. ADR-0018의 현재 iOS 게이트만 네 Pod checksum 값 재생성 예외를 적용한다. 다른 tracked byte는 같아야 한다. mobile SHA는 표본이 아니라 각 검증 실행에서 별도로 고정한다.
 _Avoid_: clean repo, test project
 
 **검증 결과 (Validation verdict)**:
