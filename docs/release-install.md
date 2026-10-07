@@ -1,24 +1,44 @@
 # Runstir 설치
 
-첫 pre-release는 macOS Apple Silicon(arm64)용이다. CLI 명령어는 `mobile`이다.
+macOS Apple Silicon(arm64)용 CLI다. CLI 명령어는 `mobile`이다.
 실행 파일과 두 `.bundle` 디렉터리를 같은 디렉터리에 유지한다.
 
-## 설치 절차
+## Homebrew 설치
+
+1. 기존 GitHub 저장소를 tap으로 등록한다.
+
+   ```sh
+   brew tap minjunkim-dev/runstir https://github.com/minjunkim-dev/mobile-runtime
+   ```
+
+2. Runstir를 설치한다.
+
+   ```sh
+   brew install minjunkim-dev/runstir/runstir
+   mobile --version
+   ```
+
+formula는 배포 archive의 SHA-256을 고정한다. 실행 파일과 두 resource bundle을 함께 설치한다.
+Node·Ruby·JDK·Xcode·Android SDK는 프로젝트별 버전이 다르므로 formula 의존성으로 설치하지 않는다.
+현재 배포는 CLI다. DMG 설치는 GUI를 제공할 때 추가한다.
+
+## archive 설치
 
 1. GitHub Releases에서 `runstir-<version>-macos-arm64.tar.gz`와 같은 이름의 `.sha256` 파일을 다운로드한다.
 2. 다운로드한 디렉터리에서 checksum을 확인한다.
 
    ```sh
-   shasum -a 256 -c runstir-0.1.0-alpha.1-macos-arm64.tar.gz.sha256
+   version=0.1.0-alpha.2
+   shasum -a 256 -c "runstir-$version-macos-arm64.tar.gz.sha256"
    ```
 
 3. archive를 풀고 전체 디렉터리를 설치한다. 실행 파일만 옮기지 않는다.
 
    ```sh
-   tar -xzf runstir-0.1.0-alpha.1-macos-arm64.tar.gz
+   tar -xzf "runstir-$version-macos-arm64.tar.gz"
    mkdir -p "$HOME/.local/lib/runstir" "$HOME/.local/bin"
-   mv runstir-0.1.0-alpha.1-macos-arm64 "$HOME/.local/lib/runstir/"
-   ln -s "$HOME/.local/lib/runstir/runstir-0.1.0-alpha.1-macos-arm64/mobile" "$HOME/.local/bin/mobile"
+   mv "runstir-$version-macos-arm64" "$HOME/.local/lib/runstir/"
+   ln -s "$HOME/.local/lib/runstir/runstir-$version-macos-arm64/mobile" "$HOME/.local/bin/mobile"
    ```
 
 4. `PATH`를 설정하고 실행한다.
@@ -29,17 +49,19 @@
    mobile --help
    ```
 
-5. 신뢰한 프로젝트에서 원하는 플랫폼을 실행한다.
+## 환경 확인과 실행
 
-   ```sh
-   mobile doctor --json
-   mobile up
-   mobile down
-   # Android
-   mobile doctor --platform android --json
-   mobile up --platform android
-   mobile down --platform android
-   ```
+신뢰한 프로젝트에서 원하는 플랫폼을 실행한다.
+
+```sh
+mobile doctor --json
+mobile up
+mobile down
+# Android
+mobile doctor --platform android --json
+mobile up --platform android
+mobile down --platform android
+```
 
 `mobile`은 프로젝트의 Gradle·package manager·Podfile 코드를 실행한다.
 SDK·Simulator·Emulator·Node·Ruby·JDK는 사람이 준비한다.
@@ -49,7 +71,7 @@ SDK·Simulator·Emulator·Node·Ruby·JDK는 사람이 준비한다.
 ## 버전과 실행 범위
 
 `BUILD.json`에 release version, source SHA, 내부 CLI version, 빌드 도구와 의존성을 기록한다.
-첫 archive의 release version은 `0.1.0-alpha.1`이다. 내부 CLI version은 `0.1.0`이다.
+현재 archive와 formula의 release version은 `0.1.0-alpha.2`다. 내부 CLI version은 `0.1.0`이다.
 
 Package.swift의 macOS 최소 버전 선언은 14다. 첫 실행 검증 범위는 macOS 27.0.1 arm64다.
 릴리스 노트의 BlueWallet iOS·FreeKiosk Android 검증 조합을 확인한다.
@@ -62,5 +84,11 @@ macOS의 시스템 설정에서 제공하는 보안 승인 절차를 따른다.
 
 ## 제거
 
-`~/.local/bin/mobile` symlink와 설치한 버전의 Runstir 디렉터리를 제거한다.
+Homebrew 설치는 다음 명령으로 제거한다.
+
+```sh
+brew uninstall minjunkim-dev/runstir/runstir
+```
+
+archive 설치는 `~/.local/bin/mobile` symlink와 설치한 버전의 Runstir 디렉터리를 제거한다.
 프로젝트 파일·SDK·Simulator·Emulator는 유지한다.

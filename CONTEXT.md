@@ -195,6 +195,9 @@ React Native 지원 주장, Go 판정을 뜻하지 않는다.
 **첫 외부 배포 (First external pre-release)**:
 iOS와 Android를 함께 제공하는 첫 GitHub Releases 공개 pre-release다. 각 플랫폼의 검증 조합을 명시한다. 공개 게시와 실제 다운로드한 배포 파일의 설치·실행 검증을 완료 기준으로 삼는다.
 
+**설치와 환경 준비**:
+macOS Apple Silicon CLI는 GitHub archive와 같은 저장소의 Homebrew tap으로 설치한다. Homebrew formula는 검증한 archive의 SHA-256을 고정한다. Node·Ruby·JDK·Xcode·Android SDK는 프로젝트별 요구에 맞춰 사람이 준비한다. `doctor`는 부족한 도구·초기 설정·라이선스 승인 기록·경로 접근을 검사하고 복구 절차를 안내한다. 도구 설치·라이선스 동의·권한 변경을 자동 실행하지 않는다. DMG는 GUI를 제공할 때 추가한다.
+
 **Alpha blocker**:
 필수 증거·독립 실행·안전성·tracked 파일 무변경 중 하나를 깨뜨려 내부 alpha 완료를 막는 결함. 기록된 warning, 미관 문제, 초기 UI 이후의 프로젝트 고유 기능 문제는 포함하지 않는다.
 _Avoid_: release blocker, Go/No-Go blocker
