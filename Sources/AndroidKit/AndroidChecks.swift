@@ -483,7 +483,7 @@ private struct AndroidGradleCompatibilityCheck: Check {
 private struct AndroidSDKCheck: Check {
     let id = "android.sdk"
     let category = "Android SDK"
-    let title = "The selected SDK root contains every package this variant requires"
+    let title = "The selected SDK packages are installed and their license records match"
     let context: AndroidDoctorContext
     let includeRuntimeTools: Bool
 
@@ -560,7 +560,9 @@ private struct AndroidSDKCheck: Check {
 
         let manager = FileManager.default
         var missing: [(label: String, package: String)] = []
+        var packages: [URL] = []
         func require(_ relative: String, _ label: String, _ package: String, executable: Bool = false) {
+            packages.append(sdk.appendingPathComponent(package.replacingOccurrences(of: ";", with: "/")))
             let path = sdk.appendingPathComponent(relative).path
             let exists = executable ? manager.isExecutableFile(atPath: path) : manager.fileExists(atPath: path)
             if !exists { missing.append((label, package)) }
@@ -594,13 +596,19 @@ private struct AndroidSDKCheck: Check {
                 )
             )
         }
+        let licenseCommand = findSDKManager(in: sdk).map {
+            "\(shellQuote($0.path)) \(shellQuote("--sdk_root=\(sdk.path)")) --licenses"
+        }
+        if let outcome = AndroidSDKLicenses.check(packages: packages, sdk: sdk, command: licenseCommand) {
+            return outcome
+        }
         return .pass(
             observed: "android-\(compileSDK), Build Tools \(buildTools)"
                 + (includeRuntimeTools ? ", adb, Emulator" : "")
                 + (module.nativeBuildConfigured ? ", native tools" : "")
                 + (module.nativeBuildConfigured ? cmakeVersion.map { ", CMake \($0)" } ?? "" : "")
                 + (cmakeDirectory != nil ? ", CMake from cmake.dir" : ""),
-            required: "variant SDK inventory",
+            required: "variant SDK inventory and matching license acceptance records",
             source: source
         )
     }
@@ -676,6 +684,23 @@ private struct AndroidAVDCheck: Check {
             )
         }
 
+        func verdict(_ selected: AndroidAVD, running: Bool = false, required: String) -> CheckOutcome {
+            guard let image = selected.systemImageDirectory else {
+                return .unknown(reason: "selected AVD has no observable system image package", source: source)
+            }
+            let command = findSDKManager(in: sdk).map {
+                "\(shellQuote($0.path)) \(shellQuote("--sdk_root=\(sdk.path)")) --licenses"
+            }
+            if let license = AndroidSDKLicenses.check(packages: [image], sdk: sdk, command: command) {
+                return license
+            }
+            return .pass(
+                observed: "\(running ? "running " : "")\(selected.name) — API \(selected.apiLevel.map(String.init) ?? "unknown"), "
+                    + "ABI \(selected.abi ?? "unspecified")",
+                required: required, source: source
+            )
+        }
+
         if let declared = context.config.configuration?.androidAVD {
             guard let selected = compatible.first(where: { $0.name == declared }) else {
                 return .error(
@@ -685,23 +710,13 @@ private struct AndroidAVDCheck: Check {
                     remediation: Remediation(summary: "Set android.avd to one compatible existing AVD in mobile.yml.")
                 )
             }
-            return .pass(
-                observed: "\(selected.name) — API \(selected.apiLevel.map(String.init) ?? "unknown"), "
-                    + "ABI \(selected.abi ?? "unspecified")",
-                required: "selected AVD compatible with minSdk \(minSDK)",
-                source: source
-            )
+            return verdict(selected, required: "selected AVD compatible with minSdk \(minSDK)")
         }
 
         let running = try await runningAVDNames(sdk: sdk)
         let runningCompatible = compatible.filter { running.contains($0.name) }
         if runningCompatible.count == 1, let selected = runningCompatible.first {
-            return .pass(
-                observed: "running \(selected.name) — API \(selected.apiLevel.map(String.init) ?? "unknown"), "
-                    + "ABI \(selected.abi ?? "unspecified")",
-                required: "one compatible running or installed AVD",
-                source: source
-            )
+            return verdict(selected, running: true, required: "one compatible running or installed AVD")
         }
         let candidates = runningCompatible.isEmpty ? compatible : runningCompatible
         guard candidates.count == 1, let selected = candidates.first else {
@@ -713,12 +728,7 @@ private struct AndroidAVDCheck: Check {
                 remediation: Remediation(summary: "Set android.avd to one compatible AVD in mobile.yml.")
             )
         }
-        return .pass(
-            observed: "\(selected.name) — API \(selected.apiLevel.map(String.init) ?? "unknown"), "
-                + "ABI \(selected.abi ?? "unspecified")",
-            required: "one compatible existing AVD",
-            source: source
-        )
+        return verdict(selected, required: "one compatible existing AVD")
     }
 
     private func runningAVDNames(sdk: URL) async throws -> Set<String> {

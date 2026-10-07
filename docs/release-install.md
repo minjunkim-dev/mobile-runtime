@@ -43,6 +43,7 @@
 
 `mobile`은 프로젝트의 Gradle·package manager·Podfile 코드를 실행한다.
 SDK·Simulator·Emulator·Node·Ruby·JDK는 사람이 준비한다.
+부족한 환경의 확인과 복구 절차는 [환경 준비 안내](environment-setup.md)를 따른다.
 검토하지 않은 프로젝트를 민감한 환경값이 있는 환경에서 실행하지 않는다.
 
 ## 버전과 실행 범위

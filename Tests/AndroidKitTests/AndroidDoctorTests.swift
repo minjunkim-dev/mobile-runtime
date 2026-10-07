@@ -19,6 +19,10 @@ private func executable(_ repo: FixtureRepo, _ path: String, contents: String = 
     try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: repo.url(path).path)
 }
 
+private func sdkPackage(_ repo: FixtureRepo, _ path: String) throws {
+    try repo.write("\(path)/package.xml", "<repository><localPackage/></repository>")
+}
+
 private func modelJSON(variants: String? = nil, abiFilters: String = #"["arm64-v8a"]"#) -> String {
     let variants = variants ??
         """
@@ -78,8 +82,12 @@ private func scenario(
     try executable(repo, "sdk/build-tools/35.0.0/aapt2")
     try executable(repo, "sdk/platform-tools/adb")
     try executable(repo, "sdk/emulator/emulator")
+    for package in ["platforms/android-36", "build-tools/35.0.0", "platform-tools", "emulator"] {
+        try sdkPackage(repo, "sdk/\(package)")
+    }
     if installSystemImage {
         try repo.directory("sdk/system-images/android-35/google_apis/arm64-v8a")
+        try sdkPackage(repo, "sdk/system-images/android-35/google_apis/arm64-v8a")
     }
 
     let avdHome = repo.url("avd-home")
@@ -151,6 +159,21 @@ private func composedChecks(_ scenario: AndroidScenario) async -> [any Check] {
 
 @Suite("Android doctor")
 struct AndroidDoctorTests {
+    @Test("an unaccepted selected SDK license stops build validation before dependency install")
+    func licenseGate() async throws {
+        let scenario = try scenario()
+        try scenario.repo.write("sdk/platforms/android-36/package.xml", "<repository><license id='test-license'>hello</license><localPackage><uses-license ref='test-license'/></localPackage></repository>")
+        let stage = ValidateStage(engine: DoctorEngine(checks: checks(scenario)), checkIDs: AndroidWorkflowValidation.checkIDs)
+        var context = UpContext()
+        do {
+            _ = try await stage.run(&context)
+            Issue.record("validation must stop before dependencies and build")
+        } catch is DomainError {
+            #expect(context.validation?.checks.first { $0.id == "android.sdk" }?.status == .error)
+        }
+        #expect(!scenario.runner.log.all.contains { $0.arguments.contains("--licenses") || $0.arguments.contains(":app:assembleDebug") })
+    }
+
     @Test("Java versions with a fourth component or suffix order by the first three")
     func javaVersionShapes() {
         #expect(SemanticVersion(java: "21.0.12.1") == SemanticVersion("21.0.12"))
@@ -457,10 +480,10 @@ struct AndroidDoctorTests {
     @Test("unspecified CMake uses the bundled AGP default without provisioning", arguments: [false, true])
     func defaultCMakePackage(installed: Bool) async throws {
         let scenario = try scenario(modelResponse: .ok(AndroidGradleModelProbe.marker + nativeModelJSON() + "\n"))
-        try scenario.repo.directory("sdk/ndk/27.1.12297006")
+        try sdkPackage(scenario.repo, "sdk/ndk/27.1.12297006")
         try executable(scenario.repo, "sdk/cmdline-tools/latest/bin/sdkmanager")
         if installed {
-            try scenario.repo.directory("sdk/cmake/3.22.1")
+            try sdkPackage(scenario.repo, "sdk/cmake/3.22.1")
             try FileManager.default.removeItem(at: scenario.repo.url("android/local.properties"))
         }
 
@@ -481,8 +504,8 @@ struct AndroidDoctorTests {
     func explicitCMakePackage(agp: String) async throws {
         let model = nativeModelJSON(agp: agp, cmake: "3.18.1")
         let scenario = try scenario(modelResponse: .ok(AndroidGradleModelProbe.marker + model + "\n"))
-        try scenario.repo.directory("sdk/ndk/27.1.12297006")
-        try scenario.repo.directory("sdk/cmake/3.18.1")
+        try sdkPackage(scenario.repo, "sdk/ndk/27.1.12297006")
+        try sdkPackage(scenario.repo, "sdk/cmake/3.18.1")
 
         let report = await DoctorEngine(checks: checks(scenario)).run(only: ["android.sdk"])
         let sdk = try #require(report.checks.first { $0.id == "android.sdk" })
@@ -495,8 +518,8 @@ struct AndroidDoctorTests {
     @Test("unspecified CMake with an unbundled or unavailable AGP stays unknown", arguments: ["8.10.0", "99.0.0", "invalid", nil] as [String?])
     func unknownDefaultCMake(agp: String?) async throws {
         let scenario = try scenario(modelResponse: .ok(AndroidGradleModelProbe.marker + nativeModelJSON(agp: agp) + "\n"))
-        try scenario.repo.directory("sdk/ndk/27.1.12297006")
-        try scenario.repo.directory("sdk/cmake/3.22.1")
+        try sdkPackage(scenario.repo, "sdk/ndk/27.1.12297006")
+        try sdkPackage(scenario.repo, "sdk/cmake/3.22.1")
 
         let report = await DoctorEngine(checks: checks(scenario)).run(only: ["android.sdk"])
         let sdk = try #require(report.checks.first { $0.id == "android.sdk" })
@@ -510,7 +533,7 @@ struct AndroidDoctorTests {
     func localCMakeDirectory(agp: String) async throws {
         let model = nativeModelJSON(agp: agp)
         let scenario = try scenario(modelResponse: .ok(AndroidGradleModelProbe.marker + model + "\n"))
-        try scenario.repo.directory("sdk/ndk/27.1.12297006")
+        try sdkPackage(scenario.repo, "sdk/ndk/27.1.12297006")
         try executable(scenario.repo, "custom cmake/bin/cmake")
         try scenario.repo.write(
             "android/local.properties",
@@ -575,7 +598,7 @@ struct AndroidDoctorTests {
     func nativeBuildWithoutCMake() async throws {
         let model = nativeModelJSON(cmakeConfigured: false)
         let scenario = try scenario(modelResponse: .ok(AndroidGradleModelProbe.marker + model + "\n"))
-        try scenario.repo.directory("sdk/ndk/27.1.12297006")
+        try sdkPackage(scenario.repo, "sdk/ndk/27.1.12297006")
 
         let report = await DoctorEngine(checks: checks(scenario)).run(only: ["android.sdk"])
         let sdk = try #require(report.checks.first { $0.id == "android.sdk" })

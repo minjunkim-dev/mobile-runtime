@@ -70,6 +70,9 @@ public enum IOSWorkflowValidation {
     public static let checkIDs: Set<String> = [
         // Host and matrix — can this machine build for iOS at all.
         "xcode.installed",
+        "xcode.ready",
+        "host.workspace-access",
+        "host.storage",
         "xcode.version",
         "simulator.daemon",
         "simulator.runtime",

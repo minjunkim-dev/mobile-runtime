@@ -51,6 +51,28 @@ struct Wiring {
         } else {
             projectEnvironment = nil
         }
+        var paths = [workingDirectory, FileManager.default.temporaryDirectory]
+        if let anchor {
+            paths.append(anchor.directory)
+            if let root = anchor.workspaceRoot { paths.append(root.directory) }
+        }
+        let environment = ProcessInfo.processInfo.environment
+        if let anchor, anchor.workspaceRoot?.packageManagerName == "npm" || anchor.packageManager?.name == "npm" {
+            paths.append(environment["npm_config_cache"].map { URL(fileURLWithPath: $0) }
+                ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".npm"))
+        }
+        if platform == .android {
+            let gradle = environment["GRADLE_USER_HOME"].map { URL(fileURLWithPath: $0) }
+                ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".gradle")
+            paths.append(gradle)
+        }
+        var uniquePaths: [URL] = []
+        for path in paths where !uniquePaths.contains(path.standardizedFileURL) {
+            uniquePaths.append(path.standardizedFileURL)
+        }
+        let workspaceChecks: [any Check] = [
+            WorkspaceAccessCheck(paths: uniquePaths), WorkspaceStorageCheck(paths: uniquePaths)
+        ]
         let checks: [any Check]
         switch platform {
         case .ios:
@@ -59,7 +81,7 @@ struct Wiring {
             } else {
                 [any Check]()
             }
-            checks = iOSChecks(lookup: lookup, runner: runner, locator: locator)
+            checks = workspaceChecks + iOSChecks(lookup: lookup, runner: runner, locator: locator)
                 + configChecks(context: config, lookup: lookup, runner: runner, locator: locator)
                 + projectChecks
         case .android:
@@ -78,7 +100,7 @@ struct Wiring {
                 android.append(contentsOf: projectEnvironment.commonChecks(anchor: anchor, context: config))
                 android.append(contentsOf: platformChecks.dropFirst())
             }
-            checks = android
+            checks = workspaceChecks + android
         }
 
         return Wiring(
