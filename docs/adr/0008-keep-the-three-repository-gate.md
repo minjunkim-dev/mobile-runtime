@@ -47,4 +47,4 @@
 
 > 2026-10-06: fresh clone 해석(사람이 준비한 앱 환경값 허용)과 iOS 전용 범위는 [ADR-0016](0016-go-gate-allows-human-app-environment.md)이 보완한다. 세 repo·잠긴 SHA·3/3 기준은 그대로다.
 
-> 2026-10-07: Go 게이트의 검증 조합(Xcode 27.0 / iOS 27.0)과 세 repo의 표본 SHA는 [ADR-0017](0017-relock-go-samples-for-xcode-27.md)이 대체한다. 세 repo와 3/3 기준은 그대로다.
+> 2026-10-07: [ADR-0017](0017-relock-go-samples-for-xcode-27.md)이 Xcode 27.0 / iOS 27.0 게이트를 열고 세 repo의 후보 SHA를 고정했다. 이 게이트의 known-good 표본은 아직 없다. 세 repo와 3/3 기준은 그대로다.

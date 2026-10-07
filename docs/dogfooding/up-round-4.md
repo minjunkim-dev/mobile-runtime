@@ -65,7 +65,7 @@ but the range of supported deployment target versions is 15.0 to 27.0.x.
 
 1. **CocoaPods 1.16.1 — host 준비 누락.** #153은 `mobile up`의 `bundle install`이 1.16.1을 설치한다고 보았다. 그러나 repo의 `pod-install` script는 bare `pod install`을 실행한다. solidarity도 PATH의 `pod` 1.16.1을 요구한다. 따라서 repo Ruby(3.2.11)에 CocoaPods 1.16.1을 직접 설치해야 한다.
 2. **Android SDK — host 준비 누락.** repo의 preinstall은 iOS 빌드에도 Android SDK를 요구한다. 이 host는 SDK를 외장 SSD에 둔다. SSD를 분리하면 `npm ci`가 실패한다.
-3. **Xcode 27 — host 준비 누락, 미해결.** 잠긴 SHA의 Pods는 Xcode 27에서 빌드되지 않는다. repo는 Xcode를 선언하지 않는다. ADR-0016은 이 경우 사람이 다른 Xcode를 설치하고 `overrides.xcode`로 지정하도록 허용한다. maintainer는 이후 Go 게이트를 Xcode 27로 통일하기로 했다. 표본 재고정은 [#156](https://github.com/minjunkim-dev/mobile-runtime/issues/156)과 ADR-0017이 맡는다.
+3. **Xcode 27 — host 준비 누락(당시 게이트 기준), 미해결.** 잠긴 SHA의 Pods는 Xcode 27에서 빌드되지 않는다. repo는 Xcode를 선언하지 않는다. ADR-0016은 이 경우 사람이 다른 Xcode를 설치하고 `overrides.xcode`로 지정하도록 허용한다. maintainer는 이후 Go 게이트를 Xcode 27로 통일하기로 했다. 표본 재고정은 [#156](https://github.com/minjunkim-dev/mobile-runtime/issues/156)과 ADR-0017이 맡는다.
 
 `mobile` 결함이 첫 화면 도달을 막은 사례는 없다. 따라서 Go blocker 티켓을 만들지 않았다.
 
