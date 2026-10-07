@@ -20,7 +20,8 @@ CocoaPods도 준비한다. Android는 Gradle과 AGP가 요구하는 JDK를 준�
 Homebrew로 Runstir를 설치해도 프로젝트마다 다른 Node·Ruby·JDK 버전을 일괄 설치하지 않는다.
 
 `host.workspace-access`는 작업 디렉터리, 프로젝트·워크스페이스 루트, 임시 로그 경로,
-알려진 npm cache 경로와 Android Gradle cache 경로의 읽기·쓰기·검색 권한을 확인한다.
+프로젝트 실행 환경에서 `npm config get cache`로 관측한 npm cache 경로와 Android Gradle cache
+경로의 읽기·쓰기·검색 권한을 확인한다. npm cache를 관측하지 못하면 unknown으로 보고한다.
 없어진 cache는 생성하지 않는다. 가장 가까운 기존 부모 디렉터리를 확인한다.
 실제 쓰기나 모든 도구의 사용자 정의 cache 접근까지 보증하는 검사는 아니다.
 

@@ -13,6 +13,7 @@ struct AndroidSDKLicensesTests {
         let result = AndroidSDKLicenses.check(packages: [repo.url("sdk/package")], sdk: repo.url("sdk"), command: "sdkmanager --licenses")
         #expect(hash.hasPrefix("aaf4") ? result == nil : result?.status == .error)
         if !hash.hasPrefix("aaf4") { #expect(result?.remediation?.command == "sdkmanager --licenses") }
+        if !hash.hasPrefix("aaf4") { #expect(result?.observed?.contains(repo.url("sdk/licenses/test-license").path) == true) }
         #expect(!FileManager.default.fileExists(atPath: repo.url("sdk/licenses/test-license").path) || !hash.isEmpty)
     }
 

@@ -14,6 +14,14 @@ struct WorkspaceReadinessTests {
         #expect(!FileManager.default.fileExists(atPath: cache.path))
     }
 
+    @Test("an unobserved package cache is unknown rather than a guessed pass or permission error")
+    func unobservedCache() async throws {
+        let repo = try FixtureRepo()
+        let result = try await WorkspaceAccessCheck(paths: [repo.root], unresolvedCache: "npm cache could not be read").run()
+        #expect(result.status == .unknown)
+        #expect(result.reason?.contains("npm cache") == true)
+    }
+
     @Test("an inaccessible location reports its path and permission guidance")
     func deniedPath() async throws {
         let repo = try FixtureRepo()

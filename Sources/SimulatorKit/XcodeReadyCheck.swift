@@ -23,6 +23,16 @@ public struct XcodeReadyCheck: Check {
             timeout: .seconds(30)
         ))
         guard result.terminationStatus.isSuccess else {
+            let output = result.combinedOutput.lowercased()
+            let knownSetupFailure = output.contains("additional system content")
+                || output.contains("license agreement")
+                || output.contains("license has not been accepted")
+            guard case .exited = result.terminationStatus, knownSetupFailure else {
+                return .unknown(
+                    reason: "Xcode initial setup probe did not return a usable verdict. Run xcodebuild -checkFirstLaunchStatus with the selected DEVELOPER_DIR and inspect its output.",
+                    observed: "\(String(describing: result.terminationStatus)): \(result.combinedOutput.firstLine ?? "no output")"
+                )
+            }
             let app = URL(fileURLWithPath: installation.developerDirectory)
                 .deletingLastPathComponent().deletingLastPathComponent()
             let quotedApp = "'" + app.path.replacingOccurrences(of: "'", with: "'\\''") + "'"

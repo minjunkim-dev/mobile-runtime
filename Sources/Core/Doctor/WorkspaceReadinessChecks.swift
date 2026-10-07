@@ -6,8 +6,12 @@ public struct WorkspaceAccessCheck: Check {
     public let category = "Workspace"
     public let title = "Working and cache directories are accessible"
     let paths: [URL]
+    let unresolvedCache: String?
 
-    public init(paths: [URL]) { self.paths = paths }
+    public init(paths: [URL], unresolvedCache: String? = nil) {
+        self.paths = paths
+        self.unresolvedCache = unresolvedCache
+    }
 
     public func run() async throws -> CheckOutcome {
         let manager = FileManager.default
@@ -23,6 +27,7 @@ public struct WorkspaceAccessCheck: Check {
                 manager.isExecutableFile(atPath: directory.path)
             else { return Self.denied(path, observed: "cannot read, write, or search \(directory.path)") }
         }
+        if let unresolvedCache { return .unknown(reason: unresolvedCache) }
         return .pass(observed: "\(paths.count) working/cache locations accessible (no write probe)")
     }
 

@@ -33,12 +33,12 @@ enum AndroidSDKLicenses {
                 do {
                     let accepted = try String(contentsOf: record, encoding: .utf8)
                     if !accepted.split(whereSeparator: \.isNewline).contains(Substring(hash)) {
-                        unaccepted.append(reference)
+                        unaccepted.append(record.path)
                     }
                 } catch {
                     if (error as NSError).domain == NSCocoaErrorDomain,
                         (error as NSError).code == NSFileReadNoSuchFileError {
-                        unaccepted.append(reference)
+                        unaccepted.append(record.path)
                     } else {
                         unresolved.append(record.path)
                     }
@@ -50,7 +50,7 @@ enum AndroidSDKLicenses {
         }
         if !unaccepted.isEmpty {
             return .error(
-                observed: "SDK license acceptance missing: \(Set(unaccepted).sorted().joined(separator: ", "))",
+                observed: "SDK root \(sdk.path); license acceptance missing: \(Set(unaccepted).sorted().joined(separator: ", "))",
                 required: "accepted licenses for the selected SDK packages",
                 source: CheckSource(tier: 1, origin: "selected package.xml + SDK licenses records"),
                 remediation: Remediation(

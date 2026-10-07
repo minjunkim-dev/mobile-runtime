@@ -57,9 +57,25 @@ struct Wiring {
             if let root = anchor.workspaceRoot { paths.append(root.directory) }
         }
         let environment = ProcessInfo.processInfo.environment
-        if let anchor, anchor.workspaceRoot?.packageManagerName == "npm" || anchor.packageManager?.name == "npm" {
-            paths.append(environment["npm_config_cache"].map { URL(fileURLWithPath: $0) }
-                ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".npm"))
+        var unresolvedCache: String?
+        if let anchor, let projectEnvironment, anchor.packageManagerName == "npm" {
+            let command = ProcessCommand(
+                "npm", ["config", "get", "cache"],
+                workingDirectory: anchor.workspaceRoot?.directory ?? anchor.directory,
+                timeout: .seconds(15)
+            )
+            do {
+                let result = try await projectEnvironment.runner.run(command)
+                let path = result.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines)
+                if result.terminationStatus.isSuccess, path.hasPrefix("/"), !path.contains("\n") {
+                    paths.append(URL(fileURLWithPath: path))
+                } else {
+                    let diagnostic = result.combinedOutput.split(whereSeparator: \.isNewline).first.map(String.init)
+                    unresolvedCache = "npm's effective cache path could not be read: \(diagnostic ?? String(describing: result.terminationStatus)). Run npm config get cache in the project's toolchain environment."
+                }
+            } catch {
+                unresolvedCache = "npm's effective cache path could not be read: \(error). Run npm config get cache in the project's toolchain environment."
+            }
         }
         if platform == .android {
             let gradle = environment["GRADLE_USER_HOME"].map { URL(fileURLWithPath: $0) }
@@ -71,7 +87,7 @@ struct Wiring {
             uniquePaths.append(path.standardizedFileURL)
         }
         let workspaceChecks: [any Check] = [
-            WorkspaceAccessCheck(paths: uniquePaths), WorkspaceStorageCheck(paths: uniquePaths)
+            WorkspaceAccessCheck(paths: uniquePaths, unresolvedCache: unresolvedCache), WorkspaceStorageCheck(paths: uniquePaths)
         ]
         let checks: [any Check]
         switch platform {
