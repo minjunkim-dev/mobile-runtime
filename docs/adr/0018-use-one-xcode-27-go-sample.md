@@ -65,6 +65,8 @@ Go는 ADR-0016의 이름 결정과 외부 배포 허용 범위만 연다. 이번
 
 ## 후속 검증
 
+2026-10-07의 새 실행은 [Go round runbook](../go-round-runbook.md)에 기록했다. 독립 baseline과 별도 fresh clone의 mobile 실행은 성공했다. 현재 판정은 고정 SHA와 검증 조합에 한정한 1/1 Go다. 기존 No-Go 결과는 바꾸지 않는다.
+
 mattermost-mobile, Rainbow, Joplin은 upstream의 Xcode 27 대응 뒤 별도 입력으로 검증한다. 이 검증은 현재 1/1 게이트의 필수 조건이 아니다. 기존 후보 실패와 준비 실패 기록은 유지한다.
 
 ## 대안
