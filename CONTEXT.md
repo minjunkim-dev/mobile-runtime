@@ -1,4 +1,4 @@
-# mobile (working name)
+# Runstir
 
 Reproducible mobile development runtime. 프로젝트가 요구하는 환경을 추론·검증·기동한다 — North Star는 `git clone → mobile up`.
 
@@ -8,6 +8,10 @@ macOS 검증 조합 하나에서 통과했다(`docs/private-android-alpha-runboo
 macOS 앱은 같은 Core/provider 계약을 표현할 후속 표면이다.
 
 ## Language
+
+**Runstir (런스터)**:
+프로젝트의 모바일 개발 환경을 추론·검증·기동하는 제품의 이름이다. `run`과 `stir`를 결합한 조어다.
+_Avoid_: mobile-runtime (제품명), mobile (working name)
 
 ### 요구사항 계층
 
@@ -185,6 +189,9 @@ private 저장소 접근권이 있고 검증 표본의 앱 환경값을 직접 �
 필수 표본은 SHA를 고정한 공개 OSS 실제 RN Android 앱 한 개다. maintainer 소유
 프로젝트 검증은 후속 milestone이다. 외부 배포, 일반적인
 React Native 지원 주장, Go 판정을 뜻하지 않는다.
+
+**첫 외부 배포 (First external pre-release)**:
+iOS와 Android를 함께 제공하는 첫 GitHub Releases 공개 pre-release다. 각 플랫폼의 검증 조합을 명시한다. 공개 게시와 실제 다운로드한 배포 파일의 설치·실행 검증을 완료 기준으로 삼는다.
 
 **Alpha blocker**:
 필수 증거·독립 실행·안전성·tracked 파일 무변경 중 하나를 깨뜨려 내부 alpha 완료를 막는 결함. 기록된 warning, 미관 문제, 초기 UI 이후의 프로젝트 고유 기능 문제는 포함하지 않는다.

@@ -1,4 +1,4 @@
-# mobile (working name)
+# Runstir
 
 Reproducible mobile development runtime. North Star: `git clone → mobile up`.
 
