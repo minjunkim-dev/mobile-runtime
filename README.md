@@ -1,4 +1,4 @@
-# mobile (working name)
+# Runstir (런스터)
 
 Reproducible mobile development environments.
 
@@ -22,8 +22,17 @@ Android 지원을 뜻하지 않는다. CLI가 현재 실행 표면이고,
 SwiftUI macOS 앱은 같은 Core/provider 계약을 표현할 후속 표면이다. 현재 계약과
 제약은 [CONTEXT.md](CONTEXT.md)와 [ADRs](docs/adr/)에 둔다.
 
-이 저장소는 pre-alpha이고 working name은 `mobile`이다. No-Go이며, 소스 공개가
-외부 배포나 일반 지원을 보증하지 않는다.
+제품명은 Runstir다. CLI 명령어는 `mobile`이다. iOS의 Xcode 27 Go 게이트는
+고정 BlueWallet 표본과 검증 조합에서 통과했다. [실행 증거](docs/go-round-runbook.md)를 확인한다.
+일반적인 React Native 지원을 뜻하지 않는다.
+
+## 첫 pre-release
+
+GitHub Releases에서 macOS Apple Silicon용 archive 하나에 iOS와 Android를 함께 제공한다.
+첫 release version은 `0.1.0-alpha.1`이다. 내부 CLI version은 `0.1.0`이다.
+[설치 안내](docs/release-install.md)를 따른다. 실행 파일과 두 resource bundle을 함께 유지한다.
+배포물의 직접 다운로드·실행 검증이 끝나기 전에는 공개 배포 완료로 판정하지 않는다.
+검증 조합과 결과는 release notes에 기록한다. Homebrew와 다른 호스트의 배포는 후속 작업이다.
 
 ## Building
 

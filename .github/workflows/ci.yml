@@ -88,6 +88,8 @@ jobs:
           swift build --force-resolved-versions --cache-path "$RUNNER_TEMP/swiftpm"
           swift test --force-resolved-versions --cache-path "$RUNNER_TEMP/swiftpm"
           git diff --exit-code -- Package.resolved
+      - name: Package and verify macOS arm64 pre-release
+        run: scripts/package-release.sh 0.1.0-alpha.1 "$RUNNER_TEMP/release"
       - name: Record cache state
         if: always()
         env:
