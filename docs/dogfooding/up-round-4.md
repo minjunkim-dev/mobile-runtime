@@ -65,7 +65,7 @@ but the range of supported deployment target versions is 15.0 to 27.0.x.
 
 1. **CocoaPods 1.16.1 — host 준비 누락.** #153은 `mobile up`의 `bundle install`이 1.16.1을 설치한다고 보았다. 그러나 repo의 `pod-install` script는 bare `pod install`을 실행한다. solidarity도 PATH의 `pod` 1.16.1을 요구한다. 따라서 repo Ruby(3.2.11)에 CocoaPods 1.16.1을 직접 설치해야 한다.
 2. **Android SDK — host 준비 누락.** repo의 preinstall은 iOS 빌드에도 Android SDK를 요구한다. 이 host는 SDK를 외장 SSD에 둔다. SSD를 분리하면 `npm ci`가 실패한다.
-3. **Xcode 27 — host 준비 누락, 미해결.** 잠긴 SHA의 Pods는 Xcode 27에서 빌드되지 않는다. repo는 Xcode를 선언하지 않는다. ADR-0016은 이 경우 사람이 다른 Xcode를 설치하고 `overrides.xcode`로 지정하도록 허용한다. maintainer는 이 실행에서 Xcode 26.x를 설치하지 않기로 했다. 설치와 baseline 확인은 [#156](https://github.com/minjunkim-dev/mobile-runtime/issues/156)이 맡는다.
+3. **Xcode 27 — host 준비 누락, 미해결.** 잠긴 SHA의 Pods는 Xcode 27에서 빌드되지 않는다. repo는 Xcode를 선언하지 않는다. ADR-0016은 이 경우 사람이 다른 Xcode를 설치하고 `overrides.xcode`로 지정하도록 허용한다. maintainer는 이후 Go 게이트를 Xcode 27로 통일하기로 했다. 표본 재고정은 [#156](https://github.com/minjunkim-dev/mobile-runtime/issues/156)과 ADR-0017이 맡는다.
 
 `mobile` 결함이 첫 화면 도달을 막은 사례는 없다. 따라서 Go blocker 티켓을 만들지 않았다.
 
@@ -91,7 +91,7 @@ but the range of supported deployment target versions is 15.0 to 27.0.x.
 
 실행 6에서 `ios/Podfile.lock`의 `SPEC CHECKSUMS` 119줄이 바뀌었다. 버전·의존성 줄은 바뀌지 않았다. `mobile`은 이 파일을 직접 쓰지 않았다. `mobile`이 `npm ci`를 실행했고, repo의 `postinstall`(`scripts/postinstall.sh`)이 `npm run pod-install`로 `pod install`을 실행했다. 이 `pod install`이 파일을 바꿨다. checksum이 바뀐 원인은 확정하지 못했다. 라운드 1·2 기록에는 이 변경이 없다.
 
-따라서 이 실행은 #155 완료 조건의 "tracked 파일 수정 없음"을 충족하지 못했다. known-good 표본은 tracked 파일을 바꾸지 않아야 한다. Xcode 26.x에서도 같은 변경이 생기는지는 #156이 확인한다.
+따라서 이 실행은 #155 완료 조건의 "tracked 파일 수정 없음"을 충족하지 못했다. known-good 표본은 tracked 파일을 바꾸지 않아야 한다. 같은 현상은 ADR-0017의 새 후보에서도 관측됐다.
 
 ### 저장하지 않은 것
 

@@ -29,9 +29,9 @@ maintainer는 Go 게이트의 host를 Xcode 27로 통일하기로 했다. 2027�
 
 | repo | default branch | 후보 SHA | committer date | baseline |
 | --- | --- | --- | --- | --- |
-| `mattermost/mattermost-mobile` | `main` | `62f18af38254a9acf74390b3815c2a11852b7bc5` | 2026-10-05T11:10:40Z | 미측정 |
-| `rainbow-me/rainbow` | `develop` | `a64ecce56fe1c41551d9eb1bf354a698114be4f0` | 2026-10-05T23:18:52Z | 미측정 |
-| `laurent22/joplin` | `dev` | `aaa6f8e3ae206555fc5de7dbd82a8bcfe0d2d5cc` | 2026-10-05T13:09:44Z | 미측정 |
+| `mattermost/mattermost-mobile` | `main` | `62f18af38254a9acf74390b3815c2a11852b7bc5` | 2026-10-05T11:10:40Z | 후보 실패 |
+| `rainbow-me/rainbow` | `develop` | `a64ecce56fe1c41551d9eb1bf354a698114be4f0` | 2026-10-05T23:18:52Z | 판정 보류 |
+| `laurent22/joplin` | `dev` | `aaa6f8e3ae206555fc5de7dbd82a8bcfe0d2d5cc` | 2026-10-05T13:09:44Z | 후보 실패 |
 
 ## baseline 절차
 
@@ -55,6 +55,28 @@ maintainer는 Go 게이트의 host를 Xcode 27로 통일하기로 했다. 2027�
 - 위 명령은 각 후보 SHA의 README·`readme/dev/BUILD.md`·`package.json`에서 가져왔다.
 - Rainbow의 내부 전용 단계(`yarn update-env`, `rainbow-scripts`)는 외부 기여자 절차를 따라 쓰지 않는다.
 - Rainbow 앱 환경값은 ADR-0016대로 placeholder로 먼저 시도한다. 첫 화면에 도달하지 못하면 maintainer가 실제 키를 준비한다. baseline과 Go round에 같은 준비 조건을 적용한다. 준비한 종류만 기록하고 값과 파일은 기록하지 않는다.
+
+## baseline 결과 (2026-10-06–07)
+
+세 후보 모두 known-good 표본이 아니다. Xcode 27 게이트에서 통과한 표본은 없다.
+
+| repo | 결과 | 멈춘 단계와 원인 | tracked 파일 |
+| --- | --- | --- | --- |
+| mattermost-mobile | 후보 실패 | xcodebuild exit 65. Pods resource bundle target 11개의 deployment target 9.0–14.0을 Xcode 27이 error로 거부한다 | `ios/Podfile.lock` 변경. commit된 lock이 `package-lock.json`과 다르다(`react-native-network-client` 1.11.2 → 1.11.4)와 checksum |
+| Rainbow | 판정 보류 | `yarn setup`의 `fetch:networks`가 `METADATA_BASE_URL`에서 network 목록을 받는다. placeholder로는 실패한다. 실제 값은 maintainer가 준비해야 한다 | postinstall이 `GoogleService-Info.plist`와 `src/graphql/config.js`를 바꾸고 `git update-index --assume-unchanged`로 `git status`에서 숨긴다 |
+| Joplin | 후보 실패 | xcodebuild exit 65. Pods resource bundle target 4개의 deployment target 9.0–12.4를 Xcode 27이 error로 거부한다 | `packages/app-mobile/ios/Podfile.lock` 변경. commit된 lock이 `yarn.lock`과 다르다(`react-native-safe-area-context` 5.7.0 → 5.8.0)와 checksum |
+
+- 두 build 실패는 같은 원인이다. CocoaPods 1.16.x가 만드는 resource bundle target은 pod 선언의 낮은 deployment target을 그대로 쓴다. Xcode 27은 15.0 미만을 error로 처리한다. 두 repo의 upstream tip은 아직 Xcode 27에 대응하지 않았다.
+- 세 repo 모두 문서화된 절차만으로 tracked 파일이 바뀐다. "tracked 파일 무변경" 조건은 이 세 repo에서 성립하지 않는다.
+- Rainbow `.env`는 `.env.example`의 빈 키 18개를 placeholder로 채우고, 예시에 없는 `METADATA_BASE_URL`을 추가해 준비했다. 값과 파일은 기록하지 않는다.
+
+host 보완(모두 준비 범위이며 repo 절차를 바꾸지 않았다):
+
+- maven CDN 연결의 일부가 13–70KB/s로 느렸다. RN pod 스크립트의 curl은 다시 시도하지 않는다. 임시 `CURL_HOME`의 `.curlrc`로 저속 연결을 끊고 다시 시도하게 했다.
+- 외장 SSD가 두 번 분리됐다. 이 host는 Android SDK·CocoaPods cache·DerivedData를 SSD에 둔다. Joplin은 `CP_CACHE_DIR`와 `-derivedDataPath`를 임시 경로로 지정해 실행했다.
+- Joplin root에는 Node 선언이 없다. 준비 목록의 Node 22를 root에도 적용하려고 `MISE_NODE_VERSION=22`를 지정했다.
+
+규칙에 따라 다른 commit을 찾지 않았다. 다음 처리는 maintainer가 별도 결정으로 정한다.
 
 ## 대안
 
