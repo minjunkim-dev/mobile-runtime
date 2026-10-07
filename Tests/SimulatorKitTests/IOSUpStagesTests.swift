@@ -39,6 +39,7 @@ private func runner(_ repo: FixtureRepo) throws -> FakeProcessRunner {
         // validate
         "xcode-select -p": .ok(developerDirectory + "\n"),
         "xcodebuild -version": .ok(try Fixture.text("xcodebuild-version.stdout.txt")),
+        "xcodebuild -checkFirstLaunchStatus": .ok(""),
         "xcrun simctl list runtimes -j": .ok(try Fixture.text("simctl-list-runtimes.stdout.json")),
         "node --version": .ok("v22.14.0\n"),
         "yarn --version": .ok("1.22.22\n"),
@@ -106,6 +107,18 @@ private func contents(of repo: FixtureRepo) -> Set<String> {
 
 @Suite("up pipeline on iOS")
 struct IOSUpStagesTests {
+    @Test("unfinished Xcode setup stops build and up before dependency installation", arguments: [IOSWorkflow.build, IOSWorkflow.up])
+    func incompleteXcode(workflow: IOSWorkflow) async throws {
+        let repo = try settledProject()
+        var runner = try runner(repo)
+        runner.responses["xcodebuild -checkFirstLaunchStatus"] = .failed(1, "additional system content needs installation")
+        let report = await pipeline(repo, runner, workflow: workflow).run()
+        #expect(report.exitCode == 1)
+        #expect(report.stages.map(\.id) == ["validate"])
+        #expect(runner.log.spawned.isEmpty)
+        #expect(!runner.log.all.contains { $0.arguments.contains("-runFirstLaunch") || $0.description == "yarn install --frozen-lockfile" })
+    }
+
     /// The whole North Star in one assertion: a settled project goes through all
     /// seven stages and the run ends with the app launched and exit 0.
     @Test("the seven stages run in order and the run ends with the app launched")

@@ -6,6 +6,8 @@ import FoundationXML
 
 public enum AndroidWorkflowValidation {
     public static let checkIDs: Set<String> = [
+        "host.workspace-access",
+        "host.storage",
         "config.syntax",
         "project.execution-environment",
         "node.version",

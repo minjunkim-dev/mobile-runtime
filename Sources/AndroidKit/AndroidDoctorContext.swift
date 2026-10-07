@@ -119,6 +119,7 @@ struct AndroidAVD: Sendable, Equatable {
     let abi: String?
     let config: URL?
     let systemImagePresent: Bool
+    let systemImageDirectory: URL?
 }
 
 actor AndroidDoctorContext {
@@ -403,7 +404,7 @@ actor AndroidDoctorContext {
     nonisolated func avds(names: [String], sdk: URL) -> [AndroidAVD] {
         guard let avdHome = environment.avdHome else {
             return names.map {
-                AndroidAVD(name: $0, apiLevel: nil, abi: nil, config: nil, systemImagePresent: false)
+                AndroidAVD(name: $0, apiLevel: nil, abi: nil, config: nil, systemImagePresent: false, systemImageDirectory: nil)
             }
         }
         return names.map { name in
@@ -430,7 +431,8 @@ actor AndroidDoctorContext {
                 abi: abi,
                 config: FileManager.default.fileExists(atPath: config.path) ? config : nil,
                 systemImagePresent: !image.isEmpty
-                    && FileManager.default.fileExists(atPath: imageDirectory.path)
+                    && FileManager.default.fileExists(atPath: imageDirectory.path),
+                systemImageDirectory: image.isEmpty ? nil : imageDirectory
             )
         }
     }

@@ -56,6 +56,8 @@ _Avoid_: fallback(조용히 내려앉는다는 뜻이 섞인다)
 **Host check**:
 프로젝트와 무관하게 머신 상태만 보는 Check (Xcode 설치, CoreSimulator 데몬 등).
 
+`xcode.ready`는 선택한 Xcode의 초기 설정 상태를 읽는다. `host.workspace-access`는 알려진 작업·cache 경로의 접근을 파일 생성 없이 관측한다. `host.storage`는 여유 공간과 10 GiB 준비 권고를 보고한다. 실제 쓰기나 빌드 성공을 보증하지 않는다. Android SDK·선택 AVD 검사는 설치 package metadata와 정확히 일치하는 라이선스 승인 기록을 확인한다. 확인할 수 없는 기록은 unknown이다. 설치·라이선스 동의·권한 변경은 수행하지 않는다. 절차는 `docs/environment-setup.md`를 따른다.
+
 **Project check**:
 프로젝트 선언을 읽어야 성립하는 Check. 프로젝트 미탐지 시 실행되지 않는다.
 

@@ -55,6 +55,7 @@ private func hostResponses(
     [
         "xcode-select -p": .ok(developerDirectory + "\n"),
         "xcodebuild -version": .ok(xcodebuild),
+        "xcodebuild -checkFirstLaunchStatus": .ok(""),
         "xcrun simctl list runtimes -j": .ok(runtimes),
     ]
 }
@@ -75,7 +76,7 @@ struct IOSChecksTests {
             checks: iOSChecks(lookup: nil, runner: runner, locator: locator)
         ).run()
 
-        #expect(report.checks.map(\.id) == ["xcode.installed", "simulator.daemon"])
+        #expect(report.checks.map(\.id) == ["xcode.installed", "xcode.ready", "simulator.daemon"])
         #expect(report.status == .pass)
     }
 }

@@ -14,6 +14,7 @@ public func iOSChecks(
     locator: XcodeLocator
 ) -> [any Check] {
     var checks: [any Check] = [XcodeInstalledCheck(locator: locator)]
+    checks.append(XcodeReadyCheck(runner: runner, locator: locator))
     if let lookup { checks.append(XcodeVersionCheck(lookup: lookup, locator: locator)) }
     checks.append(SimulatorDaemonCheck(runner: runner, locator: locator))
     if let lookup { checks.append(SimulatorRuntimeCheck(lookup: lookup, runner: runner, locator: locator)) }
