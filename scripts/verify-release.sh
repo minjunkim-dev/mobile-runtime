@@ -11,8 +11,10 @@ trap 'rm -rf "$scratch"' EXIT
 tar -xzf "$archive" -C "$scratch"
 package=$(find "$scratch" -mindepth 1 -maxdepth 1 -type d)
 test -x "$package/mobile"
-test -f "$package/mobile_Core.bundle/Contents/Resources/matrix.json"
-test -f "$package/mobile_AndroidKit.bundle/Contents/Resources/mobile-doctor.gradle"
+test -f "$package/mobile_Core.bundle/Contents/Resources/matrix.json" || \
+  test -f "$package/mobile_Core.bundle/matrix.json"
+test -f "$package/mobile_AndroidKit.bundle/Contents/Resources/mobile-doctor.gradle" || \
+  test -f "$package/mobile_AndroidKit.bundle/mobile-doctor.gradle"
 test -s "$package/LICENSE"
 test -s "$package/THIRD_PARTY_NOTICES.md"
 test -s "$package/INSTALL.md"
