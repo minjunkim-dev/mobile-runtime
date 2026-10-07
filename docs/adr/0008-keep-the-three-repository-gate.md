@@ -1,5 +1,7 @@
 # ADR-0008: 잠긴 세 repo 게이트를 유지하고 현재를 No-Go로 판정한다
 
+> 2026-10-07: [ADR-0018](0018-use-one-xcode-27-go-sample.md)이 현재 iOS 게이트를 단일 표본 1/1로 대체했다. 이 ADR의 과거 No-Go 판정은 유지한다.
+
 - 상태: 채택
 - 날짜: 2026-08-21
 - 관련: #14(Go/No-Go 게이트), #44(up dogfooding 라운드 1) · [up 라운드 1](../dogfooding/up-round-1.md), [up 라운드 2](../dogfooding/up-round-2.md)
