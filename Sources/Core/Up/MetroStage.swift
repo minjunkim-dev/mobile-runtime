@@ -55,7 +55,10 @@ public struct MetroStage: Stage {
         // The project's own start script, through the manager its lockfile named —
         // the same answer `dependencies` installs with.
         if context.nodeModulesReinstalled { await Self.dropWatchmanWatch(of: anchor.directory, runner: runner) }
-        let command = anchor.startProcess
+        var command = anchor.startProcess
+        // Metro colors its completed BUNDLE label green and its failed label red.
+        // Preserve that distinction when its output goes to our non-TTY log file.
+        command.environment["FORCE_COLOR"] = "1"
         let pid = try await runner.spawnDetached(command, logFile: logFile)
 
         // The pid that comes back is the start script's, and the bundler is two links

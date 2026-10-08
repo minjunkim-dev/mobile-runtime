@@ -184,6 +184,7 @@ struct MetroStageTests {
         let spawn = try #require(runner.log.spawned.first)
         // The project's own start script, through the manager the lockfile named.
         #expect(spawn.command.description == "yarn start")
+        #expect(spawn.command.environment["FORCE_COLOR"] == "1")
         #expect(spawn.command.workingDirectory?.path == repo.root.path)
         #expect(spawn.logFile == logs.directory.appendingPathComponent("metro.log"))
         #expect(context.metro?.state == .spawned)
@@ -210,6 +211,7 @@ struct MetroStageTests {
         let spawn = try #require(runner.log.spawned.first)
         #expect(spawn.command.description == "corepack yarn start")
         #expect(spawn.command.environment["COREPACK_ENABLE_NETWORK"] == "0")
+        #expect(spawn.command.environment["FORCE_COLOR"] == "1")
         #expect(spawn.command.workingDirectory?.path == repo.root.path)
     }
 

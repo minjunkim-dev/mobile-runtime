@@ -249,6 +249,28 @@ struct LaunchStageTests {
         #expect(outcome.detail?.contains("still bundling") == false)
     }
 
+    @Test("a forced-color Metro success marker finishes launch without the readiness timeout")
+    func coloredBundleCompletion() async throws {
+        let runner = launching()
+        let logs = try RunLogs.temporary()
+        // Metro 0.84.3 TerminalReporter uses green/inverse/bold for bundle_build_done.
+        // Unlike its progress updates, the completed frame has no percentage.
+        let logFile = try #require(logs.write(
+            "\u{1b}[32m\u{1b}[7m\u{1b}[1m BUNDLE \u{1b}[22m\u{1b}[27m\u{1b}[39m ./index.js\n",
+            to: "metro.log"
+        ))
+        var context = afterBuild()
+        context.metro = MetroProcess(state: .spawned, logPath: logFile.path)
+
+        let started = ContinuousClock.now
+        let outcome = try await stage(runner, readinessWait: .seconds(1)).run(&context)
+        let elapsed = started.duration(to: .now)
+
+        #expect(outcome.status == .pass)
+        #expect(outcome.detail?.contains("still bundling") == false)
+        #expect(elapsed < .milliseconds(500))
+    }
+
     @Test("a progress-free failed bundle keeps the readiness hint")
     func failedBundleIsReported() async throws {
         let runner = launching()
@@ -262,6 +284,24 @@ struct LaunchStageTests {
         #expect(outcome.status == .pass)
         #expect(outcome.detail?.contains("still bundling") == true)
         #expect(outcome.detail?.contains(logFile.path) == true)
+    }
+
+    @Test("colored failures, partial progress, and prebundles are not bundle success", arguments: [
+        "\u{1b}[31m\u{1b}[7m\u{1b}[1m BUNDLE \u{1b}[22m\u{1b}[27m\u{1b}[39m ./index.js\n ERROR transform failed\n",
+        "\u{1b}[33m\u{1b}[7m\u{1b}[1m BUNDLE \u{1b}[22m\u{1b}[27m\u{1b}[39m ./index.js \u{1b}[32m▓▓▓▓░░░░\u{1b}[39m 80% (8/10)\n",
+        "\u{1b}[32m\u{1b}[7m\u{1b}[1m PREBUNDLE \u{1b}[22m\u{1b}[27m\u{1b}[39m ./index.js\n",
+        "\u{1b}[32m\u{1b}[39m BUNDLE ./index.js\n",
+    ])
+    func coloredIncompleteBundle(_ text: String) async throws {
+        let runner = launching()
+        let logs = try RunLogs.temporary()
+        let logFile = try #require(logs.write(text, to: "metro.log"))
+        var context = afterBuild()
+        context.metro = MetroProcess(state: .spawned, logPath: logFile.path)
+
+        let outcome = try await stage(runner, readinessWait: .milliseconds(10)).run(&context)
+
+        #expect(outcome.detail?.contains("still bundling") == true)
     }
 
     @Test("an incomplete Metro bundle returns success with a visible readiness hint")

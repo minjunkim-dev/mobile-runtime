@@ -133,12 +133,18 @@ private struct MetroReadiness: Sendable {
                   let log = try? String(contentsOfFile: logPath, encoding: .utf8)
             else { return false }
             return log.split(whereSeparator: \.isNewline).contains { rawLine in
-                let line = rawLine.split(whereSeparator: \.isWhitespace).joined(separator: " ")
-                // Metro 0.82 prints the same progress-free BUNDLE line for done
-                // and failed builds. The app connection is the unambiguous success
-                // signal for the bundle this launch actually consumed.
+                let line = rawLine.replacingOccurrences(
+                    of: #"\x1B\[[0-9;]*m"#, with: "", options: .regularExpression
+                ).split(whereSeparator: \.isWhitespace).joined(separator: " ")
+                // Modern Metro omits progress on both done and failed frames.
+                // FORCE_COLOR=1 preserves its green success label. Match only the
+                // label: an incomplete yellow frame also has a green progress bar.
+                let greenBundle = rawLine.range(
+                    of: #"^\s*(?:\x1B\[(?:1|7)m)*\x1B\[32m(?:\x1B\[(?:1|7)m)*\s*BUNDLE\b"#,
+                    options: .regularExpression
+                ) != nil
                 let completedBundle = line.uppercased().hasPrefix("BUNDLE ")
-                    && (line.contains("100.0%") || line.contains("100%"))
+                    && (greenBundle || line.contains("100.0%") || line.contains("100%"))
                 let connectedApp = line.contains("Running \"") && line.contains(" with {")
                 return completedBundle || connectedApp
             }
