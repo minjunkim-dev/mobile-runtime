@@ -20,12 +20,12 @@ public struct MetroStage: Stage {
     private let runner: any ProcessRunner
     private let logs: RunLogs
     /// How long the port is given to answer with the bundler's pid after the start
-    /// script is launched. Measured at ~2s on this project's dogfooding repos, so ten
-    /// is room for a cold machine rather than a guess. Injected for tests, which have
-    /// no real process to wait for.
+    /// script is launched. A fresh macOS VM exceeded ten seconds during first
+    /// startup, so allow one minute while still checking for an early process exit.
+    /// Injected for tests, which have no real process to wait for.
     private let bindWait: Duration
 
-    public static let defaultBindWait: Duration = .seconds(10)
+    public static let defaultBindWait: Duration = .seconds(60)
 
     public init(
         anchor: ProjectAnchor,
