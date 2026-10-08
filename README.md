@@ -29,7 +29,7 @@ SwiftUI macOS 앱은 같은 Core/provider 계약을 표현할 후속 표면이�
 ## 설치
 
 GitHub Releases에서 macOS Apple Silicon용 archive 하나에 iOS와 Android를 함께 제공한다. Homebrew로 같은 archive를 설치할 수 있다.
-현재 release version은 `0.1.0-alpha.2`다. 내부 CLI version은 `0.1.0`이다.
+현재 release version은 `0.1.0-alpha.3`다. 내부 CLI version은 `0.1.0`이다.
 [설치 안내](docs/release-install.md)를 따른다. 실행 파일과 두 resource bundle을 함께 유지한다.
 배포물의 직접 다운로드·실행 검증이 끝나기 전에는 공개 배포 완료로 판정하지 않는다.
 검증 조합과 결과는 release notes에 기록한다. 다른 호스트의 배포는 후속 작업이다.
