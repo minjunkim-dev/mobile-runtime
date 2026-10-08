@@ -28,7 +28,7 @@ Node·Ruby·JDK·Xcode·Android SDK는 프로젝트별 버전이 다르므로 fo
 2. 다운로드한 디렉터리에서 checksum을 확인한다.
 
    ```sh
-   version=0.1.0-alpha.3
+   version=0.1.0-alpha.4
    shasum -a 256 -c "runstir-$version-macos-arm64.tar.gz.sha256"
    ```
 
@@ -71,7 +71,7 @@ SDK·Simulator·Emulator·Node·Ruby·JDK는 사람이 준비한다.
 ## 버전과 실행 범위
 
 `BUILD.json`에 release version, source SHA, 내부 CLI version, 빌드 도구와 의존성을 기록한다.
-현재 archive와 formula의 release version은 `0.1.0-alpha.3`다. 내부 CLI version은 `0.1.0`이다.
+현재 archive와 formula의 release version은 `0.1.0-alpha.4`다. 내부 CLI version은 `0.1.0`이다.
 
 Package.swift의 macOS 최소 버전 선언은 14다. 첫 실행 검증 범위는 macOS 27.0.1 arm64다.
 릴리스 노트의 BlueWallet iOS·FreeKiosk Android 검증 조합을 확인한다.

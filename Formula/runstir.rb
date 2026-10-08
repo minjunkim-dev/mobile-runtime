@@ -1,9 +1,9 @@
 class Runstir < Formula
   desc "Reproducible mobile development runtime"
   homepage "https://github.com/minjunkim-dev/mobile-runtime"
-  url "https://github.com/minjunkim-dev/mobile-runtime/releases/download/v0.1.0-alpha.3/runstir-0.1.0-alpha.3-macos-arm64.tar.gz"
-  version "0.1.0-alpha.3"
-  sha256 "2b8f02edf274a6dcc09c5bb325ff67777d00bf846e8efe53e3e4e223d09547fc"
+  url "https://github.com/minjunkim-dev/mobile-runtime/releases/download/v0.1.0-alpha.4/runstir-0.1.0-alpha.4-macos-arm64.tar.gz"
+  version "0.1.0-alpha.4"
+  sha256 "4aa0acf7d864507c524b69e554aab615c3a89b5b27519ad71355366ac98aa22c"
   license "Apache-2.0"
 
   depends_on arch: :arm64
