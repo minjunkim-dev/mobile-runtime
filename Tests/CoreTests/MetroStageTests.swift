@@ -36,10 +36,12 @@ private func run(
 
 private actor DelayedListenerRunner: ProcessRunner {
     private let inner: FakeProcessRunner
-    private var probes = 0
+    private let bindDelay: Duration
+    private var spawnedAt: ContinuousClock.Instant?
 
-    init(_ inner: FakeProcessRunner) {
+    init(_ inner: FakeProcessRunner, bindDelay: Duration = .milliseconds(250)) {
         self.inner = inner
+        self.bindDelay = bindDelay
     }
 
     func run(
@@ -49,16 +51,18 @@ private actor DelayedListenerRunner: ProcessRunner {
         guard command.description == "lsof -nP -iTCP:8081 -sTCP:LISTEN -t" else {
             return try await inner.run(command, onLine: onLine)
         }
-        probes += 1
+        let bound = spawnedAt.map { ContinuousClock.now >= $0 + bindDelay } ?? false
         return ProcessResult(
-            terminationStatus: .exited(probes == 1 ? 1 : 0),
-            standardOutput: probes == 1 ? "" : "70947\n",
+            terminationStatus: .exited(bound ? 0 : 1),
+            standardOutput: bound ? "70947\n" : "",
             standardError: ""
         )
     }
 
     func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
-        try await inner.spawnDetached(command, logFile: logFile)
+        let pid = try await inner.spawnDetached(command, logFile: logFile)
+        spawnedAt = .now
+        return pid
     }
 }
 
@@ -282,6 +286,27 @@ struct MetroStageTests {
 
         #expect(outcome.status == .pass)
         #expect(context.metro?.listenerPid == 70947)
+    }
+
+    @Test("a cold Metro that binds after ten seconds passes with the production wait")
+    func coldStartup() async throws {
+        let repo = try app()
+        let anchor = try #require(ProjectAnchor.detect(from: repo.root))
+        let inner = FakeProcessRunner(responses: [
+            MetroStatus.command: .failed(7, ""),
+            "kill -0 4242": .ok(""),
+        ])
+        let runner = DelayedListenerRunner(inner, bindDelay: .seconds(11))
+        var context = UpContext()
+
+        let outcome = try await MetroStage(
+            anchor: anchor, runner: runner, logs: try temporaryLogs()
+        ).run(&context)
+
+        #expect(outcome.status == .pass)
+        #expect(context.metro?.state == .spawned)
+        #expect(context.metro?.listenerPid == 70947)
+        #expect(inner.log.spawned.count == 1)
     }
 
     /// A port that accepts the connection and then says nothing is not an empty port.
