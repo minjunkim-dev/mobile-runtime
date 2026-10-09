@@ -13,6 +13,20 @@ macOS 앱은 같은 Core/provider 계약을 표현할 후속 표면이다.
 프로젝트의 모바일 개발 환경을 추론·검증·기동하는 제품의 이름이다. `run`과 `stir`를 결합한 조어다.
 _Avoid_: mobile-runtime (제품명), mobile (working name)
 
+### 프로젝트와 실행 환경
+
+**프로젝트 종류 (Project kind)**:
+앱의 도구와 실행 경로를 구분하는 네이티브·Flutter·React Native 분류다. iOS·Android 플랫폼과 별개의 구분이다.
+
+**플랫폼 (Platform)**:
+앱이 빌드되고 실행되는 iOS 또는 Android 환경이다. Runstir를 실행하는 호스트 macOS와 구분한다.
+
+**실행 기기 (Execution device)**:
+앱을 설치하고 실행할 Simulator·Emulator 또는 연결된 실기기다. 실행 기기는 특정 플랫폼에 속한다.
+
+**환경 준비 (Environment preparation)**:
+프로젝트가 요구하는 도구·프로젝트 의존성과 가상 기기·실기기의 실행 조건을 갖추는 일이다. 특정 실행 기기에 앱을 설치하고 실행하는 일과 구분한다.
+
 ### 요구사항 계층
 
 **Tier 1 (선언 파일)**:
