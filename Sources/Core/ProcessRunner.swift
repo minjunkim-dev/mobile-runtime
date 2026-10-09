@@ -186,22 +186,29 @@ public struct SystemProcessRunner: ProcessRunner {
     private static let errorLimit = 1024 * 1024
 
     private let logger: Logger
+    private let environment: [String: String]
+    private let workingDirectory: URL?
 
-    public init(logger: Logger = Logger(label: "mobile.process")) {
+    public init(logger: Logger = Logger(label: "mobile.process"), environment: [String: String] = ProcessInfo.processInfo.environment, workingDirectory: URL? = nil) {
         self.logger = logger
+        self.environment = environment
+        self.workingDirectory = workingDirectory
     }
 
     public func run(
         _ command: ProcessCommand,
         onLine: (@Sendable (String) -> Void)?
     ) async throws -> ProcessResult {
+        var resolvedCommand = command
+        if resolvedCommand.workingDirectory == nil { resolvedCommand.workingDirectory = workingDirectory }
+        let command = resolvedCommand
         let start = ContinuousClock.now
-        var overrides: [Subprocess.Environment.Key: String?] = [:]
-        for (name, value) in command.environment {
+        var values: [Subprocess.Environment.Key: String] = [:]
+        for (name, value) in environment.merging(command.environment, uniquingKeysWith: { _, override in override }) {
             guard let key = Subprocess.Environment.Key(rawValue: name) else { continue }
-            overrides[key] = value
+            values[key] = value
         }
-        let environment = Subprocess.Environment.inherit.updating(overrides)
+        let environment = Subprocess.Environment.custom(values)
 
         let invocation = Self.invocation(command)
         let work = Task { () async throws -> ProcessResult in
@@ -307,8 +314,8 @@ public struct SystemProcessRunner: ProcessRunner {
         let process = Process()
         process.executableURL = Self.env
         process.arguments = [command.executable] + command.arguments
-        process.currentDirectoryURL = command.workingDirectory
-        process.environment = ProcessInfo.processInfo.environment
+        process.currentDirectoryURL = command.workingDirectory ?? workingDirectory
+        process.environment = environment
             .merging(command.environment) { _, override in override }
         // Not the terminal we were started from: a background child that reads stdin
         // is stopped with SIGTTIN the moment `up` hands the terminal back, and Metro's

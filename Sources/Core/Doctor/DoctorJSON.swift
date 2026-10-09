@@ -26,17 +26,20 @@ public struct DoctorJSONDocument: Encodable, Sendable {
     public let platform: String?
     public let status: CheckStatus
     public let checks: [Item]
+    public let selection: ProjectSelection?
 
     public init(
         report: DoctorReport,
         toolVersion: String,
         command: String = "doctor",
-        platform: String? = nil
+        platform: String? = nil,
+        selection: ProjectSelection? = nil
     ) {
         self.schemaVersion = Self.schemaVersion
         self.toolVersion = toolVersion
         self.command = command
         self.platform = platform
+        self.selection = selection
         self.status = report.status
         self.checks = report.checks.map { check in
             Item(
