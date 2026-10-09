@@ -12,6 +12,20 @@ private func report(_ jobs: [Teardown.Job]) async -> TeardownReport {
 
 @Suite("teardown")
 struct TeardownTests {
+    @Test("cancellation preserves completed cleanup and marks remaining resources unknown")
+    func cancellationPreservesRemaining() async {
+        let called = Mutable(false)
+        let result = await report([
+            (id: "metro", run: { .stopped("metro", "pid 42") }),
+            (id: "app", run: { throw CancellationError() }),
+            (id: "other", run: { called.mutate { $0 = true }; return .stopped("other", "pid 43") }),
+        ])
+        #expect(result.exitCode == 130)
+        #expect(result.items.map(\.id) == ["metro", "app", "other"])
+        #expect(result.items.map(\.status) == [.stopped, .unknown, .unknown])
+        #expect(!called.value)
+    }
+
     /// Not a pipeline: a Metro that would not die is no reason to leave the app
     /// running (ADR-0007), so both jobs run and both report.
     @Test("every job runs even after one fails")

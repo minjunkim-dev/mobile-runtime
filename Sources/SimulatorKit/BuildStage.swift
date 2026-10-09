@@ -23,6 +23,8 @@ public struct BuildStage: Stage {
     /// How often the elapsed line is printed. Long enough not to fill the terminal,
     /// short enough that a silent build never looks hung.
     private let heartbeat: Duration
+    private let configuration: String
+    private let genericDestination: Bool
 
     public init(
         config: ConfigContext,
@@ -30,6 +32,8 @@ public struct BuildStage: Stage {
         locator: XcodeLocator,
         logs: RunLogs? = nil,
         heartbeat: Duration = .seconds(15),
+        configuration: String = "Debug",
+        genericDestination: Bool = false,
         note: @escaping @Sendable (String) -> Void
     ) {
         self.config = config
@@ -39,6 +43,8 @@ public struct BuildStage: Stage {
         // anything is written, so where the logs would have gone never matters.
         self.logs = logs ?? RunLogs(project: config.anchor?.directory ?? config.workingDirectory)
         self.heartbeat = heartbeat
+        self.configuration = configuration
+        self.genericDestination = genericDestination
         self.note = note
     }
 
@@ -48,19 +54,18 @@ public struct BuildStage: Stage {
         }
         // The pipeline runs `device` first. Reaching here without one is mobile's own
         // bug, not the project's, so it must not land on the project's exit code.
-        guard let device = context.device else {
-            throw ToolUnavailable(
-                description: "build ran before a simulator was chosen — `device` comes first"
-            )
-        }
+        let destination: String
+        if genericDestination { destination = "generic/platform=iOS Simulator" }
+        else if let device = context.device { destination = "platform=iOS Simulator,id=\(device.udid)" }
+        else { throw ToolUnavailable(description: "build ran before a simulator was chosen — `device` comes first") }
 
         let environment = await locator.pinnedEnvironment()
         let scheme = try await scheme(anchor, target, environment)
         let arguments =
             target.arguments + [
                 "-scheme", scheme,
-                "-configuration", "Debug",
-                "-destination", "platform=iOS Simulator,id=\(device.udid)",
+                "-configuration", configuration,
+                "-destination", destination,
             ]
 
         context.buildLog = try await build(arguments, environment).path

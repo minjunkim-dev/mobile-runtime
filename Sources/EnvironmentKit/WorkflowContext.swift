@@ -27,13 +27,14 @@ public struct WorkflowContext: Sendable {
         anchor: ProjectAnchor?,
         runner: any ProcessRunner,
         includeProjectEnvironment: Bool = true,
-        includeRuntimeSDKTools: Bool = true
+        includeRuntimeSDKTools: Bool = true,
+        selectedConfig: ConfigContext? = nil
     ) async -> WorkflowContext {
         let locator = XcodeLocator(runner: runner, developerDirOverride: input.environment["DEVELOPER_DIR"])
         let workingDirectory = input.directory.standardizedFileURL.resolvingSymlinksInPath()
         // mobile.yml is read before the matrix: its overrides are part of what the
         // Tier 2 checks compare against.
-        let config = ConfigContext.detect(anchor: anchor, workingDirectory: workingDirectory)
+        let config = selectedConfig ?? ConfigContext.detect(anchor: anchor, workingDirectory: workingDirectory)
         let lookup = anchor.map { MatrixLookup.resolve(anchor: $0, config: config.configuration) }
         let projectEnvironment: ProjectExecutionEnvironment?
         if includeProjectEnvironment, let anchor {

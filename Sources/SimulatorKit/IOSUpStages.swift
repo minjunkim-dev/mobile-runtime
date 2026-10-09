@@ -20,6 +20,9 @@ public func iOSStages(
     projectRunner: any ProcessRunner,
     locator: XcodeLocator,
     readinessWait: Duration = LaunchStage.defaultReadinessWait,
+    deviceID: String? = nil,
+    configuration: String = "Debug",
+    buildWithoutDevice: Bool = false,
     note: @escaping @Sendable (String) -> Void
 ) -> [any Stage] {
     var stages: [any Stage] = [
@@ -29,18 +32,22 @@ public func iOSStages(
             promoteToError: IOSWorkflowValidation.promotesToError
         ),
         DependenciesStage(anchor: anchor, runner: projectRunner),
-        DeviceStage(
+    ]
+    if !buildWithoutDevice {
+        stages.append(DeviceStage(
             declared: config.configuration?.device,
             lookup: lookup,
             runner: hostRunner,
-            locator: locator
-        ),
-    ]
+            locator: locator,
+            deviceID: deviceID
+        ))
+    }
     if case .up = workflow {
         // Before build on purpose: Metro warms up while xcodebuild spends its minutes.
         stages.append(MetroStage(anchor: anchor, runner: projectRunner))
     }
-    stages.append(BuildStage(config: config, runner: projectRunner, locator: locator, note: note))
+    stages.append(BuildStage(config: config, runner: projectRunner, locator: locator,
+                             configuration: configuration, genericDestination: buildWithoutDevice, note: note))
     if case .up = workflow {
         stages.append(InstallStage(
             runner: hostRunner, locator: locator, logs: RunLogs(project: anchor.directory)

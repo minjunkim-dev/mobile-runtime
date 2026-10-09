@@ -80,23 +80,27 @@ public struct TeardownReport: Sendable {
     /// Android ownership cleanup treats an identity mismatch as a failed cleanup;
     /// iOS keeps ADR-0007's legacy non-error `blocked` meaning.
     public let blockedIsFailure: Bool
+    public let cancelled: Bool
 
     public init(
         items: [TeardownItem],
         toolFailures: [String] = [],
         failure: DomainError? = nil,
-        blockedIsFailure: Bool = false
+        blockedIsFailure: Bool = false,
+        cancelled: Bool = false
     ) {
         self.items = items
         self.toolFailures = toolFailures
         self.failure = failure
         self.blockedIsFailure = blockedIsFailure
+        self.cancelled = cancelled
     }
 
     /// Doctor's vocabulary again, so a consumer does not learn a second one — and a
     /// run that could not ask must not answer `pass`: that is the envelope saying
     /// the machine is clean while the exit code says the tool broke.
     public var status: CheckStatus {
+        if cancelled { return .error }
         if failure != nil || items.contains(where: {
             $0.status == .failed || (blockedIsFailure && $0.status == .blocked)
         }) { return .error }
@@ -115,6 +119,7 @@ public struct TeardownReport: Sendable {
 
     /// The same split doctor and up make: 1 is the project's problem, 2 is ours.
     public var exitCode: Int32 {
+        if cancelled { return 130 }
         if !toolFailures.isEmpty { return 2 }
         return status == .error ? 1 : 0
     }
@@ -138,9 +143,13 @@ public struct Teardown: Sendable {
         var items: [TeardownItem] = []
         var toolFailures: [String] = []
 
-        for job in jobs {
+        for (index, job) in jobs.enumerated() {
             do {
+                try Task.checkCancellation()
                 items.append(try await job.run())
+            } catch is CancellationError {
+                let pending = jobs.dropFirst(index).map { TeardownItem.unknown($0.id, "cancelled before cleanup completed") }
+                return TeardownReport(items: items + pending, toolFailures: toolFailures, cancelled: true)
             } catch {
                 // A job that could not run says nothing about the thing it aimed at.
                 // Not `failed` — that word is for "it is still there" — and above all

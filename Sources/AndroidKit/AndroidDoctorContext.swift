@@ -280,12 +280,16 @@ actor AndroidDoctorContext {
     }
 
     func model() async throws -> AndroidModelProbeOutcome {
-        if let modelTask { return try await modelTask.value }
-        let task = Task<AndroidModelProbeOutcome, any Error> {
-            try await probeModel(offline: true, timeout: .seconds(90))
+        try Task.checkCancellation()
+        let task: Task<AndroidModelProbeOutcome, any Error>
+        if let modelTask { task = modelTask }
+        else {
+            task = Task { try await probeModel(offline: true, timeout: .seconds(90)) }
+            modelTask = task
         }
-        modelTask = task
-        return try await task.value
+        return try await withTaskCancellationHandler {
+            try await task.value
+        } onCancel: { task.cancel() }
     }
 
     /// Build may materialize the wrapper distribution and Gradle project

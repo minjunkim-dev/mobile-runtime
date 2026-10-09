@@ -199,6 +199,7 @@ public struct SystemProcessRunner: ProcessRunner {
         _ command: ProcessCommand,
         onLine: (@Sendable (String) -> Void)?
     ) async throws -> ProcessResult {
+        try Task.checkCancellation()
         var resolvedCommand = command
         if resolvedCommand.workingDirectory == nil { resolvedCommand.workingDirectory = workingDirectory }
         let command = resolvedCommand
@@ -282,7 +283,10 @@ public struct SystemProcessRunner: ProcessRunner {
         }
 
         do {
-            let result = try await work.value
+            let result = try await withTaskCancellationHandler {
+                try await work.value
+            } onCancel: { work.cancel() }
+            try Task.checkCancellation()
             // The deadline kills the child, so a killed process that also raced to
             // the finish line still counts as a real result.
             if expired.isRaised, !result.terminationStatus.isSuccess {
@@ -290,6 +294,8 @@ public struct SystemProcessRunner: ProcessRunner {
             }
             log("ran subprocess", ("status", "\(result.terminationStatus)"))
             return result
+        } catch where Task.isCancelled {
+            throw CancellationError()
         } catch let error as ProcessError {
             throw error
         } catch is CancellationError where expired.isRaised {

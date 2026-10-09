@@ -4,6 +4,7 @@ import Foundation
 /// user can act on, and a tool problem they cannot.
 public enum UpFailure: Sendable {
     case domain(DomainError)
+    case cancelled
     /// Already spelled with the stage that hit it — nothing else names where it broke.
     case tool(String)
 
@@ -11,6 +12,7 @@ public enum UpFailure: Sendable {
         switch self {
         case .domain(let error): error.message
         case .tool(let description): description
+        case .cancelled: "operation cancelled"
         }
     }
 
@@ -18,6 +20,7 @@ public enum UpFailure: Sendable {
         switch self {
         case .domain(let error): error.remediation
         case .tool: nil
+        case .cancelled: Remediation(summary: "Inspect completed stages and run down for any remaining runtime resources.")
         }
     }
 }
@@ -61,6 +64,7 @@ public struct UpReport: Sendable {
         case .none: 0
         case .domain: 1
         case .tool: 2
+        case .cancelled: 130
         }
         return max(pipeline, context.androidRollbackExitCode ?? 0)
     }
@@ -79,7 +83,8 @@ public struct UpPipeline: Sendable {
     /// - Parameter onStageFinished: called as each Stage lands, so progress is
     ///   printed while the pipeline runs rather than collected for the end.
     public func run(
-        onStageFinished: (@Sendable (StageResult) -> Void)? = nil
+        onStageFinished: (@Sendable (StageResult) -> Void)? = nil,
+        onStageStarted: (@Sendable (String) -> Void)? = nil
     ) async -> UpReport {
         var context = UpContext()
         var results: [StageResult] = []
@@ -97,8 +102,13 @@ public struct UpPipeline: Sendable {
             }
 
             do {
+                try Task.checkCancellation()
+                onStageStarted?(stage.id)
                 let outcome = try await stage.run(&context)
                 _ = finish(outcome.status, outcome.detail)
+            } catch is CancellationError {
+                _ = finish(.failed, "cancelled")
+                return UpReport(stages: results, context: context, failure: .cancelled)
             } catch let error as DomainError {
                 _ = finish(.failed, error.summary)
                 return UpReport(stages: results, context: context, failure: .domain(error))

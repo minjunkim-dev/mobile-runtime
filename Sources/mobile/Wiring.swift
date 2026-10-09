@@ -26,8 +26,9 @@ extension WorkflowContext {
     }
 }
 
-func bootstrapLogging(verbose: Bool) {
+func bootstrapLogging(verbose: Bool, silent: Bool = false) {
     LoggingSystem.bootstrap { label in
+        if silent { return SwiftLogNoOpLogHandler() }
         var handler = StreamLogHandler.standardError(label: label)
         handler.logLevel = verbose ? .debug : .info
         return handler
