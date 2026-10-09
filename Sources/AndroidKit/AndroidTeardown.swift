@@ -73,6 +73,7 @@ struct AndroidCleanup: Sendable {
         var toolFailures: [String] = []
         for id in ids {
             do {
+                try Task.checkCancellation()
                 let item: TeardownItem
                 switch id {
                 case "android.app": item = try await cleanApp(active.app, device: active.device)
@@ -91,6 +92,11 @@ struct AndroidCleanup: Sendable {
                     try store.removeIfEmpty(active)
                 }
                 items.append(item)
+            } catch is CancellationError {
+                let pending = ids.dropFirst(items.count).map { TeardownItem.unknown($0, "cancelled before cleanup completed") }
+                return Result(report: TeardownReport(items: items + pending, toolFailures: toolFailures,
+                                                      blockedIsFailure: true, cancelled: true),
+                              hasRemainingRecord: true)
             } catch {
                 items.append(.unknown(id, "could not verify or update ownership state"))
                 toolFailures.append("\(id): \(error)")

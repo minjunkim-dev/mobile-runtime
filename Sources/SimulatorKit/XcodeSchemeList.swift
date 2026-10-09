@@ -7,6 +7,7 @@ import Foundation
 struct XcodeSchemeList: Decodable {
     private struct Container: Decodable {
         let schemes: [String]?
+        let configurations: [String]?
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -15,12 +16,14 @@ struct XcodeSchemeList: Decodable {
     }
 
     let schemes: [String]
+    let configurations: [String]
 
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let listing = try container.decodeIfPresent(Container.self, forKey: .project)
             ?? container.decode(Container.self, forKey: .workspace)
         schemes = listing.schemes ?? []
+        configurations = listing.configurations ?? []
     }
 
     static func command(project: URL, environment: [String: String]) -> ProcessCommand {

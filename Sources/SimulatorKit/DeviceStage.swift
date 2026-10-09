@@ -16,17 +16,20 @@ public struct DeviceStage: Stage {
     private let lookup: MatrixLookup?
     private let runner: any ProcessRunner
     private let locator: XcodeLocator
+    private let deviceID: String?
 
     public init(
         declared: String?,
         lookup: MatrixLookup?,
         runner: any ProcessRunner,
-        locator: XcodeLocator
+        locator: XcodeLocator,
+        deviceID: String? = nil
     ) {
         self.declared = declared
         self.lookup = lookup
         self.runner = runner
         self.locator = locator
+        self.deviceID = deviceID
     }
 
     public func run(_ context: inout UpContext) async throws -> StageOutcome {
@@ -35,6 +38,17 @@ public struct DeviceStage: Stage {
         let selector = SimulatorSelector(simulators: list.simulators, lookup: lookup)
 
         let simulator: SimctlDeviceList.Simulator
+        if let deviceID {
+            guard let selected = list.simulators.first(where: { $0.udid == deviceID && $0.isAvailable }) else {
+                throw DomainError(summary: "selected Simulator identity is no longer available: \(deviceID)",
+                                  remediation: Remediation(summary: "Refresh the device candidates and select an available Simulator."))
+            }
+            if case .requirement(let minimum, _) = lookup?.runtime, !minimum.isSatisfied(by: selected.runtime) {
+                throw DomainError(summary: "selected Simulator runtime is below the project requirement",
+                                  remediation: Remediation(summary: "Select a compatible Simulator identity."))
+            }
+            simulator = selected
+        } else {
         switch selector.resolve(declared: declared) {
         case .success(let resolved):
             simulator = resolved
@@ -46,6 +60,7 @@ public struct DeviceStage: Stage {
                     create: miss == .noPhoneInstalled ? await createCommand(list, environment) : nil
                 )
             )
+        }
         }
 
         // Written before the boot: a simulator that fails to come up is still the one

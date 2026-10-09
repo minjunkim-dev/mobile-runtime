@@ -119,6 +119,23 @@ private let reverseSource = "tcp:8081"
 
 @Suite("Android owned runtime")
 struct AndroidRuntimeTests {
+    @Test("another requested AVD preserves the existing active run before any subprocess")
+    func requestedAVDDoesNotRollbackExistingRun() async throws {
+        let scenario = try runtimeScenario()
+        let store = AndroidActiveRunStore(project: scenario.repo.root, logs: scenario.logs)
+        var active = AndroidActiveRun(project: scenario.repo.root, product: scenario.product)
+        active.device = .init(avd: "Pixel", launcherPID: 7001, serial: serial, api: 35, abi: "arm64-v8a", state: .started)
+        try store.write(active)
+        let runner = FakeProcessRunner()
+        let report = await runAndroidUp(anchor: scenario.anchor, doctor: DoctorEngine(checks: []),
+            config: scenario.config.selecting(avd: "AnotherPixel"), hostRunner: runner, projectRunner: runner,
+            environment: scenario.environment, logs: scenario.logs, note: { _ in })
+        #expect(report.exitCode == 1)
+        #expect(report.stages.isEmpty)
+        #expect(try store.read()?.device?.avd == "Pixel")
+        #expect(try store.read()?.device?.launcherPID == 7001)
+        #expect(runner.log.all.isEmpty)
+    }
     @Test("lifecycle lock rejects a concurrent command and releases with its lease")
     func lifecycleLock() throws {
         let scenario = try runtimeScenario()

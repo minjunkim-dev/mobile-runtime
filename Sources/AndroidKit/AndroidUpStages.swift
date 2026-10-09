@@ -55,6 +55,10 @@ actor AndroidRuntime {
     func device(for product: AndroidBuiltProduct) async throws -> AndroidDevice {
         try prepare(product)
         if let existing = try run().device {
+            if let requested = config.configuration?.androidAVD, requested != existing.avd {
+                throw DomainError(summary: "selected AVD differs from the Android active run",
+                                  remediation: retryDown)
+            }
             guard let serial = existing.serial, let api = existing.api, let abi = existing.abi else {
                 throw DomainError(
                     summary: "the Android active run has an incomplete Emulator identity",
@@ -855,13 +859,19 @@ public func runAndroidUp(
     logs: RunLogs? = nil,
     timeouts: AndroidRuntimeTimeouts = AndroidRuntimeTimeouts(),
     note: @escaping @Sendable (String) -> Void,
-    onStageFinished: (@Sendable (StageResult) -> Void)? = nil
+    onStageFinished: (@Sendable (StageResult) -> Void)? = nil,
+    onStageStarted: (@Sendable (String) -> Void)? = nil
 ) async -> UpReport {
     let logs = logs ?? RunLogs(project: anchor.directory)
     let store = AndroidActiveRunStore(project: anchor.directory, logs: logs)
     do {
         let lease = try store.acquire(operation: "up")
         defer { withExtendedLifetime(lease) {} }
+        if let requested = config.configuration?.androidAVD,
+            let active = try store.read(), let device = active.device, device.avd != requested {
+            throw DomainError(summary: "selected AVD differs from the Android active run",
+                              remediation: Remediation(summary: "Run mobile down --platform android for this project before selecting another AVD."))
+        }
         let stages = androidUpStages(
             anchor: anchor,
             doctor: doctor,
@@ -874,11 +884,11 @@ public func runAndroidUp(
             note: note
         )
         let report = await UpPipeline(stages: stages).run(
-            onStageFinished: onStageFinished
+            onStageFinished: onStageFinished, onStageStarted: onStageStarted
         )
         guard report.failure != nil, report.context.androidProduct != nil else { return report }
 
-        let cleanup = await AndroidCleanup(
+        let cleanup = await Task.detached { await AndroidCleanup(
             anchor: anchor,
             config: config,
             runner: hostRunner,
@@ -886,7 +896,7 @@ public func runAndroidUp(
             environment: environment,
             logs: logs,
             timeouts: timeouts
-        ).run()
+        ).run() }.value
         var context = report.context
         var product = context.androidProduct
         product?.rollback = cleanup.report.items

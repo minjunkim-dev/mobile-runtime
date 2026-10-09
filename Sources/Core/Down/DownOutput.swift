@@ -26,17 +26,20 @@ public struct DownJSONDocument: Encodable, Sendable {
     public let status: CheckStatus
     public let items: [Item]
     public let error: Failure?
+    public let operation: WorkflowOperation?
 
     public init(
         report: TeardownReport,
         toolVersion: String,
         command: String = "down",
-        platform: String? = nil
+        platform: String? = nil,
+        operation: WorkflowOperation? = nil
     ) {
         self.schemaVersion = Self.schemaVersion
         self.toolVersion = toolVersion
         self.command = command
         self.platform = platform
+        self.operation = operation
         self.status = report.status
         self.items = report.items.map {
             Item(id: $0.id, status: $0.status, detail: $0.detail, remediation: $0.remediation)

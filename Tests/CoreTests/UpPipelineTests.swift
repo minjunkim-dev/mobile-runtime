@@ -26,6 +26,23 @@ private func stage(
 
 @Suite("UpPipeline")
 struct UpPipelineTests {
+    @Test("cancellation preserves completed stages and context without running later effects")
+    func cancelledAfterEffect() async {
+        let runner = FakeProcessRunner()
+        let report = await UpPipeline(stages: [
+            stage("metro", runner) { context in
+                context.metro = MetroProcess(state: .spawned, pid: 42, listenerPid: 43, logPath: "/test/metro.log")
+                return .pass("started")
+            },
+            stage("build", runner) { _ in throw CancellationError() },
+            stage("install", runner),
+        ]).run()
+        #expect(report.exitCode == 130)
+        #expect(report.stages.map(\.id) == ["metro", "build"])
+        #expect(report.context.metro?.listenerPid == 43)
+        #expect(report.teardownHint != nil)
+        #expect(!runner.log.all.contains { $0.description == "echo install" })
+    }
     @Test("stages run in order and each result carries its status and detail")
     func runsInOrder() async {
         let runner = FakeProcessRunner()

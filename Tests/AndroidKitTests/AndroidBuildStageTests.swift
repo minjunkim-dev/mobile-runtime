@@ -176,6 +176,38 @@ private func buildScenario(
 
 @Suite("Android build stage")
 struct AndroidBuildStageTests {
+    @Test("workflow target candidates use the existing debug default and normalized module")
+    func workflowTargetDefault() async throws {
+        let scenario = try buildScenario()
+        var runner = scenario.runner
+        let offline = try #require(AndroidGradleModelProbe.command(androidDirectory: scenario.repo.url("android"), offline: true))
+        let online = try #require(AndroidGradleModelProbe.command(androidDirectory: scenario.repo.url("android"), offline: false, timeout: nil))
+        runner.responses[offline.description] = runner.responses[online.description]
+        let target = try await AndroidWorkflowTarget.load(anchor: scenario.anchor,
+            config: scenario.config.selecting(module: "app"), hostRunner: runner, projectRunner: runner,
+            environment: scenario.environment)
+        #expect(target.module == ":app")
+        #expect(target.variant == "debug")
+        #expect(target.requiredInput.isEmpty)
+        #expect(target.modules == [":app"])
+        #expect(!runner.log.all.contains { $0.arguments.contains(":app:assembleDebug") })
+    }
+
+    @Test("workflow target returns flavor candidates without assembling before selection")
+    func workflowFlavorSelection() async throws {
+        let flavors = #"[{"name":"stagingDebug","debuggable":true,"assembleTask":":app:assembleStagingDebug","installTask":":app:installStagingDebug"},{"name":"prodDebug","debuggable":true,"assembleTask":":app:assembleProdDebug","installTask":":app:installProdDebug"}]"#
+        let scenario = try buildScenario(variants: flavors)
+        var runner = scenario.runner
+        let offline = try #require(AndroidGradleModelProbe.command(androidDirectory: scenario.repo.url("android"), offline: true))
+        let online = try #require(AndroidGradleModelProbe.command(androidDirectory: scenario.repo.url("android"), offline: false, timeout: nil))
+        runner.responses[offline.description] = runner.responses[online.description]
+        let target = try await AndroidWorkflowTarget.load(anchor: scenario.anchor, config: scenario.config,
+            hostRunner: runner, projectRunner: runner, environment: scenario.environment)
+        #expect(target.requiredInput == ["--variant"])
+        #expect(target.variants == ["prodDebug", "stagingDebug"])
+        #expect(target.variant == nil)
+        #expect(runner.log.all.allSatisfy { $0.arguments.contains("--offline") })
+    }
     @Test("one evaluated debug target builds one verified APK with the project wrapper")
     func buildsVerifiedAPK() async throws {
         let scenario = try buildScenario()

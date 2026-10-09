@@ -52,17 +52,20 @@ public struct UpJSONDocument: Encodable, Sendable {
     public let stages: [Item]
     public let result: Outcome?
     public let error: Failure?
+    public let operation: WorkflowOperation?
 
     public init(
         report: UpReport,
         toolVersion: String,
         command: String = "up",
-        platform: String? = nil
+        platform: String? = nil,
+        operation: WorkflowOperation? = nil
     ) {
         self.schemaVersion = Self.schemaVersion
         self.toolVersion = toolVersion
         self.command = command
         self.platform = platform
+        self.operation = operation
         self.status = report.status
         self.stages = report.stages.map {
             Item(id: $0.id, status: $0.status, durationMs: $0.durationMs, detail: $0.detail)

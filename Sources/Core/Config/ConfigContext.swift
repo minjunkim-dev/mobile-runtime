@@ -59,6 +59,23 @@ public struct ConfigContext: Sendable {
         return config
     }
 
+    public func selecting(scheme: String? = nil, module: String? = nil, variant: String? = nil,
+                          avd: String? = nil, clearDevice: Bool = false) -> ConfigContext {
+        if case .invalid = parse { return self }
+        let previous = configuration ?? MobileConfig()
+        let unknownKeys: [String]
+        if case .parsed(_, let keys) = parse { unknownKeys = keys } else { unknownKeys = [] }
+        let selected = MobileConfig(device: clearDevice ? nil : previous.device, scheme: scheme ?? previous.scheme,
+                                    xcode: previous.xcode, iosRuntime: previous.iosRuntime,
+                                    androidModule: module ?? previous.androidModule,
+                                    androidVariant: variant ?? previous.androidVariant,
+                                    androidLauncherActivity: previous.androidLauncherActivity,
+                                    androidAVD: avd ?? previous.androidAVD)
+        return ConfigContext(anchor: anchor, workingDirectory: workingDirectory, file: file,
+                             misspelledFile: misspelledFile, strayFile: strayFile,
+                             parse: .parsed(selected, unknownKeys: unknownKeys))
+    }
+
     /// The Check exists only when a file does. A project with no mobile.yml gets no
     /// mobile.yml line — zero-config means zero noise.
     public func checks() -> [any Check] {
