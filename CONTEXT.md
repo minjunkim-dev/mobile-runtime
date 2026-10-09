@@ -15,6 +15,9 @@ _Avoid_: mobile-runtime (제품명), mobile (working name)
 
 ### 프로젝트와 실행 환경
 
+**프로젝트 작업 폴더 (Project working directory)**:
+프로젝트를 열고 작업을 수행하는 실제 폴더다. 같은 Git 저장소의 서로 다른 워크트리도 각각 별도 작업 폴더다. 저장소를 공유하는 관계와 같은 작업 폴더를 다시 여는 일을 구분한다.
+
 **프로젝트 종류 (Project kind)**:
 앱의 도구와 실행 경로를 구분하는 네이티브·Flutter·React Native 분류다. iOS·Android 플랫폼과 별개의 구분이다.
 
