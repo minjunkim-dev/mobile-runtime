@@ -7,7 +7,8 @@ let package = Package(
     // the host Xcode decides what we build with — this is the deployment target.
     platforms: [.macOS(.v14)],
     products: [
-        .executable(name: "mobile", targets: ["mobile"])
+        .executable(name: "mobile", targets: ["mobile"]),
+        .executable(name: "Runstir", targets: ["RunstirGUI"])
     ],
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-subprocess", from: "1.0.0"),
@@ -44,12 +45,15 @@ let package = Package(
             dependencies: ["Core"],
             resources: [.copy("Resources/mobile-doctor.gradle")]
         ),
+        .target(name: "EnvironmentKit", dependencies: ["Core", "SimulatorKit", "AndroidKit"]),
+        .executableTarget(name: "RunstirGUI", dependencies: ["Core", "EnvironmentKit"]),
         .executableTarget(
             name: "mobile",
             dependencies: [
                 "Core",
                 "SimulatorKit",
                 "AndroidKit",
+                "EnvironmentKit",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 .product(name: "Logging", package: "swift-log"),
             ]
@@ -58,6 +62,7 @@ let package = Package(
         // targets share a single copy of it rather than drifting apart.
         .target(name: "TestSupport", dependencies: ["Core"], path: "Tests/TestSupport"),
         .testTarget(name: "CoreTests", dependencies: ["Core", "TestSupport"]),
+        .testTarget(name: "EnvironmentKitTests", dependencies: ["EnvironmentKit", "Core", "TestSupport"]),
         .testTarget(
             name: "SimulatorKitTests",
             dependencies: ["SimulatorKit", "Core", "TestSupport"],
