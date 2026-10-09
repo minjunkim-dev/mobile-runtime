@@ -19,7 +19,7 @@ struct EnvironmentInspectionTests {
         let input = ProjectInspectionInput(directory: repo.root, environment: ["DEVELOPER_DIR": "/test/Xcode"], platform: .ios)
         let cli = try await EnvironmentInspection.run(input: input, runner: runner)
         let gui = try await EnvironmentInspection.run(input: input, runner: runner)
-        #expect(try cli.document(toolVersion: "test").encoded() == gui.document(toolVersion: "test").encoded())
+        #expect(try comparableDocument(cli) == comparableDocument(gui))
         #expect(cli.report.checks.contains { $0.id == "project.detected" && $0.status == .warning
             && $0.outcome.observed == "React Native 0.76.5, node_modules missing" })
         #expect(cli.selection.selected?.id == ".")
@@ -66,7 +66,7 @@ struct EnvironmentInspectionTests {
         let input = ProjectInspectionInput(directory: repo.root, environment: [:])
         let cli = try await EnvironmentInspection.run(input: input, runner: runner)
         let gui = try await EnvironmentInspection.run(input: input, runner: runner)
-        #expect(try cli.document(toolVersion: "test").encoded() == gui.document(toolVersion: "test").encoded())
+        #expect(try comparableDocument(cli) == comparableDocument(gui))
         #expect(cli.selection.candidates.isEmpty)
         #expect(cli.report.checks.contains { $0.id == "xcode.installed" })
         #expect(!cli.report.checks.contains { $0.id == "project.detected" })
@@ -77,5 +77,17 @@ struct EnvironmentInspectionTests {
         #expect(json["command"] as? String == "doctor")
         #expect(json["selection"] != nil)
         #expect(json["environment"] == nil)
+    }
+
+    private func comparableDocument(_ result: EnvironmentInspection) throws -> Data {
+        let data = Data(try result.document(toolVersion: "test").encoded().utf8)
+        var json = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        var checks = try #require(json["checks"] as? [[String: Any]])
+        // Free bytes are measured live, outside the ProcessRunner fixture; compare the verdict and contract.
+        for index in checks.indices where checks[index]["id"] as? String == "host.storage" {
+            checks[index].removeValue(forKey: "observed")
+        }
+        json["checks"] = checks
+        return try JSONSerialization.data(withJSONObject: json, options: [.sortedKeys])
     }
 }
