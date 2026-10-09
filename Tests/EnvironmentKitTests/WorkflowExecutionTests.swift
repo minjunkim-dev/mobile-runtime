@@ -62,6 +62,30 @@ struct WorkflowExecutionTests {
         #expect(runner.log.spawned.isEmpty)
     }
 
+    @Test("workspace-only apps confirm Debug from effective Xcode settings")
+    func workspaceOnlyBuild() async throws {
+        let repo = try iosProject(workspaceOnly: true)
+        let runner = iosRunner(repo, workspaceOnly: true)
+        let result = await WorkflowExecution.run(.build, input: WorkflowInput(project: ProjectInspectionInput(
+            directory: repo.root, environment: [:])), runner: runner)
+        #expect(result.exitCode == 0)
+        #expect(result.operation.configuration == "Debug")
+        #expect(result.up?.stages.map(\.id) == ["validate", "dependencies", "build"])
+    }
+
+    @Test("a workspace cannot accept an invalid configuration that Xcode silently resolves to Release")
+    func workspaceInvalidConfiguration() async throws {
+        let repo = try iosProject(workspaceOnly: true)
+        var runner = iosRunner(repo, workspaceOnly: true)
+        let command = "xcodebuild -showBuildSettings -json -workspace \(repo.url("ios/MyApp.xcworkspace").path) -scheme MyApp -configuration Missing -destination generic/platform=iOS Simulator"
+        runner.responses[command] = .ok(#"[{"target":"MyApp","buildSettings":{"CONFIGURATION":"Release"}}]"#)
+        let result = await WorkflowExecution.run(.build, input: WorkflowInput(project: ProjectInspectionInput(
+            directory: repo.root, environment: [:]), configuration: "Missing"), runner: runner)
+        #expect(result.exitCode == 1)
+        #expect(result.operation.configurations == ["Release"])
+        #expect(!runner.log.all.contains { $0.description == "yarn install --frozen-lockfile" })
+    }
+
     @Test("invalid scheme and cross-platform selectors stop before dependency changes")
     func invalidSelectors() async throws {
         let repo = try iosProject()
@@ -120,17 +144,18 @@ struct WorkflowExecutionTests {
         #expect(result.up?.stages.isEmpty == true)
     }
 
-    private func iosProject() throws -> FixtureRepo {
+    private func iosProject(workspaceOnly: Bool = false) throws -> FixtureRepo {
         let repo = try FixtureRepo()
         try repo.write("package.json", #"{"dependencies":{"react-native":"0.81.0"}}"#)
         try repo.write("yarn.lock", "")
         try repo.directory("node_modules")
-        try repo.directory("ios/MyApp.xcodeproj")
+        try repo.directory(workspaceOnly ? "ios/MyApp.xcworkspace" : "ios/MyApp.xcodeproj")
         return repo
     }
 
-    private func iosRunner(_ repo: FixtureRepo) -> FakeProcessRunner {
-        let destination = "-project \(repo.url("ios/MyApp.xcodeproj").path) -scheme MyApp -configuration Debug -destination generic/platform=iOS Simulator"
+    private func iosRunner(_ repo: FixtureRepo, workspaceOnly: Bool = false) -> FakeProcessRunner {
+        let target = workspaceOnly ? "-workspace \(repo.url("ios/MyApp.xcworkspace").path)" : "-project \(repo.url("ios/MyApp.xcodeproj").path)"
+        let destination = "\(target) -scheme MyApp -configuration Debug -destination generic/platform=iOS Simulator"
         return FakeProcessRunner(responses: [
             "xcode-select -p": .ok("/test/Xcode"),
             "xcodebuild -version": .ok("Xcode 27.0\nBuild version 18A100"),
@@ -139,9 +164,9 @@ struct WorkflowExecutionTests {
             "node --version": .ok("v22.14.0"),
             "yarn --version": .ok("1.22.22"),
             "yarn install --frozen-lockfile": .ok(""),
-            "xcodebuild -list -json -project \(repo.url("ios/MyApp.xcodeproj").path)": .ok(#"{"project":{"schemes":["MyApp"],"configurations":["Debug","Release"]}}"#),
+            "xcodebuild -list -json \(target)": .ok(workspaceOnly ? #"{"workspace":{"schemes":["MyApp"]}}"# : #"{"project":{"schemes":["MyApp"],"configurations":["Debug","Release"]}}"#),
             "xcodebuild \(destination) build": .ok("** BUILD SUCCEEDED **"),
-            "xcodebuild -showBuildSettings -json \(destination)": .ok(#"[{"target":"MyApp","buildSettings":{"BUILT_PRODUCTS_DIR":"/test/build","FULL_PRODUCT_NAME":"MyApp.app","PRODUCT_BUNDLE_IDENTIFIER":"com.test.MyApp"}}]"#),
+            "xcodebuild -showBuildSettings -json \(destination)": .ok(#"[{"target":"MyApp","buildSettings":{"CONFIGURATION":"Debug","BUILT_PRODUCTS_DIR":"/test/build","FULL_PRODUCT_NAME":"MyApp.app","PRODUCT_BUNDLE_IDENTIFIER":"com.test.MyApp"}}]"#),
         ])
     }
 }

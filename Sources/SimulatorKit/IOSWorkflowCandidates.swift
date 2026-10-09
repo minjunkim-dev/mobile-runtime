@@ -9,7 +9,7 @@ public struct IOSWorkflowCandidates: Sendable {
 
     public static func load(anchor: ProjectAnchor, config: ConfigContext, lookup: MatrixLookup?,
                             runner: any ProcessRunner, locator: XcodeLocator,
-                            includeDevices: Bool) async throws -> Self {
+                            includeDevices: Bool, configuration: String? = nil) async throws -> Self {
         let environment = await locator.pinnedEnvironment()
         var devices: [RuntimeDeviceCandidate] = []
         var declaredID: String?
@@ -40,7 +40,24 @@ public struct IOSWorkflowCandidates: Sendable {
             !listing.schemes.isEmpty else {
             throw ToolUnavailable(description: "Could not list Xcode schemes. Check Xcode and run mobile doctor.")
         }
+        var configurations = listing.configurations
+        // Workspace lists omit configurations. Expose the effective value so callers reject Xcode's fallback.
+        if configurations.isEmpty, let scheme = config.configuration?.scheme ?? (listing.schemes.count == 1 ? listing.schemes.first : nil),
+           listing.schemes.contains(scheme) {
+            let requested = configuration ?? "Debug"
+            let arguments = ["-showBuildSettings", "-json"] + targetToList.arguments
+                + ["-scheme", scheme, "-configuration", requested, "-destination", "generic/platform=iOS Simulator"]
+            let settings = try await runner.run(ProcessCommand("xcodebuild", arguments, environment: environment, timeout: .seconds(120)))
+            if settings.terminationStatus.isSuccess,
+               let entries = (try? JSONSerialization.jsonObject(with: Data(settings.standardOutput.utf8))) as? [[String: Any]],
+               !entries.isEmpty,
+               let effective = (entries.first?["buildSettings"] as? [String: String])?["CONFIGURATION"],
+               !effective.isEmpty,
+               entries.allSatisfy({ ($0["buildSettings"] as? [String: String])?["CONFIGURATION"] == effective }) {
+                configurations = [effective]
+            }
+        }
         return Self(devices: devices, declaredDeviceID: declaredID,
-                    schemes: listing.schemes.sorted(), configurations: listing.configurations.sorted())
+                    schemes: listing.schemes.sorted(), configurations: configurations.sorted())
     }
 }

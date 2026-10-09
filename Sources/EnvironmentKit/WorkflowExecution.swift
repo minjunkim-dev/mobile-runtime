@@ -107,7 +107,8 @@ public enum WorkflowExecution {
 
                 if platform == .ios {
                     let choices = try await IOSWorkflowCandidates.load(anchor: anchor, config: config, lookup: wiring.lookup,
-                        runner: wiring.projectRunner, locator: wiring.locator, includeDevices: kind == .up || input.device != nil)
+                        runner: wiring.projectRunner, locator: wiring.locator, includeDevices: kind == .up || input.device != nil,
+                        configuration: input.configuration)
                     operation.schemes = choices.schemes
                     operation.configurations = choices.configurations
                     operation.devices = choices.devices
