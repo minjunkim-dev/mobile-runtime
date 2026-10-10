@@ -167,10 +167,7 @@ struct PreparationExecutionTests {
         let initial = await PreparationExecution.run(input: input, planOnly: true, runner: runner)
         let id = try #require(initial.plan?.id)
         let first = Task { await PreparationExecution.run(input: input, approvedPlanID: id, trustRepository: true, runner: runner) }
-        for _ in 0..<200 {
-            if await gate.started { break }
-            try await Task.sleep(for: .milliseconds(10))
-        }
+        await gate.waitUntilStarted()
         #expect(await gate.started)
         let current = await PreparationExecution.run(input: input, planOnly: true, runner: tools(repo))
         let second = await PreparationExecution.run(input: input, approvedPlanID: try #require(current.plan?.id), trustRepository: true, runner: tools(repo))
@@ -268,10 +265,7 @@ struct PreparationExecutionTests {
         let id = try #require(firstPlan.plan?.id)
         let task = Task { await PreparationExecution.run(input: firstInput, approvedPlanID: id,
             trustRepository: true, runner: WaitingRunner(base: firstTools, gate: gate)) }
-        for _ in 0..<200 {
-            if await gate.started { break }
-            try await Task.sleep(for: .milliseconds(10))
-        }
+        await gate.waitUntilStarted()
         #expect(await gate.started)
         let denied = await PreparationExecution.run(input: secondInput, approvedPlanID: try #require(secondPlan.plan?.id),
             trustRepository: true, runner: secondTools)
@@ -370,9 +364,16 @@ private struct CancellingRunner: ProcessRunner {
 private actor InstallGate {
     private(set) var started = false
     private var continuation: CheckedContinuation<Void, Never>?
+    private var startWaiters: [CheckedContinuation<Void, Never>] = []
     func wait() async {
         started = true
+        startWaiters.forEach { $0.resume() }
+        startWaiters.removeAll()
         await withCheckedContinuation { continuation = $0 }
+    }
+    func waitUntilStarted() async {
+        if started { return }
+        await withCheckedContinuation { startWaiters.append($0) }
     }
     func release() { continuation?.resume(); continuation = nil }
 }
