@@ -281,4 +281,5 @@ iOS는 명시한 UDID의 `simctl install`과 `simctl launch`를 사용했다.
 | #199 AC06 | 실제 Mac Android 가속을 관측했다. VM·새 호스트·대표 실기기를 검증하지 않았다. |
 
 #212를 닫지 않는다. OSS 양플랫폼 known-good과 fresh 준비·인계 조건이 남아 있다.
-현재 예외는 Pods deployment target 보정을 허용하지 않는다. 별도 결정 없이 실패한 입력의 실행을 진행하지 않는다.
+[attempt-05 기록](./rn-baseline-212-attempt-05.md)은 plain Pods 설치 성공 뒤 감사 도구의 과잉 POSIX 권한 검사로 중단한 시도를 보존한다. 허용한 Hermes 한 값 외 tracked byte·파일 유형·Git 실행 권한·index는 같았다. deployment 재검사·생성 Pods 보정·native 실행은 수행하지 않았다.
+[ADR-0021](./adr/0021-mattermost-generated-pods-preparation.md)은 고정 Mattermost 입력의 생성 resource bundle target 11개에서 Debug deployment 값만 `16.4`로 준비하도록 허용한다. Release·다른 설정·source·graph는 유지한다. 이 준비 조건의 확정은 baseline 성공이 아니다. 허용 범위 밖의 변경이나 필수 실패가 나오면 중단한다.
