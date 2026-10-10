@@ -2,14 +2,18 @@
 
 검증일: 2026-10-10, Asia/Seoul. 상태: **부분 검증. #212 완료가 아니다.**
 현재 최소 앱은 [attempt-02](./rn-baseline-212-attempt-02.md)의 iOS 26·Android 조건에서 양플랫폼 known-good이다.
-현재 OSS는 [attempt-03 Mattermost](./rn-baseline-212-attempt-03.md)의 Android 첫 화면만 확인했다.
-OSS iOS는 원본 frozen Pods checksum 실패로 미달이다.
+현재 OSS는 [attempt-03 Mattermost](./rn-baseline-212-attempt-03.md)의 원본 Android 첫 화면을 확인했다.
+[attempt-04](./rn-baseline-212-attempt-04.md)는 ADR-0020의 별도 준비 입력이다.
+Hermes 한 값 재생성과 frozen 준비는 성공했다. iOS build는 Pods deployment target 검사에서 실패했다.
+새 준비 입력의 Android 실행과 fresh 준비·인계는 미완료다. OSS 양플랫폼 known-good은 미달이다.
 제품 실행 SHA: 없음. 모든 앱 준비·빌드·설치·실행에 Runstir를 사용하지 않았다.
 
 입력은 [#194 조사 정본](https://github.com/minjunkim-dev/mobile-runtime/blob/52ca6150685780cca86d5cb7c0b562033b40bd30/docs/research/cli-expansion-validation-candidates.md)이다.
 [지원 계약](./cli-expansion-support-contract.md)과 [공동 게이트 계약](./shared-launch-gate-contract.md)을 적용했다.
 [명세 #199](https://github.com/minjunkim-dev/mobile-runtime/issues/199)의 AC05·AC06에 baseline 증거만 제공한다.
 과거 BlueWallet Go의 Pod checksum 예외와 #201의 RN 0.82 준비 앱 증거를 적용하지 않았다.
+attempt-04에만 [ADR-0020](./adr/0020-rn-baseline-prepared-input.md)의 고정 Mattermost Hermes 한 값 예외를 적용했다.
+아래 최초 source·실행 기록은 원본 이력이다. 최신 판정은 attempt-04와 마지막 AC 표를 따른다.
 
 ## 최초 attempt 판정
 
@@ -270,11 +274,11 @@ iOS는 명시한 UDID의 `simctl install`과 `simctl launch`를 사용했다.
 | --- | --- |
 | #212 source·generator·locks 고정 | 조사 정본, 생성 SHA 두 개, OSS SHA, lock checksum, fresh clone 분리 |
 | #212 정확 도구·환경 입력 | 관측 버전과 선택을 기록했다. 표본별 bundled 도구 차이를 같은 tuple로 숨기지 않았다. |
-| #212 양플랫폼 최소+OSS 첫 화면 | 미충족. 두 Android 첫 화면 확인. 최소 iOS crash, BlueWallet iOS 준비 실패. |
-| #212 실패·교체 이유 보존 | 원본 실패와 하네스·Watchman 실패를 분리했다. SHA 탐색과 lock 예외 없음. |
-| #212 fresh clone 인계 | 실행하지 않은 별도 clone과 생성 source bundle 제공. |
+| #212 양플랫폼 최소+OSS 첫 화면 | 미충족. 최소 앱은 attempt-02에서 양플랫폼 PASS다. Mattermost 원본 Android는 attempt-03 PASS다. attempt-04의 별도 준비 입력은 iOS build 실패이며 새 Android 실행은 중단했다. |
+| #212 실패·교체 이유 보존 | 원본 실패·진단 오류·실제 build 실패를 구분했다. ADR-0020의 Hermes 한 값만 재생성했다. 추가 checksum·source patch·버전 변경과 성공 SHA 탐색은 없다. |
+| #212 fresh clone 인계 | 최소 b62 source bundle과 세 lock 입력을 보존했다. 최소 fresh의 frozen 준비는 미검증이다. Mattermost attempt-04의 후속 clone은 no-checkout이며 준비·인계 미완료다. |
 | #199 AC05 | baseline 부분 증거다. Runstir CLI·GUI 및 여섯 조합 검증을 대체하지 않는다. |
 | #199 AC06 | 실제 Mac Android 가속을 관측했다. VM·새 호스트·대표 실기기를 검증하지 않았다. |
 
-#212를 닫지 않는다. 양플랫폼 iOS 첫 화면 조건이 남아 있다.
-정식 교체 후보 또는 승인한 새 표본 입력을 고정한 뒤 미달 항목을 다시 검증한다.
+#212를 닫지 않는다. OSS 양플랫폼 known-good과 fresh 준비·인계 조건이 남아 있다.
+현재 예외는 Pods deployment target 보정을 허용하지 않는다. 별도 결정 없이 실패한 입력의 실행을 진행하지 않는다.
