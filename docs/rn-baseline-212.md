@@ -150,6 +150,37 @@ Pod lock을 재생성하거나 과거 checksum 예외를 적용하지 않았다.
 빌드 성공 SHA를 찾는 탐색과 nightly 우회를 수행하지 않았다.
 교체 후보는 baseline 실패 기록을 보존한 뒤 별도 source와 도구 조건으로 고정해야 한다.
 
+### 실행하지 않은 후속 후보와 필요한 입력
+
+2026-10-10 추가 확인은 공식 선언과 계약의 read-only 검토다.
+추가 설치·부팅·빌드·앱 실행은 수행하지 않았다.
+[지원 계약](./cli-expansion-support-contract.md)은 Xcode `27.0` 정식을 하한으로 둔다.
+Xcode `26.x`로 변경할 수 없다.
+새 [공동 계약](./shared-launch-gate-contract.md)과 명세 #199는 iOS runtime `27.0` 하한을 별도로 두지 않는다.
+ADR-0017·0018의 iOS `27.0` 고정은 과거 Go 게이트의 입력이다.
+따라서 Xcode `27.0`을 유지한 정식 iOS `26.x` runtime을 새 tuple 후보로 검토할 수 있다.
+그 후보의 호환성과 첫 화면은 미검증이다.
+[Apple UIScene 문서](https://developer.apple.com/documentation/uikit/transitioning-to-the-uikit-scene-based-life-cycle)는 iOS 26의 경고와 iOS 27에서 최신 SDK 앱의 실행 거부를 구분한다.
+다른 runtime에서 성공해도 이 보고서의 iOS 27 실패를 대체하지 않는다.
+새 tuple identity와 두 표본의 전체 baseline 증거가 필요하다.
+
+BlueWallet의 [공식 latest 정식 release `v8.0.2`](https://github.com/BlueWallet/BlueWallet/releases/tag/v8.0.2) 하나만 확인했다.
+발표일은 `2026-10-06`이다. `prerelease=false`다.
+source는 `a7fe068709b0f91c504b28accda8bc85ee4c3714`다.
+이 입력은 현재 실행한 `69adb1555038c8b2385952edd0404d2e1ecd7ca7`과 다르다.
+이 tag의 [package.json](https://github.com/BlueWallet/BlueWallet/blob/a7fe068709b0f91c504b28accda8bc85ee4c3714/package.json), [package-lock.json](https://github.com/BlueWallet/BlueWallet/blob/a7fe068709b0f91c504b28accda8bc85ee4c3714/package-lock.json), [Podfile.lock](https://github.com/BlueWallet/BlueWallet/blob/a7fe068709b0f91c504b28accda8bc85ee4c3714/ios/Podfile.lock)은 lottie `7.4.0`과 safe-area `5.8.1`을 함께 고정한다.
+선언상 이번 두 의존성의 lock 불일치는 없다.
+RN은 `0.85.3`이다. Node 요구는 `>=22.11.0`이다.
+[Gemfile.lock](https://github.com/BlueWallet/BlueWallet/blob/a7fe068709b0f91c504b28accda8bc85ee4c3714/Gemfile.lock)은 Ruby `3.4.10p104`, Bundler `2.6.9`, CocoaPods `1.17.0`, xcodeproj `1.28.1`을 고정한다.
+이 선언은 교체 후보 근거다. 성공한 baseline 근거가 아니다.
+여러 SHA의 build 성공을 탐색하지 않았다.
+
+최소 앱의 xcodeproj `<1.26.0`과 이 후보의 `1.28.1`은 공통 Pods 조합을 아직 만족하지 않는다.
+공통 Gem/Pods 조건을 만족하는 정식 최소 표본이 필요하다.
+표본별 resolved 의존성을 허용하는 tuple 해석이 있다면 승인 정본에 연결해야 한다.
+이를 현재 문서가 대신 결정하지 않는다.
+후속 실제 실행은 새 자원 lease와 새 기록을 확보한 뒤 수행해야 한다.
+
 ## fresh clone 인계
 
 독립 검증 루트는 `/Volumes/P41_USB4/Developer/validation/runstir-212-rn-baseline-20261010`이다.
