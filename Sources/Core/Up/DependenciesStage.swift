@@ -15,6 +15,8 @@ public struct DependenciesStage: Stage {
     private let anchor: ProjectAnchor
     private let runner: any ProcessRunner
     private let includePods: Bool
+    /// Setup has already approved locked commands; installed directories must not bypass alignment.
+    private let forceLockedAlignment: Bool
     /// Where each install's whole output goes — a failed one's ten lines are almost
     /// always the deprecation warnings the installer piled on after the reason (#49).
     private let logs: RunLogs
@@ -23,11 +25,13 @@ public struct DependenciesStage: Stage {
         anchor: ProjectAnchor,
         runner: any ProcessRunner,
         includePods: Bool = true,
+        forceLockedAlignment: Bool = false,
         logs: RunLogs? = nil
     ) {
         self.anchor = anchor
         self.runner = runner
         self.includePods = includePods
+        self.forceLockedAlignment = forceLockedAlignment
         self.logs = logs ?? RunLogs(project: anchor.directory)
     }
 
@@ -62,7 +66,7 @@ public struct DependenciesStage: Stage {
         let files = FileManager.default
         let nodeModules = directory.appendingPathComponent("node_modules")
         let incomplete = nodeModules.appendingPathComponent(".mobile-install.incomplete")
-        guard anchor.workspaceRoot != nil
+        guard forceLockedAlignment || anchor.workspaceRoot != nil
             || !files.fileExists(atPath: nodeModules.path)
             || files.fileExists(atPath: incomplete.path)
         else { return false }
@@ -95,7 +99,7 @@ public struct DependenciesStage: Stage {
     private func installPods() async throws -> [String] {
         let ios = anchor.directory.appendingPathComponent("ios")
         guard FileManager.default.fileExists(atPath: ios.appendingPathComponent(Self.podfile).path),
-            Self.podsAreStale(ios)
+            forceLockedAlignment || Self.podsAreStale(ios)
         else { return [] }
 
         var installed: [String] = []

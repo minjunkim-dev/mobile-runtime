@@ -47,6 +47,16 @@ public struct ProjectSelection: Codable, Sendable {
     public let requiredInput: [String]
     public let error: String?
 
+    public init(directory: FolderIdentity, candidates: [ProjectCandidate], selected: ProjectCandidate?,
+                platform: ProjectPlatform?, requiredInput: [String], error: String?) {
+        self.directory = directory
+        self.candidates = candidates
+        self.selected = selected
+        self.platform = platform
+        self.requiredInput = requiredInput
+        self.error = error
+    }
+
     public var state: String {
         error != nil ? "failed" : requiredInput.isEmpty ? "succeeded" : "needs-selection"
     }
