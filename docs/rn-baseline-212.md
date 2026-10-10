@@ -5,6 +5,8 @@
 현재 OSS는 [attempt-03 Mattermost](./rn-baseline-212-attempt-03.md)의 원본 Android 첫 화면을 확인했다.
 [attempt-04](./rn-baseline-212-attempt-04.md)는 ADR-0020의 별도 준비 입력이다.
 Hermes 한 값 재생성과 frozen 준비는 성공했다. iOS build는 Pods deployment target 검사에서 실패했다.
+[attempt-06](./rn-baseline-212-attempt-06.md)은 ADR-0021의 생성 resource bundle 11개 Debug 보정을 적용했다.
+frozen 준비와 source·generated project 감사는 성공했다. iOS build는 ExpoRouter Swift compile에서 exit `65`로 실패했다.
 새 준비 입력의 Android 실행과 fresh 준비·인계는 미완료다. OSS 양플랫폼 known-good은 미달이다.
 제품 실행 SHA: 없음. 모든 앱 준비·빌드·설치·실행에 Runstir를 사용하지 않았다.
 
@@ -12,8 +14,8 @@ Hermes 한 값 재생성과 frozen 준비는 성공했다. iOS build는 Pods dep
 [지원 계약](./cli-expansion-support-contract.md)과 [공동 게이트 계약](./shared-launch-gate-contract.md)을 적용했다.
 [명세 #199](https://github.com/minjunkim-dev/mobile-runtime/issues/199)의 AC05·AC06에 baseline 증거만 제공한다.
 과거 BlueWallet Go의 Pod checksum 예외와 #201의 RN 0.82 준비 앱 증거를 적용하지 않았다.
-attempt-04에만 [ADR-0020](./adr/0020-rn-baseline-prepared-input.md)의 고정 Mattermost Hermes 한 값 예외를 적용했다.
-아래 최초 source·실행 기록은 원본 이력이다. 최신 판정은 attempt-04와 마지막 AC 표를 따른다.
+attempt-04 이후의 고정 Mattermost 준비 입력에 [ADR-0020](./adr/0020-rn-baseline-prepared-input.md)의 Hermes 한 값 예외를 적용했다.
+아래 최초 source·실행 기록은 원본 이력이다. 최신 판정은 attempt-06과 마지막 AC 표를 따른다.
 
 ## 최초 attempt 판정
 
@@ -104,7 +106,7 @@ system image는 API `37.0` Google Play ARM64 revision `6`다.
 실제 Mac의 `emulator -accel-check`는 code `0`과 `Hypervisor.Framework OS X Version 27.0`을 반환했다.
 VM에서 Android 가속을 검증했다고 주장하지 않는다.
 
-iOS 대상은 기존 iPhone 18 Pro, iOS `27.0`, UDID `8C71F44D-7D37-436D-94D3-3D25DCF3FD30`다.
+iOS 대상은 기존 iPhone 18 Pro, iOS `27.0`, UDID `<BASELINE_SIMULATOR_UDID>`다. 실제 UDID는 로컬 원본 증거에 보존한다.
 Simulator build에는 `CODE_SIGNING_ALLOWED=NO`를 명시했다.
 기존 두 Simulator·Smallnext QA·사용자 GUI를 보존했다.
 
@@ -194,7 +196,7 @@ RN은 `0.85.3`이다. Node 요구는 `>=22.11.0`이다.
 
 ## fresh clone 인계
 
-독립 검증 루트는 `/Volumes/P41_USB4/Developer/validation/runstir-212-rn-baseline-20261010`이다.
+독립 검증 루트는 `<LOCAL_VALIDATION_ROOT>`로 표시한다. 실제 host 절대 경로는 로컬 원본 증거에 보존한다.
 `minimal-source`와 `bluewallet-source`는 baseline 실행용이다.
 `minimal-fresh`와 `bluewallet-fresh`는 실행하지 않은 별도 clone이다.
 fresh clone에는 baseline의 node_modules·Pods·build 산출물·앱 데이터·Metro를 복사하지 않았다.
@@ -274,12 +276,13 @@ iOS는 명시한 UDID의 `simctl install`과 `simctl launch`를 사용했다.
 | --- | --- |
 | #212 source·generator·locks 고정 | 조사 정본, 생성 SHA 두 개, OSS SHA, lock checksum, fresh clone 분리 |
 | #212 정확 도구·환경 입력 | 관측 버전과 선택을 기록했다. 표본별 bundled 도구 차이를 같은 tuple로 숨기지 않았다. |
-| #212 양플랫폼 최소+OSS 첫 화면 | 미충족. 최소 앱은 attempt-02에서 양플랫폼 PASS다. Mattermost 원본 Android는 attempt-03 PASS다. attempt-04의 별도 준비 입력은 iOS build 실패이며 새 Android 실행은 중단했다. |
-| #212 실패·교체 이유 보존 | 원본 실패·진단 오류·실제 build 실패를 구분했다. ADR-0020의 Hermes 한 값만 재생성했다. 추가 checksum·source patch·버전 변경과 성공 SHA 탐색은 없다. |
-| #212 fresh clone 인계 | 최소 b62 source bundle과 세 lock 입력을 보존했다. 최소 fresh의 frozen 준비는 미검증이다. Mattermost attempt-04의 후속 clone은 no-checkout이며 준비·인계 미완료다. |
+| #212 양플랫폼 최소+OSS 첫 화면 | 미충족. 최소 앱은 attempt-02에서 양플랫폼 PASS다. Mattermost 원본 Android는 attempt-03 PASS다. attempt-06은 생성 resource bundle 11개 Debug 보정과 frozen 준비 후에도 ExpoRouter compile에서 실패했다. 새 입력의 iOS install·launch·첫 화면과 Android 실행은 수행하지 않았다. |
+| #212 실패·교체 이유 보존 | 원본 실패·진단 오류·실제 build 실패를 구분했다. ADR-0020의 Hermes 한 값과 ADR-0021의 생성 Debug 11값만 준비했다. 추가 checksum·source patch·버전·target 변경과 성공 SHA 탐색은 없다. |
+| #212 fresh clone 인계 | 최소 b62 source bundle과 세 lock 입력을 보존했다. 최소 fresh의 frozen 준비는 미검증이다. 필수 build 실패 뒤 attempt-06의 새 Mattermost fresh clone 준비를 수행하지 않았다. 이전 attempt-04 후속 clone의 no-checkout 상태도 인계 성공이 아니다. |
 | #199 AC05 | baseline 부분 증거다. Runstir CLI·GUI 및 여섯 조합 검증을 대체하지 않는다. |
 | #199 AC06 | 실제 Mac Android 가속을 관측했다. VM·새 호스트·대표 실기기를 검증하지 않았다. |
 
 #212를 닫지 않는다. OSS 양플랫폼 known-good과 fresh 준비·인계 조건이 남아 있다.
 [attempt-05 기록](./rn-baseline-212-attempt-05.md)은 plain Pods 설치 성공 뒤 감사 도구의 과잉 POSIX 권한 검사로 중단한 시도를 보존한다. 허용한 Hermes 한 값 외 tracked byte·파일 유형·Git 실행 권한·index는 같았다. deployment 재검사·생성 Pods 보정·native 실행은 수행하지 않았다.
 [ADR-0021](./adr/0021-mattermost-generated-pods-preparation.md)은 고정 Mattermost 입력의 생성 resource bundle target 11개에서 Debug deployment 값만 `16.4`로 준비하도록 허용한다. Release·다른 설정·source·graph는 유지한다. 이 준비 조건의 확정은 baseline 성공이 아니다. 허용 범위 밖의 변경이나 필수 실패가 나오면 중단한다.
+[attempt-06 기록](./rn-baseline-212-attempt-06.md)은 실제 compiler가 ExpoRouter의 `subtitle` 사용에 iOS `16.0+`를 요구한 실패를 보존한다. ExpoRouter framework target의 원본 Debug·Release 값은 `15.1`이며 기존 11개 resource bundle 예외에 포함되지 않는다. SDK header의 iOS `15.0` 선언과 Swift diagnostic의 차이는 원인 미확정이다. source와 생성 project의 사후 감사는 통과했다. 추가 target을 보정하지 않았다.
