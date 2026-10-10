@@ -1,6 +1,6 @@
 # React Native 고정 표본 baseline — #212
 
-검증일: 2026-10-10, Asia/Seoul. 상태: **부분 검증. #212 완료가 아니다.**
+검증일: 2026-10-11, Asia/Seoul. 상태: **부분 검증. #212 완료가 아니다.**
 현재 최소 앱은 [attempt-02](./rn-baseline-212-attempt-02.md)의 iOS 26·Android 조건에서 양플랫폼 known-good이다.
 현재 OSS는 [attempt-03 Mattermost](./rn-baseline-212-attempt-03.md)의 원본 Android 첫 화면을 확인했다.
 [attempt-04](./rn-baseline-212-attempt-04.md)는 ADR-0020의 별도 준비 입력이다.
@@ -9,7 +9,10 @@ Hermes 한 값 재생성과 frozen 준비는 성공했다. iOS build는 Pods dep
 frozen 준비와 source·generated project 감사는 성공했다. iOS build는 ExpoRouter Swift compile에서 exit `65`로 실패했다.
 [attempt-07](./rn-baseline-212-attempt-07.md)은 ADR-0022의 ExpoRouter Debug 보정까지 합한 정확한 12개 값을 준비했다.
 frozen 준비와 source·generated project 및 사후 감사는 성공했다. iOS build는 앱 compiler 하한 `16.0`과 ExpoRouter module 하한 `16.4`의 import 경계에서 exit `65`로 실패했다.
-새 준비 입력의 Android 실행과 fresh 준비·인계는 미완료다. OSS 양플랫폼 known-good은 미달이다.
+[attempt-08](./rn-baseline-212-attempt-08.md)은 ADR-0023의 resource bundle 11개 Debug `16.4`와 ExpoRouter Debug `16.0`을 준비했다.
+frozen 준비와 source·generated project 및 사후 감사는 성공했다. iOS native build와 install은 성공했다. 원본 Metro는 Watchman의 `Operation not permitted` 오류로 exit `1`이었다. 접근 차단 원인은 미확정이다.
+Metro 실패 뒤 launch를 호출한 순서 오류를 보존했다. launch 요청 exit `0`은 앱 생존이나 첫 화면 성공이 아니다. 첫 화면은 확인하지 못했다.
+새 준비 입력의 Android 실행과 두 표본의 fresh 준비·인계는 미완료다. OSS 양플랫폼 known-good은 미달이다.
 제품 실행 SHA: 없음. 모든 앱 준비·빌드·설치·실행에 Runstir를 사용하지 않았다.
 
 입력은 [#194 조사 정본](https://github.com/minjunkim-dev/mobile-runtime/blob/52ca6150685780cca86d5cb7c0b562033b40bd30/docs/research/cli-expansion-validation-candidates.md)이다.
@@ -17,7 +20,7 @@ frozen 준비와 source·generated project 및 사후 감사는 성공했다. iO
 [명세 #199](https://github.com/minjunkim-dev/mobile-runtime/issues/199)의 AC05·AC06에 baseline 증거만 제공한다.
 과거 BlueWallet Go의 Pod checksum 예외와 #201의 RN 0.82 준비 앱 증거를 적용하지 않았다.
 attempt-04 이후의 고정 Mattermost 준비 입력에 [ADR-0020](./adr/0020-rn-baseline-prepared-input.md)의 Hermes 한 값 예외를 적용했다.
-아래 최초 source·실행 기록은 원본 이력이다. 최신 판정은 attempt-07과 마지막 AC 표를 따른다.
+아래 최초 source·실행 기록은 원본 이력이다. 최신 판정은 attempt-08과 마지막 AC 표를 따른다.
 
 ## 최초 attempt 판정
 
@@ -278,9 +281,9 @@ iOS는 명시한 UDID의 `simctl install`과 `simctl launch`를 사용했다.
 | --- | --- |
 | #212 source·generator·locks 고정 | 조사 정본, 생성 SHA 두 개, OSS SHA, lock checksum, fresh clone 분리 |
 | #212 정확 도구·환경 입력 | 관측 버전과 선택을 기록했다. 표본별 bundled 도구 차이를 같은 tuple로 숨기지 않았다. |
-| #212 양플랫폼 최소+OSS 첫 화면 | 미충족. 최소 앱은 attempt-02에서 양플랫폼 PASS다. Mattermost 원본 Android는 attempt-03 PASS다. attempt-07은 frozen 준비와 정확한 12개 Debug 값 감사 뒤 원본 앱 `16.0`이 ExpoRouter module `16.4`를 import하지 못해 실패했다. 새 입력의 iOS install·launch·첫 화면과 Android 실행은 수행하지 않았다. |
-| #212 실패·교체 이유 보존 | 원본 실패·진단 오류·실제 build 실패를 구분했다. ADR-0020의 Hermes 한 값과 ADR-0021·0022의 정확한 생성 Debug 12값만 준비했다. 추가 checksum·source patch·버전·target 변경과 성공 SHA 탐색은 없다. |
-| #212 fresh clone 인계 | 최소 b62 source bundle과 세 lock 입력을 보존했다. 최소 fresh의 frozen 준비는 미검증이다. 필수 build 실패 뒤 attempt-06·07의 새 Mattermost fresh clone 준비를 수행하지 않았다. 이전 attempt-04 후속 clone의 no-checkout 상태도 인계 성공이 아니다. |
+| #212 양플랫폼 최소+OSS 첫 화면 | 미충족. 최소 앱은 attempt-02의 과거 조건에서 양플랫폼 PASS다. Mattermost 원본 Android는 attempt-03 PASS다. attempt-08은 frozen 준비와 정확한 mixed Debug 12값 및 iOS native build·install을 통과했다. 원본 Metro가 Watchman 접근 오류로 실패했다. 실패 뒤 launch를 호출한 순서 오류가 있었다. 앱 생존·첫 화면은 미검증이다. 새 입력의 Android는 미실행이다. |
+| #212 실패·교체 이유 보존 | 원본 실패·감사 도구 오류·native 실패·Metro 실패·launch 순서 오류를 구분했다. ADR-0020의 Hermes 한 값과 ADR-0021·0023의 생성 Debug 12값만 준비했다. ExpoRouter Debug는 `16.0`이고 11개 bundle Debug는 `16.4`다. source patch·버전 변경과 성공 SHA 탐색은 없다. |
+| #212 fresh clone 인계 | 최소 b62 source bundle과 세 lock 입력을 보존했다. 최소 fresh의 frozen 준비는 미검증이다. 필수 실패 뒤 attempt-06·07·08의 새 Mattermost fresh clone 준비를 수행하지 않았다. 이전 attempt-04 후속 clone의 no-checkout 상태도 인계 성공이 아니다. |
 | #199 AC05 | baseline 부분 증거다. Runstir CLI·GUI 및 여섯 조합 검증을 대체하지 않는다. |
 | #199 AC06 | 실제 Mac Android 가속을 관측했다. VM·새 호스트·대표 실기기를 검증하지 않았다. |
 
@@ -290,3 +293,6 @@ iOS는 명시한 UDID의 `simctl install`과 `simctl launch`를 사용했다.
 [attempt-06 기록](./rn-baseline-212-attempt-06.md)은 실제 compiler가 ExpoRouter의 `subtitle` 사용에 iOS `16.0+`를 요구한 실패를 보존한다. ExpoRouter framework target의 원본 Debug·Release 값은 `15.1`이며 기존 11개 resource bundle 예외에 포함되지 않는다. SDK header의 iOS `15.0` 선언과 Swift diagnostic의 차이는 원인 미확정이다. source와 생성 project의 사후 감사는 통과했다. 추가 target을 보정하지 않았다.
 [ADR-0022](./adr/0022-mattermost-exporouter-debug-preparation.md)은 ExpoRouter framework의 생성 Debug 한 값만 `15.1`에서 `16.4`로 준비하는 추가 예외다. 기존 11개와 합한 정확한 12값의 감사를 요구한다. 원본 앱 project `16.0`, ExpoRouter Release `15.1`, source·버전·나머지 설정을 유지한다. 이 정책의 채택은 attempt-06 실패를 바꾸지 않는다. 새 실행과 독립 fresh 준비의 결과는 별도로 기록한다.
 [attempt-07 기록](./rn-baseline-212-attempt-07.md)은 이 12값의 frozen/source/전체 project 준비와 사후 감사를 통과한 뒤 `ExpoModulesProvider.swift:21:17`에서 실패한 실행을 보존한다. compiler는 iOS `16.0`으로 컴파일하는 앱이 최소값 `16.4`의 ExpoRouter module을 import할 수 없다고 보고했다. 원본 앱 project의 8개 `16.0` 값은 유지됐다. install·launch·새 Android·fresh 준비를 시작하지 않았다. 자원 보존을 확인하고 단독 lease를 반납했다. 새 조건의 실제 실행은 시작하지 않았다.
+
+[ADR-0023](https://github.com/minjunkim-dev/mobile-runtime/blob/4f2d585da92c60df86000a5ce75faf4693bb69b5/docs/adr/0023-mattermost-exporouter-app-floor-preparation.md)은 ExpoRouter Debug 한 값을 원본 앱 하한 `16.0`으로 준비하도록 확정했다. 11개 resource bundle Debug `16.4`와 합한 정확한 mixed 12값을 감사했다. 앱 8개 `16.0`과 ExpoRouter Release `15.1` 및 source·dependency graph를 유지했다.
+[attempt-08 기록](./rn-baseline-212-attempt-08.md)은 실제 iOS native build와 install 성공을 보존한다. ExpoRouter와 Mattermost의 실제 Swift target은 모두 `arm64-apple-ios16.0-simulator`다. 원본 Metro는 Watchman 접근 오류로 실패했다. status 확인은 도구 hook에 redirect되어 실제 receipt가 없었다. Metro 실패 뒤 launch 요청을 실행한 순서 오류도 보존했다. launch exit `0` 뒤 앱 생존과 첫 화면을 확인하지 못했다. terminate exit `3`의 앱 종료 원인은 미확정이다. 후속 Android와 두 표본 fresh를 시작하지 않았다. source·generated 사후 감사와 소유 자원 정리를 통과했다. 단독 lease를 반환했다. 추가 조건을 확정하기 전에는 실제 실행을 재개하지 않는다.
