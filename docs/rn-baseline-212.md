@@ -8,7 +8,9 @@
 [명세 #199](https://github.com/minjunkim-dev/mobile-runtime/issues/199)의 AC05·AC06에 baseline 증거만 제공한다.
 과거 BlueWallet Go의 Pod checksum 예외와 #201의 RN 0.82 준비 앱 증거를 적용하지 않았다.
 
-## 판정
+## 최초 attempt 판정
+
+아래 표와 최초 실행 기록은 `attempt-01-ios27` 이력이다.
 
 | 표본 | Android | iOS | known-good |
 | --- | --- | --- | --- |
@@ -18,8 +20,10 @@
 이 실패는 **Runstir 실패가 아니다.** RN 원본 표본의 준비 또는 실행 실패다.
 최소 앱과 BlueWallet의 RN·AGP·Gradle·NDK와 bundled CocoaPods·xcodeproj가 다르다.
 공통 host·Node·Ruby·JDK·SDK 설치·기기 조건과 표본별 resolved 도구를 분리했다.
-이 기록을 같은 전체 검증 조합의 PASS로 합산하지 않는다.
-필수 양플랫폼 baseline과 같은 도구 조합 조건은 아직 출시 게이트를 통과하지 못했다.
+[사용자 tuple 확정](https://github.com/minjunkim-dev/mobile-runtime/issues/212#issuecomment-6092021206)은 같은 host·기기 조건에서 표본별 선언 버전을 유지한다.
+각 표본의 baseline과 후속 Runstir 실행은 같은 표본 tuple을 사용해야 한다.
+두 표본의 선언 버전 차이는 허용한다. 차이 자체를 현재 미달 조건으로 세지 않는다.
+필수 양플랫폼 baseline은 아직 출시 게이트를 통과하지 못했다.
 
 ## source와 lockfile
 
@@ -150,7 +154,7 @@ Pod lock을 재생성하거나 과거 checksum 예외를 적용하지 않았다.
 빌드 성공 SHA를 찾는 탐색과 nightly 우회를 수행하지 않았다.
 교체 후보는 baseline 실패 기록을 보존한 뒤 별도 source와 도구 조건으로 고정해야 한다.
 
-### 실행하지 않은 후속 후보와 필요한 입력
+### tuple 확정 전 후속 후보 조사 이력
 
 2026-10-10 추가 확인은 공식 선언과 계약의 read-only 검토다.
 추가 설치·부팅·빌드·앱 실행은 수행하지 않았다.
@@ -175,11 +179,11 @@ RN은 `0.85.3`이다. Node 요구는 `>=22.11.0`이다.
 이 선언은 교체 후보 근거다. 성공한 baseline 근거가 아니다.
 여러 SHA의 build 성공을 탐색하지 않았다.
 
-최소 앱의 xcodeproj `<1.26.0`과 이 후보의 `1.28.1`은 공통 Pods 조합을 아직 만족하지 않는다.
-공통 Gem/Pods 조건을 만족하는 정식 최소 표본이 필요하다.
-표본별 resolved 의존성을 허용하는 tuple 해석이 있다면 승인 정본에 연결해야 한다.
-이를 현재 문서가 대신 결정하지 않는다.
-후속 실제 실행은 새 자원 lease와 새 기록을 확보한 뒤 수행해야 한다.
+당시 최소 앱의 xcodeproj `<1.26.0`과 이 후보의 `1.28.1` 차이를 tuple 미확정 조건으로 기록했다.
+이 조건은 위 사용자 확정으로 해소했다.
+이후 `attempt-02-ios26`에서 표본별 선언 버전을 유지한 새 실행을 시작했다.
+최초 iOS 27 실패와 원본 `69adb155` 실패를 덮어쓰지 않는다.
+새 실행 증거는 [attempt-02 기록](./rn-baseline-212-attempt-02.md)에 연결한다.
 
 ## fresh clone 인계
 
@@ -269,5 +273,5 @@ iOS는 명시한 UDID의 `simctl install`과 `simctl launch`를 사용했다.
 | #199 AC05 | baseline 부분 증거다. Runstir CLI·GUI 및 여섯 조합 검증을 대체하지 않는다. |
 | #199 AC06 | 실제 Mac Android 가속을 관측했다. VM·새 호스트·대표 실기기를 검증하지 않았다. |
 
-#212를 닫지 않는다. 원본 iOS 문제와 같은 도구 조합 조건이 남아 있다.
+#212를 닫지 않는다. 양플랫폼 iOS 첫 화면 조건이 남아 있다.
 정식 교체 후보 또는 승인한 새 표본 입력을 고정한 뒤 미달 항목을 다시 검증한다.

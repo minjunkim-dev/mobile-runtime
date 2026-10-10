@@ -58,7 +58,12 @@
       "xcodeproj": "1.25.1",
       "gradle": "9.4.1",
       "agp": "9.2.1",
-      "sdk": {"compile": "37", "target": "36", "buildTools": "37.0.0", "ndk": "27.1.12297006"},
+      "sdk": {
+        "compile": "37",
+        "target": "36",
+        "buildTools": "37.0.0",
+        "ndk": "27.1.12297006"
+      },
       "locks": {
         "package-lock.json": "3478830fc86d9d1ae7cd46ae129eec9c4915b0ec4e2df247e2cb62b136caeee0",
         "Gemfile.lock": "3679d60340d049c31b74052580c64ab26b3e6fa611f332c1407121dfc3c791eb",
@@ -88,7 +93,10 @@
         "launchRequest": "passed",
         "firstScreen": "failed",
         "appId": "org.reactjs.native.example.RunstirBaselineRN",
-        "observedLaunchPids": [55086, 57097],
+        "observedLaunchPids": [
+          55086,
+          57097
+        ],
         "failure": "EXC_BREAKPOINT SIGTRAP: ___UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption_block_invoke",
         "artifact": "minimal-ios.app.zip",
         "artifactSha256": "af040475f573409ec581760345cdde269542a52df956243747d69c6280474ee8",
@@ -106,7 +114,12 @@
       "xcodeproj": "1.28.1",
       "gradle": "9.3.1",
       "agp": "8.13.2",
-      "sdk": {"compile": "36", "target": "36", "buildTools": "36.0.0", "ndk": "28.2.13676358"},
+      "sdk": {
+        "compile": "36",
+        "target": "36",
+        "buildTools": "36.0.0",
+        "ndk": "28.2.13676358"
+      },
       "locks": {
         "package-lock.json": "d4baeb805376bc178428464867435c1832b4f94ccbb2d2ea4dfd7286a3d8fc07",
         "Gemfile.lock": "09528bbbbf3141568bbc664e0ee9270c617ac87c937f36a66911edf3fa916814",
@@ -153,7 +166,6 @@
     "uiScreenshotsViaTemporaryDir": true
   },
   "unverified": [
-    "Same full resolved tool tuple across both samples",
     "Successful minimum iOS initial UI",
     "BlueWallet iOS frozen preparation, build/install/launch/initial UI",
     "Runstir CLI/GUI validation",
@@ -166,5 +178,12 @@
     "bluewallet-android.png": "f18908c6cb7d72a3e834e8744c6373bf110d612fcdf8a88209464c44571ff4ad",
     "execution.txt": "2982eba565a8992191055153b9919c63417ca71a225a9fefc16ff359994e2585",
     "no-watchman-config.cjs": "805039e7e420ce17a8690d4e68a10168644c8fc4d43e5e72679cf77d733f87d9"
+  },
+  "attemptId": "attempt-01-ios27",
+  "tupleDecision": {
+    "url": "https://github.com/minjunkim-dev/mobile-runtime/issues/212#issuecomment-6092021206",
+    "scope": "Common host/devices, preserve sample-declared versions; baseline-to-Runstir must match each sample tuple",
+    "acrossSampleResolvedDifferencesAllowed": true,
+    "priorCommonPodsQuestion": "Historical pre-decision investigation; not a current blocker"
   }
 }
