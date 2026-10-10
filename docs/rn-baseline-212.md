@@ -1,6 +1,9 @@
 # React Native 고정 표본 baseline — #212
 
 검증일: 2026-10-10, Asia/Seoul. 상태: **부분 검증. #212 완료가 아니다.**
+현재 최소 앱은 [attempt-02](./rn-baseline-212-attempt-02.md)의 iOS 26·Android 조건에서 양플랫폼 known-good이다.
+현재 OSS는 [attempt-03 Mattermost](./rn-baseline-212-attempt-03.md)의 Android 첫 화면만 확인했다.
+OSS iOS는 원본 frozen Pods checksum 실패로 미달이다.
 제품 실행 SHA: 없음. 모든 앱 준비·빌드·설치·실행에 Runstir를 사용하지 않았다.
 
 입력은 [#194 조사 정본](https://github.com/minjunkim-dev/mobile-runtime/blob/52ca6150685780cca86d5cb7c0b562033b40bd30/docs/research/cli-expansion-validation-candidates.md)이다.

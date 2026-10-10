@@ -131,3 +131,12 @@ export와 설치된 DMG의 SHA-256은 모두 `19252564d65ab92616c299ca817f7358d0
 직접 외부 볼륨 screenshot 쓰기는 EPERM으로 실패했다. `/tmp` 출력 뒤 전용 검증 경로로 복사했다.
 최소 앱은 이 새 tuple에서 양플랫폼 known-good을 충족한다.
 BlueWallet v8은 원본 frozen Pods 실패로 양플랫폼 known-good을 충족하지 않는다.
+
+## fresh clone 검증 경계
+
+최소 RN 0.87.1의 실제 Local Podspecs 86개에는 baseline clone 절대 경로가 없었다.
+Hermes CLI는 `$(PODS_ROOT)/../../node_modules` 기준 상대 경로다.
+React-Core-prebuilt와 ReactNativeDependencies의 source는 공식 Maven HTTPS URL이다.
+이 관측은 BlueWallet RN 0.85.3의 세 경로 checksum 문제와 다르다.
+최소 fresh clone의 실제 frozen dependency 설치와 앱 실행은 수행하지 않았다.
+source·lock byte를 보존한 인계와 fresh 경로에서의 실행 성공은 별도 증거다.
