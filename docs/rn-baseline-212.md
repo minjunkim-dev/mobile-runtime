@@ -7,6 +7,8 @@
 Hermes 한 값 재생성과 frozen 준비는 성공했다. iOS build는 Pods deployment target 검사에서 실패했다.
 [attempt-06](./rn-baseline-212-attempt-06.md)은 ADR-0021의 생성 resource bundle 11개 Debug 보정을 적용했다.
 frozen 준비와 source·generated project 감사는 성공했다. iOS build는 ExpoRouter Swift compile에서 exit `65`로 실패했다.
+[attempt-07](./rn-baseline-212-attempt-07.md)은 ADR-0022의 ExpoRouter Debug 보정까지 합한 정확한 12개 값을 준비했다.
+frozen 준비와 source·generated project 및 사후 감사는 성공했다. iOS build는 앱 compiler 하한 `16.0`과 ExpoRouter module 하한 `16.4`의 import 경계에서 exit `65`로 실패했다.
 새 준비 입력의 Android 실행과 fresh 준비·인계는 미완료다. OSS 양플랫폼 known-good은 미달이다.
 제품 실행 SHA: 없음. 모든 앱 준비·빌드·설치·실행에 Runstir를 사용하지 않았다.
 
@@ -15,7 +17,7 @@ frozen 준비와 source·generated project 감사는 성공했다. iOS build는 
 [명세 #199](https://github.com/minjunkim-dev/mobile-runtime/issues/199)의 AC05·AC06에 baseline 증거만 제공한다.
 과거 BlueWallet Go의 Pod checksum 예외와 #201의 RN 0.82 준비 앱 증거를 적용하지 않았다.
 attempt-04 이후의 고정 Mattermost 준비 입력에 [ADR-0020](./adr/0020-rn-baseline-prepared-input.md)의 Hermes 한 값 예외를 적용했다.
-아래 최초 source·실행 기록은 원본 이력이다. 최신 판정은 attempt-06과 마지막 AC 표를 따른다.
+아래 최초 source·실행 기록은 원본 이력이다. 최신 판정은 attempt-07과 마지막 AC 표를 따른다.
 
 ## 최초 attempt 판정
 
@@ -276,9 +278,9 @@ iOS는 명시한 UDID의 `simctl install`과 `simctl launch`를 사용했다.
 | --- | --- |
 | #212 source·generator·locks 고정 | 조사 정본, 생성 SHA 두 개, OSS SHA, lock checksum, fresh clone 분리 |
 | #212 정확 도구·환경 입력 | 관측 버전과 선택을 기록했다. 표본별 bundled 도구 차이를 같은 tuple로 숨기지 않았다. |
-| #212 양플랫폼 최소+OSS 첫 화면 | 미충족. 최소 앱은 attempt-02에서 양플랫폼 PASS다. Mattermost 원본 Android는 attempt-03 PASS다. attempt-06은 생성 resource bundle 11개 Debug 보정과 frozen 준비 후에도 ExpoRouter compile에서 실패했다. 새 입력의 iOS install·launch·첫 화면과 Android 실행은 수행하지 않았다. |
-| #212 실패·교체 이유 보존 | 원본 실패·진단 오류·실제 build 실패를 구분했다. ADR-0020의 Hermes 한 값과 ADR-0021의 생성 Debug 11값만 준비했다. 추가 checksum·source patch·버전·target 변경과 성공 SHA 탐색은 없다. |
-| #212 fresh clone 인계 | 최소 b62 source bundle과 세 lock 입력을 보존했다. 최소 fresh의 frozen 준비는 미검증이다. 필수 build 실패 뒤 attempt-06의 새 Mattermost fresh clone 준비를 수행하지 않았다. 이전 attempt-04 후속 clone의 no-checkout 상태도 인계 성공이 아니다. |
+| #212 양플랫폼 최소+OSS 첫 화면 | 미충족. 최소 앱은 attempt-02에서 양플랫폼 PASS다. Mattermost 원본 Android는 attempt-03 PASS다. attempt-07은 frozen 준비와 정확한 12개 Debug 값 감사 뒤 원본 앱 `16.0`이 ExpoRouter module `16.4`를 import하지 못해 실패했다. 새 입력의 iOS install·launch·첫 화면과 Android 실행은 수행하지 않았다. |
+| #212 실패·교체 이유 보존 | 원본 실패·진단 오류·실제 build 실패를 구분했다. ADR-0020의 Hermes 한 값과 ADR-0021·0022의 정확한 생성 Debug 12값만 준비했다. 추가 checksum·source patch·버전·target 변경과 성공 SHA 탐색은 없다. |
+| #212 fresh clone 인계 | 최소 b62 source bundle과 세 lock 입력을 보존했다. 최소 fresh의 frozen 준비는 미검증이다. 필수 build 실패 뒤 attempt-06·07의 새 Mattermost fresh clone 준비를 수행하지 않았다. 이전 attempt-04 후속 clone의 no-checkout 상태도 인계 성공이 아니다. |
 | #199 AC05 | baseline 부분 증거다. Runstir CLI·GUI 및 여섯 조합 검증을 대체하지 않는다. |
 | #199 AC06 | 실제 Mac Android 가속을 관측했다. VM·새 호스트·대표 실기기를 검증하지 않았다. |
 
@@ -287,3 +289,4 @@ iOS는 명시한 UDID의 `simctl install`과 `simctl launch`를 사용했다.
 [ADR-0021](./adr/0021-mattermost-generated-pods-preparation.md)은 고정 Mattermost 입력의 생성 resource bundle target 11개에서 Debug deployment 값만 `16.4`로 준비하도록 허용한다. `16.4`는 원본 Podfile.properties.json의 `deploymentTarget`과 생성 Pods project의 하한이다. 원본 앱 project의 명시 값 `16.0`과 구분한다. Release·다른 설정·source·graph는 유지한다. 이 준비 조건의 확정은 baseline 성공이 아니다. 허용 범위 밖의 변경이나 필수 실패가 나오면 중단한다.
 [attempt-06 기록](./rn-baseline-212-attempt-06.md)은 실제 compiler가 ExpoRouter의 `subtitle` 사용에 iOS `16.0+`를 요구한 실패를 보존한다. ExpoRouter framework target의 원본 Debug·Release 값은 `15.1`이며 기존 11개 resource bundle 예외에 포함되지 않는다. SDK header의 iOS `15.0` 선언과 Swift diagnostic의 차이는 원인 미확정이다. source와 생성 project의 사후 감사는 통과했다. 추가 target을 보정하지 않았다.
 [ADR-0022](./adr/0022-mattermost-exporouter-debug-preparation.md)은 ExpoRouter framework의 생성 Debug 한 값만 `15.1`에서 `16.4`로 준비하는 추가 예외다. 기존 11개와 합한 정확한 12값의 감사를 요구한다. 원본 앱 project `16.0`, ExpoRouter Release `15.1`, source·버전·나머지 설정을 유지한다. 이 정책의 채택은 attempt-06 실패를 바꾸지 않는다. 새 실행과 독립 fresh 준비의 결과는 별도로 기록한다.
+[attempt-07 기록](./rn-baseline-212-attempt-07.md)은 이 12값의 frozen/source/전체 project 준비와 사후 감사를 통과한 뒤 `ExpoModulesProvider.swift:21:17`에서 실패한 실행을 보존한다. compiler는 iOS `16.0`으로 컴파일하는 앱이 최소값 `16.4`의 ExpoRouter module을 import할 수 없다고 보고했다. 원본 앱 project의 8개 `16.0` 값은 유지됐다. install·launch·새 Android·fresh 준비를 시작하지 않았다. 자원 보존을 확인하고 단독 lease를 반납했다. 새 조건의 실제 실행은 시작하지 않았다.
