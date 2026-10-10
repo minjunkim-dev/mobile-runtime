@@ -89,6 +89,8 @@ struct InspectionView: View {
     @State private var cancelling = false
     @State private var executionID: UUID?
     @State private var devices: [RuntimeDeviceCandidate] = []
+    @State private var preparation: PreparationResult?
+    @State private var repositoryTrusted = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -122,6 +124,41 @@ struct InspectionView: View {
                     TextField("Configuration (Debug)", text: $configuration)
                 }
             }.disabled(checking || running != nil)
+            HStack {
+                Button("준비 계획 확인") { prepare() }.disabled(checking || running != nil)
+                Toggle("저장소 스크립트 신뢰", isOn: $repositoryTrusted)
+                    .help("준비 승인과 별개입니다. 라이선스 동의와 관리자 권한을 대신하지 않습니다.")
+                    .disabled(checking || running != nil)
+                Button("현재 계획 승인·준비") { prepare(approvedPlanID: preparation?.plan?.id) }
+                    .disabled(checking || running != nil || preparation?.plan == nil)
+            }
+            if let preparation {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("setup: \(preparation.operation.state) / exit \(preparation.exitCode)").font(.headline)
+                    if let plan = preparation.plan {
+                        Text("승인 대상 plan-id: \(plan.id)").font(.caption)
+                        Text("\(plan.projectKind) 준비는 iOS·Android 양쪽을 확인합니다.")
+                        ScrollView {
+                            VStack(alignment: .leading, spacing: 4) {
+                                ForEach(plan.inspectionLines, id: \.self) { Text($0) }
+                                ForEach(plan.steps, id: \.id) { step in
+                                    Text("\(step.id) [\(step.kind)] → \(step.target)")
+                                    if let required = step.required { Text("요구: \(required)") }
+                                    if let command = step.command { Text("명령: \(command)") }
+                                    if let advice = step.remediation { Text(advice.summary) }
+                                }
+                            }.frame(maxWidth: .infinity, alignment: .leading)
+                        }.frame(maxHeight: 150)
+                        Text(plan.platforms.map { "\($0.platform.rawValue): \($0.state)" }.joined(separator: " / "))
+                    }
+                    if let error = preparation.operation.error { Text(error).foregroundStyle(.red) }
+                    if !preparation.operation.completed.isEmpty { Text("완료한 변경: \(preparation.operation.completed.joined(separator: ", "))") }
+                    if !preparation.operation.remaining.isEmpty { Text("남은 작업: \(preparation.operation.remaining.joined(separator: ", "))") }
+                    ForEach(preparation.operation.changedFiles, id: \.self) { Text("변경 파일: \($0)") }
+                    if let next = preparation.operation.nextAction { Text("다음 행동: \(next)") }
+                    if let log = preparation.operation.log { Text("설치 로그: \(log)") }
+                }.textSelection(.enabled)
+            }
             HStack {
                 Button("빌드") { execute(.build) }.disabled(checking || running != nil)
                 Button("실행") { execute(.up) }.disabled(checking || running != nil)
@@ -195,6 +232,7 @@ struct InspectionView: View {
             }
             .onChange(of: app) { _, _ in
                 device = ""; devices = []; workflow = nil
+                preparation = nil; repositoryTrusted = false
                 scheme = ""; configuration = ""; module = ""; variant = ""
             }
             .onDisappear { running?.cancel() }
@@ -244,6 +282,30 @@ struct InspectionView: View {
             if !output.operation.devices.isEmpty { devices = output.operation.devices }
             running = nil
             cancelling = false
+        }
+    }
+
+    @MainActor private func prepare(approvedPlanID: String? = nil) {
+        guard !checking, running == nil else { return }
+        let input = ProjectInspectionInput(directory: directory, environment: ProcessInfo.processInfo.environment,
+            app: app.isEmpty ? nil : app, platform: ProjectPlatform(rawValue: platform))
+        let trust = repositoryTrusted
+        let generation = UUID()
+        executionID = generation
+        events = []; cancelling = false; currentStage = "준비 조건 확인"
+        running = Task {
+            let output = await PreparationExecution.run(input: input, planOnly: approvedPlanID == nil,
+                approvedPlanID: approvedPlanID, trustRepository: trust) { event in
+                Task { @MainActor in
+                    guard executionID == generation else { return }
+                    events.append(event)
+                    if events.count > 30 { events.removeFirst(events.count - 30) }
+                    currentStage = "\(event.stageId ?? event.kind): \(event.state)"
+                }
+            }
+            guard executionID == generation else { return }
+            preparation = output
+            running = nil; cancelling = false
         }
     }
 }
