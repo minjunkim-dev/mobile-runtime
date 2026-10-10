@@ -438,7 +438,7 @@ public enum PreparationExecution {
                 && !($0.id.hasSuffix(".cocoapods.version") && completed.contains("dependencies.gems"))
         }
         let destinations = Dictionary(uniqueKeysWithValues: plan.steps.filter { $0.id.hasPrefix("dependencies.") }.map {
-            ($0.id, $0.environment.merging(["target": $0.target, "command": $0.command ?? ""]) { _, last in last })
+            ($0.id, $0.environment.merging(["kind": $0.kind, "target": $0.target, "command": $0.command ?? ""]) { _, last in last })
         })
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]

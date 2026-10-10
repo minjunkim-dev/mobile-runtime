@@ -233,6 +233,13 @@ struct PreparationExecutionTests {
         #expect(changedTools.operation.completed == ["dependencies.node"])
         #expect(changedTools.operation.error?.contains("conditions changed") == true)
         #expect(!changing.base.log.all.contains { $0.description == "bundle install" })
+        let movedDuringRun = ChangedEffectiveBundleRunner(base: FakeProcessRunner(responses: runner.responses))
+        let stableBundlePlan = await PreparationExecution.run(input: input, planOnly: true, runner: movedDuringRun)
+        let prevented = await PreparationExecution.run(input: input, approvedPlanID: try #require(stableBundlePlan.plan?.id),
+            trustRepository: true, runner: movedDuringRun)
+        #expect(prevented.operation.state == "failed")
+        #expect(prevented.operation.completed == ["dependencies.node"])
+        #expect(!movedDuringRun.base.log.all.contains { $0.description == "bundle install" })
     }
 
     @Test("different projects cannot prepare one shared Bundle destination concurrently")
@@ -326,6 +333,21 @@ private struct ChangedNodeVersionRunner: ProcessRunner {
         let result = try await base.run(command, onLine: onLine)
         if command.description == "node --version", base.log.all.contains(where: { $0.description == "yarn install --frozen-lockfile" }) {
             return ProcessResult(terminationStatus: .exited(0), standardOutput: "v22.15.0", standardError: "")
+        }
+        return result
+    }
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+        try await base.spawnDetached(command, logFile: logFile)
+    }
+}
+
+private struct ChangedEffectiveBundleRunner: ProcessRunner {
+    let base: FakeProcessRunner
+    func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+        let result = try await base.run(command, onLine: onLine)
+        if command.description == "ruby -rbundler -e print Bundler.bundle_path", command.environment["BUNDLE_PATH"] != nil,
+           base.log.all.contains(where: { $0.description == "yarn install --frozen-lockfile" }) {
+            return ProcessResult(terminationStatus: .exited(0), standardOutput: "/different/effective/destination", standardError: "")
         }
         return result
     }
