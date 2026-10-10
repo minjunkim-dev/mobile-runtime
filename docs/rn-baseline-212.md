@@ -284,5 +284,6 @@ iOS는 명시한 UDID의 `simctl install`과 `simctl launch`를 사용했다.
 
 #212를 닫지 않는다. OSS 양플랫폼 known-good과 fresh 준비·인계 조건이 남아 있다.
 [attempt-05 기록](./rn-baseline-212-attempt-05.md)은 plain Pods 설치 성공 뒤 감사 도구의 과잉 POSIX 권한 검사로 중단한 시도를 보존한다. 허용한 Hermes 한 값 외 tracked byte·파일 유형·Git 실행 권한·index는 같았다. deployment 재검사·생성 Pods 보정·native 실행은 수행하지 않았다.
-[ADR-0021](./adr/0021-mattermost-generated-pods-preparation.md)은 고정 Mattermost 입력의 생성 resource bundle target 11개에서 Debug deployment 값만 `16.4`로 준비하도록 허용한다. Release·다른 설정·source·graph는 유지한다. 이 준비 조건의 확정은 baseline 성공이 아니다. 허용 범위 밖의 변경이나 필수 실패가 나오면 중단한다.
+[ADR-0021](./adr/0021-mattermost-generated-pods-preparation.md)은 고정 Mattermost 입력의 생성 resource bundle target 11개에서 Debug deployment 값만 `16.4`로 준비하도록 허용한다. `16.4`는 원본 Podfile.properties.json의 `deploymentTarget`과 생성 Pods project의 하한이다. 원본 앱 project의 명시 값 `16.0`과 구분한다. Release·다른 설정·source·graph는 유지한다. 이 준비 조건의 확정은 baseline 성공이 아니다. 허용 범위 밖의 변경이나 필수 실패가 나오면 중단한다.
 [attempt-06 기록](./rn-baseline-212-attempt-06.md)은 실제 compiler가 ExpoRouter의 `subtitle` 사용에 iOS `16.0+`를 요구한 실패를 보존한다. ExpoRouter framework target의 원본 Debug·Release 값은 `15.1`이며 기존 11개 resource bundle 예외에 포함되지 않는다. SDK header의 iOS `15.0` 선언과 Swift diagnostic의 차이는 원인 미확정이다. source와 생성 project의 사후 감사는 통과했다. 추가 target을 보정하지 않았다.
+[ADR-0022](./adr/0022-mattermost-exporouter-debug-preparation.md)은 ExpoRouter framework의 생성 Debug 한 값만 `15.1`에서 `16.4`로 준비하는 추가 예외다. 기존 11개와 합한 정확한 12값의 감사를 요구한다. 원본 앱 project `16.0`, ExpoRouter Release `15.1`, source·버전·나머지 설정을 유지한다. 이 정책의 채택은 attempt-06 실패를 바꾸지 않는다. 새 실행과 독립 fresh 준비의 결과는 별도로 기록한다.

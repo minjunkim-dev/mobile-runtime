@@ -1188,5 +1188,43 @@
     "Android verification of this prepared input was stopped by Q5",
     "Mattermost independent fresh and minimum RN fresh frozen handoff remain incomplete",
     "Actual Runstir CLI/GUI and shared six-combination release gate remain later scope"
-  ]
+  ],
+  "sourceFactClarification": {
+    "sourceSha": "c2fe3beda22befd2178dce431793c09111ed903e",
+    "scope": "public label clarification from original source and recorded generated objects; historical raw packet metadata remains unchanged",
+    "podfileProperties": {
+      "path": "ios/Podfile.properties.json",
+      "actualKey": "deploymentTarget",
+      "value": "16.4",
+      "sha256": "d467d772218d88c784d80ecee9054f1f1f91238d840e347781c22361f28dee77",
+      "originalSourceBlobMatchesCheckoutBytes": true,
+      "meaning": "original Pods platform preparation declaration read by ios/Podfile"
+    },
+    "generatedPodsPbxProject": {
+      "debugDeploymentTarget": "16.4",
+      "releaseDeploymentTarget": "16.4",
+      "beforeAfterSame": true
+    },
+    "originalAppProject": {
+      "path": "ios/Mattermost.xcodeproj/project.pbxproj",
+      "sha256": "8ed8c81f2861eec2f92c6a252edd0150ee8c0eb6a082aaf85373bbc3a28dd33f",
+      "originalSourceBlobMatchesCheckoutBytes": true,
+      "explicitDeploymentTargetValueCount": 8,
+      "explicitDeploymentTargetValues": [
+        "16.0",
+        "16.0",
+        "16.0",
+        "16.0",
+        "16.0",
+        "16.0",
+        "16.0",
+        "16.0"
+      ]
+    },
+    "labelCorrection": "16.4 identifies original Pods preparation declaration; it does not identify the original app project explicit deployment target of 16.0",
+    "historicalRawPacketHashesAndValuesUnchanged": true,
+    "approved11ResourceBundleDebugValue": "16.4",
+    "approved11ResourceBundleScopeUnchanged": true,
+    "nativeFailureAndNotRunConclusionsUnchanged": true
+  }
 }
