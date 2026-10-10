@@ -1,0 +1,1380 @@
+{
+  "issue": 212,
+  "attempt": "09-internal-volume-preflight",
+  "date": "2026-10-11",
+  "status": "STOP_PARTIAL",
+  "publicationReady": true,
+  "issueCompleted": false,
+  "runstirUsed": false,
+  "runstirSourceSha": null,
+  "policy": {
+    "mainSha": "e323ed43a462b63994debcb22367da111b6ba98c",
+    "adr": "ADR-0024",
+    "immutableSource": "https://github.com/minjunkim-dev/mobile-runtime/blob/e323ed43a462b63994debcb22367da111b6ba98c/docs/adr/0024-rn-baseline-internal-volume-preflight.md",
+    "pullRequest": 243,
+    "ciRun": 38067699098,
+    "ciRequiredJobs": "4 PASS",
+    "ciProofScope": "policy document validation; does not prove native execution or first screen"
+  },
+  "source": {
+    "minimum": {
+      "actualCheckoutSha": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+      "trackedFiles": 55,
+      "root": "<INTERNAL_VALIDATION_ROOT>/minimal-baseline",
+      "cloneMethod": "git clone --no-checkout from preserved minimal-source.bundle; detached checkout at original SHA"
+    },
+    "mattermost": {
+      "configuredCandidateSha": "c2fe3beda22befd2178dce431793c09111ed903e",
+      "actualCheckoutSha": null,
+      "cloneExists": false,
+      "status": "NOT_STARTED"
+    },
+    "fresh": {
+      "minimumActualCheckoutSha": null,
+      "mattermostActualCheckoutSha": null,
+      "status": "NOT_STARTED"
+    }
+  },
+  "toolBoundary": {
+    "requestedNode": "22.23.2",
+    "requestedRuby": "3.4.11",
+    "originalLockBundler": "2.5.22",
+    "newToolOrDependencyInstallAfterStop": false,
+    "newVersionMeasurementAfterStop": false,
+    "downstreamTools": "NOT_MEASURED",
+    "fallbackPerformed": false
+  },
+  "pathPreflight": {
+    "passed": true,
+    "measurementSucceeded": true,
+    "observedAt": "2026-10-11T01:49:46.284481+09:00",
+    "canonicalPathMatchesInternalDataVolume": true,
+    "freeBytes": 37739339776,
+    "protectedLocation": false,
+    "externalVolume": false,
+    "hasSymlinkAncestor": false,
+    "permissionRootCause": "UNKNOWN"
+  },
+  "commandResults": [
+    {
+      "step": "minimal-baseline-clone",
+      "started": "2026-10-11T01:49:55.820657+09:00",
+      "finished": "2026-10-11T01:49:55.852053+09:00",
+      "exitCode": 0,
+      "runnerSha256": "ec0dd7e13e56e2962375b9fae6626a3325fc3c200a8ac3d96c4bd5f547f26689",
+      "cwd": "<INTERNAL_VALIDATION_ROOT>",
+      "argv": [
+        "git",
+        "clone",
+        "--no-checkout",
+        "<REPOSITORY>/docs/evidence/212/minimal-source.bundle",
+        "<INTERNAL_VALIDATION_ROOT>/minimal-baseline"
+      ],
+      "resultFile": "minimal-baseline-clone.result.json",
+      "resultRawSha256": "e404a00ce01b2f0545d71f7fcae8a8fd16c011411384f319c5a59193a333aa7c",
+      "logFile": "minimal-baseline-clone.log",
+      "logRawSha256": "3d29a86c6b317a69c76106a1d53779a8190cc89c0f0dd8fe6d033943d3006a96",
+      "hashScope": "original local raw bytes",
+      "argvAndCwdAreRedactedRepresentations": true,
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "minimal-baseline-checkout",
+      "started": "2026-10-11T01:49:55.911108+09:00",
+      "finished": "2026-10-11T01:49:56.015032+09:00",
+      "exitCode": 0,
+      "runnerSha256": "ec0dd7e13e56e2962375b9fae6626a3325fc3c200a8ac3d96c4bd5f547f26689",
+      "cwd": "<INTERNAL_VALIDATION_ROOT>/minimal-baseline",
+      "argv": [
+        "git",
+        "checkout",
+        "--detach",
+        "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4"
+      ],
+      "resultFile": "minimal-baseline-checkout.result.json",
+      "resultRawSha256": "f2b9962907aa445407c6c94a3654009e335a650ba85610b86d41d8bbf55c4b01",
+      "logFile": "minimal-baseline-checkout.log",
+      "logRawSha256": "12a49c2a0adfd3ac6eec7fab96a96ae2e77a1263e070e5e496de22847ec196ae",
+      "hashScope": "original local raw bytes",
+      "argvAndCwdAreRedactedRepresentations": true,
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "minimal-baseline-npm-ci",
+      "started": "2026-10-11T01:49:56.214628+09:00",
+      "finished": "2026-10-11T01:50:02.962761+09:00",
+      "exitCode": 0,
+      "runnerSha256": "ec0dd7e13e56e2962375b9fae6626a3325fc3c200a8ac3d96c4bd5f547f26689",
+      "cwd": "<INTERNAL_VALIDATION_ROOT>/minimal-baseline",
+      "argv": [
+        "mise",
+        "exec",
+        "node@22.23.2",
+        "--",
+        "npm",
+        "ci"
+      ],
+      "resultFile": "minimal-baseline-npm-ci.result.json",
+      "resultRawSha256": "f04677a67995b1b1a7e0f4127449c6035bd12ecba5780fb59c6ef42bb6917f4a",
+      "logFile": "minimal-baseline-npm-ci.log",
+      "logRawSha256": "b22831f0c1102ad27e65ebd728b2c5da46a9baf9766746ff70ed7172e7a2a156",
+      "hashScope": "original local raw bytes",
+      "argvAndCwdAreRedactedRepresentations": true,
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "minimal-baseline-bundle-install",
+      "started": "2026-10-11T01:50:46.851550+09:00",
+      "finished": "2026-10-11T01:50:46.952039+09:00",
+      "exitCode": 1,
+      "runnerSha256": "ec0dd7e13e56e2962375b9fae6626a3325fc3c200a8ac3d96c4bd5f547f26689",
+      "cwd": "<INTERNAL_VALIDATION_ROOT>/minimal-baseline",
+      "argv": [
+        "env",
+        "BUNDLE_FROZEN=true",
+        "BUNDLE_PATH=<INTERNAL_VALIDATION_ROOT>/minimal-baseline/vendor/bundle",
+        "mise",
+        "exec",
+        "ruby@3.4.11",
+        "node@22.23.2",
+        "--",
+        "bundle",
+        "_2.5.22_",
+        "install"
+      ],
+      "resultFile": "minimal-baseline-bundle-install.result.json",
+      "resultRawSha256": "3d7a78911619804312aed5d08dfd81bf03d366f3c90066f5295d05db52b1064c",
+      "logFile": "minimal-baseline-bundle-install.log",
+      "logRawSha256": "96c9e23c500ed6cca838b204b5ab61db396f4b357d3399bcf75a78ffa230e8e4",
+      "hashScope": "original local raw bytes",
+      "argvAndCwdAreRedactedRepresentations": true,
+      "matchesOriginalRawResult": true
+    }
+  ],
+  "earlyOriginalMetro": {
+    "actualObservation": true,
+    "hookRedirected": false,
+    "observedAt": "2026-10-11T01:50:27.951276+09:00",
+    "source": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+    "argv": [
+      "env",
+      "-u",
+      "BASELINE_APP_ROOT",
+      "mise",
+      "exec",
+      "node@22.23.2",
+      "--",
+      "npm",
+      "start"
+    ],
+    "processAliveBeforeHttp": true,
+    "processAliveAfterHttp": true,
+    "processIdentityUnchanged": true,
+    "portOwnerDescendantOfOwnLauncher": true,
+    "resourceCommandsKnownSuccess": true,
+    "fatalLogLines": [],
+    "passed": true,
+    "status": "PASS_READINESS_ONLY",
+    "ownerIdentity": "<OWN_METRO_PROCESS_GROUP>",
+    "sourceBindingBeforeAfterMatched": true,
+    "http": {
+      "executed": true,
+      "receiptExists": true,
+      "url": "http://127.0.0.1:8081/status",
+      "responseUrl": "http://127.0.0.1:8081/status",
+      "status": 200,
+      "bodyHex": "7061636b616765722d7374617475733a72756e6e696e67",
+      "bodySha256": "ed71e52f066b30c279378b7933ec895ee558e0899131124296dec5bec2995cef",
+      "bodyFileVerified": true,
+      "error": null,
+      "bodyText": "packager-status:running"
+    },
+    "readinessRawSha256": "b3527ed4dbbc4df5c19b465f3760e4ab4ea801650ff4c3eabab8f6932e6362d3",
+    "logRawSha256": "09a29f4b4da78d67a4eec52f5a9d8a931bec2ddce8767f58da4478025bf4f1ab",
+    "bodyRawSha256": "ed71e52f066b30c279378b7933ec895ee558e0899131124296dec5bec2995cef",
+    "ownStop": {
+      "ownedRecordSha256": "2fa6735a5083b919d7419154e76f08decc5f4b2a6b0f98f3385f9a5d74298f9e",
+      "sentTermToVerifiedOwnGroup": true,
+      "alreadyExited": false,
+      "mutatedGlobalWatchman": false
+    },
+    "originalConfigAndWatchmanPreserved": true,
+    "firstScreenProof": false,
+    "permissionRootCauseProof": false
+  },
+  "frozenBundle": {
+    "status": "FAIL command exit1 before Bundle install",
+    "started": "2026-10-11T01:50:46.851550+09:00",
+    "finished": "2026-10-11T01:50:46.952039+09:00",
+    "error": "can't find gem bundler (= 2.5.22) with executable bundle (Gem::GemNotFoundException)",
+    "logSha256": "96c9e23c500ed6cca838b204b5ab61db396f4b357d3399bcf75a78ffa230e8e4",
+    "resultSha256": "3d7a78911619804312aed5d08dfd81bf03d366f3c90066f5295d05db52b1064c",
+    "readOnlyDiagnosticSha256": "4dc5a4e649e99b57a307c8bf1c1c31f6363bc9c6ca98ec18dc642912035eac46",
+    "classification": "requested Bundler executable unavailable to this command before dependency installation; not app/native or Pod resolution failure",
+    "lockBundlerUnchanged": true,
+    "readOnlyDiagnosticScope": [
+      {
+        "role": "requested Ruby regular specifications",
+        "directoryExists": true,
+        "bundlerGemspecs": []
+      },
+      {
+        "role": "requested Ruby default specifications",
+        "directoryExists": true,
+        "bundlerGemspecs": [
+          {
+            "name": "bundler-2.6.9.gemspec",
+            "sha256": "31752bbbd3148f51a61cce24a5c4560883b3a2c44e977c2bb61923b61e3def36"
+          }
+        ]
+      },
+      {
+        "role": "new internal clone vendor specifications",
+        "directoryExists": false,
+        "bundlerGemspecs": []
+      },
+      {
+        "role": "prior external clone vendor specifications",
+        "directoryExists": true,
+        "bundlerGemspecs": [
+          {
+            "name": "bundler-2.5.22.gemspec",
+            "sha256": "a41ec6ae0a375f7889c1bc8b7c4b931c35de5e47ba99101c220cb2aeda2cdcff"
+          }
+        ]
+      }
+    ],
+    "hostWideSearchPerformed": false,
+    "globalBundlerAbsenceProven": false,
+    "inheritedGemEnvironmentPresenceOnly": {
+      "GEM_HOME": false,
+      "GEM_PATH": false,
+      "BUNDLE_GEMFILE": false,
+      "BUNDLE_PATH": false,
+      "BUNDLE_FROZEN": false
+    },
+    "newBundlerInstallPerformed": false,
+    "oldVendorCopied": false
+  },
+  "sourceAudit": {
+    "source": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+    "snapshotSha256": "a3499930554b2c879b32616b54c9b8454fff9d3a04334b467e9867895f162640",
+    "currentSnapshotSha256": "707c79ba1ab583cb9b9f4befdffe5052a00d93f9358dbe52ab98a61c2097e04f",
+    "hiddenFlags": [],
+    "indexEntriesSha256": "6c376752c62a66afc19ea9799cc798af85e1a02561519c677c48b8e6e4a71d8a",
+    "passed": true,
+    "prepared": true,
+    "trackedFiles": 55,
+    "indexUnchanged": true,
+    "kindAndGitModePassed": true,
+    "originalLocksUnchanged": true,
+    "mattermostChecksumOrGeneratedTargetExceptionApplied": false,
+    "trackedChanges": [],
+    "lockHashes": {
+      "package-lock.json": "3478830fc86d9d1ae7cd46ae129eec9c4915b0ec4e2df247e2cb62b136caeee0",
+      "Gemfile.lock": "3679d60340d049c31b74052580c64ab26b3e6fa611f332c1407121dfc3c791eb",
+      "ios/Podfile.lock": "cec099ee896ed83dd780bd8da0a03e840c3ba6a0803f90c0bbfcd04efaf17d56"
+    },
+    "preparedFieldScope": "raw strict-minimal audit passed; does not mean dependencies or baseline completed",
+    "rawFile": "minimal-baseline-after-stop.strict-minimal-audit.json",
+    "rawSha256": "44da9a5d7567a2e0d3667938f74199573f425fdceb1a4f8961086c0096c4cd4c"
+  },
+  "selfchecks": {
+    "version": "source-only v2",
+    "memorySuiteCounts": [
+      34,
+      35,
+      21,
+      11,
+      130
+    ],
+    "memoryChecksTotal": 231,
+    "allPassed": true,
+    "syntaxPassed": true,
+    "independentMaterialFindings": 0,
+    "independentReviewRawSha256": "6ca81e6a1303e57eb8cf1091e91233cf0379ee73a10b55177a62a15794257fd6",
+    "exact35FileHashScope": {
+      "generated_pods.py": "abc940a9e9b9daab7500bd9c01702be5a3191835e0e43dd2f1ea4a12a2bc9ec7",
+      "generated-memory-selfcheck.json": "b90e976788ba0255a2c84ef13a5fec0eea7f9a80e79db8297a102aac574f6b76",
+      "resource-preflight-memory-selfcheck.json": "4ab41d4089f5775151eea2d0364c3eb6b8039ad6322038868afa3aa325f63429",
+      "runtime-memory-selfcheck.py": "7b5d00bab0e12d3e15df78f92301323268fb6ddbfe423f3fb0fe8dc48e4ab2e6",
+      "readiness-initial.json": "6b24e1a3ca4c178a8581d0f8d402280fd14bc4d27c353d14bc3e6784d60777c8",
+      "resource_preflight.py": "9fe84c1e5dd16ea83284bbc4a34ce1ddb5cb51a4c851bcb0d42a3df5c5e6a6fe",
+      "v2-review-fix.diff": "a794260d808412fd108523fd18cc8b68d9ef35b8203222199acdff642599d930",
+      "finished-runtime-batch.json": "5f2c2dce5f92bd3195e473fc1ab034b6dcf2f80901b3d8eda2c9f9b4ed63e59c",
+      "v2-calibration-history.json": "13f9ecfd5db67883d017a3a0e986e4f44563415402d6f3fcf828c13a922b1c74",
+      "prerequisite-memory-selfcheck.py": "0839c128377fd9c83b645c724d7f1c93605e9921dcbaa3659c2e7a02066442c6",
+      "resource-preflight-memory-selfcheck.py": "2976223ceb6f92c77eec4a882c489d940d5d5fbfb002741780211cfe33837317",
+      "run_step.py": "ec0dd7e13e56e2962375b9fae6626a3325fc3c200a8ac3d96c4bd5f547f26689",
+      "prepare_source_stage.py": "cc1712fd2743df5f9007954b61fc092cd450618c23da21608568340757bfc4e1",
+      "prepare_hooks.py": "f73298419910215f913a81da6dc20ca234ccd4afad379db646a1e1a9b0d834fc",
+      "minimal-primary-inputs.json": "7fa37432fdafd4e8ded8700187c780039ac444f9dafcfea90b27006f2ac36bdb",
+      "audit-v2.py": "a0a030097bd67c85c3bed3f7436ad6a86f8f66229731dbed3078647b9bb2d528",
+      "runtime-memory-selfcheck.json": "61becf98bb50c631df96284d4e98451f974e11a344e42d148fde7801ddeccb6a",
+      "metro_guard.py": "3ecb4df83da855467d43f524a4e66cc54d1db8031df22d89fe5f75a1cf118249",
+      "source_paths.py": "eabf5b7684f5b1cf8c3a83e172c7f509a2e1fe7c24db484257d9c4ed7e7ece42",
+      "strict_minimal_audit.py": "f38d6c29c3608253bb015caee79a37c00bcdd601e1cea6f3aea693599fa1e067",
+      "generated_post_audit.py": "fff6e0d2f0fe69b87c9818159582ca203f6512aa953c7f30629c082a06a69cb4",
+      "prepare_frozen_stage.py": "97c142bea83eae9471cad2f9c9990f831d25e003ad19d6f999a09c1e4c921a34",
+      "generated-post-memory-selfcheck.py": "18fae5471d6c620a6c5552d2e25c61d439e8194ae4fe3e8ca6ea7ff5fcfd4072",
+      "prerequisite-memory-selfcheck.json": "97bc59cf6b4cfd9b5a21b06ab96d5775a60eff7432a52dd20f1ff3b02f8e86f2",
+      "finished-audit-batch.json": "b1a8d6ec1d7124d0e5639e5e80e338ec402b3e12d01e584c63214bbf2ae3af52",
+      "completion_gate.py": "556e090a9b320965ecb3d4102b43b84ad9eaaeec14f7f1a1eb52dd9e9e4759e2",
+      "PLAN.md": "fe30e17f040c418ac93e1b09a5ec6d2540a01c7265a1fc7fd2ab1a8326722717",
+      "generated-post-memory-selfcheck.json": "6d52f416756ba2a6323fe2b476eab9770163ef0aa1f8574d7fe453dd8e1f4ec6",
+      "independent-runtime-review-v1.md": "2456aed89e441c3b0960e4b6412fb37f76ab2a223b566d11d38cc6615033d7ee",
+      "path_guard.py": "86ca19fe86a001c969c5c6f70d0380c8e93d0481494cbdfc5c7286b8a63360a3",
+      "policy-seal.json": "153edc293127fea7bc4465c58cdb41d0be75d1beca22773a1a2278fe780e2097",
+      "generated-memory-selfcheck.py": "c95ae63444b6f7f11f74961598731690b73186331bf1c3a01db0a73dc3f38cd1",
+      "independent-audit-batch-review.md": "560aabf87fc729475f9f5f311c0144ee2a75068213a358252b7e36d9a0157eca",
+      "generated-memory-proposed.diff": "0283f749ff7ff2bc5eef84832a269bd293e5604b6ad08ef10216f02e439a03ed",
+      "policy-seal-v2.json": "a2781192f07f081eb03f14cc304b13ab09f90088364695f1be4a311b5ce617bb"
+    },
+    "actualExecutionProof": false,
+    "historicalPreleaseReadinessAndSealPreserved": true
+  },
+  "notStarted": [
+    "minimum Pods",
+    "minimum native iOS build",
+    "minimum install",
+    "minimum launch",
+    "minimum first screen",
+    "minimum Android",
+    "Mattermost clone/preparation/native/device on both platforms",
+    "minimum fresh clone/preparation",
+    "Mattermost fresh clone/preparation"
+  ],
+  "generatedPodsAudit": {
+    "status": "NOT_APPLICABLE",
+    "reason": "Pods and generated project not created; no Mattermost checksum or target exception applied"
+  },
+  "artifacts": {
+    "iosZip": 0,
+    "apk": 0,
+    "firstScreenPng": 0
+  },
+  "cleanup": {
+    "rawFile": "final-cleanup-preflight.json",
+    "rawSha256": "e1337bf4a22be3f88d172e1f312a576c8751219517e8e31843be0d4b7ab30126",
+    "observedAt": "2026-10-11T01:51:15.469476+09:00",
+    "passed": true,
+    "initialSimulatorCount": 2,
+    "initialSimulatorStatesPreserved": "Booted",
+    "dedicatedIos26State": "Shutdown",
+    "existingGuiPreserved": true,
+    "metroPort8081ListenerPresent": false,
+    "adbDevicesEmpty": true,
+    "actualNativeEmulatorProcesses": [],
+    "ownEarlyMetroGroupStoppedBeforeBundle": true,
+    "newAppsInstalled": 0,
+    "newSimulatorsBooted": 0,
+    "newEmulatorsStarted": 0,
+    "gradleStarted": 0,
+    "existingWatchmanAndOtherOwnersPreserved": true,
+    "globalToolPathSdkRuntimePermissionsChanged": false,
+    "additionalCleanupActionsRequired": false
+  },
+  "leaseEvidence": {
+    "originalGrantFile": "root-lease.json",
+    "originalGrantRawSha256": "002bb841770bff62743e14b5489c7245f352acdc125c68fafde8169a394d87c9",
+    "originalGrantState": "granted",
+    "returnRequestFile": "lease-return-requested.json",
+    "returnRequestRawSha256": "85be81a4b8a77126f279105570d07107baed1a0c0977ba12f38829ac956e895a",
+    "returnRequestState": "ReturnRequested",
+    "canonicalRootReleaseFile": "root-release-message-receipt.json",
+    "canonicalRootReleaseRawSha256": "9a022eaf37e6dc0181bae965e200ee59dbbce574421559bf487ad10e9e7316fd",
+    "canonicalRootState": "RELEASED",
+    "confirmedAt": "2026-10-11T01:52:12+09:00",
+    "furtherActualOperationsAuthorized": false,
+    "newConditionsRequireSeparateDecisionAndNewRun": true
+  },
+  "history": {
+    "helperV1": {
+      "status": "source-only pre-execution history",
+      "fileCount": 31,
+      "archiveIndexCount": 1,
+      "reason": "internal cache producer/consumer mismatch corrected in v2 before lease; not actual candidate failure"
+    },
+    "rootPreleaseAggregator": {
+      "error": "KeyError: returncode; helper returns exitCode",
+      "resourceMutation": false,
+      "causeOfFrozenBundleFailure": false
+    },
+    "preRootReleaseCore": {
+      "files": [
+        "pre-root-release-final-core/REPORT.md",
+        "pre-root-release-final-core/manifest.json",
+        "pre-root-release-final-core/SHA256SUMS"
+      ],
+      "reason": "canonical RELEASED receipt arrived after preliminary core hashes; preliminary bytes preserved as history, current final core includes release",
+      "actualExecutionResumed": false
+    },
+    "priorAttemptResultsInherited": false,
+    "priorOutputsCopied": false
+  },
+  "priorAttemptsPreserved": {
+    "07": {
+      "docs/rn-baseline-212-attempt-07.md": "cc408616ccfe3cc3ac7949c4141f52622c1da1f72ac0d007eaf1c68943f8a4d6",
+      "docs/evidence/212/attempt-07/manifest.json": "76e8e2aa8ee0aa0b5c78396e817e7c0c7ef4aa467c2222324b17ac34539ee7d8"
+    },
+    "08": {
+      "docs/rn-baseline-212-attempt-08.md": "1d6d1be75bc5f5edf4da1e6796e72d47e7190c602dfae763107a7ef200dedb2c",
+      "docs/evidence/212/attempt-08/manifest.json": "527e0c358c72c1fedbbca8f82895112a14d1de4f80ff10878d4e273e679343be"
+    }
+  },
+  "rawArtifacts": {
+    "localRootPlaceholder": "<LOCAL_VALIDATION_ROOT>/attempt-09-internal-volume-preflight",
+    "published": false,
+    "hashScope": "original local raw bytes",
+    "counts": {
+      "topLevelRootFilesIncludingIndex": 75,
+      "sourceOnlyV1ArchiveFilesIncludingArchiveIndex": 32,
+      "preRootReleaseCoreFiles": 3,
+      "sealedInventoryIncludingIndex": 110,
+      "checksumIndexEntries": 109,
+      "runnerResultCount": 4,
+      "runnerLogCount": 4,
+      "totalTopLevelLogCount": 5,
+      "totalSealedLogCount": 5,
+      "runnerExit0": 3,
+      "runnerExit1": 1,
+      "rawOfficialArchiveCacheCopies": 0,
+      "excludedUnsealedPythonCacheFiles": 5
+    },
+    "files": {
+      "PLAN.md": {
+        "sizeBytes": 17176,
+        "sha256": "fe30e17f040c418ac93e1b09a5ec6d2540a01c7265a1fc7fd2ab1a8326722717",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "REPORT.md": {
+        "sizeBytes": 3481,
+        "sha256": "ea1d7f324190f9d8d6cb71ef0f0a55bc8c08432148b3142ddc95eacd92116006",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "SHA256SUMS": {
+        "sizeBytes": 11046,
+        "sha256": "56d361a65a5450b416e504a88100c096bd4f97ab8321ac427a0d7e974bbd4c83",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": false,
+        "role": "checksum index; own hash verified separately"
+      },
+      "actual-start-preflight.json": {
+        "sizeBytes": 168508,
+        "sha256": "fa5d5e2cbbe3acddfcb2265c0968b99d268d42cc945e4c668ae3500b7fbd291e",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "actual-start.path-space.json": {
+        "sizeBytes": 515,
+        "sha256": "2c994d0ad067a2271a44783e215e349d5be15150287e63655616630a283eb387",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "audit-v2.py": {
+        "sizeBytes": 11996,
+        "sha256": "a0a030097bd67c85c3bed3f7436ad6a86f8f66229731dbed3078647b9bb2d528",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "bundler-readonly-diagnostic.json": {
+        "sizeBytes": 1759,
+        "sha256": "4dc5a4e649e99b57a307c8bf1c1c31f6363bc9c6ca98ec18dc642912035eac46",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "completion_gate.py": {
+        "sizeBytes": 1648,
+        "sha256": "556e090a9b320965ecb3d4102b43b84ad9eaaeec14f7f1a1eb52dd9e9e4759e2",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "execution-start.json": {
+        "sizeBytes": 315,
+        "sha256": "4b04c26ae3f135c21df683565ff117fd26a47171012789d8a25d3ac2675ed710",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "final-cleanup-preflight.json": {
+        "sizeBytes": 168263,
+        "sha256": "e1337bf4a22be3f88d172e1f312a576c8751219517e8e31843be0d4b7ab30126",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "finished-audit-batch.json": {
+        "sizeBytes": 2279,
+        "sha256": "b1a8d6ec1d7124d0e5639e5e80e338ec402b3e12d01e584c63214bbf2ae3af52",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "finished-runtime-batch.json": {
+        "sizeBytes": 1804,
+        "sha256": "5f2c2dce5f92bd3195e473fc1ab034b6dcf2f80901b3d8eda2c9f9b4ed63e59c",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "finished-v2-batch.json": {
+        "sizeBytes": 4019,
+        "sha256": "bbf83c91d7a8671538b2d9a3366649c482db39aeaa6358ebb271973513d86389",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "generated-memory-proposed.diff": {
+        "sizeBytes": 4197,
+        "sha256": "0283f749ff7ff2bc5eef84832a269bd293e5604b6ad08ef10216f02e439a03ed",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "generated-memory-selfcheck.json": {
+        "sizeBytes": 14608,
+        "sha256": "b90e976788ba0255a2c84ef13a5fec0eea7f9a80e79db8297a102aac574f6b76",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "generated-memory-selfcheck.py": {
+        "sizeBytes": 7037,
+        "sha256": "c95ae63444b6f7f11f74961598731690b73186331bf1c3a01db0a73dc3f38cd1",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "generated-post-memory-selfcheck.json": {
+        "sizeBytes": 667,
+        "sha256": "6d52f416756ba2a6323fe2b476eab9770163ef0aa1f8574d7fe453dd8e1f4ec6",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "generated-post-memory-selfcheck.py": {
+        "sizeBytes": 3485,
+        "sha256": "18fae5471d6c620a6c5552d2e25c61d439e8194ae4fe3e8ca6ea7ff5fcfd4072",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "generated_pods.py": {
+        "sizeBytes": 20282,
+        "sha256": "abc940a9e9b9daab7500bd9c01702be5a3191835e0e43dd2f1ea4a12a2bc9ec7",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "generated_post_audit.py": {
+        "sizeBytes": 3989,
+        "sha256": "fff6e0d2f0fe69b87c9818159582ca203f6512aa953c7f30629c082a06a69cb4",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "independent-audit-batch-review.md": {
+        "sizeBytes": 1774,
+        "sha256": "560aabf87fc729475f9f5f311c0144ee2a75068213a358252b7e36d9a0157eca",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "independent-helper-review-v2.md": {
+        "sizeBytes": 1896,
+        "sha256": "6ca81e6a1303e57eb8cf1091e91233cf0379ee73a10b55177a62a15794257fd6",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "independent-runtime-review-v1.md": {
+        "sizeBytes": 2184,
+        "sha256": "2456aed89e441c3b0960e4b6412fb37f76ab2a223b566d11d38cc6615033d7ee",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "lease-return-requested.json": {
+        "sizeBytes": 390,
+        "sha256": "85be81a4b8a77126f279105570d07107baed1a0c0977ba12f38829ac956e895a",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "manifest.json": {
+        "sizeBytes": 176938,
+        "sha256": "75bf01cc3a9e86050235ba56e7f6ffbcedaa2bf7a596136a2bf06b4ccdfe3584",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "metro_guard.py": {
+        "sizeBytes": 13336,
+        "sha256": "3ecb4df83da855467d43f524a4e66cc54d1db8031df22d89fe5f75a1cf118249",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimal-baseline-after-npm-ci.strict-minimal-audit.json": {
+        "sizeBytes": 1215,
+        "sha256": "ad48375e3ccfe3441d12ffa76c73180e760e90ec019da2e7cb71901dc585b95d",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimal-baseline-after-stop.strict-minimal-audit.json": {
+        "sizeBytes": 1213,
+        "sha256": "44da9a5d7567a2e0d3667938f74199573f425fdceb1a4f8961086c0096c4cd4c",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimal-baseline-before-bundle.strict-minimal-audit.json": {
+        "sizeBytes": 1216,
+        "sha256": "c6ab79e1533fa433b77dafee46693940c89028ce4507568aecc7f985999ce534",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimal-baseline-before-source.path-space.json": {
+        "sizeBytes": 515,
+        "sha256": "9368b57f8a8559b8a2ad04c22f525dd03b1cd727f3528928fc32a3a93f461008",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimal-baseline-bundle-install.log": {
+        "sizeBytes": 399,
+        "sha256": "96c9e23c500ed6cca838b204b5ab61db396f4b357d3399bcf75a78ffa230e8e4",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimal-baseline-bundle-install.path-space.json": {
+        "sizeBytes": 528,
+        "sha256": "47081d2d60015038c43daa7a42c151d12c638cd888ba322e6abac8a5bfb39041",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimal-baseline-bundle-install.result.json": {
+        "sizeBytes": 1995,
+        "sha256": "3d7a78911619804312aed5d08dfd81bf03d366f3c90066f5295d05db52b1064c",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimal-baseline-checkout.log": {
+        "sizeBytes": 89,
+        "sha256": "12a49c2a0adfd3ac6eec7fab96a96ae2e77a1263e070e5e496de22847ec196ae",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimal-baseline-checkout.result.json": {
+        "sizeBytes": 1679,
+        "sha256": "f2b9962907aa445407c6c94a3654009e335a650ba85610b86d41d8bbf55c4b01",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimal-baseline-clone.log": {
+        "sizeBytes": 107,
+        "sha256": "3d29a86c6b317a69c76106a1d53779a8190cc89c0f0dd8fe6d033943d3006a96",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimal-baseline-clone.result.json": {
+        "sizeBytes": 657,
+        "sha256": "e404a00ce01b2f0545d71f7fcae8a8fd16c011411384f319c5a59193a333aa7c",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimal-baseline-early-ready.http-body": {
+        "sizeBytes": 23,
+        "sha256": "ed71e52f066b30c279378b7933ec895ee558e0899131124296dec5bec2995cef",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimal-baseline-early-ready.readiness.json": {
+        "sizeBytes": 342662,
+        "sha256": "b3527ed4dbbc4df5c19b465f3760e4ab4ea801650ff4c3eabab8f6932e6362d3",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimal-baseline-early-stop.stop.json": {
+        "sizeBytes": 192,
+        "sha256": "8891b80e0c49828611beea463f614abb158ab30598304856ef90429711640ec6",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimal-baseline-early.log": {
+        "sizeBytes": 1217,
+        "sha256": "09a29f4b4da78d67a4eec52f5a9d8a931bec2ddce8767f58da4478025bf4f1ab",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimal-baseline-early.owned.json": {
+        "sizeBytes": 1585,
+        "sha256": "2fa6735a5083b919d7419154e76f08decc5f4b2a6b0f98f3385f9a5d74298f9e",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimal-baseline-initial-raw-snapshot.json": {
+        "sizeBytes": 12126,
+        "sha256": "a3499930554b2c879b32616b54c9b8454fff9d3a04334b467e9867895f162640",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimal-baseline-initial.strict-minimal-audit.json": {
+        "sizeBytes": 1211,
+        "sha256": "c2a6eea36eae7ab66827610f8b9d5069499ded07abba3bda4ee7703b09743f5b",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimal-baseline-npm-ci.log": {
+        "sizeBytes": 1349,
+        "sha256": "b22831f0c1102ad27e65ebd728b2c5da46a9baf9766746ff70ed7172e7a2a156",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimal-baseline-npm-ci.result.json": {
+        "sizeBytes": 1785,
+        "sha256": "f04677a67995b1b1a7e0f4127449c6035bd12ecba5780fb59c6ef42bb6917f4a",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimal-baseline-original-Podfile.lock": {
+        "sizeBytes": 63628,
+        "sha256": "cec099ee896ed83dd780bd8da0a03e840c3ba6a0803f90c0bbfcd04efaf17d56",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimal-baseline-original-inputs.json": {
+        "sizeBytes": 700,
+        "sha256": "f70f2d89efab7c641c24a5c7d9ab9074878df7d86cba9bd475304fbb98ac3b1c",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimal-baseline-source-stage.json": {
+        "sizeBytes": 328,
+        "sha256": "5315333a7140cf1685b3a4ec760f88fb41ff86d82e63e879f6c110872fa37d9b",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimal-primary-inputs.json": {
+        "sizeBytes": 2621,
+        "sha256": "7fa37432fdafd4e8ded8700187c780039ac444f9dafcfea90b27006f2ac36bdb",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimum-after-early-stop.json": {
+        "sizeBytes": 170239,
+        "sha256": "3121d9a1528ec5d2babccdec36c74ccac747f7565a4de8db7aae41e8c6d1e6e2",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "minimum-before-early-metro.json": {
+        "sizeBytes": 170185,
+        "sha256": "fb3babd25b4909ae537c07dea7f18767b46b7956e5ddea8d6a31795d6aa2af52",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "path_guard.py": {
+        "sizeBytes": 2832,
+        "sha256": "86ca19fe86a001c969c5c6f70d0380c8e93d0481494cbdfc5c7286b8a63360a3",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "policy-seal-v2.json": {
+        "sizeBytes": 2422,
+        "sha256": "a2781192f07f081eb03f14cc304b13ab09f90088364695f1be4a311b5ce617bb",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "policy-seal.json": {
+        "sizeBytes": 351,
+        "sha256": "153edc293127fea7bc4465c58cdb41d0be75d1beca22773a1a2278fe780e2097",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "pre-lease-preflight.json": {
+        "sizeBytes": 3585,
+        "sha256": "3da10488fc79bef3f4cb64bdeaf9b9d90e585ebf787bfc34a8aaf6fb6c21d6ac",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "pre-root-release-final-core/REPORT.md": {
+        "sizeBytes": 3156,
+        "sha256": "06bdd01d20916ab5303b82bd90910982b0890d569fdc3094d799fbe7243555da",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved pre-root-release core history"
+      },
+      "pre-root-release-final-core/SHA256SUMS": {
+        "sizeBytes": 10629,
+        "sha256": "5f9e8632a39b265a2feccbf1f8a020eccbe0bab0ee84078703e1986cbd5a6df1",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved pre-root-release core history"
+      },
+      "pre-root-release-final-core/manifest.json": {
+        "sizeBytes": 176079,
+        "sha256": "0b9abe9344af6d025c9bb9a9d973863ca70620413b0b4c79b149c41e1a9efaab",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved pre-root-release core history"
+      },
+      "prepare_frozen_stage.py": {
+        "sizeBytes": 4015,
+        "sha256": "97c142bea83eae9471cad2f9c9990f831d25e003ad19d6f999a09c1e4c921a34",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "prepare_hooks.py": {
+        "sizeBytes": 1714,
+        "sha256": "f73298419910215f913a81da6dc20ca234ccd4afad379db646a1e1a9b0d834fc",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "prepare_source_stage.py": {
+        "sizeBytes": 3126,
+        "sha256": "cc1712fd2743df5f9007954b61fc092cd450618c23da21608568340757bfc4e1",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "prerequisite-memory-selfcheck.json": {
+        "sizeBytes": 1831,
+        "sha256": "97bc59cf6b4cfd9b5a21b06ab96d5775a60eff7432a52dd20f1ff3b02f8e86f2",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "prerequisite-memory-selfcheck.py": {
+        "sizeBytes": 6533,
+        "sha256": "0839c128377fd9c83b645c724d7f1c93605e9921dcbaa3659c2e7a02066442c6",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "readiness-initial.json": {
+        "sizeBytes": 481,
+        "sha256": "6b24e1a3ca4c178a8581d0f8d402280fd14bc4d27c353d14bc3e6784d60777c8",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "readiness-v2.json": {
+        "sizeBytes": 369,
+        "sha256": "58a4bb25bd5de56e8ea9854584f027c8a6adaf4ec890e86301cc9e0c509487e1",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "resource-preflight-memory-selfcheck.json": {
+        "sizeBytes": 1056,
+        "sha256": "4ab41d4089f5775151eea2d0364c3eb6b8039ad6322038868afa3aa325f63429",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "resource-preflight-memory-selfcheck.py": {
+        "sizeBytes": 2283,
+        "sha256": "2976223ceb6f92c77eec4a882c489d940d5d5fbfb002741780211cfe33837317",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "resource_preflight.py": {
+        "sizeBytes": 4385,
+        "sha256": "9fe84c1e5dd16ea83284bbc4a34ce1ddb5cb51a4c851bcb0d42a3df5c5e6a6fe",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "root-lease.json": {
+        "sizeBytes": 6845,
+        "sha256": "002bb841770bff62743e14b5489c7245f352acdc125c68fafde8169a394d87c9",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "root-release-message-receipt.json": {
+        "sizeBytes": 566,
+        "sha256": "9a022eaf37e6dc0181bae965e200ee59dbbce574421559bf487ad10e9e7316fd",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "run_step.py": {
+        "sizeBytes": 1452,
+        "sha256": "ec0dd7e13e56e2962375b9fae6626a3325fc3c200a8ac3d96c4bd5f547f26689",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "runtime-memory-selfcheck.json": {
+        "sizeBytes": 11619,
+        "sha256": "61becf98bb50c631df96284d4e98451f974e11a344e42d148fde7801ddeccb6a",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "runtime-memory-selfcheck.py": {
+        "sizeBytes": 9787,
+        "sha256": "7b5d00bab0e12d3e15df78f92301323268fb6ddbfe423f3fb0fe8dc48e4ab2e6",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "source-only-v1-archive/ARCHIVE-INDEX.json": {
+        "sizeBytes": 3290,
+        "sha256": "4cb577ca8e3ef0062d216edb3f3eed5e3faa4e94f7e64b052b1cc44be801ac16",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/PLAN.md": {
+        "sizeBytes": 16446,
+        "sha256": "f85913225127a3aea54eeacf8129ec13aa860288ece9c548a05729ff1cbe7d3d",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/audit-v2.py": {
+        "sizeBytes": 11996,
+        "sha256": "a0a030097bd67c85c3bed3f7436ad6a86f8f66229731dbed3078647b9bb2d528",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/completion_gate.py": {
+        "sizeBytes": 1648,
+        "sha256": "556e090a9b320965ecb3d4102b43b84ad9eaaeec14f7f1a1eb52dd9e9e4759e2",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/finished-audit-batch.json": {
+        "sizeBytes": 2279,
+        "sha256": "b1a8d6ec1d7124d0e5639e5e80e338ec402b3e12d01e584c63214bbf2ae3af52",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/finished-runtime-batch.json": {
+        "sizeBytes": 1804,
+        "sha256": "5f2c2dce5f92bd3195e473fc1ab034b6dcf2f80901b3d8eda2c9f9b4ed63e59c",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/generated-memory-proposed.diff": {
+        "sizeBytes": 4197,
+        "sha256": "0283f749ff7ff2bc5eef84832a269bd293e5604b6ad08ef10216f02e439a03ed",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/generated-memory-selfcheck.json": {
+        "sizeBytes": 14608,
+        "sha256": "c8c7c7a122ecdf157fc4c8c7f1a4b6c2278a73b2a0e020214b0322bd7699aebb",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/generated-memory-selfcheck.py": {
+        "sizeBytes": 7037,
+        "sha256": "c95ae63444b6f7f11f74961598731690b73186331bf1c3a01db0a73dc3f38cd1",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/generated-post-memory-selfcheck.json": {
+        "sizeBytes": 667,
+        "sha256": "6d52f416756ba2a6323fe2b476eab9770163ef0aa1f8574d7fe453dd8e1f4ec6",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/generated-post-memory-selfcheck.py": {
+        "sizeBytes": 3485,
+        "sha256": "18fae5471d6c620a6c5552d2e25c61d439e8194ae4fe3e8ca6ea7ff5fcfd4072",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/generated_pods.py": {
+        "sizeBytes": 19858,
+        "sha256": "f29af1cf5e232c40b07f538dfb03dc5af94e59addabea5bbb5bdc31df6e36a69",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/generated_post_audit.py": {
+        "sizeBytes": 3989,
+        "sha256": "fff6e0d2f0fe69b87c9818159582ca203f6512aa953c7f30629c082a06a69cb4",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/independent-audit-batch-review.md": {
+        "sizeBytes": 1774,
+        "sha256": "560aabf87fc729475f9f5f311c0144ee2a75068213a358252b7e36d9a0157eca",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/metro_guard.py": {
+        "sizeBytes": 13336,
+        "sha256": "3ecb4df83da855467d43f524a4e66cc54d1db8031df22d89fe5f75a1cf118249",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/minimal-primary-inputs.json": {
+        "sizeBytes": 2621,
+        "sha256": "7fa37432fdafd4e8ded8700187c780039ac444f9dafcfea90b27006f2ac36bdb",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/path_guard.py": {
+        "sizeBytes": 2832,
+        "sha256": "86ca19fe86a001c969c5c6f70d0380c8e93d0481494cbdfc5c7286b8a63360a3",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/policy-seal.json": {
+        "sizeBytes": 351,
+        "sha256": "153edc293127fea7bc4465c58cdb41d0be75d1beca22773a1a2278fe780e2097",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/prepare_frozen_stage.py": {
+        "sizeBytes": 4015,
+        "sha256": "97c142bea83eae9471cad2f9c9990f831d25e003ad19d6f999a09c1e4c921a34",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/prepare_hooks.py": {
+        "sizeBytes": 1714,
+        "sha256": "f73298419910215f913a81da6dc20ca234ccd4afad379db646a1e1a9b0d834fc",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/prepare_source_stage.py": {
+        "sizeBytes": 3126,
+        "sha256": "cc1712fd2743df5f9007954b61fc092cd450618c23da21608568340757bfc4e1",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/prerequisite-memory-selfcheck.json": {
+        "sizeBytes": 1509,
+        "sha256": "d224e69b30d353798182bb21d9979433a278b4a8e7af841e7d6064ffc8b96ce6",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/prerequisite-memory-selfcheck.py": {
+        "sizeBytes": 5144,
+        "sha256": "fc3cf7301ba926e7c30debf3d83a856022b4540ca1b24c2e1a0cd7eaac024443",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/readiness-initial.json": {
+        "sizeBytes": 481,
+        "sha256": "6b24e1a3ca4c178a8581d0f8d402280fd14bc4d27c353d14bc3e6784d60777c8",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/resource-preflight-memory-selfcheck.json": {
+        "sizeBytes": 1056,
+        "sha256": "4ab41d4089f5775151eea2d0364c3eb6b8039ad6322038868afa3aa325f63429",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/resource-preflight-memory-selfcheck.py": {
+        "sizeBytes": 2283,
+        "sha256": "2976223ceb6f92c77eec4a882c489d940d5d5fbfb002741780211cfe33837317",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/resource_preflight.py": {
+        "sizeBytes": 4385,
+        "sha256": "9fe84c1e5dd16ea83284bbc4a34ce1ddb5cb51a4c851bcb0d42a3df5c5e6a6fe",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/run_step.py": {
+        "sizeBytes": 1452,
+        "sha256": "ec0dd7e13e56e2962375b9fae6626a3325fc3c200a8ac3d96c4bd5f547f26689",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/runtime-memory-selfcheck.json": {
+        "sizeBytes": 11619,
+        "sha256": "61becf98bb50c631df96284d4e98451f974e11a344e42d148fde7801ddeccb6a",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/runtime-memory-selfcheck.py": {
+        "sizeBytes": 9787,
+        "sha256": "7b5d00bab0e12d3e15df78f92301323268fb6ddbfe423f3fb0fe8dc48e4ab2e6",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/source_paths.py": {
+        "sizeBytes": 1598,
+        "sha256": "eabf5b7684f5b1cf8c3a83e172c7f509a2e1fe7c24db484257d9c4ed7e7ece42",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source-only-v1-archive/strict_minimal_audit.py": {
+        "sizeBytes": 4343,
+        "sha256": "f38d6c29c3608253bb015caee79a37c00bcdd601e1cea6f3aea693599fa1e067",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "preserved source-only helper v1 history"
+      },
+      "source_paths.py": {
+        "sizeBytes": 1598,
+        "sha256": "eabf5b7684f5b1cf8c3a83e172c7f509a2e1fe7c24db484257d9c4ed7e7ece42",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "strict_minimal_audit.py": {
+        "sizeBytes": 4343,
+        "sha256": "f38d6c29c3608253bb015caee79a37c00bcdd601e1cea6f3aea693599fa1e067",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "v2-calibration-history.json": {
+        "sizeBytes": 1538,
+        "sha256": "13f9ecfd5db67883d017a3a0e986e4f44563415402d6f3fcf828c13a922b1c74",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      },
+      "v2-review-fix.diff": {
+        "sizeBytes": 10386,
+        "sha256": "a794260d808412fd108523fd18cc8b68d9ef35b8203222199acdff642599d930",
+        "hashScope": "original local raw bytes",
+        "published": false,
+        "checksumIndexEntry": true,
+        "role": "sealed raw evidence"
+      }
+    }
+  },
+  "sourcePacketIntegrity": {
+    "verifiedChecksumIndexEntries": 109,
+    "checksumIndexMismatchCount": 0,
+    "checksumIndexOwnHashVerifiedSeparately": true,
+    "verifiedRunnerCommandResults": 4,
+    "files": {
+      "REPORT.md": {
+        "sizeBytes": 3481,
+        "sha256": "ea1d7f324190f9d8d6cb71ef0f0a55bc8c08432148b3142ddc95eacd92116006",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "manifest.json": {
+        "sizeBytes": 176938,
+        "sha256": "75bf01cc3a9e86050235ba56e7f6ffbcedaa2bf7a596136a2bf06b4ccdfe3584",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "SHA256SUMS": {
+        "sizeBytes": 11046,
+        "sha256": "56d361a65a5450b416e504a88100c096bd4f97ab8321ac427a0d7e974bbd4c83",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "root-release-message-receipt.json": {
+        "sizeBytes": 566,
+        "sha256": "9a022eaf37e6dc0181bae965e200ee59dbbce574421559bf487ad10e9e7316fd",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "minimal-baseline-after-stop.strict-minimal-audit.json": {
+        "sizeBytes": 1213,
+        "sha256": "44da9a5d7567a2e0d3667938f74199573f425fdceb1a4f8961086c0096c4cd4c",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "final-cleanup-preflight.json": {
+        "sizeBytes": 168263,
+        "sha256": "e1337bf4a22be3f88d172e1f312a576c8751219517e8e31843be0d4b7ab30126",
+        "hashScope": "original local raw bytes",
+        "published": false
+      }
+    },
+    "publicManifestIsCuratedSummary": true,
+    "originalHashDoesNotIdentifyPublicSanitizedBytes": true
+  },
+  "remaining": [
+    "mandatory frozen preparation with declared Bundler unresolved",
+    "minimum new native/device checkpoints incomplete",
+    "Mattermost prepared both-platform native/device checkpoints incomplete",
+    "independent minimum-fresh and Mattermost-fresh frozen preparation incomplete",
+    "actual Runstir gate remains subsequent scope"
+  ]
+}
