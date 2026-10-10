@@ -278,7 +278,7 @@ _Avoid_: 지원 범위, 호환성 정책
 _Avoid_: 검증 조합, tested on
 
 **Known-good 표본 (Known-good sample)**:
-고정된 프로젝트 revision이 같은 검증 조합에서 mobile 없이도 build·install·launch·초기 UI에 도달하고 tracked 파일을 바꾸지 않는 검증 표본이다. ADR-0018의 고정 iOS 게이트와 ADR-0020·ADR-0021·ADR-0022의 고정 RN baseline만 각 ADR의 준비 예외를 적용한다. 다른 tracked byte는 같아야 한다. mobile SHA는 표본이 아니라 각 검증 실행에서 별도로 고정한다.
+고정된 프로젝트 revision이 같은 검증 조합에서 mobile 없이도 build·install·launch·초기 UI에 도달하고 tracked 파일을 바꾸지 않는 검증 표본이다. ADR-0018의 고정 iOS 게이트와 ADR-0020·ADR-0021·ADR-0022·ADR-0023의 고정 RN baseline만 각 ADR의 준비 예외를 적용한다. 다른 tracked byte는 같아야 한다. mobile SHA는 표본이 아니라 각 검증 실행에서 별도로 고정한다.
 _Avoid_: clean repo, test project
 
 **준비 입력 (Prepared input)**:
