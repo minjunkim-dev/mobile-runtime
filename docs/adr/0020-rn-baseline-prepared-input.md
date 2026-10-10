@@ -16,13 +16,15 @@
 
 이번 예외는 #212의 Mattermost source `c2fe3beda22befd2178dce431793c09111ed903e`에 있는 `ios/Podfile.lock`의 `SPEC CHECKSUMS.hermes-engine` 값 하나의 재생성이다. BlueWallet, 다른 source SHA, 다른 checksum에는 자동 적용하지 않는다. Runstir가 checksum을 자동 수정하는 제품 기능을 추가하지 않는다.
 
-앱 소스, 선언 버전, 의존성 그래프와 source 선언은 유지한다. 허용한 checksum 외의 모든 tracked byte와 Git index는 원본 HEAD와 같아야 한다. `assume-unchanged`와 `skip-worktree`로 변경을 숨기지 않는다. 원본 checksum의 생성 조건은 미확인으로 보존한다. 새 준비 입력의 독립 재현을 검증하며, 그 결과를 원본 대비 경로만 달랐다는 증거로 제시하지 않는다.
+앱 소스, 선언 버전, 의존성 그래프와 source 선언은 유지한다. 허용한 checksum 외의 모든 tracked byte는 준비 전 원본 checkout과 같아야 하며 Git index는 원본 HEAD와 같아야 한다. `assume-unchanged`와 `skip-worktree`로 변경을 숨기지 않는다. 원본 checksum의 생성 조건은 미확인으로 보존한다. 새 준비 입력의 독립 재현을 검증하며, 그 결과를 원본 대비 경로만 달랐다는 증거로 제시하지 않는다.
+
+원본 `.gitattributes`는 `*.bat text eol=crlf`를 선언한다. 따라서 원본 checkout의 `android/gradlew.bat` raw byte와 저장된 HEAD blob의 LF byte는 다르다. 준비 전에는 원본 선언의 EOL 변환을 검증하여 Git 정규화 결과가 HEAD blob과 같은지 확인하고, 실제 checkout byte와 선언을 고정한다. 준비 뒤에는 그 실제 byte를 그대로 비교한다. 이것은 원본 checkout의 식별 방법이며 준비 중 source 변경이나 Git 설정 변경을 허용하는 예외가 아니다. 다른 원인으로 초기 byte를 귀속할 수 없으면 중단한다.
 
 ## 재현 절차와 증거
 
-1. 각 fresh clone의 source SHA와 원본 tracked byte·index를 확인한다. 도구 버전, host·runtime·기기, 앱 선택과 준비 명령을 고정한다. 기존 표본별 선언 버전을 유지한다.
+1. 각 fresh clone의 source SHA와 원본 checkout byte·index를 확인한다. 원본 선언의 EOL 변환과 HEAD blob 대응을 확인한 뒤 초기 raw byte를 고정한다. 도구 버전, host·runtime·기기, 앱 선택과 준비 명령을 고정한다. 기존 표본별 선언 버전을 유지한다.
 2. 각 clone에서 같은 원본 프로젝트 준비 절차를 독립 수행한다. 원본 도구 선언을 사용하는 사람의 `pod install`로 checksum을 재생성한다. Pods와 node_modules를 다른 clone에서 복사하지 않는다. 검증한 공식 다운로드 archive의 캐시는 재사용할 수 있으며 hash와 재사용 사실을 기록한다.
-3. 준비 전후 실제 tracked byte를 HEAD blob과 비교한다. 허용한 checksum 한 값만 정규화한 lock 전체가 원본과 같아야 한다. 다른 tracked byte와 Git index도 같아야 한다. 실제 generated spec, 원본·준비 lock, raw diff, 파일 hash, 도구와 명령·경로·종료 상태를 증거로 고정한다. 준비 입력의 identity는 source SHA, 준비 절차, 검증 조합과 clone별 결과 hash를 함께 식별한다. clone 경로가 달라지면 raw checksum이 같다고 가정하지 않는다.
+3. 준비 전후 실제 tracked byte를 초기 raw byte와 비교한다. 허용한 checksum 한 값만 정규화한 lock 전체가 원본과 같아야 한다. 다른 tracked byte는 초기 원본 checkout과 같아야 하며 Git index는 HEAD와 같아야 한다. 실제 generated spec, 원본·준비 lock, raw diff, 파일 hash, 도구와 명령·경로·종료 상태를 증거로 고정한다. 준비 입력의 identity는 source SHA, 준비 절차, 검증 조합과 clone별 결과 hash를 함께 식별한다. clone 경로가 달라지면 raw checksum이 같다고 가정하지 않는다.
 4. 준비 뒤 원본 도구 선언과 frozen Bundler를 사용하여 `pod install --deployment` 성공을 확인한다. 감사 결과와 frozen 성공이 모두 있어야 baseline build로 진행한다. build·install·launch·첫 화면 뒤에도 tracked byte·index를 감사한다.
 5. 같은 표본별 검증 조합에서 Runstir 없이 baseline을 확인한다. 성공하면 별도 fresh clone에서 같은 준비와 frozen 검사를 독립 수행하고 후속 Runstir 검증에 인계한다. baseline의 Pods·node_modules·빌드 산출물을 인계 clone으로 복사하지 않는다. 같은 Simulator·Emulator·Metro를 사용하는 실제 실행은 직렬로 조정한다. 다른 작업의 자원을 변경하지 않는다.
 
