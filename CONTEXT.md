@@ -278,8 +278,12 @@ _Avoid_: 지원 범위, 호환성 정책
 _Avoid_: 검증 조합, tested on
 
 **Known-good 표본 (Known-good sample)**:
-고정된 프로젝트 revision이 같은 검증 조합에서 mobile 없이도 build·install·launch·초기 UI에 도달하고 tracked 파일을 바꾸지 않는 검증 표본이다. ADR-0018의 현재 iOS 게이트만 네 Pod checksum 값 재생성 예외를 적용한다. 다른 tracked byte는 같아야 한다. mobile SHA는 표본이 아니라 각 검증 실행에서 별도로 고정한다.
+고정된 프로젝트 revision이 같은 검증 조합에서 mobile 없이도 build·install·launch·초기 UI에 도달하고 tracked 파일을 바꾸지 않는 검증 표본이다. ADR-0018의 고정 iOS 게이트와 ADR-0020의 고정 RN baseline만 각 ADR의 준비 예외를 적용한다. 다른 tracked byte는 같아야 한다. mobile SHA는 표본이 아니라 각 검증 실행에서 별도로 고정한다.
 _Avoid_: clean repo, test project
+
+**준비 입력 (Prepared input)**:
+고정된 프로젝트 revision과 그 revision에 적용할 준비 조건을 함께 식별한 검증 입력이다. 준비 입력의 고정은 known-good 판정이 아니며, known-good 여부는 별도 baseline 결과로 판정한다.
+_Avoid_: known-good 표본, 준비 성공
 
 **검증 결과 (Validation verdict)**:
 고정된 검증 실행의 결과로, 전체 증거 체인이 성공하면 `validated`, known-good baseline 이후 동일한 mobile/toolchain 실패가 재현되면 `failed`, 결과를 귀속할 수 없으면 `inconclusive`다. 검증 조합에만 귀속하며 doctor의 Status나 지원 판정으로 일반화하지 않는다.
