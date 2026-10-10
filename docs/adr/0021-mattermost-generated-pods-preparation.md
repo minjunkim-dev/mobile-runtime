@@ -14,7 +14,7 @@ status: accepted
 
 ## 허용 범위
 
-대상 source는 Mattermost `c2fe3beda22befd2178dce431793c09111ed903e` 하나다. 원본 [Podfile.properties.json](https://github.com/mattermost/mattermost-mobile/blob/c2fe3beda22befd2178dce431793c09111ed903e/ios/Podfile.properties.json)의 app minimum은 `16.4`다. source SHA와 원본 선언 버전을 유지한다. [ADR-0020](0020-rn-baseline-prepared-input.md)의 기존 Hermes checksum 한 값 예외와 raw checkout/index 감사는 그대로 적용한다. 원본 serialized spec의 provenance는 여전히 unknown이다.
+대상 source는 Mattermost `c2fe3beda22befd2178dce431793c09111ed903e` 하나다. 원본 [Podfile.properties.json](https://github.com/mattermost/mattermost-mobile/blob/c2fe3beda22befd2178dce431793c09111ed903e/ios/Podfile.properties.json)의 `deploymentTarget`은 `16.4`다. 생성 Pods project의 Debug·Release 하한도 `16.4`다. 원본 앱 project의 명시 deployment 값은 `16.0`이므로 이를 앱 최소값 `16.4`로 표현하지 않는다. 이 사실 정정은 아래 준비 값이나 승인 범위를 바꾸지 않는다. source SHA와 원본 선언 버전을 유지한다. [ADR-0020](0020-rn-baseline-prepared-input.md)의 기존 Hermes checksum 한 값 예외와 raw checkout/index 감사는 그대로 적용한다. 원본 serialized spec의 provenance는 여전히 unknown이다.
 
 마지막 frozen Pods 설치가 성공한 뒤 `ios/Pods/Pods.xcodeproj/project.pbxproj`에서 다음 11개 resource bundle target의 **Debug** `IPHONEOS_DEPLOYMENT_TARGET` 값만 `16.4`로 바꾸는 사람 준비를 허용한다.
 
