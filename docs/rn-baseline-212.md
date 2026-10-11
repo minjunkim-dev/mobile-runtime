@@ -15,8 +15,9 @@ Metro 실패 뒤 launch를 호출한 순서 오류를 보존했다. launch 요�
 [attempt-09](./rn-baseline-212-attempt-09.md)는 ADR-0024의 새 내장 경로에서 최소 RN의 원본 clone·npm·source 감사를 통과했다. 원본 Metro의 실제 HTTP `200`과 own process·port를 확인했다. 첫 화면 증거는 아니다.
 최소 RN의 원본 frozen Bundle 명령은 `Bundler 2.5.22` executable을 찾지 못해 exit `1`이었다. 필수 실패 뒤 모든 후속 실행을 중단했다. 최소 Pods·native·install·launch·첫 화면·Android 및 Mattermost·fresh를 시작하지 않았다. 사후 source 감사와 자원 보존을 확인했다. 단독 lease를 반납했다.
 [attempt-10](./rn-baseline-212-attempt-10.md)은 새 최소 clone·원본 npm·early Metro를 통과했다. 원본 Ruby plugin 한 개를 사전 guard가 거부했다.
-최신 [attempt-11](./rn-baseline-212-attempt-11.md)은 ADR-0026의 원본 plugin과 clone별 mise 준비 환경을 유지했다. 최소 원본 clone·npm·early Metro와 source 감사를 통과했다. 원본 mise 선택 명령은 exit `0`이었다. private STATE symlink 5개를 사후 guard가 거부했다. 공유 snapshot의 최종 불변과 strict source 55개·세 lock 불변을 확인했다. 일시적 공유 write 부재는 증명하지 않는다.
-실제 Ruby facts·공식 gem·frozen Bundle·Pods·native·기기·Mattermost·fresh는 미시작이다. lease는 RELEASED다. 새 준비 입력의 Android 실행과 두 표본의 fresh 준비·인계는 미완료다. OSS 양플랫폼 known-good은 미달이다.
+[attempt-11](./rn-baseline-212-attempt-11.md)은 원본 mise 선택 exit `0` 뒤 private STATE symlink 5개를 사후 guard가 거부한 이력이다.
+최신 [attempt-12](./rn-baseline-212-attempt-12.md)은 ADR-0027의 원본 metadata 입력을 제한해 감사했다. 최소 새 clone·원본 npm·early Metro·strict55/세 lock과 원본 mise 선택 exit `0` 및 metadata/host/shared 사후 감사는 PASS다. 실제 원본 Ruby facts/prefix/pkgconfig와 공식 Bundler metadata/archive/spec도 PASS다. 원본 installer는 `Invalid option: --norc`로 exit `1`이었다. observer의 RuntimeError unknown은 별도로 보존했다.
+activation·frozen Bundle·Pods·native·기기·Android·Mattermost·fresh는 미시작이다. source/shared 최종 불변과 owned cleanup을 확인했다. 일시적 공유 write 부재는 증명하지 않는다. lease는 RELEASED다. 새 준비 입력의 양플랫폼 첫 화면과 두 표본 fresh 인계는 미완료다. 최소 installer token 위치정정 정책은 미확정이다.
 제품 실행 SHA: 없음. 모든 앱 준비·빌드·설치·실행에 Runstir를 사용하지 않았다.
 
 입력은 [#194 조사 정본](https://github.com/minjunkim-dev/mobile-runtime/blob/52ca6150685780cca86d5cb7c0b562033b40bd30/docs/research/cli-expansion-validation-candidates.md)이다.
@@ -24,7 +25,7 @@ Metro 실패 뒤 launch를 호출한 순서 오류를 보존했다. launch 요�
 [명세 #199](https://github.com/minjunkim-dev/mobile-runtime/issues/199)의 AC05·AC06에 baseline 증거만 제공한다.
 과거 BlueWallet Go의 Pod checksum 예외와 #201의 RN 0.82 준비 앱 증거를 적용하지 않았다.
 attempt-04 이후의 고정 Mattermost 준비 입력에 [ADR-0020](./adr/0020-rn-baseline-prepared-input.md)의 Hermes 한 값 예외를 적용했다.
-아래 최초 source·실행 기록은 원본 이력이다. 최신 판정은 attempt-11과 마지막 AC 표를 따른다. 과거 성공을 새 내장 경로·원본 Metro 조건의 성공으로 승계하지 않는다.
+아래 최초 source·실행 기록은 원본 이력이다. 최신 판정은 attempt-12와 마지막 AC 표를 따른다. 과거 성공을 새 내장 경로·원본 Metro 조건의 성공으로 승계하지 않는다.
 
 ## 최초 attempt 판정
 
@@ -285,9 +286,9 @@ iOS는 명시한 UDID의 `simctl install`과 `simctl launch`를 사용했다.
 | --- | --- |
 | #212 source·generator·locks 고정 | 조사 정본, 생성 SHA 두 개, OSS SHA, lock checksum, fresh clone 분리 |
 | #212 정확 도구·환경 입력 | 관측 버전과 선택을 기록했다. 표본별 bundled 도구 차이를 같은 tuple로 숨기지 않았다. |
-| #212 양플랫폼 최소+OSS 첫 화면 | 미충족. 최소 attempt-02와 Mattermost Android attempt-03은 과거 성공이다. attempt-08의 native·install 뒤 Metro 실패와 launch 순서 오류를 보존한다. attempt-09는 Bundler lookup에서, attempt-10은 plugin 사전 guard에서 중단했다. 최신 attempt-11의 새 최소 clone·원본 npm·early Metro 실제 HTTP 200은 PASS다. 원본 mise 선택 명령 exit0 뒤 private STATE symlink 5개를 사후 guard가 거부했다. source 55개·세 lock과 공유 최종 snapshot은 불변이다. 실제 Ruby facts·공식 gem·frozen Bundle·Pods·새 두 표본 native·기기·양플랫폼 첫 화면은 미시작이다. |
+| #212 양플랫폼 최소+OSS 첫 화면 | 미충족. 과거 성공과 attempt-08의 Metro 실패·launch 순서 오류를 유지한다. attempt-09·10·11의 각 필수 실패도 보존한다. 최신 attempt-12는 최소 clone/npm/early Metro·mise 선택·metadata/host/shared·Ruby facts/spec을 통과했다. installer 원본 exit1과 observer unknown FAIL 뒤 activation/frozen/Pods/native·기기·Android·Mattermost·첫 화면은 미시작이다. source55/세 lock과 공유 최종 snapshot은 불변이다. |
 | #212 실패·교체 이유 보존 | 원본 실패·감사 도구 오류·native 실패·Metro 실패·launch 순서 오류를 구분했다. ADR-0020의 Hermes 한 값과 ADR-0021·0023의 생성 Debug 12값만 준비했다. ExpoRouter Debug는 `16.0`이고 11개 bundle Debug는 `16.4`다. source patch·버전 변경과 성공 SHA 탐색은 없다. |
-| #212 fresh clone 인계 | 최소 b62 source bundle과 세 lock 입력을 보존했다. 최소 fresh의 frozen 준비는 미검증이다. 필수 실패 뒤 attempt-06·07·08·09·10·11의 새 fresh 준비를 수행하지 않았다. 이전 attempt-04 후속 clone의 no-checkout 상태도 인계 성공이 아니다. |
+| #212 fresh clone 인계 | 최소 b62 source bundle과 세 lock 입력을 보존했다. 최소 fresh의 frozen 준비는 미검증이다. 필수 실패 뒤 attempt-06·07·08·09·10·11·12의 새 fresh 준비를 수행하지 않았다. 이전 attempt-04 후속 clone의 no-checkout 상태도 인계 성공이 아니다. |
 | #199 AC05 | baseline 부분 증거다. Runstir CLI·GUI 및 여섯 조합 검증을 대체하지 않는다. |
 | #199 AC06 | 실제 Mac Android 가속을 관측했다. VM·새 호스트·대표 실기기를 검증하지 않았다. |
 
@@ -309,3 +310,6 @@ iOS는 명시한 UDID의 `simctl install`과 `simctl launch`를 사용했다.
 
 [ADR-0026](https://github.com/minjunkim-dev/mobile-runtime/blob/24c3189997316fced36b77cb1af261318ebb4696/docs/adr/0026-rn-original-plugin-preparation.md)은 원본 Ruby/plugin identity와 clone별 private mise 준비 환경 및 shared installs lookup을 확정했다. 원본 npm/hook 분리·Metro/native 명령을 유지한다. 공유 최종 byte·kind·link·mode와 실제 consumer 연결을 감사한다. 최소 표본에만 Bundler 2.5.22 bootstrap을 적용한다.
 [attempt-11 기록](./rn-baseline-212-attempt-11.md)은 새 최소 b62 clone·원본 npm·early Metro 실제 HTTP200과 own process/port를 통과했다. 원본 mise 선택 명령은 exit0이었다. Python launcher lookup은 실제 Ruby facts나 activation 증거가 아니다. private STATE의 tracked-configs 4개와 trusted-configs 1개 symlink를 사후 guard가 거부했다. 공유 changedPaths는0이며 원본 plugin과 strict55/세 lock은 불변이다. 최종 snapshot은 일시write 부재나 OS 격리를 증명하지 않는다. 실제 Ruby facts/prefix/pkgconfig·공식 gem·frozen Bundle·Pods·native·기기·Mattermost·fresh는 미시작이다. 재시도나 source/helper/settings/symlink 변경은 없다. own Metro 종료와 자원 보존 뒤 root는 lease를 RELEASED로 확정했다. 원본 index101개와 index 포함 packet102개, runner log4개와 Metro log1개를 보존했다. PNG·APK·ZIP은0개다. 원본 mise exit0과 private output guard FAIL을 앱 또는 원본 frozen 실패로 표현하지 않는다.
+
+[ADR-0027](https://github.com/minjunkim-dev/mobile-runtime/blob/81f25a513fef92be75c09c8d3f0b567ded3f4d8c/docs/adr/0027-rn-mise-state-metadata-links.md)은 원본 clone/host config와 기존 shared home marker의 제한된 private STATE metadata 링크를 감사하도록 확정했다. primary/store/shims/wrappers의 링크 규칙을 넓히지 않았다.
+[attempt-12 기록](./rn-baseline-212-attempt-12.md)은 metadata guard와 실제 Ruby facts/spec을 통과했다. 원본 installer는 `--norc` 거부로 exit1이었다. observer의 RuntimeError와 정확한 query/predicate unknown을 분리했다. 사후 strict55/세 lock·metadata/host/shared와 same-Ruby repository 최종 감사는 PASS다. activation 이후 모든 후속 단계는 미시작이다. own cleanup 뒤 root가 lease RELEASED를 확정했다. 원본 index118/전체119개와 runner result7/log7·Metro log1을 보존했다. PNG·APK·app ZIP은0개다. 최소 installer 두 token 위치정정 정책검토와 observer 비식별 진단은 다음 조건이며 아직 미확정이다.
