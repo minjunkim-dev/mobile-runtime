@@ -1,0 +1,278 @@
+{
+  "schemaVersion": 1,
+  "attemptId": "attempt-03-mattermost",
+  "issue": 212,
+  "status": "partial",
+  "runstirUsed": false,
+  "candidate": {
+    "repository": "https://github.com/mattermost/mattermost-mobile",
+    "tag": "release-2.44",
+    "source": "c2fe3beda22befd2178dce431793c09111ed903e",
+    "branchTagSameNameCaution": true,
+    "selectionReason": "Official stable declaration, source-build RN/Expo, relative codegen, separated CI hooks; not build-success SHA search"
+  },
+  "sourceBoundary": {
+    "trackedFilesBefore": 4216,
+    "trackedByteChangesAfterNodeBundleAndFrozenPods": 0,
+    "freshCloneSameSha": true,
+    "freshCloneExecuted": false,
+    "copiedDependenciesToFresh": false,
+    "postExecutionChecks": [
+      {
+        "id": "mattermost-source",
+        "source": "c2fe3beda22befd2178dce431793c09111ed903e",
+        "trackedFiles": 4216,
+        "trackedByteChangesAfterExecution": [],
+        "gitTrackedDiff": ""
+      },
+      {
+        "id": "mattermost-fresh",
+        "source": "c2fe3beda22befd2178dce431793c09111ed903e",
+        "trackedFiles": 4216,
+        "trackedByteChangesAfterExecution": [],
+        "gitTrackedDiff": ""
+      }
+    ],
+    "trackedByteChangesAfterAndroidExecution": 0
+  },
+  "locks": {
+    "package-lock.json": {
+      "baselineSha256": "c0ff8ca81bcf9f89abdfa4fc8980e81aae86ca161d25590a8af1b9360733bcb8",
+      "freshSha256": "c0ff8ca81bcf9f89abdfa4fc8980e81aae86ca161d25590a8af1b9360733bcb8"
+    },
+    "Gemfile.lock": {
+      "baselineSha256": "aacdfd202b0bbb5f2268a0b4af6ea5054d13af98b9b250796c8088ea7fa4e38c",
+      "freshSha256": "aacdfd202b0bbb5f2268a0b4af6ea5054d13af98b9b250796c8088ea7fa4e38c"
+    },
+    "ios/Podfile.lock": {
+      "baselineSha256": "64d1d50255e98c08f7722481629507a568e6f4efbce551344b658fe2d8f3ef1b",
+      "freshSha256": "64d1d50255e98c08f7722481629507a568e6f4efbce551344b658fe2d8f3ef1b"
+    },
+    "android/buildscript-gradle.lockfile": {
+      "baselineSha256": "916335d6cc10abe0dffb7c6313e1dacc8ca25b580a0fa0572663bc04800f9f48",
+      "freshSha256": "916335d6cc10abe0dffb7c6313e1dacc8ca25b580a0fa0572663bc04800f9f48"
+    },
+    "android/gradle/wrapper/gradle-wrapper.properties": {
+      "baselineSha256": "27e36e81f38c016d72c51f96c174899d1ddf55661acb8cc5a52e8b43e7a553a3",
+      "freshSha256": "27e36e81f38c016d72c51f96c174899d1ddf55661acb8cc5a52e8b43e7a553a3"
+    },
+    "android/settings-gradle.lockfile": {
+      "baselineSha256": "e58bb2ed80db9f829601a658d7c33b9802eb7d2191c31e79c28e01f14c225926",
+      "freshSha256": "e58bb2ed80db9f829601a658d7c33b9802eb7d2191c31e79c28e01f14c225926",
+      "executionScope": "used by Gradle settings"
+    },
+    "fastlane/Gemfile.lock": {
+      "baselineSha256": "a4ecb389626ed0289235c3cf15e14ae3a27a4c46a93e4a518a39c47daf6cdd3d",
+      "freshSha256": "a4ecb389626ed0289235c3cf15e14ae3a27a4c46a93e4a518a39c47daf6cdd3d",
+      "executionScope": "tracked input only; Fastlane not executed"
+    }
+  },
+  "tuple": {
+    "host": "macOS27.0.1/26A434 arm64",
+    "xcode": "27.0/27A266a",
+    "node": "24.15.0",
+    "npm": "11.12.1",
+    "ruby": "3.2.11",
+    "bundler": "2.5.11",
+    "cocoapods": "1.16.1",
+    "xcodeproj": "1.27.0",
+    "jdk": "Temurin17.0.20.1+1",
+    "jdkMiseIdentity": "temurin-17.0.20+101",
+    "jdkExactPatchDeclaredByApp": false,
+    "jdkOfficialArchiveSha256": "196d13ba5f10414bef7f6a05a9b3f00edacb18ebacef2b99485db9e2ee18f0e8",
+    "jdkInstalledExecutableSha256": "af8b122943345320b179c75c3404d56a981017739746b75f9caf583632f0bea0",
+    "rn": "0.83.9",
+    "expo": "55.0.23",
+    "gradle": "9.0.0",
+    "agp": "8.12.0",
+    "compileTargetSdk": "36/36",
+    "buildTools": "36.0.0",
+    "ndk": "27.1.12297006",
+    "globalSelectionChanged": false,
+    "newLicenseConsent": false
+  },
+  "preparation": {
+    "npm": "NODE_ENV=development npm ci --ignore-scripts, passed",
+    "bundle": "BUNDLE_FROZEN=true BUNDLE_PATH=<baseline-root>/vendor/bundle bundle _2.5.11_ install, passed",
+    "officialHooks": [
+      "Sentry CLI install",
+      "original patch-package",
+      "generate-assets",
+      "font copy in two ignored directories",
+      "generate-compass-glyph-map",
+      "original sounds copy in ignored res/raw",
+      "original jetify in node_modules"
+    ],
+    "fullNpmLifecycleExecuted": false,
+    "ignoredGeneratedAssets": true,
+    "privateRawLogsSha256": {
+      "npm-ci.log": "2fbe627cb19dba3c8a55db2b181f2109533c54e9a51ef50dd933f6bfcf27f3f7",
+      "bundle-install.log": "cf9bdfb2f0b7930aaf21a471721a3d2702a467fbe1d0fbf53abe3b284cb03e0e",
+      "sentry-install.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "patch-package.log": "41dd2e8fcda5356193a2193d62925c10bd9baae6ce512b0ab2ac2ce1c6ac24c5",
+      "generate-assets.log": "e817aec836b12165c8b4488cbd48d9a82c1c7bdc32dfc061af25e2a65a168cb2",
+      "generate-glyph.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "jetify.log": "2c7cbd938aeeee8e1260c7e5fca3c21339a108fcbd8e82949e53aafc553266e7",
+      "pods-install.log": "ee75b78bb150a18b670a3c2da425a31e6b288922ffd81bc572242b2ce8a628ae",
+      "android-build.log": "083acbda35deb33fe9c22ed6ae55d1ba7fe215609de33cd1d3b84fc94df6ca47",
+      "metro.log": "2a4b890e748d315113289d2f2da1a9534b925db0dc82ca4e30f1c7c8c817e772"
+    }
+  },
+  "ios": {
+    "runtime": "26.0/23A343",
+    "device": "iPhone16Pro/BEAB5D23-2F3D-4EC0-80AD-2892B9F42BE6",
+    "preparation": "failed",
+    "frozenPodsExitCode": 1,
+    "failure": {
+      "name": "hermes-engine",
+      "actualSpecSha1": "b25a74331dcb8f58ede30887262c71629246d013",
+      "originalLockSha1": "28814c9c9296d16aef26cb514de5378d18885e44",
+      "spec": {
+        "name": "hermes-engine",
+        "version": "0.14.1",
+        "summary": "Hermes is a small and lightweight JavaScript engine optimized for running React Native.",
+        "description": "Hermes is a JavaScript engine optimized for fast start-up of React Native apps. It features ahead-of-time static optimization and compact bytecode.",
+        "homepage": "https://hermesengine.dev",
+        "license": "MIT",
+        "authors": "Facebook",
+        "source": {
+          "http": "https://repo1.maven.org/maven2/com/facebook/hermes/hermes-ios/0.14.1/hermes-ios-0.14.1-hermes-ios-debug.tar.gz"
+        },
+        "platforms": {
+          "osx": "10.13",
+          "ios": "15.1",
+          "visionos": "1.0",
+          "tvos": "15.1"
+        },
+        "preserve_paths": "**/*.*",
+        "source_files": "",
+        "pod_target_xcconfig": {
+          "CLANG_CXX_LANGUAGE_STANDARD": "c++20",
+          "CLANG_CXX_LIBRARY": "compiler-default",
+          "GCC_WARN_INHIBIT_ALL_WARNINGS": "YES"
+        },
+        "ios": {
+          "vendored_frameworks": "destroot/Library/Frameworks/ios/hermesvm.framework"
+        },
+        "tvos": {
+          "vendored_frameworks": "destroot/Library/Frameworks/tvos/hermesvm.framework"
+        },
+        "osx": {
+          "vendored_frameworks": "destroot/Library/Frameworks/macosx/hermesvm.framework"
+        },
+        "visionos": {
+          "vendored_frameworks": "destroot/Library/Frameworks/xros/hermesvm.framework"
+        },
+        "user_target_xcconfig": {
+          "HERMES_CLI_PATH": "<baseline-root>/node_modules/hermes-compiler/hermesc/osx-bin/hermesc"
+        },
+        "script_phases": {
+          "name": "[Hermes] Replace Hermes for the right configuration, if needed",
+          "execution_position": "before_compile",
+          "script": "        . \"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\n\n        CONFIG=\"Release\"\n        if echo $GCC_PREPROCESSOR_DEFINITIONS | grep -q \"DEBUG=1\"; then\n          CONFIG=\"Debug\"\n        fi\n\n        \"$NODE_BINARY\" \"$REACT_NATIVE_PATH/sdks/hermes-engine/utils/replace_hermes_version.js\" -c \"$CONFIG\" -r \"0.14.1\" -p \"$PODS_ROOT\"\n"
+        },
+        "subspecs": [
+          {
+            "name": "Pre-built",
+            "preserve_paths": [
+              "destroot/bin/*",
+              "**/*.{h,c,cpp}"
+            ],
+            "source_files": "destroot/include/hermes/**/*.h",
+            "header_mappings_dir": "destroot/include",
+            "ios": {
+              "vendored_frameworks": "destroot/Library/Frameworks/universal/hermesvm.xcframework"
+            },
+            "visionos": {
+              "vendored_frameworks": "destroot/Library/Frameworks/universal/hermesvm.xcframework"
+            },
+            "tvos": {
+              "vendored_frameworks": "destroot/Library/Frameworks/universal/hermesvm.xcframework"
+            },
+            "osx": {
+              "vendored_frameworks": "destroot/Library/Frameworks/macosx/hermesvm.framework"
+            }
+          }
+        ]
+      },
+      "containsBaselineAbsolutePath": true,
+      "inheritedFlagsPresence": {
+        "RCT_USE_PREBUILT_RNCORE": false,
+        "RCT_USE_RN_DEP": false,
+        "USE_FRAMEWORKS": false,
+        "NO_FLIPPER": false,
+        "RCT_NEW_ARCH_ENABLED": false,
+        "USE_HERMES": false,
+        "RCT_HERMES_V1_ENABLED": false,
+        "INTUNE_ENABLED": false
+      },
+      "commandSetsNewArchitecture": true,
+      "pathOnlyAlternativeSha1": "8ebf8a508120f75fd20fdd5ea5d2f7b7a0177e23",
+      "pathOnlySpecWritten": false,
+      "frozenPodsExitCode": 1,
+      "iosBuildRun": false
+    },
+    "build": "not-run",
+    "install": "not-run",
+    "launch": "not-run",
+    "firstScreen": "not-run"
+  },
+  "android": {
+    "status": "passed",
+    "module": ":app",
+    "variant": "debug",
+    "architectures": "arm64-v8a",
+    "appId": "com.mattermost.rnbeta",
+    "existingSameAppIdBeforeInstall": false,
+    "avd": "Pixel_10_API_37_Play",
+    "image": "API37GooglePlayarm64revision6",
+    "renderer": "software/headless",
+    "installed": true,
+    "build": "BUILD SUCCESSFUL in12m33s;902executed223cache",
+    "source": "c2fe3beda22befd2178dce431793c09111ed903e",
+    "apk": {
+      "bytes": 128477303,
+      "sha256": "cf92d7198ec9a1b6122c53364ad592ca817386c2e829a9fcf16c7a160f397365",
+      "abis": [
+        "arm64-v8a"
+      ]
+    },
+    "install": "Success; no existing same AppID",
+    "launch": {
+      "status": "ok",
+      "state": "COLD",
+      "totalMs": 7192,
+      "waitMs": 7196
+    },
+    "timestamp": "2026-10-10T10:43:46.745702+09:00",
+    "firstScreen": "passed;Connect to your server form, Enter Server URL, Display Name, AppVersion2.44.0(Build814)",
+    "firstScreenPid": 3899,
+    "permissionPreparation": "Declined POST_NOTIFICATIONS prompt for newly installed baseline app",
+    "screenshotSha256": "b4f6eaaf000273bd9818fb39e5e9f144bd2618f361d428741038241eb1ef84eb",
+    "packageVersion": "versionCode=814 minSdk=24 targetSdk=36\nversionName=2.44.0",
+    "observedAt": "2026-10-10T10:45:05.948420+09:00",
+    "accountOrServerEntered": false,
+    "firstScreenEvidence": "android-first.png"
+  },
+  "remainingPolicyInput": "Original serialized Hermes spec/checksum provenance, or explicit path-dependent checksum policy decision. No exception applied; no additional candidate/SHA build search.",
+  "publicFiles": {
+    "android-first.png": "b4f6eaaf000273bd9818fb39e5e9f144bd2618f361d428741038241eb1ef84eb"
+  },
+  "cleanup": {
+    "ownAppForceStopped": true,
+    "ownAdbReverseRemoved": true,
+    "ownEmulatorNormalShutdown": true,
+    "ownMetroPidsTerminated": [
+      61181,
+      61270
+    ],
+    "ownGradleDaemonTerminated": 59080,
+    "ownIos26SimulatorShutdown": true,
+    "initialIos27DevicesPreservedBooted": true,
+    "originalGui98365Alive": true,
+    "adbDevicesAfter": [],
+    "port8081ListenersAfter": [],
+    "runtimeDeviceDefinitionAvdAppsAndLocalToolsRetained": true,
+    "avdDataResetOrDeleted": false
+  }
+}

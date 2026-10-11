@@ -1,0 +1,898 @@
+{
+  "issue": 212,
+  "attempt": "attempt-11-original-plugin-preparation",
+  "date": "2026-10-11",
+  "status": "PARTIAL_MANDATORY_POST_SELECTION_GUARD_STOP",
+  "publicationReady": true,
+  "issueCompleted": false,
+  "runstirUsed": false,
+  "runstirSourceSha": null,
+  "policy": {
+    "mainSha": "24c3189997316fced36b77cb1af261318ebb4696",
+    "adr": "ADR-0026",
+    "immutableSource": "https://github.com/minjunkim-dev/mobile-runtime/blob/24c3189997316fced36b77cb1af261318ebb4696/docs/adr/0026-rn-original-plugin-preparation.md",
+    "pullRequest": 245,
+    "exactHead": "aad9f47f9a0fe2bff5bf77eb81153f1c5087787f",
+    "ciRun": 38099391787,
+    "ciRequiredJobs": "4 PASS",
+    "ciProofScope": "policy adoption only; baseline actual evidence is separate"
+  },
+  "source": {
+    "minimum": {
+      "configuredSha": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+      "checkedOutSha": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+      "path": "<INTERNAL_ROOT>/minimal-baseline",
+      "independentlyCloned": true
+    },
+    "mattermost": {
+      "configuredSha": "c2fe3beda22befd2178dce431793c09111ed903e",
+      "checkedOutSha": null,
+      "state": "NOT_CREATED"
+    },
+    "fresh": {
+      "minimum": {
+        "configuredSha": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+        "checkedOutSha": null,
+        "state": "NOT_CREATED"
+      },
+      "mattermost": {
+        "configuredSha": "c2fe3beda22befd2178dce431793c09111ed903e",
+        "checkedOutSha": null,
+        "state": "NOT_CREATED"
+      }
+    }
+  },
+  "commandResults": [
+    {
+      "step": "minimal-baseline-clone",
+      "cwd": "<INTERNAL_ROOT>",
+      "argv": [
+        "git",
+        "clone",
+        "--no-checkout",
+        "<BASELINE_EVIDENCE_REPOSITORY>/docs/evidence/212/minimal-source.bundle",
+        "<INTERNAL_ROOT>/minimal-baseline"
+      ],
+      "started": "2026-10-11T10:17:47.653210+09:00",
+      "finished": "2026-10-11T10:17:47.685130+09:00",
+      "exitCode": 0,
+      "runnerSha256": "064811d938fb0dfe102d456f8caad2314c8bbace7a1f8f3932b2025c8db87b63",
+      "consumerKind": "ordinary",
+      "preparationGuardPassed": true
+    },
+    {
+      "step": "minimal-baseline-checkout",
+      "cwd": "<INTERNAL_ROOT>/minimal-baseline",
+      "argv": [
+        "git",
+        "checkout",
+        "--detach",
+        "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4"
+      ],
+      "started": "2026-10-11T10:17:47.717008+09:00",
+      "finished": "2026-10-11T10:17:47.817362+09:00",
+      "exitCode": 0,
+      "runnerSha256": "064811d938fb0dfe102d456f8caad2314c8bbace7a1f8f3932b2025c8db87b63",
+      "consumerKind": "ordinary",
+      "preparationGuardPassed": true
+    },
+    {
+      "step": "minimal-baseline-npm-ci",
+      "cwd": "<INTERNAL_ROOT>/minimal-baseline",
+      "argv": [
+        "mise",
+        "exec",
+        "node@22.23.2",
+        "--",
+        "npm",
+        "ci"
+      ],
+      "started": "2026-10-11T10:17:47.996612+09:00",
+      "finished": "2026-10-11T10:17:55.546853+09:00",
+      "exitCode": 0,
+      "runnerSha256": "064811d938fb0dfe102d456f8caad2314c8bbace7a1f8f3932b2025c8db87b63",
+      "consumerKind": "ordinary",
+      "preparationGuardPassed": true
+    },
+    {
+      "step": "minimal-baseline-mise-effective-selection",
+      "cwd": "<INTERNAL_ROOT>/minimal-baseline",
+      "argv": [
+        "env",
+        "MISE_DATA_DIR=<INTERNAL_ROOT>/minimal-baseline/vendor/bundle/mise-preparation/data",
+        "MISE_CACHE_DIR=<INTERNAL_ROOT>/minimal-baseline/vendor/bundle/mise-preparation/cache",
+        "MISE_STATE_DIR=<INTERNAL_ROOT>/minimal-baseline/vendor/bundle/mise-preparation/state",
+        "MISE_TMP_DIR=<INTERNAL_ROOT>/minimal-baseline/vendor/bundle/mise-preparation/tmp",
+        "MISE_SHIMS_DIR=<INTERNAL_ROOT>/minimal-baseline/vendor/bundle/mise-preparation/data/shims",
+        "MISE_SHARED_INSTALL_DIRS=<MISE_ORIGINAL_INSTALLS>",
+        "mise",
+        "exec",
+        "ruby@3.4.11",
+        "node@22.23.2",
+        "--",
+        "<PYTHON_EXECUTABLE>",
+        "<ATTEMPT_11_RAW_ROOT>/ruby_preparation.py",
+        "--probe-selected",
+        "minimal-baseline"
+      ],
+      "started": "2026-10-11T10:19:11.704311+09:00",
+      "finished": "2026-10-11T10:19:31.450064+09:00",
+      "exitCode": 0,
+      "runnerSha256": "064811d938fb0dfe102d456f8caad2314c8bbace7a1f8f3932b2025c8db87b63",
+      "consumerKind": "selection-probe",
+      "preparationGuardPassed": false
+    }
+  ],
+  "actualStages": {
+    "minimumCloneCheckout": "PASS",
+    "originalNpmCi": "PASS",
+    "strict55OriginalThreeLocks": "PASS",
+    "originalEarlyMetroActualHttpAndOwnership": "PASS",
+    "ownedMetroStop": "PASS",
+    "sharedBeforeSnapshot": "PASS",
+    "originalPluginIdentity": "PASS",
+    "originalMisePythonSelectionExitCode": 0,
+    "pythonLauncherLookup": "PASS",
+    "privateOutputPostGuard": "FAIL_STOP",
+    "actualRubyFactsPrefixPkgconfig": "NOT_STARTED",
+    "actualRubyConsumerObservation": "NOT_STARTED",
+    "officialGemMetadataArchiveSpecInstallerActivation": "NOT_STARTED",
+    "frozenBundleAndPodDeployment": "NOT_STARTED",
+    "minimumIosAndroidNativeInstallLaunchFirstscreen": "NOT_STARTED",
+    "mattermostBaseline": "NOT_STARTED",
+    "bothFresh": "NOT_STARTED",
+    "actualRunstir": "NOT_AUTHORIZED"
+  },
+  "toolBoundary": {
+    "requestedRuby": "3.4.11",
+    "requestedNode": "22.23.2",
+    "pythonLauncherLookupPathsMatchedOriginalRubyGemBundleNode": true,
+    "actualRubyVersionFactsMeasured": false,
+    "actualRubyPrefixPkgconfigMeasured": false,
+    "bundlerActivationMeasured": false,
+    "independentNodeNpmVersionProbePerformed": false,
+    "actualRubyRuntimeEnvironmentPluginEffectsAndEachReshim": "NOT_MEASURED",
+    "kernelProcArgsObservation": "NOT_STARTED",
+    "oldNativeSdkDeviceSuccessInherited": false
+  },
+  "earlyMetro": {
+    "observedAt": "2026-10-11T10:18:18.446017+09:00",
+    "processAliveBeforeHttp": true,
+    "processAliveAfterHttp": true,
+    "processIdentityUnchanged": true,
+    "portOwnerDescendantOfOwnLauncher": true,
+    "resourceCommandsKnownSuccess": true,
+    "http": {
+      "executed": true,
+      "receiptExists": true,
+      "url": "http://127.0.0.1:8081/status",
+      "responseUrl": "http://127.0.0.1:8081/status",
+      "status": 200,
+      "bodyHex": "7061636b616765722d7374617475733a72756e6e696e67",
+      "bodySha256": "ed71e52f066b30c279378b7933ec895ee558e0899131124296dec5bec2995cef",
+      "bodyFileVerified": true,
+      "error": null
+    },
+    "fatalLogLines": [],
+    "passed": true
+  },
+  "failure": {
+    "result": {
+      "path": "minimal-baseline-mise-effective-selection.result.json",
+      "bytes": 8311,
+      "sha256": "b808491bc82afe4223b300b7e3fbad2524bf7fc4c0262d095def6fb9fc4b6e48"
+    },
+    "selectionCommandExitCode": 0,
+    "runnerGuardPassed": false,
+    "outerBootstrapAndFrozenExitCode": 1,
+    "outerExitEvidence": "tool combined output; outer timestamps and separated stderr file were not persisted",
+    "guardError": "shared/plugin/private audit failed",
+    "postAudit": {
+      "path": "minimal-baseline-mise-effective-selection-after-consumer.mise-shared-audit.json",
+      "bytes": 4306,
+      "sha256": "1ba31a1b130768320fa6326fb8cfca6c52183d2eca7677f1477712152531ec6e"
+    },
+    "sharedChangedPaths": [],
+    "plugin": {
+      "count": 1,
+      "kind": "regular",
+      "bytes": 1553,
+      "relativeRubyPath": "lib/ruby/site_ruby/rubygems_plugin.rb",
+      "sha256": "6cedbcf33ae6de36e2569a3a181735031e05e1e5c52745d0d725d8b665f0ac5c",
+      "unchanged": true,
+      "runtimeLoadAndEffects": "NOT_MEASURED"
+    },
+    "privateState": {
+      "symlinkCount": 5,
+      "trackedConfigLinks": 4,
+      "trustedConfigLinks": 1,
+      "rawDiagnostic": {
+        "path": "readonly-private-symlink-diagnostic.json",
+        "bytes": 2923,
+        "sha256": "40a7ae0aed6dfff447c070096c1958414683b1bd75e381ba64dab276699ad228"
+      },
+      "exactTargetsPublic": false,
+      "targetsClassifiedOnlyAs": "clone input and existing user/config references",
+      "predicate": "ruby_preparation.py:81-82 permits symlink only under data/shims with original mise target",
+      "privateOutputScopePassed": false,
+      "policySemanticsDecision": "NOT_INFERRED_FROM_THIS_FAILURE"
+    },
+    "classification": "mandatory private-output guard stop after original selection exit0; not tool absence, original frozen failure, shared/source mutation, or application build failure",
+    "noRetryOrSourceHelperSettingsSymlinkChange": true
+  },
+  "sourceAudit": {
+    "sourcePath": "<INTERNAL_ROOT>/minimal-baseline",
+    "source": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+    "snapshotPath": "<ATTEMPT_11_RAW_ROOT>/minimal-baseline-initial-raw-snapshot.json",
+    "snapshotSha256": "907e14f44a40eae74b4270089d375674504e236c0cb57f74e055925d27e62129",
+    "currentSnapshotSha256": "707c79ba1ab583cb9b9f4befdffe5052a00d93f9358dbe52ab98a61c2097e04f",
+    "hiddenFlags": [],
+    "indexEntriesSha256": "6c376752c62a66afc19ea9799cc798af85e1a02561519c677c48b8e6e4a71d8a",
+    "label": "minimal-baseline-final",
+    "passed": true,
+    "prepared": true,
+    "trackedFiles": 55,
+    "indexUnchanged": true,
+    "kindAndGitModePassed": true,
+    "originalLocksUnchanged": true,
+    "mattermostChecksumOrGeneratedTargetExceptionApplied": false,
+    "trackedChanges": [],
+    "lockHashes": {
+      "package-lock.json": "3478830fc86d9d1ae7cd46ae129eec9c4915b0ec4e2df247e2cb62b136caeee0",
+      "Gemfile.lock": "3679d60340d049c31b74052580c64ab26b3e6fa611f332c1407121dfc3c791eb",
+      "ios/Podfile.lock": "cec099ee896ed83dd780bd8da0a03e840c3ba6a0803f90c0bbfcd04efaf17d56"
+    }
+  },
+  "sharedInvariant": {
+    "changedSharedPaths": [],
+    "finalBytesKindLinkModeUnchanged": true,
+    "sharedSnapshot": {
+      "path": "minimal-baseline-mise-shared-before.json",
+      "bytes": 48773193,
+      "sha256": "dedd599945b834ff7fb84b9e51134cac74874b401ec1c0eaf8d57d34421f517f"
+    },
+    "beforeAudit": {
+      "path": "minimal-baseline-mise-effective-selection-before-consumer.mise-shared-audit.json",
+      "bytes": 1593,
+      "sha256": "69230b22a0ba592ed88d478411687ff1bd6c7b7531c55bda6e9b987b5105b062"
+    },
+    "afterAudit": {
+      "path": "minimal-baseline-mise-effective-selection-after-consumer.mise-shared-audit.json",
+      "bytes": 4306,
+      "sha256": "1ba31a1b130768320fa6326fb8cfca6c52183d2eca7677f1477712152531ec6e"
+    },
+    "temporaryWriteAbsenceProven": false,
+    "osWriteIsolationProven": false
+  },
+  "helperEvidence": {
+    "authorMemoryPass": 667,
+    "counts": {
+      "rubyPreparedInput": 315,
+      "bootstrapProducerConsumer": 130,
+      "runtime": 130,
+      "resource": 21,
+      "ownedEmulator": 71
+    },
+    "syntaxPassFiles": 21,
+    "sealedHelperFiles": 36,
+    "sealedIndexEntries": 37,
+    "sealedBatch": {
+      "path": "finished-preparation-v2-batch.json",
+      "bytes": 4427,
+      "sha256": "603b8d7a96ba609c1ef9efb761a17d117e2bb4e2857f18c0c0ad2c8823fe4e5b"
+    },
+    "sealedIndex": {
+      "path": "SHA256SUMS.helpers",
+      "bytes": 3387,
+      "sha256": "b3059ce54761021dc336cae6410a4bef810ebdb19eca51d6d27905b3a3d02ce5"
+    },
+    "actualSourceOnlyHelperMismatch": 0,
+    "v1ArchiveFiles": 18,
+    "sourceOnlyChecksProveActualCompatibility": false,
+    "publicHelperConsumerChanges": "fixed authority/prefix binding/missing environment bypass/observed argv privacy; no original source or command change",
+    "independentReview": {
+      "path": "independent-helper-review-v2.md",
+      "bytes": 2160,
+      "sha256": "4d1a65a4793091c342442ef78f25e3d65801c6299d5987c9d1bbcf1282b8319f"
+    },
+    "independentReviewConclusion": "root granted after material finding 0; full review receipt is retained"
+  },
+  "cleanup": {
+    "raw": {
+      "path": "cleanup.json",
+      "bytes": 1205,
+      "sha256": "989dbd4dbb3cd1021d62dfee650da1b71a6a4b52c510e14fca1cae9cd7d5e9d9"
+    },
+    "finalResource": {
+      "path": "final-cleanup.json",
+      "bytes": 199896,
+      "sha256": "1ab76e41444b691db1ba5d3a1da36351d8c4743d6149df54a8ec7bed70dbc12d"
+    },
+    "finalResourceObservedAt": "2026-10-11T10:19:50.559709+09:00",
+    "passed": true,
+    "originalTwoSimulatorsPreservedBooted": true,
+    "dedicatedSimulatorPreservedShutdown": true,
+    "originalGuiAndWatchmanPreserved": true,
+    "metroListenerAbsent": true,
+    "existingAdbServerReadWithNoDevices": true,
+    "actualNativeEmulatorProcesses": 0,
+    "appInstallSimulatorBootEmulatorReverseGradleNotStarted": true,
+    "ownMetroGroupOnlyStopped": true,
+    "globalSourcePluginToolSdkRuntimePermissionsChangePerformed": false
+  },
+  "lease": {
+    "leaseId": "rn-212-attempt11-adr0026-20261011",
+    "initialGrant": {
+      "path": "root-lease.json",
+      "bytes": 7503,
+      "sha256": "29e082773fee2a4ff97678676f677271944ba6671d91ac896bf596572ebd4e26"
+    },
+    "initialGrantBytesPreserved": true,
+    "returnRequest": {
+      "path": "lease-return-request.json",
+      "bytes": 411,
+      "sha256": "0cfe07102d605bd69a88bfe619a397520fed287cd9cedd5867253d068f6cddfc"
+    },
+    "initialCleanupRootReleaseConfirmed": false,
+    "canonicalRootRelease": {
+      "path": "root-release-message-receipt.json",
+      "bytes": 1104,
+      "sha256": "5b656a433d0a4eec6a1f03f0bd03def59c7d9e24f48e3d07b05c6c53557b34e3"
+    },
+    "state": "RELEASED",
+    "releasedAt": "2026-10-11 01:20:56 UTC",
+    "furtherActualAllowed": false
+  },
+  "artifacts": {
+    "runnerResults": 4,
+    "runnerLogs": 4,
+    "metroLogs": 1,
+    "totalLogs": 5,
+    "firstscreenPng": 0,
+    "appZip": 0,
+    "apk": 0
+  },
+  "sourcePacketIntegrity": {
+    "checksumIndexEntries": 101,
+    "filesIncludingIndex": 102,
+    "mismatchCount": 0,
+    "bytecodeExcluded": true,
+    "indexSelfHashVerifiedSeparately": true,
+    "core": {
+      "report": {
+        "path": "REPORT.md",
+        "bytes": 3316,
+        "sha256": "816d9e00373962a2810ac6d4ff4b0ba81296e303c9715d7befa1773cb6536eef"
+      },
+      "manifest": {
+        "path": "manifest.json",
+        "bytes": 3767,
+        "sha256": "b65eb166072478a1b725b710396c99ee38e2f168d62d026904e932b8ea31ca5b"
+      },
+      "checksumIndex": {
+        "path": "SHA256SUMS",
+        "bytes": 10246,
+        "sha256": "bbbce379965d08060e1c665d52ff7969f4381bd820f84be71e8d6329c77b42e2"
+      }
+    },
+    "files": [
+      {
+        "path": "PLAN.md",
+        "bytes": 35704,
+        "sha256": "4da9c6431984989052707bd395bb26878e14d73477ded87eea4284f311187991"
+      },
+      {
+        "path": "PUBLIC-CHECKPOINT-DRAFT.md",
+        "bytes": 2071,
+        "sha256": "8fa3bba636b79cdb338584722a030bc485185e6584b0edd7576f9a8088c4a151"
+      },
+      {
+        "path": "REPORT.md",
+        "bytes": 3316,
+        "sha256": "816d9e00373962a2810ac6d4ff4b0ba81296e303c9715d7befa1773cb6536eef"
+      },
+      {
+        "path": "SHA256SUMS.helpers",
+        "bytes": 3387,
+        "sha256": "b3059ce54761021dc336cae6410a4bef810ebdb19eca51d6d27905b3a3d02ce5"
+      },
+      {
+        "path": "attempt11-start.json",
+        "bytes": 197952,
+        "sha256": "0166b7933d0b15d15828c14fb340f55c7c942c011d1144e94a593caa36cf5a00"
+      },
+      {
+        "path": "audit-v2.py",
+        "bytes": 11996,
+        "sha256": "a0a030097bd67c85c3bed3f7436ad6a86f8f66229731dbed3078647b9bb2d528"
+      },
+      {
+        "path": "bootstrap-memory-selfcheck.json",
+        "bytes": 13916,
+        "sha256": "8551ede75a13884d89a76a9caf1005a7ffbfd403675658a07eee85e769a80ca0"
+      },
+      {
+        "path": "bootstrap-memory-selfcheck.py",
+        "bytes": 11332,
+        "sha256": "cb72151076110d8be3b2205a50478f90007592acb6dd03d0557e6c96b788eec9"
+      },
+      {
+        "path": "bundler_bootstrap.py",
+        "bytes": 19842,
+        "sha256": "044b387c080650b417b7f38656ea7cad01b79ea8f5de07c54f500989de351596"
+      },
+      {
+        "path": "cleanup.json",
+        "bytes": 1205,
+        "sha256": "989dbd4dbb3cd1021d62dfee650da1b71a6a4b52c510e14fca1cae9cd7d5e9d9"
+      },
+      {
+        "path": "completion_gate.py",
+        "bytes": 1648,
+        "sha256": "556e090a9b320965ecb3d4102b43b84ad9eaaeec14f7f1a1eb52dd9e9e4759e2"
+      },
+      {
+        "path": "final-cleanup.json",
+        "bytes": 199896,
+        "sha256": "1ab76e41444b691db1ba5d3a1da36351d8c4743d6149df54a8ec7bed70dbc12d"
+      },
+      {
+        "path": "finished-preparation-v2-batch.json",
+        "bytes": 4427,
+        "sha256": "603b8d7a96ba609c1ef9efb761a17d117e2bb4e2857f18c0c0ad2c8823fe4e5b"
+      },
+      {
+        "path": "finished-ruby-preparation-batch.json",
+        "bytes": 2331,
+        "sha256": "248fbc7ac694d46ed588b2b5d077b0b59a28c08c2ec2b645396bbf47708e5d27"
+      },
+      {
+        "path": "generated_pods.py",
+        "bytes": 20799,
+        "sha256": "efc0f4615db5caf426d7365b0ece6fe2c54e03f9ff50de93c24d023e78f4a79a"
+      },
+      {
+        "path": "generated_post_audit.py",
+        "bytes": 3989,
+        "sha256": "fff6e0d2f0fe69b87c9818159582ca203f6512aa953c7f30629c082a06a69cb4"
+      },
+      {
+        "path": "independent-helper-review-v2.md",
+        "bytes": 2160,
+        "sha256": "4d1a65a4793091c342442ef78f25e3d65801c6299d5987c9d1bbcf1282b8319f"
+      },
+      {
+        "path": "lease-return-request.json",
+        "bytes": 411,
+        "sha256": "0cfe07102d605bd69a88bfe619a397520fed287cd9cedd5867253d068f6cddfc"
+      },
+      {
+        "path": "manifest.json",
+        "bytes": 3767,
+        "sha256": "b65eb166072478a1b725b710396c99ee38e2f168d62d026904e932b8ea31ca5b"
+      },
+      {
+        "path": "metro_guard.py",
+        "bytes": 15791,
+        "sha256": "5cfa40c028b7f732176aad6b02222f28c8ce7459400407b6fdc1f42580d2fd9f"
+      },
+      {
+        "path": "minimal-after-early.json",
+        "bytes": 201987,
+        "sha256": "ea78391e7894478ee85089ec6a9510956f0ed751e629fd9bf91dbe121e80fa01"
+      },
+      {
+        "path": "minimal-baseline-after-npm-ci.strict-minimal-audit.json",
+        "bytes": 1217,
+        "sha256": "0cfc5a7ebcfb30206c327986bdee78cf8c26147dd7bb495f40f747d1a8118dfe"
+      },
+      {
+        "path": "minimal-baseline-before-bootstrap.strict-minimal-audit.json",
+        "bytes": 1221,
+        "sha256": "c8ba1b836689e26c01bc606021d6f14234c539a137a43d64a681fdd1cd7706fe"
+      },
+      {
+        "path": "minimal-baseline-before-source.path-space.json",
+        "bytes": 515,
+        "sha256": "04b7f02a1a320f6c61c3d38781b69f60fddcb03757de71bf815b8c81b34e224f"
+      },
+      {
+        "path": "minimal-baseline-checkout.log",
+        "bytes": 89,
+        "sha256": "12a49c2a0adfd3ac6eec7fab96a96ae2e77a1263e070e5e496de22847ec196ae"
+      },
+      {
+        "path": "minimal-baseline-checkout.result.json",
+        "bytes": 703,
+        "sha256": "6f3e65cdbaa442f4831c9c102ea5023e68adf7c7ead87f81efaa01d74bc6006f"
+      },
+      {
+        "path": "minimal-baseline-clone.log",
+        "bytes": 107,
+        "sha256": "c3d791ddf82ccae49d0f4fcc24a375f7dc769f73654ed169aa9646d53af891bd"
+      },
+      {
+        "path": "minimal-baseline-clone.result.json",
+        "bytes": 851,
+        "sha256": "0f62f76143fb056373b17b5ff943ab5c8306635548c5b92ebe1403889783c434"
+      },
+      {
+        "path": "minimal-baseline-early-ready.http-body",
+        "bytes": 23,
+        "sha256": "ed71e52f066b30c279378b7933ec895ee558e0899131124296dec5bec2995cef"
+      },
+      {
+        "path": "minimal-baseline-early-ready.readiness.json",
+        "bytes": 388784,
+        "sha256": "bd51f57eab134126ca6294451b1f47900713406ac4719ea6f865c0a972e35158"
+      },
+      {
+        "path": "minimal-baseline-early-stop.stop.json",
+        "bytes": 192,
+        "sha256": "9ad62b502f1d884b60016bd1b75671b72328b0e86f95286797213b5ee7919725"
+      },
+      {
+        "path": "minimal-baseline-early.log",
+        "bytes": 1217,
+        "sha256": "09a29f4b4da78d67a4eec52f5a9d8a931bec2ddce8767f58da4478025bf4f1ab"
+      },
+      {
+        "path": "minimal-baseline-early.owned.json",
+        "bytes": 1663,
+        "sha256": "d59a745deaa3754d26fb8723a5ca1c59db3f737d1fb92e4a01a2246106f0d243"
+      },
+      {
+        "path": "minimal-baseline-final.strict-minimal-audit.json",
+        "bytes": 1210,
+        "sha256": "2372d460f24ad84e24018defff204107bf86c146b45d8c6adb74d41a1a83bede"
+      },
+      {
+        "path": "minimal-baseline-initial-raw-snapshot.json",
+        "bytes": 12126,
+        "sha256": "907e14f44a40eae74b4270089d375674504e236c0cb57f74e055925d27e62129"
+      },
+      {
+        "path": "minimal-baseline-initial.strict-minimal-audit.json",
+        "bytes": 1213,
+        "sha256": "dfa79fe7f50e9ff0dab76a7c3c020aceb4bcecc0cd1d49f74b36afc84b93fd13"
+      },
+      {
+        "path": "minimal-baseline-mise-context.json",
+        "bytes": 2489,
+        "sha256": "f80d5da8acc8db5012459d4c2393260199d59fe780816052f010c313a260c5f7"
+      },
+      {
+        "path": "minimal-baseline-mise-effective-selection-after-consumer-source.strict-minimal-audit.json",
+        "bytes": 1251,
+        "sha256": "dca617e2bcd8c0ddb112c83b6cc8c7b81b450d7573f232b717b6853b3df877c2"
+      },
+      {
+        "path": "minimal-baseline-mise-effective-selection-after-consumer.mise-shared-audit.json",
+        "bytes": 4306,
+        "sha256": "1ba31a1b130768320fa6326fb8cfca6c52183d2eca7677f1477712152531ec6e"
+      },
+      {
+        "path": "minimal-baseline-mise-effective-selection-before-consumer-source.strict-minimal-audit.json",
+        "bytes": 1252,
+        "sha256": "c93d3e43189e7e7a9e621d9cb7066277acf1bb3c3030e42b3cb55607c3c8b5d1"
+      },
+      {
+        "path": "minimal-baseline-mise-effective-selection-before-consumer.mise-shared-audit.json",
+        "bytes": 1593,
+        "sha256": "69230b22a0ba592ed88d478411687ff1bd6c7b7531c55bda6e9b987b5105b062"
+      },
+      {
+        "path": "minimal-baseline-mise-effective-selection.log",
+        "bytes": 1333,
+        "sha256": "8b56b5da8f2b27b719ac197a2fdde0e0b6b27ea4def48ef9fd1ef57522790c28"
+      },
+      {
+        "path": "minimal-baseline-mise-effective-selection.result.json",
+        "bytes": 8311,
+        "sha256": "b808491bc82afe4223b300b7e3fbad2524bf7fc4c0262d095def6fb9fc4b6e48"
+      },
+      {
+        "path": "minimal-baseline-mise-shared-before.json",
+        "bytes": 48773193,
+        "sha256": "dedd599945b834ff7fb84b9e51134cac74874b401ec1c0eaf8d57d34421f517f"
+      },
+      {
+        "path": "minimal-baseline-npm-ci.log",
+        "bytes": 1349,
+        "sha256": "1474019fa8e1bfe5371098684a461c078fcf7600e72c65cbc4fb4fb6c176d4ad"
+      },
+      {
+        "path": "minimal-baseline-npm-ci.result.json",
+        "bytes": 1983,
+        "sha256": "60191722724a667313cac3da148b4a1316f7eb76532554440839cdf2b85d1835"
+      },
+      {
+        "path": "minimal-baseline-original-Podfile.lock",
+        "bytes": 63628,
+        "sha256": "cec099ee896ed83dd780bd8da0a03e840c3ba6a0803f90c0bbfcd04efaf17d56"
+      },
+      {
+        "path": "minimal-baseline-original-inputs.json",
+        "bytes": 700,
+        "sha256": "f70f2d89efab7c641c24a5c7d9ab9074878df7d86cba9bd475304fbb98ac3b1c"
+      },
+      {
+        "path": "minimal-baseline-source-stage.json",
+        "bytes": 328,
+        "sha256": "b7eced511b9e20bb34c44d9d9bf5dcc163b85f4b095ea42d812f8b07808d3527"
+      },
+      {
+        "path": "minimal-early-preflight.json",
+        "bytes": 202132,
+        "sha256": "b3b5049efd5c98a73115cee92a9d6f6d1c5c65fc11952a0e74032a33b71ce394"
+      },
+      {
+        "path": "minimal-primary-inputs.json",
+        "bytes": 2621,
+        "sha256": "7fa37432fdafd4e8ded8700187c780039ac444f9dafcfea90b27006f2ac36bdb"
+      },
+      {
+        "path": "owned-emulator-memory-selfcheck.json",
+        "bytes": 6972,
+        "sha256": "15e6d73eea8fbd1c81c3de4c5721c426b83bb7719d36f38d95cbe65368377d7a"
+      },
+      {
+        "path": "owned-emulator-memory-selfcheck.py",
+        "bytes": 9417,
+        "sha256": "3107cfe607a86f07f5c275128ab44397de83e6e4147162ba10da691fa1f5f2ad"
+      },
+      {
+        "path": "path_guard.py",
+        "bytes": 2832,
+        "sha256": "86ca19fe86a001c969c5c6f70d0380c8e93d0481494cbdfc5c7286b8a63360a3"
+      },
+      {
+        "path": "policy-seal.json",
+        "bytes": 518,
+        "sha256": "cc4e41c065f11f9819cbc0cb7c4dcdd664b754fe5f54e184790d6b6ec62450f5"
+      },
+      {
+        "path": "pre-lease-preflight.json",
+        "bytes": 2460,
+        "sha256": "925cc68cf783dd47bc247cd180ba7c293c7117915be32ed8361ab38538da08e5"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/audit-v2.py",
+        "bytes": 11996,
+        "sha256": "a0a030097bd67c85c3bed3f7436ad6a86f8f66229731dbed3078647b9bb2d528"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/bootstrap-memory-selfcheck.json",
+        "bytes": 13916,
+        "sha256": "af0a3502dcf17dd0256263772e1947cf4dbd3dfefa83caf04e825818a7ce4f29"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/bootstrap-memory-selfcheck.py",
+        "bytes": 11161,
+        "sha256": "62740d3e71acc3ea02b6f119720dd5ed52b4097f5abdcdfcbdd9827696151597"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/bundler_bootstrap.py",
+        "bytes": 18872,
+        "sha256": "0434c289b25217b4e6a213dc6ffe67e27827fb302b035e9a1dc40422f68da362"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/finished-ruby-preparation-batch.json",
+        "bytes": 2331,
+        "sha256": "248fbc7ac694d46ed588b2b5d077b0b59a28c08c2ec2b645396bbf47708e5d27"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/generated_pods.py",
+        "bytes": 20799,
+        "sha256": "efc0f4615db5caf426d7365b0ece6fe2c54e03f9ff50de93c24d023e78f4a79a"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/generated_post_audit.py",
+        "bytes": 3989,
+        "sha256": "fff6e0d2f0fe69b87c9818159582ca203f6512aa953c7f30629c082a06a69cb4"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/policy-seal.json",
+        "bytes": 518,
+        "sha256": "cc4e41c065f11f9819cbc0cb7c4dcdd664b754fe5f54e184790d6b6ec62450f5"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/prepare_frozen_stage.py",
+        "bytes": 7415,
+        "sha256": "715f4a874e2e722258df8b0cb512b8d92bd137b2ef622a108e7939463166aedf"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/review-findings.json",
+        "bytes": 876,
+        "sha256": "9bb5364d7f5638588373c8c0b5dc4542f1ce0476477d28d939a49f39f3b3adcb"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/ruby-preparation-memory-selfcheck.json",
+        "bytes": 23465,
+        "sha256": "5f5b01ad55913fa0ffbec6e746b499f9675255507b16608cc4540bdf3cb9267b"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/ruby-preparation-memory-selfcheck.py",
+        "bytes": 10767,
+        "sha256": "bb097baff1001936522b2b133cebf6cff3d857fd6325c907f337d18e18990c28"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/ruby_consumer_observer.py",
+        "bytes": 11906,
+        "sha256": "5c0f238bc1b2c2d3b95c63cfbc1b8bd4e067b1336f6c2c84a3369c72e65b3b4e"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/ruby_preparation.py",
+        "bytes": 11232,
+        "sha256": "081088905cf7a9430e8bb1c2bddfbd2337f9e208c3155f5b611ec886e55adb42"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/run_step.py",
+        "bytes": 6048,
+        "sha256": "46cad25c79794d8141126a31ae41679929843469468b6284038eec3259465bb2"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/source_paths.py",
+        "bytes": 1598,
+        "sha256": "cac6ff3e06f2157ec1e6c0744da243d01763123073ba066304c7398a7cd9cfb8"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/strict_minimal_audit.py",
+        "bytes": 4343,
+        "sha256": "f38d6c29c3608253bb015caee79a37c00bcdd601e1cea6f3aea693599fa1e067"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/syntax-memory-result.json",
+        "bytes": 168,
+        "sha256": "acabab8b634d532dc7d7a092fa9ad1aba9fd396e4ab918fea178c86ada1125cd"
+      },
+      {
+        "path": "prepare_frozen_stage.py",
+        "bytes": 7780,
+        "sha256": "32b19fe983144b6da5fdd765f06fde1390ca9c58edb111de38edf7a15461e551"
+      },
+      {
+        "path": "prepare_hooks.py",
+        "bytes": 1714,
+        "sha256": "f73298419910215f913a81da6dc20ca234ccd4afad379db646a1e1a9b0d834fc"
+      },
+      {
+        "path": "prepare_source_stage.py",
+        "bytes": 3255,
+        "sha256": "c1fe2743d119042febf60cb3e7e14646ee118dfd9febcb7e986433401434319b"
+      },
+      {
+        "path": "public-manifest-draft.json",
+        "bytes": 1643,
+        "sha256": "7e21a22245436a910455f42a813a5909fb4ebe58c8fdc0915ae84ddf5155cdd9"
+      },
+      {
+        "path": "readiness-initial.json",
+        "bytes": 682,
+        "sha256": "9b3f62d3e98a70752c3d41d3541e93a0d25f7fb9cee2c396dbd28cf4d76900ab"
+      },
+      {
+        "path": "readonly-private-symlink-diagnostic.json",
+        "bytes": 2923,
+        "sha256": "40a7ae0aed6dfff447c070096c1958414683b1bd75e381ba64dab276699ad228"
+      },
+      {
+        "path": "resource-preflight-memory-selfcheck.json",
+        "bytes": 1056,
+        "sha256": "be6ea9987c1972b9e93c78dc27b55cf05b9b3108e066aa0f24db1d3bc53de828"
+      },
+      {
+        "path": "resource-preflight-memory-selfcheck.py",
+        "bytes": 2130,
+        "sha256": "324a4d6ad6f32858fe85fdda1bbc9cc9b450d3db9b871b68cf2d6ea99f326056"
+      },
+      {
+        "path": "resource_preflight.py",
+        "bytes": 14695,
+        "sha256": "2ee124f55df26f9e8ed736f3e8f0da66f5d84d9ae47e4242a04b442fda4f299c"
+      },
+      {
+        "path": "reused10-origin.json",
+        "bytes": 2037,
+        "sha256": "d664cc223d5aa2bc2681c55469613a89f43285b166587a76bdbf43c4c6e259dc"
+      },
+      {
+        "path": "root-lease.json",
+        "bytes": 7503,
+        "sha256": "29e082773fee2a4ff97678676f677271944ba6671d91ac896bf596572ebd4e26"
+      },
+      {
+        "path": "root-release-message-receipt.json",
+        "bytes": 1104,
+        "sha256": "5b656a433d0a4eec6a1f03f0bd03def59c7d9e24f48e3d07b05c6c53557b34e3"
+      },
+      {
+        "path": "ruby-preparation-memory-selfcheck.json",
+        "bytes": 31485,
+        "sha256": "51dd6aa7c04d323a905ff95bb95c883c53ecdc4e62c942bef9f417af9d988738"
+      },
+      {
+        "path": "ruby-preparation-memory-selfcheck.py",
+        "bytes": 17907,
+        "sha256": "ffe6968bc43bf907631b4ebd30a3d056678f3d0fe727a262d4032eb63cd6fb49"
+      },
+      {
+        "path": "ruby_consumer_observer.py",
+        "bytes": 12389,
+        "sha256": "63b9ef9aa41e51f4801f3a461debfedbc5a417d9e896bae582879ee5ce475839"
+      },
+      {
+        "path": "ruby_preparation.py",
+        "bytes": 17829,
+        "sha256": "bc45e86bb4c91a534e64f4d1c5cba75dbe10f0374fef2de1a622b2bd23cedc53"
+      },
+      {
+        "path": "run_step.py",
+        "bytes": 8025,
+        "sha256": "064811d938fb0dfe102d456f8caad2314c8bbace7a1f8f3932b2025c8db87b63"
+      },
+      {
+        "path": "runtime-memory-selfcheck.json",
+        "bytes": 11619,
+        "sha256": "5aa369e0e138f66516465305aef2ce2ad8fb6c06b1ff5efbe891e05bf1ab68cb"
+      },
+      {
+        "path": "runtime-memory-selfcheck.py",
+        "bytes": 9671,
+        "sha256": "9a4a1c9bd03b04589d188c4c639867666e2e7c78d00e9613dcbb3f7bcb005757"
+      },
+      {
+        "path": "source-only-helper-changes.diff",
+        "bytes": 47855,
+        "sha256": "6b2fe03d5cc073081e81e788ce9dc0d5012311ce620ea7b2dc7b217493d061ca"
+      },
+      {
+        "path": "source-only-v2-calibration.json",
+        "bytes": 1212,
+        "sha256": "568fa5100af82d51ecd80f136df020994dd0db1ee4b43e9a9c2f56e3d180e727"
+      },
+      {
+        "path": "source-only-v2-review-fixes.diff",
+        "bytes": 50397,
+        "sha256": "a557cd7dcbae1ab5171b0d147b7ed00641fdc5a567a9c0b369daf642703349c9"
+      },
+      {
+        "path": "source_paths.py",
+        "bytes": 1598,
+        "sha256": "cac6ff3e06f2157ec1e6c0744da243d01763123073ba066304c7398a7cd9cfb8"
+      },
+      {
+        "path": "start.path-space.json",
+        "bytes": 515,
+        "sha256": "4a6554342e4aed0c1d71edf38658a0ff32d8a636b7d2d2262dbe366fbc6f01a8"
+      },
+      {
+        "path": "strict_minimal_audit.py",
+        "bytes": 4343,
+        "sha256": "f38d6c29c3608253bb015caee79a37c00bcdd601e1cea6f3aea693599fa1e067"
+      },
+      {
+        "path": "syntax-memory-result.json",
+        "bytes": 168,
+        "sha256": "06934947dbbf477c9d8bb2a86c2e226b6265c2b06bed6b8726c132693f36da79"
+      },
+      {
+        "path": "v1-source-only-archive-index.json",
+        "bytes": 1897,
+        "sha256": "3223d6a6d800393492b665460a0bfdd67f077d9f1e8620c4b7c735cbe1048570"
+      },
+      {
+        "path": "SHA256SUMS",
+        "bytes": 10246,
+        "sha256": "bbbce379965d08060e1c665d52ff7969f4381bd820f84be71e8d6329c77b42e2"
+      }
+    ],
+    "publicManifestIsCuratedSummary": true,
+    "originalHashesDoNotIdentifySanitizedPublicBytes": true
+  },
+  "remaining": [
+    "new minimum and OSS baseline native/build/install/launch/first screen on both platforms",
+    "both independent fresh preparations after all four baseline first screens",
+    "actual Runstir and preservation of preparation belong to later gate"
+  ]
+}

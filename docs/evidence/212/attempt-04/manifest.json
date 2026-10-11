@@ -1,0 +1,1357 @@
+{
+  "issue": 212,
+  "attempt": "attempt-04-mattermost-prepared",
+  "date": "2026-10-10/Asia-Seoul",
+  "status": "partial/stopped: prepared input passes frozen preparation; iOS build fails deployment-target validation",
+  "issueCompleted": false,
+  "runstirUsed": false,
+  "runstirSourceSha": null,
+  "policy": "../../../adr/0020-rn-baseline-prepared-input.md",
+  "canonicalTupleDecision": "https://github.com/minjunkim-dev/mobile-runtime/issues/212#issuecomment-6092021206",
+  "priorAttemptsPreserved": [
+    "../manifest.json",
+    "../attempt-02/manifest.json",
+    "../attempt-03/manifest.json"
+  ],
+  "source": {
+    "repository": "https://github.com/mattermost/mattermost-mobile",
+    "tag": "release-2.44",
+    "sourceSha": "c2fe3beda22befd2178dce431793c09111ed903e",
+    "license": "Apache-2.0",
+    "appVersion": "2.44.0",
+    "fromOfficialOrigin": true,
+    "nodeModulesPodsBuildCopied": false
+  },
+  "preparedInput": {
+    "rawIdentitySha256": "44da20ee311474138c5e0cffba78eef39c4eb057a95555fb9454ba0e6c1409fe",
+    "identity": {
+      "sourceSha": "c2fe3beda22befd2178dce431793c09111ed903e",
+      "policy": "ADR-0020 #212 Mattermost Hermes1 checksum regeneration; original serialized spec unknown",
+      "auditClarificationMain": "a5fb193d8ee79147453d06a0ed338a47d091b74f",
+      "baselineRoot": "<baseline-root>",
+      "tuple": {
+        "host": "macOS27.0.1/26A434 arm64",
+        "xcode": "27.0/27A266a",
+        "node": "24.15.0",
+        "npm": "11.12.1",
+        "ruby": "3.2.11",
+        "bundler": "2.5.11",
+        "cocoapods": "1.16.1",
+        "xcodeproj": "1.27.0",
+        "jdk": "Temurin17.0.20.1+1",
+        "jdkMiseIdentity": "temurin-17.0.20+101",
+        "rn": "0.83.9",
+        "expo": "55.0.23",
+        "gradle": "9.0.0",
+        "agp": "8.12.0",
+        "compileTargetSdk": "36/36",
+        "buildTools": "36.0.0",
+        "ndk": "27.1.12297006",
+        "iosSdk": "27.0",
+        "iosRuntime": "26.0/23A343",
+        "iosDevice": "iPhone16Pro/BEAB5D23-2F3D-4EC0-80AD-2892B9F42BE6",
+        "androidIntendedDevice": "Pixel_10_API_37_Play/API37GooglePlayarm64revision6/software-headless; not-run"
+      },
+      "preparationSteps": [
+        {
+          "step": "baseline-npm-ci",
+          "cwd": "<baseline-root>",
+          "argv": [
+            "env",
+            "NODE_ENV=development",
+            "mise",
+            "exec",
+            "node@24.15.0",
+            "--",
+            "npm",
+            "ci",
+            "--ignore-scripts"
+          ],
+          "started": "2026-10-10T19:01:02.447572+09:00",
+          "finished": "2026-10-10T19:01:18.969691+09:00",
+          "exitCode": 0
+        },
+        {
+          "step": "baseline-sentry-install",
+          "cwd": "<baseline-root>",
+          "argv": [
+            "mise",
+            "exec",
+            "node@24.15.0",
+            "--",
+            "node",
+            "node_modules/@sentry/cli/scripts/install.js"
+          ],
+          "started": "2026-10-10T19:01:45.108701+09:00",
+          "finished": "2026-10-10T19:01:45.178777+09:00",
+          "exitCode": 0
+        },
+        {
+          "step": "baseline-patch-package",
+          "cwd": "<baseline-root>",
+          "argv": [
+            "mise",
+            "exec",
+            "node@24.15.0",
+            "--",
+            "./node_modules/.bin/patch-package"
+          ],
+          "started": "2026-10-10T19:01:45.613199+09:00",
+          "finished": "2026-10-10T19:01:45.788674+09:00",
+          "exitCode": 0
+        },
+        {
+          "step": "baseline-generate-assets",
+          "cwd": "<baseline-root>",
+          "argv": [
+            "mise",
+            "exec",
+            "node@24.15.0",
+            "--",
+            "node",
+            "scripts/generate-assets.js"
+          ],
+          "started": "2026-10-10T19:01:46.229080+09:00",
+          "finished": "2026-10-10T19:01:46.287834+09:00",
+          "exitCode": 0
+        },
+        {
+          "step": "baseline-font-assets",
+          "cwd": "<baseline-root>",
+          "argv": [
+            "cp",
+            "node_modules/@mattermost/compass-icons/font/compass-icons.ttf",
+            "assets/fonts/"
+          ],
+          "started": "2026-10-10T19:01:46.722891+09:00",
+          "finished": "2026-10-10T19:01:46.727544+09:00",
+          "exitCode": 0
+        },
+        {
+          "step": "baseline-font-android",
+          "cwd": "<baseline-root>",
+          "argv": [
+            "cp",
+            "node_modules/@mattermost/compass-icons/font/compass-icons.ttf",
+            "android/app/src/main/assets/fonts/"
+          ],
+          "started": "2026-10-10T19:01:47.168194+09:00",
+          "finished": "2026-10-10T19:01:47.171523+09:00",
+          "exitCode": 0
+        },
+        {
+          "step": "baseline-generate-glyph",
+          "cwd": "<baseline-root>",
+          "argv": [
+            "mise",
+            "exec",
+            "node@24.15.0",
+            "--",
+            "node",
+            "scripts/generate-compass-glyph-map.mjs"
+          ],
+          "started": "2026-10-10T19:01:47.792197+09:00",
+          "finished": "2026-10-10T19:01:47.869212+09:00",
+          "exitCode": 0
+        },
+        {
+          "step": "baseline-sounds-copy",
+          "cwd": "<baseline-root>",
+          "argv": [
+            "cp",
+            "assets/sounds/calls_calm.mp3",
+            "assets/sounds/calls_cheerful.mp3",
+            "assets/sounds/calls_dynamic.mp3",
+            "assets/sounds/calls_urgent.mp3",
+            "assets/sounds/ringback.mp3",
+            "<baseline-root>/android/app/src/main/res/raw"
+          ],
+          "started": "2026-10-10T19:01:48.336465+09:00",
+          "finished": "2026-10-10T19:01:48.341023+09:00",
+          "exitCode": 0
+        },
+        {
+          "step": "baseline-jetify",
+          "cwd": "<baseline-root>",
+          "argv": [
+            "mise",
+            "exec",
+            "node@24.15.0",
+            "--",
+            "./node_modules/.bin/jetify"
+          ],
+          "started": "2026-10-10T19:01:48.366488+09:00",
+          "finished": "2026-10-10T19:01:49.800128+09:00",
+          "exitCode": 0
+        },
+        {
+          "step": "baseline-bundle-install",
+          "cwd": "<baseline-root>",
+          "argv": [
+            "env",
+            "BUNDLE_FROZEN=true",
+            "BUNDLE_PATH=<baseline-root>/vendor/bundle",
+            "mise",
+            "exec",
+            "ruby@3.2.11",
+            "node@24.15.0",
+            "--",
+            "bundle",
+            "_2.5.11_",
+            "install"
+          ],
+          "started": "2026-10-10T19:01:59.410922+09:00",
+          "finished": "2026-10-10T19:02:09.591018+09:00",
+          "exitCode": 0
+        },
+        {
+          "step": "baseline-pod-install",
+          "cwd": "<baseline-root>/ios",
+          "argv": [
+            "env",
+            "TMPDIR=/tmp",
+            "CP_CACHE_DIR=<evidence-root>/baseline-pod-download-cache",
+            "RCT_NEW_ARCH_ENABLED=1",
+            "BUNDLE_FROZEN=true",
+            "BUNDLE_PATH=<baseline-root>/vendor/bundle",
+            "mise",
+            "exec",
+            "ruby@3.2.11",
+            "node@24.15.0",
+            "--",
+            "bundle",
+            "_2.5.11_",
+            "exec",
+            "pod",
+            "install"
+          ],
+          "started": "2026-10-10T19:02:47.124975+09:00",
+          "finished": "2026-10-10T19:04:46.777490+09:00",
+          "exitCode": 0
+        },
+        {
+          "step": "baseline-pod-deployment",
+          "cwd": "<baseline-root>/ios",
+          "argv": [
+            "env",
+            "TMPDIR=/tmp",
+            "CP_CACHE_DIR=<evidence-root>/baseline-pod-download-cache",
+            "RCT_NEW_ARCH_ENABLED=1",
+            "BUNDLE_FROZEN=true",
+            "BUNDLE_PATH=<baseline-root>/vendor/bundle",
+            "mise",
+            "exec",
+            "ruby@3.2.11",
+            "node@24.15.0",
+            "--",
+            "bundle",
+            "_2.5.11_",
+            "exec",
+            "pod",
+            "install",
+            "--deployment"
+          ],
+          "started": "2026-10-10T19:05:06.935102+09:00",
+          "finished": "2026-10-10T19:05:20.466506+09:00",
+          "exitCode": 0
+        }
+      ],
+      "locks": {
+        "package-lock.json": {
+          "originalHeadBlobSha256": "c0ff8ca81bcf9f89abdfa4fc8980e81aae86ca161d25590a8af1b9360733bcb8",
+          "preparedRawSha256": "c0ff8ca81bcf9f89abdfa4fc8980e81aae86ca161d25590a8af1b9360733bcb8",
+          "allowedDifference": "none"
+        },
+        "Gemfile.lock": {
+          "originalHeadBlobSha256": "aacdfd202b0bbb5f2268a0b4af6ea5054d13af98b9b250796c8088ea7fa4e38c",
+          "preparedRawSha256": "aacdfd202b0bbb5f2268a0b4af6ea5054d13af98b9b250796c8088ea7fa4e38c",
+          "allowedDifference": "none"
+        },
+        "ios/Podfile.lock": {
+          "originalHeadBlobSha256": "64d1d50255e98c08f7722481629507a568e6f4efbce551344b658fe2d8f3ef1b",
+          "preparedRawSha256": "19c91cb4e61822f857e4a56e7501a06222caa471e4f1091838b8a9e1f434c117",
+          "allowedDifference": "SPEC CHECKSUMS.hermes-engine only"
+        }
+      },
+      "generatedSpecRawSha1": "62383905fde533671dca54d2eefc9611977fe593",
+      "generatedSpecRawSha256": "f8de28196620694edfbf618ac8f6ad1193e34702fe7584c7e7e198cc43b4af0a"
+    },
+    "originalSerializedSpecAvailable": false,
+    "oldNewDifferenceProvenOnlyPath": false,
+    "hermesOriginalChecksum": "28814c9c9296d16aef26cb514de5378d18885e44",
+    "hermesPreparedChecksum": "62383905fde533671dca54d2eefc9611977fe593",
+    "explicitVerifiedArchiveReuse": [],
+    "podCache": "fresh per-attempt CP_CACHE_DIR; no previous clone Pods copy"
+  },
+  "tuple": {
+    "host": "macOS27.0.1/26A434 arm64",
+    "xcode": "27.0/27A266a",
+    "node": "24.15.0",
+    "npm": "11.12.1",
+    "ruby": "3.2.11",
+    "bundler": "2.5.11",
+    "cocoapods": "1.16.1",
+    "xcodeproj": "1.27.0",
+    "jdk": "Temurin17.0.20.1+1",
+    "jdkMiseIdentity": "temurin-17.0.20+101",
+    "rn": "0.83.9",
+    "expo": "55.0.23",
+    "gradle": "9.0.0",
+    "agp": "8.12.0",
+    "compileTargetSdk": "36/36",
+    "buildTools": "36.0.0",
+    "ndk": "27.1.12297006",
+    "iosSdk": "27.0",
+    "iosRuntime": "26.0/23A343",
+    "iosDevice": "iPhone16Pro/BEAB5D23-2F3D-4EC0-80AD-2892B9F42BE6",
+    "androidIntendedDevice": "Pixel_10_API_37_Play/API37GooglePlayarm64revision6/software-headless; not-run"
+  },
+  "environmentMeasurement": {
+    "observedAt": "2026-10-10T19:02:21.771766+09:00",
+    "commands": {
+      "node": {
+        "argv": [
+          "mise",
+          "exec",
+          "node@24.15.0",
+          "--",
+          "node",
+          "--version"
+        ],
+        "exitCode": 0,
+        "output": "v24.15.0"
+      },
+      "npm": {
+        "argv": [
+          "mise",
+          "exec",
+          "node@24.15.0",
+          "--",
+          "npm",
+          "--version"
+        ],
+        "exitCode": 0,
+        "output": "11.12.1"
+      },
+      "ruby": {
+        "argv": [
+          "mise",
+          "exec",
+          "ruby@3.2.11",
+          "--",
+          "ruby",
+          "--version"
+        ],
+        "exitCode": 0,
+        "output": "ruby 3.2.11 (2026-03-27 revision 5483bfc1ae) [arm64-darwin23]"
+      },
+      "bundler": {
+        "argv": [
+          "mise",
+          "exec",
+          "ruby@3.2.11",
+          "--",
+          "bundle",
+          "_2.5.11_",
+          "--version"
+        ],
+        "exitCode": 0,
+        "output": "Bundler version 2.5.11"
+      },
+      "xcode": {
+        "argv": [
+          "/usr/bin/xcodebuild",
+          "-version"
+        ],
+        "exitCode": 0,
+        "output": "Xcode 27.0\nBuild version 27A266a"
+      },
+      "java": {
+        "argv": [
+          "mise",
+          "exec",
+          "java@temurin-17.0.20+101",
+          "--",
+          "java",
+          "-version"
+        ],
+        "exitCode": 0,
+        "output": "openjdk version \"17.0.20.1\" 2026-08-18\nOpenJDK Runtime Environment Temurin-17.0.20.1+1 (build 17.0.20.1+1)\nOpenJDK 64-Bit Server VM Temurin-17.0.20.1+1 (build 17.0.20.1+1, mixed mode, sharing)"
+      },
+      "host": {
+        "argv": [
+          "/usr/bin/sw_vers"
+        ],
+        "exitCode": 0,
+        "output": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0.1\nBuildVersion:\t\t26A434"
+      }
+    }
+  },
+  "locks": {
+    "package-lock.json": {
+      "originalHeadBlobSha256": "c0ff8ca81bcf9f89abdfa4fc8980e81aae86ca161d25590a8af1b9360733bcb8",
+      "preparedRawSha256": "c0ff8ca81bcf9f89abdfa4fc8980e81aae86ca161d25590a8af1b9360733bcb8",
+      "allowedDifference": "none"
+    },
+    "Gemfile.lock": {
+      "originalHeadBlobSha256": "aacdfd202b0bbb5f2268a0b4af6ea5054d13af98b9b250796c8088ea7fa4e38c",
+      "preparedRawSha256": "aacdfd202b0bbb5f2268a0b4af6ea5054d13af98b9b250796c8088ea7fa4e38c",
+      "allowedDifference": "none"
+    },
+    "ios/Podfile.lock": {
+      "originalHeadBlobSha256": "64d1d50255e98c08f7722481629507a568e6f4efbce551344b658fe2d8f3ef1b",
+      "preparedRawSha256": "19c91cb4e61822f857e4a56e7501a06222caa471e4f1091838b8a9e1f434c117",
+      "allowedDifference": "SPEC CHECKSUMS.hermes-engine only"
+    }
+  },
+  "commandResults": [
+    {
+      "step": "baseline-clone",
+      "cwd": "<evidence-root>",
+      "argv": [
+        "git",
+        "clone",
+        "--filter=blob:none",
+        "--no-checkout",
+        "https://github.com/mattermost/mattermost-mobile.git",
+        "mattermost-baseline"
+      ],
+      "started": "2026-10-10T18:53:13.086973+09:00",
+      "finished": "2026-10-10T18:53:16.396305+09:00",
+      "exitCode": 0
+    },
+    {
+      "step": "baseline-checkout",
+      "cwd": "<baseline-root>",
+      "argv": [
+        "git",
+        "checkout",
+        "--detach",
+        "c2fe3beda22befd2178dce431793c09111ed903e"
+      ],
+      "started": "2026-10-10T18:53:53.657053+09:00",
+      "finished": "2026-10-10T18:54:00.650405+09:00",
+      "exitCode": 0
+    },
+    {
+      "step": "baseline-npm-ci",
+      "cwd": "<baseline-root>",
+      "argv": [
+        "env",
+        "NODE_ENV=development",
+        "mise",
+        "exec",
+        "node@24.15.0",
+        "--",
+        "npm",
+        "ci",
+        "--ignore-scripts"
+      ],
+      "started": "2026-10-10T19:01:02.447572+09:00",
+      "finished": "2026-10-10T19:01:18.969691+09:00",
+      "exitCode": 0
+    },
+    {
+      "step": "baseline-sentry-install",
+      "cwd": "<baseline-root>",
+      "argv": [
+        "mise",
+        "exec",
+        "node@24.15.0",
+        "--",
+        "node",
+        "node_modules/@sentry/cli/scripts/install.js"
+      ],
+      "started": "2026-10-10T19:01:45.108701+09:00",
+      "finished": "2026-10-10T19:01:45.178777+09:00",
+      "exitCode": 0
+    },
+    {
+      "step": "baseline-patch-package",
+      "cwd": "<baseline-root>",
+      "argv": [
+        "mise",
+        "exec",
+        "node@24.15.0",
+        "--",
+        "./node_modules/.bin/patch-package"
+      ],
+      "started": "2026-10-10T19:01:45.613199+09:00",
+      "finished": "2026-10-10T19:01:45.788674+09:00",
+      "exitCode": 0
+    },
+    {
+      "step": "baseline-generate-assets",
+      "cwd": "<baseline-root>",
+      "argv": [
+        "mise",
+        "exec",
+        "node@24.15.0",
+        "--",
+        "node",
+        "scripts/generate-assets.js"
+      ],
+      "started": "2026-10-10T19:01:46.229080+09:00",
+      "finished": "2026-10-10T19:01:46.287834+09:00",
+      "exitCode": 0
+    },
+    {
+      "step": "baseline-font-assets",
+      "cwd": "<baseline-root>",
+      "argv": [
+        "cp",
+        "node_modules/@mattermost/compass-icons/font/compass-icons.ttf",
+        "assets/fonts/"
+      ],
+      "started": "2026-10-10T19:01:46.722891+09:00",
+      "finished": "2026-10-10T19:01:46.727544+09:00",
+      "exitCode": 0
+    },
+    {
+      "step": "baseline-font-android",
+      "cwd": "<baseline-root>",
+      "argv": [
+        "cp",
+        "node_modules/@mattermost/compass-icons/font/compass-icons.ttf",
+        "android/app/src/main/assets/fonts/"
+      ],
+      "started": "2026-10-10T19:01:47.168194+09:00",
+      "finished": "2026-10-10T19:01:47.171523+09:00",
+      "exitCode": 0
+    },
+    {
+      "step": "baseline-generate-glyph",
+      "cwd": "<baseline-root>",
+      "argv": [
+        "mise",
+        "exec",
+        "node@24.15.0",
+        "--",
+        "node",
+        "scripts/generate-compass-glyph-map.mjs"
+      ],
+      "started": "2026-10-10T19:01:47.792197+09:00",
+      "finished": "2026-10-10T19:01:47.869212+09:00",
+      "exitCode": 0
+    },
+    {
+      "step": "baseline-sounds-copy",
+      "cwd": "<baseline-root>",
+      "argv": [
+        "cp",
+        "assets/sounds/calls_calm.mp3",
+        "assets/sounds/calls_cheerful.mp3",
+        "assets/sounds/calls_dynamic.mp3",
+        "assets/sounds/calls_urgent.mp3",
+        "assets/sounds/ringback.mp3",
+        "<baseline-root>/android/app/src/main/res/raw"
+      ],
+      "started": "2026-10-10T19:01:48.336465+09:00",
+      "finished": "2026-10-10T19:01:48.341023+09:00",
+      "exitCode": 0
+    },
+    {
+      "step": "baseline-jetify",
+      "cwd": "<baseline-root>",
+      "argv": [
+        "mise",
+        "exec",
+        "node@24.15.0",
+        "--",
+        "./node_modules/.bin/jetify"
+      ],
+      "started": "2026-10-10T19:01:48.366488+09:00",
+      "finished": "2026-10-10T19:01:49.800128+09:00",
+      "exitCode": 0
+    },
+    {
+      "step": "baseline-bundle-install",
+      "cwd": "<baseline-root>",
+      "argv": [
+        "env",
+        "BUNDLE_FROZEN=true",
+        "BUNDLE_PATH=<baseline-root>/vendor/bundle",
+        "mise",
+        "exec",
+        "ruby@3.2.11",
+        "node@24.15.0",
+        "--",
+        "bundle",
+        "_2.5.11_",
+        "install"
+      ],
+      "started": "2026-10-10T19:01:59.410922+09:00",
+      "finished": "2026-10-10T19:02:09.591018+09:00",
+      "exitCode": 0
+    },
+    {
+      "step": "baseline-pod-install",
+      "cwd": "<baseline-root>/ios",
+      "argv": [
+        "env",
+        "TMPDIR=/tmp",
+        "CP_CACHE_DIR=<evidence-root>/baseline-pod-download-cache",
+        "RCT_NEW_ARCH_ENABLED=1",
+        "BUNDLE_FROZEN=true",
+        "BUNDLE_PATH=<baseline-root>/vendor/bundle",
+        "mise",
+        "exec",
+        "ruby@3.2.11",
+        "node@24.15.0",
+        "--",
+        "bundle",
+        "_2.5.11_",
+        "exec",
+        "pod",
+        "install"
+      ],
+      "started": "2026-10-10T19:02:47.124975+09:00",
+      "finished": "2026-10-10T19:04:46.777490+09:00",
+      "exitCode": 0
+    },
+    {
+      "step": "baseline-pod-deployment",
+      "cwd": "<baseline-root>/ios",
+      "argv": [
+        "env",
+        "TMPDIR=/tmp",
+        "CP_CACHE_DIR=<evidence-root>/baseline-pod-download-cache",
+        "RCT_NEW_ARCH_ENABLED=1",
+        "BUNDLE_FROZEN=true",
+        "BUNDLE_PATH=<baseline-root>/vendor/bundle",
+        "mise",
+        "exec",
+        "ruby@3.2.11",
+        "node@24.15.0",
+        "--",
+        "bundle",
+        "_2.5.11_",
+        "exec",
+        "pod",
+        "install",
+        "--deployment"
+      ],
+      "started": "2026-10-10T19:05:06.935102+09:00",
+      "finished": "2026-10-10T19:05:20.466506+09:00",
+      "exitCode": 0
+    },
+    {
+      "step": "baseline-ios-build",
+      "cwd": "<baseline-root>",
+      "argv": [
+        "env",
+        "RCT_NO_LAUNCH_PACKAGER=1",
+        "mise",
+        "exec",
+        "node@24.15.0",
+        "--",
+        "/usr/bin/xcodebuild",
+        "-workspace",
+        "ios/Mattermost.xcworkspace",
+        "-scheme",
+        "Mattermost",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "iphonesimulator",
+        "-destination",
+        "id=BEAB5D23-2F3D-4EC0-80AD-2892B9F42BE6",
+        "-derivedDataPath",
+        "<evidence-root>/ios-derived-data",
+        "-jobs",
+        "6",
+        "CODE_SIGNING_ALLOWED=NO",
+        "build"
+      ],
+      "started": "2026-10-10T19:05:37.575831+09:00",
+      "finished": "2026-10-10T19:05:48.443936+09:00",
+      "exitCode": 65
+    }
+  ],
+  "audit": {
+    "initial": {
+      "label": "baseline-initial",
+      "source": "c2fe3beda22befd2178dce431793c09111ed903e",
+      "trackedFiles": 4216,
+      "indexUnchanged": true,
+      "hiddenFlags": [],
+      "gitlinks": {
+        "libraries/@mattermost/intune": "0bfd1dfae93b9e6f06b4d65239a2f080e48df640"
+      },
+      "prepared": false,
+      "changesFromDeclaredCheckout": [],
+      "modeChanges": [],
+      "sourceHeadBlobCorrespondence": true,
+      "normalizedLockEqualOriginal": true,
+      "beforeAfterRawInvariant": true,
+      "oldHermesChecksum": "28814c9c9296d16aef26cb514de5378d18885e44",
+      "actualHermesChecksum": "28814c9c9296d16aef26cb514de5378d18885e44",
+      "originalPodLockSha256": "64d1d50255e98c08f7722481629507a568e6f4efbce551344b658fe2d8f3ef1b",
+      "actualPodLockSha256": "64d1d50255e98c08f7722481629507a568e6f4efbce551344b658fe2d8f3ef1b",
+      "declaredCheckoutConversion": {
+        "file": "android/gradlew.bat",
+        "attribute": {
+          "text": "set",
+          "eol": "crlf"
+        },
+        "headSha256": "94102713eb8fb22d032397924c0f38ab2da783ba60d07054339f1190a0c4e2cd",
+        "expectedCheckoutSha256": "1d297e00bd21de3ace22b4d7f2de1f9dfa858883d66bbf7c1ccbecccec8f4f3b",
+        "actualSha256": "1d297e00bd21de3ace22b4d7f2de1f9dfa858883d66bbf7c1ccbecccec8f4f3b"
+      },
+      "policySelfChecks": {
+        "original": true,
+        "hermesOnly": true,
+        "otherChecksumRejected": true,
+        "versionRejected": true,
+        "additionalTrackedRejected": true,
+        "preparedEolChangeRejected": true,
+        "gitattributesChangeRejected": true
+      },
+      "passed": true
+    },
+    "afterPreparation": {
+      "label": "baseline-after-pod-install",
+      "source": "c2fe3beda22befd2178dce431793c09111ed903e",
+      "trackedFiles": 4216,
+      "indexUnchanged": true,
+      "hiddenFlags": [],
+      "gitlinks": {
+        "libraries/@mattermost/intune": "0bfd1dfae93b9e6f06b4d65239a2f080e48df640"
+      },
+      "prepared": true,
+      "changesFromDeclaredCheckout": [
+        "ios/Podfile.lock"
+      ],
+      "modeChanges": [],
+      "sourceHeadBlobCorrespondence": true,
+      "normalizedLockEqualOriginal": true,
+      "beforeAfterRawInvariant": true,
+      "oldHermesChecksum": "28814c9c9296d16aef26cb514de5378d18885e44",
+      "actualHermesChecksum": "62383905fde533671dca54d2eefc9611977fe593",
+      "originalPodLockSha256": "64d1d50255e98c08f7722481629507a568e6f4efbce551344b658fe2d8f3ef1b",
+      "actualPodLockSha256": "19c91cb4e61822f857e4a56e7501a06222caa471e4f1091838b8a9e1f434c117",
+      "declaredCheckoutConversion": {
+        "file": "android/gradlew.bat",
+        "attribute": {
+          "text": "set",
+          "eol": "crlf"
+        },
+        "headSha256": "94102713eb8fb22d032397924c0f38ab2da783ba60d07054339f1190a0c4e2cd",
+        "expectedCheckoutSha256": "1d297e00bd21de3ace22b4d7f2de1f9dfa858883d66bbf7c1ccbecccec8f4f3b",
+        "actualSha256": "1d297e00bd21de3ace22b4d7f2de1f9dfa858883d66bbf7c1ccbecccec8f4f3b"
+      },
+      "policySelfChecks": {
+        "original": true,
+        "hermesOnly": true,
+        "otherChecksumRejected": true,
+        "versionRejected": true,
+        "additionalTrackedRejected": true,
+        "preparedEolChangeRejected": true,
+        "gitattributesChangeRejected": true
+      },
+      "passed": true
+    },
+    "afterDeployment": {
+      "label": "baseline-after-deployment",
+      "source": "c2fe3beda22befd2178dce431793c09111ed903e",
+      "trackedFiles": 4216,
+      "indexUnchanged": true,
+      "hiddenFlags": [],
+      "gitlinks": {
+        "libraries/@mattermost/intune": "0bfd1dfae93b9e6f06b4d65239a2f080e48df640"
+      },
+      "prepared": true,
+      "changesFromDeclaredCheckout": [
+        "ios/Podfile.lock"
+      ],
+      "modeChanges": [],
+      "sourceHeadBlobCorrespondence": true,
+      "normalizedLockEqualOriginal": true,
+      "beforeAfterRawInvariant": true,
+      "oldHermesChecksum": "28814c9c9296d16aef26cb514de5378d18885e44",
+      "actualHermesChecksum": "62383905fde533671dca54d2eefc9611977fe593",
+      "originalPodLockSha256": "64d1d50255e98c08f7722481629507a568e6f4efbce551344b658fe2d8f3ef1b",
+      "actualPodLockSha256": "19c91cb4e61822f857e4a56e7501a06222caa471e4f1091838b8a9e1f434c117",
+      "declaredCheckoutConversion": {
+        "file": "android/gradlew.bat",
+        "attribute": {
+          "text": "set",
+          "eol": "crlf"
+        },
+        "headSha256": "94102713eb8fb22d032397924c0f38ab2da783ba60d07054339f1190a0c4e2cd",
+        "expectedCheckoutSha256": "1d297e00bd21de3ace22b4d7f2de1f9dfa858883d66bbf7c1ccbecccec8f4f3b",
+        "actualSha256": "1d297e00bd21de3ace22b4d7f2de1f9dfa858883d66bbf7c1ccbecccec8f4f3b"
+      },
+      "policySelfChecks": {
+        "original": true,
+        "hermesOnly": true,
+        "otherChecksumRejected": true,
+        "versionRejected": true,
+        "additionalTrackedRejected": true,
+        "preparedEolChangeRejected": true,
+        "gitattributesChangeRejected": true
+      },
+      "passed": true
+    },
+    "afterBuildFailure": {
+      "label": "baseline-after-ios-build-failure",
+      "source": "c2fe3beda22befd2178dce431793c09111ed903e",
+      "trackedFiles": 4216,
+      "indexUnchanged": true,
+      "hiddenFlags": [],
+      "gitlinks": {
+        "libraries/@mattermost/intune": "0bfd1dfae93b9e6f06b4d65239a2f080e48df640"
+      },
+      "prepared": true,
+      "changesFromDeclaredCheckout": [
+        "ios/Podfile.lock"
+      ],
+      "modeChanges": [],
+      "sourceHeadBlobCorrespondence": true,
+      "normalizedLockEqualOriginal": true,
+      "beforeAfterRawInvariant": true,
+      "oldHermesChecksum": "28814c9c9296d16aef26cb514de5378d18885e44",
+      "actualHermesChecksum": "62383905fde533671dca54d2eefc9611977fe593",
+      "originalPodLockSha256": "64d1d50255e98c08f7722481629507a568e6f4efbce551344b658fe2d8f3ef1b",
+      "actualPodLockSha256": "19c91cb4e61822f857e4a56e7501a06222caa471e4f1091838b8a9e1f434c117",
+      "declaredCheckoutConversion": {
+        "file": "android/gradlew.bat",
+        "attribute": {
+          "text": "set",
+          "eol": "crlf"
+        },
+        "headSha256": "94102713eb8fb22d032397924c0f38ab2da783ba60d07054339f1190a0c4e2cd",
+        "expectedCheckoutSha256": "1d297e00bd21de3ace22b4d7f2de1f9dfa858883d66bbf7c1ccbecccec8f4f3b",
+        "actualSha256": "1d297e00bd21de3ace22b4d7f2de1f9dfa858883d66bbf7c1ccbecccec8f4f3b"
+      },
+      "policySelfChecks": {
+        "original": true,
+        "hermesOnly": true,
+        "otherChecksumRejected": true,
+        "versionRejected": true,
+        "additionalTrackedRejected": true,
+        "preparedEolChangeRejected": true,
+        "gitattributesChangeRejected": true
+      },
+      "passed": true
+    },
+    "rawInitialSnapshotSha256": "c233a846f17e3f178dc0dfd5dda36e35ad7976ee9ae95ea7e146f230c895cf4d",
+    "rawByteInvariant": "compare every prepared tracked file to initial original checkout; normalize only one Hermes checksum; EOL/gitattributes drift rejected",
+    "gitlinkInitialized": false
+  },
+  "diagnostics": {
+    "literalHeadComparisonFalseFailure": {
+      "classification": "audit diagnostic error; declared original checkout conversion",
+      "evidenceName": "baseline-initial.audit.json",
+      "actualSourceChange": false,
+      "expectedOriginalCheckoutEol": "*.bat text eol=crlf",
+      "resolvedBy": "canonical HEAD correspondence plus fixed checkout raw hashes"
+    },
+    "rootSymlinkReadFalseMismatch": {
+      "classification": "independent validator diagnostic error; followed mode120000 link",
+      "evidenceName": "audit-root-mismatch-symlink-resolution.json",
+      "path": "test-runner/src/main/kotlin/com/mattermost/helpers/push_notification/ErrorFormatting.kt",
+      "linkTargetSha256": "b5e77836fc3ad6b123e0f90a830ed00bd947c84c5e669c80e1b46c430bde27e5",
+      "headAndSnapshotAndLinkEqual": true,
+      "actualSourceChange": false
+    }
+  },
+  "ios": {
+    "preparation": "passed",
+    "plainPodInstallExitCode": 0,
+    "deploymentExitCode": 0,
+    "build": "failed",
+    "buildExitCode": 65,
+    "failure": {
+      "observedAt": "2026-10-10T19:06:21.802514+09:00",
+      "build": {
+        "step": "baseline-ios-build",
+        "cwd": "<baseline-root>",
+        "argv": [
+          "env",
+          "RCT_NO_LAUNCH_PACKAGER=1",
+          "mise",
+          "exec",
+          "node@24.15.0",
+          "--",
+          "/usr/bin/xcodebuild",
+          "-workspace",
+          "ios/Mattermost.xcworkspace",
+          "-scheme",
+          "Mattermost",
+          "-configuration",
+          "Debug",
+          "-sdk",
+          "iphonesimulator",
+          "-destination",
+          "id=BEAB5D23-2F3D-4EC0-80AD-2892B9F42BE6",
+          "-derivedDataPath",
+          "<evidence-root>/ios-derived-data",
+          "-jobs",
+          "6",
+          "CODE_SIGNING_ALLOWED=NO",
+          "build"
+        ],
+        "started": "2026-10-10T19:05:37.575831+09:00",
+        "finished": "2026-10-10T19:05:48.443936+09:00",
+        "exitCode": 65
+      },
+      "errors": [
+        "<baseline-root>/ios/Pods/Pods.xcodeproj: error: The iOS Simulator deployment target 'IPHONEOS_DEPLOYMENT_TARGET' is set to 12.4, but the range of supported deployment target versions is 15.0 to 27.0.x. (in target 'RNSVG-RNSVGFilters' from project 'Pods')",
+        "<baseline-root>/ios/Pods/Pods.xcodeproj: error: The iOS Simulator deployment target 'IPHONEOS_DEPLOYMENT_TARGET' is set to 9.0, but the range of supported deployment target versions is 15.0 to 27.0.x. (in target 'SDWebImage-SDWebImage' from project 'Pods')",
+        "<baseline-root>/ios/Pods/Pods.xcodeproj: error: The iOS Simulator deployment target 'IPHONEOS_DEPLOYMENT_TARGET' is set to 11.0, but the range of supported deployment target versions is 15.0 to 27.0.x. (in target 'CocoaLumberjack-CocoaLumberjackPrivacy' from project 'Pods')",
+        "<baseline-root>/ios/Pods/Pods.xcodeproj: error: The iOS Simulator deployment target 'IPHONEOS_DEPLOYMENT_TARGET' is set to 14.0, but the range of supported deployment target versions is 15.0 to 27.0.x. (in target 'ratex-react-native-RaTeXFonts' from project 'Pods')",
+        "<baseline-root>/ios/Pods/Pods.xcodeproj: error: The iOS Simulator deployment target 'IPHONEOS_DEPLOYMENT_TARGET' is set to 12.0, but the range of supported deployment target versions is 15.0 to 27.0.x. (in target 'SwiftyJSON-SwiftyJSON' from project 'Pods')",
+        "<baseline-root>/ios/Pods/Pods.xcodeproj: error: The iOS Simulator deployment target 'IPHONEOS_DEPLOYMENT_TARGET' is set to 12.0, but the range of supported deployment target versions is 15.0 to 27.0.x. (in target 'Starscream-Starscream_Privacy' from project 'Pods')",
+        "<baseline-root>/ios/Pods/Pods.xcodeproj: error: The iOS Simulator deployment target 'IPHONEOS_DEPLOYMENT_TARGET' is set to 12.4, but the range of supported deployment target versions is 15.0 to 27.0.x. (in target 'RNPermissions-RNPermissionsPrivacyInfo' from project 'Pods')",
+        "<baseline-root>/ios/Pods/Pods.xcodeproj: error: The iOS Simulator deployment target 'IPHONEOS_DEPLOYMENT_TARGET' is set to 12.0, but the range of supported deployment target versions is 15.0 to 27.0.x. (in target 'SQLite.swift-SQLite.swift' from project 'Pods')",
+        "<baseline-root>/ios/Pods/Pods.xcodeproj: error: The iOS Simulator deployment target 'IPHONEOS_DEPLOYMENT_TARGET' is set to 9.0, but the range of supported deployment target versions is 15.0 to 27.0.x. (in target 'react-native-cameraroll-RNCameraRollPrivacyInfo' from project 'Pods')",
+        "<baseline-root>/ios/Pods/Pods.xcodeproj: error: The iOS Simulator deployment target 'IPHONEOS_DEPLOYMENT_TARGET' is set to 10.0, but the range of supported deployment target versions is 15.0 to 27.0.x. (in target 'Alamofire-Alamofire' from project 'Pods')",
+        "<baseline-root>/ios/Pods/Pods.xcodeproj: error: The iOS Simulator deployment target 'IPHONEOS_DEPLOYMENT_TARGET' is set to 9.0, but the range of supported deployment target versions is 15.0 to 27.0.x. (in target 'react-native-image-picker-RNImagePickerPrivacyInfo' from project 'Pods')"
+      ],
+      "errorCount": 11,
+      "buildFailed": true,
+      "logSha256": "402820a9373b112e2f6459cd662cf741981e9374328eb9f5362c07a6eb54b8b2",
+      "newAndroidBuildRun": false,
+      "freshPrepared": false,
+      "deviceBootOrInstallRun": false,
+      "deploymentTargetCorrectionApplied": false,
+      "firstErrorLine": 2462,
+      "firstErrorContext": [
+        "",
+        "ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --print-asset-tag-combinations --output-format xml1 <baseline-root>/ios/Mattermost/Images.xcassets",
+        "",
+        "Build description signature: d44ca87066036ae72721ffd1dd69bcab",
+        "Build description path: <evidence-root>/ios-derived-data/Build/Intermediates.noindex/XCBuildData/d44ca87066036ae72721ffd1dd69bcab.xcbuilddata",
+        "<baseline-root>/ios/Pods/Pods.xcodeproj: error: The iOS Simulator deployment target 'IPHONEOS_DEPLOYMENT_TARGET' is set to 12.4, but the range of supported deployment target versions is 15.0 to 27.0.x. (in target 'RNSVG-RNSVGFilters' from project 'Pods')",
+        "warning: Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking \"Based on dependency analysis\" in the script phase. (in target 'React-rendererdebug' from project 'Pods')",
+        "warning: no rule to process file '<baseline-root>/ios/Pods/TurboLogIOSNative/Sources/TurboLogSwift/module.modulemap' of type 'sourcecode.module-map' for architecture 'arm64' (in target 'TurboLogIOSNative' from project 'Pods')"
+      ],
+      "phase": "CreateBuildDescription / deployment-target validation",
+      "compileActionCounts": {
+        "CompileC": 0,
+        "SwiftCompile": 0,
+        "SwiftEmitModule": 0,
+        "PhaseScriptExecution": 0,
+        "CompileAssetCatalog": 0
+      },
+      "sourceCompileObserved": false
+    },
+    "install": "not-run",
+    "launch": "not-run",
+    "firstScreen": "not-run",
+    "appArtifact": null,
+    "simulatorBootedByAttempt": false,
+    "deploymentTargetCorrectionApplied": false,
+    "sourcePatchOrAdditionalChecksumApplied": false
+  },
+  "android": {
+    "newPreparedInputBuild": "not-run/stopped after required iOS failure",
+    "install": "not-run",
+    "launch": "not-run",
+    "firstScreen": "not-run",
+    "priorOriginalAndroidPass": "../attempt-03/manifest.json; not inherited by prepared input",
+    "apkArtifact": null
+  },
+  "freshHandoff": {
+    "state": "incomplete",
+    "cloneFromOfficialOrigin": true,
+    "noCheckout": true,
+    "configuredCandidateObjectSha": "c2fe3beda22befd2178dce431793c09111ed903e",
+    "actualRepositoryHead": "e216404659b7bba5fdcb9e7936efd054f1142d87",
+    "actualCandidateCheckout": false,
+    "indexEntryCount": 0,
+    "workingSourceSha": null,
+    "workingLockHashes": null,
+    "nodeModulesExists": false,
+    "bundleExists": false,
+    "podsExists": false,
+    "independentPreparation": "not-run/stopped",
+    "deployment": "not-run",
+    "runstirProductExecution": "future ticket; not-run"
+  },
+  "minimumHandoff": {
+    "baselineKnownGoodEvidence": "../attempt-02/manifest.json",
+    "newExecutionPerformed": false,
+    "handoffFrozenPreparation": "not-run/unverified",
+    "clones": [
+      {
+        "id": "minimal-source",
+        "sourceSha": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+        "locksSha256": {
+          "package-lock.json": "3478830fc86d9d1ae7cd46ae129eec9c4915b0ec4e2df247e2cb62b136caeee0",
+          "Gemfile.lock": "3679d60340d049c31b74052580c64ab26b3e6fa611f332c1407121dfc3c791eb",
+          "ios/Podfile.lock": "cec099ee896ed83dd780bd8da0a03e840c3ba6a0803f90c0bbfcd04efaf17d56"
+        },
+        "trackedDiff": "",
+        "nodeModulesExists": true,
+        "podsExists": true
+      },
+      {
+        "id": "minimal-fresh",
+        "sourceSha": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+        "locksSha256": {
+          "package-lock.json": "3478830fc86d9d1ae7cd46ae129eec9c4915b0ec4e2df247e2cb62b136caeee0",
+          "Gemfile.lock": "3679d60340d049c31b74052580c64ab26b3e6fa611f332c1407121dfc3c791eb",
+          "ios/Podfile.lock": "cec099ee896ed83dd780bd8da0a03e840c3ba6a0803f90c0bbfcd04efaf17d56"
+        },
+        "trackedDiff": "",
+        "nodeModulesExists": false,
+        "podsExists": false
+      }
+    ]
+  },
+  "cleanup": {
+    "leaseReleased": true,
+    "ownAttemptProcessesFinal": [],
+    "ownMetroEmulatorGradleOrSimLaunched": false,
+    "dedicatedIos26Shutdown": true,
+    "initialIos27BootedPreserved": true,
+    "originalGui98365Alive": true,
+    "port8081Listeners": [],
+    "adbDevices": [],
+    "qemuProcesses": [],
+    "globalPathXcodeToolSelectionChanged": false,
+    "newLicenseConsent": false,
+    "sdkRuntimeInstallOrAvdDataModification": false,
+    "userAppDataChanged": false
+  },
+  "rawArtifacts": [
+    {
+      "localEvidenceName": "audit-root-mismatch-symlink-resolution.json",
+      "bytes": 954,
+      "sha256": "d16528d86383a05192db2499324631b57d6cb1e6f946ed81289d603fdac7a341"
+    },
+    {
+      "localEvidenceName": "audit-root-mismatch.json",
+      "bytes": 4807,
+      "sha256": "b8db98614feb515f570dc48d72a1404363608231a3e3a23c534a1e2188cf166a"
+    },
+    {
+      "localEvidenceName": "audit-v2.py",
+      "bytes": 6512,
+      "sha256": "9a1289dbd52999c3dee6e34513dfaa14b4b7f69556fb1caf58b8dbe65fad17eb"
+    },
+    {
+      "localEvidenceName": "audit.py",
+      "bytes": 3932,
+      "sha256": "214e1c7bec0d166131825aa5de221ddfdf04bebac7593336566b0de55cc89aef"
+    },
+    {
+      "localEvidenceName": "baseline-after-bundle.audit-v2.json",
+      "bytes": 1470,
+      "sha256": "61d7ca92092e5096656ac22c5de8dabd789ef3daafacad5e9aaaf463f94bd454"
+    },
+    {
+      "localEvidenceName": "baseline-after-deployment.audit-v2.json",
+      "bytes": 1500,
+      "sha256": "eb0aee45cfc3e6541ddc09c2113e072347f0a3c101bc42b063be8f13b3f11534"
+    },
+    {
+      "localEvidenceName": "baseline-after-font-android.audit-v2.json",
+      "bytes": 1476,
+      "sha256": "ff5711f421ee0fc1e534b742cf24096ec2c5073e99fa072718384b0dd7a5a4f4"
+    },
+    {
+      "localEvidenceName": "baseline-after-font-assets.audit-v2.json",
+      "bytes": 1475,
+      "sha256": "70f154f6f2b8442e3199bd8a4713ac77a1a389725de199c27baed783580f5fc0"
+    },
+    {
+      "localEvidenceName": "baseline-after-generate-assets.audit-v2.json",
+      "bytes": 1479,
+      "sha256": "5e1a0a2c8eb8677ffef241b285324c9d69b67f5682bbebf24bd7a7844e5b7454"
+    },
+    {
+      "localEvidenceName": "baseline-after-generate-glyph.audit-v2.json",
+      "bytes": 1478,
+      "sha256": "3d8a5398894fa3e327a92a50c69e5254d6a95256efff2d0af0ccb39d5e98c4f6"
+    },
+    {
+      "localEvidenceName": "baseline-after-hooks.audit-v2.json",
+      "bytes": 1469,
+      "sha256": "27fc7b2d64b0899faa2f8d931f6df0a449f8118b08408aab7a141983403035c9"
+    },
+    {
+      "localEvidenceName": "baseline-after-ios-build-failure.audit-v2.json",
+      "bytes": 1507,
+      "sha256": "7ed8b9d13bde8eda8592baec80a8890aea613c6b7f40a891204ad2c9d93780d4"
+    },
+    {
+      "localEvidenceName": "baseline-after-npm.audit-v2.json",
+      "bytes": 1467,
+      "sha256": "4d240c3f63e836b8d090c3819624c97ed3cedd239612e4041bcde6b5b54a1c57"
+    },
+    {
+      "localEvidenceName": "baseline-after-patch-package.audit-v2.json",
+      "bytes": 1477,
+      "sha256": "b6196660ba9eb190119308122fb5683277a67b172002c1d907572c1817cd30e6"
+    },
+    {
+      "localEvidenceName": "baseline-after-pod-install.audit-v2.json",
+      "bytes": 1501,
+      "sha256": "180417a1fa1855bd654d79b7f4f45a711757162888bb177ffb18c81de8ba98c5"
+    },
+    {
+      "localEvidenceName": "baseline-after-sentry-install.audit-v2.json",
+      "bytes": 1478,
+      "sha256": "90c271ee9e7af9227bed8782100b54601791a614a7b776b5f8a9a8f54c17dc81"
+    },
+    {
+      "localEvidenceName": "baseline-bundle-install.log",
+      "bytes": 3099,
+      "sha256": "4413babc94f1d09d9b51917e4760eeb23a7b1cccce363cc5fbfc3201ba9949f6"
+    },
+    {
+      "localEvidenceName": "baseline-bundle-install.result.json",
+      "bytes": 618,
+      "sha256": "6e9843611f8be00c4f57bd2dc212d5231e556bd4fce47aea8646f0662a46c0a8"
+    },
+    {
+      "localEvidenceName": "baseline-checkout.log",
+      "bytes": 101,
+      "sha256": "be3830ec95d40694769561922b7c0fe21015e44a5f91ae7dc3184890aa78b6b0"
+    },
+    {
+      "localEvidenceName": "baseline-checkout.result.json",
+      "bytes": 392,
+      "sha256": "149db8e3a4c13d1cb300665c225e404ec9e09b5767706f213cf62f83f72fe624"
+    },
+    {
+      "localEvidenceName": "baseline-clone.log",
+      "bytes": 38,
+      "sha256": "053e4747abd4706c451a751fd0dc5d96418f831cc616485aaec56dd544907f89"
+    },
+    {
+      "localEvidenceName": "baseline-clone.result.json",
+      "bytes": 435,
+      "sha256": "49c47604d6320dd4a0b3e806be02171fd7635eef53d33c96e242d09eecdc0e89"
+    },
+    {
+      "localEvidenceName": "baseline-font-android.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "localEvidenceName": "baseline-font-android.result.json",
+      "bytes": 426,
+      "sha256": "7728e399821f3c3e42b3fbe2c9ebcb54929b53b60898c18e234f8c93fa761b49"
+    },
+    {
+      "localEvidenceName": "baseline-font-assets.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "localEvidenceName": "baseline-font-assets.result.json",
+      "bytes": 404,
+      "sha256": "5bacef59bbad5fb36475c0be78f91c259a3b98015f76989db851f76bcb09ee47"
+    },
+    {
+      "localEvidenceName": "baseline-generate-assets.log",
+      "bytes": 20281,
+      "sha256": "e817aec836b12165c8b4488cbd48d9a82c1c7bdc32dfc061af25e2a65a168cb2"
+    },
+    {
+      "localEvidenceName": "baseline-generate-assets.result.json",
+      "bytes": 408,
+      "sha256": "5c401afb7caeb1974064062a8961d762e31e304ec684f282a7d577024791f114"
+    },
+    {
+      "localEvidenceName": "baseline-generate-glyph.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "localEvidenceName": "baseline-generate-glyph.result.json",
+      "bytes": 419,
+      "sha256": "d3a3786a4b03fb53acb6abbe038138bffbf4ddb8e4e2f0f86c8672f1f2d5c908"
+    },
+    {
+      "localEvidenceName": "baseline-hermes-engine.podspec.json",
+      "bytes": 2746,
+      "sha256": "f8de28196620694edfbf618ac8f6ad1193e34702fe7584c7e7e198cc43b4af0a"
+    },
+    {
+      "localEvidenceName": "baseline-initial.audit-v2.json",
+      "bytes": 1466,
+      "sha256": "e9df79ecf088a89dab82eab4acde94b4cca290348a4af479b6a1ba0f2bc940c6"
+    },
+    {
+      "localEvidenceName": "baseline-initial.audit.json",
+      "bytes": 529922,
+      "sha256": "35e5b1fdfcaaad608f2931d070a9b6c0ad0b6362cfb5c23ebfa1f4ba0c31ebf4"
+    },
+    {
+      "localEvidenceName": "baseline-ios-build.log",
+      "bytes": 218284,
+      "sha256": "402820a9373b112e2f6459cd662cf741981e9374328eb9f5362c07a6eb54b8b2"
+    },
+    {
+      "localEvidenceName": "baseline-ios-build.result.json",
+      "bytes": 866,
+      "sha256": "93da6cfbff9febacec348af1aa525f872e64c008315112697b99e447e5cb29ef"
+    },
+    {
+      "localEvidenceName": "baseline-jetify.log",
+      "bytes": 998,
+      "sha256": "2c7cbd938aeeee8e1260c7e5fca3c21339a108fcbd8e82949e53aafc553266e7"
+    },
+    {
+      "localEvidenceName": "baseline-jetify.result.json",
+      "bytes": 387,
+      "sha256": "32066a856a79af0c877c62dc5374b449b85191aca666bf46d4f6001beddfa654"
+    },
+    {
+      "localEvidenceName": "baseline-npm-ci.log",
+      "bytes": 4747,
+      "sha256": "5239e1f3447b8ce0866ddc6c1b2cd5365f30139b00472445af52f85bd9c1e485"
+    },
+    {
+      "localEvidenceName": "baseline-npm-ci.result.json",
+      "bytes": 437,
+      "sha256": "8001d151bd3c6836b6ecf5fe367f7abcb3edebd329d207c15352b36916678508"
+    },
+    {
+      "localEvidenceName": "baseline-original-Podfile.lock",
+      "bytes": 120403,
+      "sha256": "64d1d50255e98c08f7722481629507a568e6f4efbce551344b658fe2d8f3ef1b"
+    },
+    {
+      "localEvidenceName": "baseline-patch-package.log",
+      "bytes": 700,
+      "sha256": "41dd2e8fcda5356193a2193d62925c10bd9baae6ce512b0ab2ac2ce1c6ac24c5"
+    },
+    {
+      "localEvidenceName": "baseline-patch-package.result.json",
+      "bytes": 401,
+      "sha256": "9842d16795f5cd7dc370e558782ed4ee45265d6d71f4abdc276c617b04c72fac"
+    },
+    {
+      "localEvidenceName": "baseline-pod-deployment.log",
+      "bytes": 45639,
+      "sha256": "727c9dc8cc344977b8afc145783a87864f5ef1e1f3ec332a7fb6cf1b43932a7f"
+    },
+    {
+      "localEvidenceName": "baseline-pod-deployment.result.json",
+      "bytes": 865,
+      "sha256": "ba95428e21d8e3fbc93a2b9fcca3d1c0228ee62e9fa210f421e653dbcf1018db"
+    },
+    {
+      "localEvidenceName": "baseline-pod-install.log",
+      "bytes": 54843,
+      "sha256": "03317f0436ecb04434e95246c6729896a8c0f0ee9b3cf7b5b7d71be51e8eef06"
+    },
+    {
+      "localEvidenceName": "baseline-pod-install.result.json",
+      "bytes": 842,
+      "sha256": "f5a9507bd86355abb8b351bfc12318bfb9f829ce7f7218b51ac794c4151afda5"
+    },
+    {
+      "localEvidenceName": "baseline-prepared-Podfile.lock",
+      "bytes": 120403,
+      "sha256": "19c91cb4e61822f857e4a56e7501a06222caa471e4f1091838b8a9e1f434c117"
+    },
+    {
+      "localEvidenceName": "baseline-prepared-lock.diff",
+      "bytes": 608,
+      "sha256": "7260cc5c3b862167ea58fc829440074c3bc8c0b33e260ba90e7fd86ed96404d2"
+    },
+    {
+      "localEvidenceName": "baseline-sentry-install.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "localEvidenceName": "baseline-sentry-install.result.json",
+      "bytes": 424,
+      "sha256": "6971dbd7dd2b82b0728bfe54fa0603b81273422c8ed4fd1e1b0f08dcfa19908b"
+    },
+    {
+      "localEvidenceName": "baseline-sounds-copy.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "localEvidenceName": "baseline-sounds-copy.result.json",
+      "bytes": 660,
+      "sha256": "11a6fdab4993a538e6d2479bff230dc8d0edca1104d73414765902e3c19333b9"
+    },
+    {
+      "localEvidenceName": "checkout-byte-boundary.json",
+      "bytes": 709,
+      "sha256": "b7d638cdc12e4359d447671815a8a815e91710268aad6c48eba869f3df410809"
+    },
+    {
+      "localEvidenceName": "checkout-gitattributes.head-blob",
+      "bytes": 126,
+      "sha256": "8ccdb3d97c5beb71838952e014c46eead1f586556115724f43845d96241c1f6c"
+    },
+    {
+      "localEvidenceName": "checkout-gradlew.bat.head-blob",
+      "bytes": 2843,
+      "sha256": "94102713eb8fb22d032397924c0f38ab2da783ba60d07054339f1190a0c4e2cd"
+    },
+    {
+      "localEvidenceName": "checkout-gradlew.bat.original-worktree-bytes",
+      "bytes": 2937,
+      "sha256": "1d297e00bd21de3ace22b4d7f2de1f9dfa858883d66bbf7c1ccbecccec8f4f3b"
+    },
+    {
+      "localEvidenceName": "cleanup-state.json",
+      "bytes": 1927,
+      "sha256": "854c22f9f2dddba05511fd991d2be998e2331188b1828c911f497a61e421b39f"
+    },
+    {
+      "localEvidenceName": "environment.json",
+      "bytes": 1717,
+      "sha256": "1eac9b8024454bac3c088bd2756af8f422cb83539b4bd61fe0d4fa904c66a4da"
+    },
+    {
+      "localEvidenceName": "fresh-clone.log",
+      "bytes": 35,
+      "sha256": "f6b17a132e018d8a0f29266adc35fdf3fbcf4c580cc467aa82c77d6e98a017eb"
+    },
+    {
+      "localEvidenceName": "fresh-clone.result.json",
+      "bytes": 429,
+      "sha256": "2fa4b5c17cf21f4ebf9475cc0deb879c9b984175a05097802077fd0f4cbbc0a1"
+    },
+    {
+      "localEvidenceName": "ios-build-failure.json",
+      "bytes": 7490,
+      "sha256": "554c8ba594863ecbc4ee49ddb857cd0b512857bd50fbb2b40d2f991a1922db97"
+    },
+    {
+      "localEvidenceName": "mattermost-baseline-initial-raw-snapshot.json",
+      "bytes": 1057757,
+      "sha256": "c233a846f17e3f178dc0dfd5dda36e35ad7976ee9ae95ea7e146f230c895cf4d"
+    },
+    {
+      "localEvidenceName": "minimal-handoff-readonly.json",
+      "bytes": 1180,
+      "sha256": "d15459edb9a530d5bea12616c0a5064facd3027a5d96873c775dfaf0d58c68d8"
+    },
+    {
+      "localEvidenceName": "prepare_hooks.py",
+      "bytes": 1558,
+      "sha256": "a25afc1a98cfc333db9e2e4ac3aaa66f6c6e17f258a04a20695774d82984791b"
+    },
+    {
+      "localEvidenceName": "prepared-input-identity.json",
+      "bytes": 9237,
+      "sha256": "44da20ee311474138c5e0cffba78eef39c4eb057a95555fb9454ba0e6c1409fe"
+    },
+    {
+      "localEvidenceName": "publish_packet.py",
+      "bytes": 8768,
+      "sha256": "f1b4124c766299e02fbfe790b18c0628223a263fed5fc05bd5cb03cdd4593bc2"
+    },
+    {
+      "localEvidenceName": "run_step.py",
+      "bytes": 663,
+      "sha256": "05102fecc94fd0806f0ddd4ea2abd320532be8ee8351ad0ed76d167f7559088f"
+    }
+  ],
+  "remaining": "#212 OSS dual-platform baseline and fresh frozen handoff incomplete. No further source/lock/flag/version/deployment adjustment is approved."
+}
