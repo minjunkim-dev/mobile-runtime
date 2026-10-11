@@ -35,6 +35,8 @@ ADR-0025의 installer 예시와 새 helper·PLAN·exact argv 검사를 같은 �
 
 observer의 필수 판정과 unknown STOP을 유지한다. 새 helper는 기존 관측 지점에 고정된 비식별 stage·errorCode를 기록할 수 있다. raw argv·환경·예외 원문을 추가 저장하지 않는다. 관측 query·sampling·delay·통과 조건을 바꾸지 않는다. 이 진단은 실제 race 원인 확정이나 실패 상쇄가 아니다.
 
+[ADR-0029](0029-rn-observer-executable-errno.md)는 기존 executable 조회의 함수·prototype·errno 설정을 유지한 private errno copy 초기화·실패 직후 읽기·고정 enum 기록만 별도로 허용한다. 나머지 관측 조건과 필수 STOP 및 새 실행 조건은 유지한다.
+
 ## 새 실행 조건
 
 1. 확정한 정책을 main에 반영한다. 문서와 새 helper를 독립 검토한다. 최초 attempt-12 receipt와 공개 실패 증거를 변경하지 않는다.
