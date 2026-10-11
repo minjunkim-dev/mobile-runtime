@@ -66,6 +66,8 @@ attempt-15의 최소 RN 원본 Bundle install은 exit `0`이었다. 해당 consu
 
 오류 무시, race 재분류, retry, 추가 생존·identity syscall과 관측 query 변경을 허용하지 않는다. sleep·delay·sampling·poll 순서·통과 조건을 바꾸지 않는다. 과거 성공 관측이나 exit 0으로 오류를 상쇄하지 않는다. 실제 errno에 따라 명령이나 환경을 자동 변경하지 않는다.
 
+[ADR-0030](0030-rn-pod-runtime-cwd-boundary.md)은 고정한 원본 Pod 호출 여섯 개의 own launcher cwd 판정과 제한된 cache metadata 감사를 별도로 결정한다. 이 결정의 errno 관측·query·sampling·delay와 오류 STOP은 유지한다. 다른 Ruby consumer와 모든 descendant의 exact cwd도 유지한다.
+
 private copy 초기화·읽기와 고정 enum 기록에는 실행 작업이 추가된다. 시간 overhead가 0이라고 주장하지 않는다. scheduling과 관측 시점에 미치는 실제 영향은 미측정이다. 이 관측은 root cause fix도 baseline 통과 보장도 아니다.
 
 ## 새 실행과 검토 조건
