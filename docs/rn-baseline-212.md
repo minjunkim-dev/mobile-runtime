@@ -18,9 +18,10 @@ Metro 실패 뒤 launch를 호출한 순서 오류를 보존했다. launch 요�
 [attempt-11](./rn-baseline-212-attempt-11.md)은 원본 mise 선택 exit `0` 뒤 private STATE symlink 5개를 사후 guard가 거부한 이력이다.
 [attempt-12](./rn-baseline-212-attempt-12.md)은 원본 metadata·Ruby facts/spec을 통과한 뒤 installer exit1과 observer unknown으로 중단한 이력이다.
 [attempt-13](./rn-baseline-212-attempt-13.md)은 installer·activation·bootstrap 성공 뒤 다음 선택 receipt label 중복으로 중단한 이력이다.
-최신 [attempt-14](./rn-baseline-212-attempt-14.md)은 원본 조건을 유지한 frozen 선택 receipt producer/read ID 정정을 적용했다. 최소 clone·npm·early Metro·strict55/세 lock·metadata/host/shared·installer·activation·새 선택·원본 frozen Bundle은 PASS다.
+[attempt-14](./rn-baseline-212-attempt-14.md)은 원본 조건을 유지한 frozen 선택 receipt producer/read ID 정정을 적용했다. 최소 clone·npm·early Metro·strict55/세 lock·metadata/host/shared·installer·activation·새 선택·원본 frozen Bundle은 PASS다.
 원본 runner12개는 모두 exit0이다. gem-actual은 CocoaPods1.15.2/xcodeproj1.25.1을 출력했다. observer는 저장된 관측83개와 EXECUTABLE_UNKNOWN 오류1개로 FAIL이다. 준비 helper는 exit1이었다. 정확한 하위 원인은 unknown이다. Bundle exec 내부환경·Pods·native·기기·첫 화면·Android·Mattermost·두 fresh는 미시작이다. 최초 파생 count0은 보존했고 별도 sidecar가83/총554로 정정한다. source/metadata/host/shared 사후 감사와 owned cleanup은 PASS다. 일시적 공유 write 부재는 증명하지 않는다. lease는 RELEASED다.
-다음 attempt15는 기존 ADR-0028 고정 비식별 진단의 source-only 준비다. 원인 해결이나 성공 보장이 아니다. 두 최종 독립 검토·최신 preflight·새 root lease 전 actual은 금지다.
+최신 [attempt-15](./rn-baseline-212-attempt-15.md)는 기존 ADR-0028의 고정 executable call-site 진단만 구분했다. 최소 clone·npm·early Metro·strict55/세 lock·metadata/host/shared·installer·activation·새 frozen 선택은 PASS다. 원본 frozen Bundle command는 exit0이지만 observer551관측과 executable-launcher-image-zero/EXECUTABLE_RETURN_ZERO 오류1개로 준비 guard가 FAIL이다. 하위 원인은 unknown이다. 원본 runner11개 모두 exit0, guard10PASS/1FAIL, Ruby receipt5개 총582관측/오류1개다. 후속 gem-actual·Pods·native·기기·첫 화면·Android·Mattermost·두 fresh는 미시작이다. 사후 감사·owned cleanup은 PASS다. lease는 RELEASED다.
+ADR-0029는 현재 proposal이며 사용자 Q1을 기다린다. 정책 main 채택과 attempt16 실제 권한은 없다. 원인 해결이나 성공을 보장하지 않는다.
 제품 실행 SHA: 없음. 모든 앱 준비·빌드·설치·실행에 Runstir를 사용하지 않았다.
 
 입력은 [#194 조사 정본](https://github.com/minjunkim-dev/mobile-runtime/blob/52ca6150685780cca86d5cb7c0b562033b40bd30/docs/research/cli-expansion-validation-candidates.md)이다.
@@ -28,7 +29,7 @@ Metro 실패 뒤 launch를 호출한 순서 오류를 보존했다. launch 요�
 [명세 #199](https://github.com/minjunkim-dev/mobile-runtime/issues/199)의 AC05·AC06에 baseline 증거만 제공한다.
 과거 BlueWallet Go의 Pod checksum 예외와 #201의 RN 0.82 준비 앱 증거를 적용하지 않았다.
 attempt-04 이후의 고정 Mattermost 준비 입력에 [ADR-0020](./adr/0020-rn-baseline-prepared-input.md)의 Hermes 한 값 예외를 적용했다.
-아래 최초 source·실행 기록은 원본 이력이다. 최신 판정은 attempt-14와 마지막 AC 표를 따른다. 과거 성공을 새 내장 경로·원본 Metro 조건의 성공으로 승계하지 않는다.
+아래 최초 source·실행 기록은 원본 이력이다. 최신 판정은 attempt-15와 마지막 AC 표를 따른다. 과거 성공을 새 내장 경로·원본 Metro 조건의 성공으로 승계하지 않는다.
 
 ## 최초 attempt 판정
 
@@ -289,9 +290,9 @@ iOS는 명시한 UDID의 `simctl install`과 `simctl launch`를 사용했다.
 | --- | --- |
 | #212 source·generator·locks 고정 | 조사 정본, 생성 SHA 두 개, OSS SHA, lock checksum, fresh clone 분리 |
 | #212 정확 도구·환경 입력 | 관측 버전과 선택을 기록했다. 표본별 bundled 도구 차이를 같은 tuple로 숨기지 않았다. |
-| #212 양플랫폼 최소+OSS 첫 화면 | 미충족. 과거 성공·필수 실패를 보존한다. 최신 attempt-14의 최소 source/npm/early Metro·strict55/세 lock·metadata/host/shared·installer·activation·새 선택·원본 frozen Bundle은 PASS다. 원본 tool12개 exit0 뒤 gem-actual observer83관측/EXECUTABLE_UNKNOWN 오류1개로 준비 guard가 중단했다. 전체 관측554개와 최초 파생count0의 별도 정정을 연결한다. Pods·native·기기·Android·Mattermost·첫 화면과 fresh는 미시작이다. |
+| #212 양플랫폼 최소+OSS 첫 화면 | 미충족. 과거 성공·필수 실패를 보존한다. 최신 attempt-15의 source/npm/early Metro·strict55/세 lock·metadata/host/shared·installer·activation·새 frozen 선택은 PASS다. 원본 tool11개는 exit0이다. 원본 Bundle command exit0 뒤 observer551관측/executable-launcher-image-zero 오류1개로 guard가 중단했다. Ruby receipt5개 총582관측과 오류1개를 연결한다. gem-actual·Pods·native·기기·Android·Mattermost·첫 화면과 fresh는 미시작이다. |
 | #212 실패·교체 이유 보존 | 원본 실패·감사 도구 오류·native 실패·Metro 실패·launch 순서 오류를 구분했다. ADR-0020의 Hermes 한 값과 ADR-0021·0023의 생성 Debug 12값만 준비했다. ExpoRouter Debug는 `16.0`이고 11개 bundle Debug는 `16.4`다. source patch·버전 변경과 성공 SHA 탐색은 없다. |
-| #212 fresh clone 인계 | 최소 b62 source bundle과 세 lock 입력을 보존했다. 최소 fresh의 frozen 준비는 미검증이다. 필수 실패 뒤 attempt-06·07·08·09·10·11·12·13·14의 새 fresh 준비를 수행하지 않았다. 이전 attempt-04 후속 clone의 no-checkout 상태도 인계 성공이 아니다. |
+| #212 fresh clone 인계 | 최소 b62 source bundle과 세 lock 입력을 보존했다. 최소 fresh의 frozen 준비는 미검증이다. 필수 실패 뒤 attempt-06·07·08·09·10·11·12·13·14·15의 새 fresh 준비를 수행하지 않았다. 이전 attempt-04 후속 clone의 no-checkout 상태도 인계 성공이 아니다. |
 | #199 AC05 | baseline 부분 증거다. Runstir CLI·GUI 및 여섯 조합 검증을 대체하지 않는다. |
 | #199 AC06 | 실제 Mac Android 가속을 관측했다. VM·새 호스트·대표 실기기를 검증하지 않았다. |
 
@@ -321,3 +322,5 @@ iOS는 명시한 UDID의 `simctl install`과 `simctl launch`를 사용했다.
 [attempt-13 기록](./rn-baseline-212-attempt-13.md)은 installer·Bundler2.5.22 activation·bootstrap PASS를 보존한다. 다음 선택의 receipt label 중복으로 helper가 중단했다. 원본 tool 실패가 아니다. 최초 선택 receipt를 보존했다. 두 번째 선택 실제 consumer와 frozen·Pods·native·Android·Mattermost·fresh는 미시작이다. 원본 packet133개/index132개와 runner8/log8·Metro log1을 연결했다. source·metadata·host·shared 사후 감사와 owned cleanup은 PASS다. root lease는 RELEASED다. 다음 routine receipt-ID 정정은 별도 source-only attempt14다. 새 입력 정책 예외와 현재 actual 권한은 없다. 공개 초안의 검토와 새 head·CI는 대기한다.
 
 [attempt-14 기록](./rn-baseline-212-attempt-14.md)은 입력 조건을 유지한 선택 receipt-ID producer/read 정정과 원본 frozen Bundle PASS를 보존한다. 원본 tool12개는 모두 exit0이다. gem-actual의 저장된 관측83개와 executable 단계의 EXECUTABLE_UNKNOWN 오류1개로 observer·준비 guard가 FAIL이다. 정확한 하위 원인은 unknown이다. 최초 파생 count0은 보존하고 별도 sidecar가83/총554를 연결한다. 후속 Pods·native·첫 화면·Android·Mattermost·fresh는 미시작이다. 원본 recursive packet178개/index177개에는 bytecode10개도 포함했다. source·metadata·host·shared 사후 감사와 owned cleanup은 PASS다. root lease는 RELEASED다. 다음 attempt15는 기존 ADR-0028의 고정 비식별 진단 범위에서 source-only로 준비 중이다. 원인 해결이나 성공 보장을 뜻하지 않는다. 공개 문서는 두 독립 검토에서 material finding0을 확인했다. publicationReady=true다. 새 공개 head·CI 결과는 PR236 본문과 공개 checkpoint 댓글에 기록한다.
+
+[attempt-15 기록](./rn-baseline-212-attempt-15.md)은 기존 ADR-0028 범위의 executable call-site4곳과 같은 query 반환 zero/negative 진단만 구분했다. 원본 argv/env·query·FFI·sampling·delay·판정은 유지했다. 최소 원본 frozen Bundle command는 exit0이었다. observer551관측과 executable-launcher-image-zero/EXECUTABLE_RETURN_ZERO 오류1개로 guard가 FAIL이다. 하위 원인은 unknown이다. 실제 Ruby receipt5개는 총582관측/오류1개다. 원본 tool11개 exit0와 guard10PASS/1FAIL을 구분한다. 원본 recursive packet171개/index170개에는 bytecode9개와 log14개를 포함했다. 사후 source/metadata/host/shared 감사와 owned cleanup은 PASS다. root lease는 RELEASED다. 모든 후속 실제 실행은 미시작이다. 원본 packet과 공개 문서는 각각 두 독립 검토에서 material finding0을 확인했다. publicationReady=true이며 새 head·CI를 기다린다. ADR-0029는 proposal/PENDING_USER_Q1이다. attempt16 actual 권한은 없다.
