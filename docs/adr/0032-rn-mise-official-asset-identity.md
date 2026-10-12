@@ -85,4 +85,6 @@ semantic production 변경 범위는 `MISE_SHA` 상수 한 곳뿐이다. 다음 
 
 ## 확정한 답
 
+후속 [ADR-0033](0033-rn-gui-adb-resource-preparation.md)은 GUI 상태와 ADB phase별 receipt·ownership·STOP·CLEANUP_PENDING 계약의 문서 및 source-only memory 모델 준비만 채택한다. 실제 resource state 적용·startup·snapshot·hostwrite·재개와 원본 resource predicate 변경은 포함하지 않는다. 이 결정의 실제 권한 경계와 미해결 frontier는 그대로 유지한다.
+
 사용자는 현재 같은 canonical mise 경로의 identity를 공식 `v2026.10.7` raw macos-arm64 asset과 exact인 `f517…`으로 고정하고 새 정책·helper의 source-only 준비만 진행하는 최소 범위를 확정했다. 새 설치와 경로 변경 및 actual 재개 권한은 포함하지 않는다. 원래 resource 조건 변경은 별도 결정으로 남긴다. 기존 failure와 모든 guard 및 unknown STOP을 유지한다.
