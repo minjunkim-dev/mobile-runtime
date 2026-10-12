@@ -71,6 +71,8 @@ loop 밖 오류에는 ordinal과 누적 개수를 `null`로 기록한다. poll o
 
 원본 source·lock·graph·선언 버전과 plugin 및 공유 경로 감사를 유지한다. 최소의 source 55개와 세 lock을 보존한다. Mattermost의 허용된 Hermes 한 값과 generated mixed Debug 12값 및 원본 app·Release 보존 조건을 유지한다. ADR-0030의 exact 여섯 Pod recipe와 own launcher cwd 및 제한된 cache metadata 조건을 유지한다. 다른 consumer와 descendant의 원래 판정도 유지한다.
 
+[ADR-0032](0032-rn-mise-official-asset-identity.md)은 기존 canonical mise 파일의 identity 한 개와 새 source-only 준비만 별도로 결정한다. 세 진단 field와 모든 필수 STOP은 유지한다. ADR-0032의 범위 확정은 실제 실행을 재개하는 권한이 아니다. 원래 resource 조건과 최신 preflight 및 새 단독 lease를 유지한다.
+
 ## 새 실행과 검토 조건
 
 1. 확정한 진단 범위와 새 실행 조건을 정책 main에 반영한다. 최초 attempt-19와 이전 packet의 bytes 및 필수 STOP을 보존한다. 같은 attempt에서 새 field나 helper를 넣어 재개하지 않는다.
