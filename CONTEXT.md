@@ -285,6 +285,10 @@ _Avoid_: clean repo, test project
 고정된 프로젝트 revision과 그 revision에 적용할 준비 조건을 함께 식별한 검증 입력이다. 준비 입력의 고정은 known-good 판정이 아니며, known-good 여부는 별도 baseline 결과로 판정한다. ADR-0024의 RN 준비 입력은 최소 RN과 Mattermost 각각의 새 내장 경로와 원본 Metro 조건을 고정한다. ADR-0025의 원본 선언 Bundler 준비와 ADR-0026의 원본 Ruby plugin 준비도 clone별 독립 조건으로 식별한다. ADR-0027의 제한된 STATE metadata link 조건도 같은 준비 입력에 포함한다. ADR-0028의 최소 Bundler installer 순서 정정과 비식별 관측 진단도 같은 준비 입력에 포함한다. ADR-0029의 기존 executable 조회를 유지한 private errno copy 초기화·실패 직후 읽기·고정 enum 기록도 같은 준비 입력에 포함한다. ADR-0030의 고정한 원본 Pod 호출 여섯 개에 대한 own launcher cwd 경계와 제한된 cache metadata 감사도 같은 준비 입력에 포함한다. ADR-0031의 기존 observer loop 오류 ordinal·완전한 관측 누적 개수·바로 다음 기존 loop-head poll enum 연결도 같은 준비 입력에 포함한다. ADR-0032의 공식 raw asset과 exact인 기존 canonical mise identity 및 새 source-only 준비도 같은 준비 입력에 포함하며 실제 실행 권한은 별도로 유지한다. ADR-0033의 GUI 상태와 ADB phase별 receipt·ownership·STOP·CLEANUP_PENDING 계약도 문서와 source-only memory 모델로 준비하며, 실제 state 적용·startup·snapshot·hostwrite·재개와 원본 resource predicate 변경은 포함하지 않는다. 기존 성공을 새 조건으로 승계하지 않는다. 두 표본 각각의 양플랫폼 첫 화면을 확인한 뒤 독립 fresh를 준비한다.
 _Avoid_: known-good 표본, 준비 성공
 
+**실행 환경 기록 (Execution environment receipt)**:
+한 검증 실행의 특정 호출에 연결한 환경 증거다. 선언값·launcher 전달값·실제 수신 증거를 구분한다. 미수집·부재·빈 값·값 존재는 서로 다른 상태다. 향후 기록은 과거 원본 환경의 공백을 소급 보완하지 않는다. ADR-0034는 이 기록의 source-only 준비 범위를 고정한다.
+_Avoid_: 원본 환경 복원, 현재 환경으로 원본 보충
+
 **검증 결과 (Validation verdict)**:
 고정된 검증 실행의 결과로, 전체 증거 체인이 성공하면 `validated`, known-good baseline 이후 동일한 mobile/toolchain 실패가 재현되면 `failed`, 결과를 귀속할 수 없으면 `inconclusive`다. 검증 조합에만 귀속하며 doctor의 Status나 지원 판정으로 일반화하지 않는다.
 _Avoid_: support status, doctor status
