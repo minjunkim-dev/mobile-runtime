@@ -217,3 +217,52 @@ raw ZIP과 두 member bytes는 파일로 저장하지 않았다. bytes는 메모
 Q3 읽기 당시 `rawBytesPersisted=false`와 `documentWritten=false`였다. raw HTML과 추출 원문은 저장하지 않았다. 메모리 검사 프로세스 종료 뒤 원문을 보존하지 않았다. binary 실행·현재 SDK·HOME·key 읽기·실제 환경 수집·resource 조회·시작·추가 URL 조회는 수행하지 않았다. 실제 준비 권한과 readiness는 `false`다. 실제 lease는 없다.
 
 사용자는 Q4의 증거 기준과 Q5의 미입증 시 중단 경로를 확정했다. 이 두 결정은 [ADR-0033](../adr/0033-rn-gui-adb-resource-preparation.md)의 `full source/build 증거 기준과 중단 경로` 절에 저장한다. 사용자는 이어서 기존 정책 문서와 이 조사 문서의 파일 저장을 허용했다. 이번 저장은 앞서 대화에 표시한 Q3 결과 metadata의 기록이다. Q3 당시의 문서 미저장 사실을 바꾸지 않는다. 응답을 다시 조회하거나 raw bytes를 복원하지 않았다. 추가 URL·실제 환경·resource 조회·시작 권한은 부여하지 않는다. full source/build 대응은 UNKNOWN STOP이며 #212는 계속 미완료다.
+
+## 고정 ZIP member 목록 읽기 — 범위 확정과 결과
+
+사용자는 2026-10-13에 PR #257 병합 뒤의 다음 읽기 범위와 STOP 기준을 추천대로 확정했다. 정확한 대상은 `https://dl.google.com/android/repository/platform-tools_r37.0.1-darwin.zip`다. HTTPS GET 1회만 허용했다. redirect·재시도·후속 URL 조회는 제외했다. identity encoding을 요청했다. 원문 ZIP은 메모리에서만 처리했다. 기존 Q1도 중앙 directory를 검사했다. 이번 새 목적은 전체 member 이름에서 build 근거의 위치 후보를 찾는 것이다. 기존 Q1을 중앙 directory 미조회로 바꾸지 않는다.
+
+연결·읽기 timeout은 각각 15초다. 전체 상한은 30초다. 수신 상한은 `16110554B`다. 중앙 directory는 64KiB 이하, entry는 128개 이하, 이름은 각각 512B 이하, 추출 metadata는 64KiB 이하로 제한했다. HTTP 오류·redirect·불완전 수신·timeout·상한 초과·해석 불가·중복 또는 안전하지 않은 entry는 UNKNOWN STOP이다. 후보 부재·모호함도 UNKNOWN STOP이다. 완전히 수신한 산출물이 기존 크기·SHA-1·SHA-256과 다르면 실패 STOP이다. 같은 대상에 귀속한 직접 근거의 모순도 실패 STOP이다. 어느 STOP에서도 조회를 자동 확대하지 않는다.
+
+| metadata | 결과 |
+| --- | --- |
+| 요청 시작 UTC | `2026-10-13T06:31:45.943703+00:00` |
+| 수신 완료 UTC | `2026-10-13T06:31:48.412743+00:00` |
+| 검사 완료 UTC | `2026-10-13T06:31:48.438797+00:00` |
+| 요청 횟수·HTTP 상태 | `1` · `200` |
+| archive 크기 | `16110554B` |
+| archive SHA-1 | `6ae73f4de6452dc57e62ec02b68eed92a4c21661` |
+| archive SHA-256 | `ee39ad5967e95c2a07f04dbcbde96b1a0c916ba376096db5d2f498b7727a5d1d` |
+| archive identity 판정 | `PASS` — 기존 Q1·Q2와 일치 |
+| 중앙 directory 크기·entry 수 | `1153B` · `14` |
+| 한정 목록 검사 판정 | `PASS` |
+| build locator 이름 후보 | `[]` |
+| 일반 metadata 이름 후보 | `platform-tools/source.properties`, `platform-tools/NOTICE.txt` |
+| 읽기 전 합성 메모리 검사 | `10`개 PASS |
+| 경과 시간 | `2.495`초 |
+| 종합 판정 | `LOCATOR_CANDIDATE_ONLY_UNKNOWN_STOP` |
+
+중앙 directory에 선언된 member 이름·형식·크기는 다음과 같다. 아래 크기는 member 내용에서 측정한 값이 아니다. 압축 해제와 member 내용 검사는 수행하지 않았다.
+
+| member | 형식 | 선언 압축 크기 B | 선언 비압축 크기 B |
+| --- | --- | ---: | ---: |
+| `platform-tools/` | DIRECTORY | 0 | 0 |
+| `platform-tools/mke2fs` | FILE | 796313 | 1815872 |
+| `platform-tools/lib64/` | DIRECTORY | 0 | 0 |
+| `platform-tools/lib64/libc++.dylib` | FILE | 903319 | 2662912 |
+| `platform-tools/make_f2fs_casefold` | FILE | 247016 | 595376 |
+| `platform-tools/source.properties` | FILE | 39 | 38 |
+| `platform-tools/mke2fs.conf` | FILE | 380 | 1157 |
+| `platform-tools/adb` | FILE | 8087530 | 18844128 |
+| `platform-tools/etc1tool` | FILE | 316911 | 669952 |
+| `platform-tools/fastboot` | FILE | 2198377 | 5736048 |
+| `platform-tools/make_f2fs` | FILE | 247015 | 595360 |
+| `platform-tools/sqlite3` | FILE | 3032907 | 6606368 |
+| `platform-tools/hprof-conv` | FILE | 19033 | 134624 |
+| `platform-tools/NOTICE.txt` | FILE | 259362 | 1152421 |
+
+build locator 이름 후보는 basename에 `build`·`manifest`·`provenance`·`revision`·`version`을 포함하는 파일을 대소문자 구분 없이 찾은 결과다. 후보 0건은 이 이름 규칙과 이번 목록 범위에만 귀속한다. 다른 member 내용이나 다른 공식 자료에 build 근거가 없다는 증거가 아니다. 일반 metadata 후보 두 개도 build identity나 공식 연결의 입증 근거가 아니다. `source.properties`의 revision-only 결과는 기존 Q2에 있다. 이번에 그 내용을 다시 읽지 않았다. `NOTICE.txt`의 내용도 읽지 않았다.
+
+원문 ZIP은 파일로 저장하지 않았다. 메모리 검사 프로세스가 끝나면 원문을 폐기했다. 이번 문서 저장은 결과 metadata의 기록이다. member 내용·고정 source 7개·release notes·manifest·후속 URL·현재 SDK·HOME·key·실제 환경·resource를 조회하지 않았다. binary 실행·extract·설치·실제 준비를 수행하지 않았다. MODEL-ONLY helper를 실제 응답의 입증 도구로 사용하지 않았다. 공식 build identity와 full source/build 대응은 UNKNOWN STOP이다. 실제 권한·readiness는 false이며 lease는 없다. #212와 PR #236의 상태를 변경하지 않았다.
+
+이번 승인 범위에서 읽기를 종료했다. member 내용이나 다른 공식 자료로 확대하려면 정확한 대상과 읽기 범위를 새로 확정해야 한다. 이 결과로 실제 준비 권한을 도출하지 않는다.
