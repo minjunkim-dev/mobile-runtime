@@ -25,7 +25,7 @@
 - ProcessRunner seam을 사용한다. 명령 인자를 문자열로 조합하지 않는다. 종료 상태와 취소를 보존한다.
 - plan approval과 repository trust를 구분한다. 실행 직전 조건과 lease 검사를 생략하지 않는다.
 - 실행이 소유한 자원만 정리한다. 사용자 데이터와 기존 실행을 보존한다.
-- 알 수 없는 결과는 UNKNOWN으로 기록한다. MODEL-ONLY, CI, archive 근거를 실제 기기, 지원 범위, actual readiness로 승격하지 않는다.
+- 알 수 없는 결과는 해당 계약의 판정 불가 상태로 기록한다. doctor는 `unknown`, 검증 결과는 `inconclusive`, source-only receipt는 `UNKNOWN`을 사용한다. MODEL-ONLY, CI, archive 근거를 실제 기기, 지원 범위, actual readiness로 승격하지 않는다.
 - 토큰, key bytes, 개인 경로의 민감한 내용은 로그와 공개 근거에서 제외한다.
 
 ## 리뷰 보고
