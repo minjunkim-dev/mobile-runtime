@@ -156,14 +156,8 @@ public enum PreparationExecution {
             if !actions.isEmpty {
                 result.operation.state = "running"
                 let guarded = PreparationRunner(base: context.projectRunner, plan: plan,
-                    root: prepared.root, files: try sourceFiles(prepared.root), actions: actions, events: events) { completed in
-                        guard let current = try await inspect(input, runner: host).plan,
-                              current.project == plan.project, current.app == plan.app,
-                              try executionConditions(current, completed: completed) == executionConditions(plan, completed: completed)
-                        else {
-                            throw DomainError(summary: "Preparation conditions changed before a dependency command",
-                                remediation: Remediation(summary: "Preserve completed resources. Inspect the current tools and approve a new plan."))
-                        }
+                    root: prepared.root, files: try sourceFiles(prepared.root), actions: actions, events: events) {
+                        try await inspect(input, runner: host).plan
                     }
                 let includePods = actions.contains { $0.id == "dependencies.pods" }
                 var stageContext = UpContext()
@@ -426,25 +420,6 @@ public enum PreparationExecution {
         SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
     }
 
-    private static func executionConditions(_ plan: PreparationPlan, completed: [String]) throws -> Data {
-        // Installed resources change through this operation. Tool selection and destinations do not.
-        struct Conditions: Encodable {
-            let checks: [PreparationStep]
-            let destinations: [String: [String: String]]
-        }
-        let checks = plan.platforms.flatMap(\.checks).filter {
-            ($0.id.hasSuffix(".version") || $0.id.hasSuffix(".path") || $0.id.hasSuffix(".xcode.installed")
-                || $0.id.hasSuffix(".xcode.ready") || $0.id.hasSuffix(".project.execution-environment"))
-                && !($0.id.hasSuffix(".cocoapods.version") && completed.contains("dependencies.gems"))
-        }
-        let destinations = Dictionary(uniqueKeysWithValues: plan.steps.filter { $0.id.hasPrefix("dependencies.") }.map {
-            ($0.id, $0.environment.merging(["kind": $0.kind, "target": $0.target, "command": $0.command ?? ""]) { _, last in last })
-        })
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.sortedKeys]
-        return try encoder.encode(Conditions(checks: checks, destinations: destinations))
-    }
-
     private static func approvalFiles(_ root: URL) throws -> [String: String] {
         let names: Set<String> = ["package.json", "package-lock.json", "npm-shrinkwrap.json", "yarn.lock", "pnpm-lock.yaml", "pnpm-workspace.yaml", "Podfile", "Podfile.lock", "Manifest.lock", "Gemfile", "Gemfile.lock", "pubspec.yaml", "pubspec.lock", "mobile.yml", ".nvmrc", ".node-version", ".ruby-version", ".java-version", ".tool-versions", ".xcode-version", "build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts", "gradle-wrapper.properties", "project.pbxproj"]
         var result = try sourceFiles(root).filter { names.contains(URL(fileURLWithPath: $0.key).lastPathComponent) }
@@ -509,7 +484,7 @@ private final class PreparationRunner: ProcessRunner, @unchecked Sendable {
     let files: [String: String]
     let actions: [PreparationStep]
     let events: PreparationEvents
-    let verifyConditions: @Sendable ([String]) async throws -> Void
+    let freshPlan: @Sendable () async throws -> PreparationPlan?
     private let lock = NSLock()
     private var finished: [String] = []
     private var changed: [String] = []
@@ -518,9 +493,9 @@ private final class PreparationRunner: ProcessRunner, @unchecked Sendable {
     var changedFiles: [String] { lock.withLock { changed } }
     var log: String? { lock.withLock { logPath } }
     init(base: any ProcessRunner, plan: PreparationPlan, root: URL, files: [String: String], actions: [PreparationStep], events: PreparationEvents,
-         verifyConditions: @escaping @Sendable ([String]) async throws -> Void) {
+         freshPlan: @escaping @Sendable () async throws -> PreparationPlan?) {
         self.base = base; self.plan = plan; self.root = root; self.files = files; self.actions = actions; self.events = events
-        self.verifyConditions = verifyConditions
+        self.freshPlan = freshPlan
     }
     func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
         try Task.checkCancellation()
@@ -553,6 +528,33 @@ private final class PreparationRunner: ProcessRunner, @unchecked Sendable {
     }
     func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
         throw DomainError(summary: "Setup cannot spawn runtime processes", remediation: Remediation(summary: "Run build/up separately after preparation."))
+    }
+    private func verifyConditions(_ completed: [String]) async throws {
+        guard let current = try await freshPlan(),
+              current.project == plan.project, current.app == plan.app,
+              try Self.executionConditions(current, completed: completed) == Self.executionConditions(plan, completed: completed)
+        else {
+            throw DomainError(summary: "Preparation conditions changed before a dependency command",
+                remediation: Remediation(summary: "Preserve completed resources. Inspect the current tools and approve a new plan."))
+        }
+    }
+    private static func executionConditions(_ plan: PreparationPlan, completed: [String]) throws -> Data {
+        // Installed resources change through this operation. Tool selection and destinations do not.
+        struct Conditions: Encodable {
+            let checks: [PreparationStep]
+            let destinations: [String: [String: String]]
+        }
+        let checks = plan.platforms.flatMap(\.checks).filter {
+            ($0.id.hasSuffix(".version") || $0.id.hasSuffix(".path") || $0.id.hasSuffix(".xcode.installed")
+                || $0.id.hasSuffix(".xcode.ready") || $0.id.hasSuffix(".project.execution-environment"))
+                && !($0.id.hasSuffix(".cocoapods.version") && completed.contains("dependencies.gems"))
+        }
+        let destinations = Dictionary(uniqueKeysWithValues: plan.steps.filter { $0.id.hasPrefix("dependencies.") }.map {
+            ($0.id, $0.environment.merging(["kind": $0.kind, "target": $0.target, "command": $0.command ?? ""]) { _, last in last })
+        })
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        return try encoder.encode(Conditions(checks: checks, destinations: destinations))
     }
     private func checkFiles() throws {
         let now = try PreparationExecution.sourceFiles(root)
