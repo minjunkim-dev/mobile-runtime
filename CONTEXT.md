@@ -289,6 +289,10 @@ _Avoid_: known-good 표본, 준비 성공
 한 검증 실행의 특정 호출에 연결한 환경 증거다. 선언값·launcher 전달값·실제 수신 증거를 구분한다. 미수집·부재·빈 값·값 존재는 서로 다른 상태다. 향후 기록은 과거 원본 환경의 공백을 소급 보완하지 않는다. ADR-0034는 이 기록의 source-only 준비 범위를 고정한다.
 _Avoid_: 원본 환경 복원, 현재 환경으로 원본 보충
 
+**Source/build 증거 기록 (Source/build evidence receipt)**:
+공식 산출물과 정확한 build identity 및 source·dependency·toolchain·build 입력 사이의 연결 근거와 판정을 기록한 증거다. 후보·선언·입증을 구분하며 실제 준비 권한을 부여하지 않는다.
+_Avoid_: version 일치 증명, 준비 완료 기록
+
 **검증 결과 (Validation verdict)**:
 고정된 검증 실행의 결과로, 전체 증거 체인이 성공하면 `validated`, known-good baseline 이후 동일한 mobile/toolchain 실패가 재현되면 `failed`, 결과를 귀속할 수 없으면 `inconclusive`다. 검증 조합에만 귀속하며 doctor의 Status나 지원 판정으로 일반화하지 않는다.
 _Avoid_: support status, doctor status

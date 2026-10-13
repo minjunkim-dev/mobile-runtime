@@ -62,6 +62,64 @@ full source/build 대응은 다음 연결을 공식 build 기록에서 직접 �
 4. 향후 실제 자원의 소유권이나 종료가 미입증이면 아래의 기존 CLEANUP_PENDING 계약을 적용한다. 자동 cleanup이나 RELEASED 판정으로 우회하지 않는다. 이번 결정은 실제 resource 상태를 판정하거나 cleanup을 실행하지 않는다.
 5. 현재 source-only 경계를 유지한다. 이번 문서 저장은 추가 URL 조회·현재 SDK·HOME·key 읽기·실제 환경 수집·resource 조회·시작과 실제 준비 권한을 포함하지 않는다.
 
+### Source/build 증거 기록·판정 계약
+
+사용자는 2026-10-13에 `/grill-with-docs` 검토의 추천안을 모두 채택했다. 기존 `model_receipt`와 별도인 source/build 증거 기록을 사용한다. 증거의 종류와 연결 판정을 분리한다. 이 계약은 문서와 MODEL-ONLY 합성 사례의 설계다. 공식 build 근거의 추가 조회나 실제 collector·adapter 구현을 승인하지 않는다.
+
+#### 필드
+
+| 그룹 | 필드와 의미 |
+| --- | --- |
+| 기록 식별 | `schemaVersion`, `receiptId`, `kind`, `scope`, `policyRef`. 이번 `kind`는 `MODEL-ONLY`다. `scope`는 대상과 증거가 적용되는 시점을 식별한다. `policyRef`는 정책 revision·경로·digest를 연결한다. |
+| 대상 식별 | `artifactDigest`, `archiveAdbDigest`, `buildIdentity`, `sourceRevision`, `dependencies`, `toolchain`, `buildInputs`. digest에는 algorithm과 값을 둔다. `buildIdentity`에는 공식 식별자의 namespace와 값을 둔다. 대상 platform과 archive member를 명시한다. 미확인 값은 `null`이다. |
+| 근거 | `evidenceId`, `locator`, `readScope`, `observedAt`, `recordedAt`, `contentDigest`, `rawBytesPreserved`, `materialKind`. `locator`는 출처와 정확한 section·member·기록 위치를 연결한다. `materialKind`는 원문·보존된 검사 결과·metadata만 있는 기록·합성 입력을 구분한다. 미확인 값은 `null`이다. |
+| 증거 연결 | `linkId`, `from`, `to`, `evidenceRefs`, `evidenceClass`, `linkVerdict`, `reason`, `modelLinkVerdict`. `from`과 `to`는 정확한 대상 identity를 참조한다. `evidenceRefs`는 근거 ID를 참조한다. `modelLinkVerdict`는 합성 입력에 대한 기대 판정이며 실제 연결 판정과 분리한다. |
+| 종합 판정 | `modelVerdict`, `fullSourceBuildVerdict`, `actualVerdict`, `actualAuthority`, `actualReadiness`, `actualLease`. 합성 모델 성공을 실제 source/build 대응이나 실제 준비 성공으로 사용하지 않는다. |
+
+각 필수 연결의 record를 항상 둔다. 근거가 없으면 `evidenceRefs=[]`, `linkVerdict=UNKNOWN`, 누락 이유를 기록한다. 아직 종류를 정할 수 없으면 `evidenceClass=null`이다. 누락된 연결을 목록에서 빼지 않는다.
+
+digest 선언과 실제 bytes 검사 결과는 근거 record를 나눠 기록한다. hash 일치는 두 값의 대응만 입증한다. hash 일치로 공식 build와의 연결을 추정하지 않는다. 출처가 공식 URL이라는 선언만으로 직접 근거를 입증하지 않는다. 해당 공식 기록이 정확한 대상들을 직접 연결하는지 검사한다. 읽은 범위 밖의 내용은 근거로 사용하지 않는다.
+
+과거 검사 결과와 새 읽기 결과 및 합성 입력의 적용 범위를 분리한다. `observedAt`은 근거를 관측한 시각이다. `recordedAt`은 이 record를 기록한 시각이다. 새 기록 시각으로 과거 관측 시각을 대체하지 않는다. `rawBytesPreserved=false`인 metadata를 원문 보존 증거로 표시하지 않는다. 근거의 형식이나 원문 미보존 여부만으로 새로운 Q4 필수 조건을 만들지 않는다. 보존된 검사 결과가 직접 입증하는 범위와 확인할 수 없는 범위를 구분한다. 이 계약은 현재 SDK identity를 수집하거나 역사 identity와 같다고 가정하지 않는다.
+
+#### 필수 연결과 판정
+
+| `linkId` | 반드시 연결할 대상 |
+| --- | --- |
+| `ARTIFACT_AND_ADB_TO_BUILD` | 공식 artifact digest와 그 archive member ADB hash 모두 → 같은 정확한 공식 build identity |
+| `BUILD_TO_SOURCE` | 정확한 공식 build identity → 고정 source revision |
+| `BUILD_TO_DEPENDENCIES` | 같은 공식 build identity → 해당 build의 dependency 입력 |
+| `BUILD_TO_TOOLCHAIN` | 같은 공식 build identity → 해당 build의 toolchain 입력 |
+| `BUILD_TO_INPUTS` | 같은 공식 build identity → 해당 build의 build 입력 |
+
+`evidenceClass`는 `CANDIDATE`·`DECLARATION`·`DIRECT_EVIDENCE` 중 하나다. 후보는 조사 대상이다. 선언은 기록된 주장이다. 직접 근거는 해당 연결을 검사할 자료다. `DIRECT_EVIDENCE`라는 입력값 자체는 입증 판정이 아니다. 정확한 대상·출처·적용 범위·직접 연결을 확인해야 `linkVerdict=PASS`다. version·날짜·URL 후보·부분 source hash·값 존재만으로 PASS로 승격하지 않는다.
+
+판정자는 입력 record의 PASS 주장을 그대로 신뢰하지 않는다. 참조한 근거와 필수 연결에서 판정을 도출한다. 같은 이름의 다른 build·platform이나 다른 artifact의 근거를 결합하지 않는다. 첫 연결에서 artifact 또는 ADB의 근거 하나만 있으면 UNKNOWN이다. dependency·toolchain·build 입력의 각 연결도 독립적으로 검사한다. 특정 manifest 형식이나 bit-for-bit rebuild를 추가 필수 조건으로 만들지 않는다.
+
+1. 근거가 모순되면 `FAIL`이며 실패 STOP이다. 필수 UNKNOWN이 함께 있어도 실패를 숨기지 않는다. 원본 실패와 과거 기록을 보존한다.
+2. 모순이 없어도 필수 연결이 누락되거나 모호하면 `UNKNOWN`이며 UNKNOWN STOP이다. 누락 근거·identity·출처·범위·필수 참조도 같은 규칙을 적용한다. 서로 다른 후보는 그 자체로 모순이 아니다. 정확한 대상을 정하지 못하면 UNKNOWN이다.
+3. 모든 필수 연결의 공식 직접 근거를 입증해야 `fullSourceBuildVerdict=PASS`다. 종합 판정은 `FAIL` → `UNKNOWN` → `PASS` 우선순위로 도출한다. 부분 PASS나 환경 MATCH는 필수 UNKNOWN·FAIL을 상쇄하지 않는다.
+4. 합성 입력은 실제 `linkVerdict`를 변경하지 않는다. 합성 입력에 대한 `modelLinkVerdict`·`modelVerdict`를 따로 기록한다. 합성 입력의 PASS·FAIL·UNKNOWN은 모두 모델 판정이다. 실제 full source/build 대응은 합성 입력으로 바꾸지 않는다.
+5. 현재 실제 `fullSourceBuildVerdict=UNKNOWN`, `actualVerdict=STOP`, `actualAuthority=false`, `actualReadiness=false`, `actualLease=null`을 유지한다. 향후 실제 source/build PASS에도 실제 준비 권한·readiness를 자동 부여하지 않는다. Q5와 기존 별도 gate를 유지한다.
+
+#### 기존 환경 모델과 합성 사례의 검토
+
+정적 검토 대상은 [`model_receipt`](../../scripts/source-only/rn_adb_environment.py)와 [기존 합성 검사](../../scripts/source-only/test_rn_adb_environment.py)다. 기존 함수의 호출자는 합성 검사뿐이다. 실제 adapter는 없다. 함수는 `actualVerdict=STOP`, `actualCompatibility=UNKNOWN`, `actualAuthority=false`, `actualReadiness=false`, `actualLease=null`을 반환한다.
+
+기존 합성 검사 8개는 환경 MATCH·미기록과 부재의 구분·입력 불일치·UNKNOWN과 불일치의 혼합·schema와 identity 오류·입출력 격리·I/O 경계를 검사한다. 공식 artifact·build identity·source/build 입력 연결을 검사하지 않는다. 이번 검토에서 검사를 실행하지 않았다.
+
+`binaryIdentity.fixture`는 합성 path·hash·size다. `sourcePrediction.pin`은 고정 source의 선언이다. 둘 다 공식 build 연결의 직접 근거가 아니다. `sourcePrediction` 값은 환경 입력이 선언과 같으면 존재할 수 있다. 다른 환경의 보존 조건이 false 또는 미기록이어도 이 값은 존재할 수 있다. 이때 모델은 STOP 또는 UNKNOWN이다. 소비자는 예측값의 존재를 MATCH·입증·권한으로 해석하지 않는다. 두 기록을 연결할 때도 정확한 fixture identity와 적용 범위만 대조한다. 실제 수신·설치·compatibility를 추정하지 않는다.
+
+| 향후 합성 메모리 사례 | 기대 판정 |
+| --- | --- |
+| version·날짜·선언 digest만 일치하거나 artifact·ADB 중 한쪽 연결만 있음 | 해당 `modelLinkVerdict=UNKNOWN`; `modelVerdict=UNKNOWN`이며 모델 UNKNOWN STOP |
+| dependency·toolchain·build 입력 중 하나 누락 또는 근거 참조·대상·범위가 모호함 | 부분 모델 PASS를 유지해도 `modelVerdict=UNKNOWN`이며 모델 UNKNOWN STOP |
+| 합성한 정확한 대상의 공식 근거가 hash 또는 build 대응에 모순되고 다른 연결은 UNKNOWN | `modelVerdict=FAIL`이며 모델 실패 STOP; 합성 실패 기록 보존 |
+| 합성 입력에서 모든 필수 직접 연결을 충족 | `modelVerdict=PASS`만 허용; 실제 source/build는 UNKNOWN STOP |
+| source/build 근거 없이 환경 모델 MATCH 또는 STOP/UNKNOWN과 존재하는 `sourcePrediction`을 공급 | source/build `modelVerdict=UNKNOWN`; 환경 모델이나 예측값으로 승격하지 않음 |
+
+모든 합성 사례는 실제 `linkVerdict`와 `fullSourceBuildVerdict`를 변경하지 않는다. 현재 실제 `fullSourceBuildVerdict=UNKNOWN`과 `actualVerdict=STOP`을 유지한다. 모든 합성 사례에서 실제 STOP·권한 false·readiness false·lease null을 검사하는 설계를 유지한다. 이 표는 기대 결과의 설계다. 새 검사 구현이나 실행 결과가 아니다. 이번 계약 저장으로 공식 build 증거를 확보하지 않았다. #212의 실제 준비는 미완료다. PR #236을 병합하지 않는다.
+
 ## 선택지와 추천 검토 범위
 
 1. 원래 존재 predicate를 유지한다. 실제 준비는 STOP 상태를 유지한다. historical GUI를 다시 띄우거나 ADB daemon을 자동 복원하는 권한은 없다.
