@@ -84,8 +84,11 @@ gh workflow run draft-release.yml --repo minjunkim-dev/mobile-runtime --ref main
 workflow는 잠근 의존성으로 macOS arm64 archive와 checksum을 만들고 검증한다.
 GitHub에 `draft=true`, `prerelease=true`인 Release만 생성한다.
 기존 Release와 태그가 있는 버전은 거절한다. 기존 asset을 덮어쓰지 않는다.
+Draft 생성 직전에 입력을 다시 검증한다. 생성 후 같은 태그가 생겼으면 실패로 처리하고 Draft를 공개하지 않는다.
+이 검사는 외부 태그 변경을 원자적으로 잠그지 않는다. 실패한 Draft는 검토 후 처리한다.
 빌드 job은 읽기 권한만 사용한다. Draft 생성 job만 `contents: write`를 사용한다.
 공개 전환과 Homebrew formula 갱신은 실행하지 않는다.
+workflow 등록은 권한 확대다. 병합 전에 사람이 최종 head를 승인한다.
 
 Draft의 archive를 내려받아 [ADR-0019](adr/0019-first-external-pre-release.md)의 실제 실행 검증을 완료한다.
 archive smoke와 CI는 그 실행 검증을 대체하지 않는다. 공개는 별도 승인으로 처리한다.

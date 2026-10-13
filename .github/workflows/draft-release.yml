@@ -64,7 +64,13 @@ jobs:
     timeout-minutes: 5
     permissions:
       contents: write
+      actions: read
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: draft-release
@@ -76,6 +82,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          python3 scripts/validate-release-input.py "$RELEASE_VERSION" "$SOURCE_SHA"
           cat > "$RUNNER_TEMP/notes.md" <<EOF
           Source SHA: $SOURCE_SHA
           Workflow: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
@@ -91,4 +98,10 @@ jobs:
             --notes-file "$RUNNER_TEMP/notes.md"
           gh release view "v$RELEASE_VERSION" --repo "$GH_REPO" \
             --json isDraft,isPrerelease,targetCommitish \
-            --jq 'if .isDraft and .isPrerelease then . else error("Expected an unpublished draft") end'
+            --jq "if .isDraft and .isPrerelease and .targetCommitish == \"$SOURCE_SHA\" then . else error(\"Expected an unpublished draft for the verified source\") end"
+          tag_count="$(gh api "repos/$GH_REPO/git/matching-refs/tags/v$RELEASE_VERSION" \
+            --jq "map(select(.ref == \"refs/tags/v$RELEASE_VERSION\")) | length")"
+          if test "$tag_count" != 0; then
+            echo 'A release tag appeared during creation. The draft remains unpublished; inspect the tag and source SHA before proceeding.' >&2
+            exit 1
+          fi
