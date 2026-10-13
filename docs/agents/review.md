@@ -69,6 +69,8 @@ Bugbot은 선택적인 추가 리뷰어다. 필수 `CI`나 독립 리뷰를 대�
 리뷰 규칙은 [.cursor/BUGBOT.md](../../.cursor/BUGBOT.md)에서 프로젝트의 코딩 규칙과 도메인 문서로 연결한다.
 이 파일은 리뷰 지시문이다. 실행 방식과 결제 설정은 대시보드에서 확인한다.
 Trigger Mode는 `Manual Only`, Autofix Mode는 `Off`, On-demand Spending은 `Disabled`로 유지한다.
+PR 요약은 `As Comment`로 사용한다. 위험 점수를 함께 표시한다. Draft 자동 리뷰는 `Off`로 유지한다.
+요약과 위험 점수는 보조 자료다. PR 본문의 근거와 Merge Danger, 최종 head의 사람 승인을 대체하지 않는다.
 
 1. 추가 검토가 필요한 PR에서 `bugbot run verbose=true` 코멘트로 수동 리뷰를 요청한다.
 2. verbose 결과에서 `.cursor/BUGBOT.md`의 포함 여부와 생략·잘림 여부를 확인한다. 요청 ID와 검토한 head를 기록한다.
