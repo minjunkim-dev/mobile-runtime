@@ -44,6 +44,8 @@ jobs:
       - name: Verify source-only ADB contracts
         run: |
           python3 -B -m unittest discover -s scripts/source-only -p 'test_*.py' -v
+      - name: Verify Draft Release input guards
+        run: python3 -B scripts/test-release-input.py -v
       - name: Validate workflows and shell scripts
         run: |
           curl --fail --silent --show-error --location \
