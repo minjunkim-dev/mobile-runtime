@@ -22,7 +22,7 @@ This is a single-context repo:
 └── Sources/
 ```
 
-`docs/adr/` does not exist yet — the first ADR creates it.
+`CONTEXT.md` is the domain glossary. Do not duplicate it in `GLOSSARY.md`.
 
 ## Use the glossary's vocabulary
 
