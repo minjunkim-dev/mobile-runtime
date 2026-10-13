@@ -27,6 +27,7 @@ commands. Setup reports changed paths and stops. It never restores source files.
 Setup recomputes the plan before execution and after acquiring its lease. Before
 each dependency command it rechecks tool versions and executable paths, Xcode selection/readiness,
 project toolchain activation, dependency commands, and destination policy. A
+private `PreparationRunner` owns this comparison; its caller only supplies the fresh plan. A
 completed locked Bundle installation may change the CocoaPods measurement; that
 expected transition is excluded from later condition comparisons. Cancellation
 stops new commands and preserves completed dependencies and partial-install
