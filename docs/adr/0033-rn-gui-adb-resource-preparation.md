@@ -6,6 +6,8 @@
 
 foreground ADB server는 제한된 준비 후보다. 아래 syntax의 공식 source 근거는 확인했다. 설치한 SDK binary의 전체 대응과 shared write·transport·client race 차단은 미확정이다. 따라서 이 결정을 즉시 실행 가능한 준비 계획이나 approval-ready actual 제안으로 사용하지 않는다. 미해결 frontier를 먼저 검토한다.
 
+사용자는 2026-10-13에 Q4의 full source/build 증거 기준과 Q5의 미입증 시 중단 경로를 확정했다. 같은 날 이 정책 문서와 기존 조사 문서의 저장을 허용했다. 이 추가 범위는 실제 resource 조건 채택·준비·실행 권한을 포함하지 않는다.
+
 ## 배경과 원래 판정
 
 E20의 저장된 reconnection resource receipt는 historical GUI 부재와 기존 ADB server 미입증을 기록했다. 전체 resource 판정은 false다. GUI의 종료 주체·시점·원인은 미확정이다. ADB listener 부재 원인도 미확정이다. `adb devices`의 실제 receipt가 없으므로 파생 `adbDevicesEmpty=false`는 기기 존재 증거가 아니다.
@@ -33,6 +35,32 @@ snapshot anchor만 새 현재값으로 바꾸고 원래 predicate를 유지하�
 | [adb.h:71](https://android.googlesource.com/platform/packages/modules/adb/+/fb529d52f4485c1fdbe6208f20af6578493e1ca7/adb.h#71) | 이 source의 server protocol 상수는 41이다. 설치 binary의 기대값 증명은 아니다. | `448530595669e914264f314765c9d839dbc82c29e8f1e9a23b21738f23d4606a` |
 
 `main`은 listener bind 전에 USB·mDNS·local transport 초기화를 수행한다. port bind 실패만으로 그 전의 효과가 없었다고 주장하지 않는다. default server는 외부 client가 연결할 수 있는 공유 endpoint다. foreground process 소유만으로 foreign client·device 사용 부재를 증명하지 않는다.
+
+## full source/build 증거 기준과 중단 경로
+
+### Q4: 확정한 증거 기준
+
+full source/build 대응은 다음 연결을 공식 build 기록에서 직접 입증해야 한다. 각 연결의 근거·판정과 UNKNOWN을 구분한다.
+
+| 연결 | 필요한 근거 |
+| --- | --- |
+| 공식 산출물의 digest와 archive ADB hash → 정확한 공식 build identity | 해당 산출물과 payload를 그 build에 연결하는 공식 기록 |
+| 정확한 공식 build identity → 고정 source revision | 해당 build가 사용한 source revision을 연결하는 공식 기록 |
+| 정확한 공식 build identity → dependency·toolchain·build 입력 | 해당 build의 dependency·toolchain·build 입력을 연결하는 공식 기록 |
+
+모든 필수 연결을 입증하기 전에는 full source/build 대응을 PASS로 처리하지 않는다. version·공개 날짜·링크 후보·source 7개 hash는 이 연결을 대신하지 않는다. 특정 manifest 형식이나 bit-for-bit rebuild 방식을 새 필수 조건으로 지정하지 않는다. 기록의 형식보다 각 연결의 직접 근거를 검사한다.
+
+현재 설치 상태와 syntax·protocol·환경·hostwrite·transport 대응 및 실제 compatibility는 기존 별도 gate를 유지한다. source/build 대응의 PASS만으로 startup·baseline 권한이나 readiness를 부여하지 않는다. [ADR-0034](0034-rn-adb-environment-evidence-gap.md)의 과거 환경 UNKNOWN과 향후 환경 기록 구분도 유지한다.
+
+[기존 조사 문서](../research/rn-adb-existing-provenance.md)의 Q1·Q2는 공식 archive member hash와 과거 설치 hash 및 고정 source 7개 hash의 대응을 기록한다. Q3는 release notes의 한정 section에서 공개 revision과 날짜를 확인했다. 정확한 공식 build identity와 위의 source/build 입력 연결은 입증하지 못했다. full source/build 대응은 계속 UNKNOWN이다. 이 판정은 다른 공식 자료에도 근거가 없다는 결론이 아니다.
+
+### Q5: 확정한 미입증 시 중단 경로
+
+1. 필수 연결이 누락되거나 모호하면 UNKNOWN STOP이다. 증거가 모순되면 실패 STOP이다. 원본 실패와 과거 기록을 보존한다. 부분 PASS로 필수 UNKNOWN이나 실패를 상쇄하지 않는다.
+2. URL 확대·재시도·다른 binary 설치·버전 변경·자동 복구·host write를 수행하지 않는다. 새 근거나 조건 변경에는 별도 범위 결정이 필요하다. 조건이 바뀐 실제 검증에는 [ADR-0020](0020-rn-baseline-prepared-input.md)의 새 실행 계약을 유지한다.
+3. #212는 미완료다. PR #236을 병합하지 않는다. 실제 grant·fresh resource preflight·sole lease와 startup 뒤 compatibility 및 consumer 접합의 기존 gate를 유지한다.
+4. 향후 실제 자원의 소유권이나 종료가 미입증이면 아래의 기존 CLEANUP_PENDING 계약을 적용한다. 자동 cleanup이나 RELEASED 판정으로 우회하지 않는다. 이번 결정은 실제 resource 상태를 판정하거나 cleanup을 실행하지 않는다.
+5. 현재 source-only 경계를 유지한다. 이번 문서 저장은 추가 URL 조회·현재 SDK·HOME·key 읽기·실제 환경 수집·resource 조회·시작과 실제 준비 권한을 포함하지 않는다.
 
 ## 선택지와 추천 검토 범위
 
