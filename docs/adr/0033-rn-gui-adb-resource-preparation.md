@@ -120,6 +120,20 @@ digest 선언과 실제 bytes 검사 결과는 근거 record를 나눠 기록한
 
 모든 합성 사례는 실제 `linkVerdict`와 `fullSourceBuildVerdict`를 변경하지 않는다. 현재 실제 `fullSourceBuildVerdict=UNKNOWN`과 `actualVerdict=STOP`을 유지한다. 모든 합성 사례에서 실제 STOP·권한 false·readiness false·lease null을 검사하는 설계를 유지한다. 이 표는 기대 결과의 설계다. 새 검사 구현이나 실행 결과가 아니다. 이번 계약 저장으로 공식 build 증거를 확보하지 않았다. #212의 실제 준비는 미완료다. PR #236을 병합하지 않는다.
 
+#### MODEL-ONLY helper 구현
+
+사용자는 2026-10-13에 별도 MODEL-ONLY helper와 합성 검사의 구현을 요청했다. [`rn_adb_source_build.py`](../../scripts/source-only/rn_adb_source_build.py)의 `model_receipt(receipt_id, scope=None, policy_ref=None, subjects=None, evidence=None, links=None)`는 전달받은 합성 데이터만 처리한다. import·collector·실행 adapter·파일·환경·process·socket·network·persistent write 경로는 없다. 기존 환경 helper는 변경하지 않는다.
+
+fixture의 `receiptId`와 identity는 `model://`에 한정한다. `scope`는 `subjectId`·`epoch`다. `policyRef`는 `revision`·`path`·`digest`다. `subjects`에는 대상 필드를 둔다. 합성 digest는 SHA-1 또는 SHA-256 형식을 사용한다. dependency·toolchain·build 입력은 각각 합성 identity 목록이다. 이 표현은 공식 manifest 형식을 요구하거나 실제 입력의 완전성을 입증하는 조건이 아니다.
+
+근거의 `evidenceClass`와 합성 관계 `modelBinding`에서 모델 판정을 도출한다. `modelBinding`은 `linkId`·`from`·`to`·`scope`·`platform`·`archiveMember`·`publisher`를 연결한다. `from`과 `to`에는 해당 대상 identity의 필드와 값을 둔다. `readScope`는 검사한 연결 ID 목록이다. 합성 출처는 같은 publisher namespace의 `model://` locator다. `observedAt`은 `scope.epoch`에 연결한다. `recordedAt`은 별도 합성 시각 identity다. 근거는 `materialKind=SYNTHETIC`, `rawBytesPreserved=false`다. 이러한 일치 검사는 합성 관계의 내부 일관성 검사다. 실제 공식 기록의 진위나 실제 build 대응을 검증하지 않는다.
+
+artifact와 ADB의 근거는 각각 별도 record로 제공할 수 있다. 두 근거 모두 같은 정확한 build identity를 직접 연결해야 모델 PASS다. 누락된 연결은 항상 UNKNOWN record로 반환한다. 반환한 `links`의 실제 `linkVerdict`는 모두 UNKNOWN이다. 입력 link의 PASS 주장으로 판정을 덮지 않는다. 입력 근거와 link record는 `evidence`와 `inputLinks`에 복사해 보존한다. `modelVerdict=FAIL`은 `modelStop=FAILURE_STOP`이며 `modelVerdict=UNKNOWN`은 `modelStop=UNKNOWN_STOP`이다. 모든 반환에서 실제 full source/build UNKNOWN·STOP·권한 false·readiness false·lease null을 유지한다.
+
+MODEL-ONLY envelope 안의 누락·모호한 근거는 UNKNOWN이다. 실제 receipt ID·대상 밖 subject 필드·record 목록이 아닌 입력·사용자 정의 객체·입력 상한 초과는 `ValueError`로 거부한다. 값을 복사할 때 사용자 정의 hook을 호출하지 않는다. 거부는 실행 권한을 부여하거나 실제 실패를 입증하지 않는다.
+
+[`test_rn_adb_source_build.py`](../../scripts/source-only/test_rn_adb_source_build.py)는 계약의 합성 사례, 두 digest의 독립 연결, 필수 누락·모호한 참조·적용 범위, 실패 우선, 입력 PASS 불신, 환경 예측값 분리, 입력 격리와 I/O 경계를 검사한다. repository root에서 `python3 -B scripts/source-only/test_rn_adb_source_build.py`로 실행한다. 기존 환경 합성 검사와 함께 required CI의 Repository hygiene에서 실행한다. 이 검사는 실제 증거 조회나 실제 준비가 아니다. #212와 PR #236의 열린 상태를 유지한다.
+
 ## 선택지와 추천 검토 범위
 
 1. 원래 존재 predicate를 유지한다. 실제 준비는 STOP 상태를 유지한다. historical GUI를 다시 띄우거나 ADB daemon을 자동 복원하는 권한은 없다.
