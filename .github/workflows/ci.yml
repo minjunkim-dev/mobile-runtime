@@ -41,8 +41,10 @@ jobs:
           grep -Fq 'Version 2.0, January 2004' LICENSE
           grep -Eq 'Copyright [0-9]{4} MINJUN KIM' README.md
           grep -Fq 'SPDX-License-Identifier: Apache-2.0' README.md
-      - name: Verify source-only ADB environment contract
-        run: python3 -B scripts/source-only/test_rn_adb_environment.py
+      - name: Verify source-only ADB contracts
+        run: |
+          python3 -B scripts/source-only/test_rn_adb_environment.py
+          python3 -B scripts/source-only/test_rn_adb_source_build.py
       - name: Validate workflows and shell scripts
         run: |
           curl --fail --silent --show-error --location \
