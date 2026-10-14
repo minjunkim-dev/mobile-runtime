@@ -24,7 +24,8 @@ CI 성공은 티켓의 실제 측정이나 독립 리뷰를 대체하지 않는�
 | 검사 | 확인하는 것 | 확인하지 않는 것 |
 | --- | --- | --- |
 | Repository hygiene | 라이선스, workflow, shell, source-only 합성 테스트 | 실제 ADB 자원과 provenance |
-| macOS Swift build and tests | 잠근 의존성, 경고 없는 빌드, Swift 동작, 실제 CLI 입력 계약, 배포 archive | 실제 모바일 첫 화면과 release 승인 |
+| macOS Swift build and tests | 잠근 의존성, 경고 없는 빌드, Swift 동작, 실제 CLI 입력 계약 | 실제 모바일 첫 화면과 release 승인 |
+| macOS release package verification | 별도 disposable build와 배포 archive의 리소스 독립성 | 공개 배포와 release 승인 |
 | Linux Core compile | Apple 프레임워크 없는 Core 컴파일 | Linux 제품 지원 |
 
 source-only 테스트는 `test_*.py`를 자동 탐색한다. AST 검사는 정적 I/O 금지 제약에만 사용한다.

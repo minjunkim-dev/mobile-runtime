@@ -1,10 +1,17 @@
 # CI 캐시 재현성 검증
 
-issue #133의 CI는 저장소 위생, macOS build·test, Linux Core compile을 병렬로
-실행한다. 필수 check는 결과를 모으는 `CI` 하나다. 셋 중 실패·취소·skip이 있으면
+CI는 저장소 위생, macOS build·test, macOS release package, Linux Core compile을 병렬로
+실행한다. 필수 check는 결과를 모으는 `CI` 하나다. 넷 중 실패·취소·skip이 있으면
 `CI`도 실패한다. LICENSE와 README의 SPDX 선언은 #132의 공개 문서를 기준으로 한다.
 
 ## 캐시와 무효화
+
+release package는 별도 macOS 실행기에서 disposable build를 수행한다.
+debug 빌드 캐시를 사용하지 않는다. archive의 리소스 독립 검증을 그대로 실행한다.
+2026-10-15 조사에서 실행 `38582765099`의 build·test는 149초, package는 106초였다.
+기존 순차 실행의 합을 줄이기 위해 두 검사를 분리했다.
+새 실행기의 준비 시간과 사용 분량은 추가된다. 병렬 실행 후 실제 시간을 다시 비교한다.
+패키징을 테스트 성공 뒤로 미루는 조건은 추가하지 않는다. 필수 `CI`가 두 결과를 모두 요구한다.
 
 SwiftPM 공유 의존성과 빌드 산출물을 따로 캐시한다. key는 `CACHE_VERSION`(`v1`),
 runner OS·arch, 툴체인 fingerprint, `Package.resolved` 해시로 만든다. 빌드 key에는
