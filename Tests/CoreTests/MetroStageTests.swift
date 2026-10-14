@@ -74,7 +74,7 @@ struct MetroStageTests {
         let probe = "watchman watch-project \(repo.root.path)"
         let runner = FakeProcessRunner(responses: [probe: .ok(#"{"watch": "/watched/root"}"#)])
 
-        await MetroStage.dropWatchmanWatch(of: repo.root, runner: runner)
+        await MetroLaunch.dropWatchmanWatch(of: repo.root, runner: runner)
 
         #expect(runner.log.first(matching: "watchman watch-del /watched/root") != nil)
     }
@@ -84,7 +84,7 @@ struct MetroStageTests {
         let repo = try app()
         let runner = FakeProcessRunner()
 
-        await MetroStage.dropWatchmanWatch(of: repo.root, runner: runner)
+        await MetroLaunch.dropWatchmanWatch(of: repo.root, runner: runner)
 
         #expect(!runner.log.all.contains { $0.arguments.first == "watch-del" })
     }

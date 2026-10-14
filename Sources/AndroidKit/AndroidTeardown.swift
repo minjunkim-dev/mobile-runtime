@@ -232,7 +232,7 @@ struct AndroidCleanup: Sendable {
         } else {
             false
         }
-        let listener = try await currentListener()
+        let listener = try await MetroLaunch.listeners(runner: projectRunner).first
         if !startRunning && listener == nil {
             return .skipped("metro", "owned Metro already stopped")
         }
@@ -292,7 +292,7 @@ struct AndroidCleanup: Sendable {
             )
         }
         try await pause()
-        let listenerAfter = try await currentListener()
+        let listenerAfter = try await MetroLaunch.listeners(runner: projectRunner).first
         let startAfter = if let pid = metro.startPID {
             try await processIsRunning(pid)
         } else {
@@ -410,16 +410,6 @@ struct AndroidCleanup: Sendable {
             guard fields.count >= 2 else { return }
             mappings[fields[fields.count - 2]] = fields[fields.count - 1]
         }
-    }
-
-    private func currentListener() async throws -> Int32? {
-        let result = try await projectRunner.run(
-            ProcessCommand(
-                "lsof", MetroVerdict.listenerArguments + ["-t"], timeout: .seconds(10)
-            )
-        )
-        return result.standardOutput.split(separator: "\n")
-            .compactMap { Int32($0.trimmingCharacters(in: .whitespaces)) }.first
     }
 
     private func processIsRunning(_ pid: Int32) async throws -> Bool {

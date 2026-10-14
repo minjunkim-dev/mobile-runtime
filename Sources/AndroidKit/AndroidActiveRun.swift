@@ -187,7 +187,7 @@ public struct AndroidRuntimeTimeouts: Sendable {
         boot: Duration = .seconds(300),
         install: Duration = .seconds(120),
         launch: Duration = .seconds(30),
-        metroBind: Duration = .seconds(10),
+        metroBind: Duration = MetroLaunch.defaultBindWait,
         cleanupGrace: Duration = .seconds(2),
         poll: Duration = .milliseconds(250)
     ) {

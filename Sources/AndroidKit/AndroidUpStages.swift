@@ -220,7 +220,7 @@ actor AndroidRuntime {
                 }
             case .spawned:
                 guard let listener = existing.listenerPID,
-                    try await currentListener() == listener,
+                    try await MetroLaunch.listeners(runner: projectRunner).first == listener,
                     try await MetroVerdict.ask(anchor: anchor.directory, runner: projectRunner) == .mine
                 else {
                     throw DomainError(
@@ -249,9 +249,9 @@ actor AndroidRuntime {
         }
 
         let log = logs.url("metro.log")
-        if afterReinstall { await MetroStage.dropWatchmanWatch(of: anchor.directory, runner: projectRunner) }
-        let command = anchor.startProcess
-        let startPID = try await projectRunner.spawnDetached(command, logFile: log)
+        let (command, startPID) = try await MetroLaunch.start(
+            anchor: anchor, runner: projectRunner, logFile: log, afterReinstall: afterReinstall
+        )
         value = try run()
         value.metro = AndroidActiveRun.Metro(
             state: .spawned,
@@ -268,44 +268,43 @@ actor AndroidRuntime {
             throw error
         }
 
-        let deadline = ContinuousClock.now + timeouts.metroBind
-        while true {
-            if let listener = try await currentListener() {
-                let observed = try await MetroVerdict.ask(
-                    anchor: anchor.directory, runner: projectRunner
+        let anchorDirectory = anchor.directory
+        let projectRunner = projectRunner
+        let readiness = try await MetroLaunch.readiness(
+            startPID: startPID, runner: projectRunner, bindWait: timeouts.metroBind, poll: timeouts.poll
+        ) { _ in
+            let observed = try await MetroVerdict.ask(anchor: anchorDirectory, runner: projectRunner)
+            if case .mine = observed { return true }
+            if let blocker = observed.blocker { throw blocker }
+            return false
+        }
+        switch readiness {
+        case .listening(let listener):
+            value = try run()
+            value.metro?.listenerPID = listener
+            try save(value)
+            return MetroProcess(
+                state: .spawned,
+                pid: startPID,
+                listenerPid: listener,
+                logPath: log.path
+            )
+        case .exited:
+            throw DomainError(
+                summary: "Metro exited before listening on \(MetroVerdict.port)",
+                remediation: Remediation(
+                    summary: "Inspect the Metro log at \(log.path).",
+                    command: command.description
                 )
-                if case .mine = observed {
-                    value = try run()
-                    value.metro?.listenerPID = listener
-                    try save(value)
-                    return MetroProcess(
-                        state: .spawned,
-                        pid: startPID,
-                        listenerPid: listener,
-                        logPath: log.path
-                    )
-                }
-                if let blocker = observed.blocker { throw blocker }
-            }
-            guard try await processIsRunning(startPID) else {
-                throw DomainError(
-                    summary: "Metro exited before listening on \(MetroVerdict.port)",
-                    remediation: Remediation(
-                        summary: "Inspect the Metro log at \(log.path).",
-                        command: command.description
-                    )
+            )
+        case .timedOut:
+            throw DomainError(
+                summary: "Metro did not listen on \(MetroVerdict.port) within \(timeouts.metroBind)",
+                remediation: Remediation(
+                    summary: "Inspect the Metro log at \(log.path).",
+                    command: command.description
                 )
-            }
-            guard ContinuousClock.now < deadline else {
-                throw DomainError(
-                    summary: "Metro did not listen on \(MetroVerdict.port) within \(timeouts.metroBind)",
-                    remediation: Remediation(
-                        summary: "Inspect the Metro log at \(log.path).",
-                        command: command.description
-                    )
-                )
-            }
-            try await pause()
+            )
         }
     }
 
@@ -478,22 +477,6 @@ actor AndroidRuntime {
             guard fields.count >= 2 else { return }
             mappings[fields[fields.count - 2]] = fields[fields.count - 1]
         }
-    }
-
-    private func currentListener() async throws -> Int32? {
-        let result = try await projectRunner.run(
-            ProcessCommand(
-                "lsof", MetroVerdict.listenerArguments + ["-t"], timeout: .seconds(10)
-            )
-        )
-        return result.standardOutput.split(separator: "\n")
-            .compactMap { Int32($0.trimmingCharacters(in: .whitespaces)) }.first
-    }
-
-    private func processIsRunning(_ pid: Int32) async throws -> Bool {
-        try await projectRunner.run(
-            ProcessCommand("kill", ["-0", "\(pid)"], timeout: .seconds(10))
-        ).terminationStatus.isSuccess
     }
 
     private func prepare(_ product: AndroidBuiltProduct) throws {
