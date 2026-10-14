@@ -10,7 +10,7 @@ import sys
 
 def validate_inputs(version, source_sha):
     number = r"(?:0|[1-9][0-9]*)"
-    if not re.fullmatch(rf"{number}\.{number}\.{number}-alpha\.{number}", version):
+    if not re.fullmatch(rf"{number}\.{number}\.{number}-alpha-smoke\.{number}", version):
         raise ValueError("version must be an alpha version, e.g. 0.1.0-alpha.5")
     if not re.fullmatch(r"[0-9a-f]{40}", source_sha):
         raise ValueError("source SHA must be a full lowercase 40-character commit SHA")
