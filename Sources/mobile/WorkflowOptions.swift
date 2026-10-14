@@ -58,12 +58,10 @@ struct WorkflowOptions: ParsableArguments {
         } else {
             let renderer = HumanReportRenderer(useColor: Terminal.supportsColor, verbose: verbose)
             if let report = result.up {
-                try UpWriter(json: false, toolVersion: Tool.version, command: kind.rawValue,
-                             renderer: renderer, standardOutput: { print($0) }, standardError: { writeError($0) }).finish(report)
+                UpWriter(command: kind.rawValue, renderer: renderer, standardError: { writeError($0) }).finish(report)
             }
             if let report = result.down {
-                try DownWriter(json: false, toolVersion: Tool.version, renderer: renderer,
-                               standardOutput: { print($0) }, standardError: { writeError($0) }).finish(report)
+                DownWriter(renderer: renderer, standardError: { writeError($0) }).finish(report)
             }
             for candidate in result.operation.selection?.candidates ?? [] where result.operation.requiredInput.contains("--app") {
                 writeError("app: \(candidate.id)")

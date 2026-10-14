@@ -192,6 +192,9 @@ _Avoid_: 점유(무엇이 잡고 있는지 안다는 뜻이 섞인다)
 자식을 띄우고 기다리지 않는 실행. 출력은 실행 로그로 리다이렉트되고 PID만 돌아온다. up이 종료해도 Metro가 따라 죽지 않게 하려는 것 — 프로세스 그룹까지 떼지는 않으므로 터미널의 Ctrl-C는 아직 닿는다.
 _Avoid_: daemon, background job
 
+**Metro 기동 (Metro launch)**:
+프로젝트 start 스크립트를 detached spawn하고 8081 listener가 생길 때까지 기다리는 절차다. bind 대기는 시작 PID의 조기 종료를 함께 확인하며 기본 60초다. iOS와 Android가 같은 절차를 쓴다. 누구의 Metro인가는 Metro 판정과 플랫폼별 소유 기록이 정한다(ADR-0013).
+
 **MetroProcess**:
 up이 남긴 Metro의 보고. `state`(reused/spawned)와, spawn했을 때만 PID·로그 경로. 재사용에는 PID가 없다 — **우리가 띄우지 않은** 프로세스이고, CI는 자기가 띄운 것만 정리해야 한다. 재사용이 성립했다는 것은 그 Metro가 이 프로젝트의 것이라는 뜻이지(Metro 판정), 이 실행이 시작했다는 뜻이 아니다. 실패한 `up`이 `mobile down`을 권하는 것은 `spawned`일 때뿐인 이유가 그것이다.
 

@@ -56,48 +56,22 @@ public struct DownJSONDocument: Encodable, Sendable {
     public func encoded() throws -> String { try JSONOutput.encode(self) }
 }
 
-/// `down`'s two streams, split the way `up` splits them: the `--json` document is
-/// the only thing on stdout, and everything a human reads goes to stderr, so a
-/// piped run and a watched one are the same run.
+/// The `down` report a human reads, on stderr. stdout is left to the `--json`
+/// document, which `WorkflowResult` writes.
 public struct DownWriter: Sendable {
     private static let nameWidth = 14
 
-    private let json: Bool
-    private let toolVersion: String
-    private let platform: String?
     private let renderer: HumanReportRenderer
-    private let standardOutput: @Sendable (String) -> Void
     private let standardError: @Sendable (String) -> Void
 
-    public init(
-        json: Bool,
-        toolVersion: String,
-        platform: String? = nil,
-        renderer: HumanReportRenderer,
-        standardOutput: @escaping @Sendable (String) -> Void,
-        standardError: @escaping @Sendable (String) -> Void
-    ) {
-        self.json = json
-        self.toolVersion = toolVersion
-        self.platform = platform
+    public init(renderer: HumanReportRenderer, standardError: @escaping @Sendable (String) -> Void) {
         self.renderer = renderer
-        self.standardOutput = standardOutput
         self.standardError = standardError
     }
 
-    public func finish(_ report: TeardownReport) throws {
-        // A job that could not run at all is the tool's problem, and it is the same
-        // sentence in both modes — `--json` describes what `down` did, and this is
-        // something it could not do.
+    public func finish(_ report: TeardownReport) {
+        // A job that could not run at all is the tool's problem, not one of the items.
         for failure in report.toolFailures { standardError("tool failure: \(failure)") }
-
-        if json {
-            return standardOutput(
-                try DownJSONDocument(
-                    report: report, toolVersion: toolVersion, platform: platform
-                ).encoded()
-            )
-        }
 
         for item in report.items {
             standardError(line(item))

@@ -131,7 +131,7 @@ private struct AndroidGradleWrapperCheck: Check {
                 source: wrapper.source,
                 remediation: Remediation(
                     summary: "Materialize the declared wrapper distribution explicitly, then re-run mobile doctor. mobile will not download it.",
-                    command: "cd \(shellQuote(context.androidDirectory.path)) && ./gradlew --version"
+                    command: "cd \(shellArgument(context.androidDirectory.path)) && ./gradlew --version"
                 )
             )
         case .success(let wrapper):
@@ -394,7 +394,7 @@ private struct AndroidTargetCheck: Check {
                 source: CheckSource(tier: 1, origin: "./gradlew --offline help + mobile init script"),
                 remediation: Remediation(
                     summary: "Materialize the project's declared Gradle inputs explicitly, then re-run mobile doctor.",
-                    command: "cd \(shellQuote(context.androidDirectory.path)) && ./gradlew help"
+                    command: "cd \(shellArgument(context.androidDirectory.path)) && ./gradlew help"
                 )
             )
         case .failure(let reason):
@@ -404,7 +404,7 @@ private struct AndroidTargetCheck: Check {
                 source: CheckSource(tier: 1, origin: "./gradlew --offline help + mobile init script"),
                 remediation: Remediation(
                     summary: "Fix the Gradle configuration, then repeat the same side-effect-free model query.",
-                    command: "cd \(shellQuote(context.androidDirectory.path)) && ./gradlew --offline --no-daemon help"
+                    command: "cd \(shellArgument(context.androidDirectory.path)) && ./gradlew --offline --no-daemon help"
                 )
             )
         case .model(let value): model = value
@@ -590,14 +590,14 @@ private struct AndroidSDKCheck: Check {
                 remediation: Remediation(
                     summary: "Install the missing SDK packages explicitly; mobile will not download or license them.",
                     command: sdkmanager.map {
-                        ([shellQuote($0.path)] + packages.map(shellQuote)).joined(separator: " ")
+                        ([shellArgument($0.path)] + packages.map(shellArgument)).joined(separator: " ")
                     },
                     url: sdkmanager == nil ? "https://developer.android.com/tools/sdkmanager" : nil
                 )
             )
         }
         let licenseCommand = findSDKManager(in: sdk).map {
-            "\(shellQuote($0.path)) \(shellQuote("--sdk_root=\(sdk.path)")) --licenses"
+            "\(shellArgument($0.path)) \(shellArgument("--sdk_root=\(sdk.path)")) --licenses"
         }
         if let outcome = AndroidSDKLicenses.check(packages: packages, sdk: sdk, command: licenseCommand) {
             return outcome
@@ -689,7 +689,7 @@ private struct AndroidAVDCheck: Check {
                 return .unknown(reason: "selected AVD has no observable system image package", source: source)
             }
             let command = findSDKManager(in: sdk).map {
-                "\(shellQuote($0.path)) \(shellQuote("--sdk_root=\(sdk.path)")) --licenses"
+                "\(shellArgument($0.path)) \(shellArgument("--sdk_root=\(sdk.path)")) --licenses"
             }
             if let license = AndroidSDKLicenses.check(packages: [image], sdk: sdk, command: command) {
                 return license
@@ -846,6 +846,3 @@ private func daemonVendorMatches(required: String, observed: String) -> Bool? {
     return tokens.contains { observed.contains($0) }
 }
 
-private func shellQuote(_ value: String) -> String {
-    "'" + value.replacingOccurrences(of: "'", with: "'\\''") + "'"
-}

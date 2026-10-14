@@ -74,3 +74,11 @@ struct VersionManagerCommandTests {
         )
     }
 }
+
+/// Remediation commands are pasted into a shell, so each argument must survive as one.
+@Test("a pasteable argument stays one argument, quoted only when it has to be")
+func pasteableShellArgument() {
+    #expect(shellArgument("/Users/me/Library/Android/sdk") == "/Users/me/Library/Android/sdk")
+    #expect(shellArgument("/Users/me/My Apps/it's") == #"'/Users/me/My Apps/it'"'"'s'"#)
+    #expect(shellArgument("") == "''")
+}

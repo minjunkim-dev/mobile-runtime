@@ -111,11 +111,14 @@ private func shimOwner(of path: String) -> ShimOwner? {
     return components.contains(".rvm") ? .rvm : nil
 }
 
-func shellArgument(_ value: String) -> String {
+/// One argument a human can paste into a shell: bare when it is plainly safe,
+/// single-quoted otherwise.
+public func shellArgument(_ value: String) -> String {
     let safe = CharacterSet(
         charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._/"
     )
-    guard value.unicodeScalars.allSatisfy({ safe.contains($0) }) else {
+    // An empty argument left bare disappears from the pasted command.
+    guard !value.isEmpty, value.unicodeScalars.allSatisfy({ safe.contains($0) }) else {
         return "'\(value.replacingOccurrences(of: "'", with: "'\"'\"'"))'"
     }
     return value

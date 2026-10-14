@@ -183,7 +183,7 @@ struct AndroidCleanup: Sendable {
         case .verified: break
         }
         let source = "tcp:\(MetroVerdict.port)"
-        let mappings = try await reverseMappings(serial: reverse.serial, sdk: sdk)
+        let mappings = try await doctorContext.reverseMappings(serial: reverse.serial, sdk: sdk, runner: runner)
         guard let current = mappings[source] else {
             return .skipped("android.adb.reverse", "mapping already absent")
         }
@@ -209,7 +209,7 @@ struct AndroidCleanup: Sendable {
                 )
             )
         }
-        guard try await reverseMappings(serial: reverse.serial, sdk: sdk)[source] == nil else {
+        guard try await doctorContext.reverseMappings(serial: reverse.serial, sdk: sdk, runner: runner)[source] == nil else {
             return .failed(
                 "android.adb.reverse",
                 cleanupFailure(
@@ -232,7 +232,7 @@ struct AndroidCleanup: Sendable {
         } else {
             false
         }
-        let listener = try await currentListener()
+        let listener = try await MetroLaunch.listeners(runner: projectRunner).first
         if !startRunning && listener == nil {
             return .skipped("metro", "owned Metro already stopped")
         }
@@ -292,7 +292,7 @@ struct AndroidCleanup: Sendable {
             )
         }
         try await pause()
-        let listenerAfter = try await currentListener()
+        let listenerAfter = try await MetroLaunch.listeners(runner: projectRunner).first
         let startAfter = if let pid = metro.startPID {
             try await processIsRunning(pid)
         } else {
@@ -396,30 +396,6 @@ struct AndroidCleanup: Sendable {
         _ arguments: [String], sdk: URL, timeout: Duration = .seconds(15)
     ) -> ProcessCommand {
         doctorContext.toolCommand("adb", arguments, sdk: sdk, timeout: timeout)
-    }
-
-    private func reverseMappings(serial: String, sdk: URL) async throws -> [String: String] {
-        let result = try await runner.run(adb(
-            ["-s", serial, "reverse", "--list"], sdk: sdk
-        ))
-        guard result.terminationStatus.isSuccess else {
-            throw AndroidStateError("adb reverse --list could not be observed")
-        }
-        return result.standardOutput.split(separator: "\n").reduce(into: [:]) { mappings, line in
-            let fields = line.split(whereSeparator: \.isWhitespace).map(String.init)
-            guard fields.count >= 2 else { return }
-            mappings[fields[fields.count - 2]] = fields[fields.count - 1]
-        }
-    }
-
-    private func currentListener() async throws -> Int32? {
-        let result = try await projectRunner.run(
-            ProcessCommand(
-                "lsof", MetroVerdict.listenerArguments + ["-t"], timeout: .seconds(10)
-            )
-        )
-        return result.standardOutput.split(separator: "\n")
-            .compactMap { Int32($0.trimmingCharacters(in: .whitespaces)) }.first
     }
 
     private func processIsRunning(_ pid: Int32) async throws -> Bool {
