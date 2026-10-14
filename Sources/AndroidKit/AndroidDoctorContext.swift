@@ -386,6 +386,22 @@ actor AndroidDoctorContext {
         return directory
     }
 
+    /// `adb reverse --list` as a source → target map. `up` and `down` both decide
+    /// ownership from it, so they read it the same way.
+    nonisolated func reverseMappings(
+        serial: String, sdk: URL, runner: any ProcessRunner
+    ) async throws -> [String: String] {
+        let result = try await runner.run(toolCommand("adb", ["-s", serial, "reverse", "--list"], sdk: sdk))
+        guard result.terminationStatus.isSuccess else {
+            throw AndroidStateError("adb reverse --list could not be observed")
+        }
+        return result.standardOutput.split(separator: "\n").reduce(into: [:]) { mappings, line in
+            let fields = line.split(whereSeparator: \.isWhitespace).map(String.init)
+            guard fields.count >= 2 else { return }
+            mappings[fields[fields.count - 2]] = fields[fields.count - 1]
+        }
+    }
+
     nonisolated func toolCommand(
         _ executable: String,
         _ arguments: [String],

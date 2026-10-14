@@ -318,7 +318,7 @@ actor AndroidRuntime {
             )
         }
 
-        let mappings = try await reverseMappings(serial: device.serial, sdk: sdk)
+        let mappings = try await doctorContext.reverseMappings(serial: device.serial, sdk: sdk, runner: hostRunner)
         let source = "tcp:\(MetroVerdict.port)"
         if let target = mappings[source], target != source {
             throw DomainError(
@@ -354,7 +354,7 @@ actor AndroidRuntime {
         do {
             try save(value)
         } catch {
-            if let mappings = try? await reverseMappings(serial: device.serial, sdk: sdk),
+            if let mappings = try? await doctorContext.reverseMappings(serial: device.serial, sdk: sdk, runner: hostRunner),
                 mappings[source] == source
             {
                 _ = try? await hostRunner.run(adb(
@@ -363,7 +363,7 @@ actor AndroidRuntime {
             }
             throw error
         }
-        guard try await reverseMappings(serial: device.serial, sdk: sdk)[source] == source else {
+        guard try await doctorContext.reverseMappings(serial: device.serial, sdk: sdk, runner: hostRunner)[source] == source else {
             throw DomainError(
                 summary: "adb reverse did not retain the Metro mapping",
                 remediation: retryDown
@@ -459,24 +459,10 @@ actor AndroidRuntime {
             activities.standardOutput.contains(product.launcherActivity)
         else { return nil }
         let source = "tcp:\(MetroVerdict.port)"
-        guard try await reverseMappings(serial: serial, sdk: sdk)[source] == source,
+        guard try await doctorContext.reverseMappings(serial: serial, sdk: sdk, runner: hostRunner)[source] == source,
             try await MetroVerdict.ask(anchor: anchor.directory, runner: projectRunner) == .mine
         else { return nil }
         return pid
-    }
-
-    private func reverseMappings(serial: String, sdk: URL) async throws -> [String: String] {
-        let result = try await hostRunner.run(adb(
-            ["-s", serial, "reverse", "--list"], sdk: sdk
-        ))
-        guard result.terminationStatus.isSuccess else {
-            throw AndroidStateError("adb reverse --list could not be observed")
-        }
-        return result.standardOutput.split(separator: "\n").reduce(into: [:]) { mappings, line in
-            let fields = line.split(whereSeparator: \.isWhitespace).map(String.init)
-            guard fields.count >= 2 else { return }
-            mappings[fields[fields.count - 2]] = fields[fields.count - 1]
-        }
     }
 
     private func prepare(_ product: AndroidBuiltProduct) throws {

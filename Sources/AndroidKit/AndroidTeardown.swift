@@ -183,7 +183,7 @@ struct AndroidCleanup: Sendable {
         case .verified: break
         }
         let source = "tcp:\(MetroVerdict.port)"
-        let mappings = try await reverseMappings(serial: reverse.serial, sdk: sdk)
+        let mappings = try await doctorContext.reverseMappings(serial: reverse.serial, sdk: sdk, runner: runner)
         guard let current = mappings[source] else {
             return .skipped("android.adb.reverse", "mapping already absent")
         }
@@ -209,7 +209,7 @@ struct AndroidCleanup: Sendable {
                 )
             )
         }
-        guard try await reverseMappings(serial: reverse.serial, sdk: sdk)[source] == nil else {
+        guard try await doctorContext.reverseMappings(serial: reverse.serial, sdk: sdk, runner: runner)[source] == nil else {
             return .failed(
                 "android.adb.reverse",
                 cleanupFailure(
@@ -396,20 +396,6 @@ struct AndroidCleanup: Sendable {
         _ arguments: [String], sdk: URL, timeout: Duration = .seconds(15)
     ) -> ProcessCommand {
         doctorContext.toolCommand("adb", arguments, sdk: sdk, timeout: timeout)
-    }
-
-    private func reverseMappings(serial: String, sdk: URL) async throws -> [String: String] {
-        let result = try await runner.run(adb(
-            ["-s", serial, "reverse", "--list"], sdk: sdk
-        ))
-        guard result.terminationStatus.isSuccess else {
-            throw AndroidStateError("adb reverse --list could not be observed")
-        }
-        return result.standardOutput.split(separator: "\n").reduce(into: [:]) { mappings, line in
-            let fields = line.split(whereSeparator: \.isWhitespace).map(String.init)
-            guard fields.count >= 2 else { return }
-            mappings[fields[fields.count - 2]] = fields[fields.count - 1]
-        }
     }
 
     private func processIsRunning(_ pid: Int32) async throws -> Bool {
