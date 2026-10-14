@@ -121,7 +121,7 @@ Bugbot에는 root `.cursor/BUGBOT.md`의 핵심 규칙과 변경 경로의 하�
 | --- | --- |
 | Swift·CLI·GUI·실행 | `CONTEXT.md`, 관련 `docs/adr/`의 public contract·trust·approval·lease 결정 |
 | 검사·패키징·source-only | 해당 스크립트의 계약 문서·ADR·티켓의 실제 측정 조건 |
-| GitHub·CI·Draft | `docs/REPOSITORY_SETUP.md`, `docs/DRAFT_RELEASE.md`, 관련 workflow와 입력 계약 |
+| GitHub·CI·Draft | `docs/REPOSITORY_SETUP.md`, `docs/release-install.md`, 관련 workflow와 입력 계약 |
 | 문서·권리 | 변경한 기준 문서·관련 ADR, `LICENSE`와 출처 기록 |
 
 
