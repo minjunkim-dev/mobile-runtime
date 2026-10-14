@@ -97,7 +97,7 @@ public struct AndroidBuildStage: Stage {
                 observed: reason,
                 remediation: Remediation(
                     summary: "Fix or materialize the declared Gradle inputs, then run the same wrapper model query.",
-                    command: "cd \(shell(anchor.directory.appendingPathComponent("android").path)) && ./gradlew help"
+                    command: "cd \(shellArgument(anchor.directory.appendingPathComponent("android").path)) && ./gradlew help"
                 )
             )
         }
@@ -529,11 +529,7 @@ private func names(_ values: [String]) -> String {
     values.isEmpty ? "none" : values.joined(separator: ", ")
 }
 
-private func shell(_ value: String) -> String {
-    "'" + value.replacingOccurrences(of: "'", with: "'\\''") + "'"
-}
-
 private func pasteable(_ command: ProcessCommand) -> String {
-    "cd \(shell(command.workingDirectory?.path ?? ".")) && "
-        + ([command.executable] + command.arguments).map(shell).joined(separator: " ")
+    "cd \(shellArgument(command.workingDirectory?.path ?? ".")) && "
+        + ([command.executable] + command.arguments).map(shellArgument).joined(separator: " ")
 }

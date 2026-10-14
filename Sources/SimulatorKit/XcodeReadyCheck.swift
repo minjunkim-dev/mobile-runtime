@@ -35,13 +35,12 @@ public struct XcodeReadyCheck: Check {
             }
             let app = URL(fileURLWithPath: installation.developerDirectory)
                 .deletingLastPathComponent().deletingLastPathComponent()
-            let quotedApp = "'" + app.path.replacingOccurrences(of: "'", with: "'\\''") + "'"
             return .error(
                 observed: result.combinedOutput.firstLine ?? "Xcode reports incomplete initial setup",
                 required: "Xcode license approval and first-launch tasks completed",
                 remediation: Remediation(
                     summary: "Open the selected Xcode. Review its license and finish initial setup, then run mobile doctor again.",
-                    command: app.pathExtension == "app" ? "open \(quotedApp)" : nil,
+                    command: app.pathExtension == "app" ? "open \(shellArgument(app.path))" : nil,
                     url: "https://developer.apple.com/xcode/"
                 )
             )
