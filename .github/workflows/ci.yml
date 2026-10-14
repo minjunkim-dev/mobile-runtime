@@ -100,8 +100,6 @@ jobs:
           python3 scripts/verify-workflow-input.py "$(swift build --show-bin-path)/mobile"
           python3 scripts/verify-setup-input.py "$(swift build --show-bin-path)/mobile"
           git diff --exit-code -- Package.resolved
-      - name: Package and verify macOS arm64 pre-release
-        run: scripts/package-release.sh 0.1.0-alpha.1 "$RUNNER_TEMP/release"
       - name: Record cache state
         if: always()
         env:
@@ -110,6 +108,18 @@ jobs:
         run: |
           printf 'Cache enabled: %s; dependencies hit: %s; exact build hit: %s\n' \
             "$CACHE_ENABLED" "${PACKAGES_HIT:-false}" "${BUILD_HIT:-false}" >> "$GITHUB_STEP_SUMMARY"
+
+  macos-release-package:
+    name: macOS release package verification
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # The disposable release build must stay independent of cached debug outputs.
+      - name: Package and verify macOS arm64 pre-release
+        run: scripts/package-release.sh 0.1.0-alpha.1 "$RUNNER_TEMP/release"
 
   linux-core-compile:
     name: Linux Core compile
@@ -160,7 +170,7 @@ jobs:
   ci:
     name: CI
     if: always()
-    needs: [repository-hygiene, macos-swift-tests, linux-core-compile]
+    needs: [repository-hygiene, macos-swift-tests, macos-release-package, linux-core-compile]
     runs-on: ubuntu-24.04
     timeout-minutes: 2
     steps:
@@ -168,10 +178,11 @@ jobs:
         env:
           HYGIENE_RESULT: ${{ needs.repository-hygiene.result }}
           MACOS_RESULT: ${{ needs.macos-swift-tests.result }}
+          PACKAGE_RESULT: ${{ needs.macos-release-package.result }}
           LINUX_RESULT: ${{ needs.linux-core-compile.result }}
         run: |
-          printf 'Hygiene: %s; macOS: %s; Linux Core: %s\n' \
-            "$HYGIENE_RESULT" "$MACOS_RESULT" "$LINUX_RESULT" >> "$GITHUB_STEP_SUMMARY"
-          for result in "$HYGIENE_RESULT" "$MACOS_RESULT" "$LINUX_RESULT"; do
+          printf 'Hygiene: %s; macOS: %s; release package: %s; Linux Core: %s\n' \
+            "$HYGIENE_RESULT" "$MACOS_RESULT" "$PACKAGE_RESULT" "$LINUX_RESULT" >> "$GITHUB_STEP_SUMMARY"
+          for result in "$HYGIENE_RESULT" "$MACOS_RESULT" "$PACKAGE_RESULT" "$LINUX_RESULT"; do
             test "$result" = success
           done
