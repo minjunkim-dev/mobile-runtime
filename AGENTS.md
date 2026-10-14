@@ -12,7 +12,7 @@ is the closed historical MVP map.
 ## Shared instructions
 
 This file is the shared project instruction source for coding agents.
-`CLAUDE.md` contains only `@AGENTS.md`; do not duplicate instructions there.
+Do not maintain separate tool-specific project instruction files.
 
 ## Agent skills
 
