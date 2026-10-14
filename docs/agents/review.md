@@ -31,6 +31,19 @@ source-only 테스트는 `test_*.py`를 자동 탐색한다. AST 검사는 정�
 새 동작 검사는 interface를 실행한다. 기존 검사를 약화해서 CI를 통과시키지 않는다.
 새 formatter 도입은 별도 변경으로 평가한다. 기존 전체 소스를 포맷하는 변경을 섞지 않는다.
 
+## CI 실패 처리
+
+담당 로컬 에이전트는 맡은 PR의 CI가 완료될 때까지 결과를 확인한다.
+
+1. PR의 head·base SHA와 실패한 run·attempt를 기록한다. `gh run view <RUN_ID> --repo <OWNER/REPO> --log-failed`로 실패 로그를 확인한다.
+2. 코드 결함과 인프라 장애를 구분한다. 가능한 실패는 로컬에서 재현한다. 재현하지 못한 범위는 기록한다.
+3. 범위 안의 원인을 수정하고 관련 검사를 실행한다. 검사 삭제·skip·조건 완화로 실패를 숨기지 않는다. 같은 실패를 근거 없이 반복 재실행하지 않는다.
+4. 수정 내용을 커밋·푸시한다. 새 head의 CI를 확인한다. 이전 커밋의 성공을 새 head의 근거로 사용하지 않는다.
+5. 최종 head의 전체 diff를 별도 Standards·Spec 컨텍스트에서 다시 검토한다. 필요한 Security 리뷰, 티켓 검증과 필수 CI를 확인한 뒤 위험별 병합 조건을 적용한다.
+
+접근 권한 부족이나 해결하지 못한 실패가 남으면 원인과 미확인 범위를 보고하고 병합하지 않는다.
+이 절차는 담당 에이전트의 작업 중 수행한다. 별도 상시 감시 프로그램을 뜻하지 않는다.
+
 ## PR 본문과 병합
 
 `.github/pull_request_template.md`의 Summary, Evidence, Merge Danger를 사용한다.
@@ -46,9 +59,13 @@ Summary에는 변경 흐름을 보여주는 작은 도식을 둔다. Evidence에
 많은 프로젝트의 실행 동작이나 공개 계약을 바꾸는 변경은 broad로 처리한다.
 diff 크기로 위험을 결정하지 않는다. 정책상 사람이 승인할 변경은 `ready-for-human`으로 표시한다.
 현재 GitHub 보호 설정은 `CI`만 강제한다. 위 사람 승인과 독립 리뷰는 에이전트 절차다. 서버가 자동으로 강제한다고 주장하지 않는다.
-최종 head SHA를 확인하고 `gh pr merge --squash --match-head-commit <SHA>`로 병합한다.
+병합 직전에 GitHub API로 head·base와 검사 결과를 다시 확인한다.
+최종 head SHA를 확인하고 `gh pr merge <PR> --repo <OWNER/REPO> --squash --match-head-commit <SHA>`로 병합한다.
+`--admin`으로 보호를 우회하지 않는다.
 리뷰 이후 커밋이나 base가 바뀌면 영향받는 검증을 갱신한다.
 사용자가 병합을 금지한 작업은 검증 후에도 PR을 열어 둔다.
+저장소 `Allow auto-merge`는 On으로 둔다. 모든 PR에 자동 병합을 예약하지 않는다.
+기본 흐름은 최종 검증 후 직접 병합이다. GitHub 자동 병합 예약은 독립 리뷰 결과를 대상 SHA의 필수 체크로 연결한 뒤 별도 구성한다.
 
 ## 로컬 보안 리뷰
 
