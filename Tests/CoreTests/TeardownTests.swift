@@ -113,41 +113,15 @@ struct TeardownTests {
         #expect(document.contains("\"android.emulator\""))
     }
 
-    /// stdout is the JSON document and nothing else, so a piped `down` stays
-    /// parseable however much a human would have wanted to read.
-    @Test("human lines and tool failures stay on stderr")
-    func streams() async throws {
-        let out = Mutable<[String]>([])
-        let err = Mutable<[String]>([])
-        let writer = DownWriter(
-            json: true,
-            toolVersion: "0.1.0",
-            renderer: HumanReportRenderer(useColor: false),
-            standardOutput: { line in out.mutate { $0.append(line) } },
-            standardError: { line in err.mutate { $0.append(line) } }
-        )
-
-        try writer.finish(
-            TeardownReport(items: [.stopped("metro", "pid 1")], toolFailures: ["app: no simctl"])
-        )
-
-        #expect(out.value.count == 1)
-        #expect(out.value.first?.contains("\"command\" : \"down\"") == true)
-        #expect(err.value == ["tool failure: app: no simctl"])
-    }
-
     @Test("the human report says nothing to stop once, at the end")
     func humanNothingToStop() async throws {
         let err = Mutable<[String]>([])
         let writer = DownWriter(
-            json: false,
-            toolVersion: "0.1.0",
             renderer: HumanReportRenderer(useColor: false),
-            standardOutput: { _ in },
             standardError: { line in err.mutate { $0.append(line) } }
         )
 
-        try writer.finish(
+        writer.finish(
             TeardownReport(items: [
                 .skipped("metro", "nothing on 8081"),
                 .skipped("app", "no install record — nothing to stop"),
@@ -190,14 +164,11 @@ struct TeardownTests {
     func humanBlocked() async throws {
         let err = Mutable<[String]>([])
         let writer = DownWriter(
-            json: false,
-            toolVersion: "0.1.0",
             renderer: HumanReportRenderer(useColor: false),
-            standardOutput: { _ in },
             standardError: { line in err.mutate { $0.append(line) } }
         )
 
-        try writer.finish(
+        writer.finish(
             TeardownReport(items: [
                 .blocked(
                     "metro",
@@ -256,14 +227,11 @@ struct TeardownTests {
     func humanFailure() async throws {
         let err = Mutable<[String]>([])
         let writer = DownWriter(
-            json: false,
-            toolVersion: "0.1.0",
             renderer: HumanReportRenderer(useColor: false),
-            standardOutput: { _ in },
             standardError: { line in err.mutate { $0.append(line) } }
         )
 
-        try writer.finish(
+        writer.finish(
             TeardownReport(items: [
                 .failed(
                     "metro",

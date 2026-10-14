@@ -345,30 +345,6 @@ struct UpJSONTests {
 struct StageLineRendererTests {
     private let renderer = StageLineRenderer()
 
-    @Test("name, outcome and elapsed time, one line per stage")
-    func line() {
-        #expect(renderer.line(result("validate", .pass)) == "validate      pass                    1.2s")
-        #expect(
-            renderer.line(result("dependencies", .skipped, .milliseconds(40), detail: "node_modules present"))
-                == "dependencies  skipped — node_modules present  0.0s"
-        )
-    }
-
-    /// On a pass the detail is what the reader wanted — which device, which scheme —
-    /// so it takes the column outright. A failure keeps its status word: there, the
-    /// status is the news.
-    @Test("a passing stage shows its detail in place of the status")
-    func detailLine() {
-        #expect(
-            renderer.line(result("device", .pass, .milliseconds(8400), detail: "iPhone 17 Pro (iOS 26.1)"))
-                == "device        iPhone 17 Pro (iOS 26.1)  8.4s"
-        )
-        #expect(
-            renderer.line(result("validate", .failed, .seconds(3), detail: "2 checks failed"))
-                == "validate      failed — 2 checks failed  3.0s"
-        )
-    }
-
     /// A build takes minutes and says nothing while it does. The same columns as a
     /// finished stage, so the wait reads as the row it will eventually become rather
     /// than as a different kind of message.
@@ -380,84 +356,27 @@ struct StageLineRendererTests {
 
 @Suite("up streams")
 struct UpWriterTests {
-    private let out = Mutable<[String]>([])
     private let error = Mutable<[String]>([])
 
-    private func writer(json: Bool, command: String = "up") -> UpWriter {
-        let out = out
+    private var writer: UpWriter {
         let error = error
-        return UpWriter(
-            json: json,
-            toolVersion: "9.9.9",
-            command: command,
-            renderer: HumanReportRenderer(useColor: false),
-            standardOutput: { out.value.append($0) },
-            standardError: { error.value.append($0) }
-        )
+        return UpWriter(renderer: HumanReportRenderer(useColor: false), standardError: { error.value.append($0) })
     }
 
-    /// The rule a parser depends on: one document, nothing else. Progress printed
-    /// while the pipeline runs is what would break it, so it is printed here too.
-    @Test("--json writes one parseable document to stdout and progress to stderr")
-    func stdoutIsOnlyJSON() throws {
-        let writer = writer(json: true)
+    @Test("a validate warning reaches the human report")
+    func validateWarningIsRendered() {
         let report = UpReport(
             stages: [result("validate", .pass)],
             context: validation(.warning(remediation: Remediation(summary: "switch node")))
         )
 
-        writer.progress(report.stages[0])
-        try writer.finish(report)
+        writer.finish(report)
 
-        #expect(out.value.count == 1)
-        let document = try JSONSerialization.jsonObject(with: Data(out.value[0].utf8)) as? [String: Any]
-        #expect(document?["command"] as? String == "up")
-        #expect(error.value.contains { $0.contains("validate") })
-        // The warning is in the document; --json does not also render it for a human.
-        #expect(error.value.contains { $0.contains("switch node") } == false)
-    }
-
-    @Test("build JSON uses the shared envelope with its own command")
-    func buildJSONCommand() throws {
-        let writer = writer(json: true, command: "build")
-        let report = UpReport(stages: [result("build", .pass)])
-
-        try writer.finish(report)
-
-        let document = try JSONSerialization.jsonObject(with: Data(out.value[0].utf8))
-            as? [String: Any]
-        #expect(document?["command"] as? String == "build")
-        #expect((document?["stages"] as? [[String: Any]])?.first?["id"] as? String == "build")
-    }
-
-    /// A stage that is still working writes through the same door as everything else
-    /// a human reads. `--json` is exactly when this matters: the document has not
-    /// been written yet, and one stray line would make stdout unparseable.
-    @Test("a note from a running stage goes to stderr in either mode")
-    func notesStayOnStderr() {
-        writer(json: true).note("build         running…                45.0s")
-
-        #expect(out.value.isEmpty)
-        #expect(error.value == ["build         running…                45.0s"])
-    }
-
-    @Test("without --json nothing goes to stdout at all")
-    func humanOutputStaysOnStderr() throws {
-        let writer = writer(json: false)
-        let report = UpReport(
-            stages: [result("validate", .pass)],
-            context: validation(.warning(remediation: Remediation(summary: "switch node")))
-        )
-
-        writer.progress(report.stages[0])
-        try writer.finish(report)
-
-        #expect(out.value.isEmpty)
         #expect(error.value.joined(separator: "\n").contains("→ switch node"))
     }
 
     @Test("a validate error is rendered once, by doctor's renderer")
-    func domainFailureRendersTheReport() throws {
+    func domainFailureRendersTheReport() {
         let remediation = Remediation(summary: "Switch to Node 24.")
         let report = UpReport(
             stages: [result("validate", .failed)],
@@ -465,7 +384,7 @@ struct UpWriterTests {
             failure: .domain(DomainError(summary: "Node 18", remediation: remediation))
         )
 
-        try writer(json: false).finish(report)
+        writer.finish(report)
 
         let text = error.value.joined(separator: "\n")
         #expect(text.contains("[✗] Node — Node 18"))
@@ -476,14 +395,14 @@ struct UpWriterTests {
     /// exit 2 next to check errors that exit 1: printing only the errors would hide
     /// why the exit code disagrees with them.
     @Test("a tool failure is still printed when validate also found errors")
-    func toolFailureIsNeverSwallowed() throws {
+    func toolFailureIsNeverSwallowed() {
         let report = UpReport(
             stages: [result("validate", .failed)],
             context: validation(.error(observed: "Node 18", remediation: Remediation(summary: "Switch to Node 24."))),
             failure: .tool("validate: `xcrun simctl list` timed out")
         )
 
-        try writer(json: false).finish(report)
+        writer.finish(report)
 
         let text = error.value.joined(separator: "\n")
         #expect(text.contains("[✗] Node — Node 18"))

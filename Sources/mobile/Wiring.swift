@@ -1,30 +1,5 @@
-import Core
-import EnvironmentKit
 import Foundation
 import Logging
-
-typealias Wiring = WorkflowContext
-
-extension WorkflowContext {
-    static func bootstrap(
-        verbose: Bool,
-        platform: MobilePlatform = .ios,
-        includeProjectEnvironment: Bool = true,
-        includeRuntimeSDKTools: Bool = true
-    ) async -> WorkflowContext {
-        bootstrapLogging(verbose: verbose)
-        let directory = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-        let environment = ProcessInfo.processInfo.environment
-        return await make(
-            input: ProjectInspectionInput(directory: directory, environment: environment),
-            platform: platform == .ios ? .ios : .android,
-            anchor: ProjectAnchor.detect(from: directory),
-            runner: SystemProcessRunner(),
-            includeProjectEnvironment: includeProjectEnvironment,
-            includeRuntimeSDKTools: includeRuntimeSDKTools
-        )
-    }
-}
 
 func bootstrapLogging(verbose: Bool, silent: Bool = false) {
     LoggingSystem.bootstrap { label in
