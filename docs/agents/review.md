@@ -83,7 +83,7 @@ diff 크기로 위험을 결정하지 않는다. 정책상 사람이 승인할 �
 ## Bugbot 수동 보조 리뷰
 
 Bugbot은 선택적인 추가 리뷰어다. 필수 `CI`나 독립 리뷰를 대체하지 않는다.
-리뷰 규칙은 [.cursor/BUGBOT.md](../../.cursor/BUGBOT.md)에서 프로젝트의 코딩 규칙과 도메인 문서로 연결한다.
+리뷰 규칙은 [.cursor/BUGBOT.md](../../.cursor/BUGBOT.md)의 핵심 규칙과 변경 경로의 영역 규칙으로 제한한다.
 이 파일은 리뷰 지시문이다. 실행 방식과 결제 설정은 대시보드에서 확인한다.
 Trigger Mode는 `Manual Only`, Autofix Mode는 `Off`, On-demand Spending은 `Disabled`로 유지한다.
 PR 요약은 `As Comment`로 사용한다. 위험 점수를 함께 표시한다. Draft 자동 리뷰는 `Off`로 유지한다.
@@ -106,3 +106,28 @@ Bugbot의 기본 findings 상태는 `neutral`이다. check를 필수로 등록�
 반복된 지적에는 재현 사례와 원인을 남긴다. 결정적인 실패 조건이면 자동 체크로 옮긴다.
 판단이 필요하면 코딩 규칙을 고친다. 정보를 못 찾았다면 AGENTS.md에 경로만 추가한다.
 불필요한 탐색이나 비대한 지시문을 줄인다. 실제로 반복되지 않은 가상 문제의 체크는 추가하지 않는다.
+
+## Bugbot 입력과 로컬 문서 선택
+
+Bugbot에는 root `.cursor/BUGBOT.md`의 핵심 규칙과 변경 경로의 하위 `.cursor/BUGBOT.md`만 전달한다.
+규칙 파일에는 상세 문서·다른 영역 규칙으로 향하는 상대 Markdown 링크를 두지 않는다.
+상세 문서 원문을 복제하거나 모든 문서를 읽도록 일괄 지시하지 않는다.
+영역 규칙은 변경 경로에 따라 적용한다. root에서 모든 영역을 연결하지 않는다.
+
+로컬 독립 리뷰 에이전트는 `docs/coding-standards.md`와 티켓의 확정 완료 조건을 읽는다.
+그다음 변경 영역에 필요한 원문만 선택한다. 아래 표는 로컬 리뷰의 길잡이다. Bugbot 입력 목록이 아니다.
+
+| 변경 영역 | 로컬 리뷰가 선택할 상세 문서 |
+| --- | --- |
+| Swift·CLI·GUI·실행 | `CONTEXT.md`, 관련 `docs/adr/`의 public contract·trust·approval·lease 결정 |
+| 검사·패키징·source-only | 해당 스크립트의 계약 문서·ADR·티켓의 실제 측정 조건 |
+| GitHub·CI·Draft | `docs/REPOSITORY_SETUP.md`, `docs/release-install.md`, 관련 workflow와 입력 계약 |
+| 문서·권리 | 변경한 기준 문서·관련 ADR, `LICENSE`와 출처 기록 |
+
+
+CI는 모든 추적된 root·영역 규칙을 합쳐 95,000자 이하인지 확인한다. 개별 규칙은 30,000자 이하로 유지한다.
+필수 규칙 파일 누락·빈 파일·symlink와 상세 문서의 로컬 링크도 거부한다.
+상세 문서 길이는 이 Bugbot 예산에 포함하지 않는다. 새 영역을 추가하면 필수 규칙 목록을 갱신한다.
+이 합계는 모든 영역을 더한 보수적인 값이다. 특정 PR의 서버 입력·팀 규칙·학습 규칙 전체를 증명하지 않는다.
+서버 포함·생략·잘림은 필요한 수동 리뷰의 `bugbot run verbose=true` 표로 확인한다.
+Manual Only·Autofix Off·On-demand Off를 유지한다. 이 정리로 새 Bugbot 실행이나 결제 설정 변경을 시작하지 않는다.
