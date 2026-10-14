@@ -9,6 +9,11 @@ Current decisions live in `CONTEXT.md` and `docs/adr/`.
 [Wayfinder Map: MVP 스펙 (Phase 0~3)](https://github.com/minjunkim-dev/mobile-runtime/issues/1)
 is the closed historical MVP map.
 
+## Shared instructions
+
+This file is the shared project instruction source for coding agents.
+`CLAUDE.md` contains only `@AGENTS.md`; do not duplicate instructions there.
+
 ## Agent skills
 
 ### Issue tracker
