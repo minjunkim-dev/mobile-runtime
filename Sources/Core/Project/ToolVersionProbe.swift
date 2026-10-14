@@ -117,7 +117,8 @@ public func shellArgument(_ value: String) -> String {
     let safe = CharacterSet(
         charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._/"
     )
-    guard value.unicodeScalars.allSatisfy({ safe.contains($0) }) else {
+    // An empty argument left bare disappears from the pasted command.
+    guard !value.isEmpty, value.unicodeScalars.allSatisfy({ safe.contains($0) }) else {
         return "'\(value.replacingOccurrences(of: "'", with: "'\"'\"'"))'"
     }
     return value
