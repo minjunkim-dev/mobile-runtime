@@ -273,6 +273,22 @@ struct MetroStageTests {
         #expect(context.metro == nil)
     }
 
+    /// Android accepts a listener only when the Metro verdict says it is this
+    /// project's; any other answer must keep waiting, never report it as started.
+    @Test("a listener the caller does not accept is not reported as the started Metro")
+    func unacceptedListener() async throws {
+        let runner = FakeProcessRunner(responses: [
+            "lsof -nP -iTCP:8081 -sTCP:LISTEN -t": .ok("70947\n"),
+            "kill -0 4242": .failed(1, "No such process"),
+        ])
+
+        let readiness = try await MetroLaunch.readiness(
+            startPID: 4242, runner: runner, bindWait: .zero, poll: .zero
+        ) { _ in false }
+
+        #expect(readiness == .exited)
+    }
+
     @Test("a delayed listener passes once it binds within the deadline")
     func delayedBind() async throws {
         let repo = try app()
