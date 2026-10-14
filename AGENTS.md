@@ -13,6 +13,7 @@ is the closed historical MVP map.
 
 This file is the shared project instruction source for coding agents.
 Do not maintain separate tool-specific project instruction files.
+GitHub settings and the read-only audit follow `docs/REPOSITORY_SETUP.md`.
 
 ## Agent skills
 
