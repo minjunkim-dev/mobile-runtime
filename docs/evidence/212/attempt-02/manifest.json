@@ -1,0 +1,345 @@
+{
+  "schemaVersion": 1,
+  "attemptId": "attempt-02-ios26",
+  "status": "partial",
+  "issue": 212,
+  "runstirUsed": false,
+  "tupleDecision": "https://github.com/minjunkim-dev/mobile-runtime/issues/212#issuecomment-6092021206",
+  "preservedPreviousAttempt": "../manifest.json",
+  "commonHost": {
+    "macOS": "27.0.1",
+    "osBuild": "26A434",
+    "xcode": "27.0",
+    "xcodeBuild": "27A266a",
+    "node": "22.23.2",
+    "npm": "10.9.8",
+    "java": "Zulu17.0.19+10",
+    "globalSelectionChanged": false,
+    "newLicenseConsent": false
+  },
+  "sources": [
+    {
+      "id": "minimal",
+      "executionSource": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+      "freshSource": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+      "trackedChangedPaths": "",
+      "freshTrackedChangedPaths": "",
+      "freshCloneExecuted": false,
+      "locks": {
+        "package-lock.json": {
+          "sourceSha256": "3478830fc86d9d1ae7cd46ae129eec9c4915b0ec4e2df247e2cb62b136caeee0",
+          "freshSha256": "3478830fc86d9d1ae7cd46ae129eec9c4915b0ec4e2df247e2cb62b136caeee0"
+        },
+        "Gemfile.lock": {
+          "sourceSha256": "3679d60340d049c31b74052580c64ab26b3e6fa611f332c1407121dfc3c791eb",
+          "freshSha256": "3679d60340d049c31b74052580c64ab26b3e6fa611f332c1407121dfc3c791eb"
+        },
+        "ios/Podfile.lock": {
+          "sourceSha256": "cec099ee896ed83dd780bd8da0a03e840c3ba6a0803f90c0bbfcd04efaf17d56",
+          "freshSha256": "cec099ee896ed83dd780bd8da0a03e840c3ba6a0803f90c0bbfcd04efaf17d56"
+        }
+      }
+    },
+    {
+      "id": "bluewallet-v8",
+      "executionSource": "a7fe068709b0f91c504b28accda8bc85ee4c3714",
+      "freshSource": "a7fe068709b0f91c504b28accda8bc85ee4c3714",
+      "trackedChangedPaths": "",
+      "freshTrackedChangedPaths": "",
+      "freshCloneExecuted": false,
+      "locks": {
+        "package-lock.json": {
+          "sourceSha256": "290a92a9a729f123c9995dc5c2f9944b090a0966ce249af8b8d4dd54773aae62",
+          "freshSha256": "290a92a9a729f123c9995dc5c2f9944b090a0966ce249af8b8d4dd54773aae62"
+        },
+        "Gemfile.lock": {
+          "sourceSha256": "8b1531196ded7c137d45576779a783a7a23039270ed5eb9c0f67f205d5b9019f",
+          "freshSha256": "8b1531196ded7c137d45576779a783a7a23039270ed5eb9c0f67f205d5b9019f"
+        },
+        "ios/Podfile.lock": {
+          "sourceSha256": "01db3c351c647e5e15988227c8851003c0262159c8c11d3e2240a9d13f3b3e4f",
+          "freshSha256": "01db3c351c647e5e15988227c8851003c0262159c8c11d3e2240a9d13f3b3e4f"
+        }
+      }
+    }
+  ],
+  "androidDevice": {
+    "avd": "Pixel_10_API_37_Play",
+    "serial": "emulator-5554",
+    "emulator": "37.1.11",
+    "image": "API37 GooglePlay arm64 revision6",
+    "renderer": "software",
+    "invocationFlags": [
+      "-no-window",
+      "-no-metrics",
+      "-crash-report-mode disabled",
+      "-no-snapshot-load",
+      "-no-snapshot-save"
+    ],
+    "preexistingAvd": true,
+    "dataReset": false
+  },
+  "android": {
+    "minimal": {
+      "source": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+      "build": "SUCCESS9s;8executed74uptodate; same baseline node_modules/Pods build retained; not clean-host build",
+      "install": "adb install -r Success",
+      "launch": {
+        "state": "COLD",
+        "total_ms": 658,
+        "wait_ms": 660
+      },
+      "pid": "6475",
+      "firstScreen": "Welcome to React Native; Version0.87.1; Hermes250829098.0.17",
+      "apk": {
+        "size": 122716779,
+        "sha256": "ea625a29a21df8348c113d817020311059f523c4e4f277505abcf8534623b3d3"
+      },
+      "screenshotSha256": "c12960369de86acfc394082fbc7ed548fbeb4131d142b2f76dbd8b80114b4380",
+      "timestamp": "2026-10-10T10:17:07.382200+09:00"
+    },
+    "bluewallet-v8": {
+      "source": "a7fe068709b0f91c504b28accda8bc85ee4c3714",
+      "version": "versionCode=1 minSdk=24 targetSdk=36\nversionName=8.0.2",
+      "pid": "6237",
+      "launch": {
+        "status": "ok",
+        "state": "COLD",
+        "total_ms": 3603,
+        "wait_ms": 3604
+      },
+      "first_screen": "Wallets / Add a wallet / Transactions empty, no wallet created",
+      "captured_at": "2026-10-10T10:16:06.984988+09:00",
+      "apk": {
+        "path": "attempt-02-ios26/bluewallet-source/android/app/build/outputs/apk/debug/app-debug.apk",
+        "size": 47148972,
+        "sha256": "529c6c145c888386167b62a167f4550a941d6a3d2d8f92b09f6437181bcf09b6"
+      },
+      "screenshot": {
+        "sha256": "a7fad74cd4a156683c9b7bd924359ccadad9f66cbcdd380931522077d24fb39b"
+      },
+      "first_process_note": "Initial PID4245 lost after JS bundling; relaunched same app/source without data reset. PID6237 alive at screenshot."
+    }
+  },
+  "bluewalletIosFrozenFailure": {
+    "source": "a7fe068709b0f91c504b28accda8bc85ee4c3714",
+    "inheritedFlagsPresence": {
+      "RCT_USE_PREBUILT_RNCORE": false,
+      "RCT_USE_RN_DEP": false,
+      "USE_FRAMEWORKS": false,
+      "NO_FLIPPER": false,
+      "RCT_NEW_ARCH_ENABLED": false,
+      "USE_HERMES": false,
+      "RCT_HERMES_V1_ENABLED": false
+    },
+    "frozenPods": "exit1, four SPEC CHECKSUMS differences only; original locks unchanged",
+    "specs": [
+      {
+        "name": "hermes-engine",
+        "originalLockSha1": "86cdbf283775c54dc008895c3eacd24a1f2a40b4",
+        "actualSpecSha1": "c8eb285cb5de59527128fd84565bb5fdeb0d3e6b",
+        "version": "250829098.0.10",
+        "source": {
+          "http": "https://repo1.maven.org/maven2/com/facebook/hermes/hermes-ios/250829098.0.10/hermes-ios-250829098.0.10-hermes-ios-debug.tar.gz"
+        },
+        "platforms": {
+          "osx": "10.13",
+          "ios": "15.1",
+          "visionos": "1.0",
+          "tvos": "15.1"
+        },
+        "dependencies": null,
+        "absoluteSourceOrCompilerPath": true
+      },
+      {
+        "name": "React-Core-prebuilt",
+        "originalLockSha1": "9e875134f667c471ab68bf9edf1661fa11b86540",
+        "actualSpecSha1": "97bd92bb9a514bf57d19f8c8898bc6f252a7cc8f",
+        "version": "0.85.3",
+        "source": {
+          "http": "file://<bluewallet-baseline-root>/ios/Pods/ReactNativeCore-artifacts/reactnative-core-0.85.3-debug.tar.gz"
+        },
+        "platforms": {
+          "ios": "15.1"
+        },
+        "dependencies": {
+          "ReactNativeDependencies": []
+        },
+        "absoluteSourceOrCompilerPath": true
+      },
+      {
+        "name": "ReactCodegen",
+        "originalLockSha1": "d9475a746f5735bf5e403a1e25e451306ebaae8b",
+        "actualSpecSha1": "1bd7f2174582b0e142f8671735b5c906c08b72ea",
+        "version": "0.85.3",
+        "source": {
+          "git": ""
+        },
+        "platforms": {
+          "ios": "15.1"
+        },
+        "dependencies": {
+          "React-jsiexecutor": [],
+          "RCTRequired": [],
+          "RCTTypeSafety": [],
+          "React-Core": [],
+          "React-jsi": [],
+          "ReactCommon/turbomodule/bridging": [],
+          "ReactCommon/turbomodule/core": [],
+          "React-NativeModulesApple": [],
+          "React-graphics": [],
+          "React-rendererdebug": [],
+          "React-Fabric": [],
+          "React-FabricImage": [],
+          "React-debug": [],
+          "React-utils": [],
+          "React-featureflags": [],
+          "React-RCTAppDelegate": [],
+          "hermes-engine": [],
+          "ReactNativeDependencies": [],
+          "React-Core-prebuilt": []
+        },
+        "absoluteSourceOrCompilerPath": false
+      },
+      {
+        "name": "ReactNativeDependencies",
+        "originalLockSha1": "0a5c93845772e4b1c5ad065c59a859518b13a6b7",
+        "actualSpecSha1": "c663911f9900d7f0482d7c4d5e6c8c27c9dba9b9",
+        "version": "0.85.3",
+        "source": {
+          "http": "file://<bluewallet-baseline-root>/ios/Pods/ReactNativeDependencies-artifacts/reactnative-dependencies-0.85.3-debug.tar.gz"
+        },
+        "platforms": {
+          "ios": "15.1"
+        },
+        "dependencies": null,
+        "absoluteSourceOrCompilerPath": true
+      }
+    ],
+    "oldSpecProvenanceAvailable": false,
+    "limit": "Tracked original lock records checksums only. Original serialized podspec fields cannot be recovered from those hashes. No environment flag changes or lock regeneration attempted."
+  },
+  "iosRuntime": {
+    "status": "installed-and-exported",
+    "version": "26.0",
+    "build": "23A343",
+    "architecture": "arm64",
+    "officialArchiveBytes": 7985954816,
+    "officialArchiveSha1": "ca08c03cee60164e018953dd6141c87dd4e0635b",
+    "officialArchiveUrl": "https://updates.cdn-apple.com/2025FallFCS/mobileassets/043-92741/D750A898-A5A0-4C2E-A916-9F106B55BD19/com_apple_MobileAsset_iOSSimulatorRuntime/78756498-8AB4-4E5A-986C-7AA435758657.aar",
+    "imported": true,
+    "actualArtifactChecksum": "19252564d65ab92616c299ca817f7358d037c1c34628f5e76355cddb90175614",
+    "automaticallyInstalledByDownloadCommand": true,
+    "separateImportExecuted": false,
+    "actualHashCheckedBeforeInstallation": false,
+    "exportFiles": [
+      {
+        "file": "ExportedMetadata.plist",
+        "bytes": 875,
+        "sha256": "636ec079af69825301bb03ed454b8a17f2b4079c629d7e6979424260a0d43f4a"
+      },
+      {
+        "file": "Restore/Restore.plist",
+        "bytes": 989,
+        "sha256": "2d14bb930e62707645af27e1d6a9ce16236bf1550dc729f8d8b3d3b239e137b1"
+      },
+      {
+        "file": "Restore/BuildManifest.plist",
+        "bytes": 12143,
+        "sha256": "0d8870ce491fbc77849a1abf64ab81a5b617d0d3c8c322b74836719715eb4a81"
+      },
+      {
+        "file": "Restore/043-92413-002.dmg",
+        "bytes": 8014773567,
+        "sha256": "19252564d65ab92616c299ca817f7358d037c1c34628f5e76355cddb90175614"
+      },
+      {
+        "file": "Restore/Firmware/043-92413-002.dmg.trustcache",
+        "bytes": 1301,
+        "sha256": "061528a4f2fde29a256eed9d52f3266f4fdae77b8836535d31960c04659cb240"
+      },
+      {
+        "file": "Restore/Firmware/043-92413-002.dmg.root_hash",
+        "bytes": 229,
+        "sha256": "0299a189918da0c42c9f017c4fd8db00cd121aaf91611e50b93d4f393fecdbf3"
+      },
+      {
+        "file": "Restore/Firmware/043-92413-002.dmg.cryptex_info",
+        "bytes": 330,
+        "sha256": "6f1d06d95fb9697b9bfa1de5ee229a7bf869fd3c208cf0da80c8b28ccea26288"
+      }
+    ],
+    "spaceAfter": {
+      "/System/Volumes/Data": 23485394944,
+      "/Volumes/P41_USB4": 1478022787072
+    },
+    "dmgDigestVerification": {
+      "manifestHashMethod": "sha2-384",
+      "manifestDmgDigest": "790b50513c28a4728004580b512384363acce81e04c6ce5ec4a6432e58c7ae172715f268882f6bb6a03bd3f27777b964",
+      "actualDmgSha384": "790b50513c28a4728004580b512384363acce81e04c6ce5ec4a6432e58c7ae172715f268882f6bb6a03bd3f27777b964",
+      "matches": true,
+      "installedDmgSha256": "19252564d65ab92616c299ca817f7358d037c1c34628f5e76355cddb90175614",
+      "exportedDmgMatchesInstalled": true,
+      "verificationOrder": "after xcodebuild automatic installation"
+    },
+    "officialArchiveSha1Checked": false,
+    "limit": "xcodebuild downloadPlatform/exportPath also installed. Hash collected afterward. Export contains extracted DMG not original AAR; official AAR SHA1 cannot validate different DMG bytes. Original downloaded AAR not retained by exporter.",
+    "serviceRestartOrPreexistingDeviceShutdownRequired": false,
+    "preservedBootedDevices": [
+      "8C71F44D-7D37-436D-94D3-3D25DCF3FD30",
+      "28E6CE63-3581-43C8-813C-7304467AC694"
+    ],
+    "preservedGuiPid": 98365,
+    "simulator": {
+      "id": "BEAB5D23-2F3D-4EC0-80AD-2892B9F42BE6",
+      "name": "Runstir baseline #212 iOS26 20261010",
+      "type": "iPhone 16 Pro",
+      "newDedicatedDevice": true
+    }
+  },
+  "publicFiles": {
+    "minimal-android-first.png": "c12960369de86acfc394082fbc7ed548fbeb4131d142b2f76dbd8b80114b4380",
+    "bluewallet-android-first.png": "a7fad74cd4a156683c9b7bd924359ccadad9f66cbcdd380931522077d24fb39b",
+    "minimal-ios-first.png": "dbf3bfdb191d7f644529a2ad09a4b939f0e65f11d48c1e9037cadcf8ce2921ff"
+  },
+  "androidCleanup": {
+    "appsForceStopped": true,
+    "ownAdbReverseRemoved": true,
+    "ownEmulatorNormalShutdownRequested": true,
+    "avdPreserved": true,
+    "minimalMetroRetainedForIos26": false
+  },
+  "minimalIos": {
+    "source": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+    "build": "BUILD SUCCEEDED;new DerivedData; baseline Pods/prebuilt archives reused",
+    "install": "exit0",
+    "launch": "exit0 PID40994",
+    "pidAliveAfterFirstScreen": true,
+    "firstScreen": "Welcome to React Native; RN0.87.1/Hermes250829098.0.17",
+    "simulator": "BEAB5D23-2F3D-4EC0-80AD-2892B9F42BE6",
+    "runtime": "iOS26.0/23A343",
+    "sdk": "iphonesimulator27.0",
+    "artifactZip": {
+      "bytes": 13792934,
+      "sha256": "e691844f3a97e4cba908fdfbd75b089482d00bcc00470fb90b54edfb93738806"
+    },
+    "executableSha256": "1ab65ed945d36b5f7235dd8fcbe20b8cc8e35bfa3d54963d53f4209404f87acc",
+    "screenSha256": "dbf3bfdb191d7f644529a2ad09a4b939f0e65f11d48c1e9037cadcf8ce2921ff",
+    "screenshotPreparation": "Direct external-volume write EPERM; /tmp image copied to dedicated evidence root",
+    "timestamp": "2026-10-10T10:25:50.205285+09:00"
+  },
+  "knownGood": {
+    "minimal": "both platforms passed at sample tuple; iOS26/SDK27, Android37 software renderer",
+    "bluewallet-v8": "Android passed; iOS frozen preparation failed"
+  },
+  "cleanup": {
+    "ownMetroTerminated": true,
+    "ownAndroidEmulatorStopped": true,
+    "ownAdbReverseRemoved": true,
+    "minimalIosAppTerminated": true,
+    "ownIos26SimulatorKeptBootedForNextCandidate": true,
+    "initialIos27DevicesBooted": true,
+    "originalGui98365Alive": true,
+    "newRuntimeKeptInstalled": true
+  }
+}

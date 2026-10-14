@@ -1,0 +1,89 @@
+Runstir #212 baseline, 2026-10-10 Asia/Seoul
+No mobile/Runstir executable was used.
+
+MINIMAL ANDROID
+Gradle 9.4.1 / AGP 9.2.1 / Zulu JDK 17.0.19+10
+./gradlew --no-daemon :app:assembleDebug
+BUILD SUCCESSFUL in 3m 27s
+82 actionable tasks: 82 executed
+exit=0
+adb -s emulator-5554 install android/app/build/outputs/apk/debug/app-debug.apk
+Performing Streamed Install
+Success
+adb -s emulator-5554 reverse tcp:8081 tcp:8081
+8081
+adb -s emulator-5554 shell am start -W -n com.runstirbaselinern/.MainActivity
+Status: ok
+LaunchState: COLD
+Activity: com.runstirbaselinern/.MainActivity
+TotalTime: 621
+WaitTime: 628
+Complete
+First screen: Welcome to React Native, Version 0.87.1,
+JS Engine Hermes (250829098.0.17). See minimal-android.png.
+
+MINIMAL IOS
+xcodebuild -workspace ios/RunstirBaselineRN.xcworkspace
+-scheme RunstirBaselineRN -configuration Debug
+-destination platform=iOS Simulator,id=8C71F44D-7D37-436D-94D3-3D25DCF3FD30
+CODE_SIGNING_ALLOWED=NO build
+** BUILD SUCCEEDED **
+simctl install: exit 0
+simctl launch:
+org.reactjs.native.example.RunstirBaselineRN: 55086
+second launch request:
+org.reactjs.native.example.RunstirBaselineRN: 57097
+Both processes exited before the initial UI.
+Crash: EXC_BREAKPOINT / SIGTRAP
+First triggered frame:
+___UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption_block_invoke
+First-screen verdict: failed; launch request exit 0 is not first-screen proof.
+
+BLUEWALLET IOS PREPARATION
+Tracked package-lock.json v3: lottie-react-native 7.5.0,
+react-native-safe-area-context 5.10.1.
+Tracked ios/Podfile.lock: lottie-react-native 7.4.0,
+react-native-safe-area-context 5.8.1.
+mise exec node@22.23.2 -- npm ci: exit 0.
+mise exec ruby@3.4.11 node@22.23.2 -- bundle exec pod install --deployment
+[!] There were changes to the lockfile in deployment mode:
+exit=1
+Build/install/launch/first screen: not run because frozen preparation failed.
+Original package-lock.json/Gemfile.lock/ios/Podfile.lock unchanged.
+
+BLUEWALLET ANDROID
+./gradlew --no-daemon :app:assembleDebug -PreactNativeArchitectures=arm64-v8a
+BUILD SUCCESSFUL in 7m 19s
+981 actionable tasks: 981 executed
+adb install: Success
+adb reverse tcp:8081 tcp:8081: 8081
+adb -s emulator-5554 shell am start -W -n io.bluewallet.bluewallet/.MainActivity
+Status: ok
+LaunchState: COLD
+Activity: io.bluewallet.bluewallet/.MainActivity
+TotalTime: 3588
+WaitTime: 3611
+Complete
+PID 4962 remained alive while observing the initial UI.
+First screen: Wallets / Add a wallet / Transactions empty state.
+See bluewallet-android.png. No wallet, keys, or transactions were created.
+
+HOST PREPARATION
+Emulator acceleration:
+accel:
+0
+Hypervisor.Framework OS X Version 27.0
+accel
+Actual Mac ARM64; no VM acceleration evidence.
+Ruby 3.4.11 installed alongside existing Ruby versions.
+Official stable Android build-tools 37.0.0 installed alongside existing SDK packages.
+Existing Android licenses reused; no new consent or global tool selection.
+
+PRELIMINARY HARNESS AND WATCHMAN FAILURES
+First iOS build inherited an ephemeral context-mode TMPDIR:
+Could not parse Swift version info from string 'error: couldNotFindTmpDir(...)'
+The same source built successfully with persistent TMPDIR=/tmp.
+Metro Watchman: std::__1::system_error: open: <baseline>/minimal-source:
+Operation not permitted.
+An external Metro config selected resolver.useWatchman=false.
+No tracked Metro config or host permissions changed.
