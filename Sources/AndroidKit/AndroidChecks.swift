@@ -495,9 +495,7 @@ private struct AndroidSDKCheck: Check {
                 observed: message,
                 required: "one unambiguous Android SDK root",
                 source: CheckSource(tier: 1, origin: "android/local.properties + ANDROID_HOME"),
-                remediation: Remediation(
-                    summary: "Make android/local.properties sdk.dir and ANDROID_HOME name the same installed SDK."
-                )
+                remediation: AndroidDoctorContext.sdkRootRemediation
             )
         case .resolved(let url, let source): (sdk, rootSource) = (url, source)
         }

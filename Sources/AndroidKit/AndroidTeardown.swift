@@ -71,6 +71,7 @@ struct AndroidCleanup: Sendable {
 
         var items: [TeardownItem] = []
         var toolFailures: [String] = []
+        var failure: DomainError?
         for id in ids {
             do {
                 try Task.checkCancellation()
@@ -95,8 +96,12 @@ struct AndroidCleanup: Sendable {
             } catch is CancellationError {
                 let pending = ids.dropFirst(items.count).map { TeardownItem.unknown($0, "cancelled before cleanup completed") }
                 return Result(report: TeardownReport(items: items + pending, toolFailures: toolFailures,
-                                                      blockedIsFailure: true, cancelled: true),
+                                                      failure: failure, blockedIsFailure: true, cancelled: true),
                               hasRemainingRecord: true)
+            } catch let error as DomainError {
+                items.append(TeardownItem(id: id, status: .unknown, detail: error.message,
+                                          remediation: error.remediation))
+                failure = failure ?? error
             } catch {
                 items.append(.unknown(id, "could not verify or update ownership state"))
                 toolFailures.append("\(id): \(error)")
@@ -106,6 +111,7 @@ struct AndroidCleanup: Sendable {
             report: TeardownReport(
                 items: items,
                 toolFailures: toolFailures,
+                failure: failure,
                 blockedIsFailure: true
             ),
             hasRemainingRecord: FileManager.default.fileExists(atPath: store.file.path)
@@ -119,7 +125,7 @@ struct AndroidCleanup: Sendable {
         guard app.launched else {
             return .skipped("android.app", "installed package was not launched")
         }
-        let sdk = try sdkRoot()
+        let sdk = try doctorContext.requiredSDKRoot()
         switch try await verifyDevice(
             device, serial: app.serial, sdk: sdk, resource: "Android app"
         ) {
@@ -173,7 +179,7 @@ struct AndroidCleanup: Sendable {
         guard reverse.state == .created else {
             return .skipped("android.adb.reverse", "pre-existing mapping preserved")
         }
-        let sdk = try sdkRoot()
+        let sdk = try doctorContext.requiredSDKRoot()
         switch try await verifyDevice(
             device, serial: reverse.serial, sdk: sdk, resource: "adb reverse"
         ) {
@@ -315,7 +321,7 @@ struct AndroidCleanup: Sendable {
         guard device.state == .started else {
             return .skipped("android.emulator", "pre-existing Emulator preserved")
         }
-        let sdk = try sdkRoot()
+        let sdk = try doctorContext.requiredSDKRoot()
         if let serial = device.serial {
             if try await emulatorSerials(sdk: sdk).contains(serial) {
                 let current = try await emulatorAVDName(serial: serial, sdk: sdk)
@@ -382,14 +388,6 @@ struct AndroidCleanup: Sendable {
             )
         }
         return .stopped("android.emulator", "\(device.avd) — launcher pid \(pid)")
-    }
-
-    private func sdkRoot() throws -> URL {
-        switch doctorContext.sdkRoot() {
-        case .resolved(let sdk, _): return sdk
-        case .conflict(let reason), .missing(let reason):
-            throw AndroidStateError(reason)
-        }
     }
 
     private func adb(

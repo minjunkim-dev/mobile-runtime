@@ -87,7 +87,7 @@ actor AndroidRuntime {
             )
         }
 
-        let sdk = try sdkRoot()
+        let sdk = try doctorContext.requiredSDKRoot()
         let installed = try await installedAVDs(sdk: sdk, product: product)
         let running = try await runningEmulators(sdk: sdk)
         let selected = try selectAVD(installed: installed, running: running)
@@ -161,7 +161,7 @@ actor AndroidRuntime {
             )
         }
 
-        let sdk = try sdkRoot()
+        let sdk = try doctorContext.requiredSDKRoot()
         let command = adb(
             ["-s", device.serial, "install", "-r", product.apkPath],
             sdk: sdk,
@@ -309,7 +309,7 @@ actor AndroidRuntime {
     }
 
     func reverse(on device: AndroidDevice) async throws -> AndroidReverse {
-        let sdk = try sdkRoot()
+        let sdk = try doctorContext.requiredSDKRoot()
         var value = try run()
         if let existing = value.reverse, existing.serial != device.serial {
             throw DomainError(
@@ -373,7 +373,7 @@ actor AndroidRuntime {
     }
 
     func launch(_ product: AndroidBuiltProduct, on device: AndroidDevice) async throws -> Int32 {
-        let sdk = try sdkRoot()
+        let sdk = try doctorContext.requiredSDKRoot()
         guard let app = try run().app,
             app.serial == device.serial,
             app.applicationId == product.applicationId
@@ -500,19 +500,6 @@ actor AndroidRuntime {
         activeRun = run
     }
 
-    private func sdkRoot() throws -> URL {
-        switch doctorContext.sdkRoot() {
-        case .resolved(let sdk, _): return sdk
-        case .conflict(let reason), .missing(let reason):
-            throw DomainError(
-                summary: reason,
-                remediation: Remediation(
-                    summary: "Make android/local.properties sdk.dir and ANDROID_HOME name one installed SDK."
-                )
-            )
-        }
-    }
-
     private func installedAVDs(
         sdk: URL, product: AndroidBuiltProduct
     ) async throws -> [AndroidAVD] {
@@ -629,7 +616,7 @@ actor AndroidRuntime {
         product: AndroidBuiltProduct,
         deadline: ContinuousClock.Instant
     ) async throws -> (serial: String, api: Int, abi: String) {
-        let sdk = try sdkRoot()
+        let sdk = try doctorContext.requiredSDKRoot()
         while true {
             let running = try await runningEmulators(sdk: sdk).filter { $0.avd == avd }
             if running.count == 1, let emulator = running.first,

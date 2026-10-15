@@ -136,17 +136,7 @@ public struct AndroidBuildStage: Stage {
             )
         }
 
-        let sdk: URL
-        switch context.sdkRoot() {
-        case .resolved(let value, _): sdk = value
-        case .conflict(let reason), .missing(let reason):
-            throw DomainError(
-                summary: reason,
-                remediation: Remediation(
-                    summary: "Make android/local.properties sdk.dir and ANDROID_HOME name one installed SDK."
-                )
-            )
-        }
+        let sdk = try context.requiredSDKRoot()
         let aapt2 = sdk.appendingPathComponent("build-tools/\(buildTools)/aapt2")
         guard FileManager.default.isExecutableFile(atPath: aapt2.path) else {
             throw DomainError(
