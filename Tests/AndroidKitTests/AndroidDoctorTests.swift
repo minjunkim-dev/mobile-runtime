@@ -159,6 +159,19 @@ private func composedChecks(_ scenario: AndroidScenario) async -> [any Check] {
 
 @Suite("Android doctor")
 struct AndroidDoctorTests {
+    @Test("SDK preparation uses the AGP default when a declared Build Tools version is below its minimum")
+    func effectiveBuildToolsRequirement() async throws {
+        let model = modelJSON().replacingOccurrences(of: #""buildToolsVersion":"35.0.0""#, with: #""buildToolsVersion":"34.0.0""#)
+        let fixture = try scenario(modelResponse: .ok(AndroidGradleModelProbe.marker + model))
+        let context = AndroidDoctorContext(anchor: fixture.anchor, config: fixture.config,
+            hostRunner: fixture.runner, projectRunner: fixture.runner, environment: fixture.environment)
+        let requirements = try await context.sdkRequirements()
+        #expect(requirements.blockers.isEmpty)
+        #expect(requirements.modules.first?.buildToolsVersion == "35.0.0")
+        #expect(requirements.packages.contains { $0.packagePath == "build-tools;35.0.0" })
+        #expect(!requirements.packages.contains { $0.packagePath == "build-tools;34.0.0" })
+    }
+
     @Test("relative sdk.dir resolves from the Gradle root rather than the caller directory")
     func relativeSDKDestination() async throws {
         let fixture = try scenario(sdkDir: "../sdk")

@@ -19,6 +19,7 @@ Emulator·system image·AVD 생성은 후속 provider의 범위다. SDK 준비 �
 공식 호환 근거는 [AGP–Gradle/API 표](https://developer.android.com/build/releases/about-agp),
 [Gradle Java 표](https://docs.gradle.org/current/userguide/compatibility.html), 기존 AGP 기본 CMake 표다.
 2026-10-15에 AGP 7.x–9.4의 기존 표와 [9.4의 Gradle 9.6.0/JDK 17 요구](https://developer.android.com/build/releases/agp-9-4-0-release-notes)를 확인했다. 표에 없는 버전은 unknown이다.
+같은 날 각 stable AGP 7.0–9.4 release note의 Build Tools minimum/default를 확인했다. 선언이 minimum보다 낮으면 [AGP SdkHandler](https://android.googlesource.com/platform/tools/base/+/studio-master-dev/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/SdkHandler.java)처럼 default를 요구한다. 준비·doctor·build는 같은 계산을 쓴다. 표에 없는 AGP의 Build Tools를 추측하지 않는다.
 AGP 8.11–8.13의 선언되지 않은 CMake는 기존 고정 source 근거에 따라 3.22.1이다. 다른 AGP에서 기본값을 추측하지 않는다.
 Gradle 관측과 assemble은 `-Dorg.gradle.java.installations.auto-download=false`와 `-Pandroid.builder.sdkDownload=false`를 전달한다.
 이 옵션은 JDK·SDK 자동 설치를 막는다. 프로젝트가 실행하는 임의의 사용자 코드를 격리하는 sandbox를 뜻하지 않는다.

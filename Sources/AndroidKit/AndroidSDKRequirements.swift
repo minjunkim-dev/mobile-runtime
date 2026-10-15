@@ -99,8 +99,9 @@ extension AndroidDoctorContext {
                     add("platforms;android-\(value)", "android.jar", source: source)
                 } else { blockers.append("\(module.path): compileSdk does not identify an exact platform package") }
             }
-            if let tools = module.buildToolsVersion, tools.range(of: #"^[0-9]+\.[0-9]+\.[0-9]+$"#, options: .regularExpression) != nil {
+            if let tools = module.effectiveBuildToolsVersion, tools.range(of: #"^[0-9]+\.[0-9]+\.[0-9]+$"#, options: .regularExpression) != nil {
                 add("build-tools;\(tools)", "aapt2", executable: true, source: source)
+                compatibility.append("effective Build Tools \(tools) for AGP \(module.agpVersion ?? "unknown"); https://developer.android.com/build/releases/agp-\(module.agpVersion.flatMap { SemanticVersion($0) }.map { "\($0.major)-\($0.minor)-0" } ?? "unknown")-release-notes")
             } else { blockers.append("\(module.path): effective Build Tools version is unknown") }
             var cmake = module.cmakeVersion
             if module.nativeBuildConfigured {
@@ -132,7 +133,7 @@ extension AndroidDoctorContext {
             }
             modules.append(AndroidSDKModuleRequirements(module: module.path, agpVersion: module.agpVersion,
                 gradleVersion: model.gradleVersion, daemonJDKVersion: model.daemonJavaVersion, compileSDKs: compileSDKs,
-                buildToolsVersion: module.buildToolsVersion, ndkVersion: module.ndkVersion, cmakeVersion: cmake,
+                buildToolsVersion: module.effectiveBuildToolsVersion, ndkVersion: module.ndkVersion, cmakeVersion: cmake,
                 compatibilityRequirements: Set(compatibility).sorted(), source: source))
         }
         if modules.isEmpty { blockers.append("No evaluated application module supplies SDK requirements") }

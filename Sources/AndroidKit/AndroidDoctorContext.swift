@@ -54,6 +54,9 @@ struct AndroidGradleModel: Sendable, Decodable, Equatable {
         let agpVersion: String?
         let compileSdk: String?
         let buildToolsVersion: String?
+        var effectiveBuildToolsVersion: String? {
+            AndroidCompatibility.effectiveBuildTools(declared: buildToolsVersion, agp: agpVersion)
+        }
         let minSdk: String?
         let targetSdk: String?
         let ndkVersion: String?

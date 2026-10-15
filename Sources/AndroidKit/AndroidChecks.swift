@@ -521,7 +521,7 @@ private struct AndroidSDKCheck: Check {
             return .unknown(reason: "the selected Gradle target is unavailable", source: rootSource)
         }
         guard let compileSDK = variant.compileSdk ?? module.compileSdk,
-            let buildTools = module.buildToolsVersion
+            let buildTools = module.effectiveBuildToolsVersion
         else {
             return .unknown(
                 reason: "the evaluated application module did not expose compileSdk and effective Build Tools",
