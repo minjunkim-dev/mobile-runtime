@@ -54,6 +54,9 @@ struct AndroidGradleModel: Sendable, Decodable, Equatable {
         let agpVersion: String?
         let compileSdk: String?
         let buildToolsVersion: String?
+        var effectiveBuildToolsVersion: String? {
+            AndroidCompatibility.effectiveBuildTools(declared: buildToolsVersion, agp: agpVersion)
+        }
         let minSdk: String?
         let targetSdk: String?
         let ndkVersion: String?
@@ -122,7 +125,7 @@ struct AndroidAVD: Sendable, Equatable {
     let systemImageDirectory: URL?
 }
 
-actor AndroidDoctorContext {
+public actor AndroidDoctorContext {
     nonisolated let anchor: ProjectAnchor
     nonisolated let config: ConfigContext
     nonisolated let hostRunner: any ProcessRunner
@@ -131,7 +134,7 @@ actor AndroidDoctorContext {
 
     private var modelTask: Task<AndroidModelProbeOutcome, any Error>?
 
-    init(
+    public init(
         anchor: ProjectAnchor,
         config: ConfigContext,
         hostRunner: any ProcessRunner,
@@ -145,7 +148,9 @@ actor AndroidDoctorContext {
         self.environment = environment
     }
 
-    nonisolated var androidDirectory: URL { anchor.directory.appendingPathComponent("android") }
+    nonisolated var androidDirectory: URL {
+        anchor.framework == .nativeAndroid ? anchor.directory : anchor.directory.appendingPathComponent("android")
+    }
 
     nonisolated func gradlePluginVersion() -> AndroidPackageVersion? {
         Self.packageVersion("@react-native/gradle-plugin", anchor: anchor)
@@ -281,6 +286,10 @@ actor AndroidDoctorContext {
 
     func model() async throws -> AndroidModelProbeOutcome {
         try Task.checkCancellation()
+        guard case .success(let wrapper) = wrapper(), wrapper.materialized,
+              anchor.framework != .reactNative || anchor.hasNodeModules else {
+            return .unavailable("The wrapper and project inputs must already exist locally; inspection never downloads them")
+        }
         let task: Task<AndroidModelProbeOutcome, any Error>
         if let modelTask { task = modelTask }
         else {
@@ -340,7 +349,8 @@ actor AndroidDoctorContext {
         let deprecatedPath = environment.values["ANDROID_SDK_ROOT"]
 
         func normalized(_ path: String) -> URL {
-            URL(fileURLWithPath: path).standardizedFileURL.resolvingSymlinksInPath()
+            let declared = path.hasPrefix("/") ? URL(fileURLWithPath: path) : androidDirectory.appendingPathComponent(path)
+            return declared.standardizedFileURL.resolvingSymlinksInPath()
         }
         if let localPath, let homePath, normalized(localPath).path != normalized(homePath).path {
             return .conflict("android/local.properties sdk.dir and ANDROID_HOME point to different SDK roots")
@@ -376,6 +386,10 @@ actor AndroidDoctorContext {
     }
 
     func cmakeDirectory() async throws -> URL? {
+        try await cmakeInstallation()?.directory
+    }
+
+    func cmakeInstallation() async throws -> (directory: URL, version: String)? {
         let local = androidDirectory.appendingPathComponent("local.properties")
         let text: String
         do {
@@ -398,7 +412,7 @@ actor AndroidDoctorContext {
             let version = result.standardOutput.firstMatch(#"(?m)^cmake version (\S+)"#)?.last,
             SemanticVersion(version) != nil
         else { throw CocoaError(.fileReadCorruptFile) }
-        return directory
+        return (directory, version)
     }
 
     /// `adb reverse --list` as a source → target map. `up` and `down` both decide
@@ -539,7 +553,7 @@ actor AndroidDoctorContext {
         return nil
     }
 
-    private static func properties(_ text: String) -> [String: String] {
+    static func properties(_ text: String) -> [String: String] {
         text.split(separator: "\n").reduce(into: [:]) { values, raw in
             let line = raw.trimmingCharacters(in: .whitespaces)
             guard !line.isEmpty, !line.hasPrefix("#"), !line.hasPrefix("!"),
@@ -602,7 +616,8 @@ enum AndroidGradleModelProbe {
         }
         var arguments = [
             "--no-daemon", "--no-configuration-cache", "--console=plain",
-            "--warning-mode=none", "-Porg.gradle.java.installations.auto-download=false",
+            "--warning-mode=none", "-Dorg.gradle.java.installations.auto-download=false",
+            "-Pandroid.builder.sdkDownload=false",
             "-q", "-I", script.path, "help",
         ]
         if offline { arguments.insert("--offline", at: 0) }

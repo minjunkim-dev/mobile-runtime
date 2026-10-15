@@ -120,7 +120,7 @@ public struct AndroidBuildStage: Stage {
             let applicationId = variant.applicationId,
             let minSdk = variant.minSdk ?? module.minSdk,
             let targetSdk = variant.targetSdk ?? module.targetSdk,
-            let buildTools = module.buildToolsVersion
+            let buildTools = module.effectiveBuildToolsVersion
         else {
             throw DomainError(
                 summary: "the selected Android variant did not expose complete build metadata",
@@ -155,7 +155,7 @@ public struct AndroidBuildStage: Stage {
                 assembleTask,
                 "--no-daemon",
                 "--console=plain",
-                "-Porg.gradle.java.installations.auto-download=false",
+                "-Dorg.gradle.java.installations.auto-download=false", "-Pandroid.builder.sdkDownload=false",
                 "-I",
                 modelScript.path,
             ],

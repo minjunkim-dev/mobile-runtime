@@ -1,0 +1,734 @@
+{
+  "source": "70cb2877b259690832cec686e925087ddb1c1d01",
+  "originalCompiledProducts": {
+    "bin/mobile": {
+      "sha256": "835f21ef771af0027003e70ec16ea3425435963e75853f4e780d87ae8e658acd",
+      "bytes": 16169584
+    },
+    "bin/Runstir": {
+      "sha256": "61c9d28f60a65ab05a8bdb3518b4ad832990ba94e332e4c8647caa16e0f1d099",
+      "bytes": 14184160
+    },
+    "Runstir204.app/Contents/MacOS/Runstir": {
+      "sha256": "61c9d28f60a65ab05a8bdb3518b4ad832990ba94e332e4c8647caa16e0f1d099",
+      "bytes": 14184160
+    }
+  },
+  "failedAdhocAttempt": {
+    "before": {
+      "Contents/Info.plist": {
+        "sha256": "7b7292926c3b00bc50bb28c27259d704c6bd6acd1481cb5621cd41711d492a07",
+        "bytes": 728
+      },
+      "Contents/MacOS/Runstir": {
+        "sha256": "61c9d28f60a65ab05a8bdb3518b4ad832990ba94e332e4c8647caa16e0f1d099",
+        "bytes": 14184160
+      },
+      "mobile_AndroidKit.bundle/Contents/Info.plist": {
+        "sha256": "eea897340d126e9cdc53e3a3f103c59eeda7461f43bf2ff1228d91b8852bb6c9",
+        "bytes": 1138
+      },
+      "mobile_AndroidKit.bundle/Contents/_CodeSignature/CodeResources": {
+        "sha256": "0efbac62343a2df7e85d90831dbb389904f7c7083e6e4e0a3c0cac5123964732",
+        "bytes": 2462
+      },
+      "mobile_AndroidKit.bundle/Contents/_CodeSignature/CodeDirectory": {
+        "sha256": "1c3fcc562cbdfe046f73660e106f5c564277c455a0416445c7780497eda907d7",
+        "bytes": 212
+      },
+      "mobile_AndroidKit.bundle/Contents/_CodeSignature/CodeSignature": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "mobile_AndroidKit.bundle/Contents/_CodeSignature/CodeRequirements": {
+        "sha256": "987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986",
+        "bytes": 12
+      },
+      "mobile_AndroidKit.bundle/Contents/Resources/mobile-doctor.gradle": {
+        "sha256": "50f8ccfbaa2f3f2d940ce7067bc7607e54c37adf9901e0636507a00eff4a57e4",
+        "bytes": 9303
+      },
+      "mobile_Core.bundle/Contents/Info.plist": {
+        "sha256": "95ca979e561d5e2c3aebeebc5fc478257e2f8d3d5150439b411c3f8792733190",
+        "bytes": 1126
+      },
+      "mobile_Core.bundle/Contents/_CodeSignature/CodeResources": {
+        "sha256": "baf5d381b99d42b4990297fa1c5879121b3de9c966aafb79f546a3122585eedb",
+        "bytes": 2444
+      },
+      "mobile_Core.bundle/Contents/_CodeSignature/CodeDirectory": {
+        "sha256": "b8d6bde82be79d1fb069897a8e949bbc700293f6b595b77ed3efd7295d2c461e",
+        "bytes": 206
+      },
+      "mobile_Core.bundle/Contents/_CodeSignature/CodeSignature": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "mobile_Core.bundle/Contents/_CodeSignature/CodeRequirements": {
+        "sha256": "987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986",
+        "bytes": 12
+      },
+      "mobile_Core.bundle/Contents/Resources/matrix.json": {
+        "sha256": "3ea80f5cb07aeb4db31e341653d49ebe0560b3fe68845b1b844af32acc8c79bd",
+        "bytes": 1525
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Info.plist": {
+        "sha256": "85e3c9cde424c6832f2447d7d6921f0dd6839148da5cbc8365bd3dc4c86df65b",
+        "bytes": 1152
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/_CodeSignature/CodeResources": {
+        "sha256": "3171d7b216eab16e563007097f138dd0bf1d9f649dd400de3c66f757bacb6662",
+        "bytes": 6582
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/_CodeSignature/CodeDirectory": {
+        "sha256": "e415fd0e401a1c5eb4d5ff1da2db7342596a09f6227df9baa756f6c412c8abed",
+        "bytes": 219
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/_CodeSignature/CodeSignature": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/_CodeSignature/CodeRequirements": {
+        "sha256": "987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986",
+        "bytes": 12
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/xcodebuild-version.stdout.txt": {
+        "sha256": "18730ed2ae28a2c9cf0c2d5db549033a4f07089331391a7133b7b32187454fa9",
+        "bytes": 32
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-commandlinetools.stderr.txt": {
+        "sha256": "99b8da8adc7e70feba56cd931740e16d0f5724d7515e98d84d2c8bf1bb63dec8",
+        "bytes": 79
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-list-devices-shutdown.stdout.json": {
+        "sha256": "b69076b11aa030885c16f959edc785c0a888e33c6cbf184823ace36589c8c16e",
+        "bytes": 1117
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/xcodebuild-version-broken-developer-dir.stderr.txt": {
+        "sha256": "fb800a996ad515670c9edf121c6024c80419f124368072c42911463d3e6a6163",
+        "bytes": 67
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-list-runtimes.stdout.json": {
+        "sha256": "bd785284da020203e0000d146604fd32f8897a5d5312ae9015a41d27f821656e",
+        "bytes": 20992
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-list-devices.stdout.json": {
+        "sha256": "af0e7c9f51dd99023c65c6e0fb973928ce84a51cde15c6012f7a6bc336128c08",
+        "bytes": 1730
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-list-devicetypes.stdout.json": {
+        "sha256": "70376c78091566520db3fa3b1b868e122223a65056b552f1db9ae50753d7dd20",
+        "bytes": 61947
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-install-missing.stderr.txt": {
+        "sha256": "bae9345e57bc364d79f991bf152022145db6d7df06755a4dc621b6781a1d3d56",
+        "bytes": 350
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/xcodebuild-version-commandlinetools.stderr.txt": {
+        "sha256": "6f9bc3a54a75fa953f758e1aadfbc9f16c254cd631aaea9026c126a55b054641",
+        "bytes": 157
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-launch.stdout.txt": {
+        "sha256": "b76972f4f86b88263256e78fcfb08197da1b05ac50b69c0ac1ac9792e19c1bf1",
+        "bytes": 22
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/README.md": {
+        "sha256": "a72cdb8d3bade6b4f0a3dd2d0a5ff4511aa869d1009c1116e202d52b4ce41ba0",
+        "bytes": 3539
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-launch-missing.stderr.txt": {
+        "sha256": "dbef583946085c79c1b8c8650ab26be0cef3b17881ba5f84a8130bbaf9c41893",
+        "bytes": 275
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-list-devices-none.stdout.json": {
+        "sha256": "3f4324379f7f19fdcc1633af29219f7691c8b07c31e3a230e108f3408167178d",
+        "bytes": 85
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-terminate-none.stderr.txt": {
+        "sha256": "0d45155012db32184d048f56e99f18e2514864d1fde3cdb1076e040c55ed3abe",
+        "bytes": 327
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/xcodebuild-showbuildsettings.stdout.json": {
+        "sha256": "aa81bc18dfd506d221bf75f68366684a8f44124dd981879d2d006c4b9397672a",
+        "bytes": 45200
+      }
+    },
+    "purpose": "task-local debug ad-hoc bundle packaging; not DeveloperID/notarization/Gatekeeper proof",
+    "source": "70cb2877b259690832cec686e925087ddb1c1d01",
+    "sign": {
+      "command": [
+        "/usr/bin/codesign",
+        "--force",
+        "--sign",
+        "-",
+        "--timestamp=none",
+        "/OWNED_ROOT/Runstir204Validation.app"
+      ],
+      "exitCode": 1,
+      "stderr": "/OWNED_ROOT/Runstir204Validation.app: replacing existing signature\n/OWNED_ROOT/Runstir204Validation.app: unsealed contents present in the bundle root\n"
+    },
+    "after": {
+      "Contents/Info.plist": {
+        "sha256": "7b7292926c3b00bc50bb28c27259d704c6bd6acd1481cb5621cd41711d492a07",
+        "bytes": 728
+      },
+      "Contents/MacOS/Runstir": {
+        "sha256": "61c9d28f60a65ab05a8bdb3518b4ad832990ba94e332e4c8647caa16e0f1d099",
+        "bytes": 14184160
+      },
+      "mobile_AndroidKit.bundle/Contents/Info.plist": {
+        "sha256": "eea897340d126e9cdc53e3a3f103c59eeda7461f43bf2ff1228d91b8852bb6c9",
+        "bytes": 1138
+      },
+      "mobile_AndroidKit.bundle/Contents/_CodeSignature/CodeResources": {
+        "sha256": "0efbac62343a2df7e85d90831dbb389904f7c7083e6e4e0a3c0cac5123964732",
+        "bytes": 2462
+      },
+      "mobile_AndroidKit.bundle/Contents/_CodeSignature/CodeDirectory": {
+        "sha256": "1c3fcc562cbdfe046f73660e106f5c564277c455a0416445c7780497eda907d7",
+        "bytes": 212
+      },
+      "mobile_AndroidKit.bundle/Contents/_CodeSignature/CodeSignature": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "mobile_AndroidKit.bundle/Contents/_CodeSignature/CodeRequirements": {
+        "sha256": "987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986",
+        "bytes": 12
+      },
+      "mobile_AndroidKit.bundle/Contents/Resources/mobile-doctor.gradle": {
+        "sha256": "50f8ccfbaa2f3f2d940ce7067bc7607e54c37adf9901e0636507a00eff4a57e4",
+        "bytes": 9303
+      },
+      "mobile_Core.bundle/Contents/Info.plist": {
+        "sha256": "95ca979e561d5e2c3aebeebc5fc478257e2f8d3d5150439b411c3f8792733190",
+        "bytes": 1126
+      },
+      "mobile_Core.bundle/Contents/_CodeSignature/CodeResources": {
+        "sha256": "baf5d381b99d42b4990297fa1c5879121b3de9c966aafb79f546a3122585eedb",
+        "bytes": 2444
+      },
+      "mobile_Core.bundle/Contents/_CodeSignature/CodeDirectory": {
+        "sha256": "b8d6bde82be79d1fb069897a8e949bbc700293f6b595b77ed3efd7295d2c461e",
+        "bytes": 206
+      },
+      "mobile_Core.bundle/Contents/_CodeSignature/CodeSignature": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "mobile_Core.bundle/Contents/_CodeSignature/CodeRequirements": {
+        "sha256": "987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986",
+        "bytes": 12
+      },
+      "mobile_Core.bundle/Contents/Resources/matrix.json": {
+        "sha256": "3ea80f5cb07aeb4db31e341653d49ebe0560b3fe68845b1b844af32acc8c79bd",
+        "bytes": 1525
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Info.plist": {
+        "sha256": "85e3c9cde424c6832f2447d7d6921f0dd6839148da5cbc8365bd3dc4c86df65b",
+        "bytes": 1152
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/_CodeSignature/CodeResources": {
+        "sha256": "3171d7b216eab16e563007097f138dd0bf1d9f649dd400de3c66f757bacb6662",
+        "bytes": 6582
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/_CodeSignature/CodeDirectory": {
+        "sha256": "e415fd0e401a1c5eb4d5ff1da2db7342596a09f6227df9baa756f6c412c8abed",
+        "bytes": 219
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/_CodeSignature/CodeSignature": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/_CodeSignature/CodeRequirements": {
+        "sha256": "987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986",
+        "bytes": 12
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/xcodebuild-version.stdout.txt": {
+        "sha256": "18730ed2ae28a2c9cf0c2d5db549033a4f07089331391a7133b7b32187454fa9",
+        "bytes": 32
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-commandlinetools.stderr.txt": {
+        "sha256": "99b8da8adc7e70feba56cd931740e16d0f5724d7515e98d84d2c8bf1bb63dec8",
+        "bytes": 79
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-list-devices-shutdown.stdout.json": {
+        "sha256": "b69076b11aa030885c16f959edc785c0a888e33c6cbf184823ace36589c8c16e",
+        "bytes": 1117
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/xcodebuild-version-broken-developer-dir.stderr.txt": {
+        "sha256": "fb800a996ad515670c9edf121c6024c80419f124368072c42911463d3e6a6163",
+        "bytes": 67
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-list-runtimes.stdout.json": {
+        "sha256": "bd785284da020203e0000d146604fd32f8897a5d5312ae9015a41d27f821656e",
+        "bytes": 20992
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-list-devices.stdout.json": {
+        "sha256": "af0e7c9f51dd99023c65c6e0fb973928ce84a51cde15c6012f7a6bc336128c08",
+        "bytes": 1730
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-list-devicetypes.stdout.json": {
+        "sha256": "70376c78091566520db3fa3b1b868e122223a65056b552f1db9ae50753d7dd20",
+        "bytes": 61947
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-install-missing.stderr.txt": {
+        "sha256": "bae9345e57bc364d79f991bf152022145db6d7df06755a4dc621b6781a1d3d56",
+        "bytes": 350
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/xcodebuild-version-commandlinetools.stderr.txt": {
+        "sha256": "6f9bc3a54a75fa953f758e1aadfbc9f16c254cd631aaea9026c126a55b054641",
+        "bytes": 157
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-launch.stdout.txt": {
+        "sha256": "b76972f4f86b88263256e78fcfb08197da1b05ac50b69c0ac1ac9792e19c1bf1",
+        "bytes": 22
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/README.md": {
+        "sha256": "a72cdb8d3bade6b4f0a3dd2d0a5ff4511aa869d1009c1116e202d52b4ce41ba0",
+        "bytes": 3539
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-launch-missing.stderr.txt": {
+        "sha256": "dbef583946085c79c1b8c8650ab26be0cef3b17881ba5f84a8130bbaf9c41893",
+        "bytes": 275
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-list-devices-none.stdout.json": {
+        "sha256": "3f4324379f7f19fdcc1633af29219f7691c8b07c31e3a230e108f3408167178d",
+        "bytes": 85
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-terminate-none.stderr.txt": {
+        "sha256": "0d45155012db32184d048f56e99f18e2514864d1fde3cdb1076e040c55ed3abe",
+        "bytes": 327
+      },
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/xcodebuild-showbuildsettings.stdout.json": {
+        "sha256": "aa81bc18dfd506d221bf75f68366684a8f44124dd981879d2d006c4b9397672a",
+        "bytes": 45200
+      }
+    },
+    "verify": {
+      "exitCode": 1,
+      "stderr": "/OWNED_ROOT/Runstir204Validation.app: code has no resources but signature indicates they must be present\n"
+    },
+    "details": "Executable=/OWNED_ROOT/Runstir204Validation.app/Contents/MacOS/Runstir\nIdentifier=Runstir-55554944a3941007ac89315c801a50c7244f4cc0\nFormat=app bundle with Mach-O thin (arm64)\nCodeDirectory v=20400 size=28009 flags=0x2(adhoc) hashes=864+7 location=embedded\nVersionPlatform=1\nVersionMin=917504\nVersionSDK=917504\nHash type=sha256 size=32\nCandidateCDHash sha256=c29068756701c9350ac7670131adbc3d897419fe\nCandidateCDHashFull sha256=c29068756701c9350ac7670131adbc3d897419fecef0631c7ab4bd5183c8c4c7\nHash choices=sha256\nCMSDigest=c29068756701c9350ac7670131adbc3d897419fecef0631c7ab4bd5183c8c4c7\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=8404992\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=c29068756701c9350ac7670131adbc3d897419fe\nSignature=adhoc\nInfo.plist=not bound\nTeamIdentifier=not set\nSealed Resources=none\nInternal requirements count=0 size=12\nTotal signatures=1\nChosen signature=1\n"
+  },
+  "correctBundleAdhoc": {
+    "before": {
+      "Contents/Info.plist": "7b7292926c3b00bc50bb28c27259d704c6bd6acd1481cb5621cd41711d492a07",
+      "Contents/MacOS/Runstir": "61c9d28f60a65ab05a8bdb3518b4ad832990ba94e332e4c8647caa16e0f1d099",
+      "mobile_AndroidKit.bundle/Contents/Info.plist": "eea897340d126e9cdc53e3a3f103c59eeda7461f43bf2ff1228d91b8852bb6c9",
+      "mobile_AndroidKit.bundle/Contents/_CodeSignature/CodeResources": "0efbac62343a2df7e85d90831dbb389904f7c7083e6e4e0a3c0cac5123964732",
+      "mobile_AndroidKit.bundle/Contents/_CodeSignature/CodeDirectory": "1c3fcc562cbdfe046f73660e106f5c564277c455a0416445c7780497eda907d7",
+      "mobile_AndroidKit.bundle/Contents/_CodeSignature/CodeSignature": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mobile_AndroidKit.bundle/Contents/_CodeSignature/CodeRequirements": "987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986",
+      "mobile_AndroidKit.bundle/Contents/Resources/mobile-doctor.gradle": "50f8ccfbaa2f3f2d940ce7067bc7607e54c37adf9901e0636507a00eff4a57e4",
+      "mobile_Core.bundle/Contents/Info.plist": "95ca979e561d5e2c3aebeebc5fc478257e2f8d3d5150439b411c3f8792733190",
+      "mobile_Core.bundle/Contents/_CodeSignature/CodeResources": "baf5d381b99d42b4990297fa1c5879121b3de9c966aafb79f546a3122585eedb",
+      "mobile_Core.bundle/Contents/_CodeSignature/CodeDirectory": "b8d6bde82be79d1fb069897a8e949bbc700293f6b595b77ed3efd7295d2c461e",
+      "mobile_Core.bundle/Contents/_CodeSignature/CodeSignature": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mobile_Core.bundle/Contents/_CodeSignature/CodeRequirements": "987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986",
+      "mobile_Core.bundle/Contents/Resources/matrix.json": "3ea80f5cb07aeb4db31e341653d49ebe0560b3fe68845b1b844af32acc8c79bd",
+      "mobile_SimulatorKitTests.bundle/Contents/Info.plist": "85e3c9cde424c6832f2447d7d6921f0dd6839148da5cbc8365bd3dc4c86df65b",
+      "mobile_SimulatorKitTests.bundle/Contents/_CodeSignature/CodeResources": "3171d7b216eab16e563007097f138dd0bf1d9f649dd400de3c66f757bacb6662",
+      "mobile_SimulatorKitTests.bundle/Contents/_CodeSignature/CodeDirectory": "e415fd0e401a1c5eb4d5ff1da2db7342596a09f6227df9baa756f6c412c8abed",
+      "mobile_SimulatorKitTests.bundle/Contents/_CodeSignature/CodeSignature": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mobile_SimulatorKitTests.bundle/Contents/_CodeSignature/CodeRequirements": "987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986",
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/xcodebuild-version.stdout.txt": "18730ed2ae28a2c9cf0c2d5db549033a4f07089331391a7133b7b32187454fa9",
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-commandlinetools.stderr.txt": "99b8da8adc7e70feba56cd931740e16d0f5724d7515e98d84d2c8bf1bb63dec8",
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-list-devices-shutdown.stdout.json": "b69076b11aa030885c16f959edc785c0a888e33c6cbf184823ace36589c8c16e",
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/xcodebuild-version-broken-developer-dir.stderr.txt": "fb800a996ad515670c9edf121c6024c80419f124368072c42911463d3e6a6163",
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-list-runtimes.stdout.json": "bd785284da020203e0000d146604fd32f8897a5d5312ae9015a41d27f821656e",
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-list-devices.stdout.json": "af0e7c9f51dd99023c65c6e0fb973928ce84a51cde15c6012f7a6bc336128c08",
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-list-devicetypes.stdout.json": "70376c78091566520db3fa3b1b868e122223a65056b552f1db9ae50753d7dd20",
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-install-missing.stderr.txt": "bae9345e57bc364d79f991bf152022145db6d7df06755a4dc621b6781a1d3d56",
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/xcodebuild-version-commandlinetools.stderr.txt": "6f9bc3a54a75fa953f758e1aadfbc9f16c254cd631aaea9026c126a55b054641",
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-launch.stdout.txt": "b76972f4f86b88263256e78fcfb08197da1b05ac50b69c0ac1ac9792e19c1bf1",
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/README.md": "a72cdb8d3bade6b4f0a3dd2d0a5ff4511aa869d1009c1116e202d52b4ce41ba0",
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-launch-missing.stderr.txt": "dbef583946085c79c1b8c8650ab26be0cef3b17881ba5f84a8130bbaf9c41893",
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-list-devices-none.stdout.json": "3f4324379f7f19fdcc1633af29219f7691c8b07c31e3a230e108f3408167178d",
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-terminate-none.stderr.txt": "0d45155012db32184d048f56e99f18e2514864d1fde3cdb1076e040c55ed3abe",
+      "mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/xcodebuild-showbuildsettings.stdout.json": "aa81bc18dfd506d221bf75f68366684a8f44124dd981879d2d006c4b9397672a"
+    },
+    "after": {
+      "Contents/Info.plist": "7b7292926c3b00bc50bb28c27259d704c6bd6acd1481cb5621cd41711d492a07",
+      "Contents/_CodeSignature/CodeResources": "2d8bf5de83216c00c01c4310ee03a2234d00c6545f61e0f86a2aaf99dc1da3be",
+      "Contents/MacOS/Runstir": "8d96aed6ef81d00a035145202e3359af6248472d17f52cd206bee6406a11ef83",
+      "Contents/Resources/mobile_AndroidKit.bundle/Contents/Info.plist": "eea897340d126e9cdc53e3a3f103c59eeda7461f43bf2ff1228d91b8852bb6c9",
+      "Contents/Resources/mobile_AndroidKit.bundle/Contents/_CodeSignature/CodeResources": "0efbac62343a2df7e85d90831dbb389904f7c7083e6e4e0a3c0cac5123964732",
+      "Contents/Resources/mobile_AndroidKit.bundle/Contents/_CodeSignature/CodeDirectory": "1c3fcc562cbdfe046f73660e106f5c564277c455a0416445c7780497eda907d7",
+      "Contents/Resources/mobile_AndroidKit.bundle/Contents/_CodeSignature/CodeSignature": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Contents/Resources/mobile_AndroidKit.bundle/Contents/_CodeSignature/CodeRequirements": "987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986",
+      "Contents/Resources/mobile_AndroidKit.bundle/Contents/Resources/mobile-doctor.gradle": "50f8ccfbaa2f3f2d940ce7067bc7607e54c37adf9901e0636507a00eff4a57e4",
+      "Contents/Resources/mobile_Core.bundle/Contents/Info.plist": "95ca979e561d5e2c3aebeebc5fc478257e2f8d3d5150439b411c3f8792733190",
+      "Contents/Resources/mobile_Core.bundle/Contents/_CodeSignature/CodeResources": "baf5d381b99d42b4990297fa1c5879121b3de9c966aafb79f546a3122585eedb",
+      "Contents/Resources/mobile_Core.bundle/Contents/_CodeSignature/CodeDirectory": "b8d6bde82be79d1fb069897a8e949bbc700293f6b595b77ed3efd7295d2c461e",
+      "Contents/Resources/mobile_Core.bundle/Contents/_CodeSignature/CodeSignature": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Contents/Resources/mobile_Core.bundle/Contents/_CodeSignature/CodeRequirements": "987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986",
+      "Contents/Resources/mobile_Core.bundle/Contents/Resources/matrix.json": "3ea80f5cb07aeb4db31e341653d49ebe0560b3fe68845b1b844af32acc8c79bd",
+      "Contents/Resources/mobile_SimulatorKitTests.bundle/Contents/Info.plist": "85e3c9cde424c6832f2447d7d6921f0dd6839148da5cbc8365bd3dc4c86df65b",
+      "Contents/Resources/mobile_SimulatorKitTests.bundle/Contents/_CodeSignature/CodeResources": "3171d7b216eab16e563007097f138dd0bf1d9f649dd400de3c66f757bacb6662",
+      "Contents/Resources/mobile_SimulatorKitTests.bundle/Contents/_CodeSignature/CodeDirectory": "e415fd0e401a1c5eb4d5ff1da2db7342596a09f6227df9baa756f6c412c8abed",
+      "Contents/Resources/mobile_SimulatorKitTests.bundle/Contents/_CodeSignature/CodeSignature": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Contents/Resources/mobile_SimulatorKitTests.bundle/Contents/_CodeSignature/CodeRequirements": "987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986",
+      "Contents/Resources/mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/xcodebuild-version.stdout.txt": "18730ed2ae28a2c9cf0c2d5db549033a4f07089331391a7133b7b32187454fa9",
+      "Contents/Resources/mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-commandlinetools.stderr.txt": "99b8da8adc7e70feba56cd931740e16d0f5724d7515e98d84d2c8bf1bb63dec8",
+      "Contents/Resources/mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-list-devices-shutdown.stdout.json": "b69076b11aa030885c16f959edc785c0a888e33c6cbf184823ace36589c8c16e",
+      "Contents/Resources/mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/xcodebuild-version-broken-developer-dir.stderr.txt": "fb800a996ad515670c9edf121c6024c80419f124368072c42911463d3e6a6163",
+      "Contents/Resources/mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-list-runtimes.stdout.json": "bd785284da020203e0000d146604fd32f8897a5d5312ae9015a41d27f821656e",
+      "Contents/Resources/mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-list-devices.stdout.json": "af0e7c9f51dd99023c65c6e0fb973928ce84a51cde15c6012f7a6bc336128c08",
+      "Contents/Resources/mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-list-devicetypes.stdout.json": "70376c78091566520db3fa3b1b868e122223a65056b552f1db9ae50753d7dd20",
+      "Contents/Resources/mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-install-missing.stderr.txt": "bae9345e57bc364d79f991bf152022145db6d7df06755a4dc621b6781a1d3d56",
+      "Contents/Resources/mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/xcodebuild-version-commandlinetools.stderr.txt": "6f9bc3a54a75fa953f758e1aadfbc9f16c254cd631aaea9026c126a55b054641",
+      "Contents/Resources/mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-launch.stdout.txt": "b76972f4f86b88263256e78fcfb08197da1b05ac50b69c0ac1ac9792e19c1bf1",
+      "Contents/Resources/mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/README.md": "a72cdb8d3bade6b4f0a3dd2d0a5ff4511aa869d1009c1116e202d52b4ce41ba0",
+      "Contents/Resources/mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-launch-missing.stderr.txt": "dbef583946085c79c1b8c8650ab26be0cef3b17881ba5f84a8130bbaf9c41893",
+      "Contents/Resources/mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-list-devices-none.stdout.json": "3f4324379f7f19fdcc1633af29219f7691c8b07c31e3a230e108f3408167178d",
+      "Contents/Resources/mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/simctl-terminate-none.stderr.txt": "0d45155012db32184d048f56e99f18e2514864d1fde3cdb1076e040c55ed3abe",
+      "Contents/Resources/mobile_SimulatorKitTests.bundle/Contents/Resources/Fixtures/xcodebuild-showbuildsettings.stdout.json": "aa81bc18dfd506d221bf75f68366684a8f44124dd981879d2d006c4b9397672a"
+    },
+    "command": [
+      "/usr/bin/codesign",
+      "--force",
+      "--sign",
+      "-",
+      "--timestamp=none",
+      "/OWNED_ROOT/Runstir204Validation.app"
+    ],
+    "signExit": 0,
+    "signStderr": "/OWNED_ROOT/Runstir204Validation.app: replacing existing signature\n",
+    "verifyExit": 0,
+    "verifyStderr": "/OWNED_ROOT/Runstir204Validation.app: valid on disk\n/OWNED_ROOT/Runstir204Validation.app: satisfies its Designated Requirement\n",
+    "details": "Executable=/OWNED_ROOT/Runstir204Validation.app/Contents/MacOS/Runstir\nIdentifier=dev.runstir.gui.validation204\nFormat=app bundle with Mach-O thin (arm64)\nCodeDirectory v=20400 size=27862 flags=0x2(adhoc) hashes=864+3 location=embedded\nVersionPlatform=1\nVersionMin=917504\nVersionSDK=917504\nHash type=sha256 size=32\nCandidateCDHash sha256=bd7562af3ed03601b04006101ebe713976fd17af\nCandidateCDHashFull sha256=bd7562af3ed03601b04006101ebe713976fd17af73534b9a707bc7d5a9c337c0\nHash choices=sha256\nCMSDigest=bd7562af3ed03601b04006101ebe713976fd17af73534b9a707bc7d5a9c337c0\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=8404992\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=bd7562af3ed03601b04006101ebe713976fd17af\nSignature=adhoc\nInfo.plist entries=9\nTeamIdentifier=not set\nSealed Resources version=2 rules=13 files=32\nInternal requirements count=0 size=12\nTotal signatures=1\nChosen signature=1\n",
+    "time": 1792077304.121245,
+    "resourceMove": "app root -> Contents/Resources; generated Swift accessor first candidate",
+    "source": "70cb2877b259690832cec686e925087ddb1c1d01"
+  },
+  "compiledSections": {
+    "before": {
+      "__TEXT,__text": {
+        "sha256": "1d2baf88564f73aa3f190a90248436ec3ef8e466dca0ec328baee47b9bb2404d",
+        "size": 7873380
+      },
+      "__TEXT,__stubs": {
+        "sha256": "b461a04738200fc491f4cd825fde39ccfbb4c1dec5e960512c09725e74d62d5d",
+        "size": 15228
+      },
+      "__TEXT,__objc_stubs": {
+        "sha256": "3aa07d93362310e73a444f7a6c23dfbe26241c6c3bcf954f9a7cf51052194e1d",
+        "size": 3136
+      },
+      "__TEXT,__objc_methlist": {
+        "sha256": "f95ff3dc59454816fa352c1f4143d3eb3924636c584198b3776408d4a82d6106",
+        "size": 2224
+      },
+      "__TEXT,__swift5_typeref": {
+        "sha256": "6da1f469ffb3435e7bd9b5e8f6b8fb488672822a3daba4c4f6351b59fd723ca6",
+        "size": 39628
+      },
+      "__TEXT,__const": {
+        "sha256": "591bc941d2cb6ec348b8314be5c5e1fbf83c6491961f5008d7d39d6a22828c99",
+        "size": 109912
+      },
+      "__TEXT,__cstring": {
+        "sha256": "0ee910a827aeea5ce3272a683e641dcc3a0e9d261ba81a88ec164a996430b2a9",
+        "size": 85831
+      },
+      "__TEXT,__objc_methname": {
+        "sha256": "51049861ac7d51c17bc5697811334d077040880b0bf118efe0f984236b6c1b5d",
+        "size": 6915
+      },
+      "__TEXT,__swift5_capture": {
+        "sha256": "5d5d979455b6bed6c8b3b15d96ba240b2e94a37adb3470f5061cb17f703f80fd",
+        "size": 4532
+      },
+      "__TEXT,__constg_swiftt": {
+        "sha256": "249822f98256aa1bd7cd03dab110e527861377da43e19279f2e8f61b619128db",
+        "size": 25096
+      },
+      "__TEXT,__swift5_reflstr": {
+        "sha256": "fbf29f41b09e3bb88ffab4378f2302e813009daf78a56c6d7f30c9d0c1f740bd",
+        "size": 18531
+      },
+      "__TEXT,__swift5_assocty": {
+        "sha256": "2293494ac487cd2fae70c82130ecda8830d3f78dbe2ff2268cdb8eef34eef147",
+        "size": 5360
+      },
+      "__TEXT,__swift5_entry": {
+        "sha256": "46aa960c5187a41a0cdfa6bb82e29ddcd46467594c7e75018d1ed38f79e0f506",
+        "size": 8
+      },
+      "__TEXT,__swift5_fieldmd": {
+        "sha256": "07ffe168fbb10c46800cbefe7eb2e3fe7741c9235d02f8014171e10e4784c51d",
+        "size": 34636
+      },
+      "__TEXT,__objc_classname": {
+        "sha256": "67971fc5f3f53c68b63cc2f273bd2cfe6804614296b2b9741edf6e52a7c5b8f2",
+        "size": 2681
+      },
+      "__TEXT,__objc_methtype": {
+        "sha256": "709b71a05d747dc7e23089c1da12bcd8b09cc976f4321145be2edfa6e90720a9",
+        "size": 1762
+      },
+      "__TEXT,__swift5_builtin": {
+        "sha256": "c21c2d41b68cc99863b8d9058dfa3a595cf3ccfda1a3b4264fdd3403f0ef6e8c",
+        "size": 2160
+      },
+      "__TEXT,__swift5_proto": {
+        "sha256": "ad55e2a9cc27ee5f39f2f2542d827aafe6977acf1b88f12e01b0730aa5cb34bc",
+        "size": 5408
+      },
+      "__TEXT,__swift5_types": {
+        "sha256": "d54b560654d3ffde15e941068f3d34de80697b463ebe3e3d080cd85365c9fd5d",
+        "size": 2532
+      },
+      "__TEXT,__swift_as_entry": {
+        "sha256": "0f47f82b30d78db3944e53fc8a7befa0e3256fa4aa4336f2d90b24ec8e8c77a1",
+        "size": 1456
+      },
+      "__TEXT,__swift_as_ret": {
+        "sha256": "ddffbe74d139118550a824adbed02f4e25647f1dc552afe84a1d4ada6195db5d",
+        "size": 2112
+      },
+      "__TEXT,__swift_as_cont": {
+        "sha256": "c451e08c11f0b3c67ff1d5a18fa82d76bb42624aa43e28132bc78f308f6f6239",
+        "size": 3376
+      },
+      "__TEXT,__swift5_types2": {
+        "sha256": "eef2240cd97aa390910d51fc751e2beff13259cd96a6c4f6e028624d853293e2",
+        "size": 20
+      },
+      "__TEXT,__swift5_mpenum": {
+        "sha256": "4bd2943d578b296021caa71fcddabd1be82e8c36209484692f5ff3afc1af8ca9",
+        "size": 544
+      },
+      "__TEXT,__swift5_protos": {
+        "sha256": "ae6c1d31b0f9799cf6a719c6e536a79e3f3687aa6f7fc24fdc414a0e905fcacb",
+        "size": 108
+      },
+      "__TEXT,__unwind_info": {
+        "sha256": "62db86eb65c3bf6073ff5958e750bebb72aed5810b0b608c2e7c81c41d69eff1",
+        "size": 47136
+      },
+      "__TEXT,__eh_frame": {
+        "sha256": "2e69ee7c5cc3406de8731cf7bf83e6cb7661e87b347fb74e68e326c8ff932b06",
+        "size": 92300
+      },
+      "__DATA_CONST,__const": {
+        "sha256": "aff1aadef05f20b26f9e3ae35136f473acf66ed4575eed525d0c23ffa937b8ff",
+        "size": 90256
+      },
+      "__DATA_CONST,__objc_classlist": {
+        "sha256": "67d8db08680e29dce56c7292ed181994ce2a2c04361b53d43397c704cc900b1d",
+        "size": 376
+      },
+      "__DATA_CONST,__objc_protolist": {
+        "sha256": "2a9650aec0b056635f4a175b6660cd16ac72ca77f6d7fe6618f45878391605da",
+        "size": 96
+      },
+      "__DATA_CONST,__objc_imageinfo": {
+        "sha256": "7408fcdda372aaed9b8d62d262bd8e7ad4da66abeb61efb31e7c98020b1321ce",
+        "size": 8
+      },
+      "__DATA_CONST,__got": {
+        "sha256": "da82e05052cfef779905faf5b6770f1fda3a24b3cf5215c3d3ae48c4ec9b2854",
+        "size": 15728
+      },
+      "__DATA,__objc_const": {
+        "sha256": "6e66d64c119676b5f0406d56c21530c21852c0d8072bcdb90365bbd237eb7480",
+        "size": 12904
+      },
+      "__DATA,__objc_selrefs": {
+        "sha256": "6d5b175236bb5f3263a31caae56b0f9a588d4d901a036c2d8154c7e755434068",
+        "size": 1496
+      },
+      "__DATA,__objc_protorefs": {
+        "sha256": "d18c15c1e51c8acd9d05fc4242058fa6f76cc0091eca21cc88a8f98af945acf2",
+        "size": 48
+      },
+      "__DATA,__objc_classrefs": {
+        "sha256": "7a0450d9d36a4b600b93408fd81e56f6c3f82030ad3dbccb78183c7776d86153",
+        "size": 208
+      },
+      "__DATA,__objc_data": {
+        "sha256": "57a23e898f47754780bdfd43f92b68357e4aaa1536f263058165bfaf1056d471",
+        "size": 1552
+      },
+      "__DATA,__data": {
+        "sha256": "70cf68517671626985819503aeca2b8fbec4fbf625329110c97efebd6b10bcf4",
+        "size": 36289
+      },
+      "__DATA,__s_async_hook": {
+        "sha256": "8697fc5e4c8d45d2714cbed273f82d7bc50f9c4e561dce90840527f5b1125f31",
+        "size": 416
+      },
+      "__DATA,__swift56_hooks": {
+        "sha256": "86d2cf5b090f43ee54d8f7c1dcf746a853951191457ff6dac96269a9d24860b9",
+        "size": 176
+      }
+    },
+    "after": {
+      "__TEXT,__text": {
+        "sha256": "1d2baf88564f73aa3f190a90248436ec3ef8e466dca0ec328baee47b9bb2404d",
+        "size": 7873380
+      },
+      "__TEXT,__stubs": {
+        "sha256": "b461a04738200fc491f4cd825fde39ccfbb4c1dec5e960512c09725e74d62d5d",
+        "size": 15228
+      },
+      "__TEXT,__objc_stubs": {
+        "sha256": "3aa07d93362310e73a444f7a6c23dfbe26241c6c3bcf954f9a7cf51052194e1d",
+        "size": 3136
+      },
+      "__TEXT,__objc_methlist": {
+        "sha256": "f95ff3dc59454816fa352c1f4143d3eb3924636c584198b3776408d4a82d6106",
+        "size": 2224
+      },
+      "__TEXT,__swift5_typeref": {
+        "sha256": "6da1f469ffb3435e7bd9b5e8f6b8fb488672822a3daba4c4f6351b59fd723ca6",
+        "size": 39628
+      },
+      "__TEXT,__const": {
+        "sha256": "591bc941d2cb6ec348b8314be5c5e1fbf83c6491961f5008d7d39d6a22828c99",
+        "size": 109912
+      },
+      "__TEXT,__cstring": {
+        "sha256": "0ee910a827aeea5ce3272a683e641dcc3a0e9d261ba81a88ec164a996430b2a9",
+        "size": 85831
+      },
+      "__TEXT,__objc_methname": {
+        "sha256": "51049861ac7d51c17bc5697811334d077040880b0bf118efe0f984236b6c1b5d",
+        "size": 6915
+      },
+      "__TEXT,__swift5_capture": {
+        "sha256": "5d5d979455b6bed6c8b3b15d96ba240b2e94a37adb3470f5061cb17f703f80fd",
+        "size": 4532
+      },
+      "__TEXT,__constg_swiftt": {
+        "sha256": "249822f98256aa1bd7cd03dab110e527861377da43e19279f2e8f61b619128db",
+        "size": 25096
+      },
+      "__TEXT,__swift5_reflstr": {
+        "sha256": "fbf29f41b09e3bb88ffab4378f2302e813009daf78a56c6d7f30c9d0c1f740bd",
+        "size": 18531
+      },
+      "__TEXT,__swift5_assocty": {
+        "sha256": "2293494ac487cd2fae70c82130ecda8830d3f78dbe2ff2268cdb8eef34eef147",
+        "size": 5360
+      },
+      "__TEXT,__swift5_entry": {
+        "sha256": "46aa960c5187a41a0cdfa6bb82e29ddcd46467594c7e75018d1ed38f79e0f506",
+        "size": 8
+      },
+      "__TEXT,__swift5_fieldmd": {
+        "sha256": "07ffe168fbb10c46800cbefe7eb2e3fe7741c9235d02f8014171e10e4784c51d",
+        "size": 34636
+      },
+      "__TEXT,__objc_classname": {
+        "sha256": "67971fc5f3f53c68b63cc2f273bd2cfe6804614296b2b9741edf6e52a7c5b8f2",
+        "size": 2681
+      },
+      "__TEXT,__objc_methtype": {
+        "sha256": "709b71a05d747dc7e23089c1da12bcd8b09cc976f4321145be2edfa6e90720a9",
+        "size": 1762
+      },
+      "__TEXT,__swift5_builtin": {
+        "sha256": "c21c2d41b68cc99863b8d9058dfa3a595cf3ccfda1a3b4264fdd3403f0ef6e8c",
+        "size": 2160
+      },
+      "__TEXT,__swift5_proto": {
+        "sha256": "ad55e2a9cc27ee5f39f2f2542d827aafe6977acf1b88f12e01b0730aa5cb34bc",
+        "size": 5408
+      },
+      "__TEXT,__swift5_types": {
+        "sha256": "d54b560654d3ffde15e941068f3d34de80697b463ebe3e3d080cd85365c9fd5d",
+        "size": 2532
+      },
+      "__TEXT,__swift_as_entry": {
+        "sha256": "0f47f82b30d78db3944e53fc8a7befa0e3256fa4aa4336f2d90b24ec8e8c77a1",
+        "size": 1456
+      },
+      "__TEXT,__swift_as_ret": {
+        "sha256": "ddffbe74d139118550a824adbed02f4e25647f1dc552afe84a1d4ada6195db5d",
+        "size": 2112
+      },
+      "__TEXT,__swift_as_cont": {
+        "sha256": "c451e08c11f0b3c67ff1d5a18fa82d76bb42624aa43e28132bc78f308f6f6239",
+        "size": 3376
+      },
+      "__TEXT,__swift5_types2": {
+        "sha256": "eef2240cd97aa390910d51fc751e2beff13259cd96a6c4f6e028624d853293e2",
+        "size": 20
+      },
+      "__TEXT,__swift5_mpenum": {
+        "sha256": "4bd2943d578b296021caa71fcddabd1be82e8c36209484692f5ff3afc1af8ca9",
+        "size": 544
+      },
+      "__TEXT,__swift5_protos": {
+        "sha256": "ae6c1d31b0f9799cf6a719c6e536a79e3f3687aa6f7fc24fdc414a0e905fcacb",
+        "size": 108
+      },
+      "__TEXT,__unwind_info": {
+        "sha256": "62db86eb65c3bf6073ff5958e750bebb72aed5810b0b608c2e7c81c41d69eff1",
+        "size": 47136
+      },
+      "__TEXT,__eh_frame": {
+        "sha256": "2e69ee7c5cc3406de8731cf7bf83e6cb7661e87b347fb74e68e326c8ff932b06",
+        "size": 92300
+      },
+      "__DATA_CONST,__const": {
+        "sha256": "aff1aadef05f20b26f9e3ae35136f473acf66ed4575eed525d0c23ffa937b8ff",
+        "size": 90256
+      },
+      "__DATA_CONST,__objc_classlist": {
+        "sha256": "67d8db08680e29dce56c7292ed181994ce2a2c04361b53d43397c704cc900b1d",
+        "size": 376
+      },
+      "__DATA_CONST,__objc_protolist": {
+        "sha256": "2a9650aec0b056635f4a175b6660cd16ac72ca77f6d7fe6618f45878391605da",
+        "size": 96
+      },
+      "__DATA_CONST,__objc_imageinfo": {
+        "sha256": "7408fcdda372aaed9b8d62d262bd8e7ad4da66abeb61efb31e7c98020b1321ce",
+        "size": 8
+      },
+      "__DATA_CONST,__got": {
+        "sha256": "da82e05052cfef779905faf5b6770f1fda3a24b3cf5215c3d3ae48c4ec9b2854",
+        "size": 15728
+      },
+      "__DATA,__objc_const": {
+        "sha256": "6e66d64c119676b5f0406d56c21530c21852c0d8072bcdb90365bbd237eb7480",
+        "size": 12904
+      },
+      "__DATA,__objc_selrefs": {
+        "sha256": "6d5b175236bb5f3263a31caae56b0f9a588d4d901a036c2d8154c7e755434068",
+        "size": 1496
+      },
+      "__DATA,__objc_protorefs": {
+        "sha256": "d18c15c1e51c8acd9d05fc4242058fa6f76cc0091eca21cc88a8f98af945acf2",
+        "size": 48
+      },
+      "__DATA,__objc_classrefs": {
+        "sha256": "7a0450d9d36a4b600b93408fd81e56f6c3f82030ad3dbccb78183c7776d86153",
+        "size": 208
+      },
+      "__DATA,__objc_data": {
+        "sha256": "57a23e898f47754780bdfd43f92b68357e4aaa1536f263058165bfaf1056d471",
+        "size": 1552
+      },
+      "__DATA,__data": {
+        "sha256": "70cf68517671626985819503aeca2b8fbec4fbf625329110c97efebd6b10bcf4",
+        "size": 36289
+      },
+      "__DATA,__s_async_hook": {
+        "sha256": "8697fc5e4c8d45d2714cbed273f82d7bc50f9c4e561dce90840527f5b1125f31",
+        "size": 416
+      },
+      "__DATA,__swift56_hooks": {
+        "sha256": "86d2cf5b090f43ee54d8f7c1dcf746a853951191457ff6dac96269a9d24860b9",
+        "size": 176
+      }
+    },
+    "allMaterialSectionsSame": true,
+    "boundary": "compiled Mach-O sections equal; header/code-signature bytes differ after local ad-hoc packaging"
+  },
+  "boundary": "local debug packaging only; no Developer ID, credential, notarization, quarantine removal or Gatekeeper proof"
+}
