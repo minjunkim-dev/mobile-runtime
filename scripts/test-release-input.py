@@ -3,8 +3,10 @@
 
 import importlib.util
 import hashlib
+import json
 import os
 from pathlib import Path
+import plistlib
 import subprocess
 import tarfile
 import tempfile
@@ -224,6 +226,80 @@ class ReleaseInputTests(unittest.TestCase):
                 else:
                     self.assertTrue(target.is_symlink())
                     self.assertFalse((root / "outside-destination").exists())
+
+    def test_new_candidate_path_rejects_wrong_doctor_json_under_environment_optimization(self):
+        scripts = Path(__file__).resolve().parent
+        version = "1.0.0-alpha.1"
+        build = {"releaseVersion": version, "toolVersion": version,
+                 "sourceRevision": SHA, "coreBuildIdentity": "b" * 64}
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            output, source, tools = root / "output", root / "source", root / "tools"
+            for path in [output, source, tools]:
+                path.mkdir()
+            cli = source / f"runstir-{version}-macos-arm64"
+            cli.mkdir()
+            mobile = cli / "mobile"
+            mobile.write_text(
+                '#!/bin/sh\ncase "$*" in *--help*) exit 0;; esac\n'
+                'printf \'%s\\n\' \'{"toolVersion":"wrong-version","command":"wrong-command"}\'\n'
+            )
+            mobile.chmod(0o755)
+            for resource in ["mobile_Core.bundle/matrix.json",
+                             "mobile_AndroidKit.bundle/mobile-doctor.gradle"]:
+                path = cli / resource
+                path.parent.mkdir()
+                path.write_text("fixture")
+            for name in ["LICENSE", "THIRD_PARTY_NOTICES.md", "INSTALL.md"]:
+                (cli / name).write_text("fixture")
+            (cli / "BUILD.json").write_text(json.dumps(build))
+            archive = output / f"{cli.name}.tar.gz"
+            with tarfile.open(archive, "w:gz") as stream:
+                stream.add(cli, arcname=cli.name)
+            checksum = hashlib.sha256(archive.read_bytes()).hexdigest()
+            archive.with_suffix(".gz.sha256").write_text(f"{checksum}  {archive.name}\n")
+            app = root / "Runstir.app"
+            for path in [app / "Contents/MacOS", app / "Contents/Resources",
+                         app / "mobile_Core.bundle", app / "mobile_AndroidKit.bundle"]:
+                path.mkdir(parents=True, exist_ok=True)
+            (app / "Contents/MacOS/Runstir").write_text("fixture, never executed")
+            (app / "Contents/Resources/BUILD.json").write_text(json.dumps(build))
+            (app / "Contents/Info.plist").write_bytes(plistlib.dumps(
+                {"RunstirProductVersion": version, "CFBundleShortVersionString": "1.0.0"}))
+            (tools / "hdiutil").write_text(
+                '#!/bin/sh\nif test "$1" = detach; then exit 0; fi\n'
+                'while test "$#" -gt 0; do\n'
+                '  if test "$1" = -mountpoint; then shift; '
+                'cp -R "$FIXTURE_GUI_APP" "$1/Runstir.app"; exit 0; fi\n'
+                '  shift\ndone\nexit 98\n'
+            )
+            (tools / "hdiutil").chmod(0o755)
+            (tools / "ruby").write_text('#!/bin/sh\nexit 0\n')
+            (tools / "ruby").chmod(0o755)
+            dmg, formula = output / f"Runstir-{version}-macos-arm64.dmg", output / "runstir-candidate.rb"
+            dmg.write_text("fixture, not a real disk image")
+            formula.write_text("# fixture\n")
+            candidate = {"productVersion": version, "sourceSHA": SHA,
+                         "coreBuildIdentity": "b" * 64, "signing": "unsigned",
+                         "notarization": "not-requested", "artifacts": {
+                             kind: {"file": path.name,
+                                    "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
+                             for kind, path in [("cli", archive), ("gui", dmg), ("homebrew", formula)]}}
+            (output / "CANDIDATE.json").write_text(json.dumps(candidate))
+            env = {**os.environ, "PATH": str(tools) + os.pathsep + os.environ["PATH"],
+                   "FIXTURE_GUI_APP": str(app), "TMPDIR": str(root), "PYTHONOPTIMIZE": "1"}
+            candidate_result = subprocess.run(
+                ["bash", str(scripts / "verify-candidate.sh"), str(output)], env=env,
+                capture_output=True, text=True, timeout=15,
+            )
+            self.assertEqual(candidate_result.returncode, 0, candidate_result.stderr)
+            smoke_result = subprocess.run(
+                ["bash", str(scripts / "verify-release.sh"), str(archive)], env=env,
+                capture_output=True, text=True, timeout=15,
+            )
+            self.assertNotEqual(smoke_result.returncode, 0,
+                                "candidate metadata passed but optimized smoke accepted wrong doctor JSON")
+            self.assertIn("Archive doctor JSON differs from release metadata", smoke_result.stderr)
 
 
 if __name__ == "__main__":
