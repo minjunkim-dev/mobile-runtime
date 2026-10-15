@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "excludesSelf": true,
+  "files": {
+    "README.md": {
+      "bytes": 3573,
+      "sha256": "928f78e7d1cfd181648949302e0da0c9b99953bfe9f610f452c6e86e1e8d93f7"
+    },
+    "actual-cli-plan.json": {
+      "bytes": 16648,
+      "sha256": "d287bbf7b5f97fbf533f9bac80ab9e854f73ac8e3f2ff346fd5e0e3423e85c24"
+    },
+    "attempts.md": {
+      "bytes": 3246,
+      "sha256": "451eee4af0e2f6d32d5c1608b51d7e2e0faa42ee1c61b3c7fea146e5d43f319a"
+    },
+    "compile-harness.py": {
+      "bytes": 1083,
+      "sha256": "9655c1cefaa830ae98fcd61a1fcad22beff74b5424c2c9872582c151f56afd8e"
+    },
+    "harness.swift": {
+      "bytes": 7436,
+      "sha256": "15afe726c12679f705fc2f782c41902aec8a1f66542331da299303c6a417a5c9"
+    },
+    "inputs.json": {
+      "bytes": 2861,
+      "sha256": "63e3e7a3934e4b9331de9c429c4568b047650f8d5cf96c83018edce9618a01d1"
+    },
+    "local-checks.json": {
+      "bytes": 1621,
+      "sha256": "1659868906a7d03cc7a53b43763b34d5a2fbb700f07e05159cac08557bbb1004"
+    },
+    "owned-writes.sb": {
+      "bytes": 244,
+      "sha256": "40966e61597fc45dd94c4e1d814d08acd2e5a1ed98425494b65b7069d00a6fad"
+    },
+    "private-receipts.json": {
+      "bytes": 17498,
+      "sha256": "11a5b3c702f700222d35b36d062c202d93f549aac31296f470608c4d8c3c9e71"
+    },
+    "results.json": {
+      "bytes": 7528,
+      "sha256": "aa1412fdd8e9bca751d530bb18e19c55d137c37d1ae06fb33f2f50a5ca88404b"
+    },
+    "run-harness.py": {
+      "bytes": 1109,
+      "sha256": "36a8067701ad2dda4720cd204538ca347a4c605622d82370ee8f74d58f3bbb00"
+    }
+  }
+}

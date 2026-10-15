@@ -1,0 +1,446 @@
+{
+  "command" : "setup",
+  "exitCode" : 0,
+  "operation" : {
+    "changedFiles" : [
+
+    ],
+    "completed" : [
+
+    ],
+    "id" : "12190208-52FA-41A4-B9C8-3EA680613365",
+    "kind" : "setup",
+    "manual" : [
+      {
+        "environment" : {
+
+        },
+        "id" : "android.android.avd",
+        "kind" : "provider",
+        "observed" : "minSdk 21, ABI unresolved",
+        "platform" : "android",
+        "remediation" : {
+          "summary" : "the evaluated variant exposes no pre-build ABI evidence; the APK will be authoritative after build"
+        },
+        "source" : {
+          "origin" : "evaluated Gradle model",
+          "tier" : 1
+        },
+        "target" : "evaluated Gradle model"
+      },
+      {
+        "environment" : {
+
+        },
+        "id" : "android.host.storage",
+        "kind" : "provider",
+        "observed" : "unknown",
+        "platform" : "android",
+        "remediation" : {
+          "summary" : "depends on `host.workspace-access`, which did not pass"
+        },
+        "source" : {
+          "origin" : "host"
+        },
+        "target" : "host"
+      },
+      {
+        "environment" : {
+
+        },
+        "id" : "android.host.workspace-access",
+        "kind" : "permission",
+        "observed" : "/var/folders/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T: cannot read, write, or search /var/folders/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T",
+        "platform" : "android",
+        "remediation" : {
+          "summary" : "Use a directory your user can read and write. If macOS denied folder access, allow this terminal in System Settings > Privacy & Security > Files & Folders. Then run mobile doctor again.",
+          "url" : "https://support.apple.com/guide/mac-help/mchld5a35146/mac"
+        },
+        "required" : "accessible working and cache directories",
+        "source" : {
+          "origin" : "host"
+        },
+        "target" : "host"
+      }
+    ],
+    "nextAction" : "Review this plan. Approve only its exact plan-id; repository trust is separate.",
+    "remaining" : [
+      "android.android.avd",
+      "android.host.storage",
+      "android.host.workspace-access"
+    ],
+    "requiredInput" : [
+
+    ],
+    "state" : "needs-approval"
+  },
+  "plan" : {
+    "androidRequirements" : {
+      "blockers" : [
+
+      ],
+      "modules" : [
+        {
+          "agpVersion" : "8.7.3",
+          "buildToolsVersion" : "34.0.0",
+          "compatibilityRequirements" : [
+            "AGP >= 8.6.0 for compileSdk 35",
+            "Gradle >= 7.3.0 to run on JDK 17",
+            "Gradle >= 8.9.0 for AGP 8.7.3",
+            "daemon JDK >= 17 for AGP 8.7.3",
+            "effective Build Tools 34.0.0 for AGP 8.7.3; https://developer.android.com/build/releases/agp-8-7-0-release-notes"
+          ],
+          "compileSDKs" : [
+            "35"
+          ],
+          "daemonJDKVersion" : "17.0.19",
+          "gradleVersion" : "8.11.1",
+          "module" : ":app",
+          "ndkVersion" : "27.0.12077973",
+          "source" : {
+            "origin" : "evaluated Gradle application :app; AGP 8.7.3; Android AGP compatibility table + Gradle Java compatibility table (2026-10-15); https://developer.android.com/build/releases/about-agp; https://docs.gradle.org/current/userguide/compatibility.html",
+            "tier" : 1
+          }
+        }
+      ],
+      "packages" : [
+        {
+          "executable" : true,
+          "packagePath" : "build-tools;34.0.0",
+          "requiredFile" : "aapt2",
+          "source" : {
+            "origin" : "evaluated Gradle application :app; AGP 8.7.3; Android AGP compatibility table + Gradle Java compatibility table (2026-10-15); https://developer.android.com/build/releases/about-agp; https://docs.gradle.org/current/userguide/compatibility.html",
+            "tier" : 1
+          }
+        },
+        {
+          "executable" : false,
+          "packagePath" : "platforms;android-35",
+          "requiredFile" : "android.jar",
+          "source" : {
+            "origin" : "evaluated Gradle application :app; AGP 8.7.3; Android AGP compatibility table + Gradle Java compatibility table (2026-10-15); https://developer.android.com/build/releases/about-agp; https://docs.gradle.org/current/userguide/compatibility.html",
+            "tier" : 1
+          }
+        }
+      ],
+      "sdkRoot" : "file:///Volumes/P41_USB4/Developer/validation/goal204-sdk-install-20261015/sdk/"
+    },
+    "app" : ".",
+    "files" : {
+      "/Volumes/P41_USB4/Developer/validation/goal204-sdk-install-20261015/source/app/build.gradle.kts" : "f97c61d9f8ebc48c4a4ce6327d974c61a6338a2e8481ce43a68901f9d2d23e70",
+      "/Volumes/P41_USB4/Developer/validation/goal204-sdk-install-20261015/source/build.gradle.kts" : "605701b11dede36f85bd1acd6f07af0164c223fe96fb19d4085e7964ebe115c6",
+      "/Volumes/P41_USB4/Developer/validation/goal204-sdk-install-20261015/source/gradle/wrapper/gradle-wrapper.properties" : "dcb542328654fb670759f0cbf4710c873c585bbb52896f0c836b7b3c69d472ac",
+      "/Volumes/P41_USB4/Developer/validation/goal204-sdk-install-20261015/source/settings.gradle.kts" : "5ee0bb4b4067a4deb055a6de629e6cfc78ca94329b72fbf17fae55aeb1f0a36f",
+      "/Volumes/P41_USB4/Developer/validation/goal204-sdk-install-20261015/source/shared-test/build.gradle.kts" : "073dbf9627e41b6dc633836de7444020b14d4927e8765e20430d078c67c947d6"
+    },
+    "id" : "4dba27cafdc7c4c9ac67a1e3d2d7813dbceda375d09a6865cf49fa03caf3f7fd",
+    "installed" : {
+      "/Volumes/P41_USB4/Developer/validation/goal204-sdk-install-20261015/sdk/build-tools/34.0.0" : true,
+      "/Volumes/P41_USB4/Developer/validation/goal204-sdk-install-20261015/sdk/platforms/android-35" : true
+    },
+    "platforms" : [
+      {
+        "checks" : [
+          {
+            "environment" : {
+
+            },
+            "id" : "android.android.avd",
+            "kind" : "provider",
+            "observed" : "minSdk 21, ABI unresolved",
+            "platform" : "android",
+            "remediation" : {
+              "summary" : "the evaluated variant exposes no pre-build ABI evidence; the APK will be authoritative after build"
+            },
+            "source" : {
+              "origin" : "evaluated Gradle model",
+              "tier" : 1
+            },
+            "target" : "evaluated Gradle model"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "android.android.emulator.acceleration",
+            "kind" : "reuse",
+            "observed" : "accel:\n0\nHypervisor.Framework OS X Version 27.0\naccel",
+            "platform" : "android",
+            "source" : {
+              "origin" : "android/local.properties sdk.dir",
+              "tier" : 1
+            },
+            "target" : "android/local.properties sdk.dir"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "android.android.gradle.compatibility",
+            "kind" : "reuse",
+            "observed" : "Gradle 8.11.1, AGP 8.7.3, daemon JDK 17.0.19, compileSdk 35",
+            "platform" : "android",
+            "required" : "Gradle >= 8.9.0 for AGP 8.7.3; daemon JDK >= 17 for AGP 8.7.3; Gradle >= 7.3.0 to run on JDK 17; AGP >= 8.6.0 for compileSdk 35",
+            "source" : {
+              "origin" : "Android AGP compatibility table + Gradle Java compatibility table (2026-10-15); https://developer.android.com/build/releases/about-agp; https://docs.gradle.org/current/userguide/compatibility.html",
+              "tier" : 2
+            },
+            "target" : "Android AGP compatibility table + Gradle Java compatibility table (2026-10-15); https://developer.android.com/build/releases/about-agp; https://docs.gradle.org/current/userguide/compatibility.html"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "android.android.gradle.wrapper",
+            "kind" : "reuse",
+            "observed" : "Gradle 8.11.1, local gradle-8.11.1-bin",
+            "platform" : "android",
+            "required" : "exact, locally available wrapper distribution",
+            "source" : {
+              "origin" : "android/gradle/wrapper/gradle-wrapper.properties",
+              "tier" : 1
+            },
+            "target" : "android/gradle/wrapper/gradle-wrapper.properties"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "android.android.jdk",
+            "kind" : "reuse",
+            "observed" : "client JDK 17.0.19; daemon JDK 17.0.19 (Azul Systems, Inc.)",
+            "platform" : "android",
+            "required" : "separately observable Gradle client and daemon JDK selections",
+            "source" : {
+              "origin" : "project execution environment; activated JAVA_HOME/PATH; evaluated Gradle model",
+              "tier" : 1
+            },
+            "target" : "project execution environment; activated JAVA_HOME/PATH; evaluated Gradle model"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "android.android.project",
+            "kind" : "reuse",
+            "observed" : "native Android host",
+            "platform" : "android",
+            "required" : "checked-in Gradle application",
+            "source" : {
+              "origin" : "Gradle settings + application model",
+              "tier" : 1
+            },
+            "target" : "Gradle settings + application model"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "android.android.sdk",
+            "kind" : "reuse",
+            "observed" : "android-35, Build Tools 34.0.0, adb, Emulator",
+            "platform" : "android",
+            "required" : "variant SDK inventory and matching license acceptance records",
+            "source" : {
+              "origin" : "evaluated Gradle model; android/local.properties sdk.dir",
+              "tier" : 1
+            },
+            "target" : "evaluated Gradle model; android/local.properties sdk.dir"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "android.android.target",
+            "kind" : "reuse",
+            "observed" : ":app debug — :app:assembleDebug, :app:installDebug",
+            "platform" : "android",
+            "required" : "one evaluated application module and runnable debuggable variant",
+            "source" : {
+              "origin" : "evaluated Gradle model",
+              "tier" : 1
+            },
+            "target" : "evaluated Gradle model"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "android.host.storage",
+            "kind" : "provider",
+            "observed" : "unknown",
+            "platform" : "android",
+            "remediation" : {
+              "summary" : "depends on `host.workspace-access`, which did not pass"
+            },
+            "source" : {
+              "origin" : "host"
+            },
+            "target" : "host"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "android.host.workspace-access",
+            "kind" : "permission",
+            "observed" : "/var/folders/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T: cannot read, write, or search /var/folders/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T",
+            "platform" : "android",
+            "remediation" : {
+              "summary" : "Use a directory your user can read and write. If macOS denied folder access, allow this terminal in System Settings > Privacy & Security > Files & Folders. Then run mobile doctor again.",
+              "url" : "https://support.apple.com/guide/mac-help/mchld5a35146/mac"
+            },
+            "required" : "accessible working and cache directories",
+            "source" : {
+              "origin" : "host"
+            },
+            "target" : "host"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "android.project.execution-environment",
+            "kind" : "reuse",
+            "observed" : "current PATH — no committed mise config",
+            "platform" : "android",
+            "source" : {
+              "origin" : "host"
+            },
+            "target" : "host"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "android.sdk.package.build-tools;34.0.0",
+            "kind" : "reuse",
+            "observed" : "installed revision 34.0.0",
+            "platform" : "android",
+            "required" : "build-tools;34.0.0; existing packages are never replaced",
+            "source" : {
+              "origin" : "evaluated Gradle application :app; AGP 8.7.3; Android AGP compatibility table + Gradle Java compatibility table (2026-10-15); https://developer.android.com/build/releases/about-agp; https://docs.gradle.org/current/userguide/compatibility.html",
+              "tier" : 1
+            },
+            "target" : "/Volumes/P41_USB4/Developer/validation/goal204-sdk-install-20261015/sdk/build-tools/34.0.0"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "android.sdk.package.platforms;android-35",
+            "kind" : "reuse",
+            "observed" : "installed revision 2",
+            "platform" : "android",
+            "required" : "platforms;android-35; existing packages are never replaced",
+            "source" : {
+              "origin" : "evaluated Gradle application :app; AGP 8.7.3; Android AGP compatibility table + Gradle Java compatibility table (2026-10-15); https://developer.android.com/build/releases/about-agp; https://docs.gradle.org/current/userguide/compatibility.html",
+              "tier" : 1
+            },
+            "target" : "/Volumes/P41_USB4/Developer/validation/goal204-sdk-install-20261015/sdk/platforms/android-35"
+          }
+        ],
+        "platform" : "android",
+        "state" : "waiting-manual"
+      }
+    ],
+    "project" : {
+      "file" : 20097718,
+      "path" : "/Volumes/P41_USB4/Developer/validation/goal204-sdk-install-20261015/source",
+      "volume" : 16777244
+    },
+    "projectKind" : "native-android",
+    "steps" : [
+      {
+        "environment" : {
+
+        },
+        "id" : "android.android.avd",
+        "kind" : "provider",
+        "observed" : "minSdk 21, ABI unresolved",
+        "platform" : "android",
+        "remediation" : {
+          "summary" : "the evaluated variant exposes no pre-build ABI evidence; the APK will be authoritative after build"
+        },
+        "source" : {
+          "origin" : "evaluated Gradle model",
+          "tier" : 1
+        },
+        "target" : "evaluated Gradle model"
+      },
+      {
+        "environment" : {
+
+        },
+        "id" : "android.host.storage",
+        "kind" : "provider",
+        "observed" : "unknown",
+        "platform" : "android",
+        "remediation" : {
+          "summary" : "depends on `host.workspace-access`, which did not pass"
+        },
+        "source" : {
+          "origin" : "host"
+        },
+        "target" : "host"
+      },
+      {
+        "environment" : {
+
+        },
+        "id" : "android.host.workspace-access",
+        "kind" : "permission",
+        "observed" : "/var/folders/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T: cannot read, write, or search /var/folders/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T",
+        "platform" : "android",
+        "remediation" : {
+          "summary" : "Use a directory your user can read and write. If macOS denied folder access, allow this terminal in System Settings > Privacy & Security > Files & Folders. Then run mobile doctor again.",
+          "url" : "https://support.apple.com/guide/mac-help/mchld5a35146/mac"
+        },
+        "required" : "accessible working and cache directories",
+        "source" : {
+          "origin" : "host"
+        },
+        "target" : "host"
+      }
+    ]
+  },
+  "schemaVersion" : 1,
+  "selection" : {
+    "candidates" : [
+      {
+        "app" : {
+          "file" : 20097718,
+          "path" : "/Volumes/P41_USB4/Developer/validation/goal204-sdk-install-20261015/source",
+          "volume" : 16777244
+        },
+        "framework" : "native-android",
+        "id" : ".",
+        "platforms" : [
+          "android"
+        ]
+      }
+    ],
+    "directory" : {
+      "file" : 20097718,
+      "path" : "/Volumes/P41_USB4/Developer/validation/goal204-sdk-install-20261015/source",
+      "volume" : 16777244
+    },
+    "requiredInput" : [
+
+    ],
+    "selected" : {
+      "app" : {
+        "file" : 20097718,
+        "path" : "/Volumes/P41_USB4/Developer/validation/goal204-sdk-install-20261015/source",
+        "volume" : 16777244
+      },
+      "framework" : "native-android",
+      "id" : ".",
+      "platforms" : [
+        "android"
+      ]
+    }
+  },
+  "status" : "pass",
+  "toolVersion" : "0.1.0"
+}
