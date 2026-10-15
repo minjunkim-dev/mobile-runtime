@@ -39,6 +39,22 @@ public struct MatrixLookup: Sendable, Equatable {
         config: MobileConfig? = nil,
         loading load: () throws -> CompatibilityMatrix = CompatibilityMatrix.bundled
     ) -> MatrixLookup {
+        if anchor.framework != .reactNative {
+            let native = Answer.unavailable(reason: "No React Native compatibility row applies to \(anchor.framework.displayName).")
+            let floor = MinimumVersion("27.0")!
+            let declared = config?.xcode ?? anchor.declaredXcodeVersion.flatMap(MinimumVersion.init)
+            let xcode = declared.map { floor.exceeds($0) ? floor : $0 } ?? floor
+            return MatrixLookup(
+                xcode: .requirement(xcode, source: CheckSource(tier: 1, origin:
+                    "Runstir 1.0 Xcode 27.0 minimum"
+                        + (config?.xcode != nil ? " + mobile.yml ios.xcode" : anchor.declaredXcodeVersion.map { " + .xcode-version \($0)" } ?? ""))),
+                runtime: requirement(
+                    override: config?.iosRuntime, field: MobileConfig.Key.iosRuntime,
+                    declared: anchor.deploymentTarget.map { (value: $0.value, file: $0.file) },
+                    matrix: native, value: \.runtime
+                )
+            )
+        }
         let answer = self.answer(anchor: anchor, loading: load)
         return MatrixLookup(
             xcode: requirement(
