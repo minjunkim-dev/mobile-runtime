@@ -424,3 +424,20 @@ struct AndroidRuntimeTests {
         #expect(FileManager.default.fileExists(atPath: store.file.path))
     }
 }
+
+@Suite("Android live app observation")
+struct AndroidAppObservationTests {
+    @Test("pidof separates a running app, a stopped app or gone emulator, and an unobservable device")
+    func observation() async throws {
+        let scenario = try runtimeScenario()
+        let pidof = command("adb", ["-s", serial, "shell", "pidof", "dev.other"])
+        func observe(_ response: FakeProcessRunner.Response) async -> ClaimObservation {
+            try! await androidAppObservation(serial: serial, applicationId: "dev.other", anchor: scenario.anchor,
+                config: scenario.config, runner: FakeProcessRunner(responses: [pidof: response]), environment: scenario.environment)
+        }
+        #expect(await observe(.ok("4242\n")) == .running("dev.other pid 4242 on \(serial)"))
+        #expect(await observe(.failed(1, "")) == .stopped)
+        #expect(await observe(.failed(1, "adb: device '\(serial)' not found")) == .stopped)
+        #expect(await observe(.failed(1, "error: device offline")) == .unknown("error: device offline"))
+    }
+}

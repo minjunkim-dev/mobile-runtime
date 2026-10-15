@@ -172,7 +172,9 @@ struct PreparationExecutionTests {
         let current = await PreparationExecution.run(input: input, planOnly: true, runner: tools(repo))
         let second = await PreparationExecution.run(input: input, approvedPlanID: try #require(current.plan?.id), trustRepository: true, runner: tools(repo))
         #expect(second.exitCode == 1)
-        #expect(second.operation.error?.contains("Another setup") == true)
+        #expect(second.operation.conflict?.owner?.command == "setup")
+        #expect(second.operation.conflict?.owner?.operationId != second.operation.id)
+        #expect(second.operation.error?.contains("held by setup operation") == true)
         #expect(second.operation.completed.isEmpty)
         await gate.release()
         let completed = await first.value
@@ -277,7 +279,8 @@ struct PreparationExecutionTests {
         let denied = await PreparationExecution.run(input: secondInput, approvedPlanID: try #require(secondPlan.plan?.id),
             trustRepository: true, runner: secondTools)
         #expect(denied.exitCode == 1)
-        #expect(denied.operation.error?.contains("Another setup") == true)
+        #expect(denied.operation.conflict?.key.rawValue.hasPrefix("destination:") == true)
+        #expect(denied.operation.conflict?.owner?.project == firstRepo.root.path)
         #expect(!secondTools.log.all.contains { $0.description == "yarn install --frozen-lockfile" })
         await gate.release()
         _ = await task.value

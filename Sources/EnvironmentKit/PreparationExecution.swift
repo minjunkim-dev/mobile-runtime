@@ -55,6 +55,7 @@ public struct PreparationOperation: Encodable, Sendable {
     public var nextAction: String?
     public var error: String?
     public var log: String?
+    public var conflict: ResourceConflict?
 }
 
 public struct PreparationResult: Sendable {
@@ -85,7 +86,7 @@ public enum PreparationExecution {
     public static func run(
         input: ProjectInspectionInput, planOnly: Bool = false,
         approvedPlanID: String? = nil, trustRepository: Bool = false,
-        runner: (any ProcessRunner)? = nil,
+        runner: (any ProcessRunner)? = nil, leases: ResourceLeases = .user,
         onEvent: (@Sendable (WorkflowEvent) -> Void)? = nil
     ) async -> PreparationResult {
         let events = PreparationEvents(onEvent)
@@ -139,13 +140,12 @@ public enum PreparationExecution {
                 result.operation.nextAction = "Finish the listed provider steps, then inspect again."
                 return finish(result, events)
             }
-            var leases: [PreparationLease] = []
-            defer { leases.reversed().forEach { $0.release() } }
-            leases.append(try PreparationLease(target: anchor.workspaceRoot?.directory ?? anchor.directory))
+            let folder = try FolderIdentity(directory: anchor.workspaceRoot?.directory ?? anchor.directory)
             // Separate projects can reuse one global Bundle destination.
-            for destination in Set(actions.filter { $0.id == "dependencies.gems" }.map(\.target)).sorted() {
-                leases.append(try PreparationLease(destination: URL(fileURLWithPath: destination)))
-            }
+            let destinations = actions.filter { $0.id == "dependencies.gems" }.map { ResourceKey.destination(URL(fileURLWithPath: $0.target)) }
+            let lease = try leases.acquire([.folder(folder)] + destinations,
+                owner: LeaseOwner(operationId: result.operation.id, command: "setup", project: folder.path))
+            defer { lease.release() }
             // Another preparation may have finished while the plan was being read.
             guard try await inspect(input, runner: host).plan?.id == plan.id else {
                 result.plan = try await inspect(input, runner: host).plan
@@ -199,6 +199,12 @@ public enum PreparationExecution {
             result.exitCode = 130
             result.operation.state = "cancelled"
             result.operation.nextAction = "Completed dependencies and shared caches were preserved. Inspect again before retrying."
+        } catch let conflict as ResourceConflict {
+            result.exitCode = 1
+            result.operation.state = "failed"
+            result.operation.conflict = conflict
+            result.operation.error = conflict.domainError.message
+            result.operation.nextAction = conflict.domainError.remediation.summary
         } catch let error as DomainError {
             result.exitCode = 1
             result.operation.state = "failed"
@@ -565,29 +571,4 @@ private final class PreparationRunner: ProcessRunner, @unchecked Sendable {
                 remediation: Remediation(summary: "Inspect the changed files. No files were automatically restored. Handle migrations manually and re-plan."))
         }
     }
-}
-
-private final class PreparationLease {
-    private let descriptor: Int32
-    convenience init(target: URL) throws {
-        let identity = try FolderIdentity(directory: target)
-        try self.init(key: "folder:\(identity.volume):\(identity.file)")
-    }
-    convenience init(destination: URL) throws {
-        // The canonical path stays the same before and after installation creates it.
-        try self.init(key: "destination:\(destination.resolvingSymlinksInPath().standardizedFileURL.path)")
-    }
-    private init(key rawKey: String) throws {
-        let directory = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Library/Caches/dev.runstir/preparation-locks")
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        let key = PreparationExecution.digest(Data(rawKey.utf8))
-        descriptor = open(directory.appendingPathComponent(key).path, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR)
-        guard descriptor >= 0 else { throw CocoaError(.fileWriteNoPermission) }
-        guard flock(descriptor, LOCK_EX | LOCK_NB) == 0 else {
-            close(descriptor)
-            throw DomainError(summary: "Another setup is preparing this dependency target", remediation: Remediation(summary: "Wait for the existing setup. Inspect the target again and approve the current plan."))
-        }
-    }
-    func release() { _ = flock(descriptor, LOCK_UN); close(descriptor) }
 }
