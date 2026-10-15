@@ -28,6 +28,7 @@ CI 성공은 티켓의 실제 측정이나 독립 리뷰를 대체하지 않는�
 | macOS release package verification | 별도 disposable build와 배포 archive의 리소스 독립성 | 공개 배포와 release 승인 |
 | Linux Core compile | Apple 프레임워크 없는 Core 컴파일 | Linux 제품 지원 |
 
+수동 `Simulator smoke` workflow는 필수 `CI`가 아니다. 실제 simctl 동작을 확인한다. 실행 시점은 `docs/ci-reproducibility.md`를 따른다.
 source-only 테스트는 `test_*.py`를 자동 탐색한다. AST 검사는 정적 I/O 금지 제약에만 사용한다.
 새 동작 검사는 interface를 실행한다. 기존 검사를 약화해서 CI를 통과시키지 않는다.
 새 formatter 도입은 별도 변경으로 평가한다. 기존 전체 소스를 포맷하는 변경을 섞지 않는다.
