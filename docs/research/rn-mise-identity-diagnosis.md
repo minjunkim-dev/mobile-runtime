@@ -33,11 +33,15 @@ macOS에서 기존 선택 경로의 파일만 읽는다.
 원본 helper를 import하지 않는다.
 원본 `begin`을 호출하지 않는다.
 원본 compound assertion 식만 실행한다.
+`-I -S`는 `PYTHONOPTIMIZE`와 `site` 자동 로드의 영향을 배제한다.
+이 옵션이 없으면 `PYTHONOPTIMIZE=1`이 두 assertion과 마지막 검증을 제거한다.
+수정 전 이 환경에서 두 결과가 PASS로 출력됐고 종료 코드는 `0`이었다.
+수정 후 같은 환경에서도 E20 FAIL과 ADR-0032 PASS를 확인했다.
 9초 alarm은 이 단독 진단의 상한이다.
 baseline의 timeout·observer·guard를 바꾸지 않는다.
 
 ```sh
-python3 - <<'PY'
+python3 -I -S - <<'PY'
 import hashlib, pathlib, signal, time
 signal.alarm(9)
 t = time.monotonic()
@@ -81,7 +85,7 @@ path=<HOME>/.local/bin/mise
 is_file=True is_symlink=False size=127277984
 observed_sha256=f5171e341518a57e8c4e9280e28443e35d66212c51164c83be76794e0a78b014
 before_after_metadata_equal=True both_reads_equal=True
-elapsed_s=0.171
+elapsed_s=0.134
 ```
 
 명령 종료 코드는 `0`이다.
