@@ -201,7 +201,7 @@ public struct BuildStage: Stage {
     /// remediation that has to be repaired before it runs is not a remediation.
     private static func pasteable(_ command: ProcessCommand) -> String {
         ([command.executable] + command.arguments)
-            .map { $0.contains(" ") ? "'\($0)'" : $0 }
+            .map(shellArgument)
             .joined(separator: " ")
     }
 

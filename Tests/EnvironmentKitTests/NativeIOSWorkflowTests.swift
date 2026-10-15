@@ -77,6 +77,41 @@ struct NativeIOSWorkflowTests {
         #expect(runner.log.spawned.isEmpty)
     }
 
+    @Test("a native build remediation preserves literal shell arguments", arguments: [
+        "App${INJECTED}.xcodeproj", "App$(printf\tinjected).xcodeproj", "O'Reilly Native.xcodeproj"
+    ])
+    func literalRemediation(container: String) async throws {
+        let repo = try project()
+        let originalPath = repo.url("App.xcodeproj").path
+        let containerPath = repo.url(container).path
+        try FileManager.default.moveItem(atPath: originalPath, toPath: containerPath)
+        let responses = runner(repo).responses.map { key, value in
+            (key.replacingOccurrences(of: originalPath, with: containerPath), value)
+        }
+        var runner = FakeProcessRunner(responses: Dictionary(uniqueKeysWithValues: responses))
+        let build = "xcodebuild -project \(containerPath) -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile -scheme App -configuration Debug -destination generic/platform=iOS Simulator CODE_SIGNING_ALLOWED=NO build"
+        runner.responses[build] = .failed(65, "error: fixture build failed")
+        let result = await WorkflowExecution.run(.build, input: input(repo), runner: runner)
+        #expect(result.exitCode == 1)
+        guard case .domain(let failure) = result.up?.failure else {
+            Issue.record("Expected the build failure and its remediation")
+            return
+        }
+        let command = try #require(failure.remediation.command)
+        let expected = try #require(runner.log.all.first { $0.arguments.last == "build" })
+        let output = repo.url("shell-arguments")
+        try repo.write("bin/xcodebuild", "#!/bin/sh\nprintf '%s\\0' \"$@\" > \"$ARGV_OUTPUT\"\n")
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: repo.url("bin/xcodebuild").path)
+        let shell = SystemProcessRunner(environment: ["PATH": repo.url("bin").path + ":/bin",
+            "ARGV_OUTPUT": output.path, "INJECTED": "expanded"], workingDirectory: repo.root)
+        let parsed = try await shell.run(ProcessCommand("/bin/sh", ["-c", command], timeout: .seconds(5)))
+        #expect(parsed.terminationStatus.isSuccess)
+        guard parsed.terminationStatus.isSuccess else { return }
+        let actual = try String(contentsOf: output, encoding: .utf8).split(separator: "\0", omittingEmptySubsequences: false)
+            .dropLast().map(String.init)
+        #expect(actual == expected.arguments)
+    }
+
     @Test("a private scheme is rejected before build")
     func privateScheme() async throws {
         let repo = try project()
