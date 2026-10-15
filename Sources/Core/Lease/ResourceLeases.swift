@@ -183,9 +183,19 @@ public enum ClaimObservation: Sendable, Equatable {
 }
 
 extension ResourceLeases {
+    /// Call while holding `device`, before changes. A failed final record leaves this
+    /// owner's unconfirmed reservation in place so another project cannot take over.
+    public func reserve(device: ResourceKey, owner: LeaseOwner) throws {
+        try write(DeviceReservation(owner: owner, claim: nil), device: device)
+    }
+
     public func record(_ claim: ResourceClaim) throws {
+        try write(DeviceReservation(owner: claim.owner, claim: claim), device: claim.device)
+    }
+
+    private func write(_ reservation: DeviceReservation, device: ResourceKey) throws {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        try JSONEncoder().encode(claim).write(to: file(claim.device, "claim"), options: .atomic)
+        try JSONEncoder().encode(reservation).write(to: file(device, "claim"), options: .atomic)
     }
 
     /// Call while holding `device`. Another project's claim is observed again; only an
@@ -194,11 +204,29 @@ extension ResourceLeases {
                       observe: (ResourceClaim) async throws -> ClaimObservation) async throws {
         let file = file(device, "claim")
         guard FileManager.default.fileExists(atPath: file.path) else { return }
-        guard let data = try? Data(contentsOf: file),
-              let claim = try? JSONDecoder().decode(ResourceClaim.self, from: data) else {
-            throw ResourceConflict(key: device, owner: nil, reason: "a previous run's claim on this device is unreadable: \(file.path)")
+        let unreadable = ResourceConflict(key: device, owner: nil,
+            reason: "a previous run's claim on this device is unreadable or inconsistent: \(file.path)")
+        guard let data = try? Data(contentsOf: file) else {
+            throw unreadable
         }
-        guard claim.owner.project != project else { return }
+        let reservation: DeviceReservation
+        // Existing installations wrote ResourceClaim directly rather than a reservation.
+        if let claim = try? JSONDecoder().decode(ResourceClaim.self, from: data) {
+            reservation = DeviceReservation(owner: claim.owner, claim: claim)
+        } else if let saved = try? JSONDecoder().decode(DeviceReservation.self, from: data) {
+            reservation = saved
+        } else {
+            throw unreadable
+        }
+        if let claim = reservation.claim {
+            guard claim.device == device, claim.owner == reservation.owner else { throw unreadable }
+        }
+        guard reservation.owner.project != project else { return }
+        guard let claim = reservation.claim else {
+            let owner = reservation.owner
+            throw ResourceConflict(key: device, owner: owner,
+                reason: "the result of \(owner.command) operation \(owner.operationId) for \(owner.project) is unconfirmed; its device reservation stays at \(file.path)")
+        }
         let leftBehind = "\(claim.appID) from \(claim.owner.project) (\(claim.owner.command) operation \(claim.owner.operationId))"
         switch try await observe(claim) {
         case .stopped:
@@ -208,4 +236,10 @@ extension ResourceLeases {
         case .unknown(let detail):
             throw ResourceConflict(key: claim.app, owner: claim.owner, reason: "\(leftBehind) may still be running; it could not be observed: \(detail). The claim stays at \(file.path)")
         }
-    }}
+    }
+}
+
+private struct DeviceReservation: Codable {
+    let owner: LeaseOwner
+    let claim: ResourceClaim?
+}
