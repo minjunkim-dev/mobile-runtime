@@ -58,26 +58,30 @@ struct RealSimulatorSmokeTests {
             let stopped = await AppTeardown(logs: logs, runner: runner, locator: locator).run()
             #expect(stopped.status == .stopped)
         } catch {
-            await cleanUp(selected, bundleID, bootedHere: device.status == .pass, runner, environment, logs)
+            _ = await cleanUp(selected, bundleID, bootedHere: device.status == .pass, runner, environment, logs)
             throw error
         }
-        await cleanUp(selected, bundleID, bootedHere: device.status == .pass, runner, environment, logs)
+        #expect(
+            await cleanUp(selected, bundleID, bootedHere: device.status == .pass, runner, environment, logs),
+            "simctl shutdown failed on the simulator this test booted"
+        )
     }
 
     /// The fixture app is this test's own, so it goes. The simulator goes only when this
     /// test booted it: one that was already running belongs to whoever started it.
+    /// - Returns: false only when the simulator this test booted did not shut down.
     private func cleanUp(
         _ device: SelectedDevice, _ bundleID: String, bootedHere: Bool,
         _ runner: SystemProcessRunner, _ environment: [String: String], _ logs: RunLogs
-    ) async {
+    ) async -> Bool {
         _ = try? await runner.run(ProcessCommand(
             "xcrun", ["simctl", "uninstall", device.udid, bundleID], environment: environment, timeout: .seconds(60)
         ))
-        if bootedHere {
-            _ = try? await runner.run(ProcessCommand(
-                "xcrun", ["simctl", "shutdown", device.udid], environment: environment, timeout: .seconds(60)
-            ))
-        }
-        try? FileManager.default.removeItem(at: logs.directory)
+        defer { try? FileManager.default.removeItem(at: logs.directory) }
+        guard bootedHere else { return true }
+        let shutdown = try? await runner.run(ProcessCommand(
+            "xcrun", ["simctl", "shutdown", device.udid], environment: environment, timeout: .seconds(60)
+        ))
+        return shutdown?.terminationStatus.isSuccess == true
     }
 }

@@ -75,6 +75,7 @@ macOS runner 동시 실행 슬롯은 계정 전체가 공유한다. 실제 Simul
 gh workflow run simulator-smoke.yml --repo minjunkim-dev/mobile-runtime --ref <branch>
 ```
 
-실행 URL·head SHA·step summary의 Xcode·runtime·결과를 해당 PR이나 릴리스 티켓에 기록한다.
+실행 URL·head SHA·결과와 step summary의 Xcode·runtime·부팅된 기기 목록을 해당 PR이나 릴리스 티켓에 기록한다.
+테스트 전에 부팅된 기기가 있으면 그 실행은 부팅·종료 경로를 검사하지 않았다.
 로컬에서는 `scripts/build-simulator-smoke-app.sh <dir>`가 출력한 앱 경로를 `RUNSTIR_SIMULATOR_SMOKE_APP`에 넣고
 `swift test --filter RealSimulatorSmokeTests`를 실행한다. 이미 부팅된 Simulator를 고르면 부팅 경로는 검사하지 않는다.

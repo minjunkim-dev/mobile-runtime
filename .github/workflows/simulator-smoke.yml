@@ -29,6 +29,8 @@ jobs:
             xcodebuild -version
             swift --version 2>&1
             xcrun simctl list runtimes
+            # A device booted before the test means the boot and shutdown path was skipped.
+            xcrun simctl list devices booted
             printf '~~~\n'
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Build the smoke app
