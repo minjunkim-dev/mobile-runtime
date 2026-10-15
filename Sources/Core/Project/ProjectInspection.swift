@@ -133,7 +133,8 @@ public struct ProjectInspectionInput: Sendable {
                 ? String(path.dropFirst(root.path.count + 1)) : path
             if let container = anchor.iosContainer {
                 id = id == "." ? container : id + "/" + container
-            } else if anchors.contains(where: { $0.directory == anchor.directory && $0.framework != anchor.framework }) {
+            } else if anchor.framework != .reactNative,
+                      anchors.contains(where: { $0.directory == anchor.directory && $0.framework != anchor.framework }) {
                 id = anchor.framework.rawValue + ":" + id
             }
             candidates.append(ProjectCandidate(

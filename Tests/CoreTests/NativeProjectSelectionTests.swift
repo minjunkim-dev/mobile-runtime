@@ -5,6 +5,31 @@ import Testing
 
 @Suite("native project selection")
 struct NativeProjectSelectionTests {
+    @Test("React Native candidate ids remain stable beside another framework", arguments: [
+        ProjectFramework.flutter, .nativeIOS, .nativeAndroid
+    ])
+    func reactNativeCandidateID(framework: ProjectFramework) throws {
+        let repo = try FixtureRepo()
+        try repo.write("package.json", #"{"dependencies":{"react-native":"0.76.5"}}"#)
+        try repo.write("ios/.keep", "")
+        switch framework {
+        case .flutter:
+            try repo.write("pubspec.yaml", "dependencies:\n  flutter:\n    sdk: flutter\n")
+        case .nativeIOS:
+            try repo.write("App.xcodeproj/project.pbxproj", "native app")
+        case .nativeAndroid:
+            try repo.write("settings.gradle", "rootProject.name = 'native'")
+            try repo.write("gradlew", "#!/bin/sh")
+        case .reactNative:
+            Issue.record("The additional declaration must use another framework")
+        }
+        let selection = try ProjectInspectionInput(directory: repo.root, environment: [:]).selection()
+        #expect(selection.candidates.first { $0.framework == .reactNative }?.id == ".")
+        let chosen = try ProjectInspectionInput(directory: repo.root, environment: [:], app: ".").selection()
+        #expect(chosen.selected?.framework == .reactNative)
+        #expect(chosen.error == nil)
+    }
+
     @Test("a root native iOS project is selected without a JavaScript manifest")
     func nativeIOSRoot() throws {
         let repo = try FixtureRepo()
