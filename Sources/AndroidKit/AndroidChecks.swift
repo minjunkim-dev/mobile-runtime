@@ -537,9 +537,20 @@ private struct AndroidSDKCheck: Check {
         var cmakeVersion = module.cmakeVersion
         var cmakeDirectory: URL?
         var source = CheckSource(tier: 1, origin: "evaluated Gradle model; \(rootSource.origin)")
-        if module.cmakeConfigured == true, cmakeVersion == nil {
+        if module.cmakeConfigured == true {
             do {
-                cmakeDirectory = try await context.cmakeDirectory()
+                if let installed = try await context.cmakeInstallation() {
+                    if let cmakeVersion, cmakeVersion != installed.version {
+                        return .error(
+                            observed: "cmake.dir reports CMake \(installed.version)",
+                            required: "CMake \(cmakeVersion) declared by \(module.path)",
+                            source: CheckSource(tier: 1, origin: "evaluated Gradle model; android/local.properties cmake.dir + cmake --version"),
+                            remediation: Remediation(summary: "Point cmake.dir to the declared CMake version, then inspect again.")
+                        )
+                    }
+                    cmakeDirectory = installed.directory
+                    cmakeVersion = installed.version
+                }
             } catch {
                 return .unknown(
                     reason: "android/local.properties cmake.dir could not be read or did not report a CMake version",
@@ -586,7 +597,7 @@ private struct AndroidSDKCheck: Check {
         if module.nativeBuildConfigured, let ndk = module.ndkVersion {
             require("ndk/\(ndk)", "NDK \(ndk)", "ndk;\(ndk)")
         }
-        if module.nativeBuildConfigured, let cmake = cmakeVersion {
+        if module.nativeBuildConfigured, cmakeDirectory == nil, let cmake = cmakeVersion {
             require("cmake/\(cmake)", "CMake \(cmake)", "cmake;\(cmake)")
         }
 

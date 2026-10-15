@@ -111,16 +111,18 @@ extension AndroidDoctorContext {
                 } else { blockers.append("\(module.path): effective NDK revision is unknown") }
                 if module.cmakeConfigured == true {
                     var custom = false
-                    if cmake == nil {
-                        do {
-                            if let installed = try await cmakeInstallation() {
-                                custom = true
+                    do {
+                        if let installed = try await cmakeInstallation() {
+                            custom = true
+                            source = CheckSource(tier: 1, origin: source.origin + "; cmake.dir + verified cmake --version")
+                            if let cmake, cmake != installed.version {
+                                blockers.append("\(module.path): cmake.dir reports CMake \(installed.version), but the project requires \(cmake)")
+                            } else {
                                 cmake = installed.version
-                                source = CheckSource(tier: 1, origin: source.origin + "; cmake.dir + verified cmake --version")
                             }
                         }
-                        catch { blockers.append("\(module.path): declared cmake.dir could not be verified") }
                     }
+                    catch { blockers.append("\(module.path): declared cmake.dir could not be verified") }
                     if !custom {
                         if cmake == nil, let agp = module.agpVersion.flatMap({ SemanticVersion($0) }) {
                             cmake = AndroidCompatibility.defaultCMake(for: agp)

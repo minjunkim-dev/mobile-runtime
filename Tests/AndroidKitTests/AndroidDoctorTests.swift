@@ -182,9 +182,12 @@ struct AndroidDoctorTests {
         #expect(requirements.sdkRoot?.resolvingSymlinksInPath() == fixture.repo.url("sdk").resolvingSymlinksInPath())
     }
 
-    @Test("SDK snapshot preserves the verified external CMake version without proposing a duplicate SDK package")
-    func sdkCustomCMakeSnapshot() async throws {
-        let fixture = try scenario(modelResponse: .ok(AndroidGradleModelProbe.marker + nativeModelJSON()))
+    @Test("SDK snapshot and doctor reuse matching cmake.dir and reject a version mismatch",
+          arguments: [nil, "3.27.9", "3.22.1"] as [String?])
+    func sdkCustomCMakeSnapshot(declared: String?) async throws {
+        let fixture = try scenario(modelResponse: .ok(AndroidGradleModelProbe.marker + nativeModelJSON(cmake: declared)))
+        try sdkPackage(fixture.repo, "sdk/ndk/27.1.12297006")
+        if declared == "3.22.1" { try sdkPackage(fixture.repo, "sdk/cmake/3.22.1") }
         try executable(fixture.repo, "tools/custom-cmake/bin/cmake")
         try fixture.repo.write("android/local.properties", "sdk.dir=\(fixture.repo.url("sdk").path)\ncmake.dir=\(fixture.repo.url("tools/custom-cmake").path)\n")
         var runner = fixture.runner
@@ -192,10 +195,21 @@ struct AndroidDoctorTests {
         let context = AndroidDoctorContext(anchor: fixture.anchor, config: fixture.config,
             hostRunner: runner, projectRunner: runner, environment: fixture.environment)
         let requirements = try await context.sdkRequirements()
-        #expect(requirements.blockers.isEmpty)
-        #expect(requirements.modules.first?.cmakeVersion == "3.27.9")
+        let matches = declared == nil || declared == "3.27.9"
+        #expect(requirements.blockers.isEmpty == matches)
+        #expect(requirements.modules.first?.cmakeVersion == (declared ?? "3.27.9"))
         #expect(requirements.modules.first?.source.origin.contains("cmake.dir") == true)
         #expect(!requirements.packages.contains { $0.packagePath.hasPrefix("cmake;") })
+        let report = await DoctorEngine(checks: checks(fixture, runner: runner)).run(only: ["android.sdk"])
+        let sdk = try #require(report.checks.first)
+        #expect(sdk.status == (matches ? .pass : .error))
+        if matches {
+            #expect(sdk.outcome.observed?.contains("CMake from cmake.dir") == true)
+        } else {
+            #expect(requirements.blockers.contains { $0.contains("3.27.9") && $0.contains("3.22.1") })
+            #expect(sdk.outcome.observed?.contains("3.27.9") == true)
+            #expect(sdk.outcome.required?.contains("3.22.1") == true)
+        }
     }
 
     @Test("SDK planning never materializes a missing Gradle wrapper")
