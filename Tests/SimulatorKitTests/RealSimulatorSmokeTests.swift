@@ -20,23 +20,27 @@ struct RealSimulatorSmokeTests {
         let environment = await locator.pinnedEnvironment()
 
         // The parsers the fakes feed with captured JSON, fed with this Xcode's.
-        #expect(try await SimulatorDaemonCheck(runner: runner, locator: locator).run().status == .pass)
-        let runtimes = try #require(SimctlRuntimeList.decode(
+        #expect(try await timed("simulator.daemon") {
+            try await SimulatorDaemonCheck(runner: runner, locator: locator).run().status
+        } == .pass)
+        let runtimes = try #require(SimctlRuntimeList.decode(try await timed("list runtimes") {
             try await runner.run(SimctlRuntimeList.command(environment: environment)).standardOutput
-        ))
+        }))
         let runtime = try #require(
             runtimes.runtimes.filter { $0.isIOS && $0.isAvailable }
                 .compactMap { SemanticVersion($0.version) }.max()
         )
-        let types = try #require(SimctlDeviceTypeList.decode(
+        let types = try #require(SimctlDeviceTypeList.decode(try await timed("list devicetypes") {
             try await runner.run(SimctlDeviceTypeList.command(environment: environment)).standardOutput
-        ))
+        }))
         #expect(types.newestPhone(runningOn: runtime) != nil)
 
         var context = UpContext()
-        let device = try await DeviceStage(declared: nil, lookup: nil, runner: runner, locator: locator)
-            .run(&context)
+        let device = try await timed("device") {
+            try await DeviceStage(declared: nil, lookup: nil, runner: runner, locator: locator).run(&context)
+        }
         let selected = try #require(context.device)
+        print("smoke: device \(device.status.rawValue) — \(selected.name) iOS \(selected.runtime) \(selected.udid)")
         let project = FileManager.default.temporaryDirectory
             .appendingPathComponent("runstir-simulator-smoke-\(UUID().uuidString)")
         let logs = RunLogs(project: project)
@@ -48,23 +52,38 @@ struct RealSimulatorSmokeTests {
             #expect(list.simulators.contains { $0.udid == selected.udid && $0.isBooted })
 
             context.product = BuiltProduct(path: appPath, bundleIdentifier: bundleID)
-            let install = try await InstallStage(runner: runner, locator: locator, logs: logs).run(&context)
+            let install = try await timed("install") {
+                try await InstallStage(runner: runner, locator: locator, logs: logs).run(&context)
+            }
             #expect(install.status == .pass)
-            let launch = try await LaunchStage(project: project, runner: runner, locator: locator)
-                .run(&context)
+            let launch = try await timed("launch") {
+                try await LaunchStage(project: project, runner: runner, locator: locator).run(&context)
+            }
             #expect(launch.status == .pass)
             #expect((context.appPid ?? 0) > 0)
 
-            let stopped = await AppTeardown(logs: logs, runner: runner, locator: locator).run()
+            let stopped = await timed("app teardown") {
+                await AppTeardown(logs: logs, runner: runner, locator: locator).run()
+            }
             #expect(stopped.status == .stopped)
         } catch {
-            _ = await cleanUp(selected, bundleID, bootedHere: device.status == .pass, runner, environment, logs)
+            _ = await timed("clean up") { await cleanUp(selected, bundleID, bootedHere: device.status == .pass, runner, environment, logs) }
             throw error
         }
         #expect(
-            await cleanUp(selected, bundleID, bootedHere: device.status == .pass, runner, environment, logs),
+            await timed("clean up") {
+                await cleanUp(selected, bundleID, bootedHere: device.status == .pass, runner, environment, logs)
+            },
             "simctl shutdown failed on the simulator this test booted"
         )
+    }
+
+    /// Each step's time on stdout, failed ones included: a cold runner's first boot and
+    /// launch are slow, and a timeout alone does not say which step spent the minutes.
+    private func timed<T>(_ step: String, _ body: () async throws -> T) async rethrows -> T {
+        let start = ContinuousClock.now
+        defer { print("smoke: \(step) took \(start.duration(to: .now).formatted(.units(allowed: [.seconds], fractionalPart: .show(length: 1))))") }
+        return try await body()
     }
 
     /// The fixture app is this test's own, so it goes. The simulator goes only when this
