@@ -77,7 +77,9 @@ jobs:
           path: release
       - name: Verify transferred checksum
         working-directory: release
-        run: sha256sum --check "runstir-$RELEASE_VERSION-macos-arm64.tar.gz.sha256"
+        run: |
+          sha256sum --check "runstir-$RELEASE_VERSION-macos-arm64.tar.gz.sha256"
+          sha256sum --check "Runstir-$RELEASE_VERSION-macos-arm64.dmg.sha256"
       - name: Create an unpublished pre-release draft
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -88,11 +90,16 @@ jobs:
           Workflow: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
 
           공개하지 않은 검증 대기 draft다. 실제 배포 archive를 내려받아 ADR-0019의 실행 검증을 완료한 뒤 공개를 판단한다.
+          CLI와 GUI 후보는 CANDIDATE.json의 같은 source/version/Core build를 사용한다.
+          서명·공증 상태를 CANDIDATE.json에서 확인한다. unsigned 후보는 Gatekeeper/공개 게이트를 통과하지 않았다.
           This draft does not establish device compatibility or release readiness.
           EOF
           gh release create "v$RELEASE_VERSION" \
             "release/runstir-$RELEASE_VERSION-macos-arm64.tar.gz" \
             "release/runstir-$RELEASE_VERSION-macos-arm64.tar.gz.sha256" \
+            "release/Runstir-$RELEASE_VERSION-macos-arm64.dmg" \
+            "release/Runstir-$RELEASE_VERSION-macos-arm64.dmg.sha256" \
+            "release/CANDIDATE.json" "release/runstir-candidate.rb" \
             --repo "$GH_REPO" --target "$SOURCE_SHA" \
             --draft --prerelease --title "Runstir $RELEASE_VERSION (검증 대기)" \
             --notes-file "$RUNNER_TEMP/notes.md"

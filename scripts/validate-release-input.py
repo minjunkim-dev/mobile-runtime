@@ -3,6 +3,7 @@
 
 import json
 import os
+from pathlib import PurePosixPath
 import re
 import subprocess
 import sys
@@ -35,6 +36,30 @@ def validate_unused_version(releases, refs, version):
         raise ValueError("version already has a release; drafts are not overwritten")
     if any(ref.get("ref") == f"refs/tags/{tag}" for ref in refs):
         raise ValueError("version already has a Git tag")
+
+
+def validate_candidate(candidate, cli, gui):
+    version, source = candidate.get("productVersion"), candidate.get("sourceSHA")
+    if not isinstance(version, str) or not isinstance(source, str):
+        raise ValueError("candidate requires a product version and source SHA")
+    validate_inputs(version, source)
+    core = candidate.get("coreBuildIdentity")
+    if not isinstance(core, str) or not re.fullmatch(r"[0-9a-f]{64}", core):
+        raise ValueError("candidate requires an exact Core build digest")
+    expected = {"releaseVersion": version, "toolVersion": version,
+                "sourceRevision": source, "coreBuildIdentity": core}
+    for build in (cli, gui):
+        if any(build.get(key) != value for key, value in expected.items()):
+            raise ValueError("CLI, GUI and Core must use the same source, version and build")
+
+
+def validate_candidate_archive(members, version):
+    root = f"runstir-{version}-macos-arm64"
+    for member in members:
+        path = PurePosixPath(member.name)
+        if (path.is_absolute() or ".." in path.parts or not path.parts
+                or path.parts[0] != root or not (member.isfile() or member.isdir())):
+            raise ValueError("candidate archive contains an unsafe or unexpected member")
 
 
 def api(endpoint, paginate=False):

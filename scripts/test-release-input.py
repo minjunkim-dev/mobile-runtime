@@ -4,6 +4,7 @@
 import importlib.util
 from pathlib import Path
 import subprocess
+import tarfile
 import unittest
 from unittest.mock import patch
 
@@ -70,6 +71,39 @@ class ReleaseInputTests(unittest.TestCase):
                           side_effect=subprocess.CalledProcessError(1, "gh")):
             with self.assertRaises(subprocess.CalledProcessError):
                 release_input.api("repos/example/project/releases")
+
+    def test_candidate_rejects_mixed_source_version_and_core_build(self):
+        candidate = {"productVersion": "1.0.0-alpha.1", "sourceSHA": SHA,
+                     "coreBuildIdentity": "b" * 64}
+        build = {"releaseVersion": "1.0.0-alpha.1", "toolVersion": "1.0.0-alpha.1",
+                 "sourceRevision": SHA, "coreBuildIdentity": "b" * 64}
+        release_input.validate_candidate(candidate, build, build)
+        for key, value in {"releaseVersion": "1.0.0-alpha.2", "toolVersion": "0.1.0",
+                           "sourceRevision": "c" * 40,
+                           "coreBuildIdentity": "d" * 64}.items():
+            with self.subTest(field=key), self.assertRaises(ValueError):
+                release_input.validate_candidate(candidate, build, {**build, key: value})
+
+    def test_candidate_requires_an_exact_core_build_digest(self):
+        for digest in [None, "", "unknown", "b" * 63]:
+            with self.subTest(digest=digest), self.assertRaises(ValueError):
+                release_input.validate_candidate(
+                    {"productVersion": "1.0.0-alpha.1", "sourceSHA": SHA,
+                     "coreBuildIdentity": digest}, {}, {}
+                )
+
+    def test_candidate_archive_rejects_escape_links_and_unexpected_roots(self):
+        good = tarfile.TarInfo("runstir-1.0.0-alpha.1-macos-arm64/mobile")
+        release_input.validate_candidate_archive([good], "1.0.0-alpha.1")
+        for name in ["../outside", "/absolute", "other/mobile",
+                     "runstir-1.0.0-alpha.1-macos-arm64/../../outside"]:
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                release_input.validate_candidate_archive([tarfile.TarInfo(name)], "1.0.0-alpha.1")
+        link = tarfile.TarInfo(good.name)
+        link.type = tarfile.SYMTYPE
+        link.linkname = "/outside"
+        with self.assertRaises(ValueError):
+            release_input.validate_candidate_archive([link], "1.0.0-alpha.1")
 
 
 if __name__ == "__main__":

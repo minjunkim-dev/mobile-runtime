@@ -23,6 +23,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         let menu = NSMenu()
         let appMenu = NSMenu()
+        appMenu.addItem(withTitle: "Runstir 정보", action: #selector(showAbout), keyEquivalent: "").target = self
+        appMenu.addItem(.separator())
         appMenu.addItem(withTitle: "프로젝트 열기…", action: #selector(openProject), keyEquivalent: "o").target = self
         appMenu.addItem(.separator())
         appMenu.addItem(withTitle: "Runstir 종료", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
@@ -33,12 +35,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let window = makeWindow(title: "Runstir")
         window.contentView = NSHostingView(rootView: VStack(spacing: 16) {
             Text("Runstir").font(.largeTitle)
+            Text("버전 \(runstirProductVersion)")
+            Link("공식 다운로드", destination: URL(string: "https://github.com/minjunkim-dev/mobile-runtime/releases")!)
+            Text("업데이트하려면 새 DMG의 Runstir.app으로 교체하세요. 별도 CLI는 유지됩니다.")
+                .font(.caption)
             Text("React Native 프로젝트의 환경을 확인하세요.")
             Button("프로젝트 열기…") { self.openProject() }.keyboardShortcut("o")
         }.padding(40).frame(maxWidth: .infinity, maxHeight: .infinity))
         welcome = window
         window.makeKeyAndOrderFront(nil)
         NSApplication.shared.activate(ignoringOtherApps: true)
+    }
+
+    @objc func showAbout() {
+        NSApplication.shared.orderFrontStandardAboutPanel(options: [.applicationVersion: runstirProductVersion])
     }
 
     @objc func openProject() {
