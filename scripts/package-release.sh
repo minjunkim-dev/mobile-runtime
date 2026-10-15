@@ -98,10 +98,13 @@ metadata = {
     'xcode': subprocess.check_output(['xcodebuild', '-version'], text=True).strip(),
     'dependencies': pins,
 }
-objects = sorted(checkouts.parent.glob('*/release/Core.build/*.o'))
+objects = sorted(path for path in checkouts.parent.rglob('*.o')
+                 if any(part in {'Core.build', 'Core-t.build'} for part in path.parts))
 if not objects:
     raise SystemExit('Missing Core build objects')
 core_objects = {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in objects}
+if len(core_objects) != len(objects):
+    raise SystemExit('Ambiguous Core object names')
 metadata['coreBuildIdentity'] = hashlib.sha256(
     json.dumps(core_objects, sort_keys=True).encode()).hexdigest()
 metadata['coreObjects'] = core_objects
