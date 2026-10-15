@@ -598,9 +598,9 @@ private struct AndroidSDKCheck: Check {
                 required: "all SDK packages required by \(module.path)",
                 source: source,
                 remediation: Remediation(
-                    summary: "Install the missing SDK packages explicitly; mobile will not download or license them.",
+                    summary: "Review mobile setup --plan for approved SDK package installation. Runtime provisioning and license acceptance remain manual.",
                     command: sdkmanager.map {
-                        ([shellArgument($0.path)] + packages.map(shellArgument)).joined(separator: " ")
+                        ([shellArgument($0.path), shellArgument("--sdk_root=\(sdk.path)")] + packages.map(shellArgument)).joined(separator: " ")
                     },
                     url: sdkmanager == nil ? "https://developer.android.com/tools/sdkmanager" : nil
                 )

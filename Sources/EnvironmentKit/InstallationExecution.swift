@@ -123,7 +123,14 @@ public enum InstallationExecution {
               let sourcePath = canonicalPath(source), let markerPath = canonicalPath(marker),
               markerPath.hasPrefix(sourcePath + "/"),
               !metadata.executable || manager.isExecutableFile(atPath: marker.path) else { throw failure("Archive is missing the required SDK package content") }
-        try localMetadata.write(to: source.appendingPathComponent("package.xml"), options: .atomic)
+        let packageXML = source.appendingPathComponent("package.xml")
+        // This private stage becomes public only through the final exclusive rename.
+        // Replacing a staged metadata link must never overwrite another archive member.
+        if manager.fileExists(atPath: packageXML.path)
+            || (try? manager.destinationOfSymbolicLink(atPath: packageXML.path)) != nil {
+            try manager.removeItem(at: packageXML)
+        }
+        try localMetadata.write(to: packageXML)
         try Task.checkCancellation()
         try await beforeCommit([scratch])
         try validateSDKLicense(metadata)

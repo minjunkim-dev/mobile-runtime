@@ -23,6 +23,16 @@ struct InstallationExecutionTests {
         #expect(!FileManager.default.fileExists(atPath: revoked.repo.url("sdk/licenses/fixture-license").path))
     }
 
+    @Test("generated package metadata replaces a staged link without modifying another package member")
+    func stagedMetadataLink() async throws {
+        let fixture = try await archive(metadataLink: true)
+        let metadata = pin(fixture.data, repo: fixture.repo)
+        try await InstallationExecution.installSDKZip(metadata, localMetadata: Data("generated metadata".utf8), runner: PayloadRunner(data: fixture.data))
+        #expect(try String(contentsOf: metadata.destination.appendingPathComponent("android.jar"), encoding: .utf8) == "fixture jar")
+        #expect(try String(contentsOf: metadata.destination.appendingPathComponent("package.xml"), encoding: .utf8) == "generated metadata")
+        #expect((try? FileManager.default.destinationOfSymbolicLink(atPath: metadata.destination.appendingPathComponent("package.xml").path)) == nil)
+    }
+
     @Test("a verified archive commits one absent package and preserves existing SDK files")
     func exactInstall() async throws {
         let fixture = try await archive()
@@ -100,13 +110,14 @@ struct InstallationExecutionTests {
             licenseID: "fixture-license", licenseSHA1: String(repeating: "b", count: 40), requiredFile: "android.jar")
     }
 
-    private func archive(revision: String = "2", escapingLink: Bool = false, internalLink: Bool = false) async throws -> (repo: FixtureRepo, data: Data) {
+    private func archive(revision: String = "2", escapingLink: Bool = false, internalLink: Bool = false, metadataLink: Bool = false) async throws -> (repo: FixtureRepo, data: Data) {
         let repo = try FixtureRepo()
         try repo.write("sdk/licenses/fixture-license", String(repeating: "b", count: 40) + "\n")
         try repo.write("payload/source.properties", "Pkg.Revision=\(revision)\n")
         try repo.write("payload/android.jar", "fixture jar")
         if escapingLink { try FileManager.default.createSymbolicLink(atPath: repo.url("payload/link").path, withDestinationPath: "../../outside") }
         if internalLink { try FileManager.default.createSymbolicLink(atPath: repo.url("payload/alias.jar").path, withDestinationPath: "android.jar") }
+        if metadataLink { try FileManager.default.createSymbolicLink(atPath: repo.url("payload/package.xml").path, withDestinationPath: "android.jar") }
         let result = try await SystemProcessRunner().run(ProcessCommand("zip", ["-q", "-r", "-y", repo.url("fixture.zip").path, "payload"], workingDirectory: repo.root))
         #expect(result.terminationStatus.isSuccess)
         return (repo, try Data(contentsOf: repo.url("fixture.zip")))
