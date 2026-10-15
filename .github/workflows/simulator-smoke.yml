@@ -1,0 +1,40 @@
+name: Simulator smoke
+
+# Manual only. It boots a real simulator on a macOS runner, and macOS runners share the
+# account's concurrent slots, so it stays off pull requests and pushes. When to run it:
+# docs/ci-reproducibility.md.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: simulator-smoke-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  simulator-smoke:
+    name: Real simulator smoke
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Record toolchain and simulator runtimes
+        run: |
+          {
+            printf '### macOS toolchain\n~~~text\n'
+            xcodebuild -version
+            swift --version 2>&1
+            xcrun simctl list runtimes
+            printf '~~~\n'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Build the smoke app
+        id: app
+        run: echo "path=$(scripts/build-simulator-smoke-app.sh "$RUNNER_TEMP/smoke")" >> "$GITHUB_OUTPUT"
+      - name: Select, boot, install, launch and stop on a real simulator
+        env:
+          RUNSTIR_SIMULATOR_SMOKE_APP: ${{ steps.app.outputs.path }}
+        run: swift test --force-resolved-versions --filter RealSimulatorSmokeTests -Xswiftc -warnings-as-errors
