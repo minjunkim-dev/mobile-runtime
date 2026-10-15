@@ -140,6 +140,46 @@ struct NativeIOSWorkflowTests {
         #expect(claim.owner?.operationId == result.operation.id)
     }
 
+    @Test("native up follows the scheme's runnable app instead of a same-named build target")
+    func runnableApp() async throws {
+        let repo = try project()
+        try repo.write("App.xcodeproj/xcshareddata/xcschemes/App.xcscheme", """
+            <Scheme><LaunchAction><BuildableProductRunnable>
+            <BuildableReference BlueprintIdentifier="CHOSEN" BuildableName="Chosen.app"
+                BlueprintName="Chosen" ReferencedContainer="container:App.xcodeproj"/>
+            </BuildableProductRunnable></LaunchAction></Scheme>
+            """)
+        var runner = runner(repo)
+        addUpResponses(&runner, repo)
+        let measured = #"[{"target":"App","buildSettings":{"CONFIGURATION":"Debug","PLATFORM_NAME":"iphonesimulator","IPHONEOS_DEPLOYMENT_TARGET":"17.0","BUILT_PRODUCTS_DIR":"/test/build","FULL_PRODUCT_NAME":"App.app","PRODUCT_BUNDLE_IDENTIFIER":"com.test.App"}},{"target":"Chosen","buildSettings":{"CONFIGURATION":"Debug","PLATFORM_NAME":"iphonesimulator","IPHONEOS_DEPLOYMENT_TARGET":"17.0","BUILT_PRODUCTS_DIR":"/test/build","FULL_PRODUCT_NAME":"Chosen.app","PRODUCT_BUNDLE_IDENTIFIER":"com.test.Chosen"}}]"#
+        runner.responses[settings(repo)] = .ok(measured)
+        let destination = "\(target(repo)) -scheme App -configuration Debug -destination platform=iOS Simulator,id=A CODE_SIGNING_ALLOWED=NO"
+        runner.responses["xcodebuild -showBuildSettings -json \(destination)"] = .ok(measured)
+        runner.responses["xcrun simctl install A /test/build/Chosen.app"] = .ok("")
+        runner.responses["xcrun simctl terminate A com.test.Chosen"] = .ok("")
+        runner.responses["xcrun simctl launch A com.test.Chosen"] = .ok("com.test.Chosen: 3538")
+        let result = await WorkflowExecution.run(.up, input: input(repo, device: "A"), runner: runner, leases: temporaryLeases())
+        #expect(result.exitCode == 0, Comment(rawValue: result.up?.failure?.message ?? ""))
+        #expect(result.up?.context.product?.bundleIdentifier == "com.test.Chosen")
+        #expect(runner.log.all.contains { $0.description == "xcrun simctl install A /test/build/Chosen.app" })
+        #expect(!runner.log.all.contains { $0.executable == "xcrun" && $0.arguments.contains("com.test.App") })
+    }
+
+    @Test("a missing, malformed or ambiguous native runnable never starts changes", arguments: [
+        "<Scheme><BuildAction><BuildableReference BlueprintName=\"App\" BuildableName=\"App.app\"/></BuildAction></Scheme>",
+        "<Scheme><LaunchAction><BuildableProductRunnable><BuildableReference BlueprintName=\"App\" BuildableName=\"App.app\"/><BuildableReference BlueprintName=\"Other\" BuildableName=\"Other.app\"/></BuildableProductRunnable></LaunchAction></Scheme>",
+        "<Scheme><LaunchAction><BuildableProductRunnable>",
+        "<Scheme><LaunchAction><BuildableProductRunnable><BuildableReference BlueprintName=\"Missing\" BuildableName=\"Missing.app\"/></BuildableProductRunnable></LaunchAction></Scheme>"
+    ])
+    func unresolvedRunnable(scheme: String) async throws {
+        let repo = try project()
+        try repo.write("App.xcodeproj/xcshareddata/xcschemes/App.xcscheme", scheme)
+        let runner = runner(repo)
+        let result = await WorkflowExecution.run(.build, input: input(repo), runner: runner)
+        #expect(result.exitCode == 1)
+        #expect(!runner.log.all.contains { $0.arguments.contains("build") || $0.arguments.contains("install") })
+    }
+
     @Test("native down stops its recorded app while another client owns Metro's port")
     func nativeDown() async throws {
         let repo = try project()
@@ -219,7 +259,7 @@ struct NativeIOSWorkflowTests {
         let repo = try FixtureRepo()
         try repo.write("Chosen.xcworkspace/contents.xcworkspacedata", #"<Workspace><Group location="group:Apps"><FileRef location="group:Nested.xcodeproj"/></Group></Workspace>"#)
         try repo.write("Apps/Nested.xcodeproj/project.pbxproj", "nested app")
-        try repo.write("Apps/Nested.xcodeproj/xcshareddata/xcschemes/App.xcscheme", "<Scheme/>")
+        try repo.write("Apps/Nested.xcodeproj/xcshareddata/xcschemes/App.xcscheme", appScheme)
         let target = "-workspace \(repo.url("Chosen.xcworkspace").path) -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile"
         let destination = "\(target) -scheme App -configuration Debug -destination generic/platform=iOS Simulator"
         let measured = #"[{"target":"App","buildSettings":{"CONFIGURATION":"Debug","PLATFORM_NAME":"iphonesimulator","IPHONEOS_DEPLOYMENT_TARGET":"17.0","FULL_PRODUCT_NAME":"App.app","BUILT_PRODUCTS_DIR":"/test/build","PRODUCT_BUNDLE_IDENTIFIER":"com.test.App"}}]"#
@@ -284,8 +324,16 @@ struct NativeIOSWorkflowTests {
     private func project() throws -> FixtureRepo {
         let repo = try FixtureRepo()
         try repo.write("App.xcodeproj/project.pbxproj", "// native fixture")
-        try repo.write("App.xcodeproj/xcshareddata/xcschemes/App.xcscheme", "<Scheme/>")
+        try repo.write("App.xcodeproj/xcshareddata/xcschemes/App.xcscheme", appScheme)
         return repo
+    }
+
+    private var appScheme: String {
+        """
+        <Scheme><LaunchAction><BuildableProductRunnable>
+        <BuildableReference BlueprintIdentifier="APP" BuildableName="App.app" BlueprintName="App"/>
+        </BuildableProductRunnable></LaunchAction></Scheme>
+        """
     }
 
     private func input(_ repo: FixtureRepo, scheme: String? = nil, device: String? = nil) -> WorkflowInput {

@@ -3,6 +3,7 @@
 앱 루트의 `.xcodeproj` 또는 `.xcworkspace`를 선택한다.
 컨테이너가 여러 개면 doctor가 보고한 `--app` id를 사용한다.
 공유 app scheme을 준비한다.
+scheme의 `LaunchAction`에 실행할 앱 target을 지정한다.
 scheme이 여러 개면 `--scheme` 또는 앱 루트의 `mobile.yml`로 선택한다.
 Debug가 없으면 실제 configuration을 `--configuration`으로 선택한다.
 

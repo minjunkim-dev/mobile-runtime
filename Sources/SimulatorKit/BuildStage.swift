@@ -76,7 +76,8 @@ public struct BuildStage: Stage {
             ] + (anchor.framework == .nativeIOS ? ["CODE_SIGNING_ALLOWED=NO"] : [])
 
         context.buildLog = try await build(arguments, environment).path
-        context.product = try await product(arguments, scheme: scheme, environment: environment)
+        context.product = try await product(arguments, scheme: scheme, environment: environment,
+            nativeTarget: anchor.framework == .nativeIOS ? target : nil)
         return .pass(scheme)
     }
 
@@ -156,7 +157,8 @@ public struct BuildStage: Stage {
     private func product(
         _ arguments: [String],
         scheme: String,
-        environment: [String: String]
+        environment: [String: String],
+        nativeTarget: XcodeBuildTarget?
     ) async throws -> BuiltProduct {
         let command = ProcessCommand(
             "xcodebuild", ["-showBuildSettings", "-json"] + arguments,
@@ -165,7 +167,7 @@ public struct BuildStage: Stage {
         )
         let result = try await runner.run(command)
         guard result.terminationStatus.isSuccess,
-            let product = XcodeBuildSettings.decode(result.standardOutput)?.application(scheme: scheme)
+            let product = XcodeBuildSettings.decode(result.standardOutput)?.application(scheme: scheme, nativeTarget: nativeTarget)
         else {
             throw ToolUnavailable(
                 description: "`\(command.description)` did not say where the app was built — "

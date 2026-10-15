@@ -22,6 +22,8 @@ RN·Flutter의 native host는 독립 후보로 중복 탐지하지 않는다.
 
 native iOS는 선택 컨테이너의 Xcode 목록과 공유 `.xcscheme` 파일의 교집합만 사용한다.
 workspace는 선언한 project의 공유 scheme도 포함한다.
+native iOS 앱 target과 product는 공유 scheme의 `LaunchAction/BuildableProductRunnable`을 따른다.
+build settings에 일치하는 앱이 없거나 여러 개면 실행하지 않는다.
 공유 scheme이 여러 개면 기존 scheme 선택 규칙을 적용한다.
 `xcodebuild -showBuildSettings -json`으로 앱 target, 실제 configuration,
 `iphonesimulator` 플랫폼, deployment target을 측정한다.

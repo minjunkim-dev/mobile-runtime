@@ -78,13 +78,14 @@ struct XcodeBuildSettings {
     }
 
     /// The app bundle, out of a scheme that may also build extensions and test
-    /// bundles. The scheme's own target wins; failing that, the one `.app` there is.
+    /// bundles. Native iOS uses the shared scheme's runnable target and product.
+    /// RN prefers the scheme's own target, then the only `.app` there is.
     ///
     /// Never a guess between several: a scheme that builds an app and a test host
     /// builds two `.app`s, and handing install whichever xcodebuild printed first is
     /// the same coin-flip `SchemeSelector` refuses to make.
-    func application(scheme: String) -> BuiltProduct? {
-        guard let settings = applicationSettings(scheme: scheme),
+    func application(scheme: String, nativeTarget: XcodeBuildTarget? = nil) -> BuiltProduct? {
+        guard let settings = applicationSettings(scheme: scheme, nativeTarget: nativeTarget),
             let directory = settings["BUILT_PRODUCTS_DIR"],
             let name = settings["FULL_PRODUCT_NAME"],
             let bundleIdentifier = settings["PRODUCT_BUNDLE_IDENTIFIER"]
@@ -95,8 +96,13 @@ struct XcodeBuildSettings {
         )
     }
 
-    func applicationSettings(scheme: String) -> [String: String]? {
+    func applicationSettings(scheme: String, nativeTarget: XcodeBuildTarget? = nil) -> [String: String]? {
         let apps = entries.filter { $0.buildSettings["FULL_PRODUCT_NAME"]?.hasSuffix(".app") == true }
+        if let nativeTarget {
+            guard let runnable = XcodeSchemeList.runnable(scheme: scheme, in: nativeTarget),
+                let name = runnable["BlueprintName"], let product = runnable["BuildableName"] else { return nil }
+            return apps.filter { $0.target == name && $0.buildSettings["FULL_PRODUCT_NAME"] == product }.only?.buildSettings
+        }
         return (apps.first(where: { $0.target == scheme }) ?? apps.only)?.buildSettings
     }
 }

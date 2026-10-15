@@ -60,7 +60,7 @@ public struct IOSWorkflowCandidates: Sendable {
             let settings = try await runner.run(ProcessCommand("xcodebuild", arguments, environment: environment, timeout: .seconds(120)))
             if anchor.framework == .nativeIOS {
                 guard settings.terminationStatus.isSuccess,
-                    let resolved = XcodeBuildSettings.decode(settings.standardOutput)?.applicationSettings(scheme: scheme),
+                    let resolved = XcodeBuildSettings.decode(settings.standardOutput)?.applicationSettings(scheme: scheme, nativeTarget: targetToList),
                     let effective = resolved["CONFIGURATION"],
                     let minimum = resolved["IPHONEOS_DEPLOYMENT_TARGET"], MinimumVersion(minimum) != nil,
                     resolved["PLATFORM_NAME"] == "iphonesimulator"
