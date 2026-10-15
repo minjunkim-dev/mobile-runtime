@@ -110,7 +110,11 @@ else: sys.exit('Unexpected tool')
     concurrent_plan = run("--plan", expected=0, extra={"TMPDIR": str(other_tmp)})
     concurrent = run("--approve", concurrent_plan["plan"]["id"], "--trust-repository", expected=1,
         extra={"TMPDIR": str(other_tmp)})
-    assert "Another setup" in concurrent["operation"]["error"]
+    conflict = concurrent["operation"]["conflict"]
+    assert conflict["key"].startswith("folder:"), conflict
+    assert conflict["owner"]["command"] == "setup", conflict
+    assert conflict["owner"]["operationId"] != concurrent["operation"]["id"], conflict
+    assert conflict["owner"]["pid"] == process.pid, conflict
     assert concurrent["operation"]["completed"] == []
     process.send_signal(signal.SIGINT)
     stdout, stderr = process.communicate(timeout=15)

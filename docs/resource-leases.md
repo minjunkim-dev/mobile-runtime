@@ -37,5 +37,5 @@ observes the occupant's project root.
 
 | Spec row | Automated | Real execution |
 |----------|-----------|----------------|
-| AC03 concurrent setup of one target | `PreparationExecutionTests` overlapping and shared Bundle destination | Pending: real concurrent setup on one installation target |
+| AC03 concurrent setup of one target | `PreparationExecutionTests` overlapping and shared Bundle destination | `scripts/verify-setup-input.py` runs two `mobile setup` processes with different `TMPDIR`; the second reports the first's operation and pid. Its installer is a controlled stub. Pending: real concurrent setup on one installation target |
 | AC08 folder, device, destination, port, stale/unknown owner | `ResourceLeasesTests` (cross-process `flock` holder), `WorkflowExecutionTests` folder and live-app conflicts, Simulator/Android observation tests | `mobile down` against a folder held by another process reported the owner and exited 1; after that process exited it succeeded. Pending: concurrent CLI and GUI runs on real devices |
