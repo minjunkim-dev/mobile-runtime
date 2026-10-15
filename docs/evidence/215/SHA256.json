@@ -1,0 +1,42 @@
+{
+  "README.md": {
+    "bytes": 11061,
+    "sha256": "5d46b19751c4b2d843e45882460663c66916b22a914241c94e748cae80b319d1"
+  },
+  "attempts.md": {
+    "bytes": 14831,
+    "sha256": "96a116bab87809869b806a2211fd0663e08660af195c15b1d7d4e3f328f27950"
+  },
+  "inputs.json": {
+    "bytes": 10559,
+    "sha256": "e7a1af5164eb43ce0612a270eacee0e291ae2d7c162ff45baf83db62d9f5ccf7"
+  },
+  "nia-first-screen.png": {
+    "bytes": 296044,
+    "sha256": "8b5c02302d9f6c0ce4aa5211bc0ea3b1125a6284e1db6f3d085ef918916b9bc2"
+  },
+  "nia-notification-prompt.png": {
+    "bytes": 192097,
+    "sha256": "b9da207d3f55bdbf2f41ee901a211a7911f14a99084f26f181f679cb333e5630"
+  },
+  "preservation-rerun.json": {
+    "bytes": 12744,
+    "sha256": "09009e83b7bdf2c398c7ef41b7bdc2a89f40e6681e6cb67f3fdecdbe6f1a7bfc"
+  },
+  "rerun-nia-first-screen.png": {
+    "bytes": 295380,
+    "sha256": "d1c90cf3b1e945da0b29402b4acc3e826e70cd27f26a1475478ca1f24e3dc97a"
+  },
+  "rerun-nia-notification-prompt.png": {
+    "bytes": 192877,
+    "sha256": "2e0daba8bd2f402b06c991ab99b03f7a59f8da62f2c7793e2cdb0573bd7d3701"
+  },
+  "rerun-todo-first-screen.png": {
+    "bytes": 57104,
+    "sha256": "d8e94b3e9962cdc9136261952e7083001fbdb195675989b49dbda2a3a2997493"
+  },
+  "todo-first-screen.png": {
+    "bytes": 56348,
+    "sha256": "1bc4ac868206a4277b690460de38db906018944d66bb1a443c93c9e5844d6908"
+  }
+}
