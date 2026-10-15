@@ -32,8 +32,9 @@ change.
 6. The lease ends with the command; the claim does not. The next `up` or `down`
    of another project on that device observes the app again (`simctl spawn …
    launchctl list` or `adb shell pidof`). Only an observed stop removes the
-   claim. A running or unobservable app blocks the device. ADB losing a device
-   connection is unknown, not proof that its app stopped.
+   claim. A running or unobservable app blocks the device. Android observation
+   first confirms that the stored serial still names the claimed AVD. A different
+   AVD or a lost connection is unknown, not proof that the claimed app stopped.
 
 The Metro port after a finished run stays under `MetroVerdict`, which already
 observes the occupant's project root.
