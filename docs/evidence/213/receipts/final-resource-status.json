@@ -1,0 +1,27 @@
+{
+  "cleanupObservation": "own app terminated; own Simulator Shutdown; own Emulator normal emu kill and own ADB5042 kill-server previously exit0",
+  "image": "own experimental sparseimage detached normally and preserved",
+  "lastIOSAppPID": 98480,
+  "lastIOSAppPIDStillPresent": false,
+  "otherResources": "parent may now use separate FFF4 Simulator and A215 ports; no operation on those resources",
+  "ownSimulator": {
+    "name": "Runstir-213-iPhone18Pro",
+    "state": "Shutdown",
+    "udid": "<owned-simulator>"
+  },
+  "ownedAndroidPorts": {
+    "5042": {
+      "listenerPresent": false,
+      "queryExit": 1
+    },
+    "5562": {
+      "listenerPresent": false,
+      "queryExit": 1
+    },
+    "5563": {
+      "listenerPresent": false,
+      "queryExit": 1
+    }
+  },
+  "timeUTC": "2026-10-15T13:47:57.542389+00:00"
+}

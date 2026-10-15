@@ -1,0 +1,12 @@
+{
+  "sourceSHA": "66732bc18ed28d9eed71336b4a2b018e09ad20b9",
+  "tree": "1b2c0f69a98890901706439215227d533bb69b7a",
+  "bundleSHA256": "814788e74f8567dea21cb8bd442affbc08002a92e5ac02323a5bb740d45710f2",
+  "pubGet": "exit0 --enforce-lockfile using own fresh PUB_CACHE",
+  "pubspecLockSHA256": "353b981ec19ef69d4e918807244fb842547ebde79b7e00702824513756d4bb89",
+  "trackedDiffExit": 0,
+  "indexDiffExit": 0,
+  "nativeBuildRun": "not executed in this fresh clone",
+  "handoffScope": "source/lock/dependency resolution only; not Runstir CLI/GUI proof",
+  "priorMisdirectedPubGet": "first fresh-cache invocation ran in baseline clone; receipt log renamed and not counted as fresh clone proof"
+}

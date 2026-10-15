@@ -1,0 +1,67 @@
+{
+  "appRoot": "<evidence-root>/sources/baseline-minimal-ios15",
+  "architectureSelection": {
+    "ARCHS": "arm64",
+    "ONLY_ACTIVE_ARCH": "YES",
+    "destination": "id=<owned-simulator>"
+  },
+  "attempt": "minimal-ios15-arm64",
+  "bundleID": "dev.runstir.runstirFlutterMinimal",
+  "configuration": "Debug",
+  "dependencyRoot": "<evidence-root>/sources/baseline-minimal-ios15",
+  "derivedData": "<evidence-root>/native/ios15-derived",
+  "device": {
+    "name": "Runstir-213-iPhone18Pro",
+    "type": "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro",
+    "udid": "<owned-simulator>"
+  },
+  "entrypoint": "lib/main.dart",
+  "flutter": {
+    "archiveSHA256": "d692b030a63466c44d6b2bc88583380371ecbe328f22cc4057835f59739821a1",
+    "dart": "3.11.5",
+    "engine": "42d3d75a56efe1a2e9902f52dc8006099c45d937",
+    "source": "00b0c91f06209d9e4a41f71b7a512d6eb3b9c694",
+    "version": "3.41.9"
+  },
+  "host": {
+    "architecture": "arm64",
+    "build": "26A434",
+    "hardwareModel": "Mac16,8",
+    "kind": "actual Mac",
+    "macOS": "27.0.1"
+  },
+  "notApplicable": {
+    "JDK/Gradle/AGP/AndroidSDK/NDK": "iOS-only execution",
+    "Node": "Flutter minimal source has no Node build dependency",
+    "Ruby/Bundler/CocoaPods": "generated minimal app has no native plugin and no Podfile",
+    "Rust": "generated minimal app has no Rust component"
+  },
+  "priorFailure": "minimal-ios15-build.log: generic/fat lipo verify failed; no source/tool patch",
+  "publicKnownGood": "unverified: requires actual execution, source/resource audit and fresh handoff; native installer archive digest unavailable",
+  "pubspecLockSHA256": "353b981ec19ef69d4e918807244fb842547ebde79b7e00702824513756d4bb89",
+  "runtime": {
+    "build": "24A434",
+    "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "version": "27.0"
+  },
+  "scenario": "generated-minimal-ios15-baseline",
+  "scheme": "Runner",
+  "sdkSettingsSHA256": "b8c86f02919d336244af1509b95b3bdaf9fd1151ee97ba188f5f77b301ed4a1e",
+  "signing": "not-applicable: unsigned iOS Simulator build",
+  "simulatorSDK": {
+    "build": "24A430",
+    "version": "27.0"
+  },
+  "sourcePreparation": "new generated input only: three iOS target declarations 13.0 to 15.0; source395691c and original failure preserved",
+  "sourceSHA": "66732bc18ed28d9eed71336b4a2b018e09ad20b9",
+  "sourceTree": "1b2c0f69a98890901706439215227d533bb69b7a",
+  "swift": "6.4 swiftlang-6.4.0.34.1 clang-2100.3.34.1",
+  "wrapperSHA256": "d68d54bf73b3c3913bcb454afcdcd9c7a9737479587cbe0af00c0d6c30c3e5b6",
+  "xcode": {
+    "build": "27A266a",
+    "developerDirectory": "/Applications/Xcode.app/Contents/Developer",
+    "installerArchiveSHA256": "unknown: preinstalled Xcode archive not retained",
+    "version": "27.0"
+  },
+  "xcodebuildSHA256": "c493a97b720c6afabad03b00577d4387fe9b01d44e57be26caae81511e5820bb"
+}

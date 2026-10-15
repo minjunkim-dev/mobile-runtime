@@ -1,0 +1,10 @@
+{
+  "timeUTC": "2026-10-15T12:48:10.310735+00:00",
+  "source": "<evidence-root>/state/rustup/toolchains/stable-aarch64-apple-darwin",
+  "preservedDestination": "<evidence-root>/state/rustup-quarantine/stable-interrupted-attempt1",
+  "treeEntryCount": 66,
+  "manifestSHA256": "f8533aafde0bc0ccf7a90dfdd7a7e0da7a44db599aa5151af3397d3bc1017681",
+  "reason": "initial rustup --version interrupted stable download left incomplete own toolchain; Cargokit enumerated it and failed",
+  "deletionPerformed": false,
+  "existingUserRustupModified": false
+}

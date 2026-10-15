@@ -1,0 +1,13 @@
+{
+  "sourceSHA": "c1ce322fb3acf08e44f329b8b7208b8b0d91e244",
+  "appRoot": "<evidence-root>/sources/fresh-localsend/app",
+  "workspaceRoot": "<evidence-root>/sources/fresh-localsend",
+  "entrypoint": "lib/main.dart",
+  "clone": "git clone --no-local of preserved original source",
+  "pubGet": "exit0 --enforce-lockfile using own fresh PUB_CACHE",
+  "pubspecLockSHA256": "d14333a18b86726a4d8cc792bd3d65482d8e55e53f5895a3bd21d0cdcf7f5b3a",
+  "podfileLockSHA256": "b26db1286dbc37f31a03a1375cbe8d3ebd80f1ed84005e9df888ca9060ad1136",
+  "audit": "source-audits/fresh-localsend.json",
+  "nativeBuildRun": "not executed in this fresh clone",
+  "handoffScope": "source/lock/dependency resolution only; original iOS preparation failure remains"
+}

@@ -1,0 +1,16 @@
+{
+  "metadataURL": "https://storage.googleapis.com/flutter_infra_release/releases/releases_macos.json",
+  "metadataSHA256": "be26ba7041e985325ac4dad55f795bbf51fb636da23e1ae41876223ebd51fc84",
+  "rows": [
+    {
+      "hash": "00b0c91f06209d9e4a41f71b7a512d6eb3b9c694",
+      "channel": "stable",
+      "version": "3.41.9",
+      "dart_sdk_version": "3.11.5",
+      "dart_sdk_arch": "arm64",
+      "release_date": "2026-04-30T17:06:13.044098Z",
+      "archive": "stable/macos/flutter_macos_arm64_3.41.9-stable.zip",
+      "sha256": "d692b030a63466c44d6b2bc88583380371ecbe328f22cc4057835f59739821a1"
+    }
+  ]
+}

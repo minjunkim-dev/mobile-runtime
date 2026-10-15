@@ -1,0 +1,7 @@
+{
+  "ownEmulatorSIGTERM": [],
+  "publicKeyLinesRedacted": 2,
+  "privateKeyOrTokenContentRead": false,
+  "rawUnredactedLogHashCollected": false,
+  "note": "The tool output before redaction included an automatically echoed existing public key. No private key or token was output. Future launcher filters before persistence."
+}
