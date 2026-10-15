@@ -1,0 +1,5 @@
+(version 1)
+(allow default)
+(deny file-write*)
+(deny network-outbound (remote tcp "localhost:5037"))
+(allow file-write* (subpath "/PREVIOUS_OWNED_ROOT") (literal "/dev/null") (literal "/dev/tty"))

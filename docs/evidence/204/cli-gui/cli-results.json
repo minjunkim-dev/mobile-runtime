@@ -1,0 +1,888 @@
+{
+  "source": "70cb2877b259690832cec686e925087ddb1c1d01",
+  "representation": "core excerpts from private actual CLI stdout/NDJSON/TTY; full raw logs remain private",
+  "cases": {
+    "cli-controlled-io-failure": {
+      "command": {
+        "command": [
+          "/usr/bin/sandbox-exec",
+          "-f",
+          "/OWNED_ROOT/cli-writes.sb",
+          "/OWNED_ROOT/bin/mobile",
+          "setup",
+          "--project",
+          "/OWNED_ROOT/cli-source",
+          "--approve",
+          "691d6a813bb2526743fd712816f9b7c6bb9970a81e365d850def7049700ae075",
+          "--json",
+          "--non-interactive",
+          "--progress-json"
+        ],
+        "environment": {
+          "HOME": "/USER_HOME",
+          "USER": "VALIDATION_USER",
+          "LOGNAME": "VALIDATION_USER",
+          "LANG": "en_US.UTF-8",
+          "PATH": "/JDK17_HOME/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+          "JAVA_HOME": "/JDK17_HOME",
+          "JAVA_TOOL_OPTIONS": "-Duser.home=/OWNED_ROOT/home -Djava.io.tmpdir=/OWNED_ROOT/tmp -Djava.util.prefs.userRoot=/OWNED_ROOT/home/prefs",
+          "ANDROID_HOME": "/OWNED_ROOT/cli-sdk",
+          "ANDROID_SDK_ROOT": "/OWNED_ROOT/cli-sdk",
+          "ANDROID_USER_HOME": "/OWNED_ROOT/android-user",
+          "ANDROID_EMULATOR_HOME": "/OWNED_ROOT/android-emulator",
+          "ANDROID_AVD_HOME": "/OWNED_ROOT/avd",
+          "GRADLE_USER_HOME": "/OWNED_ROOT/cli-gradle",
+          "TMPDIR": "/OWNED_ROOT/tmp/",
+          "XDG_CACHE_HOME": "/OWNED_ROOT/home/cache"
+        },
+        "source": "70cb2877b259690832cec686e925087ddb1c1d01",
+        "packagesBefore": {
+          "build-tools/34.0.0": false,
+          "platforms/android-35": false
+        }
+      },
+      "result": {
+        "exitCode": 2,
+        "seconds": 46.525,
+        "packagesAfter": {
+          "build-tools/34.0.0": false,
+          "platforms/android-35": false
+        },
+        "action": {
+          "action": "controlled-chmod-000",
+          "pid": 73920,
+          "payload": "/OWNED_ROOT/cli-sdk/.runstir-install-2883F8B5-4BC1-4EC5-8AF3-C05618675E15/payload.zip",
+          "originalMode": 420,
+          "bytesObserved": 28672,
+          "seconds": 37.479,
+          "time": 1792076751.35427,
+          "cleanupRemovedPayload": true
+        },
+        "state": "failed",
+        "planID": "691d6a813bb2526743fd712816f9b7c6bb9970a81e365d850def7049700ae075",
+        "completed": [],
+        "remaining": [
+          "android.android.avd",
+          "android.android.emulator.acceleration",
+          "android.android.sdk",
+          "android.sdk.package.build-tools;34.0.0",
+          "android.sdk.package.platforms;android-35"
+        ],
+        "steps": [
+          {
+            "id": "android.android.avd",
+            "kind": "provider",
+            "target": "host"
+          },
+          {
+            "id": "android.android.emulator.acceleration",
+            "kind": "provider",
+            "target": "host"
+          },
+          {
+            "id": "android.android.sdk",
+            "kind": "provider",
+            "target": "evaluated Gradle model; android/local.properties sdk.dir"
+          },
+          {
+            "id": "android.sdk.package.build-tools;34.0.0",
+            "kind": "install",
+            "target": "/OWNED_ROOT/cli-sdk/build-tools/34.0.0"
+          },
+          {
+            "id": "android.sdk.package.platforms;android-35",
+            "kind": "install",
+            "target": "/OWNED_ROOT/cli-sdk/platforms/android-35"
+          }
+        ]
+      },
+      "operationExcerpt": {
+        "state": "failed",
+        "completed": [],
+        "remaining": [
+          "android.android.avd",
+          "android.android.emulator.acceleration",
+          "android.android.sdk",
+          "android.sdk.package.build-tools;34.0.0",
+          "android.sdk.package.platforms;android-35"
+        ],
+        "error": "Error Domain=NSCocoaErrorDomain Code=257 \"The file “payload.zip” couldn’t be opened because you don’t have permission to view it.\" UserInfo={NSFilePath=/OWNED_ROOT/cli-sdk/.runstir-install-2883F8B5-4BC1-4EC5-8AF3-C05618675E15/payload.zip, NSURL=file:///OWNED_ROOT/cli-sdk/.runstir-install-2883F8B5-4BC1-4EC5-8AF3-C05618675E15/payload.zip, NSUnderlyingError=0x7757bf4000 {Error Domain=NSPOSIXErrorDomain Code=13 \"Permission denied\"}}",
+        "nextAction": "Inspect the failing tool. Preserve completed resources and re-plan."
+      },
+      "NDJSON": {
+        "count": 4,
+        "version1": true,
+        "sequenceContinuous": true,
+        "terminalState": "failed",
+        "stageExcerpt": [
+          {
+            "stageId": "android.sdk.package.build-tools;34.0.0",
+            "state": "running"
+          },
+          {
+            "stageId": "android.sdk.package.build-tools;34.0.0",
+            "state": "failed"
+          }
+        ]
+      }
+    },
+    "cli-final-plan": {
+      "command": {
+        "command": [
+          "/usr/bin/sandbox-exec",
+          "-f",
+          "/OWNED_ROOT/cli-writes.sb",
+          "/OWNED_ROOT/bin/mobile",
+          "setup",
+          "--project",
+          "/OWNED_ROOT/cli-source",
+          "--plan",
+          "--json",
+          "--non-interactive",
+          "--progress-json"
+        ],
+        "environment": {
+          "HOME": "/USER_HOME",
+          "USER": "VALIDATION_USER",
+          "LOGNAME": "VALIDATION_USER",
+          "LANG": "en_US.UTF-8",
+          "PATH": "/JDK17_HOME/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+          "JAVA_HOME": "/JDK17_HOME",
+          "JAVA_TOOL_OPTIONS": "-Duser.home=/OWNED_ROOT/home -Djava.io.tmpdir=/OWNED_ROOT/tmp -Djava.util.prefs.userRoot=/OWNED_ROOT/home/prefs",
+          "ANDROID_HOME": "/OWNED_ROOT/cli-sdk",
+          "ANDROID_SDK_ROOT": "/OWNED_ROOT/cli-sdk",
+          "ANDROID_USER_HOME": "/OWNED_ROOT/android-user",
+          "ANDROID_EMULATOR_HOME": "/OWNED_ROOT/android-emulator",
+          "ANDROID_AVD_HOME": "/OWNED_ROOT/avd",
+          "GRADLE_USER_HOME": "/OWNED_ROOT/cli-gradle",
+          "TMPDIR": "/OWNED_ROOT/tmp/",
+          "XDG_CACHE_HOME": "/OWNED_ROOT/home/cache"
+        },
+        "source": "70cb2877b259690832cec686e925087ddb1c1d01",
+        "packagesBefore": {
+          "build-tools/34.0.0": true,
+          "platforms/android-35": true
+        }
+      },
+      "result": {
+        "exitCode": 0,
+        "seconds": 88.61,
+        "packagesAfter": {
+          "build-tools/34.0.0": true,
+          "platforms/android-35": true
+        },
+        "action": null,
+        "state": "needs-approval",
+        "planID": "6def04fff545853bf93778e75fe75e8c05c15268c45a982096752ad2109a746a",
+        "completed": [],
+        "remaining": [
+          "android.android.avd"
+        ],
+        "steps": [
+          {
+            "id": "android.android.avd",
+            "kind": "provider",
+            "target": "evaluated Gradle model"
+          }
+        ]
+      },
+      "operationExcerpt": {
+        "state": "needs-approval",
+        "completed": [],
+        "remaining": [
+          "android.android.avd"
+        ],
+        "error": null,
+        "nextAction": "Review this plan. Approve only its exact plan-id; repository trust is separate."
+      },
+      "NDJSON": {
+        "count": 2,
+        "version1": true,
+        "sequenceContinuous": true,
+        "terminalState": "needs-approval",
+        "stageExcerpt": []
+      }
+    },
+    "cli-install-remaining": {
+      "command": {
+        "command": [
+          "/usr/bin/sandbox-exec",
+          "-f",
+          "/OWNED_ROOT/cli-writes.sb",
+          "/OWNED_ROOT/bin/mobile",
+          "setup",
+          "--project",
+          "/OWNED_ROOT/cli-source",
+          "--approve",
+          "0da5624db8e46dc1a823a0d20b681980ad37c2ec873aeffde9daac3992464aef",
+          "--json",
+          "--non-interactive",
+          "--progress-json"
+        ],
+        "environment": {
+          "HOME": "/USER_HOME",
+          "USER": "VALIDATION_USER",
+          "LOGNAME": "VALIDATION_USER",
+          "LANG": "en_US.UTF-8",
+          "PATH": "/JDK17_HOME/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+          "JAVA_HOME": "/JDK17_HOME",
+          "JAVA_TOOL_OPTIONS": "-Duser.home=/OWNED_ROOT/home -Djava.io.tmpdir=/OWNED_ROOT/tmp -Djava.util.prefs.userRoot=/OWNED_ROOT/home/prefs",
+          "ANDROID_HOME": "/OWNED_ROOT/cli-sdk",
+          "ANDROID_SDK_ROOT": "/OWNED_ROOT/cli-sdk",
+          "ANDROID_USER_HOME": "/OWNED_ROOT/android-user",
+          "ANDROID_EMULATOR_HOME": "/OWNED_ROOT/android-emulator",
+          "ANDROID_AVD_HOME": "/OWNED_ROOT/avd",
+          "GRADLE_USER_HOME": "/OWNED_ROOT/cli-gradle",
+          "TMPDIR": "/OWNED_ROOT/tmp/",
+          "XDG_CACHE_HOME": "/OWNED_ROOT/home/cache"
+        },
+        "source": "70cb2877b259690832cec686e925087ddb1c1d01",
+        "packagesBefore": {
+          "build-tools/34.0.0": true,
+          "platforms/android-35": false
+        }
+      },
+      "result": {
+        "exitCode": 1,
+        "seconds": 69.442,
+        "packagesAfter": {
+          "build-tools/34.0.0": true,
+          "platforms/android-35": true
+        },
+        "action": null,
+        "state": "partial",
+        "planID": "6def04fff545853bf93778e75fe75e8c05c15268c45a982096752ad2109a746a",
+        "completed": [
+          "android.sdk.package.platforms;android-35"
+        ],
+        "remaining": [
+          "android.android.avd"
+        ],
+        "steps": [
+          {
+            "id": "android.android.avd",
+            "kind": "provider",
+            "target": "evaluated Gradle model"
+          }
+        ]
+      },
+      "operationExcerpt": {
+        "state": "partial",
+        "completed": [
+          "android.sdk.package.platforms;android-35"
+        ],
+        "remaining": [
+          "android.android.avd"
+        ],
+        "error": null,
+        "nextAction": "Preserve completed resources. Finish manual steps, inspect again, and approve the remaining plan."
+      },
+      "NDJSON": {
+        "count": 4,
+        "version1": true,
+        "sequenceContinuous": true,
+        "terminalState": "partial",
+        "stageExcerpt": [
+          {
+            "stageId": "android.sdk.package.platforms;android-35",
+            "state": "running"
+          },
+          {
+            "stageId": "android.sdk.package.platforms;android-35",
+            "state": "succeeded"
+          }
+        ]
+      }
+    },
+    "cli-license-approved": {
+      "command": {
+        "command": [
+          "/usr/bin/sandbox-exec",
+          "-f",
+          "/OWNED_ROOT/license-writes.sb",
+          "/OWNED_ROOT/bin/mobile",
+          "setup",
+          "--project",
+          "/OWNED_ROOT/license-source",
+          "--approve",
+          "07cb21fefbf49592bf2a9a41e242842023e68bf5eb6c2b4e00eae5530f688666",
+          "--json",
+          "--non-interactive",
+          "--progress-json"
+        ],
+        "environment": {
+          "HOME": "/USER_HOME",
+          "USER": "VALIDATION_USER",
+          "LOGNAME": "VALIDATION_USER",
+          "LANG": "en_US.UTF-8",
+          "PATH": "/JDK17_HOME/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+          "JAVA_HOME": "/JDK17_HOME",
+          "JAVA_TOOL_OPTIONS": "-Duser.home=/OWNED_ROOT/home -Djava.io.tmpdir=/OWNED_ROOT/tmp -Djava.util.prefs.userRoot=/OWNED_ROOT/home/prefs",
+          "ANDROID_HOME": "/OWNED_ROOT/license-sdk",
+          "ANDROID_SDK_ROOT": "/OWNED_ROOT/license-sdk",
+          "ANDROID_USER_HOME": "/OWNED_ROOT/android-user",
+          "ANDROID_EMULATOR_HOME": "/OWNED_ROOT/android-emulator",
+          "ANDROID_AVD_HOME": "/OWNED_ROOT/avd",
+          "GRADLE_USER_HOME": "/OWNED_ROOT/license-gradle",
+          "TMPDIR": "/OWNED_ROOT/tmp/",
+          "XDG_CACHE_HOME": "/OWNED_ROOT/home/cache"
+        },
+        "source": "70cb2877b259690832cec686e925087ddb1c1d01",
+        "packagesBefore": {
+          "build-tools/34.0.0": false,
+          "platforms/android-35": false
+        }
+      },
+      "result": {
+        "exitCode": 1,
+        "seconds": 28.413,
+        "packagesAfter": {
+          "build-tools/34.0.0": false,
+          "platforms/android-35": false
+        },
+        "action": null,
+        "state": "waiting-manual",
+        "planID": "07cb21fefbf49592bf2a9a41e242842023e68bf5eb6c2b4e00eae5530f688666",
+        "completed": [],
+        "remaining": [
+          "android.android.avd",
+          "android.android.emulator.acceleration",
+          "android.android.sdk",
+          "android.sdk.package.build-tools;34.0.0",
+          "android.sdk.package.platforms;android-35"
+        ],
+        "steps": [
+          {
+            "id": "android.android.avd",
+            "kind": "provider",
+            "target": "host"
+          },
+          {
+            "id": "android.android.emulator.acceleration",
+            "kind": "provider",
+            "target": "host"
+          },
+          {
+            "id": "android.android.sdk",
+            "kind": "provider",
+            "target": "evaluated Gradle model; android/local.properties sdk.dir"
+          },
+          {
+            "id": "android.sdk.package.build-tools;34.0.0",
+            "kind": "license",
+            "target": "/OWNED_ROOT/license-sdk/build-tools/34.0.0"
+          },
+          {
+            "id": "android.sdk.package.platforms;android-35",
+            "kind": "license",
+            "target": "/OWNED_ROOT/license-sdk/platforms/android-35"
+          }
+        ]
+      },
+      "operationExcerpt": {
+        "state": "waiting-manual",
+        "completed": [],
+        "remaining": [
+          "android.android.avd",
+          "android.android.emulator.acceleration",
+          "android.android.sdk",
+          "android.sdk.package.build-tools;34.0.0",
+          "android.sdk.package.platforms;android-35"
+        ],
+        "error": null,
+        "nextAction": "Preserve completed resources. Finish manual steps, inspect again, and approve the remaining plan."
+      },
+      "NDJSON": {
+        "count": 2,
+        "version1": true,
+        "sequenceContinuous": true,
+        "terminalState": "waiting-manual",
+        "stageExcerpt": []
+      }
+    },
+    "cli-license-plan": {
+      "command": {
+        "command": [
+          "/usr/bin/sandbox-exec",
+          "-f",
+          "/OWNED_ROOT/license-writes.sb",
+          "/OWNED_ROOT/bin/mobile",
+          "setup",
+          "--project",
+          "/OWNED_ROOT/license-source",
+          "--plan",
+          "--json",
+          "--non-interactive",
+          "--progress-json"
+        ],
+        "environment": {
+          "HOME": "/USER_HOME",
+          "USER": "VALIDATION_USER",
+          "LOGNAME": "VALIDATION_USER",
+          "LANG": "en_US.UTF-8",
+          "PATH": "/JDK17_HOME/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+          "JAVA_HOME": "/JDK17_HOME",
+          "JAVA_TOOL_OPTIONS": "-Duser.home=/OWNED_ROOT/home -Djava.io.tmpdir=/OWNED_ROOT/tmp -Djava.util.prefs.userRoot=/OWNED_ROOT/home/prefs",
+          "ANDROID_HOME": "/OWNED_ROOT/license-sdk",
+          "ANDROID_SDK_ROOT": "/OWNED_ROOT/license-sdk",
+          "ANDROID_USER_HOME": "/OWNED_ROOT/android-user",
+          "ANDROID_EMULATOR_HOME": "/OWNED_ROOT/android-emulator",
+          "ANDROID_AVD_HOME": "/OWNED_ROOT/avd",
+          "GRADLE_USER_HOME": "/OWNED_ROOT/license-gradle",
+          "TMPDIR": "/OWNED_ROOT/tmp/",
+          "XDG_CACHE_HOME": "/OWNED_ROOT/home/cache"
+        },
+        "source": "70cb2877b259690832cec686e925087ddb1c1d01",
+        "packagesBefore": {
+          "build-tools/34.0.0": false,
+          "platforms/android-35": false
+        }
+      },
+      "result": {
+        "exitCode": 0,
+        "seconds": 10.546,
+        "packagesAfter": {
+          "build-tools/34.0.0": false,
+          "platforms/android-35": false
+        },
+        "action": null,
+        "state": "needs-approval",
+        "planID": "07cb21fefbf49592bf2a9a41e242842023e68bf5eb6c2b4e00eae5530f688666",
+        "completed": [],
+        "remaining": [
+          "android.android.avd",
+          "android.android.emulator.acceleration",
+          "android.android.sdk",
+          "android.sdk.package.build-tools;34.0.0",
+          "android.sdk.package.platforms;android-35"
+        ],
+        "steps": [
+          {
+            "id": "android.android.avd",
+            "kind": "provider",
+            "target": "host"
+          },
+          {
+            "id": "android.android.emulator.acceleration",
+            "kind": "provider",
+            "target": "host"
+          },
+          {
+            "id": "android.android.sdk",
+            "kind": "provider",
+            "target": "evaluated Gradle model; android/local.properties sdk.dir"
+          },
+          {
+            "id": "android.sdk.package.build-tools;34.0.0",
+            "kind": "license",
+            "target": "/OWNED_ROOT/license-sdk/build-tools/34.0.0"
+          },
+          {
+            "id": "android.sdk.package.platforms;android-35",
+            "kind": "license",
+            "target": "/OWNED_ROOT/license-sdk/platforms/android-35"
+          }
+        ]
+      },
+      "operationExcerpt": {
+        "state": "needs-approval",
+        "completed": [],
+        "remaining": [
+          "android.android.avd",
+          "android.android.emulator.acceleration",
+          "android.android.sdk",
+          "android.sdk.package.build-tools;34.0.0",
+          "android.sdk.package.platforms;android-35"
+        ],
+        "error": null,
+        "nextAction": "Review this plan. Approve only its exact plan-id; repository trust is separate."
+      },
+      "NDJSON": {
+        "count": 2,
+        "version1": true,
+        "sequenceContinuous": true,
+        "terminalState": "needs-approval",
+        "stageExcerpt": []
+      }
+    },
+    "cli-partial-install": {
+      "command": {
+        "command": [
+          "/usr/bin/sandbox-exec",
+          "-f",
+          "/OWNED_ROOT/cli-writes.sb",
+          "/OWNED_ROOT/bin/mobile",
+          "setup",
+          "--project",
+          "/OWNED_ROOT/cli-source",
+          "--approve",
+          "863f79ef512482c0e07525f84ddf8e40ea1d318e7d770d09c3dd62aa4ce89135",
+          "--json",
+          "--non-interactive",
+          "--progress-json"
+        ],
+        "environment": {
+          "HOME": "/USER_HOME",
+          "USER": "VALIDATION_USER",
+          "LOGNAME": "VALIDATION_USER",
+          "LANG": "en_US.UTF-8",
+          "PATH": "/JDK17_HOME/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+          "JAVA_HOME": "/JDK17_HOME",
+          "JAVA_TOOL_OPTIONS": "-Duser.home=/OWNED_ROOT/home -Djava.io.tmpdir=/OWNED_ROOT/tmp -Djava.util.prefs.userRoot=/OWNED_ROOT/home/prefs",
+          "ANDROID_HOME": "/OWNED_ROOT/cli-sdk",
+          "ANDROID_SDK_ROOT": "/OWNED_ROOT/cli-sdk",
+          "ANDROID_USER_HOME": "/OWNED_ROOT/android-user",
+          "ANDROID_EMULATOR_HOME": "/OWNED_ROOT/android-emulator",
+          "ANDROID_AVD_HOME": "/OWNED_ROOT/avd",
+          "GRADLE_USER_HOME": "/OWNED_ROOT/cli-gradle",
+          "TMPDIR": "/OWNED_ROOT/tmp/",
+          "XDG_CACHE_HOME": "/OWNED_ROOT/home/cache"
+        },
+        "source": "70cb2877b259690832cec686e925087ddb1c1d01",
+        "packagesBefore": {
+          "build-tools/34.0.0": false,
+          "platforms/android-35": false
+        }
+      },
+      "result": {
+        "exitCode": 1,
+        "seconds": 58.909,
+        "packagesAfter": {
+          "build-tools/34.0.0": true,
+          "platforms/android-35": false
+        },
+        "action": null,
+        "state": "partial",
+        "planID": "350e0733bbf96b3f4897db2340efc92a5201f2a2afa6fdb9621c02dc168ae8d0",
+        "completed": [
+          "android.sdk.package.build-tools;34.0.0"
+        ],
+        "remaining": [
+          "android.android.avd",
+          "android.android.emulator.acceleration",
+          "android.android.sdk",
+          "android.sdk.package.platforms;android-35"
+        ],
+        "steps": [
+          {
+            "id": "android.android.avd",
+            "kind": "provider",
+            "target": "host"
+          },
+          {
+            "id": "android.android.emulator.acceleration",
+            "kind": "provider",
+            "target": "host"
+          },
+          {
+            "id": "android.android.sdk",
+            "kind": "provider",
+            "target": "evaluated Gradle model; android/local.properties sdk.dir"
+          },
+          {
+            "id": "android.sdk.package.platforms;android-35",
+            "kind": "permission",
+            "target": "/OWNED_ROOT/cli-sdk/platforms/android-35"
+          }
+        ]
+      },
+      "operationExcerpt": {
+        "state": "partial",
+        "completed": [
+          "android.sdk.package.build-tools;34.0.0"
+        ],
+        "remaining": [
+          "android.android.avd",
+          "android.android.emulator.acceleration",
+          "android.android.sdk",
+          "android.sdk.package.platforms;android-35"
+        ],
+        "error": null,
+        "nextAction": "Preserve completed resources. Finish manual steps, inspect again, and approve the remaining plan."
+      },
+      "NDJSON": {
+        "count": 4,
+        "version1": true,
+        "sequenceContinuous": true,
+        "terminalState": "partial",
+        "stageExcerpt": [
+          {
+            "stageId": "android.sdk.package.build-tools;34.0.0",
+            "state": "running"
+          },
+          {
+            "stageId": "android.sdk.package.build-tools;34.0.0",
+            "state": "succeeded"
+          }
+        ]
+      }
+    },
+    "cli-partial-plan": {
+      "command": {
+        "command": [
+          "/usr/bin/sandbox-exec",
+          "-f",
+          "/OWNED_ROOT/cli-writes.sb",
+          "/OWNED_ROOT/bin/mobile",
+          "setup",
+          "--project",
+          "/OWNED_ROOT/cli-source",
+          "--plan",
+          "--json",
+          "--non-interactive",
+          "--progress-json"
+        ],
+        "environment": {
+          "HOME": "/USER_HOME",
+          "USER": "VALIDATION_USER",
+          "LOGNAME": "VALIDATION_USER",
+          "LANG": "en_US.UTF-8",
+          "PATH": "/JDK17_HOME/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+          "JAVA_HOME": "/JDK17_HOME",
+          "JAVA_TOOL_OPTIONS": "-Duser.home=/OWNED_ROOT/home -Djava.io.tmpdir=/OWNED_ROOT/tmp -Djava.util.prefs.userRoot=/OWNED_ROOT/home/prefs",
+          "ANDROID_HOME": "/OWNED_ROOT/cli-sdk",
+          "ANDROID_SDK_ROOT": "/OWNED_ROOT/cli-sdk",
+          "ANDROID_USER_HOME": "/OWNED_ROOT/android-user",
+          "ANDROID_EMULATOR_HOME": "/OWNED_ROOT/android-emulator",
+          "ANDROID_AVD_HOME": "/OWNED_ROOT/avd",
+          "GRADLE_USER_HOME": "/OWNED_ROOT/cli-gradle",
+          "TMPDIR": "/OWNED_ROOT/tmp/",
+          "XDG_CACHE_HOME": "/OWNED_ROOT/home/cache"
+        },
+        "source": "70cb2877b259690832cec686e925087ddb1c1d01",
+        "packagesBefore": {
+          "build-tools/34.0.0": false,
+          "platforms/android-35": false
+        }
+      },
+      "result": {
+        "exitCode": 0,
+        "seconds": 7.231,
+        "packagesAfter": {
+          "build-tools/34.0.0": false,
+          "platforms/android-35": false
+        },
+        "action": null,
+        "state": "needs-approval",
+        "planID": "863f79ef512482c0e07525f84ddf8e40ea1d318e7d770d09c3dd62aa4ce89135",
+        "completed": [],
+        "remaining": [
+          "android.android.avd",
+          "android.android.emulator.acceleration",
+          "android.android.sdk",
+          "android.sdk.package.build-tools;34.0.0",
+          "android.sdk.package.platforms;android-35"
+        ],
+        "steps": [
+          {
+            "id": "android.android.avd",
+            "kind": "provider",
+            "target": "host"
+          },
+          {
+            "id": "android.android.emulator.acceleration",
+            "kind": "provider",
+            "target": "host"
+          },
+          {
+            "id": "android.android.sdk",
+            "kind": "provider",
+            "target": "evaluated Gradle model; android/local.properties sdk.dir"
+          },
+          {
+            "id": "android.sdk.package.build-tools;34.0.0",
+            "kind": "install",
+            "target": "/OWNED_ROOT/cli-sdk/build-tools/34.0.0"
+          },
+          {
+            "id": "android.sdk.package.platforms;android-35",
+            "kind": "permission",
+            "target": "/OWNED_ROOT/cli-sdk/platforms/android-35"
+          }
+        ]
+      },
+      "operationExcerpt": {
+        "state": "needs-approval",
+        "completed": [],
+        "remaining": [
+          "android.android.avd",
+          "android.android.emulator.acceleration",
+          "android.android.sdk",
+          "android.sdk.package.build-tools;34.0.0",
+          "android.sdk.package.platforms;android-35"
+        ],
+        "error": null,
+        "nextAction": "Review this plan. Approve only its exact plan-id; repository trust is separate."
+      },
+      "NDJSON": {
+        "count": 2,
+        "version1": true,
+        "sequenceContinuous": true,
+        "terminalState": "needs-approval",
+        "stageExcerpt": []
+      }
+    },
+    "cli-stale-approval": {
+      "command": {
+        "command": [
+          "/usr/bin/sandbox-exec",
+          "-f",
+          "/OWNED_ROOT/cli-writes.sb",
+          "/OWNED_ROOT/bin/mobile",
+          "setup",
+          "--project",
+          "/OWNED_ROOT/cli-source",
+          "--approve",
+          "863f79ef512482c0e07525f84ddf8e40ea1d318e7d770d09c3dd62aa4ce89135",
+          "--json",
+          "--non-interactive",
+          "--progress-json"
+        ],
+        "environment": {
+          "HOME": "/USER_HOME",
+          "USER": "VALIDATION_USER",
+          "LOGNAME": "VALIDATION_USER",
+          "LANG": "en_US.UTF-8",
+          "PATH": "/JDK17_HOME/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+          "JAVA_HOME": "/JDK17_HOME",
+          "JAVA_TOOL_OPTIONS": "-Duser.home=/OWNED_ROOT/home -Djava.io.tmpdir=/OWNED_ROOT/tmp -Djava.util.prefs.userRoot=/OWNED_ROOT/home/prefs",
+          "ANDROID_HOME": "/OWNED_ROOT/cli-sdk",
+          "ANDROID_SDK_ROOT": "/OWNED_ROOT/cli-sdk",
+          "ANDROID_USER_HOME": "/OWNED_ROOT/android-user",
+          "ANDROID_EMULATOR_HOME": "/OWNED_ROOT/android-emulator",
+          "ANDROID_AVD_HOME": "/OWNED_ROOT/avd",
+          "GRADLE_USER_HOME": "/OWNED_ROOT/cli-gradle",
+          "TMPDIR": "/OWNED_ROOT/tmp/",
+          "XDG_CACHE_HOME": "/OWNED_ROOT/home/cache"
+        },
+        "source": "70cb2877b259690832cec686e925087ddb1c1d01",
+        "packagesBefore": {
+          "build-tools/34.0.0": true,
+          "platforms/android-35": false
+        }
+      },
+      "result": {
+        "exitCode": 1,
+        "seconds": 6.503,
+        "packagesAfter": {
+          "build-tools/34.0.0": true,
+          "platforms/android-35": false
+        },
+        "action": null,
+        "state": "needs-approval",
+        "planID": "0da5624db8e46dc1a823a0d20b681980ad37c2ec873aeffde9daac3992464aef",
+        "completed": [],
+        "remaining": [
+          "android.android.avd",
+          "android.android.emulator.acceleration",
+          "android.android.sdk",
+          "android.sdk.package.platforms;android-35"
+        ],
+        "steps": [
+          {
+            "id": "android.android.avd",
+            "kind": "provider",
+            "target": "host"
+          },
+          {
+            "id": "android.android.emulator.acceleration",
+            "kind": "provider",
+            "target": "host"
+          },
+          {
+            "id": "android.android.sdk",
+            "kind": "provider",
+            "target": "evaluated Gradle model; android/local.properties sdk.dir"
+          },
+          {
+            "id": "android.sdk.package.platforms;android-35",
+            "kind": "install",
+            "target": "/OWNED_ROOT/cli-sdk/platforms/android-35"
+          }
+        ]
+      },
+      "operationExcerpt": {
+        "state": "needs-approval",
+        "completed": [],
+        "remaining": [
+          "android.android.avd",
+          "android.android.emulator.acceleration",
+          "android.android.sdk",
+          "android.sdk.package.platforms;android-35"
+        ],
+        "error": "Plan conditions changed. No preparation changes started.",
+        "nextAction": "Review the new plan and approve its new plan-id."
+      },
+      "NDJSON": {
+        "count": 2,
+        "version1": true,
+        "sequenceContinuous": true,
+        "terminalState": "needs-approval",
+        "stageExcerpt": []
+      }
+    },
+    "cli-tty-cancel": {
+      "command": {
+        "command": [
+          "/usr/bin/sandbox-exec",
+          "-f",
+          "/OWNED_ROOT/cli-writes.sb",
+          "/OWNED_ROOT/bin/mobile",
+          "setup",
+          "--project",
+          "/OWNED_ROOT/cli-source"
+        ],
+        "environment": {
+          "HOME": "/USER_HOME",
+          "USER": "VALIDATION_USER",
+          "LOGNAME": "VALIDATION_USER",
+          "LANG": "en_US.UTF-8",
+          "PATH": "/JDK17_HOME/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+          "JAVA_HOME": "/JDK17_HOME",
+          "JAVA_TOOL_OPTIONS": "-Duser.home=/OWNED_ROOT/home -Djava.io.tmpdir=/OWNED_ROOT/tmp -Djava.util.prefs.userRoot=/OWNED_ROOT/home/prefs",
+          "ANDROID_HOME": "/OWNED_ROOT/cli-sdk",
+          "ANDROID_SDK_ROOT": "/OWNED_ROOT/cli-sdk",
+          "ANDROID_USER_HOME": "/OWNED_ROOT/android-user",
+          "ANDROID_EMULATOR_HOME": "/OWNED_ROOT/android-emulator",
+          "ANDROID_AVD_HOME": "/OWNED_ROOT/avd",
+          "GRADLE_USER_HOME": "/OWNED_ROOT/cli-gradle",
+          "TMPDIR": "/OWNED_ROOT/tmp/",
+          "XDG_CACHE_HOME": "/OWNED_ROOT/home/cache"
+        },
+        "source": "70cb2877b259690832cec686e925087ddb1c1d01",
+        "tty": true,
+        "packagesBefore": {
+          "build-tools/34.0.0": false,
+          "platforms/android-35": false
+        }
+      },
+      "result": {
+        "exitCode": 130,
+        "seconds": 45.318,
+        "actions": [
+          {
+            "action": "typed-exact-plan-id",
+            "id": "691d6a813bb2526743fd712816f9b7c6bb9970a81e365d850def7049700ae075",
+            "seconds": 9.57
+          },
+          {
+            "action": "TTY-Ctrl-C",
+            "bytesObserved": 20480,
+            "payload": "/OWNED_ROOT/cli-sdk/.runstir-install-5C47864A-DA5A-492D-B417-DC8114EF5B3D/payload.zip",
+            "seconds": 45.314
+          }
+        ],
+        "packagesAfter": {
+          "build-tools/34.0.0": false,
+          "platforms/android-35": false
+        },
+        "cancelledStateVisible": true
+      },
+      "TTYExcerpt": [
+        "Type this exact plan-id to approve, or press Return to stop: 691d6a813bb2526743fd712816f9b7c6bb9970a81e365d850def7049700ae075",
+        "cancelled: cancelled — Completed dependencies and shared caches were preserved. Inspect again before retrying.",
+        "setup: cancelled"
+      ]
+    }
+  }
+}

@@ -1,0 +1,361 @@
+{
+  "final": {
+    "at": 1792078276.0362198,
+    "sharedTrees": {
+      "/ORIGINAL_SDK": {
+        "observedEntries": 124165,
+        "metadataDeltaCount": 0,
+        "deltaPaths": []
+      },
+      "/ORIGINAL_GRADLE_CACHE": {
+        "observedEntries": 26229,
+        "metadataDeltaCount": 0,
+        "deltaPaths": []
+      },
+      "/USER_HOME/.android": {
+        "observedEntries": 13,
+        "metadataDeltaCount": 0,
+        "deltaPaths": []
+      }
+    },
+    "consoleTokenStatSame": true,
+    "existingLeaseCount": 989,
+    "changedExistingLeaseRecords": [],
+    "newLeaseRecords": {
+      "bbbb1f48969df070.lock": {
+        "stat": {
+          "mode": 33152,
+          "size": 0,
+          "mtime_ns": 1792078124007696420,
+          "uid": 501,
+          "gid": 20,
+          "ino": 298385120,
+          "link": null
+        },
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "b55ab60b42797814.lock": {
+        "stat": {
+          "mode": 33152,
+          "size": 0,
+          "mtime_ns": 1792077068829707077,
+          "uid": 501,
+          "gid": 20,
+          "ino": 298297254,
+          "link": null
+        },
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "8b0bc9db60d26fe4.lock": {
+        "stat": {
+          "mode": 33152,
+          "size": 0,
+          "mtime_ns": 1792077424619759837,
+          "uid": 501,
+          "gid": 20,
+          "ino": 298296215,
+          "link": null
+        },
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "c834ac80bb5c09a5.lock": {
+        "stat": {
+          "mode": 33152,
+          "size": 0,
+          "mtime_ns": 1792078124007757837,
+          "uid": 501,
+          "gid": 20,
+          "ino": 298385119,
+          "link": null
+        },
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "7dc0042a4c989cc6.lock": {
+        "stat": {
+          "mode": 33152,
+          "size": 0,
+          "mtime_ns": 1792077068829642035,
+          "uid": 501,
+          "gid": 20,
+          "ino": 298297255,
+          "link": null
+        },
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "sources": {
+      "cli": {
+        "trackedFileCount": 119,
+        "trackedBytesModesSame": true,
+        "indexBytesSame": false,
+        "sourceSHA": "ee66e1526b84c026615df032c705842b7d2a521f",
+        "status": ""
+      },
+      "gui": {
+        "trackedFileCount": 119,
+        "trackedBytesModesSame": true,
+        "indexBytesSame": false,
+        "sourceSHA": "ee66e1526b84c026615df032c705842b7d2a521f",
+        "status": ""
+      },
+      "license": {
+        "trackedFileCount": 119,
+        "trackedBytesModesSame": true,
+        "indexBytesSame": false,
+        "sourceSHA": "ee66e1526b84c026615df032c705842b7d2a521f",
+        "status": ""
+      }
+    },
+    "packages": {
+      "cli": {
+        "present": {
+          "build-tools/34.0.0": true,
+          "platforms/android-35": true
+        },
+        "scratchRemaining": [],
+        "firstCompletedPackageFiles": 171,
+        "firstCompletedBytesModesSame": true
+      },
+      "gui": {
+        "present": {
+          "build-tools/34.0.0": true,
+          "platforms/android-35": true
+        },
+        "scratchRemaining": [],
+        "firstCompletedPackageFiles": 171,
+        "firstCompletedBytesModesSame": true
+      },
+      "license": {
+        "present": {
+          "build-tools/34.0.0": false,
+          "platforms/android-35": false
+        },
+        "scratchRemaining": []
+      }
+    },
+    "licenses": {
+      "cli": {
+        "records": 8,
+        "samePublicLicenseRecordBytesAsOriginal": true,
+        "newAcceptance": false
+      },
+      "gui": {
+        "records": 8,
+        "samePublicLicenseRecordBytesAsOriginal": true,
+        "newAcceptance": false
+      }
+    },
+    "originalGUIPlist": {
+      "sameHashSinceIsolationBaseline": true,
+      "sameMtimeSinceIsolationBaseline": true,
+      "initialSharedChangeRetained": true
+    },
+    "ownedRuntimeOrCLIProcesses": [],
+    "limits": [
+      "shared SDK/cache full bytes not collected",
+      "whole HOME immutability not proved",
+      "tree root directory stat was not captured",
+      "ephemeral T and LaunchServices/validation preference OS writes outside SDK/cache audit scope"
+    ]
+  },
+  "indexAudit": {
+    "at": 1792078390.8446112,
+    "referenceIndexSHA256": "abdc966c6a555231d40c73d8510c062dbe228af871f96df955326026d3f7b009",
+    "copies": {
+      "cli": {
+        "beforeIndexSHAEqualsReference": true,
+        "rawIndexBytesSame": false,
+        "semanticComparison": {
+          "ls-files --stage -z": {
+            "sameAsUnmodifiedReference": true,
+            "sha256": "9218b8f57e37b188a267acdae94e2817238b31a84f9fba57e4572275abe51740"
+          },
+          "ls-files -v -z": {
+            "sameAsUnmodifiedReference": true,
+            "sha256": "3d6b77ca5549f3a0809c101b26338198204794b8309011c208f59edddfcbce90"
+          }
+        }
+      },
+      "gui": {
+        "beforeIndexSHAEqualsReference": true,
+        "rawIndexBytesSame": false,
+        "semanticComparison": {
+          "ls-files --stage -z": {
+            "sameAsUnmodifiedReference": true,
+            "sha256": "9218b8f57e37b188a267acdae94e2817238b31a84f9fba57e4572275abe51740"
+          },
+          "ls-files -v -z": {
+            "sameAsUnmodifiedReference": true,
+            "sha256": "3d6b77ca5549f3a0809c101b26338198204794b8309011c208f59edddfcbce90"
+          }
+        }
+      },
+      "license": {
+        "beforeIndexSHAEqualsReference": true,
+        "rawIndexBytesSame": false,
+        "semanticComparison": {
+          "ls-files --stage -z": {
+            "sameAsUnmodifiedReference": true,
+            "sha256": "9218b8f57e37b188a267acdae94e2817238b31a84f9fba57e4572275abe51740"
+          },
+          "ls-files -v -z": {
+            "sameAsUnmodifiedReference": true,
+            "sha256": "3d6b77ca5549f3a0809c101b26338198204794b8309011c208f59edddfcbce90"
+          }
+        }
+      }
+    },
+    "causeBoundary": "First audit invoked git status after checking raw index bytes. A later audit observed index bytes changed in owned copies. Reference raw index equals before snapshot; staged entries and flags equal reference. Metadata refresh is consistent with the audit command; no raw index restoration attempted.",
+    "rawIndexImmutability": false
+  },
+  "initialSharedGUIChange": {
+    "path": "/USER_HOME/Library/Preferences/dev.runstir.gui.plist",
+    "before": {
+      "mode": 33152,
+      "size": 1305,
+      "mtime_ns": 1792064738340083499,
+      "uid": 501,
+      "gid": 20,
+      "ino": 297408439,
+      "link": null
+    },
+    "after": {
+      "mtime_ns": 1792076746307887926,
+      "size": 1313,
+      "ino": 298298936
+    },
+    "guiPID": 76323,
+    "action": "CUA super+q; stopped before setup",
+    "cause": "unknown; process file-write guard did not prove OS-service preference immutability",
+    "restoration": "not attempted; original bytes not collected"
+  },
+  "isolatedBaseline": {
+    "time": 1792076871.141732,
+    "path": "/USER_HOME/Library/Preferences/dev.runstir.gui.plist",
+    "sha256": "e9205a85ed93330c590f15715e02a235c60a9062019e7c8f9041bfd48c131042",
+    "mtime_ns": 1792076746307887926,
+    "size": 1313,
+    "ino": 298298936,
+    "originalID": "dev.runstir.gui",
+    "validationID": "dev.runstir.gui.validation204",
+    "validationPrefsAlreadyExist": false,
+    "binarySHA256": "61c9d28f60a65ab05a8bdb3518b4ad832990ba94e332e4c8647caa16e0f1d099"
+  },
+  "isolatedFirstWindow": {
+    "hashSame": true,
+    "mtimeSame": true,
+    "time": 1792077321.401918,
+    "stage": "correct ad-hoc bundle first window",
+    "newPrefsExists": false
+  },
+  "isolatedNSOpenPanel": {
+    "hashSame": true,
+    "mtimeSame": true,
+    "time": 1792077359.412628,
+    "stage": "isolated NSOpenPanel selected license-source",
+    "newPrefsExists": true
+  },
+  "extraOwnedLookupProcess": {
+    "pid": 94507,
+    "observation": "  PID  PPID STARTED                      COMM\n94507     1 Fri Oct 16 00:07:56 2026     /OWNED_ROOT/Runstir204.app/Contents/MacOS/Runstir\n",
+    "scope": "extra owned old-path GUI discovered by final process audit after CUA lookup attempts",
+    "executionEvidence": "no setup action was applied to this process; launch environment/guard not collected",
+    "cleanup": "SIGTERM own exact PID; no other process control",
+    "at": 1792078244.959403,
+    "executableSHA256": "61c9d28f60a65ab05a8bdb3518b4ad832990ba94e332e4c8647caa16e0f1d099",
+    "afterSignalObservedAt": 1792078390.854327,
+    "pidAbsent": true,
+    "signalTiming": "receipt at field was recorded immediately before SIGTERM; exact signal send timestamp not separately captured",
+    "exitCode": "unknown; process was reparented, no wait handle"
+  },
+  "readOnlyAccelerationProbe": {
+    "command": [
+      "/usr/bin/sandbox-exec",
+      "-f",
+      "/OWNED_ROOT/cli-writes.sb",
+      "/OWNED_ROOT/cli-sdk/emulator/emulator",
+      "-accel-check"
+    ],
+    "exitCode": 0,
+    "stdout": "accel:\n0\nHypervisor.Framework OS X Version 27.0\naccel\n",
+    "stderr": "",
+    "seconds": 0.161,
+    "environment": {
+      "HOME": "/USER_HOME",
+      "USER": "VALIDATION_USER",
+      "LOGNAME": "VALIDATION_USER",
+      "LANG": "en_US.UTF-8",
+      "PATH": "/JDK17_HOME/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+      "JAVA_HOME": "/JDK17_HOME",
+      "JAVA_TOOL_OPTIONS": "-Duser.home=/OWNED_ROOT/home -Djava.io.tmpdir=/OWNED_ROOT/tmp -Djava.util.prefs.userRoot=/OWNED_ROOT/home/prefs",
+      "ANDROID_HOME": "/OWNED_ROOT/cli-sdk",
+      "ANDROID_SDK_ROOT": "/OWNED_ROOT/cli-sdk",
+      "ANDROID_USER_HOME": "/OWNED_ROOT/android-user",
+      "ANDROID_EMULATOR_HOME": "/OWNED_ROOT/android-emulator",
+      "ANDROID_AVD_HOME": "/OWNED_ROOT/avd",
+      "GRADLE_USER_HOME": "/OWNED_ROOT/cli-gradle",
+      "TMPDIR": "/OWNED_ROOT/tmp/",
+      "XDG_CACHE_HOME": "/OWNED_ROOT/home/cache"
+    },
+    "scope": "separate official read-only probe in same CLI environment; no guest/AVD/ADB server started"
+  },
+  "auditCorrection": {
+    "at": 1792078559.866517,
+    "firstAudit": {
+      "receiptName": "evidence/final-preservation.json (unversioned)",
+      "retention": "first file was overwritten by the second audit before this correction; original tool output remains in the task transcript",
+      "observedExcerpt": {
+        "indexBytesSame": {
+          "cli": true,
+          "gui": true,
+          "license": true
+        },
+        "extraOwnedProcess": 94507
+      },
+      "ordering": "index bytes checked before the audit invoked git status"
+    },
+    "secondAudit": {
+      "receiptName": "evidence/final-preservation.json",
+      "observedExcerpt": {
+        "indexBytesSame": {
+          "cli": false,
+          "gui": false,
+          "license": false
+        },
+        "extraOwnedProcessAbsent": true
+      }
+    },
+    "correction": "Do not interpret the earlier index PASS as final raw-index immutability. Reference raw index matches initial hash. Staged entries/flags and tracked119 bytes/modes are equal. No index restoration attempted.",
+    "subsequentGitCommands": "GIT_OPTIONAL_LOCKS=0 after index-audit-side-effect observation",
+    "evidence": "evidence/index-audit-side-effect.json",
+    "rawIndexBytesPreserved": false
+  },
+  "GUILeaseReturn": {
+    "at": 1792078800.310739,
+    "ownedGUIProcesses": [],
+    "primaryNormalExitCodes": [
+      0,
+      0
+    ],
+    "lookupOrphanExitCode": "unknown; SIGTERM then absent",
+    "furtherGUIExecution": "requires root lease again"
+  },
+  "sourceSnapshotTiming": {
+    "at": 1792078949.831985,
+    "sourceSnapshots": {
+      "cli": {
+        "file": "evidence/cli-tracked-before.json",
+        "collectedFileMtime": 1792076653.7406623
+      },
+      "gui": {
+        "file": "evidence/gui-tracked-before.json",
+        "collectedFileMtime": 1792076653.7796504
+      },
+      "license": {
+        "file": "evidence/license-tracked-before.json",
+        "collectedFileMtime": 1792076653.8074594
+      }
+    },
+    "boundary": "Source snapshots named before were collected before the first payload installation case. The initial license CLI plan/approval observations had already run. They are not whole-session before snapshots. SDK/cache/lease shared-before was captured before actual CLI/GUI setup cases. Fixed source commit and staged entries/flags were separately compared with the unchanged reference."
+  }
+}

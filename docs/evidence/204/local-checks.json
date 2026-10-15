@@ -1,0 +1,34 @@
+{
+  "sourceHead": "73f20f95ba6073c313c4570550e638af51285275",
+  "swift": {
+    "command": "swift test --cache-path .build/cache -Xswiftc -warnings-as-errors",
+    "exitCode": 0,
+    "fullLogSHA256": "78a311136364af4317177ea5862dd86985c492818ae24fa5861531ca9b93206e",
+    "summary": [
+      "✔ Test run with 108 tests in 16 suites passed after 0.454 seconds.",
+      "✔ Test run with 69 tests in 6 suites passed after 30.014 seconds.",
+      "✔ Test run with 352 tests in 44 suites passed after 11.128 seconds.",
+      "✔ Test run with 68 tests in 6 suites passed after 0.596 seconds."
+    ]
+  },
+  "fixtureSmokes": {
+    "doctor": {
+      "command": "python3 -I scripts/verify-doctor-input.py .build/out/Products/Debug/mobile",
+      "exitCode": 0,
+      "sha256": "2bd2116680690859fa36c3eaf4947e39d0aafeef9399eec6d8709288b0a25474",
+      "output": "doctor executable selection/JSON/non-interactive/read-only: PASS"
+    },
+    "workflow": {
+      "command": "python3 -I scripts/verify-workflow-input.py .build/out/Products/Debug/mobile",
+      "exitCode": 0,
+      "sha256": "6ca0d009e4a297358a0822b12950453350c1e52027bf417bdd2fc0c6b0d34b31",
+      "output": "RN workflow executable help/selection/JSON/NDJSON/no-mutation/SIGINT-130: PASS"
+    },
+    "setup": {
+      "command": "python3 -I scripts/verify-setup-input.py .build/out/Products/Debug/mobile",
+      "exitCode": 0,
+      "sha256": "cbc2e74c9490593dd9805dc6251b19f934972c76662f8d17c73e8cf8d65367c8",
+      "output": "setup executable contract PASS: plan, approval, trust, stale conditions, partial, failure, cancellation, TTY, JSON/NDJSON"
+    }
+  }
+}
