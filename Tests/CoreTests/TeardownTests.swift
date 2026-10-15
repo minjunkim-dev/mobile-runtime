@@ -79,6 +79,9 @@ struct TeardownTests {
         #expect(result.toolFailures.count == 1)
         #expect(result.toolFailures.first?.hasPrefix("metro:") == true)
         #expect(result.exitCode == 2)
+        let document = DownJSONDocument(report: result, toolVersion: "0.1.0")
+        #expect(document.error?.message == result.toolFailures.joined(separator: "; "))
+        #expect(document.error?.remediation == nil)
     }
 
     /// `--json` carries what was stopped, what was skipped, and what would not stop,
@@ -219,6 +222,29 @@ struct TeardownTests {
         #expect(result.exitCode == 1)
         #expect(try DownJSONDocument(report: result, toolVersion: "0.1.0").encoded()
             .contains("no React Native project here"))
+        let document = DownJSONDocument(report: result, toolVersion: "0.1.0")
+        #expect(document.error?.remediation == failure.remediation)
+    }
+
+    @Test("mixed cleanup failures report the tool cause and retain the domain item")
+    func mixedFailureJSON() {
+        let failure = DomainError(
+            summary: "SDK root is unresolved",
+            remediation: Remediation(summary: "Select one SDK root.")
+        )
+        let result = TeardownReport(
+            items: [TeardownItem(id: "android.app", status: .unknown,
+                                 detail: failure.message, remediation: failure.remediation)],
+            toolFailures: ["metro: could not launch ownership probe"], failure: failure
+        )
+        let document = DownJSONDocument(report: result, toolVersion: "0.1.0")
+
+        #expect(result.exitCode == 2)
+        #expect(document.error?.message == "metro: could not launch ownership probe")
+        #expect(document.error?.remediation == nil)
+        #expect(document.items.first?.status == .unknown)
+        #expect(document.items.first?.detail == failure.message)
+        #expect(document.items.first?.remediation == failure.remediation)
     }
 
     /// Something that would not stop is the news. "Nothing to stop" next to it would

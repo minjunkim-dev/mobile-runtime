@@ -423,6 +423,109 @@ struct AndroidRuntimeTests {
         #expect(cleanup.hasRemainingRecord)
         #expect(FileManager.default.fileExists(atPath: store.file.path))
     }
+
+    @Test("SDK root failures keep unobserved ownership unknown and exit one", arguments: [true, false])
+    func sdkRootFailurePreservesOwnership(conflicting: Bool) async throws {
+        let scenario = try runtimeScenario()
+        try scenario.repo.write("android/local.properties", conflicting ? "sdk.dir=/different-sdk\n" : "")
+        let environment = conflicting ? scenario.environment : AndroidEnvironment(values: [:])
+        let store = AndroidActiveRunStore(project: scenario.repo.root, logs: scenario.logs)
+        var record = AndroidActiveRun(project: scenario.repo.root, product: scenario.product)
+        record.device = .init(avd: "Pixel", launcherPID: 7001, serial: serial, api: 35,
+                              abi: "arm64-v8a", state: .started)
+        record.reverse = .init(serial: serial, state: .created)
+        record.app = .init(serial: serial, applicationId: scenario.product.applicationId,
+                           launched: true, pid: 8123)
+        try store.write(record)
+        let runner = FakeProcessRunner()
+
+        let report = await androidTeardown(anchor: scenario.anchor, config: scenario.config,
+            runner: runner, projectRunner: runner, environment: environment, logs: scenario.logs)
+
+        #expect(report.exitCode == 1)
+        #expect(report.status == .error)
+        #expect(report.toolFailures.isEmpty)
+        let failure = try #require(report.failure)
+        #expect(failure.remediation.summary == "Make android/local.properties sdk.dir and ANDROID_HOME name one installed SDK.")
+        let checks = androidChecks(anchor: scenario.anchor, config: scenario.config,
+            hostRunner: runner, projectRunner: runner, environment: environment).filter { $0.id == "android.sdk" }
+        let up = await runAndroidUp(anchor: scenario.anchor, doctor: DoctorEngine(checks: checks),
+            config: scenario.config, hostRunner: runner, projectRunner: runner,
+            environment: environment, logs: scenario.logs, note: { _ in })
+        #expect(up.exitCode == report.exitCode)
+        #expect(up.stages.last?.id == "validate")
+        #expect(up.failure?.remediation == failure.remediation)
+        #expect(report.items.map(\.status) == [.unknown, .unknown, .skipped, .unknown])
+        for item in report.items where item.status == .unknown {
+            #expect(item.detail == failure.message)
+            #expect(item.remediation == failure.remediation)
+        }
+        let document = DownJSONDocument(report: report, toolVersion: "test", platform: "android")
+        #expect(document.error?.message == failure.message)
+        #expect(document.error?.remediation == failure.remediation)
+        #expect(document.items.map(\.status) == report.items.map(\.status))
+        #expect(try store.read() == record)
+        #expect(runner.log.all.isEmpty)
+        #expect(runner.log.spawned.isEmpty)
+    }
+
+    @Test("cleanup process failures still exit two alongside SDK domain failures", arguments: [true, false])
+    func cleanupToolFailureKeepsExitTwo(missingSDK: Bool) async throws {
+        let scenario = try runtimeScenario()
+        if missingSDK { try scenario.repo.write("android/local.properties", "") }
+        let store = AndroidActiveRunStore(project: scenario.repo.root, logs: scenario.logs)
+        var record = AndroidActiveRun(project: scenario.repo.root, product: scenario.product)
+        record.device = .init(avd: "Pixel", launcherPID: 7001, serial: serial, api: 35,
+                              abi: "arm64-v8a", state: .started)
+        record.metro = .init(state: .spawned, startPID: 7002, listenerPID: nil, logPath: nil)
+        try store.write(record)
+        let failure = ProcessError.spawnFailed(command: "fixture probe", underlying: FixtureMiss(command: "fixture probe"))
+        let runner = FakeProcessRunner(failures: ["adb devices": failure, "kill -0 7002": failure])
+        let report = await androidTeardown(anchor: scenario.anchor, config: scenario.config,
+            runner: runner, projectRunner: runner,
+            environment: missingSDK ? AndroidEnvironment(values: [:]) : scenario.environment, logs: scenario.logs)
+
+        #expect(report.exitCode == 2)
+        #expect(!report.toolFailures.isEmpty)
+        let document = DownJSONDocument(report: report, toolVersion: "test", platform: "android")
+        #expect(document.error?.message.contains("fixture probe") == true)
+        #expect(report.items.map(\.status) == [.skipped, .skipped, .unknown, .unknown])
+        #expect(try store.read() == record)
+        #expect(runner.log.all.allSatisfy { $0.description == "adb devices" || $0.description == "kill -0 7002" })
+    }
+
+    @Test("SDK root failure still cleans an independently verified owned Metro")
+    func sdkRootFailureKeepsBestEffortCleanup() async throws {
+        let scenario = try runtimeScenario()
+        try scenario.repo.write("android/local.properties", "")
+        let store = AndroidActiveRunStore(project: scenario.repo.root, logs: scenario.logs)
+        var record = AndroidActiveRun(project: scenario.repo.root, product: scenario.product)
+        record.device = .init(avd: "Pixel", launcherPID: 7001, serial: serial, api: 35,
+                              abi: "arm64-v8a", state: .started)
+        record.app = .init(serial: serial, applicationId: scenario.product.applicationId,
+                           launched: true, pid: 8123)
+        record.metro = .init(state: .spawned, startPID: 7002, listenerPID: 7002, logPath: nil)
+        try store.write(record)
+        let state = ScriptedProcessState([
+            "kill -0 7002": [.ok(""), .failed(1, "")],
+            command("lsof", MetroVerdict.listenerArguments + ["-t"]): [.ok("7002\n"), .failed(1, "")],
+            MetroStatus.command: [.ok(MetroStatus.running(projectRoot: scenario.repo.root))],
+            "lsof -a -p 7002 -d cwd -Fn": [.ok("p7002\nn\(scenario.repo.root.path)\n")],
+            "kill -TERM 7002": [.ok("")],
+        ])
+        let runner = ScriptedProcessRunner(state: state)
+        let report = await androidTeardown(anchor: scenario.anchor, config: scenario.config,
+            runner: runner, projectRunner: runner, environment: AndroidEnvironment(values: [:]),
+            logs: scenario.logs, timeouts: AndroidRuntimeTimeouts(cleanupGrace: .zero))
+
+        #expect(report.exitCode == 1)
+        #expect(report.toolFailures.isEmpty)
+        #expect(report.items.map(\.status) == [.unknown, .skipped, .stopped, .unknown])
+        record.metro = nil
+        #expect(try store.read() == record)
+        #expect(state.all.contains { $0.description == "kill -TERM 7002" })
+        #expect(!state.all.contains { $0.executable == "adb" })
+    }
 }
 
 @Suite("Android live app observation")

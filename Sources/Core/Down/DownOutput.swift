@@ -44,13 +44,10 @@ public struct DownJSONDocument: Encodable, Sendable {
         self.items = report.items.map {
             Item(id: $0.id, status: $0.status, detail: $0.detail, remediation: $0.remediation)
         }
-        // A job that could not run is a failure of the run as much as standing
-        // outside a project is: without this, a `down` that exits 2 hands a machine
-        // an envelope with nothing in it to explain the exit code.
-        self.error = report.failure.map { Failure(message: $0.message, remediation: $0.remediation) }
-            ?? (report.toolFailures.isEmpty
-                ? nil
-                : Failure(message: report.toolFailures.joined(separator: "; "), remediation: nil))
+        // Tool failures set exit 2 even when a domain failure also blocked cleanup.
+        self.error = report.toolFailures.isEmpty
+            ? report.failure.map { Failure(message: $0.message, remediation: $0.remediation) }
+            : Failure(message: report.toolFailures.joined(separator: "; "), remediation: nil)
     }
 
     public func encoded() throws -> String { try JSONOutput.encode(self) }

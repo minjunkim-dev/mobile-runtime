@@ -243,6 +243,7 @@ struct UpJSONTests {
         #expect(android["appPid"] as? Int == 8123)
         #expect(rollback.map { $0["id"] as? String } == ["android.app", "android.emulator"])
         #expect(report.exitCode == 2)
+        #expect((json["error"] as? [String: Any])?["message"] as? String == "launch failed")
         #expect(report.teardownHint?.contains("down --platform android") == true)
     }
 
