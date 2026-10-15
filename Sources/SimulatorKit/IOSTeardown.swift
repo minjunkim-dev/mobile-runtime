@@ -14,8 +14,11 @@ public func iOSTeardown(
     grace: Duration = MetroTeardown.defaultGrace
 ) -> Teardown {
     let logs = logs ?? RunLogs(project: anchor.directory)
-    let metro = MetroTeardown(anchor: anchor.directory, runner: runner, grace: grace)
     let app = AppTeardown(logs: logs, runner: runner, locator: locator)
+    guard anchor.framework == .reactNative else {
+        return Teardown(jobs: [(id: AppTeardown.id, run: { @Sendable in await app.run() })])
+    }
+    let metro = MetroTeardown(anchor: anchor.directory, runner: runner, grace: grace)
 
     return Teardown(jobs: [
         (id: MetroTeardown.id, run: { @Sendable in try await metro.run() }),

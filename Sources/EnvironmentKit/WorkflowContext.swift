@@ -7,7 +7,7 @@ import SimulatorKit
 /// set of Checks. `build` and `up` reusing this is what keeps either from calling a
 /// project broken that `doctor` just called fine — they read it the same way.
 public struct WorkflowContext: Sendable {
-    /// nil outside a React Native project. What that means is the command's call:
+    /// nil outside a selected project. What that means is the command's call:
     /// doctor says so and carries on with host checks; build and up have nothing to do.
     public let anchor: ProjectAnchor?
     public let engine: DoctorEngine
@@ -17,7 +17,7 @@ public struct WorkflowContext: Sendable {
     public let lookup: MatrixLookup?
     /// Machine commands: Xcode discovery, simulator control, install, launch, down.
     public let runner: any ProcessRunner
-    /// Project commands: version checks now; dependencies, Metro and build in #72.
+    /// Project commands: tool checks and build; RN also runs dependencies and Metro.
     public let projectRunner: any ProcessRunner
     public let locator: XcodeLocator
 
@@ -28,7 +28,8 @@ public struct WorkflowContext: Sendable {
         runner: any ProcessRunner,
         includeProjectEnvironment: Bool = true,
         includeRuntimeSDKTools: Bool = true,
-        selectedConfig: ConfigContext? = nil
+        selectedConfig: ConfigContext? = nil,
+        selectedConfiguration: String? = nil
     ) async -> WorkflowContext {
         let locator = XcodeLocator(runner: runner, developerDirOverride: input.environment["DEVELOPER_DIR"])
         let workingDirectory = input.directory.standardizedFileURL.resolvingSymlinksInPath()
@@ -51,7 +52,7 @@ public struct WorkflowContext: Sendable {
         }
         let environment = input.environment
         var unresolvedCache: String?
-        if let anchor, let projectEnvironment, anchor.packageManagerName == "npm" {
+        if let anchor, anchor.framework == .reactNative, let projectEnvironment, anchor.packageManagerName == "npm" {
             let command = ProcessCommand(
                 "npm", ["config", "get", "cache"],
                 workingDirectory: anchor.workspaceRoot?.directory ?? anchor.directory,
@@ -90,9 +91,14 @@ public struct WorkflowContext: Sendable {
             } else {
                 [any Check]()
             }
+            let nativeChecks: [any Check] = if let anchor, anchor.framework == .nativeIOS {
+                [NativeIOSProjectCheck(anchor: anchor, config: config, lookup: lookup,
+                    runner: projectEnvironment?.runner ?? runner, locator: locator,
+                    configuration: selectedConfiguration ?? "Debug")]
+            } else { [] }
             checks = workspaceChecks + iOSChecks(lookup: lookup, runner: runner, locator: locator)
                 + configChecks(context: config, lookup: lookup, runner: runner, locator: locator)
-                + projectChecks
+                + projectChecks + nativeChecks
         case .android:
             var android = config.checks()
             if let anchor, let projectEnvironment {

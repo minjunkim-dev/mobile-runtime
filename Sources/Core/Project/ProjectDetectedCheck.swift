@@ -5,7 +5,7 @@ import Foundation
 public struct ProjectDetectedCheck: Check {
     public let id = "project.detected"
     public let category = "Project"
-    public let title = "React Native project detected"
+    public var title: String { "\(anchor.framework.displayName) project detected" }
 
     private static let source = CheckSource(tier: 1, origin: "package.json")
     /// What this Check judges, and no more. It used to say "and installed
@@ -22,6 +22,14 @@ public struct ProjectDetectedCheck: Check {
     }
 
     public func run() async throws -> CheckOutcome {
+        if anchor.framework != .reactNative {
+            return .pass(
+                observed: "\(anchor.framework.displayName) at \(anchor.directory.lastPathComponent)/"
+                    + (anchor.iosContainer.map { " — \($0)" } ?? ""),
+                required: "a project selected from its authoritative declaration",
+                source: CheckSource(tier: 1, origin: anchor.iosContainer ?? anchor.framework.rawValue)
+            )
+        }
         // Whatever the evidence chain settled on, so this line and the Tier 2 checks
         // cannot describe the same project with two different versions. The declared
         // range is the last resort: it is the only thing left when nothing answered.

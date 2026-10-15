@@ -15,8 +15,12 @@ struct XcodeBuildTarget {
 
     let kind: Kind
     let url: URL
+    var freezesPackages = false
 
-    var arguments: [String] { [kind.rawValue, url.path] }
+    var arguments: [String] {
+        [kind.rawValue, url.path] + (freezesPackages
+            ? ["-disableAutomaticPackageResolution", "-onlyUsePackageVersionsFromResolvedFile"] : [])
+    }
 
     /// The single `ios/*.xcworkspace`, else the single `ios/*.xcodeproj`. Shallow, so
     /// `Pods.xcodeproj` and the `project.xcworkspace` inside every `.xcodeproj` are
@@ -28,7 +32,17 @@ struct XcodeBuildTarget {
         inIOSDirectoryOf anchor: ProjectAnchor,
         fileManager: FileManager = .default
     ) -> XcodeBuildTarget? {
-        let ios = anchor.directory.appendingPathComponent("ios")
+        let ios = anchor.iosDirectory
+        if anchor.framework == .nativeIOS {
+            guard let name = anchor.iosContainer, name == URL(fileURLWithPath: name).lastPathComponent,
+                fileManager.fileExists(atPath: ios.appendingPathComponent(name).path)
+            else { return nil }
+            let kind: Kind
+            if name.hasSuffix(".xcworkspace") { kind = .workspace }
+            else if name.hasSuffix(".xcodeproj") { kind = .project }
+            else { return nil }
+            return XcodeBuildTarget(kind: kind, url: ios.appendingPathComponent(name), freezesPackages: true)
+        }
         let names = (try? fileManager.contentsOfDirectory(atPath: ios.path)) ?? []
         let workspaces = names.filter { $0.hasSuffix(".xcworkspace") }
         if let workspace = workspaces.only {
@@ -64,21 +78,31 @@ struct XcodeBuildSettings {
     }
 
     /// The app bundle, out of a scheme that may also build extensions and test
-    /// bundles. The scheme's own target wins; failing that, the one `.app` there is.
+    /// bundles. Native iOS uses the shared scheme's runnable target and product.
+    /// RN prefers the scheme's own target, then the only `.app` there is.
     ///
     /// Never a guess between several: a scheme that builds an app and a test host
     /// builds two `.app`s, and handing install whichever xcodebuild printed first is
     /// the same coin-flip `SchemeSelector` refuses to make.
-    func application(scheme: String) -> BuiltProduct? {
-        let apps = entries.filter { $0.buildSettings["FULL_PRODUCT_NAME"]?.hasSuffix(".app") == true }
-        guard let entry = apps.first(where: { $0.target == scheme }) ?? apps.only,
-            let directory = entry.buildSettings["BUILT_PRODUCTS_DIR"],
-            let name = entry.buildSettings["FULL_PRODUCT_NAME"],
-            let bundleIdentifier = entry.buildSettings["PRODUCT_BUNDLE_IDENTIFIER"]
+    func application(scheme: String, nativeTarget: XcodeBuildTarget? = nil) -> BuiltProduct? {
+        guard let settings = applicationSettings(scheme: scheme, nativeTarget: nativeTarget),
+            let directory = settings["BUILT_PRODUCTS_DIR"],
+            let name = settings["FULL_PRODUCT_NAME"],
+            let bundleIdentifier = settings["PRODUCT_BUNDLE_IDENTIFIER"]
         else { return nil }
         return BuiltProduct(
             path: URL(fileURLWithPath: directory).appendingPathComponent(name).path,
             bundleIdentifier: bundleIdentifier
         )
+    }
+
+    func applicationSettings(scheme: String, nativeTarget: XcodeBuildTarget? = nil) -> [String: String]? {
+        let apps = entries.filter { $0.buildSettings["FULL_PRODUCT_NAME"]?.hasSuffix(".app") == true }
+        if let nativeTarget {
+            guard let runnable = XcodeSchemeList.runnable(scheme: scheme, in: nativeTarget),
+                let name = runnable["BlueprintName"], let product = runnable["BuildableName"] else { return nil }
+            return apps.filter { $0.target == name && $0.buildSettings["FULL_PRODUCT_NAME"] == product }.only?.buildSettings
+        }
+        return (apps.first(where: { $0.target == scheme }) ?? apps.only)?.buildSettings
     }
 }

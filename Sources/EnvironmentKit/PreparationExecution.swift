@@ -92,7 +92,7 @@ public enum PreparationExecution {
         let events = PreparationEvents(onEvent)
         var result = PreparationResult(operation: PreparationOperation(id: events.id), exitCode: 1)
         let host = runner ?? SystemProcessRunner(environment: input.environment, workingDirectory: input.directory)
-        events.emit("started", state: "running", detail: "Inspect both preparation platforms")
+        events.emit("started", state: "running", detail: "Inspect preparation platforms")
         do {
             try Task.checkCancellation()
             let prepared = try await inspect(input, runner: host)
@@ -100,7 +100,7 @@ public enum PreparationExecution {
             result.selection = prepared.selection
             result.operation.requiredInput = prepared.selection?.requiredInput ?? []
             if !result.operation.requiredInput.isEmpty || prepared.plan == nil {
-                result.operation.error = prepared.selection?.error ?? "Choose a detected React Native app."
+                result.operation.error = prepared.selection?.error ?? "Choose a detected project app."
                 result.operation.state = prepared.selection?.error == nil ? "needs-selection" : "failed"
                 return finish(result, events)
             }
@@ -244,7 +244,7 @@ public enum PreparationExecution {
         let root = URL(fileURLWithPath: selection.selected?.workspace?.path ?? selection.selected?.app.path ?? selection.directory.path)
         var value = Inspection(selection: selection, root: root)
         guard selection.error == nil, let selected = selection.selected,
-              let anchor = ProjectAnchor.detect(from: URL(fileURLWithPath: selected.app.path)) else {
+              let anchor = ProjectAnchor.detect(candidate: selected) else {
             // The plan contract can represent Flutter while its execution provider is pending.
             if selection.candidates.isEmpty, FileManager.default.fileExists(atPath: root.appendingPathComponent("pubspec.yaml").path) {
                 let step = PreparationStep(id: "provider.flutter", platform: nil, kind: "provider", target: root.path,
@@ -262,7 +262,19 @@ public enum PreparationExecution {
         var steps: [PreparationStep] = []
         var contexts: [ProjectPlatform: WorkflowContext] = [:]
         // RN preparation always covers both platforms, even with --platform ios.
-        for platform in [ProjectPlatform.ios, .android] {
+        let preparationPlatforms: [ProjectPlatform] = anchor.framework == .reactNative || anchor.framework == .flutter
+            ? [.ios, .android] : selected.platforms
+        if anchor.framework == .flutter || anchor.framework == .nativeAndroid {
+            let step = PreparationStep(id: "provider.\(anchor.framework.rawValue)", platform: nil, kind: "provider", target: root.path,
+                observed: "\(anchor.framework.displayName) preparation provider is not implemented yet", required: "Framework-specific preparation provider",
+                source: CheckSource(tier: 1, origin: anchor.framework.rawValue), command: nil,
+                remediation: Remediation(summary: "Use the project's existing preparation workflow, then inspect again. No tool installation occurred."))
+            value.plan = try makePlan(project: selected.app, app: selected.id, kind: anchor.framework.rawValue,
+                platforms: preparationPlatforms.map { PreparationPlatform(platform: $0, state: "waiting-manual", checks: [step]) },
+                steps: [step], files: approvalFiles(root), installed: [:])
+            return value
+        }
+        for platform in preparationPlatforms {
             try Task.checkCancellation()
             guard selected.platforms.contains(platform) else {
                 let item = PreparationStep(id: "\(platform.rawValue).host", platform: platform, kind: "migration", target: selected.app.path,
@@ -285,7 +297,7 @@ public enum PreparationExecution {
                     required: check.outcome.required, source: check.outcome.source, command: nil,
                     remediation: check.outcome.remediation ?? (check.outcome.reason.map { Remediation(summary: $0) }))
             }
-            if !checks.contains(where: { $0.id.hasSuffix(".package-manager.version") }) {
+            if anchor.framework == .reactNative, !checks.contains(where: { $0.id.hasSuffix(".package-manager.version") }) {
                 let output = try await context.projectRunner.run(ProcessCommand(anchor.packageManagerName, ["--version"],
                     workingDirectory: anchor.workspaceRoot?.directory ?? anchor.directory, timeout: .seconds(15)))
                 let version = output.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -296,9 +308,12 @@ public enum PreparationExecution {
                     required: "Usable \(anchor.packageManagerName) selected by existing lockfile", source: CheckSource(tier: 1, origin: anchor.workspaceRoot?.lockfile ?? "package.json"),
                     command: nil, remediation: usable ? nil : Remediation(summary: "Prepare the existing package manager separately, then inspect again.")))
             }
-            var selectedTools = ["node", anchor.packageManagerName]
-            if anchor.gemInstallProcess != nil { selectedTools += ["ruby", "bundle"] }
-            else if FileManager.default.fileExists(atPath: anchor.directory.appendingPathComponent("ios/Podfile").path) { selectedTools += ["pod"] }
+            var selectedTools: [String] = []
+            if anchor.framework == .reactNative {
+                selectedTools = ["node", anchor.packageManagerName]
+                if anchor.gemInstallProcess != nil { selectedTools += ["ruby", "bundle"] }
+                else if FileManager.default.fileExists(atPath: anchor.directory.appendingPathComponent("ios/Podfile").path) { selectedTools += ["pod"] }
+            }
             for tool in Set(selectedTools).sorted() {
                 let probe = try? await context.projectRunner.run(ProcessCommand("/usr/bin/which", [tool],
                     workingDirectory: anchor.directory, timeout: .seconds(15)))
@@ -316,6 +331,11 @@ public enum PreparationExecution {
         }
         let context = contexts[.ios] ?? contexts[.android]
         value.context = context
+        if anchor.framework != .reactNative {
+            value.plan = try makePlan(project: selected.app, app: selected.id, kind: anchor.framework.rawValue,
+                platforms: platforms, steps: steps, files: approvalFiles(root), installed: [:])
+            return value
+        }
         let nodeReady = platforms.flatMap(\.checks).contains { $0.id.hasSuffix(".node.version") && $0.kind == "reuse" }
             && platforms.flatMap(\.checks).contains { $0.id.hasSuffix(".package-manager.version") && $0.kind == "reuse" }
             && platforms.flatMap(\.checks).contains { $0.id.hasSuffix(".tool.node.path") && $0.kind == "reuse" }

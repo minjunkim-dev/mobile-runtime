@@ -63,8 +63,11 @@ public enum WorkflowExecution {
                 throw selectionFailure("Select \(selection.requiredInput.joined(separator: ", ")).")
             }
             guard let candidate = selection.selected, let platform = selection.platform,
-                let anchor = ProjectAnchor.detect(from: URL(fileURLWithPath: candidate.app.path)) else {
-                throw selectionFailure("No React Native app selected. Choose a prepared React Native project.")
+                let anchor = ProjectAnchor.detect(candidate: candidate) else {
+                throw selectionFailure("No app selected. Choose a reported project candidate.")
+            }
+            guard anchor.framework == .reactNative || (anchor.framework == .nativeIOS && platform == .ios) else {
+                throw selectionFailure("\(anchor.framework.displayName) execution is not implemented yet.")
             }
             if kind == .down && [input.device, input.scheme, input.configuration, input.module, input.variant].contains(where: { $0 != nil }) {
                 throw selectionFailure("down uses the selected project's recorded resources. Omit build and device selectors.")
@@ -82,7 +85,8 @@ public enum WorkflowExecution {
                            clearDevice: platform == .ios && (input.device != nil || kind == .build))
             var wiring = await WorkflowContext.make(input: input.project, platform: platform, anchor: anchor,
                 runner: runner, includeProjectEnvironment: kind != .down,
-                includeRuntimeSDKTools: kind != .build || platform == .ios, selectedConfig: config)
+                includeRuntimeSDKTools: kind != .build || platform == .ios, selectedConfig: config,
+                selectedConfiguration: input.configuration)
             try Task.checkCancellation()
 
             if kind != .down {
@@ -161,7 +165,8 @@ public enum WorkflowExecution {
                     throw selectionFailure("Select \(operation.requiredInput.joined(separator: ", ")) before starting changes.")
                 }
                 wiring = await WorkflowContext.make(input: input.project, platform: platform, anchor: anchor,
-                    runner: runner, includeRuntimeSDKTools: kind != .build || platform == .ios, selectedConfig: config)
+                    runner: runner, includeRuntimeSDKTools: kind != .build || platform == .ios, selectedConfig: config,
+                    selectedConfiguration: operation.configuration)
                 try Task.checkCancellation()
             }
 
@@ -182,7 +187,8 @@ public enum WorkflowExecution {
                 }
             case .build: device = nil
             }
-            let resources = (device.map { [$0] } ?? []) + (kind == .build ? [] : [.port(MetroVerdict.port)])
+            let resources = (device.map { [$0] } ?? [])
+                + (kind == .build || anchor.framework != .reactNative ? [] : [.port(MetroVerdict.port)])
             let resourceLease = try leases.acquire(resources, owner: owner)
             defer { resourceLease.release() }
             if let device {
