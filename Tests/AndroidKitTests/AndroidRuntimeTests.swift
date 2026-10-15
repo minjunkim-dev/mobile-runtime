@@ -487,6 +487,8 @@ struct AndroidRuntimeTests {
 
         #expect(report.exitCode == 2)
         #expect(!report.toolFailures.isEmpty)
+        let document = DownJSONDocument(report: report, toolVersion: "test", platform: "android")
+        #expect(document.error?.message.contains("fixture probe") == true)
         #expect(report.items.map(\.status) == [.skipped, .skipped, .unknown, .unknown])
         #expect(try store.read() == record)
         #expect(runner.log.all.allSatisfy { $0.description == "adb devices" || $0.description == "kill -0 7002" })
