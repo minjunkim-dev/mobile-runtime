@@ -159,6 +159,32 @@ private func composedChecks(_ scenario: AndroidScenario) async -> [any Check] {
 
 @Suite("Android doctor")
 struct AndroidDoctorTests {
+    @Test("relative sdk.dir resolves from the Gradle root rather than the caller directory")
+    func relativeSDKDestination() async throws {
+        let fixture = try scenario(sdkDir: "../sdk")
+        let context = AndroidDoctorContext(anchor: fixture.anchor, config: fixture.config,
+            hostRunner: fixture.runner, projectRunner: fixture.runner, environment: fixture.environment)
+        let requirements = try await context.sdkRequirements()
+        #expect(requirements.blockers.isEmpty)
+        #expect(requirements.sdkRoot?.resolvingSymlinksInPath() == fixture.repo.url("sdk").resolvingSymlinksInPath())
+    }
+
+    @Test("SDK snapshot preserves the verified external CMake version without proposing a duplicate SDK package")
+    func sdkCustomCMakeSnapshot() async throws {
+        let fixture = try scenario(modelResponse: .ok(AndroidGradleModelProbe.marker + nativeModelJSON()))
+        try executable(fixture.repo, "tools/custom-cmake/bin/cmake")
+        try fixture.repo.write("android/local.properties", "sdk.dir=\(fixture.repo.url("sdk").path)\ncmake.dir=\(fixture.repo.url("tools/custom-cmake").path)\n")
+        var runner = fixture.runner
+        runner.responses["\(fixture.repo.url("tools/custom-cmake/bin/cmake").path) --version"] = .ok("cmake version 3.27.9\n")
+        let context = AndroidDoctorContext(anchor: fixture.anchor, config: fixture.config,
+            hostRunner: runner, projectRunner: runner, environment: fixture.environment)
+        let requirements = try await context.sdkRequirements()
+        #expect(requirements.blockers.isEmpty)
+        #expect(requirements.modules.first?.cmakeVersion == "3.27.9")
+        #expect(requirements.modules.first?.source.origin.contains("cmake.dir") == true)
+        #expect(!requirements.packages.contains { $0.packagePath.hasPrefix("cmake;") })
+    }
+
     @Test("SDK planning never materializes a missing Gradle wrapper")
     func sdkRequirementsNeedLocalWrapper() async throws {
         let fixture = try scenario(materializedWrapper: false)

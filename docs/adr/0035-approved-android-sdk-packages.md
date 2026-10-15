@@ -11,6 +11,8 @@
 
 준비는 모든 평가된 application module의 개발 variant 요구를 합친다. 호환성 위반이나 불명확한 버전은 설치 차단 근거다.
 wrapper나 React Native 입력이 로컬에 없으면 관측이 이를 내려받지 않는다. 기존 설치와 일치하는 package를 우선 재사용한다.
+상대 SDK 경로는 호출자의 cwd가 아닌 [Gradle root 기준](https://android.googlesource.com/platform/tools/base/+/studio-master-dev/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/SdkLocator.kt)으로 해석한다.
+이미 검증한 `cmake.dir`을 사용하면 그 정확한 CMake 버전과 근거를 기록한다. 같은 CMake를 SDK에 중복 설치하지 않는다.
 SDK 패키지 준비는 `platforms`, `build-tools`, 필요한 `ndk`, 필요한 `cmake`를 다룬다.
 Emulator·system image·AVD 생성은 후속 provider의 범위다. SDK 준비 성공을 앱 실행 성공으로 표시하지 않는다.
 

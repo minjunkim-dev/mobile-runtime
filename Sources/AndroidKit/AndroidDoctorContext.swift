@@ -346,7 +346,8 @@ public actor AndroidDoctorContext {
         let deprecatedPath = environment.values["ANDROID_SDK_ROOT"]
 
         func normalized(_ path: String) -> URL {
-            URL(fileURLWithPath: path).standardizedFileURL.resolvingSymlinksInPath()
+            let declared = path.hasPrefix("/") ? URL(fileURLWithPath: path) : androidDirectory.appendingPathComponent(path)
+            return declared.standardizedFileURL.resolvingSymlinksInPath()
         }
         if let localPath, let homePath, normalized(localPath).path != normalized(homePath).path {
             return .conflict("android/local.properties sdk.dir and ANDROID_HOME point to different SDK roots")
@@ -382,6 +383,10 @@ public actor AndroidDoctorContext {
     }
 
     func cmakeDirectory() async throws -> URL? {
+        try await cmakeInstallation()?.directory
+    }
+
+    func cmakeInstallation() async throws -> (directory: URL, version: String)? {
         let local = androidDirectory.appendingPathComponent("local.properties")
         let text: String
         do {
@@ -404,7 +409,7 @@ public actor AndroidDoctorContext {
             let version = result.standardOutput.firstMatch(#"(?m)^cmake version (\S+)"#)?.last,
             SemanticVersion(version) != nil
         else { throw CocoaError(.fileReadCorruptFile) }
-        return directory
+        return (directory, version)
     }
 
     /// `adb reverse --list` as a source → target map. `up` and `down` both decide

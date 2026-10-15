@@ -87,14 +87,14 @@ extension AndroidDoctorContext {
         for module in model.modules.sorted(by: { $0.path < $1.path }) {
             let compileSDKs = Set(module.variants.filter(\.debuggable).compactMap(\.compileSdk)
                 + [module.compileSdk].compactMap { $0 }).sorted()
-            let source = CheckSource(tier: 1, origin: "evaluated Gradle application \(module.path); AGP \(module.agpVersion ?? "unknown"); \(AndroidCompatibility.source.origin)")
+            var source = CheckSource(tier: 1, origin: "evaluated Gradle application \(module.path); AGP \(module.agpVersion ?? "unknown"); \(AndroidCompatibility.source.origin)")
             if compileSDKs.isEmpty { blockers.append("\(module.path): compileSdk is unknown") }
             var compatibility: [String] = []
             for compileSDK in compileSDKs {
                 let evaluation = AndroidCompatibility.evaluate(wrapper: wrapper, model: model, module: module, compileSDK: compileSDK)
                 compatibility += evaluation.required
                 blockers += (evaluation.violations + evaluation.unknown).map { "\(module.path): \($0)" }
-                let value = compileSDK.replacingOccurrences(of: "android-", with: "")
+                let value = compileSDK.hasPrefix("android-") ? String(compileSDK.dropFirst(8)) : compileSDK
                 if value.range(of: #"^[0-9]+(?:\.[0-9]+)?(?:-ext[0-9]+)?$"#, options: .regularExpression) != nil {
                     add("platforms;android-\(value)", "android.jar", source: source)
                 } else { blockers.append("\(module.path): compileSdk does not identify an exact platform package") }
@@ -104,13 +104,20 @@ extension AndroidDoctorContext {
             } else { blockers.append("\(module.path): effective Build Tools version is unknown") }
             var cmake = module.cmakeVersion
             if module.nativeBuildConfigured {
+                if module.cmakeConfigured == nil { blockers.append("\(module.path): native CMake configuration is unknown") }
                 if let ndk = module.ndkVersion, ndk.range(of: #"^[0-9]+\.[0-9]+\.[0-9]+$"#, options: .regularExpression) != nil {
                     add("ndk;\(ndk)", "source.properties", source: source)
                 } else { blockers.append("\(module.path): effective NDK revision is unknown") }
                 if module.cmakeConfigured == true {
                     var custom = false
                     if cmake == nil {
-                        do { custom = try await cmakeDirectory() != nil }
+                        do {
+                            if let installed = try await cmakeInstallation() {
+                                custom = true
+                                cmake = installed.version
+                                source = CheckSource(tier: 1, origin: source.origin + "; cmake.dir + verified cmake --version")
+                            }
+                        }
                         catch { blockers.append("\(module.path): declared cmake.dir could not be verified") }
                     }
                     if !custom {
