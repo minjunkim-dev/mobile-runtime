@@ -6,25 +6,46 @@ import Testing
 
 private func runMiseCorepackCheck(
     version: FakeProcessRunner.Response,
-    which: FakeProcessRunner.Response
+    which: FakeProcessRunner.Response,
+    wrapped: Bool = false
 ) async throws -> (CheckOutcome, FakeProcessRunner, FixtureRepo) {
     let repo = try FixtureRepo()
     try repo.write(
         "package.json",
         #"{"dependencies":{"react-native":"0.83.10"},"packageManager":"yarn@4.16.0"}"#
     )
+    try repo.write("mise.toml", "[tools]\nnode = \"22.23.2\"\n")
     let anchor = try #require(ProjectAnchor.detect(from: repo.root))
     let host = FakeProcessRunner(responses: [
+        "git -C \(repo.root.path) ls-files --error-unmatch -- mise.toml": .ok("mise.toml\n"),
         "mise exec -- corepack yarn --version": version,
         "mise exec -- which corepack": which,
     ])
+    let environment = await ProjectExecutionEnvironment.resolve(anchor: anchor, hostRunner: host)
     let check = PackageManagerVersionCheck(
         requirement: try #require(anchor.packageManager),
         anchor: anchor,
         context: ConfigContext.detect(anchor: anchor, workingDirectory: repo.root),
-        runner: MiseProcessRunner(base: host, configDirectory: anchor.directory)
+        runner: wrapped
+            ? ForwardingProjectRunner(base: environment.runner)
+            : environment.runner,
+        environment: environment
     )
     return (try await check.run(), host, repo)
+}
+
+private struct ForwardingProjectRunner: ProcessRunner {
+    let base: any ProcessRunner
+
+    func run(
+        _ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?
+    ) async throws -> ProcessResult {
+        try await base.run(command, onLine: onLine)
+    }
+
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+        try await base.spawnDetached(command, logFile: logFile)
+    }
 }
 
 @Suite("project execution environment")
@@ -189,6 +210,54 @@ struct ProjectExecutionEnvironmentTests {
                 == "cd \(repo.root.path) && MISE_AUTO_INSTALL=false mise exec -- npm install --global corepack"
         )
         #expect(host.log.all.contains { $0.description.contains("npm install") } == false)
+    }
+
+    @Test("a runner wrapper preserves the project's mise remediation", arguments: [false, true])
+    func wrappedMiseRemediation(missingCorepack: Bool) async throws {
+        let (outcome, host, repo) = try await runMiseCorepackCheck(
+            version: .failed(missingCorepack ? 127 : 1, "Corepack is unavailable"),
+            which: missingCorepack ? .failed(1, "") : .ok("/managed/node/bin/corepack\n"),
+            wrapped: true
+        )
+        let install = missingCorepack ? "npm install --global corepack" : "corepack install"
+
+        #expect(outcome.status == .error)
+        #expect(
+            outcome.remediation?.command
+                == "cd \(repo.root.path) && MISE_AUTO_INSTALL=false mise exec -- \(install)"
+        )
+        #expect(host.log.first(matching: "mise exec -- corepack yarn --version") != nil)
+        #expect(host.log.all.contains { $0.description.contains("install") } == false)
+    }
+
+    @Test("both project check factories preserve mise remediation", arguments: [false, true])
+    func composedMiseRemediation(commonOnly: Bool) async throws {
+        let repo = try FixtureRepo()
+        try repo.write(
+            "package.json",
+            #"{"dependencies":{"react-native":"0.83.10"},"packageManager":"yarn@4.16.0"}"#
+        )
+        try repo.write("mise.toml", "[tools]\nnode = \"22.23.2\"\n")
+        let host = FakeProcessRunner(responses: [
+            "git -C \(repo.root.path) ls-files --error-unmatch -- mise.toml": .ok("mise.toml\n"),
+            "mise exec -- corepack yarn --version": .failed(1, "Corepack manager cache miss"),
+            "mise exec -- which corepack": .ok("/managed/node/bin/corepack\n"),
+        ])
+        let anchor = try #require(ProjectAnchor.detect(from: repo.root))
+        let environment = await ProjectExecutionEnvironment.resolve(anchor: anchor, hostRunner: host)
+        let context = ConfigContext.detect(anchor: anchor, workingDirectory: repo.root)
+        let checks = commonOnly
+            ? environment.commonChecks(anchor: anchor, context: context)
+            : environment.checks(anchor: anchor, context: context)
+        let check = try #require(checks.first { $0.id == "package-manager.version" })
+
+        let outcome = try await check.run()
+
+        #expect(outcome.status == .error)
+        #expect(
+            outcome.remediation?.command
+                == "cd \(repo.root.path) && MISE_AUTO_INSTALL=false mise exec -- corepack install"
+        )
     }
 
     @Test("without a committed mise config project checks keep using PATH")
