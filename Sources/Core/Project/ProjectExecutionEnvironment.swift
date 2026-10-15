@@ -27,6 +27,10 @@ public struct ProjectExecutionEnvironment: Check, Sendable {
         self.activation = activation
     }
 
+    init(directRunner: any ProcessRunner) {
+        self.init(runner: directRunner, activation: .direct)
+    }
+
     public static func resolve(
         anchor: ProjectAnchor,
         hostRunner: any ProcessRunner,
@@ -53,7 +57,7 @@ public struct ProjectExecutionEnvironment: Check, Sendable {
     /// The complete project Check set, with activation immediately after detection
     /// so every tool Check can depend on one measured environment.
     public func checks(anchor: ProjectAnchor, context: ConfigContext) -> [any Check] {
-        var checks = anchor.checks(runner: runner, context: context)
+        var checks = anchor.checks(runner: runner, context: context, environment: self)
         for index in checks.indices where checks[index].id != "project.detected" {
             checks[index] = ActivationDependentCheck(base: checks[index])
         }
@@ -65,10 +69,21 @@ public struct ProjectExecutionEnvironment: Check, Sendable {
     /// toolchain as every later Gradle command.
     public func commonChecks(anchor: ProjectAnchor, context: ConfigContext) -> [any Check] {
         var checks: [any Check] = [self]
-        checks.append(contentsOf: anchor.commonChecks(runner: runner, context: context).map {
+        checks.append(contentsOf: anchor.commonChecks(runner: runner, context: context, environment: self).map {
             ActivationDependentCheck(base: $0)
         })
         return checks
+    }
+
+    func remediationCommand(_ command: ProcessCommand) -> String {
+        if case .mise(let config, _) = activation {
+            return MiseProcessRunner(base: runner, configDirectory: config.root)
+                .remediationCommand(command)
+        }
+        let invocation = ([command.executable] + command.arguments)
+            .map(shellArgument).joined(separator: " ")
+        guard let directory = command.workingDirectory else { return invocation }
+        return "cd \(shellArgument(directory.path)) && \(invocation)"
     }
 
     public func run() async throws -> CheckOutcome {

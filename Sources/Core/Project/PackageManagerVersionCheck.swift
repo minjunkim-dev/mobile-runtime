@@ -16,6 +16,7 @@ public struct PackageManagerVersionCheck: Check {
     private let anchor: ProjectAnchor
     private let context: ConfigContext
     private let runner: any ProcessRunner
+    private let environment: ProjectExecutionEnvironment
 
     /// The declaration can come from the workspace root rather than the anchor, so
     /// the origin travels with the requirement instead of being fixed here.
@@ -25,12 +26,14 @@ public struct PackageManagerVersionCheck: Check {
         requirement: PackageManagerRequirement,
         anchor: ProjectAnchor,
         context: ConfigContext,
-        runner: any ProcessRunner
+        runner: any ProcessRunner,
+        environment: ProjectExecutionEnvironment? = nil
     ) {
         self.requirement = requirement
         self.anchor = anchor
         self.context = context
         self.runner = runner
+        self.environment = environment ?? ProjectExecutionEnvironment(directRunner: runner)
     }
 
     public func run() async throws -> CheckOutcome {
@@ -158,12 +161,7 @@ public struct PackageManagerVersionCheck: Check {
             workingDirectory: packageManagerDirectory,
             timeout: nil
         )
-        if let mise = runner as? MiseProcessRunner {
-            return mise.remediationCommand(command)
-        }
-        let invocation = ([command.executable] + command.arguments)
-            .map(shellArgument).joined(separator: " ")
-        return "cd \(shellArgument(packageManagerDirectory.path)) && \(invocation)"
+        return environment.remediationCommand(command)
     }
 
     private var packageManagerDirectory: URL {
