@@ -80,6 +80,7 @@ jobs:
         run: |
           sha256sum --check "runstir-$RELEASE_VERSION-macos-arm64.tar.gz.sha256"
           sha256sum --check "Runstir-$RELEASE_VERSION-macos-arm64.dmg.sha256"
+          python3 -c 'import json,runpy; from pathlib import Path; runpy.run_path("../scripts/validate-release-input.py")["validate_candidate_artifacts"](json.loads(Path("CANDIDATE.json").read_text()), Path("."))'
       - name: Create an unpublished pre-release draft
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

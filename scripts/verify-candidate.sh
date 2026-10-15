@@ -15,19 +15,15 @@ cleanup() {
   rm -rf "$scratch"
 }
 trap cleanup EXIT
-python3 - "$output" <<'PY'
-import hashlib
+python3 - "$root" "$output" <<'PY'
 import json
 from pathlib import Path
+import runpy
 import sys
-output = Path(sys.argv[1])
+output = Path(sys.argv[2])
 manifest = json.loads((output / 'CANDIDATE.json').read_text())
-for artifact in manifest['artifacts'].values():
-    name = artifact['file']
-    if Path(name).name != name:
-        raise SystemExit('Artifact must be in the candidate directory')
-    if hashlib.sha256((output / name).read_bytes()).hexdigest() != artifact['sha256']:
-        raise SystemExit('Candidate checksum mismatch')
+runpy.run_path(str(Path(sys.argv[1]) / 'scripts/validate-release-input.py'))['validate_candidate_artifacts'](
+    manifest, output)
 PY
 version=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["productVersion"])' "$output/CANDIDATE.json")
 # validate_inputs rejects path and command text before using the version in paths.
@@ -75,3 +71,10 @@ if not (app / 'Contents/MacOS/Runstir').is_file():
     raise SystemExit('Missing GUI executable')
 print('Candidate identities, checksums and mounted GUI bundle passed; interactive GUI and Gatekeeper remain separate gates.')
 PY
+if [[ $(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["signing"])' "$output/CANDIDATE.json") == developer-id ]]; then
+  requirement='anchor apple generic and certificate leaf[field.1.2.840.113635.100.6.1.13] exists'
+  codesign --verify --strict -R "$requirement" "$scratch/runstir-$version-macos-arm64/mobile"
+  codesign --verify --deep --strict -R "$requirement" "$scratch/mount/Runstir.app"
+  xcrun stapler validate "$output/Runstir-$version-macos-arm64.dmg"
+fi
+ruby -c "$output/runstir-candidate.rb"

@@ -2,9 +2,11 @@
 """Behavior checks for the Draft Release trust boundary."""
 
 import importlib.util
+import hashlib
 from pathlib import Path
 import subprocess
 import tarfile
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -104,6 +106,26 @@ class ReleaseInputTests(unittest.TestCase):
         link.linkname = "/outside"
         with self.assertRaises(ValueError):
             release_input.validate_candidate_archive([link], "1.0.0-alpha.1")
+
+    def test_candidate_requires_all_artifacts_and_rejects_tampered_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            names = {"cli": "runstir-1.0.0-alpha.1-macos-arm64.tar.gz",
+                     "gui": "Runstir-1.0.0-alpha.1-macos-arm64.dmg",
+                     "homebrew": "runstir-candidate.rb"}
+            artifacts = {}
+            for kind, name in names.items():
+                (root / name).write_bytes(kind.encode())
+                artifacts[kind] = {"file": name, "sha256": hashlib.sha256(kind.encode()).hexdigest()}
+            manifest = {"productVersion": "1.0.0-alpha.1", "sourceSHA": SHA,
+                        "artifacts": artifacts}
+            release_input.validate_candidate_artifacts(manifest, root)
+            with self.assertRaises(ValueError):
+                release_input.validate_candidate_artifacts(
+                    {**manifest, "artifacts": {"cli": artifacts["cli"]}}, root)
+            (root / names["homebrew"]).write_bytes(b"changed formula")
+            with self.assertRaises(ValueError):
+                release_input.validate_candidate_artifacts(manifest, root)
 
 
 if __name__ == "__main__":

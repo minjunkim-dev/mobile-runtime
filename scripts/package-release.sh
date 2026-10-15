@@ -171,7 +171,6 @@ manifest = {
                                      ('gui', f'Runstir-{version}-macos-arm64.dmg')]},
 }
 runpy.run_path('scripts/validate-release-input.py')['validate_candidate'](manifest, build, build)
-(output / 'CANDIDATE.json').write_text(json.dumps(manifest, indent=2) + '\n')
 archive = manifest['artifacts']['cli']
 (output / 'runstir-candidate.rb').write_text(f'''class RunstirCandidate < Formula
   desc "Restricted Runstir validation candidate"
@@ -194,6 +193,10 @@ archive = manifest['artifacts']['cli']
   end
 end
 ''')
+formula = output / 'runstir-candidate.rb'
+manifest['artifacts']['homebrew'] = {
+    'file': formula.name, 'sha256': hashlib.sha256(formula.read_bytes()).hexdigest()}
+(output / 'CANDIDATE.json').write_text(json.dumps(manifest, indent=2) + '\n')
 PY
 # Remove the compiled absolute resource fallback before running the packaged binary.
 rm -rf "$scratch/build"
