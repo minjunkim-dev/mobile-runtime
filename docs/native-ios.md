@@ -23,6 +23,8 @@ mobile down --project /path/to/app --app App.xcworkspace --json
 8. down으로 이 프로젝트가 기록한 앱을 종료한다.
 
 build는 설치하거나 실행하지 않는다.
+`setup --plan`은 선택한 native iOS 컨테이너의 준비 조건을 표시한다.
+setup은 native iOS 의존성을 설치하지 않는다.
 native iOS는 Node와 Metro를 사용하지 않는다.
 build와 up은 SPM 의존성을 자동 갱신하지 않는다.
 프로젝트가 요구하는 의존성이 준비되지 않으면 Xcode 오류와 build 로그를 확인한다.

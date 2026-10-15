@@ -301,6 +301,7 @@ public struct ProjectAnchor: Sendable, Equatable {
         environment: ProjectExecutionEnvironment? = nil
     ) -> [any Check] {
         var checks: [any Check] = [ProjectDetectedCheck(anchor: self)]
+        guard framework == .reactNative else { return checks }
         checks.append(contentsOf: commonChecks(runner: runner, context: context, environment: environment))
         if let cocoapods {
             checks.append(

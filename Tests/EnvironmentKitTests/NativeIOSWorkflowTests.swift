@@ -6,6 +6,60 @@ import Testing
 
 @Suite("shared native iOS workflows")
 struct NativeIOSWorkflowTests {
+    @Test("native preparation preserves its selected container without RN plans or tools", arguments: [false, true])
+    func nativePreparation(multiple: Bool) async throws {
+        let repo = try project()
+        if multiple { try repo.write("Other.xcodeproj/project.pbxproj", "other app") }
+        try repo.write("Gemfile", "source 'https://rubygems.org'\ngem 'cocoapods'\n")
+        try repo.write("Gemfile.lock", "fixture")
+        try repo.write("Podfile", "platform :ios, '17.0'")
+        let runner = runner(repo)
+        let result = await PreparationExecution.run(input: ProjectInspectionInput(
+            directory: repo.root, environment: [:], app: "App.xcodeproj"), planOnly: true, runner: runner)
+        #expect(result.exitCode == 0)
+        #expect(result.plan?.app == "App.xcodeproj")
+        #expect(result.plan?.projectKind == "native-ios")
+        #expect(result.plan?.platforms.map(\.platform) == [.ios])
+        #expect(result.plan?.steps.contains { $0.id.hasPrefix("dependencies.") } == false)
+        #expect(result.plan?.steps.first { $0.id == "ios.project.native-ios" }?.observed?.contains("CocoaPods") == true)
+        let approved = await PreparationExecution.run(input: ProjectInspectionInput(
+            directory: repo.root, environment: [:], app: "App.xcodeproj"),
+            approvedPlanID: try #require(result.plan?.id), trustRepository: true,
+            runner: runner, leases: temporaryLeases())
+        #expect(approved.exitCode == 1)
+        #expect(approved.operation.state == "waiting-manual")
+        #expect(!runner.log.all.contains { ["node", "npm", "yarn", "pnpm", "pod", "bundle", "ruby"].contains($0.executable)
+            || ($0.executable == "/usr/bin/which" && $0.arguments.contains("node")) })
+        #expect(!FileManager.default.fileExists(atPath: repo.url("node_modules").path))
+    }
+
+    @Test("future framework preparation stays manual without invoking an execution provider", arguments: [
+        ProjectFramework.flutter, .nativeAndroid
+    ])
+    func futurePreparation(framework: ProjectFramework) async throws {
+        let repo = try FixtureRepo()
+        if framework == .flutter {
+            try repo.write("pubspec.yaml", "dependencies:\n  flutter:\n    sdk: flutter\n")
+            try repo.directory("ios")
+            try repo.directory("android")
+        } else {
+            try repo.write("settings.gradle", "rootProject.name = 'native'")
+            try repo.write("gradlew", "#!/bin/sh")
+        }
+        let input = ProjectInspectionInput(directory: repo.root, environment: [:])
+        let runner = FakeProcessRunner()
+        let result = await PreparationExecution.run(input: input, planOnly: true, runner: runner)
+        #expect(result.exitCode == 0)
+        #expect(result.plan?.projectKind == framework.rawValue)
+        #expect(result.plan?.platforms.map(\.platform) == (framework == .flutter ? [.ios, .android] : [.android]))
+        #expect(result.plan?.steps.contains { $0.kind == "provider" } == true)
+        let approved = await PreparationExecution.run(input: input,
+            approvedPlanID: try #require(result.plan?.id), trustRepository: true, runner: runner)
+        #expect(approved.exitCode == 1)
+        #expect(approved.operation.state == "waiting-manual")
+        #expect(runner.log.all.isEmpty)
+    }
+
     @Test("native build uses the selected root container without JavaScript or installation")
     func nativeBuild() async throws {
         let repo = try project()
