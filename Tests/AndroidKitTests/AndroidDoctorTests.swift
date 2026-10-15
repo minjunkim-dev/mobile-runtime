@@ -212,6 +212,20 @@ struct AndroidDoctorTests {
         }
     }
 
+    @Test("SDK requirements preserve cancellation from the custom CMake probe")
+    func sdkCustomCMakeCancellation() async throws {
+        let fixture = try scenario(modelResponse: .ok(AndroidGradleModelProbe.marker + nativeModelJSON(cmake: nil)))
+        try executable(fixture.repo, "tools/custom-cmake/bin/cmake")
+        try fixture.repo.write("android/local.properties", "sdk.dir=\(fixture.repo.url("sdk").path)\ncmake.dir=\(fixture.repo.url("tools/custom-cmake").path)\n")
+        var runner = fixture.runner
+        runner.failures["\(fixture.repo.url("tools/custom-cmake/bin/cmake").path) --version"] = CancellationError()
+        let context = AndroidDoctorContext(anchor: fixture.anchor, config: fixture.config,
+            hostRunner: runner, projectRunner: runner, environment: fixture.environment)
+        await #expect(throws: CancellationError.self) {
+            try await context.sdkRequirements()
+        }
+    }
+
     @Test("SDK planning never materializes a missing Gradle wrapper")
     func sdkRequirementsNeedLocalWrapper() async throws {
         let fixture = try scenario(materializedWrapper: false)

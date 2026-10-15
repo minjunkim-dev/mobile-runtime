@@ -122,6 +122,7 @@ extension AndroidDoctorContext {
                             }
                         }
                     }
+                    catch is CancellationError { throw CancellationError() }
                     catch { blockers.append("\(module.path): declared cmake.dir could not be verified") }
                     if !custom {
                         if cmake == nil, let agp = module.agpVersion.flatMap({ SemanticVersion($0) }) {
