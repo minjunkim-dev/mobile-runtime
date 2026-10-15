@@ -88,18 +88,18 @@ public struct ConfigValuesCheck: Check {
     /// here to break: it looks configured, and nothing it says has any effect.
     private func strayOutcome(_ stray: URL) -> CheckOutcome {
         let destination = context.anchorDirectory
+        let framework = context.anchor?.framework.displayName ?? "React Native"
         return .warning(
-            observed: "\(context.display(stray)) is not next to a React Native project, "
+            observed: "\(context.display(stray)) is not next to a \(framework) project, "
                 + "so mobile never reads it",
-            required: "\(MobileConfig.fileName) beside the package.json that depends on react-native",
+            required: "\(MobileConfig.fileName) at the selected app root",
             source: source,
             remediation: Remediation(
                 summary: destination.map {
                     "Move it to \(context.display($0.appendingPathComponent(MobileConfig.fileName))) — "
-                        + "mobile reads mobile.yml beside the project's package.json and nowhere else."
+                        + "mobile reads mobile.yml at the selected app root."
                 }
-                    ?? "mobile found no React Native project here. Move the file beside the "
-                        + "package.json that depends on react-native, or delete it."
+                    ?? "mobile found no selected project here. Move the file to the app root, or delete it."
             )
         )
     }
@@ -180,8 +180,8 @@ public struct ConfigValuesCheck: Check {
             guard let declared else { return .silent }
             return .verdict(
                 .unknown(
-                    reason: "ios.scheme declares \(declared), and there is no single root "
-                        + "ios/*.xcworkspace or ios/*.xcodeproj to check it against",
+                    reason: "ios.scheme declares \(declared), and there is no selected "
+                        + "Xcode workspace or project to check it against",
                     source: source
                 )
             )
@@ -191,7 +191,7 @@ public struct ConfigValuesCheck: Check {
         let list = XcodeSchemeList.command(target: target, environment: await locator.pinnedEnvironment())
         let result = try await runner.run(list)
         guard result.terminationStatus.isSuccess,
-            let schemes = XcodeSchemeList.decode(result.standardOutput)?.schemes, !schemes.isEmpty
+            let schemes = XcodeSchemeList.decode(result.standardOutput)?.schemes(in: target, anchor: anchor), !schemes.isEmpty
         else {
             return .verdict(
                 .unknown(

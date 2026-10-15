@@ -33,7 +33,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let window = makeWindow(title: "Runstir")
         window.contentView = NSHostingView(rootView: VStack(spacing: 16) {
             Text("Runstir").font(.largeTitle)
-            Text("React Native 프로젝트의 환경을 확인하세요.")
+            Text("프로젝트의 iOS·Android 환경을 확인하세요.")
             Button("프로젝트 열기…") { self.openProject() }.keyboardShortcut("o")
         }.padding(40).frame(maxWidth: .infinity, maxHeight: .infinity))
         welcome = window
@@ -99,7 +99,7 @@ struct InspectionView: View {
                 Picker("앱", selection: $app) {
                     Text("자동 선택").tag("")
                     ForEach(result?.selection.candidates ?? [], id: \.id) { candidate in
-                        Text(candidate.id).tag(candidate.id)
+                        Text("\(candidate.id) · \(candidate.framework.displayName)").tag(candidate.id)
                     }
                 }.disabled(checking || running != nil)
                 Picker("플랫폼", selection: $platform) {
@@ -137,7 +137,7 @@ struct InspectionView: View {
                     Text("setup: \(preparation.operation.state) / exit \(preparation.exitCode)").font(.headline)
                     if let plan = preparation.plan {
                         Text("승인 대상 plan-id: \(plan.id)").font(.caption)
-                        Text("\(plan.projectKind) 준비는 iOS·Android 양쪽을 확인합니다.")
+                        Text("\(plan.projectKind) 준비 대상: \(plan.platforms.map { $0.platform.rawValue }.joined(separator: ", "))")
                         ScrollView {
                             VStack(alignment: .leading, spacing: 4) {
                                 ForEach(plan.inspectionLines, id: \.self) { Text($0) }

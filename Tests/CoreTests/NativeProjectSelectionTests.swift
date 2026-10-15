@@ -104,4 +104,15 @@ struct NativeProjectSelectionTests {
         #expect(source.origin.contains("Podfile"))
         #expect(anchor.iosDirectory.path == repo.root.path)
     }
+
+    @Test("an Xcode project's internal workspace never becomes the app root")
+    func internalWorkspace() throws {
+        let repo = try FixtureRepo()
+        try repo.write("App.xcodeproj/project.pbxproj", "app")
+        try repo.write("App.xcodeproj/project.xcworkspace/contents.xcworkspacedata", "<Workspace/>")
+        let selection = try ProjectInspectionInput(directory: repo.url("App.xcodeproj"), environment: [:]).selection()
+        #expect(selection.candidates.count == 1)
+        #expect(selection.selected?.app.path == repo.root.path)
+        #expect(selection.selected?.iosContainer == "App.xcodeproj")
+    }
 }

@@ -40,7 +40,6 @@ public struct MatrixLookup: Sendable, Equatable {
         loading load: () throws -> CompatibilityMatrix = CompatibilityMatrix.bundled
     ) -> MatrixLookup {
         if anchor.framework != .reactNative {
-            let native = Answer.unavailable(reason: "No React Native compatibility row applies to \(anchor.framework.displayName).")
             let floor = MinimumVersion("27.0")!
             let declared = config?.xcode ?? anchor.declaredXcodeVersion.flatMap(MinimumVersion.init)
             let xcode = declared.map { floor.exceeds($0) ? floor : $0 } ?? floor
@@ -48,11 +47,7 @@ public struct MatrixLookup: Sendable, Equatable {
                 xcode: .requirement(xcode, source: CheckSource(tier: 1, origin:
                     "Runstir 1.0 Xcode 27.0 minimum"
                         + (config?.xcode != nil ? " + mobile.yml ios.xcode" : anchor.declaredXcodeVersion.map { " + .xcode-version \($0)" } ?? ""))),
-                runtime: requirement(
-                    override: config?.iosRuntime, field: MobileConfig.Key.iosRuntime,
-                    declared: anchor.deploymentTarget.map { (value: $0.value, file: $0.file) },
-                    matrix: native, value: \.runtime
-                )
+                runtime: nativeRuntime(anchor: anchor, config: config)
             )
         }
         let answer = self.answer(anchor: anchor, loading: load)
@@ -70,6 +65,17 @@ public struct MatrixLookup: Sendable, Equatable {
                 matrix: answer, value: \.runtime
             )
         )
+    }
+
+    private static func nativeRuntime(anchor: ProjectAnchor, config: MobileConfig?) -> RequirementLookup {
+        if let override = config?.iosRuntime {
+            return .requirement(override, source: CheckSource(tier: 3, origin: "mobile.yml \(MobileConfig.Key.iosRuntime)"))
+        }
+        if let declared = anchor.deploymentTarget, let minimum = MinimumVersion(declared.value) {
+            return .requirement(minimum, source: CheckSource(tier: 1, origin: declared.file))
+        }
+        return .unavailable(reason: "The iOS deployment target must be measured from the selected \(anchor.framework.displayName) app scheme.",
+            source: CheckSource(tier: 1, origin: anchor.iosContainer ?? anchor.framework.rawValue))
     }
 
     /// The matrix's own answer, before mobile.yml gets a say.

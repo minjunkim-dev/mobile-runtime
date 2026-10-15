@@ -49,7 +49,14 @@ public struct BuildStage: Stage {
     }
 
     public func run(_ context: inout UpContext) async throws -> StageOutcome {
-        guard let anchor = config.anchor, let target = XcodeBuildTarget.locate(inIOSDirectoryOf: anchor) else {
+        guard let anchor = config.anchor else {
+            throw Self.noTarget
+        }
+        guard let target = XcodeBuildTarget.locate(inIOSDirectoryOf: anchor) else {
+            if anchor.framework == .nativeIOS {
+                throw DomainError(summary: "the selected native iOS container is no longer available",
+                    remediation: Remediation(summary: "Refresh the project candidates and select an existing Xcode container."))
+            }
             throw Self.noTarget
         }
         // The pipeline runs `device` first. Reaching here without one is mobile's own
@@ -66,7 +73,7 @@ public struct BuildStage: Stage {
                 "-scheme", scheme,
                 "-configuration", configuration,
                 "-destination", destination,
-            ]
+            ] + (anchor.framework == .nativeIOS ? ["CODE_SIGNING_ALLOWED=NO"] : [])
 
         context.buildLog = try await build(arguments, environment).path
         context.product = try await product(arguments, scheme: scheme, environment: environment)
@@ -84,7 +91,7 @@ public struct BuildStage: Stage {
         let list = XcodeSchemeList.command(target: target, environment: environment)
         let result = try await runner.run(list)
         guard result.terminationStatus.isSuccess,
-            let schemes = XcodeSchemeList.decode(result.standardOutput)?.schemes, !schemes.isEmpty
+            let schemes = XcodeSchemeList.decode(result.standardOutput)?.schemes(in: target, anchor: anchor), !schemes.isEmpty
         else {
             throw ToolUnavailable(
                 description: "`\(list.description)` listed no schemes — "

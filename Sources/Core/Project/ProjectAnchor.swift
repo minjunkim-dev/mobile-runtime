@@ -79,12 +79,10 @@ public struct WorkspaceRoot: Sendable, Equatable {
 
 }
 
-/// The project's anchor: the nearest `package.json` that depends on react-native,
-/// plus the Tier 1 declarations sitting next to it. Detection happens once and
-/// everything project-scoped — the checks here, `mobile.yml` later — reads the
-/// same anchor. There is exactly one detection rule in this project.
+/// The selected app root, framework and Tier 1 declarations. Detection and
+/// `mobile.yml` share this root. Native iOS also preserves the selected container.
 public struct ProjectAnchor: Sendable, Equatable {
-    /// The directory holding the anchoring `package.json`.
+    /// The app root holding its authoritative framework declaration or container.
     public let directory: URL
     public let framework: ProjectFramework
     public let iosContainer: String?
@@ -340,12 +338,8 @@ public struct ProjectAnchor: Sendable, Equatable {
         return checks
     }
 
-    /// Walks up from `directory` looking for the anchor, stopping at the git root
-    /// (or the filesystem root). The nearest react-native `package.json` wins, so a
-    /// monorepo naturally judges the app you are standing in.
-    ///
-    /// - Returns: nil when there is no React Native project above the starting
-    ///   point. That is not an error — it means host checks only.
+    /// Walks to the nearest declared app root, stopping at the Git root.
+    /// Ambiguous frameworks or Xcode containers require an explicit candidate.
     public static func detect(from directory: URL, fileManager: FileManager = .default) -> ProjectAnchor? {
         let found = candidates(from: directory, fileManager: fileManager)
         return found.count == 1 ? found.first : nil
@@ -379,7 +373,9 @@ public struct ProjectAnchor: Sendable, Equatable {
             if read(at: ancestor, fileManager: fileManager) != nil { return true }
             return declaresFlutter(at: ancestor, fileManager: fileManager) ? true : nil
         } ?? false
-        guard !embeddedHost else { return found }
+        guard !embeddedHost,
+              !["xcodeproj", "xcworkspace"].contains(URL(fileURLWithPath: directory).pathExtension)
+        else { return found }
         let names = (try? fileManager.contentsOfDirectory(atPath: directory)) ?? []
         for name in names.sorted() where (name.hasSuffix(".xcodeproj")
             && fileManager.fileExists(atPath: directory + "/" + name + "/project.pbxproj"))
