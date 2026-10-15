@@ -115,7 +115,7 @@ macOS의 시스템 설정에서 제공하는 보안 승인 절차를 따른다.
 ### 제한 CLI·GUI 후보
 
 1. 같은 source SHA의 필수 CI를 확인한다. `Draft Release` 또는 로컬 `scripts/package-release.sh <alpha-version> <새-output-directory>`로 후보를 만든다.
-2. 접근 권한이 있는 검증자는 해당 Actions run의 `draft-release` artifact를 `gh run download <run-id> --name draft-release --dir <candidate-directory>`로 받는다. 보관 기간은 7일이다. Draft asset도 저장소 접근 권한으로 제한한다.
+2. 이 저장소는 public이다. `Draft Release` run의 `draft-release` Actions artifact는 7일간 보관하지만 제한 후보 배포 위치로 취급하지 않는다. 제한 후보 배포 위치와 검증자 접근 권한은 별도로 확정한다.
 3. 후보 디렉터리에서 두 `.sha256` 파일을 확인한다. `scripts/verify-candidate.sh <candidate-directory>`로 archive·DMG의 source/version/Core identity와 resource bundle을 확인한다.
 4. 후보 Homebrew formula는 `runstir-candidate.rb`다. 로컬 archive의 절대 `file://` URL을 `RUNSTIR_CANDIDATE_URL`에 지정한 뒤 `brew install --formula ./runstir-candidate.rb`를 실행한다. 후보는 keg-only다. `brew --prefix runstir-candidate` 아래의 `bin/mobile`로 검증한다. 기존 CLI를 link하거나 교체하지 않는다.
 5. Developer ID 서명·공증한 DMG만 Gatekeeper 실행 검증에 사용한다. `Runstir.app`을 검증용 Applications 경로로 복사한다. GUI에 제품 버전과 공식 다운로드 링크가 표시된다. 새 DMG의 앱으로 수동 교체한다. GUI bundle에는 `mobile`이 없고 별도 CLI 경로를 변경하지 않는다.
@@ -130,6 +130,7 @@ private key·비밀번호·공증 credential은 이 명령의 인자나 증거�
 `CANDIDATE.json`은 artifact SHA-256·source SHA·제품 버전·Core build identity와 서명·공증 상태를 고정한다.
 `ciRun`은 후보를 제작한 Actions workflow의 `GITHUB_RUN_ID`다. 로컬 제작에서는 `null`이다.
 같은 source의 필수 `CI` run URL과 최종 head는 별도 검증 근거에 기록한다.
+PR CI의 source SHA는 합성 merge commit일 수 있다. `CANDIDATE.json`의 `sourceSHA`를 확인한다. PR head와 같다고 추정하지 않는다.
 `distributionReady`는 자동으로 참이 되지 않는다. 실제 다운로드·설치·CLI 없는 GUI·Gatekeeper·후보 간 수동 업데이트는 AC16의 별도 실제 검증이다.
 CLI·GUI의 실제 실행, 알려진 성공 표본, tuple, 화면 증거를 같은 후보에 연결한다. 기능이 바뀌면 새 버전의 후보와 증거를 만든다.
 후보 제작은 공식 제품 공개를 수행하지 않는다.

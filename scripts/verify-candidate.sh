@@ -47,6 +47,7 @@ hdiutil attach -quiet -readonly -nobrowse -mountpoint "$scratch/mount" "$output/
 mounted=true
 python3 -I - "$root" "$output" "$scratch" "$version" <<'PY'
 import json
+import os
 from pathlib import Path
 import plistlib
 import runpy
@@ -65,9 +66,14 @@ if (plist.get('RunstirProductVersion') != manifest['productVersion']
     raise SystemExit('GUI bundle version differs from candidate')
 if (app / 'Contents/MacOS/mobile').exists():
     raise SystemExit('GUI must work independently of the CLI')
-for resource in ['mobile_Core.bundle', 'mobile_AndroidKit.bundle']:
-    if not (app / resource).is_dir():
-        raise SystemExit(f'Missing GUI resource: {resource}')
+if not (cli / 'mobile').is_file() or not os.access(cli / 'mobile', os.X_OK):
+    raise SystemExit('Missing CLI executable')
+for label, product in [('CLI', cli), ('GUI', app)]:
+    for bundle, name in [('mobile_Core.bundle', 'matrix.json'),
+                         ('mobile_AndroidKit.bundle', 'mobile-doctor.gradle')]:
+        resource = product / bundle
+        if not any(path.is_file() for path in [resource / name, resource / 'Contents/Resources' / name]):
+            raise SystemExit(f'Missing {label} resource: {bundle}/{name}')
 if not (app / 'Contents/MacOS/Runstir').is_file():
     raise SystemExit('Missing GUI executable')
 print('Candidate identities, checksums and mounted GUI bundle passed; interactive GUI and Gatekeeper remain separate gates.')

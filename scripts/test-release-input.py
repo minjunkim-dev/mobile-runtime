@@ -227,7 +227,7 @@ class ReleaseInputTests(unittest.TestCase):
                     self.assertTrue(target.is_symlink())
                     self.assertFalse((root / "outside-destination").exists())
 
-    def test_new_candidate_path_rejects_wrong_doctor_json_under_environment_optimization(self):
+    def test_candidate_requires_product_files_and_smoke_rejects_wrong_doctor_json(self):
         scripts = Path(__file__).resolve().parent
         version = "1.0.0-alpha.1"
         build = {"releaseVersion": version, "toolVersion": version,
@@ -263,6 +263,9 @@ class ReleaseInputTests(unittest.TestCase):
                          app / "mobile_Core.bundle", app / "mobile_AndroidKit.bundle"]:
                 path.mkdir(parents=True, exist_ok=True)
             (app / "Contents/MacOS/Runstir").write_text("fixture, never executed")
+            for resource in ["mobile_Core.bundle/matrix.json",
+                             "mobile_AndroidKit.bundle/mobile-doctor.gradle"]:
+                (app / resource).write_text("fixture")
             (app / "Contents/Resources/BUILD.json").write_text(json.dumps(build))
             (app / "Contents/Info.plist").write_bytes(plistlib.dumps(
                 {"RunstirProductVersion": version, "CFBundleShortVersionString": "1.0.0"}))
@@ -293,6 +296,37 @@ class ReleaseInputTests(unittest.TestCase):
                 capture_output=True, text=True, timeout=15,
             )
             self.assertEqual(candidate_result.returncode, 0, candidate_result.stderr)
+            original_archive = archive.read_bytes()
+            for product, missing in [("CLI", "mobile"),
+                                     ("CLI", "mobile_Core.bundle/matrix.json"),
+                                     ("CLI", "mobile_AndroidKit.bundle/mobile-doctor.gradle"),
+                                     ("GUI", "Contents/MacOS/Runstir"),
+                                     ("GUI", "mobile_Core.bundle/matrix.json"),
+                                     ("GUI", "mobile_AndroidKit.bundle/mobile-doctor.gradle")]:
+                with self.subTest(product=product, missing=missing):
+                    path = app / missing
+                    if product == "CLI":
+                        with tarfile.open(archive, "w:gz") as stream:
+                            stream.add(cli, arcname=cli.name, filter=lambda member:
+                                       None if member.name == f"{cli.name}/{missing}" else member)
+                        candidate["artifacts"]["cli"]["sha256"] = hashlib.sha256(archive.read_bytes()).hexdigest()
+                        (output / "CANDIDATE.json").write_text(json.dumps(candidate))
+                    else:
+                        original = path.read_bytes()
+                        path.unlink()
+                    try:
+                        result = subprocess.run(
+                            ["bash", str(scripts / "verify-candidate.sh"), str(output)], env=env,
+                            capture_output=True, text=True, timeout=15,
+                        )
+                        self.assertNotEqual(result.returncode, 0)
+                        self.assertIn(f"Missing {product}", result.stderr)
+                    finally:
+                        archive.write_bytes(original_archive)
+                        candidate["artifacts"]["cli"]["sha256"] = checksum
+                        (output / "CANDIDATE.json").write_text(json.dumps(candidate))
+                        if product == "GUI":
+                            path.write_bytes(original)
             smoke_result = subprocess.run(
                 ["bash", str(scripts / "verify-release.sh"), str(archive)], env=env,
                 capture_output=True, text=True, timeout=15,
