@@ -9,7 +9,7 @@ enum MobilePlatform: String, ExpressibleByArgument, Sendable {
 }
 
 enum Tool {
-    static let version = "0.1.0"
+    static let version = runstirProductVersion
 }
 
 @main

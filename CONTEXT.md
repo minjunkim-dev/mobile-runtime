@@ -72,6 +72,7 @@ _Avoid_: mobile-runtime (제품명), mobile (working name)
 
 **출시 후보 (Release candidate)**:
 공동 출시 대상으로 묶은 Runstir 버전과 CLI·GUI 배포 파일이다. 검증 성공이나 출시 완료를 뜻하지 않는다.
+공동 후보의 source SHA는 `git archive`의 입력 commit이다. 제작기는 disposable source의 공유 버전 상수를 제품 버전으로 고정한다. 한 빌드의 Core object digest를 CLI·GUI `BUILD.json`과 `CANDIDATE.json`에 연결한다. 원본 checkout은 수정하지 않는다. 서명·공증 결과와 실제 배포 실행 결과는 별도로 기록한다.
 
 **출시 게이트 (Release gate)**:
 출시 후보를 공개하기 전에 충족해야 하는 검증 증거와 배포 조건이다. 필수 조건의 실패·판정 불가·미검증은 출시를 막는다.
