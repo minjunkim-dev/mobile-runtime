@@ -90,6 +90,9 @@ Draft 생성 직전에 입력을 다시 검증한다. 생성 후 같은 태그�
 공개 전환과 Homebrew formula 갱신은 실행하지 않는다.
 workflow 등록은 권한 확대다. 병합 전에 사람이 최종 head를 승인한다.
 
+Draft를 만들기 전에 [실제 Simulator 스모크](ci-reproducibility.md#실제-simulator-스모크는-수동으로-실행한다)를 같은 SHA에서 수동 실행한다.
+결과 URL을 릴리스 티켓에 기록한다.
+
 Draft의 archive를 내려받아 [ADR-0019](adr/0019-first-external-pre-release.md)의 실제 실행 검증을 완료한다.
 archive smoke와 CI는 그 실행 검증을 대체하지 않는다. 공개는 별도 승인으로 처리한다.
 
