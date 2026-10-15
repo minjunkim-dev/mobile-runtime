@@ -8,6 +8,20 @@ import Testing
 
 @Suite("approved Android SDK preparation")
 struct AndroidPreparationTests {
+    @Test("WorkflowContext doctor and SDK requirements reuse one opaque actor and one model evaluation")
+    func sharedWorkflowSDKContext() async throws {
+        let fixture = try await SDKFixture()
+        let runner = fixture.runner()
+        let selected = try #require(fixture.input.selection().selected)
+        let anchor = try #require(ProjectAnchor.detect(candidate: selected))
+        let workflow = await WorkflowContext.make(input: fixture.input, platform: .android, anchor: anchor, runner: runner)
+        _ = await workflow.engine.run()
+        let context = try #require(workflow.androidContext)
+        let requirements = try await context.sdkRequirements()
+        #expect(requirements.blockers.isEmpty)
+        #expect(runner.modelReadCount == 1)
+    }
+
     @Test("an SDK inside the project preserves source and commits both approved packages")
     func projectLocalSDK() async throws {
         let fixture = try await SDKFixture()
@@ -245,12 +259,15 @@ private final class SDKPreparationRunner: ProcessRunner, @unchecked Sendable {
     private let lock = NSLock()
     private var downloaded: [String] = []
     private var metadataReads = 0
+    private var modelReads = 0
+    var modelReadCount: Int { lock.withLock { modelReads } }
     var downloads: [String] { lock.withLock { downloaded } }
     init(fixture: SDKFixture, failPlatform: Bool, repository: String, metadataChangesAfter: Int?, mutateSource: Bool) {
         self.fixture = fixture; self.failPlatform = failPlatform; self.repository = repository
         self.metadataChangesAfter = metadataChangesAfter; self.mutateSource = mutateSource
     }
     func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+        if command.description == fixture.modelCommand { lock.withLock { modelReads += 1 } }
         if command.executable == "curl", let index = command.arguments.firstIndex(of: "--output") {
             let name = URL(string: command.arguments.last!)!.lastPathComponent
             lock.withLock { downloaded.append(name) }

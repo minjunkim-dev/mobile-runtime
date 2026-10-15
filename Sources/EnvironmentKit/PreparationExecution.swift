@@ -352,22 +352,13 @@ public enum PreparationExecution {
             }
             let context = await WorkflowContext.make(input: input, platform: platform, anchor: anchor, runner: runner)
             contexts[platform] = context
-            let report: DoctorReport
+            let report = await context.engine.run()
             var sdkPreparation: AndroidSDKPreparation?
-            if platform == .android {
-                // WorkflowContext's stored actor is connected after the #210 dependency lands.
-                // Until then, run Android checks and snapshot against this one injected actor.
-                let android = AndroidDoctorContext(anchor: anchor, config: context.config, hostRunner: runner,
-                    projectRunner: context.projectRunner, environment: AndroidEnvironment(values: input.environment))
-                let common = await context.engine.run(only: Set(context.engine.checkIDs.filter { !$0.hasPrefix("android.") }))
-                let observed = common.checks.map { PreparationObservedCheck(result: $0) as any Check }
-                let platformReport = await DoctorEngine(checks: observed + androidChecks(context: android)).run()
-                report = DoctorReport(checks: platformReport.checks,
-                                      toolFailures: common.toolFailures + platformReport.toolFailures)
+            if platform == .android, let android = context.androidContext {
                 let requirements = try await android.sdkRequirements()
                 androidRequirements = requirements
                 sdkPreparation = try await AndroidSDKPreparation.inspect(requirements, runner: runner)
-            } else { report = await context.engine.run() }
+            }
             try Task.checkCancellation()
             if report.hasToolFailure { throw PreparationProbeError(failures: report.toolFailures.sorted()) }
             var checks = report.checks.sorted { $0.id < $1.id }.map { check in
@@ -578,14 +569,6 @@ public enum PreparationExecution {
         if let failure { throw failure }
         return result
     }
-}
-
-private struct PreparationObservedCheck: Check {
-    let result: CheckResult
-    var id: String { result.id }
-    var category: String { result.category }
-    var title: String { result.title }
-    func run() async throws -> CheckOutcome { result.outcome }
 }
 
 private struct PreparationProbeError: Error { let failures: [String] }
