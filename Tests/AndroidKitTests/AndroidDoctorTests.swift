@@ -159,6 +159,24 @@ private func composedChecks(_ scenario: AndroidScenario) async -> [any Check] {
 
 @Suite("Android doctor")
 struct AndroidDoctorTests {
+    @Test("SDK requirements and doctor share one model and expose no daemon paths")
+    func sdkRequirementsSnapshot() async throws {
+        let fixture = try scenario(modelResponse: .ok(AndroidGradleModelProbe.marker + nativeModelJSON(cmake: "3.22.1")))
+        let context = AndroidDoctorContext(anchor: fixture.anchor, config: fixture.config,
+            hostRunner: fixture.runner, projectRunner: fixture.runner, environment: fixture.environment)
+        let requirements = try await context.sdkRequirements()
+        #expect(requirements.blockers.isEmpty)
+        #expect(requirements.packages.map(\.packagePath) == ["build-tools;35.0.0", "cmake;3.22.1", "ndk;27.1.12297006", "platforms;android-36"])
+        #expect(requirements.modules.first?.gradleVersion == "8.13")
+        #expect(requirements.modules.first?.agpVersion == "8.12.0")
+        #expect(requirements.modules.first?.daemonJDKVersion == "17.0.12")
+        let json = String(decoding: try JSONEncoder().encode(requirements), as: UTF8.self)
+        #expect(!json.contains("/jdk/17"))
+        #expect(!json.contains("daemonJavaHome"))
+        _ = await DoctorEngine(checks: androidChecks(context: context)).run()
+        #expect(fixture.runner.log.all.filter { $0.description == fixture.modelCommand.description }.count == 1)
+    }
+
     @Test("an unaccepted selected SDK license stops build validation before dependency install")
     func licenseGate() async throws {
         let scenario = try scenario()

@@ -16,7 +16,15 @@ public func androidChecks(
         projectRunner: projectRunner,
         environment: environment
     )
-    return [
+    return androidChecks(context: context, includeRuntimeSDKTools: includeRuntimeSDKTools)
+}
+
+/// Reuses the same opaque model cache for doctor and approved SDK preparation.
+public func androidChecks(
+    context: AndroidDoctorContext,
+    includeRuntimeSDKTools: Bool = true
+) -> [any Check] {
+    [
         AndroidProjectCheck(context: context),
         AndroidGradleWrapperCheck(context: context),
         AndroidJDKCheck(context: context),
@@ -36,6 +44,10 @@ private struct AndroidProjectCheck: Check {
 
     func run() async throws -> CheckOutcome {
         let anchor = context.anchor
+        if anchor.framework == .nativeAndroid {
+            return .pass(observed: "native Android host", required: "checked-in Gradle application",
+                         source: CheckSource(tier: 1, origin: "Gradle settings + application model"))
+        }
         guard anchor.hasAndroidDirectory else {
             return .error(
                 observed: "the React Native anchor has no android/ directory",

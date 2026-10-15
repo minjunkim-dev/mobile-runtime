@@ -122,7 +122,7 @@ struct AndroidAVD: Sendable, Equatable {
     let systemImageDirectory: URL?
 }
 
-actor AndroidDoctorContext {
+public actor AndroidDoctorContext {
     nonisolated let anchor: ProjectAnchor
     nonisolated let config: ConfigContext
     nonisolated let hostRunner: any ProcessRunner
@@ -131,7 +131,7 @@ actor AndroidDoctorContext {
 
     private var modelTask: Task<AndroidModelProbeOutcome, any Error>?
 
-    init(
+    public init(
         anchor: ProjectAnchor,
         config: ConfigContext,
         hostRunner: any ProcessRunner,
@@ -145,7 +145,9 @@ actor AndroidDoctorContext {
         self.environment = environment
     }
 
-    nonisolated var androidDirectory: URL { anchor.directory.appendingPathComponent("android") }
+    nonisolated var androidDirectory: URL {
+        anchor.framework == .nativeAndroid ? anchor.directory : anchor.directory.appendingPathComponent("android")
+    }
 
     nonisolated func gradlePluginVersion() -> AndroidPackageVersion? {
         Self.packageVersion("@react-native/gradle-plugin", anchor: anchor)
