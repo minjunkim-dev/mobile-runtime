@@ -41,12 +41,20 @@ public struct MatrixLookup: Sendable, Equatable {
     ) -> MatrixLookup {
         if anchor.framework != .reactNative {
             let floor = MinimumVersion("27.0")!
-            let declared = config?.xcode ?? anchor.declaredXcodeVersion.flatMap(MinimumVersion.init)
-            let xcode = declared.map { floor.exceeds($0) ? floor : $0 } ?? floor
+            let declared = anchor.declaredXcodeVersion.flatMap(MinimumVersion.init)
+            let required = declared ?? config?.xcode
+            let xcode = required.map { floor.exceeds($0) ? floor : $0 } ?? floor
+            var origin = "Runstir 1.0 Xcode 27.0 minimum"
+            if let declared {
+                origin += " + .xcode-version \(declared)"
+                if let override = config?.xcode, !declared.agrees(with: override) {
+                    origin += " — mobile.yml \(MobileConfig.Key.xcode) \(override) cannot override the project declaration"
+                }
+            } else if let override = config?.xcode {
+                origin += " + mobile.yml \(MobileConfig.Key.xcode) \(override)"
+            }
             return MatrixLookup(
-                xcode: .requirement(xcode, source: CheckSource(tier: 1, origin:
-                    "Runstir 1.0 Xcode 27.0 minimum"
-                        + (config?.xcode != nil ? " + mobile.yml ios.xcode" : anchor.declaredXcodeVersion.map { " + .xcode-version \($0)" } ?? ""))),
+                xcode: .requirement(xcode, source: CheckSource(tier: 1, origin: origin)),
                 runtime: nativeRuntime(anchor: anchor, config: config)
             )
         }

@@ -47,6 +47,8 @@ build와 up에서 native iOS 의존성을 설치하지 않는다.
 Simulator build는 `CODE_SIGNING_ALLOWED=NO`를 명시한다.
 실기기 서명·인증서·provisioning을 자동 처리하지 않는다.
 Xcode 요구는 1.0 검증 기준인 27.0 미만으로 낮추지 않는다.
+native iOS의 `.xcode-version` 선언은 `mobile.yml overrides.xcode`보다 우선한다.
+충돌한 override는 요구 출처에 표시한다.
 RN compatibility matrix를 native 프로젝트에 적용하지 않는다.
 
 ## 검증 경계

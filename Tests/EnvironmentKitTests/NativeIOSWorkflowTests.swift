@@ -123,6 +123,25 @@ struct NativeIOSWorkflowTests {
         #expect(!runner.log.all.contains { $0.executable == "xcrun" && $0.arguments.contains("install") })
     }
 
+    @Test("native Xcode declarations remain authoritative over mobile.yml overrides", arguments: [false, true])
+    func nativeXcodeDeclaration(overrideIsNewer: Bool) async throws {
+        let repo = try project()
+        let declared = overrideIsNewer ? "27.0" : "27.1"
+        let override = overrideIsNewer ? "27.1" : "27.0"
+        try repo.write(".xcode-version", declared)
+        try repo.write("mobile.yml", "overrides:\n  xcode: '\(override)'\n")
+        let runner = runner(repo)
+        let inspection = try await EnvironmentInspection.run(input: ProjectInspectionInput(
+            directory: repo.root, environment: [:]), runner: runner)
+        let check = try #require(inspection.report.checks.first { $0.id == "xcode.version" })
+        #expect(check.status == (overrideIsNewer ? .pass : .error))
+        #expect(check.outcome.source.origin.contains(".xcode-version \(declared)"))
+        #expect(check.outcome.source.origin.contains("mobile.yml overrides.xcode \(override) cannot override"))
+        let result = await WorkflowExecution.run(.build, input: input(repo), runner: runner)
+        #expect(result.exitCode == (overrideIsNewer ? 0 : 1), Comment(rawValue: result.up?.failure?.message ?? ""))
+        #expect(runner.log.all.contains { $0.arguments.contains("build") } == overrideIsNewer)
+    }
+
     @Test("an explicit native configuration uses its own deployment target", arguments: [false, true])
     func explicitConfiguration(requiresNewerRuntime: Bool) async throws {
         let repo = try project()
