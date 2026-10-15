@@ -443,17 +443,70 @@ struct AndroidRuntimeTests {
 
 @Suite("Android live app observation")
 struct AndroidAppObservationTests {
+    @Test("a recycled serial preserves the recorded AVD claim before pidof")
+    func recycledSerial() async throws {
+        let scenario = try runtimeScenario()
+        let device = ResourceKey.device(.android, "avd:Pixel")
+        let owner = LeaseOwner(operationId: "first-up", command: "up", project: "/work/first")
+        let leases = ResourceLeases(directory: scenario.repo.url("leases"))
+        try leases.record(ResourceClaim(device: device, platform: .android, handle: serial,
+            appID: "dev.other", owner: owner))
+        let pidof = command("adb", ["-s", serial, "shell", "pidof", "dev.other"])
+        let runner = FakeProcessRunner(responses: [
+            command("adb", ["-s", serial, "emu", "avd", "name"]): .ok("Other\nOK\n"),
+            pidof: .failed(1, ""),
+        ])
+        let conflict = try await #require(throws: ResourceConflict.self) {
+            try await leases.check(device: device, project: "/work/second") { claim in
+                try await androidAppObservation(serial: claim.handle, applicationId: claim.appID, expectedDevice: claim.device,
+                    anchor: scenario.anchor, config: scenario.config, runner: runner, environment: scenario.environment)
+            }
+        }
+        #expect(conflict.owner == owner)
+        #expect(!runner.log.all.contains { $0.description == pidof })
+        try await #require(throws: ResourceConflict.self) {
+            try await leases.check(device: device, project: "/work/second") { _ in .unknown("still reserved") }
+        }
+    }
+
     @Test("pidof separates a running app, a stopped app, and a disconnected or unobservable device")
     func observation() async throws {
         let scenario = try runtimeScenario()
+        let identity = command("adb", ["-s", serial, "emu", "avd", "name"])
         let pidof = command("adb", ["-s", serial, "shell", "pidof", "dev.other"])
         func observe(_ response: FakeProcessRunner.Response) async -> ClaimObservation {
-            try! await androidAppObservation(serial: serial, applicationId: "dev.other", anchor: scenario.anchor,
-                config: scenario.config, runner: FakeProcessRunner(responses: [pidof: response]), environment: scenario.environment)
+            try! await androidAppObservation(serial: serial, applicationId: "dev.other", expectedDevice: .device(.android, "avd:Pixel"), anchor: scenario.anchor,
+                config: scenario.config, runner: FakeProcessRunner(responses: [identity: .ok("Pixel\nOK\n"), pidof: response]), environment: scenario.environment)
         }
         #expect(await observe(.ok("4242\n")) == .running("dev.other pid 4242 on \(serial)"))
         #expect(await observe(.failed(1, "")) == .stopped)
         #expect(await observe(.failed(1, "adb: device '\(serial)' not found")) == .unknown("adb: device '\(serial)' not found"))
         #expect(await observe(.failed(1, "error: device offline")) == .unknown("error: device offline"))
+    }
+
+    @Test("an unreadable AVD identity remains unknown without probing the app", arguments: [true, false])
+    func unreadableIdentity(commandFailed: Bool) async throws {
+        let scenario = try runtimeScenario()
+        let identity = command("adb", ["-s", serial, "emu", "avd", "name"])
+        let runner = FakeProcessRunner(responses: [identity: commandFailed ? .failed(1, "device offline") : .ok("")])
+        let observation = try await androidAppObservation(serial: serial, applicationId: "dev.other",
+            expectedDevice: .device(.android, "avd:Pixel"), anchor: scenario.anchor, config: scenario.config,
+            runner: runner, environment: scenario.environment)
+        guard case .unknown = observation else { Issue.record("An unverified AVD must remain unknown"); return }
+        #expect(runner.log.all.map(\.description) == [identity])
+    }
+
+    @Test("cancellation from AVD or app observation is preserved", arguments: [true, false])
+    func cancellation(duringIdentity: Bool) async throws {
+        let scenario = try runtimeScenario()
+        let identity = command("adb", ["-s", serial, "emu", "avd", "name"])
+        let pidof = command("adb", ["-s", serial, "shell", "pidof", "dev.other"])
+        var runner = FakeProcessRunner(responses: [identity: .ok("Pixel\nOK\n")])
+        runner.failures[duringIdentity ? identity : pidof] = CancellationError()
+        try await #require(throws: CancellationError.self) {
+            try await androidAppObservation(serial: serial, applicationId: "dev.other",
+                expectedDevice: .device(.android, "avd:Pixel"), anchor: scenario.anchor, config: scenario.config,
+                runner: runner, environment: scenario.environment)
+        }
     }
 }

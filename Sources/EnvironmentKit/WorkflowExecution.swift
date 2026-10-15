@@ -192,7 +192,7 @@ public enum WorkflowExecution {
                     case .ios:
                         try await simulatorAppObservation(udid: claim.handle, bundleID: claim.appID, runner: runner, locator: wiring.locator)
                     case .android:
-                        try await androidAppObservation(serial: claim.handle, applicationId: claim.appID, anchor: anchor,
+                        try await androidAppObservation(serial: claim.handle, applicationId: claim.appID, expectedDevice: claim.device, anchor: anchor,
                             config: config, runner: runner, environment: environment)
                     }
                 }
