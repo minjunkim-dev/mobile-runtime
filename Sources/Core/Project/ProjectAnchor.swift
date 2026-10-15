@@ -292,9 +292,12 @@ public struct ProjectAnchor: Sendable, Equatable {
     /// The Project checks this anchor can answer. A Check that needs a declaration
     /// to compare against is absent when the declaration is — a project that never
     /// pinned Ruby gets no Ruby line at all, rather than a permanent `unknown`.
-    public func checks(runner: any ProcessRunner, context: ConfigContext) -> [any Check] {
+    public func checks(
+        runner: any ProcessRunner, context: ConfigContext,
+        environment: ProjectExecutionEnvironment? = nil
+    ) -> [any Check] {
         var checks: [any Check] = [ProjectDetectedCheck(anchor: self)]
-        checks.append(contentsOf: commonChecks(runner: runner, context: context))
+        checks.append(contentsOf: commonChecks(runner: runner, context: context, environment: environment))
         if let cocoapods {
             checks.append(
                 CocoaPodsVersionCheck(
@@ -312,14 +315,18 @@ public struct ProjectAnchor: Sendable, Equatable {
 
     /// Checks whose meaning is the same for both platform providers. Android does
     /// not inherit the iOS-specific project/CocoaPods/Ruby checks just to reuse Node.
-    public func commonChecks(runner: any ProcessRunner, context: ConfigContext) -> [any Check] {
+    public func commonChecks(
+        runner: any ProcessRunner, context: ConfigContext,
+        environment: ProjectExecutionEnvironment? = nil
+    ) -> [any Check] {
         var checks: [any Check] = [
             NodeVersionCheck(anchor: self, context: context, runner: runner)
         ]
         if let packageManager {
             checks.append(
                 PackageManagerVersionCheck(
-                    requirement: packageManager, anchor: self, context: context, runner: runner
+                    requirement: packageManager, anchor: self, context: context, runner: runner,
+                    environment: environment
                 )
             )
         }
