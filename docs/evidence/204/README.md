@@ -10,7 +10,7 @@ To-do의 부족한 SDK package 두 개를 실제 Google archive로 설치했다.
 - [결과와 시도별 product 상태](results.json)
 - [실제 최종 CLI 계획](actual-cli-plan.json)
 - [시도 이력](attempts.md)
-- [실행한 소유 harness](harness.swift), [컴파일 명령 생성기](compile-harness.py), [실행 기록기](run-harness.py), [쓰기 guard](owned-writes.sb)
+- [실행 helper의 비식별 공개 사본](harness.swift), [컴파일 명령 생성기](compile-harness.py), [실행 기록기](run-harness.py), [쓰기 guard](owned-writes.sb)
 - [로컬 검사 명령과 결과](local-checks.json), [저장 파일 checksum](checksums.json)
 - [소유 경로에 보존한 원본 receipt의 해시](private-receipts.json)
 
@@ -47,3 +47,9 @@ fixture 결과는 실제 SDK 설치 결과와 별개다.
 GUI 설치 조작, 도구가 없는 VM, 앱 build/install/launch/첫 화면은 이 실측의 근거가 아니다.
 서로 다른 source에서 측정한 취소·설치·최종 계획을 하나의 source 실측으로 합치지 않는다.
 독립 리뷰, 원격 CI, main 병합과 main CI는 상위 작업에서 별도로 확인한다.
+
+## 공개 사본과 추가 surface 실측
+
+이 디렉터리의 공개 자료는 사용자 이름과 호스트 경로를 입력값 또는 경로 별칭으로 바꾼 사본이다. 공개 helper는 실행한 private 원본과 byte가 같다고 주장하지 않는다. `private-receipts.json`은 보존한 private 원본의 크기와 SHA-256을 기록한다. `checksums.json`은 현재 공개 사본을 검사한다. `/PREVIOUS_OWNED_ROOT`, `/WORKTREE`, `/JDK17_HOME`, `/USER_HOME` 등은 실제 경로가 아니다. `harness.swift`에는 `RUNSTIR_VALIDATION_ROOT`, `RUNSTIR_VALIDATION_JAVA_HOME`, `RUNSTIR_VALIDATION_USER`를 별도로 입력해야 한다. Python compile/run 사본은 `RUNSTIR_VALIDATION_REPOSITORY`도 요구한다. compile 사본에는 `RUNSTIR_VALIDATION_BUILD_PRODUCTS`도 입력한다.
+
+위 CLI 계획 전용·GUI 미측정 경계는 최초 API 실측의 이력이다. 후속 `70cb2877b259690832cec686e925087ddb1c1d01`의 실제 CLI·GUI 설치 상태는 [추가 surface 실측](cli-gui/README.md)에 기록한다.

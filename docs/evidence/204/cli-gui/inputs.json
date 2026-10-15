@@ -1,0 +1,195 @@
+{
+  "schemaVersion": 1,
+  "ticket": 204,
+  "source": "70cb2877b259690832cec686e925087ddb1c1d01",
+  "productBase": "cf384de1019f52341a731ce3d0f9e837a84c5696",
+  "upstream": {
+    "repository": "https://github.com/android/architecture-samples.git",
+    "sha": "ee66e1526b84c026615df032c705842b7d2a521f"
+  },
+  "tuple": {
+    "Gradle": "8.11.1",
+    "AGP": "8.7.3",
+    "daemonJDK": "17.0.19",
+    "compileSDK": "35",
+    "buildTools": "34.0.0",
+    "nativeBuildRequired": false
+  },
+  "pins": [
+    {
+      "artifact": {
+        "checksum": "00e1301387028f33753e38274401694e1a27c62f",
+        "checksumAlgorithm": "sha1",
+        "size": 76559180,
+        "url": "https://dl.google.com/android/repository/build-tools_r34-macosx.zip"
+      },
+      "destination": "file:///OWNED_ROOT/license-sdk/build-tools/34.0.0",
+      "executable": true,
+      "licenseID": "android-sdk-license",
+      "licenseSHA1": "24333f8a63b6825ea9c5514f83c2829b004d1fee",
+      "package": "build-tools;34.0.0",
+      "repositorySHA256": "237eefe28e55619d3e63d730f8994cc1ae6d9c171096f07a6c147297145787e6",
+      "repositoryURL": "https://dl.google.com/android/repository/repository2-3.xml",
+      "requiredFile": "aapt2",
+      "resourceRoot": "file:///OWNED_ROOT/license-sdk/",
+      "revision": "34.0.0"
+    },
+    {
+      "artifact": {
+        "checksum": "0bb560a90a7a2cbd0dd8348224d518b638fe7949",
+        "checksumAlgorithm": "sha1",
+        "size": 64273788,
+        "url": "https://dl.google.com/android/repository/platform-35_r02.zip"
+      },
+      "destination": "file:///OWNED_ROOT/license-sdk/platforms/android-35",
+      "executable": false,
+      "licenseID": "android-sdk-license",
+      "licenseSHA1": "24333f8a63b6825ea9c5514f83c2829b004d1fee",
+      "package": "platforms;android-35",
+      "repositorySHA256": "237eefe28e55619d3e63d730f8994cc1ae6d9c171096f07a6c147297145787e6",
+      "repositoryURL": "https://dl.google.com/android/repository/repository2-3.xml",
+      "requiredFile": "android.jar",
+      "resourceRoot": "file:///OWNED_ROOT/license-sdk/",
+      "revision": "2"
+    }
+  ],
+  "uniquePayloadBytes": 140832968,
+  "license": {
+    "id": "android-sdk-license",
+    "acceptedSHA1": "24333f8a63b6825ea9c5514f83c2829b004d1fee",
+    "newAcceptance": false,
+    "recordSource": "whole SDK COW clone; no separately added acceptance record"
+  },
+  "clones": [
+    {
+      "source": "/ORIGINAL_SDK",
+      "destination": "/OWNED_ROOT/cli-sdk",
+      "exit": 0,
+      "seconds": 15.741,
+      "stderr": ""
+    },
+    {
+      "source": "/PREVIOUS_OWNED_ROOT/source",
+      "destination": "/OWNED_ROOT/cli-source",
+      "exit": 0,
+      "seconds": 0.04,
+      "stderr": ""
+    },
+    {
+      "source": "/PREVIOUS_OWNED_ROOT/gradle",
+      "destination": "/OWNED_ROOT/cli-gradle",
+      "exit": 0,
+      "seconds": 4.128,
+      "stderr": ""
+    },
+    {
+      "source": "/ORIGINAL_SDK",
+      "destination": "/OWNED_ROOT/gui-sdk",
+      "exit": 0,
+      "seconds": 21.341,
+      "stderr": ""
+    },
+    {
+      "source": "/PREVIOUS_OWNED_ROOT/source",
+      "destination": "/OWNED_ROOT/gui-source",
+      "exit": 0,
+      "seconds": 0.045,
+      "stderr": ""
+    },
+    {
+      "source": "/PREVIOUS_OWNED_ROOT/gradle",
+      "destination": "/OWNED_ROOT/gui-gradle",
+      "exit": 0,
+      "seconds": 4.29,
+      "stderr": ""
+    },
+    {
+      "source": "/ORIGINAL_SDK",
+      "destination": "/OWNED_ROOT/license-sdk",
+      "exit": 0,
+      "seconds": 20.445,
+      "stderr": ""
+    },
+    {
+      "source": "/PREVIOUS_OWNED_ROOT/source",
+      "destination": "/OWNED_ROOT/license-source",
+      "exit": 0,
+      "seconds": 0.071,
+      "stderr": ""
+    },
+    {
+      "source": "/PREVIOUS_OWNED_ROOT/gradle",
+      "destination": "/OWNED_ROOT/license-gradle",
+      "exit": 0,
+      "seconds": 3.742,
+      "stderr": ""
+    }
+  ],
+  "leaseKeys": [
+    {
+      "case": "cli",
+      "key": "folder:16777244:20472842",
+      "file": "/USER_HOME/Library/Caches/dev.runstir/leases/7dc0042a4c989cc6.lock"
+    },
+    {
+      "case": "cli",
+      "key": "destination:/OWNED_ROOT/cli-sdk",
+      "file": "/USER_HOME/Library/Caches/dev.runstir/leases/b55ab60b42797814.lock"
+    },
+    {
+      "case": "gui",
+      "key": "folder:16777244:20640753",
+      "file": "/USER_HOME/Library/Caches/dev.runstir/leases/bbbb1f48969df070.lock"
+    },
+    {
+      "case": "gui",
+      "key": "destination:/OWNED_ROOT/gui-sdk",
+      "file": "/USER_HOME/Library/Caches/dev.runstir/leases/c834ac80bb5c09a5.lock"
+    },
+    {
+      "case": "license",
+      "key": "folder:16777244:20791842",
+      "file": "/USER_HOME/Library/Caches/dev.runstir/leases/8b0bc9db60d26fe4.lock"
+    },
+    {
+      "case": "license",
+      "key": "destination:/OWNED_ROOT/license-sdk",
+      "file": "/USER_HOME/Library/Caches/dev.runstir/leases/3a32e4571d122a79.lock"
+    }
+  ],
+  "build": {
+    "command": {
+      "command": [
+        "/usr/bin/swift",
+        "build",
+        "--package-path",
+        "/OWNED_ROOT/product-source",
+        "--scratch-path",
+        "/OWNED_ROOT/build",
+        "--cache-path",
+        "/OWNED_ROOT/swift-cache",
+        "--config-path",
+        "/OWNED_ROOT/swift-config",
+        "--security-path",
+        "/OWNED_ROOT/swift-security",
+        "--manifest-cache",
+        "local",
+        "--force-resolved-versions",
+        "-Xswiftc",
+        "-warnings-as-errors"
+      ],
+      "head": "70cb2877b259690832cec686e925087ddb1c1d01",
+      "HOME": "/USER_HOME",
+      "ownedOverrides": {
+        "TMPDIR": "/OWNED_ROOT/tmp/",
+        "CLANG_MODULE_CACHE_PATH": "/OWNED_ROOT/module-cache",
+        "SWIFTPM_MODULECACHE_OVERRIDE": "/OWNED_ROOT/module-cache"
+      }
+    },
+    "result": {
+      "exitCode": 0,
+      "seconds": 35.182
+    }
+  },
+  "aliases": "All host paths and user values are de-identified. Public commands are structural copies, not byte-identical private receipts."
+}

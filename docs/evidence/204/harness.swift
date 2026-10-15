@@ -43,13 +43,18 @@ struct BoundedRunner: ProcessRunner {
 
 @main struct OwnedSDKValidation {
     static func main() async throws {
-        let prefix = URL(fileURLWithPath: "/Volumes/P41_USB4/Developer/validation/goal204-sdk-install-20261015")
+        // Public, de-identified copy. The executed private source has its own receipt hash.
+        guard let prefixPath = ProcessInfo.processInfo.environment["RUNSTIR_VALIDATION_ROOT"],
+              let java = ProcessInfo.processInfo.environment["RUNSTIR_VALIDATION_JAVA_HOME"],
+              let user = ProcessInfo.processInfo.environment["RUNSTIR_VALIDATION_USER"] else {
+            throw ValidationFailure.message("Set the owned validation root, JDK home and validation user inputs")
+        }
+        let prefix = URL(fileURLWithPath: prefixPath)
         if CommandLine.arguments.contains("--atomic-probe") {
             try Data("owned atomic probe".utf8).write(to: prefix.appendingPathComponent("evidence/atomic-probe.txt"), options: CommandLine.arguments.contains("--regular-probe") ? [] : .atomic)
             return
         }
-        let java = "/Users/swifty/.local/share/mise/installs/java/zulu-17.66.19.0"
-        let env = ["HOME": prefix.appendingPathComponent("home").path, "USER": "swifty", "LOGNAME": "swifty", "LANG": "en_US.UTF-8",
+        let env = ["HOME": prefix.appendingPathComponent("home").path, "USER": user, "LOGNAME": user, "LANG": "en_US.UTF-8",
             "PATH": java + "/bin:/usr/bin:/bin:/usr/sbin:/sbin", "JAVA_HOME": java,
             "JAVA_TOOL_OPTIONS": "-Duser.home=" + prefix.appendingPathComponent("home").path + " -Djava.io.tmpdir=" + prefix.appendingPathComponent("tmp").path + " -Djava.util.prefs.userRoot=" + prefix.appendingPathComponent("home/prefs").path,
             "ANDROID_HOME": prefix.appendingPathComponent("sdk").path, "ANDROID_SDK_ROOT": prefix.appendingPathComponent("sdk").path,

@@ -188,7 +188,7 @@
     },
     "aapt2": {
       "argv": [
-        "/Volumes/P41_USB4/Developer/validation/goal204-sdk-install-20261015/sdk/build-tools/34.0.0/aapt2",
+        "/PREVIOUS_OWNED_ROOT/sdk/build-tools/34.0.0/aapt2",
         "version"
       ],
       "exitCode": 0,

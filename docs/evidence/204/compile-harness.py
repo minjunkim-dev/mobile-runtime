@@ -1,7 +1,8 @@
+# De-identified public copy. Private executed source has a separate receipt hash.
 from pathlib import Path
-import subprocess
-p=Path('/Volumes/P41_USB4/Developer/validation/goal204-sdk-install-20261015');b=Path('/Volumes/P41_USB4/Developer/worktrees/codex/goal204-sdk-contract/MobileEnvironment/.build/out/Products/Debug')
-repo=b.parents[3]
+import subprocess,os
+p=Path(os.environ['RUNSTIR_VALIDATION_ROOT']);b=Path(os.environ['RUNSTIR_VALIDATION_BUILD_PRODUCTS'])
+repo=Path(os.environ['RUNSTIR_VALIDATION_REPOSITORY'])
 objs=[b/(n+'.o') for n in ['Core','AndroidKit','EnvironmentKit','SimulatorKit','Subprocess','_SubprocessCShims','SystemPackage','CSystem','Yams','CYaml','Logging']]
 cmd=['/usr/bin/xcrun','swiftc','-parse-as-library','-swift-version','6','-I',str(b),'-module-cache-path',str(p/'harness-module-cache')]
 for package,target in [('swift-subprocess','_SubprocessCShims'),('swift-system','CSystem'),('Yams','CYaml')]:

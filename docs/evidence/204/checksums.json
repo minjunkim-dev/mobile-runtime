@@ -1,50 +1,50 @@
 {
   "schemaVersion": 1,
-  "excludesSelf": true,
+  "scope": "current de-identified public copies only",
   "files": {
     "README.md": {
-      "bytes": 3649,
-      "sha256": "aed3ea56b0245059d3ae3e578cca4bcf76e305e90d25299286c397256a5eedf7"
+      "bytes": 4701,
+      "sha256": "0c2372f3938c388fd88a35194f25b324e59112f7147b29761220afd6912938a6"
     },
     "actual-cli-plan.json": {
-      "bytes": 16648,
-      "sha256": "d287bbf7b5f97fbf533f9bac80ab9e854f73ac8e3f2ff346fd5e0e3423e85c24"
+      "bytes": 15774,
+      "sha256": "f64088c4cbac4dc459f7be37a992137023560eba1284f2a6e1cc82d13c8c3ba5"
     },
     "attempts.md": {
       "bytes": 3246,
       "sha256": "451eee4af0e2f6d32d5c1608b51d7e2e0faa42ee1c61b3c7fea146e5d43f319a"
     },
     "compile-harness.py": {
-      "bytes": 1083,
-      "sha256": "9655c1cefaa830ae98fcd61a1fcad22beff74b5424c2c9872582c151f56afd8e"
+      "bytes": 1110,
+      "sha256": "10b95360a6ffecd0294d1600bfcaac0b50872d8c28791e6c37203789d4aa954c"
     },
     "harness.swift": {
-      "bytes": 7436,
-      "sha256": "15afe726c12679f705fc2f782c41902aec8a1f66542331da299303c6a417a5c9"
+      "bytes": 7787,
+      "sha256": "b4186187cd2a5fa1edb14ead98f69deb9ec93df953e4cd81abb45e71bde0fd8a"
     },
     "inputs.json": {
-      "bytes": 2982,
-      "sha256": "c3720c4e1e82efab2e0bc2504b1111bd03fe080c8bd5ee72e892dff81e350f7e"
+      "bytes": 2841,
+      "sha256": "949e416aea83d684dd931c13341a7622fcea461d42393b046b19f8d26e2ca072"
     },
     "local-checks.json": {
       "bytes": 1621,
       "sha256": "1659868906a7d03cc7a53b43763b34d5a2fbb700f07e05159cac08557bbb1004"
     },
     "owned-writes.sb": {
-      "bytes": 244,
-      "sha256": "40966e61597fc45dd94c4e1d814d08acd2e5a1ed98425494b65b7069d00a6fad"
+      "bytes": 197,
+      "sha256": "17d829d6f8c0b4ea0d83a0511442525f96a8652c806a3f26512118ee42504476"
     },
     "private-receipts.json": {
-      "bytes": 17664,
-      "sha256": "4a4ecbdc2d6f8d4ce4bac07587fd041476521e4f5563a071bab04307ffbd0236"
+      "bytes": 17617,
+      "sha256": "8fd302791cfad2cce0d83d90d19d92920b563ce36b69f181184470bd4e40d91b"
     },
     "results.json": {
-      "bytes": 7658,
-      "sha256": "29fe49f8605f4a511f207515d1f7ed188a5037c05dd34b12f06cb415aa3c8285"
+      "bytes": 7611,
+      "sha256": "8d69a7bb5c4f7941deae9108d051644912500297c2a5d4e3f5807b44f7229222"
     },
     "run-harness.py": {
-      "bytes": 1109,
-      "sha256": "36a8067701ad2dda4720cd204538ca347a4c605622d82370ee8f74d58f3bbb00"
+      "bytes": 1251,
+      "sha256": "b42fff57b1724cebd3b550e4b820918703baf7a566cb1778aef41ba3ae6b8620"
     }
   }
 }

@@ -1,0 +1,25 @@
+{
+  "counts": {
+    "json": 16,
+    "python": 7,
+    "markdownLinks": 21
+  },
+  "privateOriginalIndices": {
+    "204": {
+      "references": 115,
+      "mismatches": []
+    },
+    "cli-gui": {
+      "references": 115,
+      "mismatches": []
+    }
+  },
+  "privacyUserNameAndHomePathsAbsent": true,
+  "allLocalLinksExist": true,
+  "note": "No product source changed. Runtime source remains70cb. Full raw logs stay private. Public helper differs from executed private original.",
+  "swiftParse": true,
+  "publicFileCounts": {
+    "new": 19,
+    "all204": 31
+  }
+}

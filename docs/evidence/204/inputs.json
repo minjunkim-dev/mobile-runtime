@@ -27,10 +27,10 @@
     "finalCodeHead": "73f20f95ba6073c313c4570550e638af51285275",
     "cancellationHead": "c45fe2e461b484348591c3d276f1274ccc62ad05"
   },
-  "prefix": "/Volumes/P41_USB4/Developer/validation/goal204-sdk-install-20261015",
+  "prefix": "/PREVIOUS_OWNED_ROOT",
   "pins": [
     {
-      "destination": "/Volumes/P41_USB4/Developer/validation/goal204-sdk-install-20261015/sdk/build-tools/34.0.0",
+      "destination": "/PREVIOUS_OWNED_ROOT/sdk/build-tools/34.0.0",
       "licenseAccepted": "true",
       "licenseID": "android-sdk-license",
       "licenseSHA1": "24333f8a63b6825ea9c5514f83c2829b004d1fee",
@@ -42,7 +42,7 @@
       "url": "https://dl.google.com/android/repository/build-tools_r34-macosx.zip"
     },
     {
-      "destination": "/Volumes/P41_USB4/Developer/validation/goal204-sdk-install-20261015/sdk/platforms/android-35",
+      "destination": "/PREVIOUS_OWNED_ROOT/sdk/platforms/android-35",
       "licenseAccepted": "true",
       "licenseID": "android-sdk-license",
       "licenseSHA1": "24333f8a63b6825ea9c5514f83c2829b004d1fee",
