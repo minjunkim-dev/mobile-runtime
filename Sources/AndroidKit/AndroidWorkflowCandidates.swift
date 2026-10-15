@@ -60,8 +60,8 @@ public func androidWorkflowDevices(anchor: ProjectAnchor, config: ConfigContext,
         .sorted { $0.id < $1.id }
 }
 
-/// Whether an app a finished `up` left on an emulator is still running there. A
-/// disconnected serial runs nothing; any other failure stays unknown.
+/// Whether an app a finished `up` left on an emulator is still running there.
+/// A disconnected serial cannot confirm that the app stopped.
 public func androidAppObservation(serial: String, applicationId: String, anchor: ProjectAnchor, config: ConfigContext,
                                   runner: any ProcessRunner, environment: AndroidEnvironment) async throws -> ClaimObservation {
     let context = AndroidDoctorContext(anchor: anchor, config: config, hostRunner: runner,
@@ -76,6 +76,6 @@ public func androidAppObservation(serial: String, applicationId: String, anchor:
     let pid = result.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines)
     if result.terminationStatus.isSuccess, !pid.isEmpty { return .running("\(applicationId) pid \(pid) on \(serial)") }
     let said = result.combinedOutput.trimmingCharacters(in: .whitespacesAndNewlines)
-    if result.terminationStatus == .exited(1) && (said.isEmpty || said.contains("device '\(serial)' not found")) { return .stopped }
+    if result.terminationStatus == .exited(1) && said.isEmpty { return .stopped }
     return .unknown(said.isEmpty ? String(describing: result.terminationStatus) : said)
 }
