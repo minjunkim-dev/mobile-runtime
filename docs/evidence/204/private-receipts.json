@@ -456,6 +456,10 @@
     "harness/run.py": {
       "bytes": 1109,
       "sha256": "36a8067701ad2dda4720cd204538ca347a4c605622d82370ee8f74d58f3bbb00"
+    },
+    "evidence/license-records-final-comparison.json": {
+      "bytes": 180,
+      "sha256": "e62a9fb7a2142d58ad3eac83af5bdd143ec053d96e985a78c9093ce66f1a58d7"
     }
   }
 }

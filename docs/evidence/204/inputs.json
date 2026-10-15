@@ -58,8 +58,9 @@
     "id": "android-sdk-license",
     "acceptedHash": "24333f8a63b6825ea9c5514f83c2829b004d1fee",
     "newAcceptance": false,
-    "recordAdded": false,
-    "rule": "official JAXB TrimStringAdapter then UTF-8 SHA1"
+    "rule": "official JAXB TrimStringAdapter then UTF-8 SHA1",
+    "acceptanceHashAdded": false,
+    "existingRecordSource": "preserved by the whole SDK COW clone; no separate license-record copying or edits"
   },
   "boundary": {
     "install": "public PreparationExecution.run with custom ResourceLeases under owned prefix",

@@ -27,8 +27,8 @@ Build Tools 설치는 `0b0cd7d642e4595b8c46888bf3751df9f092cb0e`에서 측정했
 SDK 준비 뒤에도 AVD와 guard 아래의 workspace 수동 단계가 남아 결과는 `partial`이었다.
 
 기존 license hash `24333f8a63b6825ea9c5514f83c2829b004d1fee`를 재사용했다.
-새 license를 수락하거나 record를 추가하지 않았다.
-공식 `sdkmanager --licenses` 대조에는 `n`만 입력했다. record bytes는 그대로였다.
+전체 SDK clone이 기존 record를 보존했다. 수락 hash를 추가하거나 license를 새로 수락하지 않았다.
+공식 `sdkmanager --licenses` 대조에는 `n`만 입력했다. 최종 record bytes는 clone 원본과 같았다.
 원격 XML license의 raw SHA-1을 사용한 초기 판단은 잘못이었다.
 공식 JAXB `TrimStringAdapter`를 확인하고 정규화 규칙을 수정했다.
 

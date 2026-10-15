@@ -238,7 +238,12 @@
       "setup": "PASS"
     },
     "remoteCI": "parent controlled; not evidence here",
-    "mainMerge": "not evidence here"
+    "mainMerge": "not evidence here",
+    "publicLicenseRecords": {
+      "equalToCloneSource": true,
+      "recordCount": 8,
+      "acceptanceHashAdded": false
+    }
   },
   "notes": [
     "Harness process exit0 does not imply product success. Use productExit/state/completed.",
