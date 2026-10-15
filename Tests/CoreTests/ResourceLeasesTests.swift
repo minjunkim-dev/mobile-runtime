@@ -82,6 +82,98 @@ struct ResourceLeasesTests {
         try await leases.check(device: device, project: "/work/second") { _ in calls.add(); return .running("") }
         #expect(calls.value == 0)
     }
+
+    @Test("an unconfirmed reservation blocks other projects without observing an unknown app")
+    func unconfirmedReservation() async throws {
+        let leases = store()
+        let device = ResourceKey.device(.ios, "A")
+        let first = owner("first", project: "/work/first")
+        try leases.reserve(device: device, owner: first)
+        let calls = Counter()
+        try await leases.check(device: device, project: first.project) { _ in calls.add(); return .stopped }
+        let conflict = try await #require(throws: ResourceConflict.self) {
+            try await leases.check(device: device, project: "/work/second") { _ in calls.add(); return .stopped }
+        }
+        #expect(conflict.key == device)
+        #expect(conflict.owner == first)
+        #expect(conflict.reason.contains("unconfirmed"))
+        #expect(calls.value == 0)
+        #expect(FileManager.default.fileExists(atPath: leases.file(device, "claim").path))
+    }
+
+    @Test("a final app record replaces the reservation and supports fresh observation")
+    func reservationBecomesAppClaim() async throws {
+        let leases = store()
+        let device = ResourceKey.device(.android, "avd:Pixel")
+        let first = owner("first", project: "/work/first")
+        try leases.reserve(device: device, owner: first)
+        let claim = ResourceClaim(device: device, platform: .android, handle: "emulator-5554", appID: "com.first", owner: first)
+        try leases.record(claim)
+        let conflict = try await #require(throws: ResourceConflict.self) {
+            try await leases.check(device: device, project: "/work/second") { saved in
+                #expect(saved == claim)
+                return .running("pid 7")
+            }
+        }
+        #expect(conflict.key == claim.app)
+        #expect(conflict.owner == first)
+    }
+
+    @Test("legacy app claims remain observable")
+    func legacyAppClaim() async throws {
+        let leases = store()
+        let device = ResourceKey.device(.ios, "A")
+        let claim = ResourceClaim(device: device, platform: .ios, handle: "A", appID: "com.first", owner: owner("first"))
+        try FileManager.default.createDirectory(at: leases.directory, withIntermediateDirectories: true)
+        try JSONEncoder().encode(claim).write(to: leases.file(device, "claim"), options: .atomic)
+        let conflict = try await #require(throws: ResourceConflict.self) {
+            try await leases.check(device: device, project: "/work/second") { saved in
+                #expect(saved == claim)
+                return .running("pid 7")
+            }
+        }
+        #expect(conflict.key == claim.app)
+    }
+
+    @Test("a claim for a different device stays unknown without observing or deleting it")
+    func mismatchedDeviceClaim() async throws {
+        let leases = store()
+        let device = ResourceKey.device(.ios, "A")
+        let claim = ResourceClaim(device: .device(.ios, "B"), platform: .ios, handle: "B", appID: "com.first", owner: owner("first"))
+        try FileManager.default.createDirectory(at: leases.directory, withIntermediateDirectories: true)
+        let data = try JSONEncoder().encode(claim)
+        let file = leases.file(device, "claim")
+        try data.write(to: file, options: .atomic)
+        let conflict = try await #require(throws: ResourceConflict.self) {
+            try await leases.check(device: device, project: "/work/second") { _ in
+                Issue.record("An inconsistent claim must not observe an app")
+                return .stopped
+            }
+        }
+        #expect(conflict.key == device)
+        #expect(conflict.owner == nil)
+        #expect(try Data(contentsOf: file) == data)
+    }
+
+    @Test("a failed final write preserves the unconfirmed reservation")
+    func failedFinalWriteKeepsReservation() async throws {
+        let leases = store()
+        let device = ResourceKey.device(.ios, "A")
+        let first = owner("first", project: "/work/first")
+        try leases.reserve(device: device, owner: first)
+        let claim = ResourceClaim(device: device, platform: .ios, handle: "A", appID: "com.first", owner: first)
+        try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: leases.directory.path)
+        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: leases.directory.path) }
+        #expect(throws: (any Error).self) { try leases.record(claim) }
+        let conflict = try await #require(throws: ResourceConflict.self) {
+            try await leases.check(device: device, project: "/work/second") { _ in
+                Issue.record("An unconfirmed reservation must not observe an app")
+                return .stopped
+            }
+        }
+        #expect(conflict.owner == first)
+        #expect(conflict.reason.contains("unconfirmed"))
+    }
 }
 
 private final class Counter: @unchecked Sendable {

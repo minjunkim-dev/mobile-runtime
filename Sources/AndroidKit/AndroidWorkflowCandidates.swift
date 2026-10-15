@@ -60,15 +60,23 @@ public func androidWorkflowDevices(anchor: ProjectAnchor, config: ConfigContext,
         .sorted { $0.id < $1.id }
 }
 
-/// Whether an app a finished `up` left on an emulator is still running there. A
-/// disconnected serial runs nothing; any other failure stays unknown.
-public func androidAppObservation(serial: String, applicationId: String, anchor: ProjectAnchor, config: ConfigContext,
+/// Whether an app a finished `up` left on an emulator is still running there.
+/// A disconnected serial cannot confirm that the app stopped.
+public func androidAppObservation(serial: String, applicationId: String, expectedDevice: ResourceKey, anchor: ProjectAnchor, config: ConfigContext,
                                   runner: any ProcessRunner, environment: AndroidEnvironment) async throws -> ClaimObservation {
     let context = AndroidDoctorContext(anchor: anchor, config: config, hostRunner: runner,
                                        projectRunner: runner, environment: environment)
     guard case .resolved(let sdk, _) = context.sdkRoot() else { return .unknown("the Android SDK root is unresolved") }
     let result: ProcessResult
     do {
+        let identity = try await runner.run(context.toolCommand("adb", ["-s", serial, "emu", "avd", "name"], sdk: sdk))
+        guard identity.terminationStatus.isSuccess, let avd = androidAVDName(from: identity.standardOutput) else {
+            return .unknown("the recorded Emulator AVD identity could not be observed: \(identity.combinedOutput)")
+        }
+        let currentDevice = ResourceKey.device(.android, "avd:\(avd)")
+        guard currentDevice == expectedDevice else {
+            return .unknown("the recorded serial now names another AVD: expected \(expectedDevice), observed \(currentDevice)")
+        }
         result = try await runner.run(context.toolCommand("adb", ["-s", serial, "shell", "pidof", applicationId], sdk: sdk))
     } catch let error where !(error is CancellationError) {
         return .unknown("adb could not be run: \(error)")
@@ -76,6 +84,6 @@ public func androidAppObservation(serial: String, applicationId: String, anchor:
     let pid = result.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines)
     if result.terminationStatus.isSuccess, !pid.isEmpty { return .running("\(applicationId) pid \(pid) on \(serial)") }
     let said = result.combinedOutput.trimmingCharacters(in: .whitespacesAndNewlines)
-    if result.terminationStatus == .exited(1) && (said.isEmpty || said.contains("device '\(serial)' not found")) { return .stopped }
+    if result.terminationStatus == .exited(1) && said.isEmpty { return .stopped }
     return .unknown(said.isEmpty ? String(describing: result.terminationStatus) : said)
 }

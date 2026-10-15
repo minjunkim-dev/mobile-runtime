@@ -165,12 +165,26 @@ public enum WorkflowExecution {
                 try Task.checkCancellation()
             }
 
-            // Inspected and selected; take every resource this command changes before the first change.
+            // Stabilize this project's recorded targets before acquiring the resources down changes.
             let folder = try FolderIdentity(directory: anchor.workspaceRoot?.directory ?? anchor.directory)
             let owner = LeaseOwner(operationId: operation.id, command: kind.rawValue, project: folder.path)
-            let device = kind == .up ? operation.device.map { ResourceKey.device(platform, $0) } : nil
-            let lease = try leases.acquire([.folder(folder)] + (device.map { [$0, .port(MetroVerdict.port)] } ?? []), owner: owner)
-            defer { lease.release() }
+            let folderLease = try leases.acquire([.folder(folder)], owner: owner)
+            defer { folderLease.release() }
+            let device: ResourceKey?
+            switch kind {
+            case .up: device = operation.device.map { .device(platform, $0) }
+            case .down:
+                switch platform {
+                case .ios:
+                    device = InstallRecord.read(from: RunLogs(project: anchor.directory)).map { .device(.ios, $0.udid) }
+                case .android:
+                    device = try androidTeardownDeviceKey(anchor: anchor)
+                }
+            case .build: device = nil
+            }
+            let resources = (device.map { [$0] } ?? []) + (kind == .build ? [] : [.port(MetroVerdict.port)])
+            let resourceLease = try leases.acquire(resources, owner: owner)
+            defer { resourceLease.release() }
             if let device {
                 let environment = AndroidEnvironment(values: input.project.environment)
                 try await leases.check(device: device, project: folder.path) { [wiring] claim in
@@ -178,11 +192,12 @@ public enum WorkflowExecution {
                     case .ios:
                         try await simulatorAppObservation(udid: claim.handle, bundleID: claim.appID, runner: runner, locator: wiring.locator)
                     case .android:
-                        try await androidAppObservation(serial: claim.handle, applicationId: claim.appID, anchor: anchor,
+                        try await androidAppObservation(serial: claim.handle, applicationId: claim.appID, expectedDevice: claim.device, anchor: anchor,
                             config: config, runner: runner, environment: environment)
                     }
                 }
             }
+            if kind == .up, let device { try leases.reserve(device: device, owner: owner) }
 
             let started: @Sendable (String) -> Void = { events.send("stage", stage: $0, state: "running") }
             let finished: @Sendable (StageResult) -> Void = { events.send("stage", stage: $0.id, state: $0.status.rawValue, detail: $0.detail) }
@@ -214,8 +229,18 @@ public enum WorkflowExecution {
                     .run(onStageFinished: finished, onStageStarted: started)
             }
             // The app outlives this lease, even after a later stage failed. The next run observes it again.
-            if let device, let up, let claim = claim(up.context, device: device, platform: platform, owner: owner) {
-                try? leases.record(claim)
+            if let device, let report = up, let claim = claim(report.context, device: device, platform: platform, owner: owner) {
+                do {
+                    try leases.record(claim)
+                } catch {
+                    let detail = "Could not record the app claim: \(error). The device reservation remains unconfirmed."
+                    operation.remaining.append(detail)
+                    operation.nextAction = "Inspect the recorded device and retry this project. Other projects remain blocked until its ownership is confirmed."
+                    let failure: UpFailure
+                    if case .cancelled? = report.failure { failure = .cancelled }
+                    else { failure = .tool([report.failure?.message, detail].compactMap { $0 }.joined(separator: "\n")) }
+                    up = UpReport(stages: report.stages, context: report.context, failure: failure)
+                }
             }
         } catch is WorkflowStopped {
             // The existing report carries the validation and its public failure classification.

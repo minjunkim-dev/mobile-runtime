@@ -219,6 +219,99 @@ struct WorkflowExecutionTests {
         lease.release()
     }
 
+    @Test("down respects another operation's device and port leases before teardown", arguments: [ResourceKey.device(.ios, "A"), .port(8081)])
+    func downResourceConflict(key: ResourceKey) async throws {
+        let repo = try iosProject()
+        let logs = RunLogs(project: repo.root)
+        defer { try? FileManager.default.removeItem(at: logs.directory) }
+        #expect(InstallRecord(udid: "A", bundleId: "com.test.MyApp").write(to: logs) != nil)
+        let leases = temporaryLeases()
+        let other = LeaseOwner(operationId: "other-up", command: "up", project: "/work/other")
+        let held = try leases.acquire([key], owner: other)
+        defer { held.release() }
+        let runner = iosRunner(repo)
+        let result = await WorkflowExecution.run(.down, input: WorkflowInput(project: ProjectInspectionInput(
+            directory: repo.root, environment: [:], platform: .ios)), runner: runner, leases: leases)
+        #expect(result.exitCode == 1)
+        #expect(result.operation.conflict?.owner == other)
+        #expect(!runner.log.all.contains { $0.arguments.contains("terminate") || $0.executable == "kill" })
+        #expect(result.down?.items.isEmpty == true)
+    }
+
+    @Test("stale down preserves another project's running or unobservable app", arguments: [true, false])
+    func downClaimConflict(running: Bool) async throws {
+        let repo = try iosProject()
+        let logs = RunLogs(project: repo.root)
+        defer { try? FileManager.default.removeItem(at: logs.directory) }
+        #expect(InstallRecord(udid: "A", bundleId: "com.test.MyApp").write(to: logs) != nil)
+        let leases = temporaryLeases()
+        let other = LeaseOwner(operationId: "finished-up", command: "up", project: "/work/other")
+        try leases.record(ResourceClaim(device: .device(.ios, "A"), platform: .ios,
+            handle: "A", appID: "com.test.MyApp", owner: other))
+        var runner = iosRunner(repo)
+        runner.responses["xcrun simctl spawn A launchctl list"] = running
+            ? .ok("PID\tStatus\tLabel\n4242\t0\tUIKitApplication:com.test.MyApp[a1b2][rb-legacy]\n")
+            : .failed(1, "Simulator observation failed")
+        let result = await WorkflowExecution.run(.down, input: WorkflowInput(project: ProjectInspectionInput(
+            directory: repo.root, environment: [:], platform: .ios)), runner: runner, leases: leases)
+        #expect(result.exitCode == 1)
+        #expect(result.operation.conflict?.owner == other)
+        #expect(!runner.log.all.contains { $0.arguments.contains("terminate") || $0.executable == "kill" })
+        #expect(result.down?.items.isEmpty == true)
+    }
+
+    @Test("an up failure before install leaves a durable unknown device reservation")
+    func failedUpKeepsReservation() async throws {
+        let repo = try iosProject()
+        var runner = iosUpRunner(repo)
+        let build = runner.responses.keys.first { $0.hasPrefix("xcodebuild ") && $0.hasSuffix(" build") && $0.contains("id=A") }!
+        runner.responses[build] = .failed(65, "compile failed")
+        let leases = temporaryLeases()
+        let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: ProjectInspectionInput(
+            directory: repo.root, environment: [:], platform: .ios), device: "A"), runner: runner, leases: leases)
+        #expect(result.exitCode == 1)
+        #expect(result.operation.completed.contains("dependencies"))
+        #expect(!runner.log.all.contains { $0.executable == "xcrun" && $0.arguments.contains("install") })
+        let conflict = try await #require(throws: ResourceConflict.self) {
+            try await leases.check(device: .device(.ios, "A"), project: "/work/other") { _ in
+                Issue.record("An unfinished reservation must not be observed as a completed app claim")
+                return .stopped
+            }
+        }
+        #expect(conflict.owner?.operationId == result.operation.id)
+    }
+
+    @Test("a final claim write failure preserves stages, app evidence and cancellation", arguments: [0, 1, 130])
+    func claimWriteFailure(launchExit: Int) async throws {
+        let repo = try iosProject()
+        var runner = iosUpRunner(repo)
+        let launch = "xcrun simctl launch A com.test.MyApp"
+        if launchExit == 130 { runner.failures[launch] = CancellationError() }
+        else if launchExit != 0 { runner.responses[launch] = .failed(1, "launch failed") }
+        let leases = temporaryLeases()
+        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: leases.directory.path) }
+        let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: ProjectInspectionInput(
+            directory: repo.root, environment: [:], platform: .ios), device: "A"), runner: runner, leases: leases) { event in
+                if event.stageId == "launch", event.state != "running" {
+                    do { try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: leases.directory.path) }
+                    catch { Issue.record("Could not inject claim write failure: \(error)") }
+                }
+            }
+        #expect(result.exitCode == (launchExit == 130 ? 130 : 2))
+        #expect(result.up?.context.product?.bundleIdentifier == "com.test.MyApp")
+        #expect(result.up?.context.device?.udid == "A")
+        #expect(result.operation.completed.contains("build"))
+        #expect(result.operation.completed.contains("install"))
+        #expect(result.operation.remaining.contains { $0.contains("Could not record the app claim") })
+        let conflict = try await #require(throws: ResourceConflict.self) {
+            try await leases.check(device: .device(.ios, "A"), project: "/work/other") { _ in
+                Issue.record("A failed final write must leave an unknown reservation")
+                return .stopped
+            }
+        }
+        #expect(conflict.owner?.operationId == result.operation.id)
+    }
+
     private func temporaryLeases() -> ResourceLeases {
         ResourceLeases(directory: FileManager.default.temporaryDirectory.appendingPathComponent("runstir-leases-\(UUID().uuidString)"))
     }
@@ -247,6 +340,19 @@ struct WorkflowExecutionTests {
             "xcodebuild \(destination) build": .ok("** BUILD SUCCEEDED **"),
             "xcodebuild -showBuildSettings -json \(destination)": .ok(#"[{"target":"MyApp","buildSettings":{"CONFIGURATION":"Debug","BUILT_PRODUCTS_DIR":"/test/build","FULL_PRODUCT_NAME":"MyApp.app","PRODUCT_BUNDLE_IDENTIFIER":"com.test.MyApp"}}]"#),
         ])
+    }
+
+    private func iosUpRunner(_ repo: FixtureRepo) -> FakeProcessRunner {
+        var runner = iosRunner(repo)
+        let destination = "-project \(repo.url("ios/MyApp.xcodeproj").path) -scheme MyApp -configuration Debug -destination platform=iOS Simulator,id=A"
+        runner.responses["xcrun simctl list devices -j"] = .ok(#"{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-27-0":[{"name":"iPhone A","udid":"A","state":"Booted","isAvailable":true}]}}"#)
+        runner.responses[MetroStatus.command] = .ok(MetroStatus.running(projectRoot: repo.root))
+        runner.responses["xcodebuild \(destination) build"] = .ok("** BUILD SUCCEEDED **")
+        runner.responses["xcodebuild -showBuildSettings -json \(destination)"] = .ok(#"[{"target":"MyApp","buildSettings":{"CONFIGURATION":"Debug","BUILT_PRODUCTS_DIR":"/test/build","FULL_PRODUCT_NAME":"MyApp.app","PRODUCT_BUNDLE_IDENTIFIER":"com.test.MyApp"}}]"#)
+        runner.responses["xcrun simctl install A /test/build/MyApp.app"] = .ok("")
+        runner.responses["xcrun simctl terminate A com.test.MyApp"] = .ok("")
+        runner.responses["xcrun simctl launch A com.test.MyApp"] = .ok("com.test.MyApp: 3538")
+        return runner
     }
 }
 
