@@ -33,7 +33,10 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Build the smoke app
         id: app
-        run: echo "path=$(scripts/build-simulator-smoke-app.sh "$RUNNER_TEMP/smoke")" >> "$GITHUB_OUTPUT"
+        # Assigned first: inside `echo`, a failed build would leave the step green.
+        run: |
+          app="$(scripts/build-simulator-smoke-app.sh "$RUNNER_TEMP/smoke")"
+          echo "path=$app" >> "$GITHUB_OUTPUT"
       - name: Select, boot, install, launch and stop on a real simulator
         env:
           RUNSTIR_SIMULATOR_SMOKE_APP: ${{ steps.app.outputs.path }}
