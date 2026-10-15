@@ -230,6 +230,29 @@ struct ConfigValuesCheckTests {
         #expect(check.outcome.remediation?.summary.contains(repo.root.path) == false)
     }
 
+    @Test("scheme guidance preserves project path arguments in a shell", arguments: [
+        "ios/Food Truck.xcodeproj", "ios/Sam's App.xcodeproj", "ios/App $(printf injected).xcodeproj",
+    ])
+    func schemeGuidanceShellArguments(_ relative: String) async throws {
+        let repo = try project(nil)
+        try FileManager.default.moveItem(at: repo.url("ios/MyApp.xcodeproj"), to: repo.url(relative))
+        let runner = FakeProcessRunner(responses: [
+            "xcode-select -p": .ok(developerDirectory),
+            "xcodebuild -list -json -project \(repo.url(relative).path)": .ok(schemeList(["One", "Two"])),
+        ])
+        let context = ConfigContext.detect(anchor: ProjectAnchor.detect(from: repo.root), workingDirectory: repo.root)
+        let outcome = try await ConfigValuesCheck(context: context, lookup: nil, runner: runner,
+            locator: XcodeLocator(runner: runner)).run()
+        let command = try #require(outcome.remediation?.command)
+        try repo.write("tools/xcodebuild", "#!/bin/sh\nprintf '%s\\n' \"$#\" \"$@\"\n")
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: repo.url("tools/xcodebuild").path)
+        let shell = SystemProcessRunner(environment: ["PATH": repo.url("tools").path + ":/usr/bin:/bin"],
+            workingDirectory: repo.root)
+        let result = try await shell.run(ProcessCommand("/bin/sh", ["-c", command], timeout: .seconds(10)))
+        #expect(result.terminationStatus.isSuccess)
+        #expect(result.standardOutput == "3\n-list\n-project\n\(relative)\n")
+    }
+
     @Test("a single scheme needs no declaration")
     func schemeUnambiguous() async throws {
         let repo = try project(nil)
