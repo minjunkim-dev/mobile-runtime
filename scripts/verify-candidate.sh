@@ -15,7 +15,8 @@ cleanup() {
   rm -rf "$scratch"
 }
 trap cleanup EXIT
-python3 - "$root" "$output" <<'PY'
+# Candidate files must not shadow Python modules during verification.
+python3 -I - "$root" "$output" <<'PY'
 import json
 from pathlib import Path
 import runpy
@@ -25,9 +26,9 @@ manifest = json.loads((output / 'CANDIDATE.json').read_text())
 runpy.run_path(str(Path(sys.argv[1]) / 'scripts/validate-release-input.py'))['validate_candidate_artifacts'](
     manifest, output)
 PY
-version=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["productVersion"])' "$output/CANDIDATE.json")
+version=$(python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["productVersion"])' "$output/CANDIDATE.json")
 # validate_inputs rejects path and command text before using the version in paths.
-python3 - "$root" "$output" <<'PY'
+python3 -I - "$root" "$output" <<'PY'
 import json
 from pathlib import Path
 import runpy
@@ -44,7 +45,7 @@ tar -xzf "$output/runstir-$version-macos-arm64.tar.gz" -C "$scratch"
 mkdir "$scratch/mount"
 hdiutil attach -quiet -readonly -nobrowse -mountpoint "$scratch/mount" "$output/Runstir-$version-macos-arm64.dmg"
 mounted=true
-python3 - "$root" "$output" "$scratch" "$version" <<'PY'
+python3 -I - "$root" "$output" "$scratch" "$version" <<'PY'
 import json
 from pathlib import Path
 import plistlib
@@ -71,7 +72,7 @@ if not (app / 'Contents/MacOS/Runstir').is_file():
     raise SystemExit('Missing GUI executable')
 print('Candidate identities, checksums and mounted GUI bundle passed; interactive GUI and Gatekeeper remain separate gates.')
 PY
-if [[ $(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["signing"])' "$output/CANDIDATE.json") == developer-id ]]; then
+if [[ $(python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["signing"])' "$output/CANDIDATE.json") == developer-id ]]; then
   requirement='anchor apple generic and certificate leaf[field.1.2.840.113635.100.6.1.13] exists'
   codesign --verify --strict -R "$requirement" "$scratch/runstir-$version-macos-arm64/mobile"
   codesign --verify --deep --strict -R "$requirement" "$scratch/mount/Runstir.app"

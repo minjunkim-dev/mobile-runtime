@@ -44,6 +44,7 @@ def validate_candidate(candidate, cli, gui):
     if not isinstance(version, str) or not isinstance(source, str):
         raise ValueError("candidate requires a product version and source SHA")
     validate_inputs(version, source)
+    validate_candidate_signing(candidate)
     core = candidate.get("coreBuildIdentity")
     if not isinstance(core, str) or not re.fullmatch(r"[0-9a-f]{64}", core):
         raise ValueError("candidate requires an exact Core build digest")
@@ -52,6 +53,13 @@ def validate_candidate(candidate, cli, gui):
     for build in (cli, gui):
         if any(build.get(key) != value for key, value in expected.items()):
             raise ValueError("CLI, GUI and Core must use the same source, version and build")
+
+
+def validate_candidate_signing(candidate):
+    if (candidate.get("signing"), candidate.get("notarization")) not in (
+        ("unsigned", "not-requested"), ("developer-id", "accepted")
+    ):
+        raise ValueError("candidate requires an explicit, consistent signing and notarization state")
 
 
 def validate_candidate_archive(members, version):
@@ -72,6 +80,7 @@ def validate_requested_candidate(candidate, version, source_sha):
 def validate_candidate_artifacts(candidate, directory):
     version = candidate.get("productVersion")
     validate_inputs(version, candidate.get("sourceSHA"))
+    validate_candidate_signing(candidate)
     expected = {"cli": f"runstir-{version}-macos-arm64.tar.gz",
                 "gui": f"Runstir-{version}-macos-arm64.dmg",
                 "homebrew": "runstir-candidate.rb"}

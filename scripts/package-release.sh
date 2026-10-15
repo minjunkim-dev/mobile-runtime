@@ -19,8 +19,9 @@ output=$(cd "$2" && pwd)
 name="runstir-$version-macos-arm64"
 archive="$output/$name.tar.gz"
 dmg="$output/Runstir-$version-macos-arm64.dmg"
-for file in "$archive" "$archive.sha256" "$dmg" "$dmg.sha256" "$output/CANDIDATE.json"; do
+for file in "$archive" "$archive.sha256" "$dmg" "$dmg.sha256" "$output/CANDIDATE.json" "$output/runstir-candidate.rb"; do
   test ! -e "$file"
+  test ! -L "$file"
 done
 if [[ -n ${RUNSTIR_SIGNING_IDENTITY:-} || -n ${RUNSTIR_NOTARY_PROFILE:-} ]]; then
   : "${RUNSTIR_SIGNING_IDENTITY:?Provide a Developer ID Application identity}"
@@ -34,7 +35,7 @@ mkdir "$scratch/source"
 git archive "$revision" | tar -x -C "$scratch/source"
 cp "$scratch/source/Package.resolved" "$scratch/resolved.json"
 cd "$scratch/source"
-python3 - "$version" <<'PY'
+python3 -I - "$version" <<'PY'
 from pathlib import Path
 import re
 import sys
@@ -61,7 +62,7 @@ done
 cp LICENSE "$stage/"
 cp docs/release-install.md "$stage/INSTALL.md"
 
-python3 - "$scratch/build/checkouts" "$stage" "$version" "$revision" <<'PY'
+python3 -I - "$scratch/build/checkouts" "$stage" "$version" "$revision" <<'PY'
 import json
 import hashlib
 from pathlib import Path
@@ -133,7 +134,7 @@ if [[ -n ${RUNSTIR_SIGNING_IDENTITY:-} ]]; then
   ditto -c -k --keepParent "$stage" "$scratch/cli-notary.zip"
   xcrun notarytool submit "$scratch/cli-notary.zip" --keychain-profile "$RUNSTIR_NOTARY_PROFILE" \
     --wait --output-format json > "$scratch/cli-notary.json"
-  python3 -c 'import json,sys; sys.exit(json.load(open(sys.argv[1]))["status"] != "Accepted")' "$scratch/cli-notary.json"
+  python3 -I -c 'import json,sys; sys.exit(json.load(open(sys.argv[1]))["status"] != "Accepted")' "$scratch/cli-notary.json"
   signed=true
 fi
 hdiutil create -quiet -fs HFS+ -volname Runstir -srcfolder "$scratch/disk" "$dmg"
@@ -141,14 +142,14 @@ if [[ $signed == true ]]; then
   codesign --timestamp --sign "$RUNSTIR_SIGNING_IDENTITY" "$dmg"
   xcrun notarytool submit "$dmg" --keychain-profile "$RUNSTIR_NOTARY_PROFILE" \
     --wait --output-format json > "$scratch/gui-notary.json"
-  python3 -c 'import json,sys; sys.exit(json.load(open(sys.argv[1]))["status"] != "Accepted")' "$scratch/gui-notary.json"
+  python3 -I -c 'import json,sys; sys.exit(json.load(open(sys.argv[1]))["status"] != "Accepted")' "$scratch/gui-notary.json"
   xcrun stapler staple "$dmg"
   xcrun stapler validate "$dmg"
 fi
 COPYFILE_DISABLE=1 tar -czf "$archive" -C "$scratch" "$name"
 (cd "$output" && shasum -a 256 "$name.tar.gz" > "$name.tar.gz.sha256")
 (cd "$output" && shasum -a 256 "$(basename "$dmg")" > "$(basename "$dmg").sha256")
-python3 - "$stage/BUILD.json" "$output" "$signed" <<'PY'
+python3 -I - "$stage/BUILD.json" "$output" "$signed" <<'PY'
 import hashlib
 import json
 import os
