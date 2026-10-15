@@ -1,13 +1,12 @@
 import Core
 
-/// `xcode.version` — the installed Xcode against what this project needs: the
-/// framework floor from the matrix, raised by `.xcode-version` when the repo asks
-/// for more. Composing the two is a verdict a host-only or project-only tool
-/// cannot reach; which evidence won is in the source.
+/// `xcode.version` compares the installed Xcode with the selected project's
+/// resolved requirement. MatrixLookup owns framework and declaration precedence;
+/// this Check keeps the winning evidence in its source.
 public struct XcodeVersionCheck: Check {
     public let id = "xcode.version"
     public let category = "Xcode"
-    public let title = "Xcode version satisfies what this React Native version needs"
+    public let title = "Xcode version satisfies the selected project's requirement"
     public let dependsOn = ["xcode.installed"]
 
     private let lookup: MatrixLookup
