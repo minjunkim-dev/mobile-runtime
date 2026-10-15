@@ -100,7 +100,8 @@ archive smoke와 CI는 그 실행 검증을 대체하지 않는다. 공개는 �
 
 `BUILD.json`에 release version, source SHA, CLI version, 빌드 도구·의존성·Core object digest를 기록한다.
 새 후보는 disposable source의 공유 버전 상수만 입력 버전으로 고정한 뒤 CLI와 GUI를 한 번에 빌드한다.
-CLI·GUI·Core는 같은 source SHA·제품 버전을 사용한다. 기존 공개 `0.1.0-alpha.4`의 내부 CLI version은 `0.1.0`이다.
+`sourceRevision`과 `sourceSHA`는 `git archive`의 입력 commit이다. 제품 버전은 복사본의 `Sources/Core/ProductVersion.swift`에 적용한 version stamp 입력이다.
+CLI·GUI·Core는 이 입력 commit과 제품 버전을 공유한다. 기존 공개 `0.1.0-alpha.4`의 내부 CLI version은 `0.1.0`이다.
 
 Package.swift의 macOS 최소 버전 선언은 14다. 첫 실행 검증 범위는 macOS 27.0.1 arm64다.
 릴리스 노트의 BlueWallet iOS·FreeKiosk Android 검증 조합을 확인한다.
@@ -126,7 +127,9 @@ private key·비밀번호·공증 credential은 이 명령의 인자나 증거�
 서명 경로는 CLI와 GUI의 hardened runtime 서명을 검증한다. CLI zip과 GUI DMG의 공증 승인을 확인한다. DMG에는 ticket을 staple하고 검증한다.
 실제 자격이 없는 환경에서는 이 서명·공증 경로를 실행 검증했다고 기록하지 않는다.
 
-`CANDIDATE.json`은 artifact SHA-256·source SHA·제품 버전·Core build identity·CI run ID와 서명·공증 상태를 고정한다.
+`CANDIDATE.json`은 artifact SHA-256·source SHA·제품 버전·Core build identity와 서명·공증 상태를 고정한다.
+`ciRun`은 후보를 제작한 Actions workflow의 `GITHUB_RUN_ID`다. 로컬 제작에서는 `null`이다.
+같은 source의 필수 `CI` run URL과 최종 head는 별도 검증 근거에 기록한다.
 `distributionReady`는 자동으로 참이 되지 않는다. 실제 다운로드·설치·CLI 없는 GUI·Gatekeeper·후보 간 수동 업데이트는 AC16의 별도 실제 검증이다.
 CLI·GUI의 실제 실행, 알려진 성공 표본, tuple, 화면 증거를 같은 후보에 연결한다. 기능이 바뀌면 새 버전의 후보와 증거를 만든다.
 후보 제작은 공식 제품 공개를 수행하지 않는다.

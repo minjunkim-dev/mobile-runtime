@@ -63,6 +63,12 @@ def validate_candidate_archive(members, version):
             raise ValueError("candidate archive contains an unsafe or unexpected member")
 
 
+def validate_requested_candidate(candidate, version, source_sha):
+    validate_inputs(version, source_sha)
+    if candidate.get("productVersion") != version or candidate.get("sourceSHA") != source_sha:
+        raise ValueError("candidate must match the requested version and source SHA")
+
+
 def validate_candidate_artifacts(candidate, directory):
     version = candidate.get("productVersion")
     validate_inputs(version, candidate.get("sourceSHA"))

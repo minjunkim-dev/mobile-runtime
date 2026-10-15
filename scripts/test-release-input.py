@@ -94,6 +94,16 @@ class ReleaseInputTests(unittest.TestCase):
                      "coreBuildIdentity": digest}, {}, {}
                 )
 
+    def test_transferred_candidate_matches_the_requested_source_and_version(self):
+        version = "1.0.0-alpha.1"
+        candidate = {"productVersion": version, "sourceSHA": SHA}
+        for key, value in {"productVersion": "1.0.0-alpha.2", "sourceSHA": "b" * 40}.items():
+            changed = {**candidate, key: value}
+            release_input.validate_inputs(changed["productVersion"], changed["sourceSHA"])
+            with self.subTest(field=key), self.assertRaises(ValueError):
+                release_input.validate_requested_candidate(changed, version, SHA)
+        release_input.validate_requested_candidate(candidate, version, SHA)
+
     def test_candidate_archive_rejects_escape_links_and_unexpected_roots(self):
         good = tarfile.TarInfo("runstir-1.0.0-alpha.1-macos-arm64/mobile")
         release_input.validate_candidate_archive([good], "1.0.0-alpha.1")
