@@ -212,6 +212,7 @@ private final class SDKFixture: @unchecked Sendable {
             let source = repo.url("archives/\(archive)")
             try FileManager.default.createDirectory(at: source, withIntermediateDirectories: true)
             try repo.write("archives/\(archive)/payload/source.properties", "Pkg.Revision=\(revision)\n")
+            try repo.write("archives/\(archive)/payload/settings.gradle.kts", "// SDK sample, not project configuration\n")
             try repo.write("archives/\(archive)/payload/\(file)", "fixture")
             try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: source.appendingPathComponent("payload/\(file)").path)
             let archiveFile = repo.url(archive)

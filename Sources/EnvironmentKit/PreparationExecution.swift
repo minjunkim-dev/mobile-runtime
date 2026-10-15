@@ -279,7 +279,7 @@ public enum PreparationExecution {
         let now = try sourceFiles(root, excluding: excluding)
         let changed = Set(now.keys).union(files.keys).filter { now[$0] != files[$0] }.sorted()
         guard changed.isEmpty else { throw PreparationSourceChanged(files: changed) }
-        guard let current = try await inspect(input, runner: host).plan,
+        guard let current = try await inspect(input, runner: host, excluding: excluding).plan,
               current.project == plan.project, current.app == plan.app, current.files == plan.files,
               current.androidRequirements == plan.androidRequirements,
               current.steps.contains(where: { $0.id == step.id && $0.kind == "install" && $0.installation == step.installation }) else {
@@ -297,7 +297,7 @@ public enum PreparationExecution {
         var installationActions: [String: InstallationAction] = [:]
     }
 
-    private static func inspect(_ input: ProjectInspectionInput, runner: any ProcessRunner) async throws -> Inspection {
+    private static func inspect(_ input: ProjectInspectionInput, runner: any ProcessRunner, excluding: [URL] = []) async throws -> Inspection {
         try Task.checkCancellation()
         let detected = try ProjectInspectionInput(directory: input.directory, environment: input.environment, app: input.app).selection()
         // Setup selects an app; both platforms remain in its preparation scope.
@@ -316,7 +316,7 @@ public enum PreparationExecution {
                     remediation: Remediation(summary: "Complete the Flutter provider and re-plan. No tool installation occurred."))
                 value.plan = try makePlan(project: selection.directory, app: ".", kind: "flutter", platforms: [.ios, .android].map {
                     PreparationPlatform(platform: $0, state: "waiting-manual", checks: [])
-                }, steps: [step], files: approvalFiles(root), installed: [:])
+                }, steps: [step], files: approvalFiles(root, excluding: excluding), installed: [:])
             }
             return value
         }
@@ -336,7 +336,7 @@ public enum PreparationExecution {
                 remediation: Remediation(summary: "Use the project's existing preparation workflow, then inspect again. No tool installation occurred."))
             value.plan = try makePlan(project: selected.app, app: selected.id, kind: anchor.framework.rawValue,
                 platforms: preparationPlatforms.map { PreparationPlatform(platform: $0, state: "waiting-manual", checks: [step]) },
-                steps: [step], files: approvalFiles(root), installed: [:])
+                steps: [step], files: approvalFiles(root, excluding: excluding), installed: [:])
             return value
         }
         for platform in preparationPlatforms {
@@ -418,7 +418,7 @@ public enum PreparationExecution {
         value.context = context
         if anchor.framework != .reactNative {
             value.plan = try makePlan(project: selected.app, app: selected.id, kind: anchor.framework.rawValue,
-                                     platforms: platforms, steps: steps, files: approvalFiles(root), installed: sdkInstalled,
+                                     platforms: platforms, steps: steps, files: approvalFiles(root, excluding: excluding), installed: sdkInstalled,
                                      androidRequirements: androidRequirements)
             return value
         }
@@ -498,7 +498,7 @@ public enum PreparationExecution {
                 remediation: Remediation(summary: "Use the declared locked Pod installation. Source or lockfile migration requires manual handling.")))
         }
         value.plan = try makePlan(project: selected.app, app: selected.id, kind: "react-native", platforms: platforms,
-                                 steps: steps, files: approvalFiles(root), installed: installed, androidRequirements: androidRequirements)
+                                 steps: steps, files: approvalFiles(root, excluding: excluding), installed: installed, androidRequirements: androidRequirements)
         return value
     }
 
@@ -534,9 +534,9 @@ public enum PreparationExecution {
         SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
     }
 
-    private static func approvalFiles(_ root: URL) throws -> [String: String] {
+    private static func approvalFiles(_ root: URL, excluding: [URL] = []) throws -> [String: String] {
         let names: Set<String> = ["package.json", "package-lock.json", "npm-shrinkwrap.json", "yarn.lock", "pnpm-lock.yaml", "pnpm-workspace.yaml", "Podfile", "Podfile.lock", "Manifest.lock", "Gemfile", "Gemfile.lock", "pubspec.yaml", "pubspec.lock", "mobile.yml", ".nvmrc", ".node-version", ".ruby-version", ".java-version", ".tool-versions", ".xcode-version", "build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts", "gradle-wrapper.properties", "project.pbxproj"]
-        var result = try sourceFiles(root).filter { names.contains(URL(fileURLWithPath: $0.key).lastPathComponent) }
+        var result = try sourceFiles(root, excluding: excluding).filter { names.contains(URL(fileURLWithPath: $0.key).lastPathComponent) }
         for name in [".mise.toml", "mise.toml"] {
             let url = root.appendingPathComponent(name)
             guard let text = try? String(contentsOf: url, encoding: .utf8) else { continue }

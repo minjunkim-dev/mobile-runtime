@@ -91,7 +91,7 @@ public enum InstallationExecution {
         try validateSDKLicense(metadata)
         try validateDestination(metadata)
         let manager = FileManager.default
-        let scratch = manager.temporaryDirectory.resolvingSymlinksInPath().appendingPathComponent("runstir-install-\(UUID().uuidString)")
+        let scratch = metadata.resourceRoot.appendingPathComponent(".runstir-install-\(UUID().uuidString)")
         try manager.createDirectory(at: scratch, withIntermediateDirectories: false)
         defer { try? manager.removeItem(at: scratch) }
         let payload = try await download(metadata.artifact, to: scratch, runner: runner)

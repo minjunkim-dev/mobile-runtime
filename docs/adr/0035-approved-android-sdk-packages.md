@@ -48,7 +48,7 @@ CLI와 GUI는 같은 `PreparationExecution`과 계획 identity를 사용한다. 
 `InstallationAction`은 공개 계획에 실행 closure를 직렬화하지 않고 provider 동작을 공통 실행 loop에 연결한다.
 공통 loop는 승인·lease·완료 기록을 처리한다. provider는 `beforeCommit`으로 실행 직전과 최종 변경 직전의 조건을 다시 확인한다.
 trusted provider는 이 callback에 자신이 만든 정확한 임시 URL 목록을 전달한다. source 감사는 그 경로와 승인한 새 package destination만 제외한다. SDK root 전체나 이름만 같은 다른 stage를 제외하지 않는다.
-`InstallationExecution.download`는 소유한 임시 디렉터리에서 고정 payload를 받는다.
+`InstallationExecution.download`는 소유한 임시 디렉터리에서 고정 payload를 받는다. SDK ZIP 실행기는 승인·lease한 SDK root 안에 고유 scratch를 만든다. 전역 임시 경로나 cache를 사용하지 않는다.
 플랫폼 설치 형식이 다르면 해당 provider가 설치 동작을 제공한다. Android의 첫 실행기는 검증한 ZIP을 사용한다.
 
 1. 승인 identity를 비교한다. 실행 직전 계획을 다시 관측한다.

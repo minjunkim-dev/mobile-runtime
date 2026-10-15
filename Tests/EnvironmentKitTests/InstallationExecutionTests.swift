@@ -31,6 +31,8 @@ struct InstallationExecutionTests {
         let metadata = pin(fixture.data, repo: repo)
         let runner = PayloadRunner(data: fixture.data)
         try await InstallationExecution.installSDKZip(metadata, localMetadata: Data("<repository/>".utf8), runner: runner)
+        #expect(runner.downloadDestinations.count == 1)
+        #expect(runner.downloadDestinations.allSatisfy { $0.path.hasPrefix(metadata.resourceRoot.path + "/") })
         #expect(try String(contentsOf: repo.url("sdk/platforms/android-36/android.jar"), encoding: .utf8) == "fixture jar")
         #expect(try String(contentsOf: repo.url("sdk/existing/keep"), encoding: .utf8) == "original")
         #expect(FileManager.default.fileExists(atPath: repo.url("sdk/platforms/android-36/package.xml").path))
@@ -119,6 +121,8 @@ private final class PayloadRunner: ProcessRunner, @unchecked Sendable {
     let revokedLicense: URL?
     private let lock = NSLock()
     private var didExtract = false
+    private var downloaded: [URL] = []
+    var downloadDestinations: [URL] { lock.withLock { downloaded } }
     var extracted: Bool { lock.withLock { didExtract } }
     init(data: Data, failExtraction: Bool = false, cancelDownload: Bool = false, occupied: URL? = nil, revokedLicense: URL? = nil) {
         self.data = data; self.failExtraction = failExtraction; self.cancelDownload = cancelDownload; self.occupied = occupied
@@ -126,7 +130,9 @@ private final class PayloadRunner: ProcessRunner, @unchecked Sendable {
     }
     func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
         if command.executable == "curl", let index = command.arguments.firstIndex(of: "--output") {
-            try data.write(to: URL(fileURLWithPath: command.arguments[index + 1]))
+            let destination = URL(fileURLWithPath: command.arguments[index + 1])
+            lock.withLock { downloaded.append(destination) }
+            try data.write(to: destination)
             if let revokedLicense { try FileManager.default.removeItem(at: revokedLicense) }
             if cancelDownload { withUnsafeCurrentTask { $0?.cancel() } }
             return ProcessResult(terminationStatus: .exited(0), standardOutput: "", standardError: "")
