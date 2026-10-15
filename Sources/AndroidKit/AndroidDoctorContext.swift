@@ -360,6 +360,21 @@ actor AndroidDoctorContext {
         return .missing("neither android/local.properties sdk.dir nor ANDROID_HOME declares the SDK root")
     }
 
+    static let sdkRootRemediation = Remediation(
+        summary: "Make android/local.properties sdk.dir and ANDROID_HOME name one installed SDK."
+    )
+
+    nonisolated func requiredSDKRoot() throws -> URL {
+        switch sdkRoot() {
+        case .resolved(let sdk, _): return sdk
+        case .conflict(let reason), .missing(let reason):
+            throw DomainError(
+                summary: reason,
+                remediation: Self.sdkRootRemediation
+            )
+        }
+    }
+
     func cmakeDirectory() async throws -> URL? {
         let local = androidDirectory.appendingPathComponent("local.properties")
         let text: String

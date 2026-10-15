@@ -176,6 +176,60 @@ private func buildScenario(
 
 @Suite("Android build stage")
 struct AndroidBuildStageTests {
+    @Test("up rollback and down share SDK root domain failures", arguments: [true, false])
+    func sdkRootFailureAcrossLifecycle(conflicting: Bool) async throws {
+        let scenario = try buildScenario()
+        try scenario.repo.directory("node_modules")
+        let logs = try RunLogs.temporary(project: scenario.repo.root)
+        let store = AndroidActiveRunStore(project: scenario.repo.root, logs: logs)
+        let product = AndroidBuiltProduct(apkPath: "unused", module: ":app", variant: "debug",
+            assembleTask: ":app:assembleDebug", applicationId: "dev.mobile.fixture", minSdk: "24",
+            targetSdk: "36", abis: ["arm64-v8a"], launcherActivity: "dev.mobile.fixture.MainActivity")
+        var record = AndroidActiveRun(project: scenario.repo.root, product: product)
+        record.device = .init(avd: "Pixel", launcherPID: 7001, serial: "emulator-5554", api: 35,
+                              abi: "arm64-v8a", state: .started)
+        record.reverse = .init(serial: "emulator-5554", state: .created)
+        record.app = .init(serial: "emulator-5554", applicationId: product.applicationId,
+                           launched: true, pid: 8123)
+        try store.write(record)
+        let runner = AAPTAnsweringRunner(base: scenario.runner, badging: healthyBadging)
+        var values = scenario.environment.values
+        if !conflicting { values.removeValue(forKey: "ANDROID_HOME") }
+        let environment = AndroidEnvironment(values: values)
+        let properties = scenario.repo.url("android/local.properties")
+        let changedProperties = Data((conflicting ? "sdk.dir=/different-sdk\n" : "").utf8)
+        let up = await runAndroidUp(anchor: scenario.anchor, doctor: DoctorEngine(checks: []),
+            config: scenario.config, hostRunner: runner, projectRunner: runner,
+            environment: environment, logs: logs, note: { _ in }, onStageFinished: { stage in
+                if stage.id == "android.build", stage.status == .pass {
+                    do { try changedProperties.write(to: properties, options: .atomic) }
+                    catch { Issue.record("Could not change SDK root after build: \(error)") }
+                }
+            })
+
+        #expect(up.stages.last?.id == "android.device")
+        #expect(up.exitCode == 1)
+        #expect(up.context.androidRollbackExitCode == 1)
+        #expect(up.context.androidRequiresTeardown)
+        let remediation = try #require(up.failure?.remediation)
+        let rollback = try #require(up.context.androidProduct?.rollback)
+        #expect(rollback.map(\.status) == [.unknown, .unknown, .skipped, .unknown])
+        for item in rollback where item.status == .unknown {
+            #expect(item.remediation == remediation)
+            #expect(item.detail == up.failure?.message)
+        }
+        #expect(try store.read() == record)
+
+        let down = await androidTeardown(anchor: scenario.anchor, config: scenario.config,
+            runner: runner, projectRunner: runner, environment: environment, logs: logs)
+        #expect(down.exitCode == up.exitCode)
+        #expect(down.failure?.remediation == remediation)
+        #expect(down.items == rollback)
+        #expect(try store.read() == record)
+        #expect(!scenario.runner.log.all.contains { ["adb", "emulator", "kill"].contains($0.executable) })
+        #expect(scenario.runner.log.spawned.isEmpty)
+    }
+
     @Test("workflow target candidates use the existing debug default and normalized module")
     func workflowTargetDefault() async throws {
         let scenario = try buildScenario()

@@ -73,9 +73,8 @@ public struct TeardownReport: Sendable {
     public let items: [TeardownItem]
     /// Jobs that could not be run at all — the tool or the machine, not the project.
     public let toolFailures: [String]
-    /// A failure of the run itself rather than of one of its jobs — standing outside
-    /// a project is the whole of it. Carried the way `up` carries one, so that no
-    /// item has to be invented to hold it.
+    /// A domain failure that prevents the run or an ownership probe from proceeding.
+    /// Unobserved items remain unknown; the failure carries their actionable cause.
     public let failure: DomainError?
     /// Android ownership cleanup treats an identity mismatch as a failed cleanup;
     /// iOS keeps ADR-0007's legacy non-error `blocked` meaning.
