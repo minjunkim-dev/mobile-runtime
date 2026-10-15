@@ -42,16 +42,17 @@ public struct InstallationMetadata: Codable, Sendable, Equatable {
 /// Providers reuse the same lease, approval checks, runner, cancellation and completion loop.
 public struct InstallationAction: Sendable {
     public let metadata: InstallationMetadata
-    private let operation: @Sendable (any ProcessRunner, @Sendable () async throws -> Void) async throws -> Void
+    private let operation: @Sendable (any ProcessRunner, @Sendable ([URL]) async throws -> Void) async throws -> Void
 
     public init(metadata: InstallationMetadata,
-                operation: @escaping @Sendable (any ProcessRunner, @Sendable () async throws -> Void) async throws -> Void) {
+                operation: @escaping @Sendable (any ProcessRunner, @Sendable ([URL]) async throws -> Void) async throws -> Void) {
         self.metadata = metadata; self.operation = operation
     }
 
-    public func run(runner: any ProcessRunner, beforeCommit: @escaping @Sendable () async throws -> Void) async throws {
+    /// A trusted provider reports only its exact owned temporary paths for source observation.
+    public func run(runner: any ProcessRunner, beforeCommit: @escaping @Sendable ([URL]) async throws -> Void) async throws {
         try Task.checkCancellation()
-        try await beforeCommit()
+        try await beforeCommit([])
         try await operation(runner, beforeCommit)
     }
 }
@@ -86,7 +87,7 @@ public enum InstallationExecution {
     /// Existing destinations are never replaced, even when they look incomplete.
     public static func installSDKZip(_ metadata: InstallationMetadata, localMetadata: Data,
                                      runner: any ProcessRunner,
-                                     beforeCommit: @Sendable () async throws -> Void = {}) async throws {
+                                     beforeCommit: @Sendable ([URL]) async throws -> Void = { _ in }) async throws {
         try validateSDKLicense(metadata)
         try validateDestination(metadata)
         let manager = FileManager.default
@@ -124,7 +125,7 @@ public enum InstallationExecution {
               !metadata.executable || manager.isExecutableFile(atPath: marker.path) else { throw failure("Archive is missing the required SDK package content") }
         try localMetadata.write(to: source.appendingPathComponent("package.xml"), options: .atomic)
         try Task.checkCancellation()
-        try await beforeCommit()
+        try await beforeCommit([scratch])
         try validateSDKLicense(metadata)
         try validateDestination(metadata)
         let parent = metadata.destination.deletingLastPathComponent()
@@ -133,7 +134,7 @@ public enum InstallationExecution {
         defer { try? manager.removeItem(at: staged) }
         try manager.copyItem(at: source, to: staged)
         try Task.checkCancellation()
-        try await beforeCommit()
+        try await beforeCommit([scratch, staged])
         try validateSDKLicense(metadata)
         try validateDestination(metadata)
         guard renamex_np(staged.path, metadata.destination.path, UInt32(RENAME_EXCL)) == 0 else {

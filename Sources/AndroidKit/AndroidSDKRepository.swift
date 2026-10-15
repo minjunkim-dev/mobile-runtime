@@ -69,7 +69,7 @@ public struct AndroidSDKRepository: Sendable {
             values.append(AndroidSDKRepositoryPackage(packagePath: path, revision: revision,
                 archiveURL: Self.url.deletingLastPathComponent().appendingPathComponent(filename),
                 size: size, sha1: checksum.value, licenseID: licenseID,
-                licenseSHA1: Insecure.SHA1.hash(data: Data(license.text.utf8)).map { String(format: "%02x", $0) }.joined(),
+                licenseSHA1: Insecure.SHA1.hash(data: Data(AndroidSDKLicenses.normalizedText(license.text).utf8)).map { String(format: "%02x", $0) }.joined(),
                 localMetadata: Data(document.utf8)))
         }
         packages = values

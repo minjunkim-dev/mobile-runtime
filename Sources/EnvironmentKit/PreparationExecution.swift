@@ -161,7 +161,8 @@ public enum PreparationExecution {
                 result.operation.error = "Conditions changed while acquiring the preparation target."
                 return finish(result, events)
             }
-            let originalFiles = try sourceFiles(prepared.root)
+            let installedDestinations = installations.compactMap { $0.installation?.destination }
+            let originalFiles = try sourceFiles(prepared.root, excluding: installedDestinations)
             let sourceRoot = prepared.root
             for step in installations {
                 try Task.checkCancellation()
@@ -172,8 +173,9 @@ public enum PreparationExecution {
                 result.operation.state = "running"
                 events.emit("stage", stage: step.id, state: "running", detail: "\(metadata.package) revision \(metadata.revision)")
                 do {
-                    try await action.run(runner: host) {
-                        try await verifyInstallation(input: input, host: host, plan: plan, step: step, root: sourceRoot, files: originalFiles)
+                    try await action.run(runner: host) { ownedTemporaryPaths in
+                        try await verifyInstallation(input: input, host: host, plan: plan, step: step, root: sourceRoot,
+                            files: originalFiles, excluding: installedDestinations + ownedTemporaryPaths)
                     }
                 } catch {
                     events.emit("stage", stage: step.id, state: error is CancellationError ? "cancelled" : "failed")
@@ -181,7 +183,7 @@ public enum PreparationExecution {
                 }
                 result.operation.completed.append(step.id)
                 events.emit("stage", stage: step.id, state: "succeeded")
-                let after = try sourceFiles(prepared.root)
+                let after = try sourceFiles(prepared.root, excluding: installedDestinations)
                 let changedAfter = Set(after.keys).union(originalFiles.keys).filter { after[$0] != originalFiles[$0] }.sorted()
                 guard changedAfter.isEmpty else {
                     result.operation.changedFiles = changedAfter
@@ -272,9 +274,9 @@ public enum PreparationExecution {
 
     private static func verifyInstallation(input: ProjectInspectionInput, host: any ProcessRunner,
                                            plan: PreparationPlan, step: PreparationStep, root: URL,
-                                           files: [String: String]) async throws {
+                                           files: [String: String], excluding: [URL]) async throws {
         try Task.checkCancellation()
-        let now = try sourceFiles(root)
+        let now = try sourceFiles(root, excluding: excluding)
         let changed = Set(now.keys).union(files.keys).filter { now[$0] != files[$0] }.sorted()
         guard changed.isEmpty else { throw PreparationSourceChanged(files: changed) }
         guard let current = try await inspect(input, runner: host).plan,
@@ -551,13 +553,18 @@ public enum PreparationExecution {
     }
 
     /// Private source/lock observation. Digests never enter the public plan or its identity.
-    fileprivate static func sourceFiles(_ root: URL) throws -> [String: String] {
+    fileprivate static func sourceFiles(_ root: URL, excluding destinations: [URL] = []) throws -> [String: String] {
         let excluded: Set<String> = [".git", "node_modules", "Pods", "vendor", "build", ".build", ".gradle", ".dart_tool", ".mobile", "graft"]
         var failure: (any Error)?
         guard let files = FileManager.default.enumerator(at: root, includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey],
             errorHandler: { _, error in failure = error; return false }) else { throw CocoaError(.fileReadNoPermission) }
         var result: [String: String] = [:]
+        let destinationPaths = Set(destinations.map { $0.standardizedFileURL.resolvingSymlinksInPath().path })
         for case let url as URL in files {
+            if destinationPaths.contains(url.standardizedFileURL.resolvingSymlinksInPath().path) {
+                files.skipDescendants()
+                continue
+            }
             let attributes = try url.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
             if excluded.contains(url.lastPathComponent) { files.skipDescendants(); continue }
             if url.pathExtension == "log" || url.lastPathComponent == ".DS_Store" { continue }

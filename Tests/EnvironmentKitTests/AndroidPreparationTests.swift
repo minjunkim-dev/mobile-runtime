@@ -8,6 +8,24 @@ import Testing
 
 @Suite("approved Android SDK preparation")
 struct AndroidPreparationTests {
+    @Test("an SDK inside the project preserves source and commits both approved packages")
+    func projectLocalSDK() async throws {
+        let fixture = try await SDKFixture()
+        let destination = fixture.repo.url("project/local-sdk")
+        try FileManager.default.moveItem(at: fixture.repo.url("sdk"), to: destination)
+        try fixture.repo.write("project/local.properties", "sdk.dir=\(destination.path)\n")
+        var environment = fixture.input.environment
+        environment["ANDROID_HOME"] = destination.path
+        let input = ProjectInspectionInput(directory: fixture.input.directory, environment: environment)
+        let runner = fixture.runner()
+        let plan = await PreparationExecution.run(input: input, planOnly: true, runner: runner)
+        let result = await PreparationExecution.run(input: input, approvedPlanID: try #require(plan.plan?.id), runner: runner)
+        let diagnostic = try result.encoded(toolVersion: "fixture")
+        #expect(result.operation.completed.count == 2, Comment(rawValue: diagnostic))
+        #expect(result.operation.changedFiles.isEmpty)
+        #expect(try String(contentsOf: destination.appendingPathComponent("keep"), encoding: .utf8) == "original SDK file")
+    }
+
     @Test("destination permissions stay manual and setup never requests administrator privileges")
     func manualPermission() async throws {
         let fixture = try await SDKFixture()

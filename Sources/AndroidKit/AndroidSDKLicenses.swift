@@ -7,9 +7,18 @@ import FoundationXML
 import CryptoKit
 #endif
 
-/// Mirrors Android repository License.checkAccepted: exact text SHA-1 in licenses/<id>.
+/// Mirrors Android repository JAXB license normalization and License.checkAccepted.
 /// No sdkmanager invocation, network request, license acceptance, or SDK modification.
 enum AndroidSDKLicenses {
+    static func normalizedText(_ text: String) -> String {
+        // LicenseType.value uses this adapter before License.getLicenseHash().
+        // https://android.googlesource.com/platform/tools/base/+/studio-master-dev/repository/src/main/java/com/android/repository/impl/meta/TrimStringAdapter.java
+        text.replacingOccurrences(of: #"(?<=[ \t\n\x0B\x0C\r])[ \t]*"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"(?<!\n)\n(?!\n)"#, with: " ", options: .regularExpression)
+            .replacingOccurrences(of: " +", with: " ", options: .regularExpression)
+            .trimmingCharacters(in: CharacterSet(charactersIn: "\u{0}"..."\u{20}"))
+    }
+
     static func check(packages: [URL], sdk: URL, command: String?) -> CheckOutcome? {
         var unresolved: [String] = []
         var unaccepted: [String] = []
@@ -28,7 +37,7 @@ enum AndroidSDKLicenses {
                     let text = document.licenses[reference]
                 else { unresolved.append(metadata.path); continue }
                 #if canImport(CryptoKit)
-                let hash = Insecure.SHA1.hash(data: Data(text.utf8)).map { String(format: "%02x", $0) }.joined()
+                let hash = Insecure.SHA1.hash(data: Data(normalizedText(text).utf8)).map { String(format: "%02x", $0) }.joined()
                 let record = sdk.appendingPathComponent("licenses").appendingPathComponent(reference)
                 do {
                     let accepted = try String(contentsOf: record, encoding: .utf8)

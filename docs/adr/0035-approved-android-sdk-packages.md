@@ -33,7 +33,8 @@ SDK 옵션은 [AGP BooleanOption](https://android.googlesource.com/platform/tool
 stable channel의 정확한 package path와 revision을 선택한다. host가 있으면 macOS와 arm64 조건을 확인한다.
 host architecture가 없는 공식 macOS 공통 archive는 그 metadata 그대로 기록한다. 이것만으로 실행 호환을 입증하지 않는다.
 base platform과 extension platform을 구분한다. 중복 path와 모호한 archive는 차단한다. 구형 schema로 내려가지 않는다.
-관측한 전체 metadata의 SHA-256, archive URL·공식 SHA-1·size, 실제 package revision, 목적 경로, license ID·정확한 text SHA-1을 계획에 묶는다.
+관측한 전체 metadata의 SHA-256, archive URL·공식 SHA-1·size, 실제 package revision, 목적 경로, license ID·SDK가 계산하는 text SHA-1을 계획에 묶는다.
+license text는 공식 [JAXB TrimStringAdapter](https://android.googlesource.com/platform/tools/base/+/studio-master-dev/repository/src/main/java/com/android/repository/impl/meta/TrimStringAdapter.java)의 공백·개행 정규화 뒤 해시한다. 원본 XML bytes의 SHA-1과 혼동하지 않는다.
 공식 legacy checksum은 SHA-1이다. HTTPS와 metadata SHA-256 pin을 함께 사용한다. 이를 공급자가 배포한 SHA-256 archive 서명으로 표현하지 않는다.
 
 계획 승인은 license 동의와 관리자 권한을 대신하지 않는다. 선택한 SDK root의 정확한 license hash가 없으면 수동 대기한다.
@@ -46,6 +47,7 @@ CLI와 GUI는 같은 `PreparationExecution`과 계획 identity를 사용한다. 
 `InstallationArtifact`와 `InstallationMetadata`는 후속 준비 provider가 재사용할 최소 계약이다.
 `InstallationAction`은 공개 계획에 실행 closure를 직렬화하지 않고 provider 동작을 공통 실행 loop에 연결한다.
 공통 loop는 승인·lease·완료 기록을 처리한다. provider는 `beforeCommit`으로 실행 직전과 최종 변경 직전의 조건을 다시 확인한다.
+trusted provider는 이 callback에 자신이 만든 정확한 임시 URL 목록을 전달한다. source 감사는 그 경로와 승인한 새 package destination만 제외한다. SDK root 전체나 이름만 같은 다른 stage를 제외하지 않는다.
 `InstallationExecution.download`는 소유한 임시 디렉터리에서 고정 payload를 받는다.
 플랫폼 설치 형식이 다르면 해당 provider가 설치 동작을 제공한다. Android의 첫 실행기는 검증한 ZIP을 사용한다.
 

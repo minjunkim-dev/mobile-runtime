@@ -1,11 +1,26 @@
 import AndroidKit
 import Core
+import CryptoKit
 import Foundation
 import TestSupport
 import Testing
 
 @Suite("official Android SDK archive selection")
 struct AndroidSDKRepositoryTests {
+    @Test("license acceptance matches the official JAXB TrimStringAdapter rather than XML formatting")
+    func sdkManagerLicenseNormalization() throws {
+        let text = "\n\tFixture  license\ntext\n\n Second  paragraph\n"
+        let metadata = xml().replacingOccurrences(of: "Fixture license text", with: text)
+        let repository = try AndroidSDKRepository(data: Data(metadata.utf8))
+        let package = try repository.package("platforms;android-36")
+        let expected = "Fixture license text\n\nSecond paragraph"
+        let hash = Insecure.SHA1.hash(data: Data(expected.utf8)).map { String(format: "%02x", $0) }.joined()
+        #expect(package.licenseSHA1 == hash)
+        let repo = try FixtureRepo()
+        try repo.write("licenses/android-sdk-license", hash + "\n")
+        #expect(package.licenseAccepted(in: repo.root))
+    }
+
     @Test("schema 3 preserves base platform revision, archive identity, and exact license text")
     func exactArchive() throws {
         let repository = try AndroidSDKRepository(data: Data(xml().utf8))
