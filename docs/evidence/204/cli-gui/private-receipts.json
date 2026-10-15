@@ -461,6 +461,10 @@
     "evidence/gui-lease-return-v1.json": {
       "bytes": 216,
       "sha256": "796b6d44d68c7ec575580c177e54d943bbbeb492612553ac10f9ddf88faf8b80"
+    },
+    "evidence/source-snapshot-timing-v1.json": {
+      "bytes": 812,
+      "sha256": "9681cc6b9f4db066f509061c9f90cb92a77fc43f25be05c9412664c2bc14ad38"
     }
   }
 }

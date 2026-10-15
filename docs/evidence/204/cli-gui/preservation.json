@@ -339,5 +339,23 @@
     ],
     "lookupOrphanExitCode": "unknown; SIGTERM then absent",
     "furtherGUIExecution": "requires root lease again"
+  },
+  "sourceSnapshotTiming": {
+    "at": 1792078949.831985,
+    "sourceSnapshots": {
+      "cli": {
+        "file": "evidence/cli-tracked-before.json",
+        "collectedFileMtime": 1792076653.7406623
+      },
+      "gui": {
+        "file": "evidence/gui-tracked-before.json",
+        "collectedFileMtime": 1792076653.7796504
+      },
+      "license": {
+        "file": "evidence/license-tracked-before.json",
+        "collectedFileMtime": 1792076653.8074594
+      }
+    },
+    "boundary": "Source snapshots named before were collected before the first payload installation case. The initial license CLI plan/approval observations had already run. They are not whole-session before snapshots. SDK/cache/lease shared-before was captured before actual CLI/GUI setup cases. Fixed source commit and staged entries/flags were separately compared with the unchanged reference."
   }
 }

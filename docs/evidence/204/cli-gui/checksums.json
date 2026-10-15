@@ -3,8 +3,8 @@
   "scope": "current de-identified public copies only",
   "files": {
     "README.md": {
-      "bytes": 5161,
-      "sha256": "bbed5e19254a4b4abf6263a3943cfdcb4660cb013a342769d40bd7c40085c385"
+      "bytes": 5358,
+      "sha256": "b0c8e1113b3a2e9b9366a4040bf50a333ab340fde107bbac3c27aa4e94e5aee1"
     },
     "attempts.json": {
       "bytes": 2783,
@@ -44,7 +44,7 @@
     },
     "local-checks.json": {
       "bytes": 561,
-      "sha256": "6e10207f7216d79d742da25401cc2c3225b4c8b993dc781ada5eab229f137bae"
+      "sha256": "546da89fa41b979cc043cf696a9050b34dedc8b1b4115347b208aa72ed445667"
     },
     "observe-gui-payload.py": {
       "bytes": 1020,
@@ -59,12 +59,12 @@
       "sha256": "fe1be83252dff277ad8ea65d4ef49d134bb2a7718156e4de5184ea95d34385b3"
     },
     "preservation.json": {
-      "bytes": 11640,
-      "sha256": "ee2da5297111c62fc739d3321916d79183700ab06524baf078920262b973274e"
+      "bytes": 12514,
+      "sha256": "cbb01e1a6a56c0261e61fd83f91019a35aebf4f50ca1beea0c7a10490ec83d39"
     },
     "private-receipts.json": {
-      "bytes": 18253,
-      "sha256": "b1bc45dfc326a0f31c87b2b05981ca7c56fc9f2afe6c1691979f83cdc643f4c5"
+      "bytes": 18412,
+      "sha256": "a6c3e6cfddebe55661b7cf477dac5bdf6c811f1acf54dd9a4ffa62770c138dec"
     },
     "run-cli.py": {
       "bytes": 3730,
