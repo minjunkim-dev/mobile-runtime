@@ -34,10 +34,9 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           include='[{"language":"actions","runner":"ubuntu-24.04","build-mode":"none"},{"language":"python","runner":"ubuntu-24.04","build-mode":"none"},{"language":"ruby","runner":"ubuntu-24.04","build-mode":"none"}'
-          # An unreadable PR diff analyzes Swift too.
+          # --quiet exits 1 for a change and 128 for an unreadable diff; both analyze Swift.
           if [ "$GITHUB_EVENT_NAME" != pull_request ] ||
-             ! changed="$(git diff --no-renames --name-only "$BASE_SHA" HEAD)" ||
-             grep -Eq '^(Sources/|Tests/|Package\.(swift|resolved)$|\.github/workflows/codeql\.yml$)' <<< "$changed"; then
+             ! git diff --quiet --no-renames "$BASE_SHA" HEAD -- Sources Tests 'Package*.swift' Package.resolved .github/workflows/codeql.yml; then
             include+=',{"language":"swift","runner":"macos-26","build-mode":"manual"}'
           fi
           echo "include=$include]" >> "$GITHUB_OUTPUT"

@@ -38,8 +38,9 @@ main에 workflow가 없으면 감사는 통과하지 않는다. PR 파일과 mai
 [advanced workflow](../.github/workflows/codeql.yml)는 Actions·Python·Ruby·Swift를 분석한다.
 default setup은 `not-configured`로 둔다. 기존 `CI`는 바꾸지 않는다. CodeQL은 검증 전 필수 체크에 추가하지 않는다.
 같은 저장소 PR·main push·주간·수동 이벤트를 사용한다. fork PR 분석 job은 제외한다.
-PR의 Swift 분석은 `Sources/`·`Tests/`·`Package.swift`·`Package.resolved`·CodeQL workflow가 바뀐 경우만 실행한다.
+PR의 Swift 분석은 `Sources/`·`Tests/`·`Package*.swift`·`Package.resolved`·CodeQL workflow가 바뀐 경우만 실행한다.
 Swift 분석은 공유 macOS runner를 약 25분 점유한다. PR diff를 읽지 못하면 Swift도 분석한다. main push·주간·수동 실행은 항상 Swift를 분석한다.
+Swift를 건너뛴 PR의 code scanning은 main의 Swift 구성을 찾지 못했다는 안내를 보일 수 있다. 이 안내는 정상이다. Swift 경고는 main 분석에서 확인한다.
 기본 권한은 `contents: read`다. 분석 job만 `security-events: write`를 사용한다. credential persistence는 Off다.
 
 Swift는 기존 제품 CI와 같은 `macos-26` runner의 기본 toolchain을 사용한다. 잠근 의존성을 init 전에 준비하고 init 후 실제 Swift 빌드를 추적한다.
