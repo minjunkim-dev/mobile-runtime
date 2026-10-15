@@ -168,6 +168,15 @@ public enum InstallationExecution {
         }
         while !manager.fileExists(atPath: ancestor.path), ancestor.path != "/" { ancestor.deleteLastPathComponent() }
         guard manager.isWritableFile(atPath: ancestor.path) else { throw failure("Installation destination needs separate manual permission") }
+        // The SDK root also hosts scratch, but the final stage is created in the
+        // nearest existing package parent. Both write boundaries must be usable.
+        var parent = destination.deletingLastPathComponent()
+        while !manager.fileExists(atPath: parent.path), parent.path != "/" { parent.deleteLastPathComponent() }
+        var directory: ObjCBool = false
+        guard manager.fileExists(atPath: parent.path, isDirectory: &directory), directory.boolValue,
+              manager.isWritableFile(atPath: parent.path), manager.isExecutableFile(atPath: parent.path) else {
+            throw failure("Installation package parent needs separate manual permission")
+        }
     }
 
     private static func validateSDKLicense(_ metadata: InstallationMetadata) throws {

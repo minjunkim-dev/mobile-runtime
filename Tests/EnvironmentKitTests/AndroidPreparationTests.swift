@@ -8,6 +8,25 @@ import Testing
 
 @Suite("approved Android SDK preparation")
 struct AndroidPreparationTests {
+    @Test("a writable SDK root does not bypass a read-only existing package parent")
+    func nestedPackagePermission() async throws {
+        let fixture = try await SDKFixture()
+        try fixture.repo.write("sdk/platforms/android-36/android.jar", "existing platform")
+        try fixture.repo.write("sdk/platforms/android-36/source.properties", "Pkg.Revision=2\n")
+        try fixture.repo.write("sdk/platforms/android-36/package.xml", "<repository><license id=\"fixture-license\">\(SDKFixture.licenseText)</license><localPackage><uses-license ref=\"fixture-license\"/></localPackage></repository>")
+        let parent = try fixture.repo.directory("sdk/build-tools")
+        try FileManager.default.setAttributes([.posixPermissions: 0o555], ofItemAtPath: parent.path)
+        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: parent.path) }
+        let runner = fixture.runner()
+        let plan = await PreparationExecution.run(input: fixture.input, planOnly: true, runner: runner)
+        let installation = try #require(plan.plan?.steps.first { $0.installation != nil })
+        #expect(installation.kind == "permission")
+        let result = await PreparationExecution.run(input: fixture.input, approvedPlanID: try #require(plan.plan?.id), runner: runner)
+        #expect(result.operation.state == "waiting-manual")
+        #expect(result.operation.completed.isEmpty)
+        #expect(runner.downloads.isEmpty)
+    }
+
     @Test("WorkflowContext doctor and SDK requirements reuse one opaque actor and one model evaluation")
     func sharedWorkflowSDKContext() async throws {
         let fixture = try await SDKFixture()
