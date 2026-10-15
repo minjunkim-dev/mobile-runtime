@@ -508,6 +508,12 @@ struct AndroidCleanup: Sendable {
     }
 }
 
+/// Read while holding the project lease, before acquiring the device lease.
+public func androidTeardownDeviceKey(anchor: ProjectAnchor, logs: RunLogs? = nil) throws -> ResourceKey? {
+    try AndroidActiveRunStore(project: anchor.directory, logs: logs).read()?.device
+        .map { .device(.android, "avd:\($0.avd)") }
+}
+
 public func androidTeardown(
     anchor: ProjectAnchor,
     config: ConfigContext,

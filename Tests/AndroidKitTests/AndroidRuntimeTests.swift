@@ -119,6 +119,22 @@ private let reverseSource = "tcp:8081"
 
 @Suite("Android owned runtime")
 struct AndroidRuntimeTests {
+    @Test("teardown derives the same AVD lease key and preserves unknown records")
+    func teardownDeviceKey() throws {
+        let scenario = try runtimeScenario()
+        let store = AndroidActiveRunStore(project: scenario.repo.root, logs: scenario.logs)
+        #expect(try androidTeardownDeviceKey(anchor: scenario.anchor, logs: scenario.logs) == nil)
+        var active = AndroidActiveRun(project: scenario.repo.root, product: scenario.product)
+        active.device = .init(avd: "Pixel", launcherPID: nil, serial: serial, api: 35, abi: "arm64-v8a", state: .reused)
+        try store.write(active)
+        #expect(try androidTeardownDeviceKey(anchor: scenario.anchor, logs: scenario.logs) == .device(.android, "avd:Pixel"))
+        try Data("unreadable active run".utf8).write(to: store.file)
+        #expect(throws: AndroidStateError.self) {
+            try androidTeardownDeviceKey(anchor: scenario.anchor, logs: scenario.logs)
+        }
+        #expect(try String(contentsOf: store.file, encoding: .utf8) == "unreadable active run")
+    }
+
     @Test("another requested AVD preserves the existing active run before any subprocess")
     func requestedAVDDoesNotRollbackExistingRun() async throws {
         let scenario = try runtimeScenario()
@@ -427,7 +443,7 @@ struct AndroidRuntimeTests {
 
 @Suite("Android live app observation")
 struct AndroidAppObservationTests {
-    @Test("pidof separates a running app, a stopped app or gone emulator, and an unobservable device")
+    @Test("pidof separates a running app, a stopped app, and a disconnected or unobservable device")
     func observation() async throws {
         let scenario = try runtimeScenario()
         let pidof = command("adb", ["-s", serial, "shell", "pidof", "dev.other"])
@@ -437,7 +453,7 @@ struct AndroidAppObservationTests {
         }
         #expect(await observe(.ok("4242\n")) == .running("dev.other pid 4242 on \(serial)"))
         #expect(await observe(.failed(1, "")) == .stopped)
-        #expect(await observe(.failed(1, "adb: device '\(serial)' not found")) == .stopped)
+        #expect(await observe(.failed(1, "adb: device '\(serial)' not found")) == .unknown("adb: device '\(serial)' not found"))
         #expect(await observe(.failed(1, "error: device offline")) == .unknown("error: device offline"))
     }
 }
