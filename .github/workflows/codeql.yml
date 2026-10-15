@@ -17,24 +17,37 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  analyze:
+  # Swift analysis holds a shared macOS runner for about 25 minutes; PRs run it only for Swift build inputs.
+  languages:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      include: ${{ steps.select.outputs.include }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - id: select
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          include='[{"language":"actions","runner":"ubuntu-24.04","build-mode":"none"},{"language":"python","runner":"ubuntu-24.04","build-mode":"none"},{"language":"ruby","runner":"ubuntu-24.04","build-mode":"none"}'
+          # --quiet exits 1 for a change and 128 for an unreadable diff; both analyze Swift.
+          if [ "$GITHUB_EVENT_NAME" != pull_request ] ||
+             ! git diff --quiet --no-renames "$BASE_SHA" HEAD -- Sources Tests 'Package*.swift' Package.resolved .github/workflows/codeql.yml; then
+            include+=',{"language":"swift","runner":"macos-26","build-mode":"manual"}'
+          fi
+          echo "include=$include]" >> "$GITHUB_OUTPUT"
+          echo "CodeQL languages: $include]" >> "$GITHUB_STEP_SUMMARY"
+
+  analyze:
+    needs: languages
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - language: actions
-            runner: ubuntu-24.04
-            build-mode: none
-          - language: python
-            runner: ubuntu-24.04
-            build-mode: none
-          - language: ruby
-            runner: ubuntu-24.04
-            build-mode: none
-          - language: swift
-            runner: macos-26
-            build-mode: manual
+        include: ${{ fromJSON(needs.languages.outputs.include) }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
     permissions:

@@ -96,7 +96,7 @@
     "codeql_main_source": {
       "path": ".github/workflows/codeql.yml",
       "type": "file",
-      "sha": "6b75461a44c46789f40d1722a2010021df75fb93"
+      "sha": "29db55d55b5c80428c757bf47ce3ae307595c085"
     }
   },
   "exceptions": [
