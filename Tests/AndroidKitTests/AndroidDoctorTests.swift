@@ -159,6 +159,17 @@ private func composedChecks(_ scenario: AndroidScenario) async -> [any Check] {
 
 @Suite("Android doctor")
 struct AndroidDoctorTests {
+    @Test("SDK planning never materializes a missing Gradle wrapper")
+    func sdkRequirementsNeedLocalWrapper() async throws {
+        let fixture = try scenario(materializedWrapper: false)
+        let context = AndroidDoctorContext(anchor: fixture.anchor, config: fixture.config,
+            hostRunner: fixture.runner, projectRunner: fixture.runner, environment: fixture.environment)
+        let requirements = try await context.sdkRequirements()
+        #expect(!requirements.blockers.isEmpty)
+        #expect(requirements.packages.isEmpty)
+        #expect(!fixture.runner.log.all.contains { $0.description == fixture.modelCommand.description })
+    }
+
     @Test("SDK requirements and doctor share one model and expose no daemon paths")
     func sdkRequirementsSnapshot() async throws {
         let fixture = try scenario(modelResponse: .ok(AndroidGradleModelProbe.marker + nativeModelJSON(cmake: "3.22.1")))
@@ -229,7 +240,8 @@ struct AndroidDoctorTests {
         #expect(gradleCommands.count == 1)
         #expect(gradleCommands[0].arguments.contains("--offline"))
         #expect(gradleCommands[0].arguments.contains("--no-daemon"))
-        #expect(gradleCommands[0].arguments.contains("-Porg.gradle.java.installations.auto-download=false"))
+        #expect(gradleCommands[0].arguments.contains("-Dorg.gradle.java.installations.auto-download=false"))
+        #expect(gradleCommands[0].arguments.contains("-Pandroid.builder.sdkDownload=false"))
         #expect(gradleCommands[0].arguments.last == "help")
         #expect(gradleCommands[0].arguments.contains {
             $0.hasPrefix(":") && $0.localizedCaseInsensitiveContains("assemble")

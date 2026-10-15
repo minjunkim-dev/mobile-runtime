@@ -10,7 +10,7 @@ struct AndroidCompatibilityEvaluation: Sendable, Equatable {
 enum AndroidCompatibility {
     static let source = CheckSource(
         tier: 2,
-        origin: "Android AGP compatibility table + Gradle Java compatibility table (2026-08-20)"
+        origin: "Android AGP compatibility table + Gradle Java compatibility table (2026-10-15); https://developer.android.com/build/releases/about-agp; https://docs.gradle.org/current/userguide/compatibility.html"
     )
 
     static func evaluate(
@@ -112,7 +112,7 @@ enum AndroidCompatibility {
                 6: "8.7", 7: "8.9", 8: "8.10.2", 9: "8.11.1", 10: "8.11.1",
                 11: "8.13", 12: "8.13", 13: "8.13",
             ],
-            9: [0: "9.1.0", 1: "9.3.1", 2: "9.4.1", 3: "9.5.0"],
+            9: [0: "9.1.0", 1: "9.3.1", 2: "9.4.1", 3: "9.5.0", 4: "9.6.0"],
         ]
         return table[agp.major]?[agp.minor].flatMap(SemanticVersion.init(_:))
     }

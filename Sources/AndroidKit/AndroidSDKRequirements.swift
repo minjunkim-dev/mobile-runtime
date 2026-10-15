@@ -2,7 +2,7 @@ import Core
 import Foundation
 
 /// A read-only projection. Gradle's private paths and process environment never leave the actor.
-public struct AndroidSDKRequirements: Codable, Sendable {
+public struct AndroidSDKRequirements: Codable, Sendable, Equatable {
     public let sdkRoot: URL?
     public let packages: [AndroidSDKPackageRequirement]
     public let modules: [AndroidSDKModuleRequirements]
@@ -14,9 +14,43 @@ public struct AndroidSDKPackageRequirement: Codable, Sendable, Equatable {
     public let requiredFile: String
     public let executable: Bool
     public let source: CheckSource
+
+    public func observation(in sdk: URL) -> AndroidSDKPackageObservation {
+        let destination = sdk.appendingPathComponent(packagePath.replacingOccurrences(of: ";", with: "/"))
+        let manager = FileManager.default
+        let present = manager.fileExists(atPath: destination.path)
+            || (try? manager.destinationOfSymbolicLink(atPath: destination.path)) != nil
+        guard present else { return AndroidSDKPackageObservation(present: false, revision: nil, ready: false, licenseStatus: nil, reason: nil) }
+        let marker = destination.appendingPathComponent(requiredFile)
+        let exists = executable ? manager.isExecutableFile(atPath: marker.path) : manager.fileExists(atPath: marker.path)
+        let properties = (try? String(contentsOf: destination.appendingPathComponent("source.properties"), encoding: .utf8))
+            .map { AndroidDoctorContext.properties($0) }
+        let revision = properties?["Pkg.Revision"].flatMap {
+            $0.range(of: #"^[0-9]+(?:\.[0-9]+){0,2}$"#, options: .regularExpression) == nil ? nil : $0
+        }
+        let declared = packagePath.split(separator: ";").last.map(String.init)
+        let exactRevision = ["build-tools;", "ndk;", "cmake;"].contains { packagePath.hasPrefix($0) }
+        let revisionMatches = !exactRevision || revision == declared
+        let licenses = AndroidSDKLicenses.check(packages: [destination], sdk: sdk, command: nil)
+        return AndroidSDKPackageObservation(present: true, revision: revision,
+            ready: exists && revision != nil && revisionMatches && licenses == nil,
+            licenseStatus: licenses?.status,
+            reason: !exists ? "Existing package content is incomplete; setup preserves it"
+                : revision == nil ? "Existing package revision is unknown; setup preserves it"
+                : !revisionMatches ? "Existing package revision differs from its required package identity; setup preserves it"
+                : licenses?.reason ?? licenses?.observed)
+    }
 }
 
-public struct AndroidSDKModuleRequirements: Codable, Sendable {
+public struct AndroidSDKPackageObservation: Sendable {
+    public let present: Bool
+    public let revision: String?
+    public let ready: Bool
+    public let licenseStatus: CheckStatus?
+    public let reason: String?
+}
+
+public struct AndroidSDKModuleRequirements: Codable, Sendable, Equatable {
     public let module: String
     public let agpVersion: String?
     public let gradleVersion: String
@@ -37,7 +71,9 @@ extension AndroidDoctorContext {
         case .resolved(let root, _): sdk = root
         case .missing(let reason), .conflict(let reason): sdk = nil; blockers.append(reason)
         }
-        guard case .success(let wrapper) = wrapper(), case .model(let model) = try await model() else {
+        guard case .success(let wrapper) = wrapper(), wrapper.materialized,
+              anchor.framework != .reactNative || anchor.hasNodeModules,
+              case .model(let model) = try await model() else {
             return AndroidSDKRequirements(sdkRoot: sdk, packages: [], modules: [],
                 blockers: blockers + ["An exact locally evaluated Gradle model and wrapper are required; setup does not guess SDK requirements."])
         }

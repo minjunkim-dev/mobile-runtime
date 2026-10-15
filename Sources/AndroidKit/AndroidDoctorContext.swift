@@ -283,6 +283,10 @@ public actor AndroidDoctorContext {
 
     func model() async throws -> AndroidModelProbeOutcome {
         try Task.checkCancellation()
+        guard case .success(let wrapper) = wrapper(), wrapper.materialized,
+              anchor.framework != .reactNative || anchor.hasNodeModules else {
+            return .unavailable("The wrapper and project inputs must already exist locally; inspection never downloads them")
+        }
         let task: Task<AndroidModelProbeOutcome, any Error>
         if let modelTask { task = modelTask }
         else {
@@ -541,7 +545,7 @@ public actor AndroidDoctorContext {
         return nil
     }
 
-    private static func properties(_ text: String) -> [String: String] {
+    static func properties(_ text: String) -> [String: String] {
         text.split(separator: "\n").reduce(into: [:]) { values, raw in
             let line = raw.trimmingCharacters(in: .whitespaces)
             guard !line.isEmpty, !line.hasPrefix("#"), !line.hasPrefix("!"),
@@ -604,7 +608,8 @@ enum AndroidGradleModelProbe {
         }
         var arguments = [
             "--no-daemon", "--no-configuration-cache", "--console=plain",
-            "--warning-mode=none", "-Porg.gradle.java.installations.auto-download=false",
+            "--warning-mode=none", "-Dorg.gradle.java.installations.auto-download=false",
+            "-Pandroid.builder.sdkDownload=false",
             "-q", "-I", script.path, "help",
         ]
         if offline { arguments.insert("--offline", at: 0) }

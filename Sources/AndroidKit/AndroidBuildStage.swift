@@ -155,7 +155,7 @@ public struct AndroidBuildStage: Stage {
                 assembleTask,
                 "--no-daemon",
                 "--console=plain",
-                "-Porg.gradle.java.installations.auto-download=false",
+                "-Dorg.gradle.java.installations.auto-download=false", "-Pandroid.builder.sdkDownload=false",
                 "-I",
                 modelScript.path,
             ],

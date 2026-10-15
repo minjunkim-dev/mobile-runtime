@@ -1,4 +1,5 @@
 import Core
+import AndroidKit
 import CryptoKit
 import Foundation
 
@@ -14,6 +15,7 @@ public struct PreparationStep: Codable, Sendable {
     public let remediation: Remediation?
     /// Only explicit, non-secret execution policy. Never the process environment.
     public var environment: [String: String] = [:]
+    public var installation: InstallationMetadata? = nil
 }
 
 public struct PreparationPlatform: Codable, Sendable {
@@ -32,6 +34,7 @@ public struct PreparationPlan: Codable, Sendable {
     /// Content digests only. Declaration contents and process environments stay private.
     public let files: [String: String]
     public let installed: [String: Bool]
+    public var androidRequirements: AndroidSDKRequirements? = nil
 
     /// The same approval inspection is visible in both clients.
     public var inspectionLines: [String] {
@@ -40,6 +43,9 @@ public struct PreparationPlan: Codable, Sendable {
                 "\(platform.platform.rawValue) \(check.id) [\(check.kind)] observed: \(check.observed ?? "unknown"); required: \(check.required ?? "none"); source: \(check.source.origin); target: \(check.target)"
             }
         } + installed.keys.sorted().map { "destination: \($0) — \(installed[$0] == true ? "present" : "absent")" }
+        + steps.compactMap { $0.installation }.map {
+            "install: \($0.package) revision \($0.revision); \($0.artifact.url.absoluteString); \($0.artifact.size) bytes; \($0.artifact.checksumAlgorithm) \($0.artifact.checksum); destination: \($0.destination.path); resource: \($0.resourceKey)"
+        }
     }
 }
 
@@ -105,7 +111,7 @@ public enum PreparationExecution {
                 return finish(result, events)
             }
             guard let plan = prepared.plan else { return finish(result, events) }
-            result.operation.manual = plan.steps.filter { $0.kind != "align" }
+            result.operation.manual = plan.steps.filter { $0.kind != "align" && $0.kind != "install" }
             result.operation.remaining = plan.steps.map(\.id)
             if planOnly || approvedPlanID == nil {
                 result.operation.state = "needs-approval"
@@ -120,6 +126,7 @@ public enum PreparationExecution {
                 return finish(result, events)
             }
             let actions = plan.steps.filter { $0.kind == "align" }
+            let installations = plan.steps.filter { $0.kind == "install" }
             guard actions.isEmpty || trustRepository else {
                 result.operation.state = "waiting-manual"
                 result.operation.requiredInput = ["--trust-repository"]
@@ -143,7 +150,8 @@ public enum PreparationExecution {
             let folder = try FolderIdentity(directory: anchor.workspaceRoot?.directory ?? anchor.directory)
             // Separate projects can reuse one global Bundle destination.
             let destinations = actions.filter { $0.id == "dependencies.gems" }.map { ResourceKey.destination(URL(fileURLWithPath: $0.target)) }
-            let lease = try leases.acquire([.folder(folder)] + destinations,
+            let installationTargets = installations.compactMap { $0.installation?.resourceKey }
+            let lease = try leases.acquire([.folder(folder)] + destinations + installationTargets,
                 owner: LeaseOwner(operationId: result.operation.id, command: "setup", project: folder.path))
             defer { lease.release() }
             // Another preparation may have finished while the plan was being read.
@@ -152,6 +160,33 @@ public enum PreparationExecution {
                 result.operation.state = "needs-approval"
                 result.operation.error = "Conditions changed while acquiring the preparation target."
                 return finish(result, events)
+            }
+            let originalFiles = try sourceFiles(prepared.root)
+            let sourceRoot = prepared.root
+            for step in installations {
+                try Task.checkCancellation()
+                guard let metadata = step.installation,
+                      let action = prepared.installationActions[step.id], action.metadata == metadata else {
+                    throw DomainError(summary: "Approved installation metadata is missing", remediation: Remediation(summary: "Inspect the package plan again."))
+                }
+                result.operation.state = "running"
+                events.emit("stage", stage: step.id, state: "running", detail: "\(metadata.package) revision \(metadata.revision)")
+                do {
+                    try await action.run(runner: host) {
+                        try await verifyInstallation(input: input, host: host, plan: plan, step: step, root: sourceRoot, files: originalFiles)
+                    }
+                } catch {
+                    events.emit("stage", stage: step.id, state: error is CancellationError ? "cancelled" : "failed")
+                    throw error
+                }
+                result.operation.completed.append(step.id)
+                events.emit("stage", stage: step.id, state: "succeeded")
+                let after = try sourceFiles(prepared.root)
+                let changedAfter = Set(after.keys).union(originalFiles.keys).filter { after[$0] != originalFiles[$0] }.sorted()
+                guard changedAfter.isEmpty else {
+                    result.operation.changedFiles = changedAfter
+                    throw DomainError(summary: "Source changed during SDK installation", remediation: Remediation(summary: "Preserve the completed package. Inspect changed files manually, then re-plan."))
+                }
             }
             if !actions.isEmpty {
                 result.operation.state = "running"
@@ -164,9 +199,9 @@ public enum PreparationExecution {
                 do {
                     _ = try await DependenciesStage(anchor: anchor, runner: guarded,
                         includePods: includePods, forceLockedAlignment: true).run(&stageContext)
-                    result.operation.completed = guarded.completed
+                    result.operation.completed += guarded.completed
                 } catch {
-                    result.operation.completed = guarded.completed
+                    result.operation.completed += guarded.completed
                     result.operation.changedFiles = guarded.changedFiles
                     result.operation.log = guarded.log
                     throw error
@@ -177,14 +212,17 @@ public enum PreparationExecution {
             try Task.checkCancellation()
             let after = try await inspect(input, runner: host)
             result.plan = after.plan
-            result.operation.manual = after.plan?.steps.filter { $0.kind != "align" } ?? []
-            result.operation.remaining = result.operation.manual.map(\.id)
+            result.operation.manual = after.plan?.steps.filter { $0.kind != "align" && $0.kind != "install" } ?? []
+            result.operation.remaining = after.plan?.steps.filter { $0.kind != "align" }.map(\.id) ?? []
             // Alignment is measured by the manager's successful frozen/locked command.
             if var updated = result.plan {
                 for index in updated.platforms.indices {
                     let platform = updated.platforms[index].platform
-                    let blocked = result.operation.manual.contains { $0.platform == nil || $0.platform == platform }
-                    updated.platforms[index].state = blocked ? "waiting-manual" : "succeeded"
+                    let pending = updated.steps.filter {
+                        $0.kind != "align" && !result.operation.completed.contains($0.id) && ($0.platform == nil || $0.platform == platform)
+                    }
+                    updated.platforms[index].state = pending.isEmpty ? "succeeded"
+                        : pending.contains { $0.kind == "install" } ? "needs-approval" : "waiting-manual"
                 }
                 result.plan = updated
             }
@@ -205,6 +243,12 @@ public enum PreparationExecution {
             result.operation.conflict = conflict
             result.operation.error = conflict.domainError.message
             result.operation.nextAction = conflict.domainError.remediation.summary
+        } catch let changed as PreparationSourceChanged {
+            result.exitCode = 1
+            result.operation.state = "failed"
+            result.operation.changedFiles = changed.files
+            result.operation.error = "Source changed during preparation"
+            result.operation.nextAction = "Inspect the changed files. No files were restored. Preserve completed packages and re-plan."
         } catch let error as DomainError {
             result.exitCode = 1
             result.operation.state = "failed"
@@ -226,12 +270,29 @@ public enum PreparationExecution {
         return result
     }
 
+    private static func verifyInstallation(input: ProjectInspectionInput, host: any ProcessRunner,
+                                           plan: PreparationPlan, step: PreparationStep, root: URL,
+                                           files: [String: String]) async throws {
+        try Task.checkCancellation()
+        let now = try sourceFiles(root)
+        let changed = Set(now.keys).union(files.keys).filter { now[$0] != files[$0] }.sorted()
+        guard changed.isEmpty else { throw PreparationSourceChanged(files: changed) }
+        guard let current = try await inspect(input, runner: host).plan,
+              current.project == plan.project, current.app == plan.app, current.files == plan.files,
+              current.androidRequirements == plan.androidRequirements,
+              current.steps.contains(where: { $0.id == step.id && $0.kind == "install" && $0.installation == step.installation }) else {
+            throw DomainError(summary: "Installation conditions changed before the next package commit",
+                remediation: Remediation(summary: "Preserve completed packages. Inspect the remaining plan and approve it again."))
+        }
+    }
+
     private struct Inspection {
         var plan: PreparationPlan?
         var selection: ProjectSelection?
         var anchor: ProjectAnchor?
         var context: WorkflowContext?
         var root: URL
+        var installationActions: [String: InstallationAction] = [:]
     }
 
     private static func inspect(_ input: ProjectInspectionInput, runner: any ProcessRunner) async throws -> Inspection {
@@ -261,13 +322,15 @@ public enum PreparationExecution {
         var platforms: [PreparationPlatform] = []
         var steps: [PreparationStep] = []
         var contexts: [ProjectPlatform: WorkflowContext] = [:]
+        var androidRequirements: AndroidSDKRequirements?
+        var sdkInstalled: [String: Bool] = [:]
         // RN preparation always covers both platforms, even with --platform ios.
         let preparationPlatforms: [ProjectPlatform] = anchor.framework == .reactNative || anchor.framework == .flutter
             ? [.ios, .android] : selected.platforms
-        if anchor.framework == .flutter || anchor.framework == .nativeAndroid {
-            let step = PreparationStep(id: "provider.\(anchor.framework.rawValue)", platform: nil, kind: "provider", target: root.path,
-                observed: "\(anchor.framework.displayName) preparation provider is not implemented yet", required: "Framework-specific preparation provider",
-                source: CheckSource(tier: 1, origin: anchor.framework.rawValue), command: nil,
+        if anchor.framework == .flutter {
+            let step = PreparationStep(id: "provider.flutter", platform: nil, kind: "provider", target: root.path,
+                observed: "Flutter preparation provider is not implemented yet", required: "Framework-specific preparation provider",
+                source: CheckSource(tier: 1, origin: "pubspec.yaml"), command: nil,
                 remediation: Remediation(summary: "Use the project's existing preparation workflow, then inspect again. No tool installation occurred."))
             value.plan = try makePlan(project: selected.app, app: selected.id, kind: anchor.framework.rawValue,
                 platforms: preparationPlatforms.map { PreparationPlatform(platform: $0, state: "waiting-manual", checks: [step]) },
@@ -287,7 +350,22 @@ public enum PreparationExecution {
             }
             let context = await WorkflowContext.make(input: input, platform: platform, anchor: anchor, runner: runner)
             contexts[platform] = context
-            let report = await context.engine.run()
+            let report: DoctorReport
+            var sdkPreparation: AndroidSDKPreparation?
+            if platform == .android {
+                // WorkflowContext's stored actor is connected after the #210 dependency lands.
+                // Until then, run Android checks and snapshot against this one injected actor.
+                let android = AndroidDoctorContext(anchor: anchor, config: context.config, hostRunner: runner,
+                    projectRunner: context.projectRunner, environment: AndroidEnvironment(values: input.environment))
+                let common = await context.engine.run(only: Set(context.engine.checkIDs.filter { !$0.hasPrefix("android.") }))
+                let observed = common.checks.map { PreparationObservedCheck(result: $0) as any Check }
+                let platformReport = await DoctorEngine(checks: observed + androidChecks(context: android)).run()
+                report = DoctorReport(checks: platformReport.checks,
+                                      toolFailures: common.toolFailures + platformReport.toolFailures)
+                let requirements = try await android.sdkRequirements()
+                androidRequirements = requirements
+                sdkPreparation = try await AndroidSDKPreparation.inspect(requirements, runner: runner)
+            } else { report = await context.engine.run() }
             try Task.checkCancellation()
             if report.hasToolFailure { throw PreparationProbeError(failures: report.toolFailures.sorted()) }
             var checks = report.checks.sorted { $0.id < $1.id }.map { check in
@@ -296,6 +374,11 @@ public enum PreparationExecution {
                     observed: check.id == "host.storage" ? check.status.rawValue : check.outcome.observed,
                     required: check.outcome.required, source: check.outcome.source, command: nil,
                     remediation: check.outcome.remediation ?? (check.outcome.reason.map { Remediation(summary: $0) }))
+            }
+            if let sdkPreparation {
+                checks += sdkPreparation.checks
+                sdkInstalled.merge(sdkPreparation.installed) { _, new in new }
+                value.installationActions.merge(sdkPreparation.actions) { _, new in new }
             }
             if anchor.framework == .reactNative, !checks.contains(where: { $0.id.hasSuffix(".package-manager.version") }) {
                 let output = try await context.projectRunner.run(ProcessCommand(anchor.packageManagerName, ["--version"],
@@ -333,7 +416,8 @@ public enum PreparationExecution {
         value.context = context
         if anchor.framework != .reactNative {
             value.plan = try makePlan(project: selected.app, app: selected.id, kind: anchor.framework.rawValue,
-                platforms: platforms, steps: steps, files: approvalFiles(root), installed: [:])
+                                     platforms: platforms, steps: steps, files: approvalFiles(root), installed: sdkInstalled,
+                                     androidRequirements: androidRequirements)
             return value
         }
         let nodeReady = platforms.flatMap(\.checks).contains { $0.id.hasSuffix(".node.version") && $0.kind == "reuse" }
@@ -344,7 +428,7 @@ public enum PreparationExecution {
         let hasNodeLock = ["package-lock.json", "yarn.lock", "pnpm-lock.yaml", "npm-shrinkwrap.json"].contains {
             FileManager.default.fileExists(atPath: dependencyRoot.appendingPathComponent($0).path)
         }
-        var installed: [String: Bool] = [:]
+        var installed: [String: Bool] = sdkInstalled
         for relative in ["node_modules", "node_modules/.mobile-install.incomplete", "ios/Pods", "ios/Pods/Manifest.lock"] {
             let base = relative.hasPrefix("node_modules") ? dependencyRoot : anchor.directory
             installed[base.appendingPathComponent(relative).path] = FileManager.default.fileExists(atPath: base.appendingPathComponent(relative).path)
@@ -412,7 +496,7 @@ public enum PreparationExecution {
                 remediation: Remediation(summary: "Use the declared locked Pod installation. Source or lockfile migration requires manual handling.")))
         }
         value.plan = try makePlan(project: selected.app, app: selected.id, kind: "react-native", platforms: platforms,
-                                 steps: steps, files: approvalFiles(root), installed: installed)
+                                 steps: steps, files: approvalFiles(root), installed: installed, androidRequirements: androidRequirements)
         return value
     }
 
@@ -433,9 +517,11 @@ public enum PreparationExecution {
     }
 
     private static func makePlan(project: FolderIdentity, app: String, kind: String,
-                                 platforms: [PreparationPlatform], steps: [PreparationStep], files: [String: String], installed: [String: Bool]) throws -> PreparationPlan {
+                                 platforms: [PreparationPlatform], steps: [PreparationStep], files: [String: String], installed: [String: Bool],
+                                 androidRequirements: AndroidSDKRequirements? = nil) throws -> PreparationPlan {
         var plan = PreparationPlan(id: "", project: project, app: app, projectKind: kind,
                                    platforms: platforms, steps: steps.sorted { $0.id < $1.id }, files: files, installed: installed)
+        plan.androidRequirements = androidRequirements
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
         plan.id = digest(try encoder.encode(plan))
@@ -487,7 +573,16 @@ public enum PreparationExecution {
     }
 }
 
+private struct PreparationObservedCheck: Check {
+    let result: CheckResult
+    var id: String { result.id }
+    var category: String { result.category }
+    var title: String { result.title }
+    func run() async throws -> CheckOutcome { result.outcome }
+}
+
 private struct PreparationProbeError: Error { let failures: [String] }
+private struct PreparationSourceChanged: Error { let files: [String] }
 
 private final class PreparationEvents: @unchecked Sendable {
     let id = UUID().uuidString
@@ -569,6 +664,7 @@ private final class PreparationRunner: ProcessRunner, @unchecked Sendable {
         struct Conditions: Encodable {
             let checks: [PreparationStep]
             let destinations: [String: [String: String]]
+            let androidRequirements: AndroidSDKRequirements?
         }
         let checks = plan.platforms.flatMap(\.checks).filter {
             ($0.id.hasSuffix(".version") || $0.id.hasSuffix(".path") || $0.id.hasSuffix(".xcode.installed")
@@ -580,7 +676,7 @@ private final class PreparationRunner: ProcessRunner, @unchecked Sendable {
         })
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
-        return try encoder.encode(Conditions(checks: checks, destinations: destinations))
+        return try encoder.encode(Conditions(checks: checks, destinations: destinations, androidRequirements: plan.androidRequirements))
     }
     private func checkFiles() throws {
         let now = try PreparationExecution.sourceFiles(root)
