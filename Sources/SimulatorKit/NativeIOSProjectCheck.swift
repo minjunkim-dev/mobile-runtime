@@ -16,14 +16,16 @@ public struct NativeIOSProjectCheck: Check {
     private let lookup: MatrixLookup?
     private let runner: any ProcessRunner
     private let locator: XcodeLocator
+    private let configuration: String
 
     public init(anchor: ProjectAnchor, config: ConfigContext, lookup: MatrixLookup?,
-                runner: any ProcessRunner, locator: XcodeLocator) {
+                runner: any ProcessRunner, locator: XcodeLocator, configuration: String = "Debug") {
         self.anchor = anchor
         self.config = config
         self.lookup = lookup
         self.runner = runner
         self.locator = locator
+        self.configuration = configuration
     }
 
     public func run() async throws -> CheckOutcome {
@@ -40,12 +42,12 @@ public struct NativeIOSProjectCheck: Check {
             }
         }
         let candidates = try await IOSWorkflowCandidates.load(anchor: anchor, config: config, lookup: lookup,
-            runner: runner, locator: locator, includeDevices: false)
+            runner: runner, locator: locator, includeDevices: false, configuration: configuration)
         guard let target = candidates.deploymentTarget, let minimum = MinimumVersion(target) else {
             return .unknown(reason: "Choose a shared app scheme before its Simulator deployment target can be measured.", source: source)
         }
-        guard candidates.configurations.contains("Debug") else {
-            return .unknown(reason: "The selected scheme did not resolve Debug. Choose an existing configuration explicitly for build or up.", source: source)
+        guard candidates.configurations.contains(configuration) else {
+            return .unknown(reason: "The selected scheme did not resolve \(configuration). Choose an existing configuration explicitly for build or up.", source: source)
         }
         let runtime = MatrixLookup(xcode: lookup?.xcode ?? .unavailable(reason: "not measured", source: source),
             runtime: .requirement(minimum, source: source))

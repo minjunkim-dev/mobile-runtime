@@ -85,7 +85,8 @@ public enum WorkflowExecution {
                            clearDevice: platform == .ios && (input.device != nil || kind == .build))
             var wiring = await WorkflowContext.make(input: input.project, platform: platform, anchor: anchor,
                 runner: runner, includeProjectEnvironment: kind != .down,
-                includeRuntimeSDKTools: kind != .build || platform == .ios, selectedConfig: config)
+                includeRuntimeSDKTools: kind != .build || platform == .ios, selectedConfig: config,
+                selectedConfiguration: input.configuration)
             try Task.checkCancellation()
 
             if kind != .down {
@@ -164,7 +165,8 @@ public enum WorkflowExecution {
                     throw selectionFailure("Select \(operation.requiredInput.joined(separator: ", ")) before starting changes.")
                 }
                 wiring = await WorkflowContext.make(input: input.project, platform: platform, anchor: anchor,
-                    runner: runner, includeRuntimeSDKTools: kind != .build || platform == .ios, selectedConfig: config)
+                    runner: runner, includeRuntimeSDKTools: kind != .build || platform == .ios, selectedConfig: config,
+                    selectedConfiguration: operation.configuration)
                 try Task.checkCancellation()
             }
 

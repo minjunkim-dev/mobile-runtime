@@ -88,6 +88,27 @@ struct NativeIOSWorkflowTests {
         #expect(!runner.log.all.contains { $0.executable == "xcrun" && $0.arguments.contains("install") })
     }
 
+    @Test("an explicit native configuration uses its own deployment target", arguments: [false, true])
+    func explicitConfiguration(requiresNewerRuntime: Bool) async throws {
+        let repo = try project()
+        var runner = runner(repo)
+        let debugTarget = requiresNewerRuntime ? "17.0" : "27.0"
+        let releaseTarget = requiresNewerRuntime ? "27.0" : "17.0"
+        runner.responses[settings(repo)] = .ok(#"[{"target":"App","buildSettings":{"CONFIGURATION":"Debug","PLATFORM_NAME":"iphonesimulator","IPHONEOS_DEPLOYMENT_TARGET":"\#(debugTarget)","FULL_PRODUCT_NAME":"App.app"}}]"#)
+        runner.responses["xcrun simctl list runtimes -j"] = .ok(#"{"runtimes":[{"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-18-0","name":"iOS 18.0","version":"18.0","isAvailable":true}]}"#)
+        let destination = "\(target(repo)) -scheme App -configuration Release -destination generic/platform=iOS Simulator"
+        let measured = #"[{"target":"App","buildSettings":{"CONFIGURATION":"Release","PLATFORM_NAME":"iphonesimulator","IPHONEOS_DEPLOYMENT_TARGET":"\#(releaseTarget)","FULL_PRODUCT_NAME":"App.app","BUILT_PRODUCTS_DIR":"/test/build","PRODUCT_BUNDLE_IDENTIFIER":"com.test.App"}}]"#
+        runner.responses["xcodebuild -showBuildSettings -json \(destination)"] = .ok(measured)
+        runner.responses["xcodebuild \(destination) CODE_SIGNING_ALLOWED=NO build"] = .ok("** BUILD SUCCEEDED **")
+        runner.responses["xcodebuild -showBuildSettings -json \(destination) CODE_SIGNING_ALLOWED=NO"] = .ok(measured)
+        let result = await WorkflowExecution.run(.build, input: WorkflowInput(
+            project: ProjectInspectionInput(directory: repo.root, environment: [:]), configuration: "Release"), runner: runner)
+        #expect(result.exitCode == (requiresNewerRuntime ? 1 : 0), Comment(rawValue: result.up?.failure?.message ?? ""))
+        #expect(runner.log.all.contains { $0.arguments.contains("build") } == !requiresNewerRuntime)
+        if !requiresNewerRuntime { #expect(result.operation.configuration == "Release") }
+        #expect(!runner.log.all.contains { $0.description == settings(repo) })
+    }
+
     @Test("native cancellation remains correlated and never starts detached work")
     func cancellation() async throws {
         let repo = try project()

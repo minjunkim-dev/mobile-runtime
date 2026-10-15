@@ -28,7 +28,8 @@ public struct WorkflowContext: Sendable {
         runner: any ProcessRunner,
         includeProjectEnvironment: Bool = true,
         includeRuntimeSDKTools: Bool = true,
-        selectedConfig: ConfigContext? = nil
+        selectedConfig: ConfigContext? = nil,
+        selectedConfiguration: String? = nil
     ) async -> WorkflowContext {
         let locator = XcodeLocator(runner: runner, developerDirOverride: input.environment["DEVELOPER_DIR"])
         let workingDirectory = input.directory.standardizedFileURL.resolvingSymlinksInPath()
@@ -92,7 +93,8 @@ public struct WorkflowContext: Sendable {
             }
             let nativeChecks: [any Check] = if let anchor, anchor.framework == .nativeIOS {
                 [NativeIOSProjectCheck(anchor: anchor, config: config, lookup: lookup,
-                    runner: projectEnvironment?.runner ?? runner, locator: locator)]
+                    runner: projectEnvironment?.runner ?? runner, locator: locator,
+                    configuration: selectedConfiguration ?? "Debug")]
             } else { [] }
             checks = workspaceChecks + iOSChecks(lookup: lookup, runner: runner, locator: locator)
                 + configChecks(context: config, lookup: lookup, runner: runner, locator: locator)
