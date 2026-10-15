@@ -144,6 +144,85 @@ struct WorkflowExecutionTests {
         #expect(result.up?.stages.isEmpty == true)
     }
 
+    @Test("a folder held by another client stops build before changes and names the owner")
+    func folderConflict() async throws {
+        let repo = try iosProject()
+        let runner = iosRunner(repo)
+        let leases = temporaryLeases()
+        let gui = LeaseOwner(operationId: "gui-1", command: "up", project: repo.root.path)
+        let held = try leases.acquire([.folder(try FolderIdentity(directory: repo.root))], owner: gui)
+        let result = await WorkflowExecution.run(.build, input: WorkflowInput(project: ProjectInspectionInput(
+            directory: repo.root, environment: [:])), runner: runner, leases: leases)
+        #expect(result.exitCode == 1)
+        #expect(result.operation.state == "failed")
+        #expect(result.operation.conflict?.owner == gui)
+        #expect(result.up?.failure?.message.contains("held by up operation gui-1") == true)
+        #expect(!runner.log.all.contains { $0.description == "yarn install --frozen-lockfile" })
+        held.release()
+        let retry = await WorkflowExecution.run(.build, input: WorkflowInput(project: ProjectInspectionInput(
+            directory: repo.root, environment: [:])), runner: iosRunner(repo), leases: leases)
+        #expect(retry.exitCode == 0)
+        _ = try leases.acquire([.folder(try FolderIdentity(directory: repo.root))], owner: gui)
+    }
+
+    @Test("an app another project left running blocks up on that device; no automatic switch")
+    func liveAppConflict() async throws {
+        let repo = try iosProject()
+        var runner = iosRunner(repo)
+        runner.responses["xcrun simctl list devices -j"] = .ok(#"{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-27-0":[{"name":"iPhone A","udid":"A","state":"Booted","isAvailable":true},{"name":"iPhone B","udid":"B","state":"Shutdown","isAvailable":true}]}}"#)
+        runner.responses["xcrun simctl spawn A launchctl list"] = .ok("PID\tStatus\tLabel\n4242\t0\tUIKitApplication:com.other.App[a1b2][rb-legacy]\n")
+        let leases = temporaryLeases()
+        let other = LeaseOwner(operationId: "cli-1", command: "up", project: "/work/other")
+        try leases.record(ResourceClaim(device: .device(.ios, "A"), platform: .ios, handle: "A", appID: "com.other.App", owner: other))
+        let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: ProjectInspectionInput(
+            directory: repo.root, environment: [:], platform: .ios), device: "A"), runner: runner, leases: leases)
+        #expect(result.exitCode == 1)
+        #expect(result.operation.device == "A")
+        #expect(result.operation.conflict?.owner == other)
+        #expect(result.operation.conflict?.reason.contains("still running") == true)
+        #expect(!runner.log.all.contains { $0.description == "yarn install --frozen-lockfile" })
+        #expect(runner.log.spawned.isEmpty)
+        // The failed up released its own keys; the other project's claim is preserved.
+        _ = try leases.acquire([.device(.ios, "A"), .port(8081)], owner: other)
+        await #expect(throws: ResourceConflict.self) {
+            try await leases.check(device: .device(.ios, "A"), project: repo.root.path) { _ in .running("") }
+        }
+    }
+
+    @Test("a finished up leaves a device claim that another project's up observes again")
+    func upLeavesClaim() async throws {
+        let repo = try iosProject()
+        var runner = iosRunner(repo)
+        let destination = "-project \(repo.url("ios/MyApp.xcodeproj").path) -scheme MyApp -configuration Debug -destination platform=iOS Simulator,id=A"
+        runner.responses["xcrun simctl list devices -j"] = .ok(#"{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-27-0":[{"name":"iPhone A","udid":"A","state":"Booted","isAvailable":true}]}}"#)
+        runner.responses[MetroStatus.command] = .ok(MetroStatus.running(projectRoot: repo.root))
+        runner.responses["xcodebuild \(destination) build"] = .ok("** BUILD SUCCEEDED **")
+        runner.responses["xcodebuild -showBuildSettings -json \(destination)"] = .ok(#"[{"target":"MyApp","buildSettings":{"CONFIGURATION":"Debug","BUILT_PRODUCTS_DIR":"/test/build","FULL_PRODUCT_NAME":"MyApp.app","PRODUCT_BUNDLE_IDENTIFIER":"com.test.MyApp"}}]"#)
+        runner.responses["xcrun simctl install A /test/build/MyApp.app"] = .ok("")
+        runner.responses["xcrun simctl terminate A com.test.MyApp"] = .ok("")
+        runner.responses["xcrun simctl launch A com.test.MyApp"] = .ok("com.test.MyApp: 3538")
+        let leases = temporaryLeases()
+        let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: ProjectInspectionInput(
+            directory: repo.root, environment: [:], platform: .ios), device: "A"), runner: runner, leases: leases)
+        #expect(result.exitCode == 0, Comment(rawValue: result.up?.failure?.message ?? ""))
+        // The lease ended with the command; the app it launched still holds the device.
+        let other = LeaseOwner(operationId: "other-up", command: "up", project: "/work/other")
+        let lease = try leases.acquire([.device(.ios, "A"), .port(8081)], owner: other)
+        let conflict = try await #require(throws: ResourceConflict.self) {
+            try await leases.check(device: .device(.ios, "A"), project: other.project) { claim in
+                #expect(claim.handle == "A")
+                return .running("pid 3538")
+            }
+        }
+        #expect(conflict.key == .app(.ios, device: "A", appID: "com.test.MyApp"))
+        #expect(conflict.owner?.operationId == result.operation.id)
+        lease.release()
+    }
+
+    private func temporaryLeases() -> ResourceLeases {
+        ResourceLeases(directory: FileManager.default.temporaryDirectory.appendingPathComponent("runstir-leases-\(UUID().uuidString)"))
+    }
+
     private func iosProject(workspaceOnly: Bool = false) throws -> FixtureRepo {
         let repo = try FixtureRepo()
         try repo.write("package.json", #"{"dependencies":{"react-native":"0.81.0"}}"#)

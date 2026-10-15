@@ -35,6 +35,8 @@ public struct WorkflowOperation: Codable, Sendable {
     public var completed: [String] = []
     public var remaining: [String] = []
     public var nextAction: String?
+    /// The resource, its owner and the reason this operation stopped before changes.
+    public var conflict: ResourceConflict?
 
     public init(id: String, kind: WorkflowKind, state: String) {
         self.id = id

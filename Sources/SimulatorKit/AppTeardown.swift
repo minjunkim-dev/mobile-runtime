@@ -45,3 +45,28 @@ public struct AppTeardown: Sendable {
         return .stopped(Self.id, "\(record.bundleId) on \(record.udid)")
     }
 }
+
+/// Whether an app a finished `up` left on a Simulator is still running there. A
+/// shut-down Simulator runs nothing; any other failure stays unknown.
+public func simulatorAppObservation(udid: String, bundleID: String, runner: any ProcessRunner,
+                                    locator: XcodeLocator) async throws -> ClaimObservation {
+    let result: ProcessResult
+    do {
+        result = try await runner.run(ProcessCommand("xcrun", ["simctl", "spawn", udid, "launchctl", "list"],
+            environment: await locator.pinnedEnvironment(), timeout: .seconds(30)))
+    } catch let error where !(error is CancellationError) {
+        return .unknown("simctl could not be run: \(error)")
+    }
+    guard result.terminationStatus.isSuccess else {
+        // simctl 27: a shut-down Simulator exits 149, a deleted one exits 148.
+        let said = result.combinedOutput
+        return said.contains("device is not booted") || said.contains("Invalid device: \(udid)") ? .stopped : .unknown(said.lastLines(1))
+    }
+    // launchctl keeps a job for an exited app; only a numeric pid column is a live process.
+    let pid = result.standardOutput.split(whereSeparator: \.isNewline)
+        .map { $0.split(separator: "\t") }
+        .first { $0.count == 3 && $0[2].hasPrefix("UIKitApplication:\(bundleID)[") && Int32($0[0]) != nil }
+        .map { $0[0] }
+    guard let pid else { return .stopped }
+    return .running("\(bundleID) pid \(pid) on \(udid)")
+}

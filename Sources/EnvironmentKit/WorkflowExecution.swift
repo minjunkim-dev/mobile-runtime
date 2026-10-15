@@ -44,7 +44,7 @@ public struct WorkflowResult: Sendable {
 /// The CLI and GUI use the same selection, factories, cancellation and final document.
 public enum WorkflowExecution {
     public static func run(_ kind: WorkflowKind, input: WorkflowInput,
-                           runner suppliedRunner: (any ProcessRunner)? = nil,
+                           runner suppliedRunner: (any ProcessRunner)? = nil, leases: ResourceLeases = .user,
                            onEvent: @escaping @Sendable (WorkflowEvent) -> Void = { _ in }) async -> WorkflowResult {
         var operation = WorkflowOperation(id: UUID().uuidString, kind: kind, state: "running")
         let events = WorkflowEvents(id: operation.id, callback: onEvent)
@@ -165,6 +165,25 @@ public enum WorkflowExecution {
                 try Task.checkCancellation()
             }
 
+            // Inspected and selected; take every resource this command changes before the first change.
+            let folder = try FolderIdentity(directory: anchor.workspaceRoot?.directory ?? anchor.directory)
+            let owner = LeaseOwner(operationId: operation.id, command: kind.rawValue, project: folder.path)
+            let device = kind == .up ? operation.device.map { ResourceKey.device(platform, $0) } : nil
+            let lease = try leases.acquire([.folder(folder)] + (device.map { [$0, .port(MetroVerdict.port)] } ?? []), owner: owner)
+            defer { lease.release() }
+            if let device {
+                let environment = AndroidEnvironment(values: input.project.environment)
+                try await leases.check(device: device, project: folder.path) { [wiring] claim in
+                    switch claim.platform {
+                    case .ios:
+                        try await simulatorAppObservation(udid: claim.handle, bundleID: claim.appID, runner: runner, locator: wiring.locator)
+                    case .android:
+                        try await androidAppObservation(serial: claim.handle, applicationId: claim.appID, anchor: anchor,
+                            config: config, runner: runner, environment: environment)
+                    }
+                }
+            }
+
             let started: @Sendable (String) -> Void = { events.send("stage", stage: $0, state: "running") }
             let finished: @Sendable (StageResult) -> Void = { events.send("stage", stage: $0.id, state: $0.status.rawValue, detail: $0.detail) }
             let note: @Sendable (String) -> Void = { events.send("detail", state: "running", detail: $0) }
@@ -194,11 +213,20 @@ public enum WorkflowExecution {
                     buildWithoutDevice: kind == .build && operation.device == nil, note: note))
                     .run(onStageFinished: finished, onStageStarted: started)
             }
+            // The app outlives this lease, even after a later stage failed. The next run observes it again.
+            if let device, let up, let claim = claim(up.context, device: device, platform: platform, owner: owner) {
+                try? leases.record(claim)
+            }
         } catch is WorkflowStopped {
             // The existing report carries the validation and its public failure classification.
         } catch is CancellationError {
             if kind == .down { down = TeardownReport(items: [], cancelled: true) }
             else { up = UpReport(stages: [], failure: .cancelled) }
+        } catch let conflict as ResourceConflict {
+            operation.conflict = conflict
+            operation.nextAction = conflict.domainError.remediation.summary
+            if kind == .down { down = TeardownReport(items: [], failure: conflict.domainError) }
+            else { up = UpReport(stages: [], failure: .domain(conflict.domainError)) }
         } catch let error as DomainError {
             operation.nextAction = error.remediation.summary
             if kind == .down { down = TeardownReport(items: [], failure: error) }
@@ -229,6 +257,17 @@ public enum WorkflowExecution {
         }
         events.send(code == 130 ? "cancelled" : "finished", state: operation.state, detail: operation.nextAction)
         return WorkflowResult(operation: operation, up: up, down: down)
+    }
+
+    private static func claim(_ context: UpContext, device: ResourceKey, platform: ProjectPlatform, owner: LeaseOwner) -> ResourceClaim? {
+        switch platform {
+        case .ios:
+            guard let udid = context.device?.udid, let app = context.product?.bundleIdentifier else { return nil }
+            return ResourceClaim(device: device, platform: .ios, handle: udid, appID: app, owner: owner)
+        case .android:
+            guard let product = context.androidProduct, let serial = product.device?.serial else { return nil }
+            return ResourceClaim(device: device, platform: .android, handle: serial, appID: product.applicationId, owner: owner)
+        }
     }
 
     private static func selectDevice(_ operation: inout WorkflowOperation) throws {
