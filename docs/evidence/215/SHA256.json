@@ -20,8 +20,8 @@
     "sha256": "b9da207d3f55bdbf2f41ee901a211a7911f14a99084f26f181f679cb333e5630"
   },
   "pinned-baseline.md": {
-    "bytes": 11347,
-    "sha256": "25794184eacbb0a56473a1849102ec797c8357efb8b86e76973a40fb6a39357d"
+    "bytes": 11453,
+    "sha256": "5938280f10d994642434e07c29be17bdd060385dcc8fbe357a61975888f6d61a"
   },
   "pinned-excerpts.md": {
     "bytes": 2635,
@@ -45,7 +45,7 @@
   },
   "pinned-runtime.json": {
     "bytes": 24669,
-    "sha256": "7d4b16cf4db1ad026a8911d2a1247b6f3e6e10cc6e1f5fd9202e8eb7f9a46fff"
+    "sha256": "80f6ff9b248a29d607dc1f534dd7f3c0ac6668cf0fdbfc3d66a1d093fa9cfb61"
   },
   "pinned-todo-first-screen.png": {
     "bytes": 56282,

@@ -110,9 +110,10 @@ NIA의 첫 관측은 알림 권한 prompt였다. 이 prompt만으로 첫 화면�
 | 전역 Android home | 13 | 0 | 10 | 0 |
 | 기존 console 인증 파일 | 단일 파일 | 0 | 1 | 0 |
 | 원본 To-do source | 119 tracked | 119 | 0 | 0 |
-| 원본 NIA source | 715 tracked | 715 | 0 | 0 |
+| 원본 NIA source | 715 tracked | 714 | 0 | 0 |
 
 regular file의 SHA256과 관측한 mode·size·mtime·symlink target을 비교했다.
+NIA의 tracked 715개는 regular file 714개와 symlink 1개다. symlink는 target·mode를 비교했다.
 민감 파일은 내용이나 hash를 읽지 않았다. stat만 비교했다.
 특히 전역 Gradle cache의 stat-only 930개를 content checksum 비교에 포함하지 않는다.
 stat-only 파일의 bytes 불변은 입증하지 않았다.
