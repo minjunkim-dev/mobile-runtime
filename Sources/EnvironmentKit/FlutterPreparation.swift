@@ -38,24 +38,29 @@ struct FlutterPreparation {
             .standardizedFileURL.resolvingSymlinksInPath()
         let root = URL(fileURLWithPath: canonicalRoot.path, isDirectory: true)
         let cache = root.appendingPathComponent("pub-cache")
-        var candidates: [URL] = []
-        if let explicit = environment["FLUTTER_ROOT"], explicit.hasPrefix("/") { candidates.append(URL(fileURLWithPath: explicit)) }
-        candidates.append(project.directory.appendingPathComponent(".fvm/flutter_sdk"))
+        var candidates: [(root: URL, allowsExecution: Bool)] = []
+        if let explicit = environment["FLUTTER_ROOT"], explicit.hasPrefix("/") {
+            candidates.append((URL(fileURLWithPath: explicit), true))
+        }
+        candidates.append((project.directory.appendingPathComponent(".fvm/flutter_sdk"), false))
         for path in (environment["PATH"] ?? "").split(separator: ":") where path.hasPrefix("/") {
             let executable = URL(fileURLWithPath: String(path)).appendingPathComponent("flutter")
             if FileManager.default.isExecutableFile(atPath: executable.path) {
-                candidates.append(executable.resolvingSymlinksInPath().deletingLastPathComponent().deletingLastPathComponent())
+                candidates.append((executable.resolvingSymlinksInPath().deletingLastPathComponent().deletingLastPathComponent(), true))
             }
         }
         let versions = root.appendingPathComponent("versions")
         // An uncommitted exclusive-rename stage is never a reusable installation.
         candidates += ((try? FileManager.default.contentsOfDirectory(at: versions, includingPropertiesForKeys: nil)) ?? [])
-            .filter { !$0.lastPathComponent.hasPrefix(".") }
+            .filter { !$0.lastPathComponent.hasPrefix(".") }.map { ($0, true) }
         var seen: Set<String> = []
+        var executionRoots: Set<String> = []
         var compatible: [FlutterSDK] = []
         for candidate in candidates {
             try Task.checkCancellation()
-            let path = candidate.standardizedFileURL.resolvingSymlinksInPath()
+            let path = candidate.root.standardizedFileURL.resolvingSymlinksInPath()
+            // Preserve explicit or managed selection even when .fvm found the same SDK first.
+            if candidate.allowsExecution { executionRoots.insert(path.path) }
             guard seen.insert(path.path).inserted else { continue }
             if let sdk = try? FlutterSDK.read(path), project.accepts(flutter: sdk.version, dart: sdk.dartVersion) {
                 compatible.append(sdk)
@@ -75,8 +80,9 @@ struct FlutterPreparation {
                 "The exact project Flutter/Dart constraints reject \(release.version)/\(release.dartVersion). Preserve declarations and choose a compatible official exact version manually."))
             return plan
         }
-        let selected = compatible.first { $0.version == release.version && $0.dartVersion == release.dartVersion && $0.revision == release.revision }
-        if let sdk = selected {
+        let matching = compatible.filter { $0.version == release.version && $0.dartVersion == release.dartVersion && $0.revision == release.revision }
+        let selected = matching.first { executionRoots.contains($0.root.path) } ?? matching.first
+        if let sdk = selected, executionRoots.contains(sdk.root.path) {
             plan.sdk = sdk
             plan.installed[sdk.root.path] = true
             plan.checks.append(PreparationStep(id: "flutter.sdk", platform: nil, kind: "reuse", target: sdk.root.path,
@@ -84,6 +90,11 @@ struct FlutterPreparation {
                 required: release.description, source: release.source, command: nil, remediation: nil))
             plan.activeEnvironment = ["FLUTTER_ROOT": sdk.root.path]
             try await plan.inspectDependencies(project, sdk: sdk, cache: cache, runner: runner)
+        } else if let sdk = selected {
+            plan.checks.append(manual("flutter.sdk", "provider", sdk.root.path,
+                "An SDK found only through .fvm/flutter_sdk is repository-selected. Metadata matching an official release does not authorize its Dart executable. Select a trusted SDK explicitly through FLUTTER_ROOT or PATH, then inspect again."))
+            plan.checks.append(manual("flutter.workspace", "provider", project.directory.path,
+                "Dart workspace inspection was not run for this automatic project SDK. Select a trusted SDK explicitly, then re-plan."))
         } else {
             do { try await plan.proposeInstall(release, root: root, runner: runner) }
             catch is CancellationError { throw CancellationError() }

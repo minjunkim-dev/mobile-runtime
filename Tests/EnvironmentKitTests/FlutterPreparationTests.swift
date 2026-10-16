@@ -6,6 +6,68 @@ import Testing
 
 @Suite("Flutter preparation")
 struct FlutterPreparationTests {
+    @Test("an automatically discovered project SDK never runs before approval", arguments: [false, true], ["plan", "unapproved", "stale"])
+    func automaticProjectSDKDoesNotRun(externalSDK: Bool, mode: String) async throws {
+        let fixture = try FlutterFixture()
+        let outside = try FixtureRepo()
+        try FlutterFixture.sdk(repo: outside, at: "sdk")
+        let sdk = externalSDK ? outside.url("sdk") : fixture.repo.url("sdk")
+        try fixture.repo.directory(".fvm")
+        try FileManager.default.createSymbolicLink(at: fixture.repo.url(".fvm/flutter_sdk"), withDestinationURL: sdk)
+        var environment = fixture.environment
+        environment["FLUTTER_ROOT"] = nil
+        environment["PATH"] = ""
+        var runner = fixture.runner()
+        runner.responses["xcode-select -p"] = .failed(1, "No Xcode in fixture")
+        let result = await PreparationExecution.run(
+            input: ProjectInspectionInput(directory: fixture.repo.root, environment: environment, platform: .android),
+            planOnly: mode == "plan", approvedPlanID: mode == "stale" ? "stale-plan" : nil, runner: runner)
+        #expect(!runner.log.all.contains { $0.executable.hasPrefix(sdk.path + "/") })
+        #expect(!runner.log.all.contains { $0.arguments == ["pub", "--suppress-analytics", "workspace", "list", "--json"] })
+        #expect(result.plan?.steps.contains { $0.id == "flutter.workspace" && $0.kind != "reuse" } == true)
+        #expect(result.plan?.steps.contains { $0.id == "dependencies.flutter" && $0.kind == "align" } == false)
+        #expect(result.operation.completed.isEmpty)
+        withExtendedLifetime(outside) {}
+    }
+
+    @Test("an explicit selection authorizes the same SDK also discovered through fvm", arguments: ["FLUTTER_ROOT", "PATH"])
+    func explicitProjectSDKSelection(source: String) async throws {
+        let fixture = try FlutterFixture()
+        let sdk = fixture.repo.url("sdk")
+        try fixture.repo.directory(".fvm")
+        try FileManager.default.createSymbolicLink(at: fixture.repo.url(".fvm/flutter_sdk"), withDestinationURL: sdk)
+        var environment = fixture.environment
+        environment["FLUTTER_ROOT"] = source == "FLUTTER_ROOT" ? sdk.path : nil
+        environment["PATH"] = source == "PATH" ? sdk.appendingPathComponent("bin").path : ""
+        let runner = fixture.runner()
+        let plan = try await FlutterPreparation.inspect(directory: fixture.repo.root, environment: environment, runner: runner)
+        #expect(runner.log.all.filter { $0.description == fixture.workspaceCommand }.count == 1)
+        #expect(plan.sdk?.root == sdk)
+        #expect(plan.dependencyCommand != nil)
+        #expect(!plan.checks.contains { $0.id == "flutter.workspace" && $0.kind != "reuse" })
+    }
+
+    @Test("an explicit PATH SDK takes priority over a different fvm SDK of the same release")
+    func explicitAlternativeSDKSelection() async throws {
+        let fixture = try FlutterFixture()
+        try FlutterFixture.sdk(repo: fixture.repo, at: "explicit-sdk")
+        let sdk = fixture.repo.url("explicit-sdk")
+        try fixture.repo.directory(".fvm")
+        try FileManager.default.createSymbolicLink(at: fixture.repo.url(".fvm/flutter_sdk"), withDestinationURL: fixture.repo.url("sdk"))
+        var environment = fixture.environment
+        environment["FLUTTER_ROOT"] = nil
+        environment["PATH"] = sdk.appendingPathComponent("bin").path
+        var runner = fixture.runner()
+        let command = ProcessCommand(sdk.appendingPathComponent("bin/cache/dart-sdk/bin/dart").path,
+            ["pub", "--suppress-analytics", "workspace", "list", "--json"])
+        runner.responses[command.description] = runner.responses[fixture.workspaceCommand]
+        let plan = try await FlutterPreparation.inspect(directory: fixture.repo.root, environment: environment, runner: runner)
+        #expect(plan.sdk?.root == sdk)
+        #expect(plan.dependencyCommand != nil)
+        #expect(runner.log.all.filter { $0.description == command.description }.count == 1)
+        #expect(!runner.log.all.contains { $0.executable.hasPrefix(fixture.repo.url("sdk").path + "/") })
+    }
+
     @Test("Pub graph permits omitted or null transitive dev dependencies but rejects malformed values", arguments: ["absent", "null", "empty", "string", "number", "element"])
     func transitiveDevDependencies(_ mode: String) async throws {
         let f = try FlutterFixture()
