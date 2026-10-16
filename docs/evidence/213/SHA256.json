@@ -1,5 +1,5 @@
 {
-  "README.md": "635ed1a9fced852f43da7c2600dec1779cd9daccab90aa19e05584a163c769a0",
+  "README.md": "938d7842f7c464fed6519ea49e73a03dac94dcb98e970485442b333103e7be6d",
   "localsend-android-first.png": "09e09068fdca039beed022515c5b40f315d51b5df625f1e008ba0d3bb4d2e89c",
   "localsend-ios-decision-input.md": "3dc8ffa3848f0f8093fbf85b3b3a38021e74e74bb8e60476a09740efcdb2c724",
   "localsend-ios-first.png": "5c367864ac8c03cf4e098795c3edae76dd709bb90e70d98892b2ec7dce8d98a9",
@@ -95,5 +95,16 @@
   "receipts/source-audit-fresh-prepared-localsend-final.json.gz": "9b4a977bd0f9ad571253d379b825319d4f7a05fed0ffdd25b168d466dfe39daf",
   "receipts/source-audit-localsend-original-final.json.gz": "ffb4f0e74f5b6a50736809eaf60ddffa04476d14fd072fef08ac073bc62f9271",
   "receipts/source-audit-minimal-final.json.gz": "a619179586223c783234198005353c17d29d969643f5f89e551d15f9b47a2f43",
-  "receipts/source-audit-prepared-localsend-after-ios-final.json.gz": "7239b8fbeaa94a893bb8ec747116ec978d3fe4b3d2694964eb306aa599d995df"
+  "receipts/source-audit-prepared-localsend-after-ios-final.json.gz": "7239b8fbeaa94a893bb8ec747116ec978d3fe4b3d2694964eb306aa599d995df",
+  "repin-20261016/README.md": "6ef79c96ae40818ffa59c4ce8b40b6995eaa6419bf837a525cfcb09b38f95c83",
+  "repin-20261016/SHA256.json": "9af591a3916d9fbaba6944d76b12ad9ae33127b2cb61479ff88b2f9d44896973",
+  "repin-20261016/fresh-handoff.json": "a0f03b69e3907797bf504239d3be66c041f1e8c2bc1a3458913f6bdbf150499d",
+  "repin-20261016/localsend-android.png": "1fe079396368f0e8b359975640ed6082d4a131c16f63a479bc8c6a06613c9ca8",
+  "repin-20261016/localsend-ios.png": "f1908e7e879ff7771280c85ec69876ac565d12489658915ccd12ef7327c437d7",
+  "repin-20261016/minimal-android.png": "5ba0a56cc2e05f0bfb66035f750a4d7d9d6ca715f25a0061ec40d09f8727f81a",
+  "repin-20261016/minimal-ios.png": "e0664bac9637749cd210b35761edf0420a4b0bf5aa07432e820293100257f521",
+  "repin-20261016/native-results.json": "6ec95f4fb69be76fb8954acae67ac236e45809a7d9fd76c39237a38211534cb1",
+  "repin-20261016/native-tuples.json": "644403556672477e6758b80ab87c1bd42a6dce9f05097e123dae4e5e50c3eca0",
+  "repin-20261016/provenance.json": "452c88aa8f0dccb9cd09735810ff0c2e9fab4959705a39870f0f5b59ff3279dc",
+  "repin-20261016/receipts.json": "d3813929e7a1cd1a5315679d78b47c77b384153cd02d2821aa7be1b2d3dcd38e"
 }

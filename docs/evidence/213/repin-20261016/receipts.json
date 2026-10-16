@@ -1,0 +1,1433 @@
+{
+  "schemaVersion": 1,
+  "meaning": "Parsed command/result fields with consistent aliases. Original file bytes/hash are in provenance.json. A public excerpt is not byteidentical to its private original.",
+  "stages": [
+    {
+      "label": "android/native-minimal-build-v4",
+      "result": "<android-native-root>/logs/native-minimal-build-v4/result.json",
+      "command": "<android-native-root>/logs/native-minimal-build-v4/command.json",
+      "startedUTC": "2026-10-16T04:31:31.607961+00:00",
+      "finishedUTC": null,
+      "exit": 0,
+      "timeout": null,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<android-native-root>/scripts/owned-writes-proposed.sb",
+        "<android-native-root>/tools/flutter/bin/flutter",
+        "--suppress-analytics",
+        "build",
+        "apk",
+        "--debug",
+        "--target-platform",
+        "android-arm64",
+        "--no-pub",
+        "--target",
+        "lib/main.dart"
+      ],
+      "cwd": "<android-native-root>/sources/native-minimal",
+      "guard": "<android-native-root>/scripts/owned-writes-proposed.sb",
+      "stdout": {
+        "SHA256": "722c45e1b963c8723b5dec3601f800283ed34ca7a5cb107300e5a4893a802de7"
+      },
+      "stderr": {
+        "SHA256": "ad81419efce25b67bd7cb654aa5935401a19c23d0fea576d39c95e901c3d702a"
+      }
+    },
+    {
+      "label": "android/native-localsend-build-v6",
+      "result": "<android-native-root>/logs/native-localsend-build-v6/result.json",
+      "command": "<android-native-root>/logs/native-localsend-build-v6/command.json",
+      "startedUTC": "2026-10-16T04:58:23.369472+00:00",
+      "finishedUTC": null,
+      "exit": 0,
+      "timeout": null,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<android-native-root>/scripts/owned-writes-proposed.sb",
+        "<android-native-root>/tools/flutter/bin/flutter",
+        "--suppress-analytics",
+        "build",
+        "apk",
+        "--debug",
+        "--target-platform",
+        "android-arm64",
+        "--no-pub",
+        "--target",
+        "lib/main.dart"
+      ],
+      "cwd": "<android-native-root>/sources/native-localsend/app",
+      "guard": "<android-native-root>/scripts/owned-writes-proposed.sb",
+      "stdout": {
+        "SHA256": "fdc6d8ad6bc03c7a8b7a8edcd4e61b9f5df8803673f38c481cdc8ff91a5d5b2b"
+      },
+      "stderr": {
+        "SHA256": "ad81419efce25b67bd7cb654aa5935401a19c23d0fea576d39c95e901c3d702a"
+      }
+    },
+    {
+      "label": "android/runtime-v7/minimal-install",
+      "result": "<android-native-root>/logs/native-device-v7/minimal-install/result.json",
+      "command": "<android-native-root>/logs/native-device-v7/minimal-install/command.json",
+      "startedUTC": "2026-10-16T05:05:26.547027+00:00",
+      "finishedUTC": null,
+      "exit": 0,
+      "timeout": null,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<android-native-root>/scripts/owned-writes-proposed.sb",
+        "<android-native-root>/tools/sdk/platform-tools/adb",
+        "-P",
+        "5042",
+        "-s",
+        "emulator-5562",
+        "install",
+        "-r",
+        "<android-native-root>/artifacts/native-minimal-v4.apk"
+      ],
+      "cwd": "<android-native-root>",
+      "guard": null,
+      "stdout": {
+        "SHA256": null
+      },
+      "stderr": {
+        "SHA256": null
+      }
+    },
+    {
+      "label": "android/runtime-v7/minimal-launch",
+      "result": "<android-native-root>/logs/native-device-v7/minimal-launch/result.json",
+      "command": "<android-native-root>/logs/native-device-v7/minimal-launch/command.json",
+      "startedUTC": "2026-10-16T05:05:31.838781+00:00",
+      "finishedUTC": null,
+      "exit": 0,
+      "timeout": null,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<android-native-root>/scripts/owned-writes-proposed.sb",
+        "<android-native-root>/tools/sdk/platform-tools/adb",
+        "-P",
+        "5042",
+        "-s",
+        "emulator-5562",
+        "shell",
+        "am",
+        "start",
+        "-W",
+        "-n",
+        "dev.runstir.runstir_flutter_minimal/dev.runstir.runstir_flutter_minimal.MainActivity"
+      ],
+      "cwd": "<android-native-root>",
+      "guard": null,
+      "stdout": {
+        "SHA256": null
+      },
+      "stderr": {
+        "SHA256": null
+      }
+    },
+    {
+      "label": "android/runtime-v7/minimal-pid",
+      "result": "<android-native-root>/logs/native-device-v7/minimal-pid/result.json",
+      "command": "<android-native-root>/logs/native-device-v7/minimal-pid/command.json",
+      "startedUTC": "2026-10-16T05:05:39.998896+00:00",
+      "finishedUTC": null,
+      "exit": 0,
+      "timeout": null,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<android-native-root>/scripts/owned-writes-proposed.sb",
+        "<android-native-root>/tools/sdk/platform-tools/adb",
+        "-P",
+        "5042",
+        "-s",
+        "emulator-5562",
+        "shell",
+        "pidof",
+        "dev.runstir.runstir_flutter_minimal"
+      ],
+      "cwd": "<android-native-root>",
+      "guard": null,
+      "stdout": {
+        "SHA256": null
+      },
+      "stderr": {
+        "SHA256": null
+      }
+    },
+    {
+      "label": "android/runtime-v7/minimal-installed-apk-digest",
+      "result": "<android-native-root>/logs/native-device-v7/minimal-installed-apk-digest/result.json",
+      "command": "<android-native-root>/logs/native-device-v7/minimal-installed-apk-digest/command.json",
+      "startedUTC": "2026-10-16T05:05:26.717582+00:00",
+      "finishedUTC": null,
+      "exit": 0,
+      "timeout": null,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<android-native-root>/scripts/owned-writes-proposed.sb",
+        "<android-native-root>/tools/sdk/platform-tools/adb",
+        "-P",
+        "5042",
+        "-s",
+        "emulator-5562",
+        "shell",
+        "sha256sum",
+        "/data/app/~~nJSyzDn8lv9iYEGezkwaQw==/dev.runstir.runstir_flutter_minimal-xHCPrAKwrGLetGoPBKnG8A==/base.apk"
+      ],
+      "cwd": "<android-native-root>",
+      "guard": null,
+      "stdout": {
+        "SHA256": null
+      },
+      "stderr": {
+        "SHA256": null
+      }
+    },
+    {
+      "label": "android/runtime-v7/minimal-first-screen",
+      "result": "<android-native-root>/logs/native-device-v7/minimal-first-screen/result.json",
+      "command": "<android-native-root>/logs/native-device-v7/minimal-first-screen/command.json",
+      "startedUTC": "2026-10-16T05:05:42.202831+00:00",
+      "finishedUTC": null,
+      "exit": 0,
+      "timeout": null,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<android-native-root>/scripts/owned-writes-proposed.sb",
+        "<android-native-root>/tools/sdk/platform-tools/adb",
+        "-P",
+        "5042",
+        "-s",
+        "emulator-5562",
+        "exec-out",
+        "screencap",
+        "-p"
+      ],
+      "cwd": "<android-native-root>",
+      "guard": null,
+      "stdout": {
+        "SHA256": null
+      },
+      "stderr": {
+        "SHA256": null
+      }
+    },
+    {
+      "label": "android/runtime-v7/localsend-install",
+      "result": "<android-native-root>/logs/native-device-v7/localsend-install/result.json",
+      "command": "<android-native-root>/logs/native-device-v7/localsend-install/command.json",
+      "startedUTC": "2026-10-16T05:06:05.256055+00:00",
+      "finishedUTC": null,
+      "exit": 0,
+      "timeout": null,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<android-native-root>/scripts/owned-writes-proposed.sb",
+        "<android-native-root>/tools/sdk/platform-tools/adb",
+        "-P",
+        "5042",
+        "-s",
+        "emulator-5562",
+        "install",
+        "-r",
+        "<android-native-root>/artifacts/native-localsend-v6.apk"
+      ],
+      "cwd": "<android-native-root>",
+      "guard": null,
+      "stdout": {
+        "SHA256": null
+      },
+      "stderr": {
+        "SHA256": null
+      }
+    },
+    {
+      "label": "android/runtime-v7/localsend-launch",
+      "result": "<android-native-root>/logs/native-device-v7/localsend-launch/result.json",
+      "command": "<android-native-root>/logs/native-device-v7/localsend-launch/command.json",
+      "startedUTC": "2026-10-16T05:06:19.780976+00:00",
+      "finishedUTC": null,
+      "exit": 0,
+      "timeout": null,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<android-native-root>/scripts/owned-writes-proposed.sb",
+        "<android-native-root>/tools/sdk/platform-tools/adb",
+        "-P",
+        "5042",
+        "-s",
+        "emulator-5562",
+        "shell",
+        "am",
+        "start",
+        "-W",
+        "-n",
+        "org.localsend.localsend_app.debug/org.localsend.localsend_app.MainActivity"
+      ],
+      "cwd": "<android-native-root>",
+      "guard": null,
+      "stdout": {
+        "SHA256": null
+      },
+      "stderr": {
+        "SHA256": null
+      }
+    },
+    {
+      "label": "android/runtime-v7/localsend-pid",
+      "result": "<android-native-root>/logs/native-device-v7/localsend-pid/result.json",
+      "command": "<android-native-root>/logs/native-device-v7/localsend-pid/command.json",
+      "startedUTC": "2026-10-16T05:06:27.934575+00:00",
+      "finishedUTC": null,
+      "exit": 0,
+      "timeout": null,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<android-native-root>/scripts/owned-writes-proposed.sb",
+        "<android-native-root>/tools/sdk/platform-tools/adb",
+        "-P",
+        "5042",
+        "-s",
+        "emulator-5562",
+        "shell",
+        "pidof",
+        "org.localsend.localsend_app.debug"
+      ],
+      "cwd": "<android-native-root>",
+      "guard": null,
+      "stdout": {
+        "SHA256": null
+      },
+      "stderr": {
+        "SHA256": null
+      }
+    },
+    {
+      "label": "android/runtime-v7/localsend-installed-apk-digest",
+      "result": "<android-native-root>/logs/native-device-v7/localsend-installed-apk-digest/result.json",
+      "command": "<android-native-root>/logs/native-device-v7/localsend-installed-apk-digest/command.json",
+      "startedUTC": "2026-10-16T05:06:07.051600+00:00",
+      "finishedUTC": null,
+      "exit": 0,
+      "timeout": null,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<android-native-root>/scripts/owned-writes-proposed.sb",
+        "<android-native-root>/tools/sdk/platform-tools/adb",
+        "-P",
+        "5042",
+        "-s",
+        "emulator-5562",
+        "shell",
+        "sha256sum",
+        "/data/app/~~ycwPdfpTlczJHopqqNIGbg==/org.localsend.localsend_app.debug-n66KANYU-rGNxlW9CZZXQw==/base.apk"
+      ],
+      "cwd": "<android-native-root>",
+      "guard": null,
+      "stdout": {
+        "SHA256": null
+      },
+      "stderr": {
+        "SHA256": null
+      }
+    },
+    {
+      "label": "android/runtime-v7/localsend-first-screen",
+      "result": "<android-native-root>/logs/native-device-v7/localsend-first-screen/result.json",
+      "command": "<android-native-root>/logs/native-device-v7/localsend-first-screen/command.json",
+      "startedUTC": "2026-10-16T05:06:30.230813+00:00",
+      "finishedUTC": null,
+      "exit": 0,
+      "timeout": null,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<android-native-root>/scripts/owned-writes-proposed.sb",
+        "<android-native-root>/tools/sdk/platform-tools/adb",
+        "-P",
+        "5042",
+        "-s",
+        "emulator-5562",
+        "exec-out",
+        "screencap",
+        "-p"
+      ],
+      "cwd": "<android-native-root>",
+      "guard": null,
+      "stdout": {
+        "SHA256": null
+      },
+      "stderr": {
+        "SHA256": null
+      }
+    },
+    {
+      "label": "android/runtime-v7/stop-own-emulator",
+      "result": "<android-native-root>/logs/native-device-v7/stop-own-emulator/result.json",
+      "command": "<android-native-root>/logs/native-device-v7/stop-own-emulator/command.json",
+      "startedUTC": "2026-10-16T05:06:30.964819+00:00",
+      "finishedUTC": null,
+      "exit": 0,
+      "timeout": null,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<android-native-root>/scripts/owned-writes-proposed.sb",
+        "<android-native-root>/tools/sdk/platform-tools/adb",
+        "-P",
+        "5042",
+        "-s",
+        "emulator-5562",
+        "emu",
+        "kill"
+      ],
+      "cwd": "<android-native-root>",
+      "guard": null,
+      "stdout": {
+        "SHA256": null
+      },
+      "stderr": {
+        "SHA256": null
+      }
+    },
+    {
+      "label": "android/runtime-v7/stop-own-adb",
+      "result": "<android-native-root>/logs/native-device-v7/stop-own-adb/result.json",
+      "command": "<android-native-root>/logs/native-device-v7/stop-own-adb/command.json",
+      "startedUTC": "2026-10-16T05:06:32.231143+00:00",
+      "finishedUTC": null,
+      "exit": 0,
+      "timeout": null,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<android-native-root>/scripts/owned-writes-proposed.sb",
+        "<android-native-root>/tools/sdk/platform-tools/adb",
+        "-P",
+        "5042",
+        "kill-server"
+      ],
+      "cwd": "<android-native-root>",
+      "guard": null,
+      "stdout": {
+        "SHA256": null
+      },
+      "stderr": {
+        "SHA256": null
+      }
+    },
+    {
+      "label": "ios/minimal-pub-v1",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/minimal-pub-v1/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/minimal-pub-v1/command.json",
+      "startedUTC": "2026-10-16T06:23:08.753210+00:00",
+      "finishedUTC": "2026-10-16T06:23:10.324888+00:00",
+      "exit": 0,
+      "timeout": false,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<ios-native-root>/actual-native-ios-v2/scripts/owned-ios-v2-native-xcodebuild.sb",
+        "<ios-native-root>/tools/flutter/bin/flutter",
+        "pub",
+        "get",
+        "--offline",
+        "--enforce-lockfile"
+      ],
+      "cwd": "<ios-native-root>/sources/native-minimal",
+      "guard": {
+        "path": "<ios-native-root>/actual-native-ios-v2/scripts/owned-ios-v2-native-xcodebuild.sb",
+        "bytes": 666,
+        "SHA256": "2ac20fdc52f3993c384b1812a7e8bf688115eb21b2520cb91b3afef70ce3c0d3"
+      },
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/minimal-pub-v1/stdout",
+        "bytes": 68,
+        "SHA256": "d4cb7a3c68b4133b4f6e58c67ff5bfd13725d8021e930388cdc98da8a575919d"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/minimal-pub-v1/stderr",
+        "bytes": 162,
+        "SHA256": "3b2fa7455a9810b17045f39dcfce22356dcb564fd35c6124433bedb2d3d90195"
+      }
+    },
+    {
+      "label": "ios/minimal-config-v1",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/minimal-config-v1/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/minimal-config-v1/command.json",
+      "startedUTC": "2026-10-16T06:23:38.560805+00:00",
+      "finishedUTC": "2026-10-16T06:23:51.744020+00:00",
+      "exit": 0,
+      "timeout": false,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<ios-native-root>/actual-native-ios-v2/scripts/owned-ios-v2-native-xcodebuild.sb",
+        "<ios-native-root>/tools/flutter/bin/flutter",
+        "build",
+        "ios",
+        "--debug",
+        "--simulator",
+        "--no-pub",
+        "--config-only"
+      ],
+      "cwd": "<ios-native-root>/sources/native-minimal",
+      "guard": {
+        "path": "<ios-native-root>/actual-native-ios-v2/scripts/owned-ios-v2-native-xcodebuild.sb",
+        "bytes": 666,
+        "SHA256": "2ac20fdc52f3993c384b1812a7e8bf688115eb21b2520cb91b3afef70ce3c0d3"
+      },
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/minimal-config-v1/stdout",
+        "bytes": 61,
+        "SHA256": "d39c79da7d38c9b4390eaf30af3369701932413855291b9b953908cd6f0c46dc"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/minimal-config-v1/stderr",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "ios/minimal-build-v1",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/minimal-build-v1/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/minimal-build-v1/command.json",
+      "startedUTC": "2026-10-16T06:24:53.420520+00:00",
+      "finishedUTC": "2026-10-16T06:24:54.468498+00:00",
+      "exit": 65,
+      "timeout": false,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<ios-native-root>/actual-native-ios-v2/scripts/owned-ios-v2-native-xcodebuild.sb",
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild",
+        "-workspace",
+        "<ios-native-root>/sources/native-minimal/ios/Runner.xcworkspace",
+        "-scheme",
+        "Runner",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "iphonesimulator27.1",
+        "-destination",
+        "generic/platform=iOS Simulator",
+        "ARCHS=arm64",
+        "ONLY_ACTIVE_ARCH=YES",
+        "CODE_SIGNING_ALLOWED=NO",
+        "-derivedDataPath",
+        "<ios-native-root>/build/minimal",
+        "-resultBundlePath",
+        "<ios-native-root>/results/minimal.xcresult",
+        "build"
+      ],
+      "cwd": "<ios-native-root>/sources/native-minimal",
+      "guard": {
+        "path": "<ios-native-root>/actual-native-ios-v2/scripts/owned-ios-v2-native-xcodebuild.sb",
+        "bytes": 666,
+        "SHA256": "2ac20fdc52f3993c384b1812a7e8bf688115eb21b2520cb91b3afef70ce3c0d3"
+      },
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/minimal-build-v1/stdout",
+        "bytes": 1779,
+        "SHA256": "31f7f1231d6ae29b02f1b77257e3ed2d426554eb023568947cd6c7c1093bb0a7"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/minimal-build-v1/stderr",
+        "bytes": 198,
+        "SHA256": "8be91bcdecfb2b9372d0a0e876ee2363997a7acf7f80f71267b287754d4e097f"
+      }
+    },
+    {
+      "label": "ios/minimal-build-v2",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/minimal-build-v2/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/minimal-build-v2/command.json",
+      "startedUTC": "2026-10-16T06:30:33.883399+00:00",
+      "finishedUTC": "2026-10-16T06:30:48.122902+00:00",
+      "exit": 0,
+      "timeout": false,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<ios-native-root>/actual-native-ios-v2/scripts/proposed-focused-native-guard-v3-not-approved.sb",
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild",
+        "-workspace",
+        "<ios-native-root>/sources/native-minimal/ios/Runner.xcworkspace",
+        "-scheme",
+        "Runner",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "iphonesimulator27.1",
+        "-destination",
+        "generic/platform=iOS Simulator",
+        "ARCHS=arm64",
+        "ONLY_ACTIVE_ARCH=YES",
+        "CODE_SIGNING_ALLOWED=NO",
+        "-derivedDataPath",
+        "<ios-native-root>/build/minimal-v2",
+        "-resultBundlePath",
+        "<ios-native-root>/results/minimal-v2.xcresult",
+        "build"
+      ],
+      "cwd": "<ios-native-root>/sources/native-minimal",
+      "guard": {
+        "path": "<ios-native-root>/actual-native-ios-v2/scripts/proposed-focused-native-guard-v3-not-approved.sb",
+        "bytes": 181170,
+        "SHA256": "1ef16eb0c18da16526daf1c6cfdc7763d6df8bae3b063b3c2b2467695877ca10"
+      },
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/minimal-build-v2/stdout",
+        "bytes": 225375,
+        "SHA256": "aab20837384dd72224e93e31e82f87957dc7abb3ac97b23739f3b2ac00bb3bee"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/minimal-build-v2/stderr",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "ios/minimal-hostlocal-install-v4",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/minimal-hostlocal-install-v4/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/minimal-hostlocal-install-v4/command.json",
+      "startedUTC": "2026-10-16T07:02:40.507464+00:00",
+      "finishedUTC": "2026-10-16T07:02:57.287330+00:00",
+      "exit": 0,
+      "timeout": false,
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "--set",
+        "<user-home>/Library/Developer/CoreSimulator/RunstirGoal213AppleV2-20261016",
+        "install",
+        "<owned-ios-udid>",
+        "<ios-native-root>/build/minimal-v2/Build/Products/Debug-iphonesimulator/Runner.app"
+      ],
+      "cwd": "<ios-native-root>/actual-native-ios-v2",
+      "guard": null,
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/minimal-hostlocal-install-v4/stdout",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/minimal-hostlocal-install-v4/stderr",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "ios/minimal-hostlocal-launch-v4",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/minimal-hostlocal-launch-v4/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/minimal-hostlocal-launch-v4/command.json",
+      "startedUTC": "2026-10-16T07:02:58.389008+00:00",
+      "finishedUTC": "2026-10-16T07:02:58.626492+00:00",
+      "exit": 0,
+      "timeout": false,
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "--set",
+        "<user-home>/Library/Developer/CoreSimulator/RunstirGoal213AppleV2-20261016",
+        "launch",
+        "<owned-ios-udid>",
+        "dev.runstir.runstirFlutterMinimal"
+      ],
+      "cwd": "<ios-native-root>/actual-native-ios-v2",
+      "guard": null,
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/minimal-hostlocal-launch-v4/stdout",
+        "bytes": 41,
+        "SHA256": "45a55c6abbd07e2a28445adecb7080c197a978744eaf48f868988892b87ada4a"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/minimal-hostlocal-launch-v4/stderr",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "ios/minimal-hostlocal-firstscreen-v5",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/minimal-hostlocal-firstscreen-v5/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/minimal-hostlocal-firstscreen-v5/command.json",
+      "startedUTC": "2026-10-16T07:04:53.759012+00:00",
+      "finishedUTC": "2026-10-16T07:04:55.009194+00:00",
+      "exit": 0,
+      "timeout": null,
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "--set",
+        "<user-home>/Library/Developer/CoreSimulator/RunstirGoal213AppleV2-20261016",
+        "io",
+        "<owned-ios-udid>",
+        "screenshot",
+        "<user-home>/Library/Developer/CoreSimulator/RunstirGoal213AppleV2-20261016/screens/minimal-v5.png"
+      ],
+      "cwd": "<ios-native-root>/actual-native-ios-v2",
+      "guard": null,
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/minimal-hostlocal-firstscreen-v5/stdout",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/minimal-hostlocal-firstscreen-v5/stderr",
+        "bytes": 273,
+        "SHA256": "362ff5aa35d1ae2872e64d72ad49dec09f0cec1e1c670097780144c959083331"
+      }
+    },
+    {
+      "label": "ios/minimal-hostlocal-terminate-v5",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/minimal-hostlocal-terminate-v5/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/minimal-hostlocal-terminate-v5/command.json",
+      "startedUTC": "2026-10-16T07:06:18.107696+00:00",
+      "finishedUTC": "2026-10-16T07:06:18.293851+00:00",
+      "exit": 0,
+      "timeout": false,
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "--set",
+        "<user-home>/Library/Developer/CoreSimulator/RunstirGoal213AppleV2-20261016",
+        "terminate",
+        "<owned-ios-udid>",
+        "dev.runstir.runstirFlutterMinimal"
+      ],
+      "cwd": "<ios-native-root>/actual-native-ios-v2",
+      "guard": null,
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/minimal-hostlocal-terminate-v5/stdout",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/minimal-hostlocal-terminate-v5/stderr",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "ios/hostlocal-own-shutdown-v5",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/hostlocal-own-shutdown-v5/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/hostlocal-own-shutdown-v5/command.json",
+      "startedUTC": "2026-10-16T07:06:18.294586+00:00",
+      "finishedUTC": "2026-10-16T07:06:18.875277+00:00",
+      "exit": 0,
+      "timeout": false,
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "--set",
+        "<user-home>/Library/Developer/CoreSimulator/RunstirGoal213AppleV2-20261016",
+        "shutdown",
+        "<owned-ios-udid>"
+      ],
+      "cwd": "<ios-native-root>/actual-native-ios-v2",
+      "guard": null,
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/hostlocal-own-shutdown-v5/stdout",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/hostlocal-own-shutdown-v5/stderr",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "ios/localsend-native-pub-v1",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-pub-v1/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-pub-v1/command.json",
+      "startedUTC": "2026-10-16T07:11:09.673484+00:00",
+      "finishedUTC": "2026-10-16T07:11:12.198392+00:00",
+      "exit": 0,
+      "timeout": false,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<ios-native-root>/actual-native-ios-v2/scripts/proposed-focused-native-guard-v3-not-approved.sb",
+        "<ios-native-root>/tools/flutter/bin/flutter",
+        "pub",
+        "get",
+        "--offline",
+        "--enforce-lockfile"
+      ],
+      "cwd": "<ios-native-root>/sources/native-localsend/app",
+      "guard": {
+        "path": "<ios-native-root>/actual-native-ios-v2/scripts/proposed-focused-native-guard-v3-not-approved.sb",
+        "bytes": 181170,
+        "SHA256": "1ef16eb0c18da16526daf1c6cfdc7763d6df8bae3b063b3c2b2467695877ca10"
+      },
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-pub-v1/stdout",
+        "bytes": 791,
+        "SHA256": "5bc21e591fd45cb67a7ca3800cf30054ba04144fb99be6518cb7b337c8d8f914"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-pub-v1/stderr",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "ios/localsend-native-config-v1",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-config-v1/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-config-v1/command.json",
+      "startedUTC": "2026-10-16T07:12:10.473318+00:00",
+      "finishedUTC": "2026-10-16T07:12:13.774255+00:00",
+      "exit": 1,
+      "timeout": false,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<ios-native-root>/actual-native-ios-v2/scripts/proposed-focused-native-guard-v3-not-approved.sb",
+        "<ios-native-root>/tools/flutter/bin/flutter",
+        "build",
+        "ios",
+        "--debug",
+        "--simulator",
+        "--no-pub",
+        "--config-only"
+      ],
+      "cwd": "<ios-native-root>/sources/native-localsend/app",
+      "guard": {
+        "path": "<ios-native-root>/actual-native-ios-v2/scripts/proposed-focused-native-guard-v3-not-approved.sb",
+        "bytes": 181170,
+        "SHA256": "1ef16eb0c18da16526daf1c6cfdc7763d6df8bae3b063b3c2b2467695877ca10"
+      },
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-config-v1/stdout",
+        "bytes": 61,
+        "SHA256": "d39c79da7d38c9b4390eaf30af3369701932413855291b9b953908cd6f0c46dc"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-config-v1/stderr",
+        "bytes": 497,
+        "SHA256": "760df64083eefa202c96fe1d1da6a8fb175319c6f754f55f8797e69aedbebf39"
+      }
+    },
+    {
+      "label": "ios/localsend-native-config-v2",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-config-v2/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-config-v2/command.json",
+      "startedUTC": "2026-10-16T07:16:17.168493+00:00",
+      "finishedUTC": "2026-10-16T07:16:25.181975+00:00",
+      "exit": 1,
+      "timeout": false,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<ios-native-root>/actual-native-ios-v2/scripts/localsend-config-exact-noop-pbx-v2.sb",
+        "<ios-native-root>/tools/flutter/bin/flutter",
+        "build",
+        "ios",
+        "--debug",
+        "--simulator",
+        "--no-pub",
+        "--config-only"
+      ],
+      "cwd": "<ios-native-root>/sources/native-localsend/app",
+      "guard": {
+        "path": "<ios-native-root>/actual-native-ios-v2/scripts/localsend-config-exact-noop-pbx-v2.sb",
+        "bytes": 181011,
+        "SHA256": "0d317166b1b22b2abffc7be413c04ec6a0fb83b65ded8638fc0dfe4953ec4ad8"
+      },
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-config-v2/stdout",
+        "bytes": 18063,
+        "SHA256": "bb2189e02bd2b1eb500656bfe1d93e2ebf3b0870af885ceb9a6f5de976e5837d"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-config-v2/stderr",
+        "bytes": 26,
+        "SHA256": "9c91047788eaf7d3bfcba44f7ccff09690499b6c084cc230550af9994ee857f1"
+      }
+    },
+    {
+      "label": "ios/localsend-frozen-pod-v4",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/localsend-frozen-pod-v4/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/localsend-frozen-pod-v4/command.json",
+      "startedUTC": "2026-10-16T07:23:14.916021+00:00",
+      "finishedUTC": "2026-10-16T07:23:17.291294+00:00",
+      "exit": 0,
+      "timeout": false,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<ios-native-root>/actual-native-ios-v2/scripts/localsend-config-exact-noop-pbx-v2.sb",
+        "<ios-native-root>/tools/frozen-pod-bin/pod",
+        "install",
+        "--verbose"
+      ],
+      "cwd": "<ios-native-root>/sources/native-localsend/app/ios",
+      "guard": {
+        "path": "<ios-native-root>/actual-native-ios-v2/scripts/localsend-config-exact-noop-pbx-v2.sb",
+        "bytes": 181011,
+        "SHA256": "0d317166b1b22b2abffc7be413c04ec6a0fb83b65ded8638fc0dfe4953ec4ad8"
+      },
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-frozen-pod-v4/stdout",
+        "bytes": 30721,
+        "SHA256": "248bec628a844156cc6486ba751088225c37ec73b3c4ae860adc0ee438fe3f8e"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-frozen-pod-v4/stderr",
+        "bytes": 2430,
+        "SHA256": "4894487fdce00846dc1715c7f70a30c43875a631a8bcd46d229488ea9ca610f1"
+      }
+    },
+    {
+      "label": "ios/cargokit-advisory-single-enforced-refresh-v3",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/cargokit-advisory-single-enforced-refresh-v3/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/cargokit-advisory-single-enforced-refresh-v3/command.json",
+      "startedUTC": "2026-10-16T07:42:59.202848+00:00",
+      "finishedUTC": "2026-10-16T07:42:59.750596+00:00",
+      "exit": 0,
+      "timeout": false,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<ios-native-root>/actual-native-ios-v2/scripts/cargokit-advisory-refresh-only-v3.sb",
+        "<ios-native-root>/tools/flutter/bin/cache/dart-sdk/bin/dart",
+        "--suppress-analytics",
+        "pub",
+        "get",
+        "--enforce-lockfile",
+        "--no-precompile"
+      ],
+      "cwd": "<ios-native-root>/build/localsend-v2/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/rust_lib_localsend_app.build/build_tool",
+      "guard": {
+        "path": "<ios-native-root>/actual-native-ios-v2/scripts/cargokit-advisory-refresh-only-v3.sb",
+        "bytes": 181154,
+        "SHA256": "34cc27031ae6ac3039f6f2256d793e67a61813f440222a5cca9487c7c0eb3665"
+      },
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/cargokit-advisory-single-enforced-refresh-v3/stdout",
+        "bytes": 712,
+        "SHA256": "b3a3cb532c978dd99bf1fc3fb9b08f909143180b9c4dcd3ba97a928f05caf1f7"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/cargokit-advisory-single-enforced-refresh-v3/stderr",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "ios/cargokit-official-help-network-metadata-v4",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/cargokit-official-help-network-metadata-v4/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/cargokit-official-help-network-metadata-v4/command.json",
+      "startedUTC": "2026-10-16T07:47:20.919265+00:00",
+      "finishedUTC": "2026-10-16T07:47:22.179508+00:00",
+      "exit": 0,
+      "timeout": false,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<ios-native-root>/actual-native-ios-v2/scripts/cargokit-advisory-refresh-only-v3.sb",
+        "/bin/bash",
+        "<ios-native-root>/sources/native-localsend/packages/localsend_isolates/rust_builder/cargokit/run_build_tool.sh",
+        "--help"
+      ],
+      "cwd": "<ios-native-root>/build/localsend-v2/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/rust_lib_localsend_app.build/build_tool",
+      "guard": {
+        "path": "<ios-native-root>/actual-native-ios-v2/scripts/cargokit-advisory-refresh-only-v3.sb",
+        "bytes": 181154,
+        "SHA256": "34cc27031ae6ac3039f6f2256d793e67a61813f440222a5cca9487c7c0eb3665"
+      },
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/cargokit-official-help-network-metadata-v4/stdout",
+        "bytes": 1324,
+        "SHA256": "cfc3c323ed28d06a3e16579cfa055dab6685a5189a658b1db6bf89579af746dc"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/cargokit-official-help-network-metadata-v4/stderr",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "ios/localsend-rust-file-mirror-install-precheck-v1",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/localsend-rust-file-mirror-install-precheck-v1/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/localsend-rust-file-mirror-install-precheck-v1/command.json",
+      "startedUTC": "2026-10-16T09:36:55.398635+00:00",
+      "finishedUTC": "2026-10-16T09:36:58.406369+00:00",
+      "exit": 0,
+      "timeout": false,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<ios-native-root>/actual-native-ios-v2/scripts/proposed-focused-native-guard-v3-not-approved.sb",
+        "<user-home>/.cargo/bin/rustup",
+        "toolchain",
+        "install",
+        "1.97.1"
+      ],
+      "cwd": "<ios-native-root>/sources/native-localsend/app",
+      "guard": {
+        "path": "<ios-native-root>/actual-native-ios-v2/scripts/proposed-focused-native-guard-v3-not-approved.sb",
+        "bytes": 181170,
+        "SHA256": "1ef16eb0c18da16526daf1c6cfdc7763d6df8bae3b063b3c2b2467695877ca10"
+      },
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-rust-file-mirror-install-precheck-v1/stdout",
+        "bytes": 80,
+        "SHA256": "3827c2b139bc2f31b6d34382802129972c97e9fce397cb40d5b25970070c0578"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-rust-file-mirror-install-precheck-v1/stderr",
+        "bytes": 62,
+        "SHA256": "5f572a3554cc80f9480f339edc711cc0ebefe5239471779993280a879c1e92ac"
+      }
+    },
+    {
+      "label": "ios/localsend-rustc-smoke-check-iossim-v1",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/localsend-rustc-smoke-check-iossim-v1/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/localsend-rustc-smoke-check-iossim-v1/command.json",
+      "startedUTC": "2026-10-16T09:41:23.424287+00:00",
+      "finishedUTC": "2026-10-16T09:41:24.188664+00:00",
+      "exit": 0,
+      "timeout": false,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<ios-native-root>/actual-native-ios-v2/scripts/proposed-focused-native-guard-v3-not-approved.sb",
+        "<user-home>/.cargo/bin/rustup",
+        "run",
+        "1.97.1",
+        "cargo",
+        "check",
+        "--offline",
+        "--locked",
+        "--manifest-path",
+        "<ios-native-root>/tmp/rustc-discovery-smoke-v1/Cargo.toml",
+        "--target",
+        "aarch64-apple-ios-sim",
+        "--target-dir",
+        "<ios-native-root>/tmp/rustc-discovery-smoke-v1/target"
+      ],
+      "cwd": "<ios-native-root>/tmp/rustc-discovery-smoke-v1",
+      "guard": {
+        "path": "<ios-native-root>/actual-native-ios-v2/scripts/proposed-focused-native-guard-v3-not-approved.sb",
+        "bytes": 181170,
+        "SHA256": "1ef16eb0c18da16526daf1c6cfdc7763d6df8bae3b063b3c2b2467695877ca10"
+      },
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-rustc-smoke-check-iossim-v1/stdout",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-rustc-smoke-check-iossim-v1/stderr",
+        "bytes": 237,
+        "SHA256": "e116884541b3e87f7fbb576338d86ceaf845ce4eb0ddfc7af0fb5e6cb3f815e1"
+      }
+    },
+    {
+      "label": "ios/localsend-native-direct-build-v1",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-direct-build-v1/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-direct-build-v1/command.json",
+      "startedUTC": "2026-10-16T07:24:21.105117+00:00",
+      "finishedUTC": "2026-10-16T07:25:24.519215+00:00",
+      "exit": 65,
+      "timeout": false,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<ios-native-root>/actual-native-ios-v2/scripts/proposed-focused-native-guard-v3-not-approved.sb",
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild",
+        "-workspace",
+        "<ios-native-root>/sources/native-localsend/app/ios/Runner.xcworkspace",
+        "-scheme",
+        "Runner",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "iphonesimulator27.1",
+        "-destination",
+        "generic/platform=iOS Simulator",
+        "ARCHS=arm64",
+        "ONLY_ACTIVE_ARCH=YES",
+        "CODE_SIGNING_ALLOWED=NO",
+        "-derivedDataPath",
+        "<ios-native-root>/build/localsend-v1",
+        "-resultBundlePath",
+        "<ios-native-root>/results/localsend-v1.xcresult",
+        "build"
+      ],
+      "cwd": "<ios-native-root>/sources/native-localsend/app",
+      "guard": {
+        "path": "<ios-native-root>/actual-native-ios-v2/scripts/proposed-focused-native-guard-v3-not-approved.sb",
+        "bytes": 181170,
+        "SHA256": "1ef16eb0c18da16526daf1c6cfdc7763d6df8bae3b063b3c2b2467695877ca10"
+      },
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-direct-build-v1/stdout",
+        "bytes": 4700546,
+        "SHA256": "28cd10733151db9183d5619bc99bf0eae71b18589b967a63f6d4dd4a75c6244d"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-direct-build-v1/stderr",
+        "bytes": 485,
+        "SHA256": "1cff986c202687c1206effe88fe8b6cdbd6a52c80060c8c370cc96e9865f2061"
+      }
+    },
+    {
+      "label": "ios/localsend-native-direct-build-v2",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-direct-build-v2/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-direct-build-v2/command.json",
+      "startedUTC": "2026-10-16T07:51:08.472515+00:00",
+      "finishedUTC": "2026-10-16T07:51:23.881954+00:00",
+      "exit": 65,
+      "timeout": false,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<ios-native-root>/actual-native-ios-v2/scripts/proposed-focused-native-guard-v3-not-approved.sb",
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild",
+        "-workspace",
+        "<ios-native-root>/sources/native-localsend/app/ios/Runner.xcworkspace",
+        "-scheme",
+        "Runner",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "iphonesimulator27.1",
+        "-destination",
+        "generic/platform=iOS Simulator",
+        "ARCHS=arm64",
+        "ONLY_ACTIVE_ARCH=YES",
+        "CODE_SIGNING_ALLOWED=NO",
+        "-derivedDataPath",
+        "<ios-native-root>/build/localsend-v2",
+        "-resultBundlePath",
+        "<ios-native-root>/results/localsend-v2.xcresult",
+        "build"
+      ],
+      "cwd": "<ios-native-root>/sources/native-localsend/app",
+      "guard": {
+        "path": "<ios-native-root>/actual-native-ios-v2/scripts/proposed-focused-native-guard-v3-not-approved.sb",
+        "bytes": 181170,
+        "SHA256": "1ef16eb0c18da16526daf1c6cfdc7763d6df8bae3b063b3c2b2467695877ca10"
+      },
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-direct-build-v2/stdout",
+        "bytes": 1119764,
+        "SHA256": "3e92e2ebcd3381dfb1607278bc2f2d95e04b05c605145f136dd880522a5ca861"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-direct-build-v2/stderr",
+        "bytes": 485,
+        "SHA256": "a1e60be990c1c8e8a22cf9c8324b6f07e124e792e0fc71bf0fa0aae463d75fb9"
+      }
+    },
+    {
+      "label": "ios/localsend-native-direct-build-v3",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-direct-build-v3/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-direct-build-v3/command.json",
+      "startedUTC": "2026-10-16T09:38:46.368781+00:00",
+      "finishedUTC": "2026-10-16T09:39:00.182889+00:00",
+      "exit": 65,
+      "timeout": false,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<ios-native-root>/actual-native-ios-v2/scripts/proposed-focused-native-guard-v3-not-approved.sb",
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild",
+        "-workspace",
+        "<ios-native-root>/sources/native-localsend/app/ios/Runner.xcworkspace",
+        "-scheme",
+        "Runner",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "iphonesimulator27.1",
+        "-destination",
+        "generic/platform=iOS Simulator",
+        "ARCHS=arm64",
+        "ONLY_ACTIVE_ARCH=YES",
+        "CODE_SIGNING_ALLOWED=NO",
+        "-derivedDataPath",
+        "<ios-native-root>/build/localsend-v3",
+        "-resultBundlePath",
+        "<ios-native-root>/results/localsend-v3.xcresult",
+        "build"
+      ],
+      "cwd": "<ios-native-root>/sources/native-localsend/app",
+      "guard": {
+        "path": "<ios-native-root>/actual-native-ios-v2/scripts/proposed-focused-native-guard-v3-not-approved.sb",
+        "bytes": 181170,
+        "SHA256": "1ef16eb0c18da16526daf1c6cfdc7763d6df8bae3b063b3c2b2467695877ca10"
+      },
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-direct-build-v3/stdout",
+        "bytes": 1433221,
+        "SHA256": "6e5d14d6ed336b9e92b7f02aabe541e423817c3914cfae092932b2410018ba07"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-direct-build-v3/stderr",
+        "bytes": 485,
+        "SHA256": "8d274cc0e38c03a5d59d919198cff28f60ba97df10a784443cc4f44ee6705361"
+      }
+    },
+    {
+      "label": "ios/localsend-native-direct-build-v4",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-direct-build-v4/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-direct-build-v4/command.json",
+      "startedUTC": "2026-10-16T09:42:19.531766+00:00",
+      "finishedUTC": "2026-10-16T09:45:08.060129+00:00",
+      "exit": 0,
+      "timeout": false,
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "<ios-native-root>/actual-native-ios-v2/scripts/proposed-focused-native-guard-v3-not-approved.sb",
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild",
+        "-workspace",
+        "<ios-native-root>/sources/native-localsend/app/ios/Runner.xcworkspace",
+        "-scheme",
+        "Runner",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "iphonesimulator27.1",
+        "-destination",
+        "generic/platform=iOS Simulator",
+        "ARCHS=arm64",
+        "ONLY_ACTIVE_ARCH=YES",
+        "CODE_SIGNING_ALLOWED=NO",
+        "-derivedDataPath",
+        "<ios-native-root>/build/localsend-v4",
+        "-resultBundlePath",
+        "<ios-native-root>/results/localsend-v4.xcresult",
+        "build"
+      ],
+      "cwd": "<ios-native-root>/sources/native-localsend/app",
+      "guard": {
+        "path": "<ios-native-root>/actual-native-ios-v2/scripts/proposed-focused-native-guard-v3-not-approved.sb",
+        "bytes": 181170,
+        "SHA256": "1ef16eb0c18da16526daf1c6cfdc7763d6df8bae3b063b3c2b2467695877ca10"
+      },
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-direct-build-v4/stdout",
+        "bytes": 5230824,
+        "SHA256": "6c5460be5aead814919f960032bd2013d0177634fc0ffce9d08b23e530d324cb"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-direct-build-v4/stderr",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "ios/localsend-hostlocal-install-v7",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-install-v7/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-install-v7/command.json",
+      "startedUTC": "2026-10-16T09:50:26.643999+00:00",
+      "finishedUTC": "2026-10-16T09:50:51.304619+00:00",
+      "exit": 0,
+      "timeout": false,
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "--set",
+        "<user-home>/Library/Developer/CoreSimulator/RunstirGoal213AppleV2-20261016",
+        "install",
+        "<owned-ios-udid>",
+        "<ios-native-root>/build/localsend-v4/Build/Products/Debug-iphonesimulator/Runner.app"
+      ],
+      "cwd": "<ios-native-root>/actual-native-ios-v2",
+      "guard": null,
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-install-v7/stdout",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-install-v7/stderr",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "ios/localsend-hostlocal-launch-v7",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-launch-v7/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-launch-v7/command.json",
+      "startedUTC": "2026-10-16T09:50:53.216732+00:00",
+      "finishedUTC": "2026-10-16T09:50:54.180320+00:00",
+      "exit": 0,
+      "timeout": false,
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "--set",
+        "<user-home>/Library/Developer/CoreSimulator/RunstirGoal213AppleV2-20261016",
+        "launch",
+        "<owned-ios-udid>",
+        "org.localsend.localsendApp"
+      ],
+      "cwd": "<ios-native-root>/actual-native-ios-v2",
+      "guard": null,
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-launch-v7/stdout",
+        "bytes": 34,
+        "SHA256": "dc04bdc857ab28c4a3923e28e0e35b3629feeebeeb4fab90e28eb9ac04a3a0ce"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-launch-v7/stderr",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "ios/localsend-hostlocal-positive-pid-v7",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-positive-pid-v7/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-positive-pid-v7/command.json",
+      "startedUTC": "2026-10-16T09:50:54.181919+00:00",
+      "finishedUTC": "2026-10-16T09:50:54.190712+00:00",
+      "exit": 0,
+      "timeout": false,
+      "argv": [
+        "/bin/ps",
+        "-ww",
+        "-p",
+        "23795",
+        "-o",
+        "pid=,comm="
+      ],
+      "cwd": "<ios-native-root>/actual-native-ios-v2",
+      "guard": null,
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-positive-pid-v7/stdout",
+        "bytes": 210,
+        "SHA256": "3f57d181c6d367200364f6951f752a16502450ac5ea9d6ed4c651e7c6642ff08"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-positive-pid-v7/stderr",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "ios/localsend-hostlocal-firstscreen-v7",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-firstscreen-v7/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-firstscreen-v7/command.json",
+      "startedUTC": "2026-10-16T09:50:57.198284+00:00",
+      "finishedUTC": "2026-10-16T09:50:57.869873+00:00",
+      "exit": 0,
+      "timeout": false,
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "--set",
+        "<user-home>/Library/Developer/CoreSimulator/RunstirGoal213AppleV2-20261016",
+        "io",
+        "<owned-ios-udid>",
+        "screenshot",
+        "<user-home>/Library/Developer/CoreSimulator/RunstirGoal213AppleV2-20261016/screens/localsend-v7.png"
+      ],
+      "cwd": "<ios-native-root>/actual-native-ios-v2",
+      "guard": null,
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-firstscreen-v7/stdout",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-firstscreen-v7/stderr",
+        "bytes": 275,
+        "SHA256": "eaac42728a95c0a0e657c8cedfce2255ba4033efb25dde8d3ccb3d124cfe8a90"
+      }
+    },
+    {
+      "label": "ios/localsend-hostlocal-terminate-v7",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-terminate-v7/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-terminate-v7/command.json",
+      "startedUTC": "2026-10-16T09:50:57.872698+00:00",
+      "finishedUTC": "2026-10-16T09:50:58.078873+00:00",
+      "exit": 0,
+      "timeout": false,
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "--set",
+        "<user-home>/Library/Developer/CoreSimulator/RunstirGoal213AppleV2-20261016",
+        "terminate",
+        "<owned-ios-udid>",
+        "org.localsend.localsendApp"
+      ],
+      "cwd": "<ios-native-root>/actual-native-ios-v2",
+      "guard": null,
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-terminate-v7/stdout",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-terminate-v7/stderr",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "ios/localsend-own-shutdown-v7",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/localsend-own-shutdown-v7/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/localsend-own-shutdown-v7/command.json",
+      "startedUTC": "2026-10-16T09:50:58.079990+00:00",
+      "finishedUTC": "2026-10-16T09:51:01.376315+00:00",
+      "exit": 0,
+      "timeout": false,
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "--set",
+        "<user-home>/Library/Developer/CoreSimulator/RunstirGoal213AppleV2-20261016",
+        "shutdown",
+        "<owned-ios-udid>"
+      ],
+      "cwd": "<ios-native-root>/actual-native-ios-v2",
+      "guard": null,
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-own-shutdown-v7/stdout",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-own-shutdown-v7/stderr",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "ios/localsend-original-pid-after-termination-v7",
+      "result": "<ios-native-root>/actual-native-ios-v2/logs/localsend-original-pid-after-termination-v7/result.json",
+      "command": "<ios-native-root>/actual-native-ios-v2/logs/localsend-original-pid-after-termination-v7/command.json",
+      "startedUTC": "2026-10-16T09:51:01.731800+00:00",
+      "finishedUTC": "2026-10-16T09:51:01.736885+00:00",
+      "exit": 1,
+      "timeout": false,
+      "argv": [
+        "/bin/ps",
+        "-ww",
+        "-p",
+        "23795",
+        "-o",
+        "pid=,comm="
+      ],
+      "cwd": "<ios-native-root>/actual-native-ios-v2",
+      "guard": null,
+      "stdout": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-original-pid-after-termination-v7/stdout",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "<ios-native-root>/actual-native-ios-v2/logs/localsend-original-pid-after-termination-v7/stderr",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ]
+}

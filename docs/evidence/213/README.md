@@ -1,5 +1,11 @@
 # #213 Flutter baseline 증거
 
+최신 결과: [2026-10-16 공식 입력 재고정과 새 native 4/4](repin-20261016/README.md).
+아래 본문은 2026-10-15 실행과 당시 입력 부족의 이력이다.
+그 성공·실패·`inconclusive`를 새 tuple의 결과로 소급하지 않는다.
+
+## 2026-10-15 보존 이력
+
 상태: **승인한 입력의 양플랫폼 native baseline 4/4 PASS**.
 필수 native 도구의 배포 identity 고정은 미완료다.
 최소 앱 `66732bc…`와 prepared LocalSend `61145cf…`의 실제 첫 화면을 확인했다.
