@@ -76,9 +76,14 @@ enum ToolInstallationValidation {
                     candidates = (inspection.rpaths + executableRpaths)
                         .map { $0.appendingPathComponent(String(dependency.dropFirst(7))) }
                 } else { candidates = expand(dependency, binary: inspection.binary, main: main).map { [$0] } ?? [] }
+                if dependency.hasPrefix("@rpath/") {
+                    guard !inspection.hasUnresolvedRpaths, !executableHasUnresolvedRpaths,
+                          candidates.allSatisfy({ contained($0) }) else {
+                        throw InstallationExecution.failure("Pinned tool needs an unapproved external library; prepare it manually without hidden downloads")
+                    }
+                }
                 if candidates.contains(where: { contained($0) && manager.fileExists(atPath: $0.path) }) { continue }
-                let matches: Set<String> = if dependency.hasPrefix("@rpath/"), !inspection.hasUnresolvedRpaths, !executableHasUnresolvedRpaths,
-                    candidates.allSatisfy({ contained($0) }) {
+                let matches: Set<String> = if dependency.hasPrefix("@rpath/") {
                     Set(internalRpaths.compactMap { path in
                         guard let target = canonical(path.appendingPathComponent(String(dependency.dropFirst(7)))) else { return nil }
                         guard contained(target), manager.fileExists(atPath: target.path), identities[target.path]?.contains(dependency) == true else { return nil }

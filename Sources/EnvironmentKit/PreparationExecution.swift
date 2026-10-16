@@ -213,16 +213,18 @@ public enum PreparationExecution {
             let after = try await inspect(input, runner: host)
             result.plan = after.plan
             result.operation.manual = after.plan?.steps.filter { $0.kind != "align" && $0.kind != "install" } ?? []
-            result.operation.remaining = after.plan?.steps.filter { $0.kind != "align" }.map(\.id) ?? []
-            // Alignment is measured by the manager's successful frozen/locked command.
+            result.operation.remaining = after.plan?.steps.filter {
+                $0.kind != "align" || !result.operation.completed.contains($0.id)
+            }.map(\.id) ?? []
+            // Only executed alignment is measured by its successful frozen/locked command.
             if var updated = result.plan {
                 for index in updated.platforms.indices {
                     let platform = updated.platforms[index].platform
                     let pending = updated.steps.filter {
-                        $0.kind != "align" && !result.operation.completed.contains($0.id) && ($0.platform == nil || $0.platform == platform)
+                        !result.operation.completed.contains($0.id) && ($0.platform == nil || $0.platform == platform)
                     }
                     updated.platforms[index].state = pending.isEmpty ? "succeeded"
-                        : pending.contains { $0.kind == "install" } ? "needs-approval" : "waiting-manual"
+                        : pending.contains { $0.kind == "install" || $0.kind == "align" } ? "needs-approval" : "waiting-manual"
                 }
                 result.plan = updated
             }

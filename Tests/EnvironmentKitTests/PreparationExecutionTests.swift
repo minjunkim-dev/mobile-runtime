@@ -84,6 +84,52 @@ struct PreparationExecutionTests {
         #expect(try Data(contentsOf: repo.url("yarn.lock")) == Data())
     }
 
+    @Test("tool-only approval preserves newly available dependency alignment for a new approval", arguments: [false, true])
+    func newlyAvailableAlignment(trustRepository: Bool) async throws {
+        let fixture = try await ToolPreparationTests().fixture()
+        let repo = fixture.repo
+        try repo.write("package.json", #"{"dependencies":{"react-native":"0.83.10"}}"#)
+        try repo.write(".nvmrc", "22.23.2\n")
+        try repo.write("yarn.lock", "")
+        try repo.directory("ios/MyApp.xcodeproj")
+        let projectTools = try tools(repo)
+        let runner = NewlyAvailableNodeRunner(base: fixture.runner, projectTools: projectTools,
+            node: repo.url("store/installs/node/22.23.2/bin/node"))
+        let input = ProjectInspectionInput(directory: repo.root,
+            environment: ["MISE_DATA_DIR": repo.url("store").path])
+        let initial = await PreparationExecution.run(input: input, planOnly: true, runner: runner)
+        let plan = try #require(initial.plan)
+        let diagnostic = try initial.encoded(toolVersion: "test")
+        try #require(plan.steps.contains { $0.id == "tools.node" && $0.kind == "install" },
+            Comment(rawValue: diagnostic))
+        #expect(!plan.steps.contains { $0.kind == "align" })
+
+        let result = await PreparationExecution.run(input: input, approvedPlanID: plan.id,
+            trustRepository: trustRepository, runner: runner,
+            leases: ResourceLeases(directory: repo.url(".mobile/leases")))
+        #expect(result.operation.completed == ["tools.node"], Comment(rawValue: result.operation.error ?? ""))
+        #expect(result.plan?.steps.contains { $0.id == "dependencies.node" && $0.kind == "align" } == true)
+        #expect(result.operation.remaining.contains("dependencies.node"))
+        #expect(result.plan?.platforms.first { $0.platform == .ios }?.state == "needs-approval")
+        #expect(result.operation.state == "partial")
+        #expect(result.exitCode == 1)
+        #expect(!projectTools.log.all.contains { $0.description == "yarn install --frozen-lockfile" })
+        #expect(!FileManager.default.fileExists(atPath: repo.url("node_modules").path))
+
+        let stale = await PreparationExecution.run(input: input, approvedPlanID: plan.id,
+            trustRepository: true, runner: runner)
+        #expect(stale.operation.state == "needs-approval")
+        #expect(stale.plan?.id != plan.id)
+        let nextID = try #require(stale.plan?.id)
+        let aligned = await PreparationExecution.run(input: input, approvedPlanID: nextID,
+            trustRepository: true, runner: runner,
+            leases: ResourceLeases(directory: repo.url(".mobile/leases")))
+        #expect(aligned.operation.completed == ["dependencies.node"], Comment(rawValue: aligned.operation.error ?? ""))
+        #expect(!aligned.operation.remaining.contains("dependencies.node"))
+        #expect(aligned.plan?.platforms.first { $0.platform == .ios }?.state == "succeeded")
+        #expect(FileManager.default.fileExists(atPath: repo.url("node_modules").path))
+    }
+
     @Test("a dependency script's source change stops later commands and is never restored")
     func sourceMutation() async throws {
         let repo = try project()
@@ -334,6 +380,32 @@ struct PreparationExecutionTests {
             "yarn install --frozen-lockfile": .ok(""),
             "xcodebuild -list -json -project \(repo.url("ios/MyApp.xcodeproj").path)": .ok(#"{"project":{"schemes":["MyApp"]}}"#),
         ])
+    }
+}
+
+private struct NewlyAvailableNodeRunner: ProcessRunner {
+    let base: ToolPreparationFixtureRunner
+    let projectTools: FakeProcessRunner
+    let node: URL
+
+    func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+        if command.executable == "/usr/bin/which", command.arguments == ["node"] {
+            return ProcessResult(terminationStatus: .exited(FileManager.default.isExecutableFile(atPath: node.path) ? 0 : 1),
+                standardOutput: node.path, standardError: "")
+        }
+        if command.executable == "node", command.arguments == ["--version"] {
+            return ProcessResult(terminationStatus: .exited(FileManager.default.isExecutableFile(atPath: node.path) ? 0 : 127),
+                standardOutput: "v22.23.2", standardError: "")
+        }
+        if projectTools.responses[command.description] != nil {
+            return try await projectTools.run(command, onLine: onLine)
+        }
+        do { return try await base.run(command, onLine: onLine) }
+        catch is FixtureMiss { return ProcessResult(terminationStatus: .exited(127), standardOutput: "", standardError: "fixture tool unavailable") }
+    }
+
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+        throw FixtureMiss(command: command.description)
     }
 }
 

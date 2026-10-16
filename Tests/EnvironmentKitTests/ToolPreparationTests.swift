@@ -268,6 +268,7 @@ struct ToolPreparationTests {
 
     @Test("rpath fallback cannot hide ambiguous missing aliased or external libraries", arguments: [
         "ambiguous", "missing", "plain-file", "wrong-id", "self-link", "outside-link", "external-local", "escaping-local", "external-main", "external-pool",
+        "external-local-contained", "external-main-contained", "relative-local-contained", "relative-main-contained",
         "absolute-external", "usr-lookalike", "system-lookalike", "usr-traversal", "system-traversal", "alias-parent-traversal", "nul-rpath", "relative-local", "relative-main", "loader-lookalike", "executable-lookalike",
     ])
     func rejectedLibraryFallback(_ fault: String) async throws {
@@ -280,13 +281,14 @@ struct ToolPreparationTests {
         #expect(try String(contentsOf: fixture.repo.url("store/existing/keep"), encoding: .utf8) == "original")
     }
 
-    private func libraryFixture(_ fault: String = "none") async throws -> (repo: FixtureRepo, runner: ToolPreparationFixtureRunner) {
+    private func libraryFixture(_ layout: String = "none") async throws -> (repo: FixtureRepo, runner: ToolPreparationFixtureRunner) {
+        let fault = layout.hasSuffix("-contained") ? String(layout.dropLast("-contained".count)) : layout
         let fixture = try await fixture()
         let stage = fixture.repo.url("stage")
         let magic = Data([0xcf, 0xfa, 0xed, 0xfe])
         let binaries = ["bin/java", "lib/libjava.dylib", "lib/server/libjvm.dylib"]
             + (["ambiguous", "local-precedence"].contains(fault) ? ["lib/other/libjvm.dylib"] : [])
-            + (fault == "local-precedence" ? ["lib/libjvm.dylib"] : [])
+            + (fault == "local-precedence" || layout.hasSuffix("-contained") ? ["lib/libjvm.dylib"] : [])
         for relative in binaries {
             let file = try fixture.repo.write("stage/\(relative)", "fixture")
             try (magic + Data(relative.utf8)).write(to: file)
@@ -345,7 +347,7 @@ struct ToolPreparationTests {
             directory: fixture.repo.root, environment: ["MISE_DATA_DIR": fixture.repo.url("store").path], runner: fixture.runner, host: host)
     }
 
-    private func fixture(manager: Bool = true) async throws -> (repo: FixtureRepo, runner: ToolPreparationFixtureRunner) {
+    func fixture(manager: Bool = true) async throws -> (repo: FixtureRepo, runner: ToolPreparationFixtureRunner) {
         let repo = try FixtureRepo()
         try repo.write("store/existing/keep", "original")
         try repo.write("global-selection", "old")
@@ -406,7 +408,7 @@ private struct SelectedJavaPropertiesRunner: ProcessRunner {
     func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 { throw FixtureMiss(command: command.description) }
 }
 
-private final class ToolPreparationFixtureRunner: ProcessRunner, @unchecked Sendable {
+final class ToolPreparationFixtureRunner: ProcessRunner, @unchecked Sendable {
     enum Fault { case none, download(PreparedTool), cancel(PreparedTool), metadataCancel, minimumOS, externalLibrary, platformIOS }
     let payloads: [PreparedTool: Data]
     let mise: URL?
