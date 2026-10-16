@@ -19,6 +19,8 @@ public struct WorkflowContext: Sendable {
     public let runner: any ProcessRunner
     /// Project commands: tool checks and build; RN also runs dependencies and Metro.
     public let projectRunner: any ProcessRunner
+    /// One opaque actor supplies doctor and the read-only preparation requirements.
+    public let androidContext: AndroidDoctorContext?
     public let locator: XcodeLocator
 
     public static func make(
@@ -84,6 +86,7 @@ public struct WorkflowContext: Sendable {
             WorkspaceAccessCheck(paths: uniquePaths, unresolvedCache: unresolvedCache), WorkspaceStorageCheck(paths: uniquePaths)
         ]
         let checks: [any Check]
+        var androidContext: AndroidDoctorContext?
         switch platform {
         case .ios:
             let projectChecks = if let anchor, let projectEnvironment {
@@ -102,14 +105,10 @@ public struct WorkflowContext: Sendable {
         case .android:
             var android = config.checks()
             if let anchor, let projectEnvironment {
-                let platformChecks = androidChecks(
-                    anchor: anchor,
-                    config: config,
-                    hostRunner: runner,
-                    projectRunner: projectEnvironment.runner,
-                    environment: AndroidEnvironment(values: input.environment),
-                    includeRuntimeSDKTools: includeRuntimeSDKTools
-                )
+                let context = AndroidDoctorContext(anchor: anchor, config: config, hostRunner: runner,
+                    projectRunner: projectEnvironment.runner, environment: AndroidEnvironment(values: input.environment))
+                androidContext = context
+                let platformChecks = androidChecks(context: context, includeRuntimeSDKTools: includeRuntimeSDKTools)
                 // The project identity is the first Android fact; the shared tool
                 // environment and Node checks follow before Gradle requirements.
                 android.append(platformChecks[0])
@@ -126,6 +125,7 @@ public struct WorkflowContext: Sendable {
             lookup: lookup,
             runner: runner,
             projectRunner: projectEnvironment?.runner ?? runner,
+            androidContext: androidContext,
             locator: locator
         )
     }

@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "scope": "current de-identified public copies only",
+  "files": {
+    "README.md": {
+      "bytes": 4701,
+      "sha256": "0c2372f3938c388fd88a35194f25b324e59112f7147b29761220afd6912938a6"
+    },
+    "actual-cli-plan.json": {
+      "bytes": 15774,
+      "sha256": "f64088c4cbac4dc459f7be37a992137023560eba1284f2a6e1cc82d13c8c3ba5"
+    },
+    "attempts.md": {
+      "bytes": 3246,
+      "sha256": "451eee4af0e2f6d32d5c1608b51d7e2e0faa42ee1c61b3c7fea146e5d43f319a"
+    },
+    "compile-harness.py": {
+      "bytes": 1110,
+      "sha256": "10b95360a6ffecd0294d1600bfcaac0b50872d8c28791e6c37203789d4aa954c"
+    },
+    "harness.swift": {
+      "bytes": 7787,
+      "sha256": "b4186187cd2a5fa1edb14ead98f69deb9ec93df953e4cd81abb45e71bde0fd8a"
+    },
+    "inputs.json": {
+      "bytes": 2841,
+      "sha256": "949e416aea83d684dd931c13341a7622fcea461d42393b046b19f8d26e2ca072"
+    },
+    "local-checks.json": {
+      "bytes": 1621,
+      "sha256": "1659868906a7d03cc7a53b43763b34d5a2fbb700f07e05159cac08557bbb1004"
+    },
+    "owned-writes.sb": {
+      "bytes": 197,
+      "sha256": "17d829d6f8c0b4ea0d83a0511442525f96a8652c806a3f26512118ee42504476"
+    },
+    "private-receipts.json": {
+      "bytes": 17617,
+      "sha256": "8fd302791cfad2cce0d83d90d19d92920b563ce36b69f181184470bd4e40d91b"
+    },
+    "results.json": {
+      "bytes": 7611,
+      "sha256": "8d69a7bb5c4f7941deae9108d051644912500297c2a5d4e3f5807b44f7229222"
+    },
+    "run-harness.py": {
+      "bytes": 1251,
+      "sha256": "b42fff57b1724cebd3b550e4b820918703baf7a566cb1778aef41ba3ae6b8620"
+    }
+  }
+}

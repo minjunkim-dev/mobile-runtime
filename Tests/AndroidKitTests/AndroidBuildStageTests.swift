@@ -80,6 +80,10 @@ private func buildScenario(
         "package.json",
         #"{"dependencies":{"react-native":"0.83.1"},"devDependencies":{"@react-native/gradle-plugin":"0.83.1"}}"#
     )
+    try repo.write("node_modules/react-native/package.json", #"{"version":"0.83.1"}"#)
+    try repo.write("node_modules/@react-native/gradle-plugin/package.json", #"{"version":"0.83.1"}"#)
+    try buildExecutable(repo, "gradle-home/wrapper/dists/gradle-8.13-bin/hash/gradle-8.13/bin/gradle")
+    try repo.write("gradle-home/wrapper/dists/gradle-8.13-bin/hash/gradle-8.13-bin.zip.ok", "")
     try repo.directory("android")
     try buildExecutable(repo, "android/gradlew")
     try repo.write("android/gradle/wrapper/gradle-wrapper.jar", "jar")
@@ -123,6 +127,7 @@ private func buildScenario(
     let config = ConfigContext.detect(anchor: anchor, workingDirectory: repo.root)
     let environment = AndroidEnvironment(values: [
         "ANDROID_HOME": sdk.path,
+        "GRADLE_USER_HOME": repo.url("gradle-home").path,
         "PATH": "/usr/bin:/bin",
     ])
     let modelCommand = try #require(
@@ -136,7 +141,7 @@ private func buildScenario(
     ).path
     let modelScript = try #require(AndroidGradleModelProbe.scriptURL)
     let assemble = "./gradlew :app:assembleDebug --no-daemon --console=plain "
-        + "-Porg.gradle.java.installations.auto-download=false -I \(modelScript.path)"
+        + "-Dorg.gradle.java.installations.auto-download=false -Pandroid.builder.sdkDownload=false -I \(modelScript.path)"
     let emittedArtifacts = AndroidGradleModelProbe.artifactMarker
         + "{\"variant\":\"debug\",\"apkDirectory\":\"\(apkDirectory)\","
         + "\"mergedManifest\":\"\(mergedManifest)\"}\n"

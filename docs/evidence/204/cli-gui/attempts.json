@@ -1,0 +1,42 @@
+{
+  "source": "70cb2877b259690832cec686e925087ddb1c1d01",
+  "order": [
+    "fixed-source owned Werror build",
+    "CLI license plan/approval -> waiting-manual",
+    "CLI real interactive TTY exact approval -> actual download -> Ctrl-C -> cancelled130",
+    "CLI controlled regular owned payload chmod000 -> failed2",
+    "CLI platform parent0555 plan -> buildtools installed -> partial1",
+    "CLI permission restored -> stale approval blocked -> remaining platform installed",
+    "GUI original bundle ID NSOpenPanel changed shared plist mtime -> stopped; original bytes unavailable; no restoration",
+    "new bundle ID old-path lookup failed; early child exit code not collected",
+    "persistent launcher and new name/path; root resource placement prevented ad-hoc signing; no file bytes changed by failed signing",
+    "same bundles moved to Contents/Resources using generated Swift accessor; local ad-hoc and strict verification passed",
+    "CUA lookup accidentally selected alpha6 deployment app -> immediate CUA quit, no setup",
+    "extra owned old-path idle process discovered during final audit -> exact PID SIGTERM -> absence observed; exit/guard unknown",
+    "isolated GUI license approval -> waiting-manual1; normal quit0",
+    "isolated GUI actual download -> CUA cancel -> cancelled130",
+    "isolated GUI controlled regular owned payload chmod000 -> failed2",
+    "GUI platform parent0555 -> buildtools installed -> partial1; permission restored",
+    "GUI stale approval blocked -> new remaining plan",
+    "Mac locked before recheck -> stopped; user manual unlock confirmed; fresh snapshot and plan",
+    "GUI exact remaining platform approval -> installed; partial1 only AVD manual; normal quit0",
+    "final resource audit: tracked bytes/modes and index entries/flags equal; raw index changed after audit git-status refresh"
+  ],
+  "unknowns": [
+    "initial shared GUI plist bytes before first launch not collected; original state was not restored",
+    "early detached GUI child exit code unknown",
+    "extra owned lookup process environment and write guard unknown; no setup action was applied to it",
+    "raw index bytes are not immutable; staged entries and flags are equal",
+    "shared SDK/cache full bytes, whole HOME, OS global databases, GUI VM/app launch not proved",
+    "CLI final-plan wall time88.61s; cause not concluded"
+  ],
+  "lookupDetail": {
+    "newIDInventory": "dev.runstir.gui.validation204 isRunning true",
+    "newIDGetApp": "Invalid app",
+    "previousPathGetApp": "cached original bundle ID",
+    "displayNameLookup": "selected alpha6 deployment app; immediately CUA super+q; no setup",
+    "ownPID": 5927,
+    "ownStop": "SIGTERM prior to fresh app name/path",
+    "cause": "lookup mapping; launch exit cause not concluded"
+  }
+}

@@ -6,6 +6,21 @@ import Testing
 
 @Suite("approved environment preparation")
 struct PreparationExecutionTests {
+    @Test("native Android preparation does not plan JavaScript dependency alignment")
+    func nativeAndroidPreparationScope() async throws {
+        let repo = try FixtureRepo()
+        try repo.write("settings.gradle.kts", "include(\":app\")")
+        try repo.write("build.gradle.kts", "plugins {}")
+        try repo.write("app/build.gradle.kts", "plugins { id(\"com.android.application\") }")
+        try repo.write("gradlew", "fixture")
+        let result = await PreparationExecution.run(
+            input: ProjectInspectionInput(directory: repo.root, environment: [:]),
+            planOnly: true, runner: FakeProcessRunner())
+        #expect(result.plan != nil)
+        #expect(result.plan?.steps.contains { $0.id == "dependencies.node" } == false)
+        #expect(result.plan?.platforms.map(\.platform) == [.android])
+    }
+
     @Test("plan includes both RN platforms without changing dependencies")
     func planOnly() async throws {
         let repo = try FixtureRepo()

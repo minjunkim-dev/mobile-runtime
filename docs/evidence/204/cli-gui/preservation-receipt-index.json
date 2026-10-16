@@ -1,0 +1,180 @@
+{
+  "collectedAt": 1792078703.30904,
+  "files": {
+    "shared-before.json": {
+      "file": "evidence/shared-before.json",
+      "bytes": 30224397,
+      "sha256": "3897bc3fddb2266562eeb741f275b11dfe461e0c15e495c025d20dc10f8879b4",
+      "role": "retained raw receipt"
+    },
+    "shared-after.json": {
+      "file": "evidence/shared-after.json",
+      "bytes": 29997465,
+      "sha256": "055f37c3a06ae0fd023cfb1b215301556a6c6d16779304e71fbe50719ddc5ec2",
+      "role": "retained raw receipt"
+    },
+    "final-preservation.json": {
+      "file": "evidence/final-preservation.json",
+      "bytes": 4178,
+      "sha256": "ab20ce87cc84f88bb786f89f346312cefe4602c8b64071f41ecd4475ee3d7b9a",
+      "role": "retained original file; final aggregate is second audit, first aggregate bytes unavailable"
+    },
+    "index-audit-side-effect.json": {
+      "file": "evidence/index-audit-side-effect.json",
+      "bytes": 1950,
+      "sha256": "7e1350db79d2a08d7cf87870c3ee68d991124d305628d577fb72aa63e1ed8c55",
+      "role": "retained raw receipt"
+    },
+    "audit-correction.json": {
+      "file": "evidence/audit-correction.json",
+      "bytes": 1164,
+      "sha256": "90e027ace8397c615afcbd5288b0511b5d6e8e39716488be8d6a516a3175247b",
+      "role": "retained raw receipt"
+    },
+    "cliSource": {
+      "before": {
+        "file": "evidence/cli-tracked-before.json",
+        "bytes": 21999,
+        "sha256": "09f05778b3f43786a9ecd0c02f54c2b19932d127c8d59035142a455b6721e281",
+        "role": "actual pre-surface snapshot"
+      },
+      "after": {
+        "file": "evidence/cli-source-after-v1.json",
+        "bytes": 22168,
+        "sha256": "3a10431a0afd4537e265c5ab5dbf41c6781fe26b1047d1cef5a1daaa5f7ea58c",
+        "role": "new post-surface file-level snapshot; raw index changed"
+      },
+      "trackedBytesModesSame": true
+    },
+    "cliFirstPackage": {
+      "beforeRemainingInstall": {
+        "file": "evidence/cli-buildtools-completed.json",
+        "bytes": 25560,
+        "sha256": "788c910e29e73aacb246d0e8f81b0c6265aa035ed53b4ae8597457b837f9b619",
+        "role": "actual after first commit, before remaining install"
+      },
+      "after": {
+        "file": "evidence/cli-buildtools-after-v1.json",
+        "bytes": 25560,
+        "sha256": "788c910e29e73aacb246d0e8f81b0c6265aa035ed53b4ae8597457b837f9b619",
+        "role": "new post-surface file-level snapshot"
+      },
+      "same": true
+    },
+    "guiSource": {
+      "before": {
+        "file": "evidence/gui-tracked-before.json",
+        "bytes": 21999,
+        "sha256": "09f05778b3f43786a9ecd0c02f54c2b19932d127c8d59035142a455b6721e281",
+        "role": "actual pre-surface snapshot"
+      },
+      "after": {
+        "file": "evidence/gui-source-after-v1.json",
+        "bytes": 22168,
+        "sha256": "15c88c9ce7604c25fd95443fb10c66565c95882e82ce1e78e38d81a8e8d0acbf",
+        "role": "new post-surface file-level snapshot; raw index changed"
+      },
+      "trackedBytesModesSame": true
+    },
+    "guiFirstPackage": {
+      "beforeRemainingInstall": {
+        "file": "evidence/gui-buildtools-completed.json",
+        "bytes": 25560,
+        "sha256": "788c910e29e73aacb246d0e8f81b0c6265aa035ed53b4ae8597457b837f9b619",
+        "role": "actual after first commit, before remaining install"
+      },
+      "after": {
+        "file": "evidence/gui-buildtools-after-v1.json",
+        "bytes": 25560,
+        "sha256": "788c910e29e73aacb246d0e8f81b0c6265aa035ed53b4ae8597457b837f9b619",
+        "role": "new post-surface file-level snapshot"
+      },
+      "same": true
+    },
+    "licenseSource": {
+      "before": {
+        "file": "evidence/license-tracked-before.json",
+        "bytes": 21999,
+        "sha256": "09f05778b3f43786a9ecd0c02f54c2b19932d127c8d59035142a455b6721e281",
+        "role": "actual pre-surface snapshot"
+      },
+      "after": {
+        "file": "evidence/license-source-after-v1.json",
+        "bytes": 22168,
+        "sha256": "c675eda599e621808a69532dcbd1a56112dc7f282494fbb161f5fa66da044db0",
+        "role": "new post-surface file-level snapshot; raw index changed"
+      },
+      "trackedBytesModesSame": true
+    },
+    "sdkAndCache": {
+      "/ORIGINAL_SDK": {
+        "before": {
+          "file": "evidence/shared-before.json",
+          "bytes": 30224397,
+          "sha256": "3897bc3fddb2266562eeb741f275b11dfe461e0c15e495c025d20dc10f8879b4",
+          "role": "actual before container",
+          "selector": "trees[/ORIGINAL_SDK]"
+        },
+        "after": {
+          "file": "evidence/shared-after.json",
+          "bytes": 29997465,
+          "sha256": "055f37c3a06ae0fd023cfb1b215301556a6c6d16779304e71fbe50719ddc5ec2",
+          "role": "actual second after container",
+          "selector": "/ORIGINAL_SDK"
+        },
+        "same": true
+      },
+      "/ORIGINAL_GRADLE_CACHE": {
+        "before": {
+          "file": "evidence/shared-before.json",
+          "bytes": 30224397,
+          "sha256": "3897bc3fddb2266562eeb741f275b11dfe461e0c15e495c025d20dc10f8879b4",
+          "role": "actual before container",
+          "selector": "trees[/ORIGINAL_GRADLE_CACHE]"
+        },
+        "after": {
+          "file": "evidence/shared-after.json",
+          "bytes": 29997465,
+          "sha256": "055f37c3a06ae0fd023cfb1b215301556a6c6d16779304e71fbe50719ddc5ec2",
+          "role": "actual second after container",
+          "selector": "/ORIGINAL_GRADLE_CACHE"
+        },
+        "same": true
+      },
+      "/USER_HOME/.android": {
+        "before": {
+          "file": "evidence/shared-before.json",
+          "bytes": 30224397,
+          "sha256": "3897bc3fddb2266562eeb741f275b11dfe461e0c15e495c025d20dc10f8879b4",
+          "role": "actual before container",
+          "selector": "trees[/USER_HOME/.android]"
+        },
+        "after": {
+          "file": "evidence/shared-after.json",
+          "bytes": 29997465,
+          "sha256": "055f37c3a06ae0fd023cfb1b215301556a6c6d16779304e71fbe50719ddc5ec2",
+          "role": "actual second after container",
+          "selector": "/USER_HOME/.android"
+        },
+        "same": true
+      }
+    },
+    "leases": {
+      "before": {
+        "file": "evidence/shared-before.json",
+        "bytes": 30224397,
+        "sha256": "3897bc3fddb2266562eeb741f275b11dfe461e0c15e495c025d20dc10f8879b4",
+        "role": "actual before container",
+        "selector": "leases"
+      },
+      "after": {
+        "file": "evidence/leases-after-v1.json",
+        "bytes": 166999,
+        "sha256": "d1e2929b7e706796d7ee357bcb1f447dc71bc7819213e8a0d6d8e9ea6c14a8ea",
+        "role": "new post-surface snapshot"
+      },
+      "existing989BytesSame": true
+    }
+  },
+  "integrity": "Each referenced file exists and the listed size/SHA256 was computed directly now. Source/171file after snapshots and lease after were collected after surface completion. SDK/cache before/after are retained containers with selectors. First unversioned aggregate original bytes are not retained."
+}

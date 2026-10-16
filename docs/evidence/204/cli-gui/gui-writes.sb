@@ -1,0 +1,5 @@
+(version 1)
+(allow default)
+(deny file-write*)
+(deny network-outbound (remote tcp "localhost:5037"))
+(allow file-write* (subpath "/OWNED_ROOT") (subpath "/EPHEMERAL_T") (literal "/dev/null") (literal "/dev/tty") (literal "/USER_HOME/Library/Caches/dev.runstir/leases/bbbb1f48969df070.lock") (literal "/USER_HOME/Library/Caches/dev.runstir/leases/c834ac80bb5c09a5.lock"))
