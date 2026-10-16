@@ -1,0 +1,78 @@
+{
+  "README.md": {
+    "bytes": 12830,
+    "sha256": "f2ebccf56539dcbbd52158488877976aff9f133fe2522cfed70c69539fd8749b"
+  },
+  "fresh-runstir-handoff.json": {
+    "bytes": 4277,
+    "sha256": "5af3dc5d34439caa716718c6455f2dc5fee8a16caa04412f2dd5392f455a3f93"
+  },
+  "attempts.md": {
+    "bytes": 14319,
+    "sha256": "c3ba362338a0e038c8e024799a7068a5f38f3882926897c9e9ff8ebbe3da25f7"
+  },
+  "inputs.json": {
+    "bytes": 10559,
+    "sha256": "e7a1af5164eb43ce0612a270eacee0e291ae2d7c162ff45baf83db62d9f5ccf7"
+  },
+  "nia-first-screen.png": {
+    "bytes": 296044,
+    "sha256": "8b5c02302d9f6c0ce4aa5211bc0ea3b1125a6284e1db6f3d085ef918916b9bc2"
+  },
+  "nia-notification-prompt.png": {
+    "bytes": 192097,
+    "sha256": "b9da207d3f55bdbf2f41ee901a211a7911f14a99084f26f181f679cb333e5630"
+  },
+  "pinned-baseline.md": {
+    "bytes": 12580,
+    "sha256": "b0b210a0c510c6c53eef17a028d8bd0408e01a1c91b997b6ca335bb1b49ee8a0"
+  },
+  "pinned-excerpts.md": {
+    "bytes": 2635,
+    "sha256": "84ff62946ab9f6a417fe5eb189889c1c36987908bf1d2da9983238172f2c25cb"
+  },
+  "pinned-inputs.json": {
+    "bytes": 21711,
+    "sha256": "2a80ff8bfa13146689f67bb3e9fa2e311c3ee94864457b3bc098b72be714c3db"
+  },
+  "pinned-nia-first-screen.png": {
+    "bytes": 294447,
+    "sha256": "2897815c865bfd41a3404fab46f78a2e311e4374c767aa9e87c21bf167ec9f44"
+  },
+  "pinned-nia-notification-prompt.png": {
+    "bytes": 208683,
+    "sha256": "3e847c158e03c9dfbfcc1da99651dd65ec68751e468684ff1651d5d36605ea8d"
+  },
+  "pinned-provenance.json": {
+    "bytes": 9698,
+    "sha256": "9295da3d0b8454811cba8f1dc5014dc502030bb0688af13207554d70982e9058"
+  },
+  "pinned-runtime.json": {
+    "bytes": 24669,
+    "sha256": "80f6ff9b248a29d607dc1f534dd7f3c0ac6668cf0fdbfc3d66a1d093fa9cfb61"
+  },
+  "pinned-todo-first-screen.png": {
+    "bytes": 56282,
+    "sha256": "3844885cc85266512692a6e09eeed1d855638e1da3c1ba4991d6eaf972645257"
+  },
+  "preservation-rerun.json": {
+    "bytes": 12655,
+    "sha256": "e3c3c7810b1cef471e5dfc5af817ea6726e6ac42227ac1211b7fed7422d80381"
+  },
+  "rerun-nia-first-screen.png": {
+    "bytes": 295380,
+    "sha256": "d1c90cf3b1e945da0b29402b4acc3e826e70cd27f26a1475478ca1f24e3dc97a"
+  },
+  "rerun-nia-notification-prompt.png": {
+    "bytes": 192877,
+    "sha256": "2e0daba8bd2f402b06c991ab99b03f7a59f8da62f2c7793e2cdb0573bd7d3701"
+  },
+  "rerun-todo-first-screen.png": {
+    "bytes": 57104,
+    "sha256": "d8e94b3e9962cdc9136261952e7083001fbdb195675989b49dbda2a3a2997493"
+  },
+  "todo-first-screen.png": {
+    "bytes": 56348,
+    "sha256": "1bc4ac868206a4277b690460de38db906018944d66bb1a443c93c9e5844d6908"
+  }
+}
