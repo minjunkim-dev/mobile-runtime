@@ -1,0 +1,29 @@
+{
+  "sourceSHA": "61145cf100522363e9658af97137097551c64832",
+  "requestedFlutterTarget": "android-arm64",
+  "observedCargokitTargets": [
+    "aarch64-linux-android",
+    "i686-linux-android",
+    "x86_64-linux-android"
+  ],
+  "apkABIs": [
+    "arm64-v8a",
+    "armeabi-v7a",
+    "x86_64"
+  ],
+  "apkSHA256": "5b5c90e3322ab1b0d905299432035e1cb322b9b584f393620f94af97b58263c5",
+  "apkBytes": 181232978,
+  "buildExit": 0,
+  "install": "exit0 Success -r replacement of own original installation",
+  "deviceState": "existing own AVD and original own app data retained; not a clean device claim",
+  "launch": "exit0 Status ok WARM",
+  "appID": "org.localsend.localsend_app.debug",
+  "activity": "org.localsend.localsend_app.MainActivity",
+  "pid": 3117,
+  "resumedActivity": "topResumedActivity=ActivityRecord{28a84b7 u0 org.localsend.localsend_app.debug/org.localsend.localsend_app.MainActivity t11}",
+  "firstScreen": "visually confirmed LocalSend Receive screen, own generated alias Hot Orange, Receive via link, Receive/Send/Settings; no crash/blank/error",
+  "screenshotSHA256": "09e09068fdca039beed022515c5b40f315d51b5df625f1e008ba0d3bb4d2e89c",
+  "sourceAudit": "source-audits/prepared-localsend-after-android-build.json",
+  "cleanup": "own app force-stop, own emulator emu kill, own ADB5042 kill-server exit0",
+  "recordCorrection": "The preserved launch log records WARM. The original receipt incorrectly recorded COLD and remains unchanged at the provenance source."
+}

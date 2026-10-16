@@ -1,0 +1,362 @@
+[
+  {
+    "cache": "<evidence-root>/state/gems/cache/CFPropertyList-3.0.8.gem",
+    "metadataSha256": "b9f1bdc62a48a29f23acfd781eb2fb27d0f3840bad484c1083514de428f099a2",
+    "metadataURL": "https://rubygems.org/api/v1/versions/CFPropertyList.json",
+    "name": "CFPropertyList",
+    "officialSha256": "2c99d0d980536d3d7ab252f7bd59ac8be50fbdd1ff487c98c949bb66bb114261",
+    "platform": "ruby",
+    "sha256": "2c99d0d980536d3d7ab252f7bd59ac8be50fbdd1ff487c98c949bb66bb114261",
+    "version": "3.0.8"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/activesupport-7.2.4.gem",
+    "metadataSha256": "6112bc0730e1b74be4b19426431d25baee4a99ef3e5b069a326108ffe8ef72b8",
+    "metadataURL": "https://rubygems.org/api/v1/versions/activesupport.json",
+    "name": "activesupport",
+    "officialSha256": "b97027b31e111675dba67b86edcd589acc25a0dddf8eecacca18d33a703a0788",
+    "platform": "ruby",
+    "sha256": "b97027b31e111675dba67b86edcd589acc25a0dddf8eecacca18d33a703a0788",
+    "version": "7.2.4"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/addressable-2.9.0.gem",
+    "metadataSha256": "a3e7eea9202b7acdeb2b0c650af266354e89196ab056a5c2d0525d78b751557a",
+    "metadataURL": "https://rubygems.org/api/v1/versions/addressable.json",
+    "name": "addressable",
+    "officialSha256": "7fdf6ac3660f7f4e867a0838be3f6cf722ace541dd97767fa42bc6cfa980c7af",
+    "platform": "ruby",
+    "sha256": "7fdf6ac3660f7f4e867a0838be3f6cf722ace541dd97767fa42bc6cfa980c7af",
+    "version": "2.9.0"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/algoliasearch-1.27.5.gem",
+    "metadataSha256": "d0dc5b1caf4644a3b2ca01ee98a0b95ee3294400196dcb8176fe6e834fec4025",
+    "metadataURL": "https://rubygems.org/api/v1/versions/algoliasearch.json",
+    "name": "algoliasearch",
+    "officialSha256": "26c1cddf3c2ec4bd60c148389e42702c98fdac862881dc6b07a4c0b89ffec853",
+    "platform": "ruby",
+    "sha256": "26c1cddf3c2ec4bd60c148389e42702c98fdac862881dc6b07a4c0b89ffec853",
+    "version": "1.27.5"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/atomos-0.1.3.gem",
+    "metadataSha256": "14f548e2a24f531ddc33d170f163c613642575ec7e2241b1eed86b4f81b824a0",
+    "metadataURL": "https://rubygems.org/api/v1/versions/atomos.json",
+    "name": "atomos",
+    "officialSha256": "7d43b22f2454a36bace5532d30785b06de3711399cb1c6bf932573eda536789f",
+    "platform": "ruby",
+    "sha256": "7d43b22f2454a36bace5532d30785b06de3711399cb1c6bf932573eda536789f",
+    "version": "0.1.3"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/claide-1.1.0.gem",
+    "metadataSha256": "79499ac459349bce76aa35c3fa8bf0996faace25e9dfbdebbf2898da733298b6",
+    "metadataURL": "https://rubygems.org/api/v1/versions/claide.json",
+    "name": "claide",
+    "officialSha256": "6d3c5c089dde904d96aa30e73306d0d4bd444b1accb9b3125ce14a3c0183f82e",
+    "platform": "ruby",
+    "sha256": "6d3c5c089dde904d96aa30e73306d0d4bd444b1accb9b3125ce14a3c0183f82e",
+    "version": "1.1.0"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/cocoapods-1.16.2.gem",
+    "metadataSha256": "144d1277c9af602c80b1f2fb21d2555f1c5eb336a8d286cfca1797bd0aa7ef84",
+    "metadataURL": "https://rubygems.org/api/v1/versions/cocoapods.json",
+    "name": "cocoapods",
+    "officialSha256": "0ff1c860f32df3db8b16df09b58da1a6bb2a12fe55f6d5e8be994a74fadd1e5e",
+    "platform": "ruby",
+    "sha256": "0ff1c860f32df3db8b16df09b58da1a6bb2a12fe55f6d5e8be994a74fadd1e5e",
+    "version": "1.16.2"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/cocoapods-core-1.16.2.gem",
+    "metadataSha256": "63d5441ead2bc0eb2fdc2df38223b327567fd81ebbc533029de201bc72a0db8a",
+    "metadataURL": "https://rubygems.org/api/v1/versions/cocoapods-core.json",
+    "name": "cocoapods-core",
+    "officialSha256": "4bb1b5c420691e60cf36fa227dec6bc48c096c34c97bb7aa512ea7f3246fc12b",
+    "platform": "ruby",
+    "sha256": "4bb1b5c420691e60cf36fa227dec6bc48c096c34c97bb7aa512ea7f3246fc12b",
+    "version": "1.16.2"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/cocoapods-deintegrate-1.0.5.gem",
+    "metadataSha256": "1bb0713e533b50440ab0c66d237d58495172085bc0c1a36dd01efebd66b7486c",
+    "metadataURL": "https://rubygems.org/api/v1/versions/cocoapods-deintegrate.json",
+    "name": "cocoapods-deintegrate",
+    "officialSha256": "517c2a448ef563afe99b6e7668704c27f5de9e02715a88ee9de6974dc1b3f6a2",
+    "platform": "ruby",
+    "sha256": "517c2a448ef563afe99b6e7668704c27f5de9e02715a88ee9de6974dc1b3f6a2",
+    "version": "1.0.5"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/cocoapods-downloader-2.1.gem",
+    "metadataSha256": "6670a9110c4a477d3771ca80a726f25a31d3d698d1f31de9f539033e79cbf9bf",
+    "metadataURL": "https://rubygems.org/api/v1/versions/cocoapods-downloader.json",
+    "name": "cocoapods-downloader",
+    "officialSha256": "bb6ebe1b3966dc4055de54f7a28b773485ac724fdf575d9bee2212d235e7b6d1",
+    "platform": "ruby",
+    "sha256": "bb6ebe1b3966dc4055de54f7a28b773485ac724fdf575d9bee2212d235e7b6d1",
+    "version": "2.1"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/cocoapods-plugins-1.0.0.gem",
+    "metadataSha256": "dd153d48955035170f800f42aff015be9ed6ff792eb29e35bd8b1d7ee98d8911",
+    "metadataURL": "https://rubygems.org/api/v1/versions/cocoapods-plugins.json",
+    "name": "cocoapods-plugins",
+    "officialSha256": "725d17ce90b52f862e73476623fd91441b4430b742d8a071000831efb440ca9a",
+    "platform": "ruby",
+    "sha256": "725d17ce90b52f862e73476623fd91441b4430b742d8a071000831efb440ca9a",
+    "version": "1.0.0"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/cocoapods-search-1.0.1.gem",
+    "metadataSha256": "375b4d06f579b44ca3afba389dedbc3612a7d51ed7daae6e2099275064cdf709",
+    "metadataURL": "https://rubygems.org/api/v1/versions/cocoapods-search.json",
+    "name": "cocoapods-search",
+    "officialSha256": "1b133b0e6719ed439bd840e84a1828cca46425ab73a11eff5e096c3b2df05589",
+    "platform": "ruby",
+    "sha256": "1b133b0e6719ed439bd840e84a1828cca46425ab73a11eff5e096c3b2df05589",
+    "version": "1.0.1"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/cocoapods-trunk-1.6.0.gem",
+    "metadataSha256": "1bb5c4a2c11405541768f90fea72720106adfedce6b0db57b51422edea6cd60a",
+    "metadataURL": "https://rubygems.org/api/v1/versions/cocoapods-trunk.json",
+    "name": "cocoapods-trunk",
+    "officialSha256": "5f5bda8c172afead48fa2d43a718cf534b1313c367ba1194cebdeb9bfee9ed31",
+    "platform": "ruby",
+    "sha256": "5f5bda8c172afead48fa2d43a718cf534b1313c367ba1194cebdeb9bfee9ed31",
+    "version": "1.6.0"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/cocoapods-try-1.2.0.gem",
+    "metadataSha256": "bafc529306f1cc2df7b9e168a6d2dd8eb804f4939f41aa632be406af1e5ad69d",
+    "metadataURL": "https://rubygems.org/api/v1/versions/cocoapods-try.json",
+    "name": "cocoapods-try",
+    "officialSha256": "145b946c6e7747ed0301d975165157951153d27469e6b2763c83e25c84b9defe",
+    "platform": "ruby",
+    "sha256": "145b946c6e7747ed0301d975165157951153d27469e6b2763c83e25c84b9defe",
+    "version": "1.2.0"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/colored2-3.1.2.gem",
+    "metadataSha256": "c5f7ae91ee44faec7eb92f26493bc57ff8dd11a2baedce8e9bedb07476579f1f",
+    "metadataURL": "https://rubygems.org/api/v1/versions/colored2.json",
+    "name": "colored2",
+    "officialSha256": "b13c2bd7eeae2cf7356a62501d398e72fde78780bd26aec6a979578293c28b4a",
+    "platform": "ruby",
+    "sha256": "b13c2bd7eeae2cf7356a62501d398e72fde78780bd26aec6a979578293c28b4a",
+    "version": "3.1.2"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/concurrent-ruby-1.3.8.gem",
+    "metadataSha256": "092ba74172c9e444ee56e3db737ab61774403bea7c009e8bc3eef15dc0b6e00b",
+    "metadataURL": "https://rubygems.org/api/v1/versions/concurrent-ruby.json",
+    "name": "concurrent-ruby",
+    "officialSha256": "b2f1be836e968ccc78ccfce277ea79c72a88633f22306782c16ff23fb415d1e1",
+    "platform": "ruby",
+    "sha256": "b2f1be836e968ccc78ccfce277ea79c72a88633f22306782c16ff23fb415d1e1",
+    "version": "1.3.8"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/connection_pool-2.5.5.gem",
+    "metadataSha256": "6e788b960a4350ed08ca59b65e06ab62ebac85c4511cf84fd442005420085ce5",
+    "metadataURL": "https://rubygems.org/api/v1/versions/connection_pool.json",
+    "name": "connection_pool",
+    "officialSha256": "e54ff92855753df1fd7c59fa04a398833355f27dd14c074f8c83a05f72a716ad",
+    "platform": "ruby",
+    "sha256": "e54ff92855753df1fd7c59fa04a398833355f27dd14c074f8c83a05f72a716ad",
+    "version": "2.5.5"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/escape-0.0.4.gem",
+    "metadataSha256": "aafbbbd313d94b42f3472267737bdfa6e1ced62292c77edd77103ffa237fd7e4",
+    "metadataURL": "https://rubygems.org/api/v1/versions/escape.json",
+    "name": "escape",
+    "officialSha256": "e49f44ae2b4f47c6a3abd544ae77fe4157802794e32f19b8e773cbc4dcec4169",
+    "platform": "ruby",
+    "sha256": "e49f44ae2b4f47c6a3abd544ae77fe4157802794e32f19b8e773cbc4dcec4169",
+    "version": "0.0.4"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/ethon-0.18.0.gem",
+    "metadataSha256": "a74e5e2339d4eaf165de0da5114f6f6e0411f3e9be166bf03e0077b452942dde",
+    "metadataURL": "https://rubygems.org/api/v1/versions/ethon.json",
+    "name": "ethon",
+    "officialSha256": "b598afc9f30448cb068b850714b7d6948e941476095d04f90a4ac65b8d6efcb2",
+    "platform": "ruby",
+    "sha256": "b598afc9f30448cb068b850714b7d6948e941476095d04f90a4ac65b8d6efcb2",
+    "version": "0.18.0"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/ffi-1.17.4-arm64-darwin.gem",
+    "metadataSha256": "ed1e7ad36b37b78f47ff52ca3aaff4b020985acb71236f07c0362deb117db048",
+    "metadataURL": "https://rubygems.org/api/v1/versions/ffi.json",
+    "name": "ffi",
+    "officialSha256": "19071aaf1419251b0a46852abf960e77330a3b334d13a4ab51d58b31a937001b",
+    "platform": "arm64-darwin",
+    "sha256": "19071aaf1419251b0a46852abf960e77330a3b334d13a4ab51d58b31a937001b",
+    "version": "1.17.4"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/fourflusher-2.3.1.gem",
+    "metadataSha256": "92a2584ef07a10cfe11a9a4def161ca478b1307c64e571029145d2e4102fb888",
+    "metadataURL": "https://rubygems.org/api/v1/versions/fourflusher.json",
+    "name": "fourflusher",
+    "officialSha256": "1b3de61c7c791b6a4e64f31e3719eb25203d151746bb519a0292bff1065ccaa9",
+    "platform": "ruby",
+    "sha256": "1b3de61c7c791b6a4e64f31e3719eb25203d151746bb519a0292bff1065ccaa9",
+    "version": "2.3.1"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/fuzzy_match-2.0.4.gem",
+    "metadataSha256": "30712cd83f009b05b287156942743ceb9df923c9c0ae0ee6155cb23d3d6dccd8",
+    "metadataURL": "https://rubygems.org/api/v1/versions/fuzzy_match.json",
+    "name": "fuzzy_match",
+    "officialSha256": "b5de4f95816589c5b5c3ad13770c0af539b75131c158135b3f3bbba75d0cfca5",
+    "platform": "ruby",
+    "sha256": "b5de4f95816589c5b5c3ad13770c0af539b75131c158135b3f3bbba75d0cfca5",
+    "version": "2.0.4"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/gh_inspector-1.1.3.gem",
+    "metadataSha256": "b6046485e0cd0d1370953b6e5c54119aa5263ef53062508f3b01b23118acffea",
+    "metadataURL": "https://rubygems.org/api/v1/versions/gh_inspector.json",
+    "name": "gh_inspector",
+    "officialSha256": "04cca7171b87164e053aa43147971d3b7f500fcb58177698886b48a9fc4a1939",
+    "platform": "ruby",
+    "sha256": "04cca7171b87164e053aa43147971d3b7f500fcb58177698886b48a9fc4a1939",
+    "version": "1.1.3"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/httpclient-2.9.0.gem",
+    "metadataSha256": "d3497f952719a2a11e826f35f27de9ecf2dab62d16fdb8197118830be83e05a6",
+    "metadataURL": "https://rubygems.org/api/v1/versions/httpclient.json",
+    "name": "httpclient",
+    "officialSha256": "4b645958e494b2f86c2f8a2f304c959baa273a310e77a2931ddb986d83e498c8",
+    "platform": "ruby",
+    "sha256": "4b645958e494b2f86c2f8a2f304c959baa273a310e77a2931ddb986d83e498c8",
+    "version": "2.9.0"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/i18n-1.15.2.gem",
+    "metadataSha256": "c8a09495e1dd273d8ddadad92f9bc964f60b5dfb8a48ac53c488be078c308b96",
+    "metadataURL": "https://rubygems.org/api/v1/versions/i18n.json",
+    "name": "i18n",
+    "officialSha256": "00f9eb62412fe593b2a65a97daa75300d37abb8f7202ec748e94b6d46a9dd1b5",
+    "platform": "ruby",
+    "sha256": "00f9eb62412fe593b2a65a97daa75300d37abb8f7202ec748e94b6d46a9dd1b5",
+    "version": "1.15.2"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/minitest-5.27.0.gem",
+    "metadataSha256": "dc187337a21b4a2c91fb8815de1c2f534575f5af5cc7831a63e18c903db04325",
+    "metadataURL": "https://rubygems.org/api/v1/versions/minitest.json",
+    "name": "minitest",
+    "officialSha256": "2d3b17f8a36fe7801c1adcffdbc38233b938eb0b4966e97a6739055a45fa77d5",
+    "platform": "ruby",
+    "sha256": "2d3b17f8a36fe7801c1adcffdbc38233b938eb0b4966e97a6739055a45fa77d5",
+    "version": "5.27.0"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/molinillo-0.8.0.gem",
+    "metadataSha256": "afc69fb0ea6d844c50ba67846986718be30ce5cfd0329321f97be14a76a8cc63",
+    "metadataURL": "https://rubygems.org/api/v1/versions/molinillo.json",
+    "name": "molinillo",
+    "officialSha256": "efbff2716324e2a30bccd3eba1ff3a735f4d5d53ffddbc6a2f32c0ca9433045d",
+    "platform": "ruby",
+    "sha256": "efbff2716324e2a30bccd3eba1ff3a735f4d5d53ffddbc6a2f32c0ca9433045d",
+    "version": "0.8.0"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/nanaimo-0.4.0.gem",
+    "metadataSha256": "93f0028f0875b0957afef9ad618c09e11545d01d5f6bf83df0ee223ccd72c0f3",
+    "metadataURL": "https://rubygems.org/api/v1/versions/nanaimo.json",
+    "name": "nanaimo",
+    "officialSha256": "faf069551bab17f15169c1f74a1c73c220657e71b6e900919897a10d991d0723",
+    "platform": "ruby",
+    "sha256": "faf069551bab17f15169c1f74a1c73c220657e71b6e900919897a10d991d0723",
+    "version": "0.4.0"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/nap-1.1.0.gem",
+    "metadataSha256": "76c1323a44079cb0ba3ad6d61ce0c9834ad00843830b6666581707057420d862",
+    "metadataURL": "https://rubygems.org/api/v1/versions/nap.json",
+    "name": "nap",
+    "officialSha256": "949691660f9d041d75be611bb2a8d2fd559c467537deac241f4097d9b5eea576",
+    "platform": "ruby",
+    "sha256": "949691660f9d041d75be611bb2a8d2fd559c467537deac241f4097d9b5eea576",
+    "version": "1.1.0"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/netrc-0.11.0.gem",
+    "metadataSha256": "d17d4e9e41e31b71b79f1ea066c265750cead8d5b5834bfa1f80c15a466bcff1",
+    "metadataURL": "https://rubygems.org/api/v1/versions/netrc.json",
+    "name": "netrc",
+    "officialSha256": "de1ce33da8c99ab1d97871726cba75151113f117146becbe45aa85cb3dabee3f",
+    "platform": "ruby",
+    "sha256": "de1ce33da8c99ab1d97871726cba75151113f117146becbe45aa85cb3dabee3f",
+    "version": "0.11.0"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/public_suffix-4.0.7.gem",
+    "metadataSha256": "e951be42d451d880cb362cf81985c94c348b7d3777bfb33633edf4d7727e4182",
+    "metadataURL": "https://rubygems.org/api/v1/versions/public_suffix.json",
+    "name": "public_suffix",
+    "officialSha256": "8be161e2421f8d45b0098c042c06486789731ea93dc3a896d30554ee38b573b8",
+    "platform": "ruby",
+    "sha256": "8be161e2421f8d45b0098c042c06486789731ea93dc3a896d30554ee38b573b8",
+    "version": "4.0.7"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/rexml-3.4.4.gem",
+    "metadataSha256": "e9175718172c38c7e349728d8ee13397603188795731e0a5aaf07dc366194d88",
+    "metadataURL": "https://rubygems.org/api/v1/versions/rexml.json",
+    "name": "rexml",
+    "officialSha256": "19e0a2c3425dfbf2d4fc1189747bdb2f849b6c5e74180401b15734bc97b5d142",
+    "platform": "ruby",
+    "sha256": "19e0a2c3425dfbf2d4fc1189747bdb2f849b6c5e74180401b15734bc97b5d142",
+    "version": "3.4.4"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/ruby-macho-2.5.1.gem",
+    "metadataSha256": "af62b43f6b2c7499bf80114121e94173edb74b5c7603746a6846c864445c8429",
+    "metadataURL": "https://rubygems.org/api/v1/versions/ruby-macho.json",
+    "name": "ruby-macho",
+    "officialSha256": "9075e52e0f9270b552a90b24fcc6219ad149b0d15eae1bc364ecd0ac8984f5c9",
+    "platform": "ruby",
+    "sha256": "9075e52e0f9270b552a90b24fcc6219ad149b0d15eae1bc364ecd0ac8984f5c9",
+    "version": "2.5.1"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/typhoeus-1.6.0.gem",
+    "metadataSha256": "18852b1b1570bb46f389050fbab08f2cfe5facc0017ab8a7031a382c58249f19",
+    "metadataURL": "https://rubygems.org/api/v1/versions/typhoeus.json",
+    "name": "typhoeus",
+    "officialSha256": "bacc41c23e379547e29801dc235cd1699b70b955a1ba3d32b2b877aa844c331d",
+    "platform": "ruby",
+    "sha256": "bacc41c23e379547e29801dc235cd1699b70b955a1ba3d32b2b877aa844c331d",
+    "version": "1.6.0"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/tzinfo-2.0.6.gem",
+    "metadataSha256": "cb5b6647683d310d45e69679e422df288df4b41e2a9568a8bbd05ebb6815f30c",
+    "metadataURL": "https://rubygems.org/api/v1/versions/tzinfo.json",
+    "name": "tzinfo",
+    "officialSha256": "8daf828cc77bcf7d63b0e3bdb6caa47e2272dcfaf4fbfe46f8c3a9df087a829b",
+    "platform": "ruby",
+    "sha256": "8daf828cc77bcf7d63b0e3bdb6caa47e2272dcfaf4fbfe46f8c3a9df087a829b",
+    "version": "2.0.6"
+  },
+  {
+    "cache": "<evidence-root>/state/gems/cache/xcodeproj-1.28.1.gem",
+    "metadataSha256": "a47f5f3d8d211e669acd8d947d05c11582b590324f6437808ac7cf8b68f44742",
+    "metadataURL": "https://rubygems.org/api/v1/versions/xcodeproj.json",
+    "name": "xcodeproj",
+    "officialSha256": "6f12670f00739d9817ca27ac89d6ef01cc86050e22a0bc08a3131487e5b5cddc",
+    "platform": "ruby",
+    "sha256": "6f12670f00739d9817ca27ac89d6ef01cc86050e22a0bc08a3131487e5b5cddc",
+    "version": "1.28.1"
+  }
+]

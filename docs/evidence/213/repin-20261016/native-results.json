@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "nativeScenarioCount": 4,
+  "nativeFirstScreenPassCount": 4,
+  "RunstirCLIGUIActual": 0,
+  "freshRunstirActual": 0,
+  "rows": [
+    {
+      "scenario": "213-new-android-minimal",
+      "sample": "minimal",
+      "platform": "Android",
+      "executor": "baseline213; Root direct image reviewer",
+      "sourceSHA": "66732bc18ed28d9eed71336b4a2b018e09ad20b9",
+      "nativeBuildPASS": true,
+      "build": "<android-native-root>/logs/native-minimal-build-v4/result.json",
+      "runtimeReceipt": "<android-native-root>/state/native-device-minimal-receipt-v7.json",
+      "appID": "dev.runstir.runstir_flutter_minimal",
+      "activity": "dev.runstir.runstir_flutter_minimal.MainActivity",
+      "PID": "1997",
+      "positivePID": true,
+      "resumedActivity": true,
+      "builtAPK": {
+        "path": "<android-native-root>/artifacts/native-minimal-v4.apk",
+        "bytes": 74591825,
+        "SHA256": "1fd259f45186150f20dcc14add200d94daa054820e83d4248a1be082fa85f373"
+      },
+      "installedAPKDigestSame": true,
+      "APKABIs": [
+        "arm64-v8a"
+      ],
+      "PNG": "minimal-android.png",
+      "RootVisual": "PASS",
+      "rootVisualReceipt": "<android-native-root>/state/native-android-root-visual-review-v7.json",
+      "amStartWaitStatus": "Starting: Intent { cmp=dev.runstir.runstir_flutter_minimal/.MainActivity }\nStatus: ok\nLaunchState: COLD\nActivity: dev.runstir.runstir_flutter_minimal/.MainActivity\nTotalTime: 4886\nWaitTime: 4926\nComplete",
+      "sourceTrackedIndexSame": true,
+      "normalOwnCleanup": true,
+      "cleanupAndPreservation": "<android-native-root>/state/preservation-after-native-android-v7.json"
+    },
+    {
+      "scenario": "213-new-android-localsend",
+      "sample": "localsend",
+      "platform": "Android",
+      "executor": "baseline213; Root direct image reviewer",
+      "sourceSHA": "61145cf100522363e9658af97137097551c64832",
+      "nativeBuildPASS": true,
+      "build": "<android-native-root>/state/native-localsend-build-adjudication-v6.json",
+      "runtimeReceipt": "<android-native-root>/state/native-device-localsend-receipt-v7.json",
+      "appID": "org.localsend.localsend_app.debug",
+      "activity": "org.localsend.localsend_app.MainActivity",
+      "PID": "3608",
+      "positivePID": true,
+      "resumedActivity": true,
+      "builtAPK": {
+        "path": "<android-native-root>/artifacts/native-localsend-v6.apk",
+        "bytes": 181239718,
+        "SHA256": "80afd75d4dd339ac1f682047808a16a82df57b228abb9be58c5c385957bf937b"
+      },
+      "installedAPKDigestSame": true,
+      "APKABIs": [
+        "arm64-v8a",
+        "armeabi-v7a",
+        "x86_64"
+      ],
+      "PNG": "localsend-android.png",
+      "RootVisual": "PASS",
+      "rootVisualReceipt": "<android-native-root>/state/native-android-root-visual-review-v7.json",
+      "amStartWaitStatus": "Starting: Intent { cmp=org.localsend.localsend_app.debug/org.localsend.localsend_app.MainActivity }\nStatus: timeout\nLaunchState: UNKNOWN (-1)\nActivity: org.localsend.localsend_app.debug/org.localsend.localsend_app.MainActivity\nWaitTime: 12402\nComplete",
+      "sourceTrackedIndexSame": true,
+      "normalOwnCleanup": true,
+      "cleanupAndPreservation": "<android-native-root>/state/preservation-after-native-android-v7.json"
+    },
+    {
+      "scenario": "213-new-ios-minimal",
+      "sample": "minimal",
+      "platform": "iOS",
+      "executor": "baseline213; Root direct image reviewer",
+      "sourceSHA": "66732bc18ed28d9eed71336b4a2b018e09ad20b9",
+      "nativeBuildPASS": true,
+      "build": "<ios-native-root>/actual-native-ios-v2/logs/minimal-build-v2/result.json",
+      "appID": "dev.runstir.runstirFlutterMinimal",
+      "PID": 76501,
+      "installedRegularFileCount": 54,
+      "installedRegularBytesEqualBuilt": true,
+      "installedAppMapping": "<ios-native-root>/actual-native-ios-v2/state/minimal-installed-app-mapping-hostlocal-v4.json",
+      "PNG": "minimal-ios.png",
+      "RootVisual": "PASS",
+      "rootVisualReceipt": "<ios-native-root>/actual-native-ios-v2/state/minimal-root-visual-verdict-v5.json",
+      "deviceSet": "<owned-hostlocal-device-set>",
+      "UDID": "<owned-ios-udid>",
+      "runtime": "27.0/24A434",
+      "compileSDK": "27.1/24A94232",
+      "normalOwnCleanup": true,
+      "cleanupReceipt": "<ios-native-root>/actual-native-ios-v2/state/minimal-hostlocal-lifecycle-outcome-v5.json",
+      "sourceTrackedIndexSame": true
+    },
+    {
+      "scenario": "213-new-ios-localsend",
+      "sample": "localsend",
+      "platform": "iOS",
+      "executor": "baseline213; Root direct image reviewer",
+      "sourceSHA": "61145cf100522363e9658af97137097551c64832",
+      "nativeBuildPASS": true,
+      "build": "<ios-native-root>/actual-native-ios-v2/state/localsend-native-direct-build-outcome-v4.json",
+      "appID": "org.localsend.localsendApp",
+      "PID": 23795,
+      "installedRegularFileCount": 204,
+      "installedRegularBytesEqualBuilt": true,
+      "installedAppMapping": "<ios-native-root>/actual-native-ios-v2/state/localsend-installed-app-mapping-hostlocal-v7.json",
+      "PNG": "localsend-ios.png",
+      "RootVisual": "PASS",
+      "rootVisualReceipt": "<ios-native-root>/actual-native-ios-v2/state/localsend-root-visual-verdict-v7.json",
+      "deviceSet": "<owned-hostlocal-device-set>",
+      "UDID": "<owned-ios-udid>",
+      "runtime": "27.0/24A434",
+      "compileSDK": "27.1/24A94232",
+      "normalOwnCleanup": true,
+      "cleanupReceipt": "<ios-native-root>/actual-native-ios-v2/state/localsend-hostlocal-lifecycle-outcome-v7.json",
+      "sourceTrackedIndexSame": true
+    }
+  ],
+  "finalSelectedPreservation": "<ios-native-root>/actual-native-ios-v2/state/preservation-after-native-ios-v7-summary.json",
+  "defaultInventoryGap": {
+    "old19to20": "External addition/availability/lastUsedAt gap kept unknown; not continuous preservation proof.",
+    "lateExistingDevice": "<existing-device-1> lastUsedAt06:30:15Z→09:38:50Z; all20Shutdown. Root accepted current20before. No restore; previous inventory is not SAME.",
+    "deltaReceipt": "<ios-native-root>/actual-native-ios-v2/state/localsend-preboot-default-inventory-delta-v6.json",
+    "acceptedCurrentBefore": "<ios-native-root>/actual-native-ios-v2/state/localsend-default-inventory-rebase-authorization-v7.json",
+    "LocalSendV7Current20BeforeAfterSame": true
+  },
+  "privateFinalHandoffs": [
+    "<android-native-root>/HANDOFF-native-android-v7.json",
+    "<ios-native-root>/actual-native-ios-v2/HANDOFF-native-ios-v7.json"
+  ],
+  "privateSelectedManifests": [
+    "<android-native-root>/private-receipt-manifest-native-v7.json",
+    "<ios-native-root>/private-preparation-receipt-manifest-v1.json",
+    "<ios-native-root>/actual-native-ios-v2/private-native-ios-selected-receipt-manifest-v7.json"
+  ]
+}

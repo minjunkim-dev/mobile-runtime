@@ -1,0 +1,28 @@
+{
+  "timeUTC": "2026-10-15T12:33:59.206168+00:00",
+  "sourceSHA": "66732bc18ed28d9eed71336b4a2b018e09ad20b9",
+  "build": {
+    "attempt1": "exit1 AndroidLocationsBuildService config failure",
+    "attempt2": "exit0 after unsetting deprecated ANDROID_PREFS_ROOT",
+    "apkSHA256": "486b0ae6ccf448848e14b04c93a4de1a60c5c6328bd831d9593de5594b8e3182",
+    "apkBytes": 74591005
+  },
+  "device": "emulator-5562",
+  "avd": "Runstir213_API35_ARM64_Attempt2",
+  "serverPort": 5042,
+  "consolePort": 5562,
+  "image": "system-images;android-35;google_apis;arm64-v8a",
+  "imageRevision": 9,
+  "install": "exit0 Success",
+  "launch": "exit0 Status ok COLD MainActivity",
+  "appID": "dev.runstir.runstir_flutter_minimal",
+  "pid": 3315,
+  "topResumedActivity": "dev.runstir.runstir_flutter_minimal/.MainActivity",
+  "firstScreen": "visually confirmed Flutter Demo Home Page, counter 0, add button; no blank/error screen",
+  "screenshotSHA256": "e732ce8f9e06ecae35daa8f5f4e74523c47effaa803f16042456574352b0176f",
+  "trackedSourceAudit": "source-audits/baseline-minimal-ios15-after-android-build.json",
+  "globalAndroidStatChanges": [],
+  "exception": "Emulator startup automatically echoed existing public key into first raw log; two rows redacted, private key/token not output. Future launcher redacts before persistence.",
+  "privateKeyOrTokenContentOrHashRead": false,
+  "existingPublicKeyExplicitlyRead": false
+}

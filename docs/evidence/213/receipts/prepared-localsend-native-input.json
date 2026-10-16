@@ -1,0 +1,607 @@
+{
+  "parentSourceSHA": "c1ce322fb3acf08e44f329b8b7208b8b0d91e244",
+  "trackedCount": 1030,
+  "changedTrackedFiles": [
+    "app/ios/Podfile",
+    "app/ios/Podfile.lock",
+    "app/ios/Runner.xcodeproj/project.pbxproj"
+  ],
+  "unexpectedRawChanges": [],
+  "pubspecLockSHA256": "d14333a18b86726a4d8cc792bd3d65482d8e55e53f5895a3bd21d0cdcf7f5b3a",
+  "podfileLockSHA256": "5595ddad3deb164f454565e62ef48b3fae1e4d0b951116781f0246abe810825f",
+  "patchSHA256": "743a7c9f8ce9bd98b7ccc68a767b280bb393e2f6ee7e380f4e2782a53567d358",
+  "resolvedPods": {
+    "PODS": [
+      {
+        "connectivity_plus (0.0.1)": [
+          "Flutter"
+        ]
+      },
+      {
+        "device_info_plus (0.0.1)": [
+          "Flutter"
+        ]
+      },
+      {
+        "DKImagePickerController/Core (4.3.9)": [
+          "DKImagePickerController/ImageDataManager",
+          "DKImagePickerController/Resource"
+        ]
+      },
+      "DKImagePickerController/ImageDataManager (4.3.9)",
+      {
+        "DKImagePickerController/PhotoGallery (4.3.9)": [
+          "DKImagePickerController/Core",
+          "DKPhotoGallery"
+        ]
+      },
+      "DKImagePickerController/Resource (4.3.9)",
+      {
+        "DKPhotoGallery (0.0.19)": [
+          "DKPhotoGallery/Core (= 0.0.19)",
+          "DKPhotoGallery/Model (= 0.0.19)",
+          "DKPhotoGallery/Preview (= 0.0.19)",
+          "DKPhotoGallery/Resource (= 0.0.19)",
+          "SDWebImage",
+          "SwiftyGif"
+        ]
+      },
+      {
+        "DKPhotoGallery/Core (0.0.19)": [
+          "DKPhotoGallery/Model",
+          "DKPhotoGallery/Preview",
+          "SDWebImage",
+          "SwiftyGif"
+        ]
+      },
+      {
+        "DKPhotoGallery/Model (0.0.19)": [
+          "SDWebImage",
+          "SwiftyGif"
+        ]
+      },
+      {
+        "DKPhotoGallery/Preview (0.0.19)": [
+          "DKPhotoGallery/Model",
+          "DKPhotoGallery/Resource",
+          "SDWebImage",
+          "SwiftyGif"
+        ]
+      },
+      {
+        "DKPhotoGallery/Resource (0.0.19)": [
+          "SDWebImage",
+          "SwiftyGif"
+        ]
+      },
+      {
+        "file_picker (0.0.1)": [
+          "DKImagePickerController/PhotoGallery",
+          "Flutter"
+        ]
+      },
+      {
+        "file_selector_ios (0.0.1)": [
+          "Flutter"
+        ]
+      },
+      "Flutter (1.0.0)",
+      {
+        "flutter_foreground_task (0.0.1)": [
+          "Flutter"
+        ]
+      },
+      {
+        "gal (1.0.0)": [
+          "Flutter",
+          "FlutterMacOS"
+        ]
+      },
+      {
+        "image_picker_ios (0.0.1)": [
+          "Flutter"
+        ]
+      },
+      {
+        "in_app_purchase_storekit (0.0.1)": [
+          "Flutter",
+          "FlutterMacOS"
+        ]
+      },
+      {
+        "network_info_plus (0.0.1)": [
+          "Flutter"
+        ]
+      },
+      {
+        "open_file_ios (1.0.3)": [
+          "Flutter"
+        ]
+      },
+      {
+        "package_info_plus (0.4.5)": [
+          "Flutter"
+        ]
+      },
+      {
+        "pasteboard (0.0.1)": [
+          "Flutter"
+        ]
+      },
+      {
+        "permission_handler_apple (9.4.8)": [
+          "Flutter"
+        ]
+      },
+      {
+        "photo_manager (3.12.0)": [
+          "Flutter",
+          "FlutterMacOS"
+        ]
+      },
+      {
+        "rust_lib_localsend_app (0.0.1)": [
+          "Flutter"
+        ]
+      },
+      {
+        "SDWebImage (5.21.7)": [
+          "SDWebImage/Core (= 5.21.7)"
+        ]
+      },
+      "SDWebImage/Core (5.21.7)",
+      {
+        "share_handler_ios (0.0.14)": [
+          "Flutter",
+          "share_handler_ios/share_handler_ios_models (= 0.0.14)",
+          "share_handler_ios_models"
+        ]
+      },
+      {
+        "share_handler_ios/share_handler_ios_models (0.0.14)": [
+          "Flutter",
+          "share_handler_ios_models"
+        ]
+      },
+      "share_handler_ios_models (0.0.9)",
+      {
+        "shared_preferences_foundation (0.0.1)": [
+          "Flutter",
+          "FlutterMacOS"
+        ]
+      },
+      "SwiftyGif (5.4.5)",
+      {
+        "system_date_time_format (1.4.0)": [
+          "Flutter"
+        ]
+      },
+      {
+        "system_settings_2 (3.0.0)": [
+          "Flutter"
+        ]
+      },
+      {
+        "uri_content (0.0.1)": [
+          "Flutter"
+        ]
+      },
+      {
+        "url_launcher_ios (0.0.1)": [
+          "Flutter"
+        ]
+      },
+      {
+        "video_player_avfoundation (0.0.1)": [
+          "Flutter",
+          "FlutterMacOS"
+        ]
+      },
+      {
+        "wakelock_plus (0.0.1)": [
+          "Flutter"
+        ]
+      }
+    ],
+    "DEPENDENCIES": [
+      "connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)",
+      "device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)",
+      "file_picker (from `.symlinks/plugins/file_picker/ios`)",
+      "file_selector_ios (from `.symlinks/plugins/file_selector_ios/ios`)",
+      "Flutter (from `Flutter`)",
+      "flutter_foreground_task (from `.symlinks/plugins/flutter_foreground_task/ios`)",
+      "gal (from `.symlinks/plugins/gal/darwin`)",
+      "image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)",
+      "in_app_purchase_storekit (from `.symlinks/plugins/in_app_purchase_storekit/darwin`)",
+      "network_info_plus (from `.symlinks/plugins/network_info_plus/ios`)",
+      "open_file_ios (from `.symlinks/plugins/open_file_ios/ios`)",
+      "package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)",
+      "pasteboard (from `.symlinks/plugins/pasteboard/ios`)",
+      "permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)",
+      "photo_manager (from `.symlinks/plugins/photo_manager/darwin`)",
+      "rust_lib_localsend_app (from `.symlinks/plugins/rust_lib_localsend_app/ios`)",
+      "share_handler_ios (from `.symlinks/plugins/share_handler_ios/ios`)",
+      "share_handler_ios_models (from `.symlinks/plugins/share_handler_ios/ios/Models`)",
+      "shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)",
+      "system_date_time_format (from `.symlinks/plugins/system_date_time_format/ios`)",
+      "system_settings_2 (from `.symlinks/plugins/system_settings_2/ios`)",
+      "uri_content (from `.symlinks/plugins/uri_content/ios`)",
+      "url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)",
+      "video_player_avfoundation (from `.symlinks/plugins/video_player_avfoundation/darwin`)",
+      "wakelock_plus (from `.symlinks/plugins/wakelock_plus/ios`)"
+    ],
+    "SPEC REPOS": {
+      "trunk": [
+        "DKImagePickerController",
+        "DKPhotoGallery",
+        "SDWebImage",
+        "SwiftyGif"
+      ]
+    },
+    "EXTERNAL SOURCES": {
+      "connectivity_plus": {
+        "path": ".symlinks/plugins/connectivity_plus/ios"
+      },
+      "device_info_plus": {
+        "path": ".symlinks/plugins/device_info_plus/ios"
+      },
+      "file_picker": {
+        "path": ".symlinks/plugins/file_picker/ios"
+      },
+      "file_selector_ios": {
+        "path": ".symlinks/plugins/file_selector_ios/ios"
+      },
+      "Flutter": {
+        "path": "Flutter"
+      },
+      "flutter_foreground_task": {
+        "path": ".symlinks/plugins/flutter_foreground_task/ios"
+      },
+      "gal": {
+        "path": ".symlinks/plugins/gal/darwin"
+      },
+      "image_picker_ios": {
+        "path": ".symlinks/plugins/image_picker_ios/ios"
+      },
+      "in_app_purchase_storekit": {
+        "path": ".symlinks/plugins/in_app_purchase_storekit/darwin"
+      },
+      "network_info_plus": {
+        "path": ".symlinks/plugins/network_info_plus/ios"
+      },
+      "open_file_ios": {
+        "path": ".symlinks/plugins/open_file_ios/ios"
+      },
+      "package_info_plus": {
+        "path": ".symlinks/plugins/package_info_plus/ios"
+      },
+      "pasteboard": {
+        "path": ".symlinks/plugins/pasteboard/ios"
+      },
+      "permission_handler_apple": {
+        "path": ".symlinks/plugins/permission_handler_apple/ios"
+      },
+      "photo_manager": {
+        "path": ".symlinks/plugins/photo_manager/darwin"
+      },
+      "rust_lib_localsend_app": {
+        "path": ".symlinks/plugins/rust_lib_localsend_app/ios"
+      },
+      "share_handler_ios": {
+        "path": ".symlinks/plugins/share_handler_ios/ios"
+      },
+      "share_handler_ios_models": {
+        "path": ".symlinks/plugins/share_handler_ios/ios/Models"
+      },
+      "shared_preferences_foundation": {
+        "path": ".symlinks/plugins/shared_preferences_foundation/darwin"
+      },
+      "system_date_time_format": {
+        "path": ".symlinks/plugins/system_date_time_format/ios"
+      },
+      "system_settings_2": {
+        "path": ".symlinks/plugins/system_settings_2/ios"
+      },
+      "uri_content": {
+        "path": ".symlinks/plugins/uri_content/ios"
+      },
+      "url_launcher_ios": {
+        "path": ".symlinks/plugins/url_launcher_ios/ios"
+      },
+      "video_player_avfoundation": {
+        "path": ".symlinks/plugins/video_player_avfoundation/darwin"
+      },
+      "wakelock_plus": {
+        "path": ".symlinks/plugins/wakelock_plus/ios"
+      }
+    },
+    "SPEC CHECKSUMS": {
+      "connectivity_plus": "2a701ffec2c0ae28a48cf7540e279787e77c447d",
+      "device_info_plus": "bf2e3232933866d73fe290f2942f2156cdd10342",
+      "DKImagePickerController": "946cec48c7873164274ecc4624d19e3da4c1ef3c",
+      "DKPhotoGallery": "b3834fecb755ee09a593d7c9e389d8b5d6deed60",
+      "file_picker": "b159e0c068aef54932bb15dc9fd1571818edaf49",
+      "file_selector_ios": "80c12e90ad3f2045ed6819d03742f1a4c5ec3f93",
+      "Flutter": "cabc95a1d2626b1b06e7179b784ebcf0c0cde467",
+      "flutter_foreground_task": "21ef182ab0a29a3005cc72cd70e5f45cb7f7f817",
+      "gal": "6a522c75909f1244732d4596d11d6a2f86ff37a5",
+      "image_picker_ios": "4f2f91b01abdb52842a8e277617df877e40f905b",
+      "in_app_purchase_storekit": "2342c0a5da86593124d08dd13d920f39a52b273a",
+      "network_info_plus": "6613d9d7cdeb0e6f366ed4dbe4b3c51c52d567a9",
+      "open_file_ios": "04cd9d58ba71ec67c8aa56dbf5e0f3ae755b19ba",
+      "package_info_plus": "c0502532a26c7662a62a356cebe2692ec5fe4ec4",
+      "pasteboard": "982969ebaa7c78af3e6cc7761e8f5e77565d9ce0",
+      "permission_handler_apple": "ee2fe0fd04551b304eb002714ff067c371c822ed",
+      "photo_manager": "3d7c9d321e7bfeb8630ddcbf02cd3f0ff82deaaf",
+      "rust_lib_localsend_app": "7613d2267cc6c941255182b0c88dac5f638f94ed",
+      "SDWebImage": "e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf",
+      "share_handler_ios": "6dd3a4ac5ca0d955274aec712ba0ecdcaf583e7c",
+      "share_handler_ios_models": "fc638c9b4330dc7f082586c92aee9dfa0b87b871",
+      "shared_preferences_foundation": "5086985c1d43c5ba4d5e69a4e8083a389e2909e6",
+      "SwiftyGif": "706c60cf65fa2bc5ee0313beece843c8eb8194d4",
+      "system_date_time_format": "afd46337f8c7a4b768e625623b103d4e1afcf725",
+      "system_settings_2": "ea074ae2afcb3f02edae89acb53db07acd9b5aa5",
+      "uri_content": "ba6d4c4d40eacdfaaad9db7100a725b48f62b980",
+      "url_launcher_ios": "bb13df5870e8c4234ca12609d04010a21be43dfa",
+      "video_player_avfoundation": "e54d03b3b19f64f2c557354f72ce538387541ba6",
+      "wakelock_plus": "76957ab028e12bfa4e66813c99e46637f367fc7e"
+    },
+    "PODFILE CHECKSUM": "e9e5397e09c6eaef2f7f1b6c4c7cf1b58cc47162",
+    "COCOAPODS": "1.16.2"
+  },
+  "localPodspecs": [
+    {
+      "name": "Flutter",
+      "version": "1.0.0",
+      "source": {
+        "git": "https://github.com/flutter/engine",
+        "tag": "1.0.0"
+      },
+      "path": "app/ios/Pods/Local Podspecs/Flutter.podspec.json",
+      "rawSHA256": "3e5637c5269364f6f8e51d05b1cfeaaeb47f5f688e0af111212043261a2ceadd",
+      "lockSpecChecksum": "cabc95a1d2626b1b06e7179b784ebcf0c0cde467"
+    },
+    {
+      "name": "connectivity_plus",
+      "version": "0.0.1",
+      "source": {
+        "http": "https://github.com/fluttercommunity/plus_plugins/tree/main/packages/connectivity_plus"
+      },
+      "path": "app/ios/Pods/Local Podspecs/connectivity_plus.podspec.json",
+      "rawSHA256": "894b7a6004fb3a1c8c48c0ee8e5effd8abffad6de6344b08aa0ea31ac072d253",
+      "lockSpecChecksum": "2a701ffec2c0ae28a48cf7540e279787e77c447d"
+    },
+    {
+      "name": "device_info_plus",
+      "version": "0.0.1",
+      "source": {
+        "http": "https://github.com/fluttercommunity/plus_plugins/tree/main/packages/device_info_plus"
+      },
+      "path": "app/ios/Pods/Local Podspecs/device_info_plus.podspec.json",
+      "rawSHA256": "fa5051adebd07ae749eb0d254c2a2b22be28d6ff5fbc3fd3977055dc6a450063",
+      "lockSpecChecksum": "bf2e3232933866d73fe290f2942f2156cdd10342"
+    },
+    {
+      "name": "file_picker",
+      "version": "0.0.1",
+      "source": {
+        "path": "."
+      },
+      "path": "app/ios/Pods/Local Podspecs/file_picker.podspec.json",
+      "rawSHA256": "144d6c03291b01098028762020f5ee888cf52c75deadf5a84e783f0ff25ec9d3",
+      "lockSpecChecksum": "b159e0c068aef54932bb15dc9fd1571818edaf49"
+    },
+    {
+      "name": "file_selector_ios",
+      "version": "0.0.1",
+      "source": {
+        "http": "https://github.com/flutter/packages/tree/main/packages/file_selector/file_selector_ios"
+      },
+      "path": "app/ios/Pods/Local Podspecs/file_selector_ios.podspec.json",
+      "rawSHA256": "b21fe01b8faa163a5e969389622b1eb0ff77c1bd13d87c3cc2d83202e11cb07d",
+      "lockSpecChecksum": "80c12e90ad3f2045ed6819d03742f1a4c5ec3f93"
+    },
+    {
+      "name": "flutter_foreground_task",
+      "version": "0.0.1",
+      "source": {
+        "path": "."
+      },
+      "path": "app/ios/Pods/Local Podspecs/flutter_foreground_task.podspec.json",
+      "rawSHA256": "225e587a0f9d6541c55220125a3c6451df2cf7dd27f9cc4af818e271d6b57609",
+      "lockSpecChecksum": "21ef182ab0a29a3005cc72cd70e5f45cb7f7f817"
+    },
+    {
+      "name": "gal",
+      "version": "1.0.0",
+      "source": {
+        "http": "https://github.com/natsuk4ze/gal"
+      },
+      "path": "app/ios/Pods/Local Podspecs/gal.podspec.json",
+      "rawSHA256": "e31128333cc9a4762a80f04d8f3796758e450efa8d401531963a3c61b02dbea8",
+      "lockSpecChecksum": "6a522c75909f1244732d4596d11d6a2f86ff37a5"
+    },
+    {
+      "name": "image_picker_ios",
+      "version": "0.0.1",
+      "source": {
+        "http": "https://github.com/flutter/packages/tree/main/packages/image_picker_ios"
+      },
+      "path": "app/ios/Pods/Local Podspecs/image_picker_ios.podspec.json",
+      "rawSHA256": "b4fb5c1b7c7dd4121d906d994b49c3072f8651d662b51ba2105e30cb889b8417",
+      "lockSpecChecksum": "4f2f91b01abdb52842a8e277617df877e40f905b"
+    },
+    {
+      "name": "in_app_purchase_storekit",
+      "version": "0.0.1",
+      "source": {
+        "http": "https://github.com/flutter/packages/tree/main/packages/in_app_purchase/in_app_purchase_storekit"
+      },
+      "path": "app/ios/Pods/Local Podspecs/in_app_purchase_storekit.podspec.json",
+      "rawSHA256": "7b74675fbed5cdcc647c00ff99f65b981c156aabb9f127145a30b1c86f6ceee4",
+      "lockSpecChecksum": "2342c0a5da86593124d08dd13d920f39a52b273a"
+    },
+    {
+      "name": "network_info_plus",
+      "version": "0.0.1",
+      "source": {
+        "http": "https://github.com/fluttercommunity/plus_plugins/tree/main/packages/network_info_plus"
+      },
+      "path": "app/ios/Pods/Local Podspecs/network_info_plus.podspec.json",
+      "rawSHA256": "bab697222e6a3041ced278d6df305de6da5da7bbb1f538305f0cdc03dd370cfb",
+      "lockSpecChecksum": "6613d9d7cdeb0e6f366ed4dbe4b3c51c52d567a9"
+    },
+    {
+      "name": "open_file_ios",
+      "version": "1.0.3",
+      "source": {
+        "path": "."
+      },
+      "path": "app/ios/Pods/Local Podspecs/open_file_ios.podspec.json",
+      "rawSHA256": "dc554743facfaad48a082f2b43a475668f29de361539cfd5b268f68b646f94cf",
+      "lockSpecChecksum": "04cd9d58ba71ec67c8aa56dbf5e0f3ae755b19ba"
+    },
+    {
+      "name": "package_info_plus",
+      "version": "0.4.5",
+      "source": {
+        "http": "https://github.com/fluttercommunity/plus_plugins/tree/main/packages/sensors_plus"
+      },
+      "path": "app/ios/Pods/Local Podspecs/package_info_plus.podspec.json",
+      "rawSHA256": "b45ec3e0279518deb6f611c1615215f8332ddf11979dc7d1f533b568a5beacb6",
+      "lockSpecChecksum": "c0502532a26c7662a62a356cebe2692ec5fe4ec4"
+    },
+    {
+      "name": "pasteboard",
+      "version": "0.0.1",
+      "source": {
+        "path": "."
+      },
+      "path": "app/ios/Pods/Local Podspecs/pasteboard.podspec.json",
+      "rawSHA256": "001bc53d65bf1db5564239e6d45ee23677fb227cb2ed7c2d4823112a7268ec94",
+      "lockSpecChecksum": "982969ebaa7c78af3e6cc7761e8f5e77565d9ce0"
+    },
+    {
+      "name": "permission_handler_apple",
+      "version": "9.4.8",
+      "source": {
+        "path": "."
+      },
+      "path": "app/ios/Pods/Local Podspecs/permission_handler_apple.podspec.json",
+      "rawSHA256": "3d0a3c868ae61e6f61dbe0d72fb4ef30fbf4e6ce90e1dd918ae6685100a3cd61",
+      "lockSpecChecksum": "ee2fe0fd04551b304eb002714ff067c371c822ed"
+    },
+    {
+      "name": "photo_manager",
+      "version": "3.12.0",
+      "source": {
+        "http": "https://github.com/fluttercandies/flutter_photo_manager/tree/main/ios"
+      },
+      "path": "app/ios/Pods/Local Podspecs/photo_manager.podspec.json",
+      "rawSHA256": "e91a7cb9856b1eb79595d1dff7ae7ef4fc95e801584ff255d9e58a6d6ce6b105",
+      "lockSpecChecksum": "3d7c9d321e7bfeb8630ddcbf02cd3f0ff82deaaf"
+    },
+    {
+      "name": "rust_lib_localsend_app",
+      "version": "0.0.1",
+      "source": {
+        "path": "."
+      },
+      "path": "app/ios/Pods/Local Podspecs/rust_lib_localsend_app.podspec.json",
+      "rawSHA256": "b098a8ebb11fda4a20382377c1bc67bb4f3faceacbbba2bca0de7e4e3901d359",
+      "lockSpecChecksum": "7613d2267cc6c941255182b0c88dac5f638f94ed"
+    },
+    {
+      "name": "share_handler_ios",
+      "version": "0.0.14",
+      "source": {
+        "path": "."
+      },
+      "path": "app/ios/Pods/Local Podspecs/share_handler_ios.podspec.json",
+      "rawSHA256": "39a0d345a8e6c14943644c437c800d60a432b67d08e356af543765bc21951de6",
+      "lockSpecChecksum": "6dd3a4ac5ca0d955274aec712ba0ecdcaf583e7c"
+    },
+    {
+      "name": "share_handler_ios_models",
+      "version": "0.0.9",
+      "source": {
+        "path": "."
+      },
+      "path": "app/ios/Pods/Local Podspecs/share_handler_ios_models.podspec.json",
+      "rawSHA256": "9875960fa5d754f4cb3d7a0cf19094fac7fe73fa3d85b8cddcd8b6b4c769db84",
+      "lockSpecChecksum": "fc638c9b4330dc7f082586c92aee9dfa0b87b871"
+    },
+    {
+      "name": "shared_preferences_foundation",
+      "version": "0.0.1",
+      "source": {
+        "http": "https://github.com/flutter/packages/tree/main/packages/shared_preferences/shared_preferences_foundation"
+      },
+      "path": "app/ios/Pods/Local Podspecs/shared_preferences_foundation.podspec.json",
+      "rawSHA256": "f8bdd9f404d1e95275c561e2aeeaf2fc1b1d2aab7e8f73f08c1da225f23ecf93",
+      "lockSpecChecksum": "5086985c1d43c5ba4d5e69a4e8083a389e2909e6"
+    },
+    {
+      "name": "system_date_time_format",
+      "version": "1.4.0",
+      "source": {
+        "path": "."
+      },
+      "path": "app/ios/Pods/Local Podspecs/system_date_time_format.podspec.json",
+      "rawSHA256": "867cd44981655d6d81f4b583cacc7dbc13b3f96cbe203ed4da54a5e28a3cbead",
+      "lockSpecChecksum": "afd46337f8c7a4b768e625623b103d4e1afcf725"
+    },
+    {
+      "name": "system_settings_2",
+      "version": "3.0.0",
+      "source": {
+        "git": "https://github.com/timmaffett/system_settings_2.git",
+        "tag": "3.0.0"
+      },
+      "path": "app/ios/Pods/Local Podspecs/system_settings_2.podspec.json",
+      "rawSHA256": "8a619fcb4f7dc876561e0a18b2357c087f4c276a1472e581d52e7182a979d35e",
+      "lockSpecChecksum": "ea074ae2afcb3f02edae89acb53db07acd9b5aa5"
+    },
+    {
+      "name": "uri_content",
+      "version": "0.0.1",
+      "source": {
+        "path": "."
+      },
+      "path": "app/ios/Pods/Local Podspecs/uri_content.podspec.json",
+      "rawSHA256": "618f566b35f4c3ae46114bc0cf052ba8199cc79ad5478faf30a191610123b27f",
+      "lockSpecChecksum": "ba6d4c4d40eacdfaaad9db7100a725b48f62b980"
+    },
+    {
+      "name": "url_launcher_ios",
+      "version": "0.0.1",
+      "source": {
+        "http": "https://github.com/flutter/packages/tree/main/packages/url_launcher/url_launcher_ios"
+      },
+      "path": "app/ios/Pods/Local Podspecs/url_launcher_ios.podspec.json",
+      "rawSHA256": "fb094339d2dbde34d9f190906393938ab2ee7c13ec9705fd691736ff58970a17",
+      "lockSpecChecksum": "bb13df5870e8c4234ca12609d04010a21be43dfa"
+    },
+    {
+      "name": "video_player_avfoundation",
+      "version": "0.0.1",
+      "source": {
+        "http": "https://github.com/flutter/packages/tree/main/packages/video_player/video_player_avfoundation"
+      },
+      "path": "app/ios/Pods/Local Podspecs/video_player_avfoundation.podspec.json",
+      "rawSHA256": "79e15a246885058e3ebb8530d6ee6fe97b10a327e9e7111f637fdf6099162e37",
+      "lockSpecChecksum": "e54d03b3b19f64f2c557354f72ce538387541ba6"
+    },
+    {
+      "name": "wakelock_plus",
+      "version": "0.0.1",
+      "source": {
+        "path": "."
+      },
+      "path": "app/ios/Pods/Local Podspecs/wakelock_plus.podspec.json",
+      "rawSHA256": "569d7c621f1e7324aba04651c4c8462b690aba612e508063b983892afec43d92",
+      "lockSpecChecksum": "76957ab028e12bfa4e66813c99e46637f367fc7e"
+    }
+  ],
+  "checksumMeaning": "SPEC CHECKSUMS are CocoaPods spec SHA1 values; rawSHA256 hashes retained local podspec JSON. These are not raw upstream download archive checksums."
+}
