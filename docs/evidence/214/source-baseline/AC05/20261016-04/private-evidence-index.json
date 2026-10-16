@@ -1,0 +1,593 @@
+{
+  "access": "Owner-controlled host-local evidence. Exact paths shared privately with coordinator; excluded from public evidence.",
+  "excludedMaterial": [
+    "MAS receipt bytes/decoded content/hash",
+    "user credentials or signing keys",
+    "raw global process listings and hashes",
+    "raw complete private paths/log content"
+  ],
+  "firstPhaseIndex": {
+    "SHA256": "0bcde703bc2aaf642c1cc3436b953d91d37b8d206d6fc4ef5bbc7a51f1c19af5",
+    "fileCount": 187
+  },
+  "followupIndex": {
+    "SHA256": "e7aec75727285d5c873542b9200f3b9a3178e7e222173732fbad2e07726b30fa",
+    "fileCount": 50
+  },
+  "limitation": "Digests bind retained private evidence; they do not prove original XIP/PKG/catalog equality or complete secret audit.",
+  "operator": "Codex #214 context",
+  "owner": "repository maintainer",
+  "privacyReview": "Author directly opened4 new PNG originals. They contain sample app screens and an OS notification dialog, with no personal account content. Public PNGs are exact bytecopies. Public JSON/logs use path/device aliases. SecretKey output only has recorded hashes; no contents or credential values.",
+  "schemaVersion": 1,
+  "selectedEvidence": [
+    {
+      "SHA256": "93ad655b95b357fa489c92d49fa0ad0e7e6a55ba4cf70c8be25df31f9f1eac70",
+      "bytes": 21840,
+      "name": "state/apple-distribution-prepin-v1.json",
+      "storageAlias": "PRIVATE_APPLE_PREPIN"
+    },
+    {
+      "SHA256": "b83ed17bdf49c5c5ea54f24a85271c0fc0db8488c6a64f6ba6a5a14900b8b51f",
+      "bytes": 976,
+      "name": "state/xcode-fulltree-summary.json",
+      "storageAlias": "PRIVATE_APPLE_PREPIN"
+    },
+    {
+      "SHA256": "ad5a2c2e087809871751a2fa34d7ffa1ab5cd586843d60d79176953a8e0c34fd",
+      "bytes": 250,
+      "name": "state/xcode-codesign-strict.json",
+      "storageAlias": "PRIVATE_APPLE_PREPIN"
+    },
+    {
+      "SHA256": "ba0c6e73a3ff93d278a69c8a876adf64da04ae710aebc2992c78f9c49cc2a38e",
+      "bytes": 283,
+      "name": "state/xcode-spctl-assess.json",
+      "storageAlias": "PRIVATE_APPLE_PREPIN"
+    },
+    {
+      "SHA256": "c1d7196b02c4cdd8ada8d4f97f4f695d04a60e6f33d512c8ba6b36f4c0b508a6",
+      "bytes": 681,
+      "name": "state/xcode-seal-comparison.json",
+      "storageAlias": "PRIVATE_APPLE_PREPIN"
+    },
+    {
+      "SHA256": "fd4d11563ea7d35564ac5dd2d87f9f7933bd3d5b7ecf812520e5c9c6bf612470",
+      "bytes": 1215,
+      "name": "state/xcode-omitted-package-metadata.json",
+      "storageAlias": "PRIVATE_APPLE_PREPIN"
+    },
+    {
+      "SHA256": "059742afa20c757aeefb73f4003e78d5bb1ff93e1825150b5ddcf4a2854d41bc",
+      "bytes": 655,
+      "name": "state/runtime-host-dmg-hash.json",
+      "storageAlias": "PRIVATE_APPLE_PREPIN"
+    },
+    {
+      "SHA256": "21b1d82200d6f52a181c9ba52cc07e1986cb8f3cdb317f36d286025cefbef65d",
+      "bytes": 372,
+      "name": "state/runtime-codesign-verify.json",
+      "storageAlias": "PRIVATE_APPLE_PREPIN"
+    },
+    {
+      "SHA256": "ad4f8aa7b53fdee7d7b9b352cdb8a852a997fe80656ed32ef676150f826c2b90",
+      "bytes": 1425,
+      "name": "state/runtime-existing-image-binding.json",
+      "storageAlias": "PRIVATE_APPLE_PREPIN"
+    },
+    {
+      "SHA256": "fd20e994a2b3deb9e7d1dd285d96a0eed6b0194139e79c794790398b7d2bcdd4",
+      "bytes": 3246,
+      "name": "state/runtime-binding-aftercheck.json",
+      "storageAlias": "PRIVATE_APPLE_PREPIN"
+    },
+    {
+      "SHA256": "b4600d75acffce7d90bfc9238f1188bcfe84bb38997399be579279813fc2293f",
+      "bytes": 1889,
+      "name": "state/runtime-core-identity.json",
+      "storageAlias": "PRIVATE_APPLE_PREPIN"
+    },
+    {
+      "SHA256": "c7c2f1444967e05585cde3bca60d08fd997cf035d7b1c36f79305d78e29d61c3",
+      "bytes": 1038,
+      "name": "state/runtime-payload-metadata-final-summary.json",
+      "storageAlias": "PRIVATE_APPLE_PREPIN"
+    },
+    {
+      "SHA256": "708fa006197b44203a40cf261eff4162c5be77b6592bb6c6593a986b88859751",
+      "bytes": 6254,
+      "name": "state/pretuple.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "0d40a41a3f60d116115de3250ec95e7fd9b5237df03630d8199044c4bcedab20",
+      "bytes": 4131,
+      "name": "state/netnewswire-pretuple-v2.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "332ed9152cf6b0ca8602bde9f36f79cdfb7a0b7f61373ffb41b9421184073d10",
+      "bytes": 7288,
+      "name": "state/food-truck-results.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "45bd5e69a72d8b3126d0a72b17651953ee960a28cf2be31a9beed43e4f58ecce",
+      "bytes": 1453,
+      "name": "state/netnewswire-first-build-preparation-failure.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "ef13151178671f504b39028e1bf5c0aaf571b8cf29a3ebd0a6b3a4fecbc04ca1",
+      "bytes": 299,
+      "name": "state/failed-first-build-0-Secrets.SwiftFileList",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "9430d4782d1e08bebdb2be51b4632a789409e0c8107c9364897cca6db35776a6",
+      "bytes": 2583,
+      "name": "state/netnewswire-v2-manual-preparation.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "43a30b596fefb4f7dbb9e7e3ae70f0c8173a87aacba0eaa49f8e11754008ab4d",
+      "bytes": 698,
+      "name": "state/netnewswire-v2-graph-observation.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "c689c8259b45b57f0308ff0d988c28ad595aad1419d544c52a2362a7d8736a5e",
+      "bytes": 7178,
+      "name": "state/netnewswire-v2-results.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "a220d52d04b993f0b257f8315f46f532a22fa06a3c8c78c6bb3c9edf35e37a88",
+      "bytes": 10807,
+      "name": "state/netnewswire-v3-observation.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "469594f03d2e67a2c4799d1f44666b1be1d4c167c70affbbe18655dd41602b83",
+      "bytes": 2082,
+      "name": "state/root-first-screen-visual-review.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "41a6ccebf9518bf32afaa87944161f2a75dd5f9277fabc3411bb0a7561efc321",
+      "bytes": 1280,
+      "name": "state/preservation-and-cleanup.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "d9d74149db6c6ef24806305a762a78b29650dab128bb9547edd3c022dd852b41",
+      "bytes": 1867,
+      "name": "state/source-after.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "5b47b2dff2dc96358de6d90df1a4691c75189406f9f7e54b241510a3aaa7dd0c",
+      "bytes": 1990,
+      "name": "state/post-audit.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "66ce12164a2993aa78897145e5ec1d3a0a2767a3ee5ee5f023b4271bd4d7849c",
+      "bytes": 1963,
+      "name": "state/owned-spm-preparation.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "b12f23b37e8c268e92171dd579f85b75e2dc7de0e855c8a3446baff4e431b08c",
+      "bytes": 2885,
+      "name": "state/fresh-runstir-preparation-handoff.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "638af5a9ef7938efb61251d4852a8d62449e1713a62b6717efaf02607e066c9a",
+      "bytes": 1003,
+      "name": "state/food-truck-screenshot-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "4472f1e32b46f13d2bfe0bb2a9b62c51a3a5e65a353e386ae043e062e776c2c1",
+      "bytes": 924,
+      "name": "state/food-truck-screenshot-stdout-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "528baa0661b20b3bb8f5657e295bbfcc40af46fdbfced0847b298bec77d7df19",
+      "bytes": 591,
+      "name": "state/capture-output-correction.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "f53c3554f559e74bf0a4384c4146fc9ada3d583251a16368767e3f4dded84d0e",
+      "bytes": 6323,
+      "name": "manifests/food-truck-built-bundle.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "5c0b3a9a335a37f4eda99e6304c5b6d278da8e48f8d633dfd1ab244bde0d2a32",
+      "bytes": 6323,
+      "name": "manifests/food-truck-installed-bundle.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "f48f6c30313717d20e6921b7d19e1da6d2b75dd7a6e55c8240e66b61bebefe86",
+      "bytes": 35636,
+      "name": "manifests/netnewswire-v2-built-bundle.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "ce7355a4b7509a551a3e8db0917df0ce6c35874197ac77b6726608f8934780bc",
+      "bytes": 35636,
+      "name": "manifests/netnewswire-v2-installed-bundle.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "0bcde703bc2aaf642c1cc3436b953d91d37b8d206d6fc4ef5bbc7a51f1c19af5",
+      "bytes": 34717,
+      "name": "private-evidence-index.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "b73279e286ba69ad55b1c8a8cfa4f49a3c88cf31400a4bb356e8e2f87bf396a7",
+      "bytes": 672,
+      "name": "state/final-selfchecks.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "c0fabc4ec681c5b87b9fd3b49c0044305b8bf891354d42eece8e16d02700f877",
+      "bytes": 2409,
+      "name": "HANDOFF.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "d54ec2e313a08b239824ed5dce53dd116ce53539db28690edcd783c9752b6dc3",
+      "bytes": 1143,
+      "name": "state/input-tuple.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "99d3efcc4d722eb5ba01098389a1062118f21e2e31d079c0ac5eb492ea0949c9",
+      "bytes": 60344,
+      "name": "state/before-inventory.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "631c00e2258cf680837c30e164a22f9a5e818f0c4b6a344912e58e45390b487e",
+      "bytes": 60344,
+      "name": "state/after-inventory.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "e01fce16edf6e53c89eb059a0e12fc6994b231b90511b7fd1f79d3c92e420381",
+      "bytes": 703,
+      "name": "state/waiting-for-root-ui.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "3486ea5c60e1df8c19f6a236931aa1dd353d20c665accbc43f7874a3c3ac1415",
+      "bytes": 1365,
+      "name": "state/post-root-observation-capture.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "66cc91f98261e7287ec2f933a41b07bd80a1177d42e03a89484cf7a8b78cfeb5",
+      "bytes": 789,
+      "name": "state/root-ui-observation.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "78cfedbdb3f81b9cfeaad6c966b10b775684425fb04e0bc26a6169f1c8025feb",
+      "bytes": 800,
+      "name": "state/root-final-screen-review.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "a0f970d3323bd3fdfd25e5555521c11d15571134a8ec12547e148207419cc076",
+      "bytes": 713,
+      "name": "state/root-png-visual-review.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "c33dbb7e51ac529e8aa4110a81dee2fc2ba09b48f7afd1dadbe38bc48c603d13",
+      "bytes": 1000,
+      "name": "state/root-device-hub-restoration.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "7eff5efca19d6003a9854f6b1b479493737aeea90e12e30a24a61d7479d393e7",
+      "bytes": 100,
+      "name": "state/own-app-terminated.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "282390d82ce706037399dc3b45629f047420e327dc26aa8ebd58c120d2f0da5a",
+      "bytes": 1617,
+      "name": "state/cleanup-and-preservation.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "c534a5286c83ceb07f294b24d788dc2674444775a89a5f25864f4c825686dcfc",
+      "bytes": 7980,
+      "name": "state/source-and-artifact-audit.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "9f75beae34b5d70a9268639d318fb3e83df5afebff6c2e1b1aeb49dd1aa7d8e3",
+      "bytes": 5224,
+      "name": "state/summary.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "1306da94b2ed1b9235b88fd7727759aaa52ced5bd86b491d8d191441e6cab6cf",
+      "bytes": 475,
+      "name": "state/selfchecks.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "e7aec75727285d5c873542b9200f3b9a3178e7e222173732fbad2e07726b30fa",
+      "bytes": 8757,
+      "name": "private-evidence-index.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "ff3de46dc43649a44798c62eb87c848f7fffe68caf00b810511b82e1fa8f2072",
+      "bytes": 1767,
+      "name": "HANDOFF.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "6237133062ff4746fd0e6769578d59eff9df6e2e55d5d7d57f86478aa9755450",
+      "bytes": 867,
+      "name": "state/after-apps-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "e6a4a0c982814a092f5fd557d9e04b4bce7f5cabf12c13d4977f56fe26990944",
+      "bytes": 851,
+      "name": "state/after-devices-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "e9e22af21fb4ed69296b3985dea8f13d5eca79dbb35c3275b75ffbd14ca56723",
+      "bytes": 868,
+      "name": "state/before-apps-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "b0b35f0b9193663e1b8ae7ff562df716840127da666d2c6803f54195de99dec7",
+      "bytes": 851,
+      "name": "state/before-devices-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "f4ab78a72fc1c1ee11237b6f669c3e6b8cf02cfa937cf33c4f1fe952c8d238fe",
+      "bytes": 871,
+      "name": "state/boot-own-simulator-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "b2d3dcf4c77a406561d1668209d14b8717fdecbac7847f95683c9eb725aa57a9",
+      "bytes": 894,
+      "name": "state/bootstatus-own-simulator-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "6f09eceb3cf387626fea536ab1486bc228091101e433ac9c627c5043f228266c",
+      "bytes": 991,
+      "name": "state/create-own-simulator-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "5c6e49eeb3452b06651a9af0fba0f4627c224abd490ffc354ab20ba6c149c494",
+      "bytes": 1753,
+      "name": "state/food-truck-build-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "69caee69770d1bf663b8f323573c6e65df79d4d919b2ca55e2562d8e4ee84af0",
+      "bytes": 1024,
+      "name": "state/food-truck-install-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "c1d72500f3a1367b4ed0e8c75231ea53a559c5a5535953bfcebac192fe2fafe8",
+      "bytes": 954,
+      "name": "state/food-truck-installed-container-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "e3e1f766d7703ed520c658033989704aa209783eb589d6170e1cd85c2aac28cc",
+      "bytes": 919,
+      "name": "state/food-truck-launch-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "211d00ebff1e4cab7f9f24c63deb18f6fcef20b042b398aaf45a1000c31049b6",
+      "bytes": 1003,
+      "name": "state/food-truck-screenshot-staging-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "f354942dcb42cbc02c1cb8706c73f6a1e478cb462ed972367d09311021f1b376",
+      "bytes": 926,
+      "name": "state/food-truck-terminate-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "5f27d06d213a65531ecc7a2ba98410a7616bb055f1c5e79533fa24f63342bdba",
+      "bytes": 1729,
+      "name": "state/netnewswire-build-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "dd3628761d9275001d6d5ecf323ade1b24c96f4766b1477a82af31890ab8c403",
+      "bytes": 1664,
+      "name": "state/netnewswire-v2-build-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "3cb201023dee2189417bd06156746600b2e66b24589d064ebaedc0061d57bd68",
+      "bytes": 966,
+      "name": "state/netnewswire-v2-install-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "f9c52ef87fdc44f5ff3d31d42efdbfc4b22b5f01b22e3a6dd51ba706f24c8f3f",
+      "bytes": 868,
+      "name": "state/netnewswire-v2-installed-container-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "a0e7ab769995e4a0c829b621b3ae5202c9f4bb2d8044908f1bb03f90da5b9b27",
+      "bytes": 847,
+      "name": "state/netnewswire-v2-launch-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "40e1398b313fdc32aea7229374afd2e456a08258fe5f4e74518a1a6e25e936a8",
+      "bytes": 1399,
+      "name": "state/netnewswire-v2-manual-generator-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "05ede5860e388e4539b4deecd5d422afdce7f811961f4b8bb3d43c1a8ff311ac",
+      "bytes": 929,
+      "name": "state/netnewswire-v2-screenshot-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "08737e92e762040d1c9dc04a4989d319197f805d208e3ef892722a7505fec002",
+      "bytes": 850,
+      "name": "state/netnewswire-v2-terminate-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "cc6fe9d992295723c8a25b4e45b350fc89333cb24777e21609dc5db17b5c0591",
+      "bytes": 807,
+      "name": "state/netnewswire-v3-10s-screenshot-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "9bdd55de04383a400648e69d8f4b6905ce00b96ced355fb0765f596174a00fcd",
+      "bytes": 808,
+      "name": "state/netnewswire-v3-30s-screenshot-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "6897923fac71360335fc0af64842788e3ea7c077d954a37f2000b0718e67e027",
+      "bytes": 736,
+      "name": "state/netnewswire-v3-launch-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "05621369d6d31c822f49b2b1ce4618d7e6d1213d540f1fd4af03b83d07c161e0",
+      "bytes": 738,
+      "name": "state/netnewswire-v3-terminate-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "22876c44fd8c8bee5765406d8eb1f982056f3835b9316256a4914a04d16b8953",
+      "bytes": 879,
+      "name": "state/shutdown-own-simulator-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "3e5cef5f49d74bc7dfbe522e3fb2cce474fd7a8ae527cd2bdac760f0554bdb56",
+      "bytes": 743,
+      "name": "state/sparkle-download-command.json",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "5c659e636e8cfdb87f976e6274fc7f68d69c40cea05cffde9d025b01d0036d70",
+      "bytes": 696,
+      "name": "state/after-apps-command.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "0b460d4d03630ff9678906f5ffa9edb802544f4b467e5b806ffb8276f9672187",
+      "bytes": 678,
+      "name": "state/after-devices-command.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "539b63e37b2899d2db8e89257b45a4b87c25b24e648a059f54c986336794ce89",
+      "bytes": 694,
+      "name": "state/before-apps-command.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "18f16a3ccffa8e8e15e945fc3f9dcaeb7c5dc2cd583f02d61e1fd922356a0851",
+      "bytes": 676,
+      "name": "state/before-devices-command.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "4f6b08b0cb81de3ada500c36b1ac7fc0245a5d88e5b2848ea68153b9f1b4ee66",
+      "bytes": 693,
+      "name": "state/boot-own-command.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "474eb8330990de29d8916df6ad475f364b857f312842ca64a2c7b87f8ddaf6d8",
+      "bytes": 708,
+      "name": "state/bootstatus-own-command.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "bd6e78abf374ce6cdee551afe91fe2da453820eac65e57ece191f054d9158be0",
+      "bytes": 734,
+      "name": "state/launch-once-command.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "d020860a6df153c6ba36e377f4df6ddafc4a4961abb2d6e03a24043a33036284",
+      "bytes": 820,
+      "name": "state/post-root-observation-screenshot-command.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "950faf555e2b392be493085d6eadfab5340cf68a4efa960c74abbe853a5da85e",
+      "bytes": 694,
+      "name": "state/shutdown-own-command.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "86d3716baa7e87ad604f69a2a4c7eb34fd0840f9c3717bf5b5c6912a3a01c03a",
+      "bytes": 738,
+      "name": "state/terminate-own-app-command.json",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    },
+    {
+      "SHA256": "37aa9eb6891d95e2c77125048562f8816174bba2b313e77e5978d48bae7ad455",
+      "bytes": 1600813,
+      "name": "screens/food-truck-first-screen.png",
+      "publicReference": "food-truck-first-screen.png",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "c034a0c83c1c4c24ff1787de445f504937cd9d4613bb30695e6b90358ee98504",
+      "bytes": 71051,
+      "name": "screens/netnewswire-v2-first-screen.png",
+      "publicReference": "netnewswire-v2-black.png",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "7eb3ecbf4ed5a839faa90519fca842e563ce6e213b9704f7024fd4f3b4f85d6f",
+      "bytes": 238704,
+      "name": "screens/netnewswire-v3-10s.png",
+      "publicReference": "netnewswire-v3-notification.png",
+      "storageAlias": "PRIVATE214_REPIN"
+    },
+    {
+      "SHA256": "50f8eed721200f98aff67ffc4835a7f948e7a14d61e0a6775fd4e63645a2004b",
+      "bytes": 148548,
+      "name": "screens/netnewswire-unobscured-no-ui-choice.png",
+      "publicReference": "netnewswire-unobscured.png",
+      "storageAlias": "PRIVATE214_NOTIFICATION_FOLLOWUP"
+    }
+  ],
+  "selectedFileCount": 94
+}
