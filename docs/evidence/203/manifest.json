@@ -1,12 +1,12 @@
 {
   "schema": "runstir.203.public-manifest.v1",
   "source_head": "7fac827f7b086ef754d37c71da94946247aa2e0a",
-  "scope": "Public source/fixture documentation only; no actual installation evidence. Manifest excludes itself.",
+  "scope": "source_head pins the initial source/fixture product implementation only. files pins the current named public files, not their snapshot at source_head. Actual CLI receipt files and this manifest are excluded.",
   "files": [
     {
       "path": "README.md",
-      "sha256": "4ccb191e10acc98cc82943a804f3d52df7012b3ce4e8bb6c3c3e46f71bf73fe1",
-      "bytes": 10960
+      "sha256": "58377f164886c66223eee5c554dc9f3795d8707e333383712a9662e0ba3be204",
+      "bytes": 12023
     },
     {
       "path": "fixture-receipts.json",

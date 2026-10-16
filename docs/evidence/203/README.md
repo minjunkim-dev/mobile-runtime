@@ -111,7 +111,7 @@ down은 새 도구를 요구하거나 관측하지 않는다.
 
 ## 검증 범위
 
-최종 source는 `7fac827f7b086ef754d37c71da94946247aa2e0a`다.
+최초 source/fixture 인계의 제품 source는 `7fac827f7b086ef754d37c71da94946247aa2e0a`다.
 전체 Werror 실행은 80개 suite의 655개 테스트를 통과했다.
 그 뒤 제품 변경 없이 추가한 Node `v` 접두 fixture 1개도 통과했다.
 이 fixture의 파일명에는 `red`가 있지만 실제 결과는 PASS다.
@@ -153,7 +153,10 @@ fake-mise shell fixture는 실제 mise 제품이 아니다.
 그 파일은 payload byte 검증이나 실제 설치 성공의 근거가 아니다.
 Node HTTP HEAD의 원본 header는 보존하지 못했다.
 그 관측을 이 묶음의 독립적인 archive 크기 증거로 사용하지 않는다.
-`manifest.json`은 공개 문서 4개의 SHA256과 크기를 고정한다.
+`manifest.json`의 `source_head`는 최초 source/fixture 제품 source를 가리킨다.
+`files`는 현재 공개 문서 4개의 SHA256과 크기를 고정한다.
+이 파일 목록은 `source_head` 시점의 문서 snapshot이 아니다.
+실제 CLI receipt 파일은 이 목록에 포함하지 않는다.
 manifest 자체는 그 목록에서 제외한다.
 
 ## 남은 한계
