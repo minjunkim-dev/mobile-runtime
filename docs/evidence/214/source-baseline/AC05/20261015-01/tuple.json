@@ -1,0 +1,108 @@
+{
+  "candidateIdentity": "source-baseline",
+  "scenarioID": "AC05",
+  "attemptID": "214-20261015-01",
+  "recordedUTC": "2026-10-15T11:18:56.707831+00:00",
+  "runstirExecuted": false,
+  "evidenceRepositoryBaseSHA": "2e9f6422366e0bbe751332ae3b16c6ae87659019",
+  "verdict": "inconclusive",
+  "host": {
+    "architecture": "arm64",
+    "hardwareModel": "Mac16,8",
+    "macOSVersion": "27.0.1",
+    "macOSBuild": "26A434",
+    "officialXcodeMinimumMacOS": "26.6",
+    "minimumOSActuallyExecuted": false,
+    "officialRequirementURL": "https://developer.apple.com/xcode/system-requirements/"
+  },
+  "toolchain": {
+    "xcodeVersion": "27.0",
+    "xcodeBuild": "27A266a",
+    "xcodeReleaseChannel": "stable",
+    "developerDirectory": "/Applications/Xcode.app/Contents/Developer",
+    "firstLaunchCheckExitCode": 0,
+    "xcodebuildBinarySHA256": "c493a97b720c6afabad03b00577d4387fe9b01d44e57be26caae81511e5820bb",
+    "swiftCompilerVersion": "6.4",
+    "swiftCompilerBuild": "swiftlang-6.4.0.34.1 clang-2100.3.34.1",
+    "swiftCompilerBinarySHA256": "cf81104bf554eef05e28a8bb5285c763f1323b4511b944d755d8bdd6cb8db717",
+    "sdk": "iphonesimulator27.0",
+    "sdkSettingsMetadataSHA256": "d217fa1ae2a58d197871b59b93ac5970dc6422e8782a7b486d67768285cbbffa",
+    "xcodeDistributionArchiveSHA256": "unknown",
+    "runtimeDistributionArchiveSHA256": "unknown",
+    "distributionChecksumLimitation": "Installed binary and metadata hashes identify observed files. They do not establish the original distribution archive checksums.",
+    "git": "2.54.0 (Apple Git-157)",
+    "python": "3.9.6; required by the original NetNewsWire gyb pre-action"
+  },
+  "simulator": {
+    "runtimeIdentifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "runtimeVersion": "27.0",
+    "runtimeBuild": "24A434",
+    "runtimeInfoMetadataSHA256": "87c0dc59cebc228fc5fee40bfacd854a3cc4dd68dce6131ba4e5c30f20a572b5",
+    "runtimeSystemVersionMetadataSHA256": "41ca552b38198d022aefb099e3fa40c530474456933613ada8365a078ad2cf0b",
+    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro",
+    "deviceTypeMetadataSHA256": "839853ebedfcd1bd96749c55d5951860c904e4703cc653122e81f9c4cb217017",
+    "modelIdentifier": "iPhone19,2",
+    "ownership": "new disposable simulator created only for this attempt",
+    "deviceIdentitySHA256": "7c25d960e97f1cf0d932f7ab7b3f3a119afd9e3d8d728f12e2ace8ddb178114f",
+    "existingBootedDeviceIdentitySHA256": "e86293ab1e9b78a5e7007ec5ab709f06e45f681d0f2df4264559039e6178e2e0"
+  },
+  "samples": [
+    {
+      "sampleIdentity": "food-truck-minimum",
+      "sourceURL": "https://github.com/apple/sample-food-truck",
+      "sourceSHA": "3954a769e99f3cc53297d94f2b960ceb2665b3d6",
+      "sourceTree": "1ad91dc9d969793ff96336c571fb191e2046067b",
+      "appRoot": ".",
+      "dependencyRoot": ".",
+      "project": "Food Truck.xcodeproj",
+      "scheme": "Food Truck",
+      "configuration": "Debug",
+      "entrypoint": "App/App.swift",
+      "appID": "com.example.apple-samplecode.Food-Truck",
+      "signing": "Simulator; CODE_SIGNING_ALLOWED=NO; CODE_SIGNING_REQUIRED=NO; no team or signing identity",
+      "languageDeclaration": "Swift 5.0; local package tools 5.7",
+      "dependencies": "FoodTruckKit local package at the same source SHA; dependencies=[]; remote package lock not applicable",
+      "trackedFileCount": 553,
+      "beforeRawTrackedSHA256": "4e72b41c4405ff3f5c95d37fbcd6e75d71e11978595a9b27bf6a8cfc3630b2b6",
+      "manualPreparation": "Use the original simple Food Truck scheme. No account, device signing, WeatherKit credential, source edit or global setting change was supplied."
+    },
+    {
+      "sampleIdentity": "netnewswire-oss",
+      "sourceURL": "https://github.com/Ranchero-Software/NetNewsWire",
+      "sourceSHA": "aea7795bcc0698ced6f28eba53da886eb6217e64",
+      "sourceTree": "57d45813a3066fddd9172a417fe45b03c76040a0",
+      "appRoot": ".",
+      "dependencyRoot": ".",
+      "project": "NetNewsWire.xcodeproj",
+      "scheme": "NetNewsWire-iOS",
+      "configuration": "Debug",
+      "entrypoint": "iOS/AppDelegate.swift",
+      "declaredAppID": "org.runstir.baseline214.NetNewsWire.iOS-DEBUG",
+      "observedAppIDReference": "../20261015-02/results.json",
+      "signing": "Simulator; no signing identity or team; DEVELOPER_ENTITLEMENTS=-dev; ORGANIZATION_IDENTIFIER=org.runstir.baseline214",
+      "languageDeclaration": "Swift 6.2; local package tools 6.2",
+      "lockfile": "NetNewsWire.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved",
+      "lockfileSHA256": "451402e67a2e01ab03d23ddbe7d73b2509956811e5265a689760b9d70d3e0097",
+      "remotePackagePins": [
+        {"identity": "plcrashreporter", "revision": "0254f941c646b1ed17b243654723d0f071e990d0", "version": "1.12.2"},
+        {"identity": "sparkle", "revision": "79bc9e872948e47877e76f194cb0c8e0412b0b90", "version": "2.9.5", "declaredBinaryArchiveSHA256": "34b9b2071f3de0012eca3faa3a9290bb94e62131e9a74f6dc91514a000097a6c", "archiveBytesIndependentlyHashed": false},
+        {"identity": "tidemark", "revision": "2a5cd8a715ad1145d36009f5d3f146704d3f7ec0", "version": "1.0.1"},
+        {"identity": "zip", "revision": "bca30f6d6c7d37cbc4aa8f6b0002e281dcc36195"}
+      ],
+      "trackedFileCount": 1352,
+      "beforeRawTrackedSHA256": "5a6d7f086849f46bc40b2ef7f95242f0e35b1354753061ffda2e34056023aef8",
+      "manualPreparation": "Original source and lock unchanged. Use explicit development-only build settings and isolated DerivedData/SPM/cache. Remove the six credential variables consumed by the original gyb script from the child environment. Never run setup.sh or supply an account or API key."
+    }
+  ],
+  "notApplicable": {
+    "NodePackageManager": "Both selected projects are native Swift/Xcode projects; no Node package installation is used.",
+    "RubyBundlerPods": "Neither selected project uses Pods or Bundler for this attempt.",
+    "AndroidJDKGradleAGPSDKNDK": "This attempt targets only the iOS Simulator.",
+    "FlutterDart": "Neither selected project is a Flutter application.",
+    "ProductDistributionArtifacts": "No Runstir release candidate, CLI archive or GUI DMG is executed by a baseline investigation."
+  },
+  "unverifiedRequiredInputs": [
+    "Original Xcode distribution archive checksum",
+    "Original iOS runtime distribution archive checksum"
+  ]
+}

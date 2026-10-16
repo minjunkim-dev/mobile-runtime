@@ -1,0 +1,18 @@
+{
+  "algorithm": "SHA256",
+  "files": {
+    "apple-distribution-prepin.json": "be2c1125604388deae34b18c7b86950673170a77a9190cb0188388e4aeef7328",
+    "commands.json": "06bb3de97a7aceaad81fe461d31eaebe352e5a898281638bf37d02511ae02c9e",
+    "commands.md": "2bb80524b9930f01cba71c213ca552a84cc5298425f08177a521b6156e2606cc",
+    "food-truck-first-screen.png": "37aa9eb6891d95e2c77125048562f8816174bba2b313e77e5978d48bae7ad455",
+    "fresh-clone-handoff.json": "64232b3609b333cecfb6c4528dc75458bfd904e391e8eb153ff1b6032b928f7d",
+    "native-command-excerpt.log": "a93da423d29325235cea04772c545a6e01720046c0966ad04af10e3e8c289588",
+    "netnewswire-unobscured.png": "50f8eed721200f98aff67ffc4835a7f948e7a14d61e0a6775fd4e63645a2004b",
+    "netnewswire-v2-black.png": "c034a0c83c1c4c24ff1787de445f504937cd9d4613bb30695e6b90358ee98504",
+    "netnewswire-v3-notification.png": "7eb3ecbf4ed5a839faa90519fca842e563ce6e213b9704f7024fd4f3b4f85d6f",
+    "private-evidence-index.json": "12bf4863d40451a1dbcc8243e3fd642c06f856cdcb9bec9f7397691694d56e33",
+    "results.json": "6a2fd7d3c98568e2e5f00db64c248e208deb5ecbd63fea00614103bff44bd181",
+    "source-preservation.json": "5bdf6d79fd285a60381c39a2e93b1df2962f3473b1c6ed15adf0a8d363feecf3",
+    "tuple.json": "219375fc71f72906e137cc9a18e96934de49aef9291c8e749ca83e1840f1d056"
+  }
+}
