@@ -66,7 +66,7 @@ struct FlutterPreparation {
                 compatible.append(sdk)
             }
         }
-        let version = compatible.first?.version ?? project.pinnedVersion ?? "3.41.9"
+        let version = compatible.first { executionRoots.contains($0.root.path) }?.version ?? compatible.first?.version ?? project.pinnedVersion ?? "3.41.9"
         let release: FlutterRelease
         do { release = try await FlutterRelease.fetch(version: version, runner: runner) }
         catch is CancellationError { throw CancellationError() }

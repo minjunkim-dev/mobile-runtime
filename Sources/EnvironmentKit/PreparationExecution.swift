@@ -429,11 +429,18 @@ public enum PreparationExecution {
                     remediation: Remediation(summary: "Preserve completed tools. Inspect again and approve any newly observed dependency or SDK steps.")))
             }
             if flutter != nil, platform == .ios, !pendingTools, let requirement = anchor.cocoapods {
-                let outcome = try await CocoaPodsVersionCheck(requirement: requirement, anchor: anchor, context: context.config,
-                    runner: context.projectRunner).run()
-                checks.append(PreparationStep(id: "ios.cocoapods.version", platform: .ios,
-                    kind: outcome.status == .pass ? "reuse" : "provider", target: anchor.iosDirectory.path,
-                    observed: outcome.observed, required: outcome.required, source: outcome.source, command: nil, remediation: outcome.remediation))
+                if anchor.gemInstallProcess != nil {
+                    checks.append(PreparationStep(id: "ios.cocoapods.version", platform: .ios, kind: "provider", target: anchor.iosDirectory.path,
+                        observed: "Bundled CocoaPods was not executed during inspection", required: "Manually verified locked Bundle and CocoaPods",
+                        source: CheckSource(tier: 1, origin: requirement.file), command: nil,
+                        remediation: Remediation(summary: "Verify the declared locked Bundle manually. Setup inspection does not evaluate the project's Gemfile.")))
+                } else {
+                    let outcome = try await CocoaPodsVersionCheck(requirement: requirement, anchor: anchor, context: context.config,
+                        runner: context.projectRunner).run()
+                    checks.append(PreparationStep(id: "ios.cocoapods.version", platform: .ios,
+                        kind: outcome.status == .pass ? "reuse" : "provider", target: anchor.iosDirectory.path,
+                        observed: outcome.observed, required: outcome.required, source: outcome.source, command: nil, remediation: outcome.remediation))
+                }
             }
             if let sdkPreparation {
                 checks += sdkPreparation.checks
@@ -542,7 +549,12 @@ public enum PreparationExecution {
             let lockedPods = try? Data(contentsOf: ios.appendingPathComponent("Podfile.lock"))
             let podsAligned = manifest != nil && manifest == lockedPods
             let gemLock = anchor.gemInstallProcess == nil || FileManager.default.fileExists(atPath: (anchor.gemInstallProcess?.workingDirectory ?? anchor.directory).appendingPathComponent("Gemfile.lock").path)
-            if let gems = anchor.gemInstallProcess, let context {
+            if let gems = anchor.gemInstallProcess, flutter != nil {
+                steps.append(PreparationStep(id: "dependencies.gems", platform: .ios, kind: "migration",
+                    target: (gems.workingDirectory ?? anchor.directory).path, observed: "Bundler destination was not inspected",
+                    required: "Existing Gemfile.lock and manually verified Bundle destination", source: CheckSource(tier: 1, origin: "Gemfile.lock"),
+                    command: nil, remediation: Remediation(summary: "Preserve the existing Bundle destination. Prepare the declared locked Bundle manually, then re-plan.")))
+            } else if let gems = anchor.gemInstallProcess, let context {
                 let gemRoot = gems.workingDirectory ?? anchor.directory
                 let bundleVersion = try await optionalTool(ProcessCommand("bundle", ["--version"], workingDirectory: gemRoot), runner: context.projectRunner)
                 let pathProbe = try await optionalTool(ProcessCommand("bundle", ["config", "get", "path", "--parseable"],

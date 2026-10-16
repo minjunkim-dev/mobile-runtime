@@ -68,6 +68,57 @@ struct FlutterPreparationTests {
         #expect(!runner.log.all.contains { $0.executable.hasPrefix(fixture.repo.url("sdk").path + "/") })
     }
 
+    @Test("an explicit compatible SDK selects its own release before an automatic fvm SDK", arguments: ["automatic", "absent", "pinned"])
+    func explicitSDKVersionPriority(_ mode: String) async throws {
+        let fixture = try FlutterFixture()
+        try FlutterFixture.sdk(repo: fixture.repo, at: "explicit-sdk", version: "3.47.2")
+        let sdk = fixture.repo.url("explicit-sdk")
+        if mode != "absent" {
+            try fixture.repo.directory(".fvm")
+            try FileManager.default.createSymbolicLink(at: fixture.repo.url(".fvm/flutter_sdk"), withDestinationURL: fixture.repo.url("sdk"))
+        }
+        if mode == "pinned" { try fixture.repo.write(".fvmrc", #"{"flutter":"3.41.9"}"#) }
+        var environment = fixture.environment
+        environment["FLUTTER_ROOT"] = nil
+        environment["PATH"] = sdk.appendingPathComponent("bin").path
+        var runner = fixture.runner()
+        var metadata = try #require(JSONSerialization.jsonObject(with: FlutterFixture.releaseMetadata()) as? [String: Any])
+        var releases = try #require(metadata["releases"] as? [[String: Any]])
+        var release = releases[0]
+        release["version"] = "3.47.2"
+        release["archive"] = "stable/macos/flutter_macos_arm64_3.47.2-stable.zip"
+        releases.append(release)
+        metadata["releases"] = releases
+        runner.responses[FlutterRelease.command.description] = .ok(String(decoding: try JSONSerialization.data(withJSONObject: metadata), as: UTF8.self))
+        let command = ProcessCommand(sdk.appendingPathComponent("bin/cache/dart-sdk/bin/dart").path,
+            ["pub", "--suppress-analytics", "workspace", "list", "--json"])
+        runner.responses[command.description] = runner.responses[fixture.workspaceCommand]
+        let project = try FlutterProject(directory: fixture.repo.root)
+        #expect(project.accepts(flutter: "3.41.9", dart: "3.11.5"))
+        #expect(project.accepts(flutter: "3.47.2", dart: "3.11.5") == (mode != "pinned"))
+        let plan = try await FlutterPreparation.inspect(directory: fixture.repo.root, environment: environment, runner: runner)
+        #expect((plan.sdk?.root == sdk) == (mode != "pinned"))
+        #expect((plan.dependencyCommand != nil) == (mode != "pinned"))
+        #expect(runner.log.all.filter { $0.description == command.description }.count == (mode == "pinned" ? 0 : 1))
+        #expect(!runner.log.all.contains { $0.executable.hasPrefix(fixture.repo.url("sdk").path + "/") })
+    }
+
+    @Test("Flutter inspection never evaluates a Gemfile before exact approval and trust", arguments: ["plan", "unapproved", "stale"])
+    func bundledPodsDoNotRunBeforeApproval(_ mode: String) async throws {
+        let fixture = try FlutterFixture()
+        let runner = try podTools(fixture, bundled: true)
+        try fixture.repo.write("ios/Podfile.lock", "locked pods")
+        let result = await PreparationExecution.run(
+            input: ProjectInspectionInput(directory: fixture.repo.root, environment: fixture.environment),
+            planOnly: mode == "plan", approvedPlanID: mode == "stale" ? "stale-plan" : nil,
+            runner: runner, leases: ResourceLeases(directory: fixture.repo.url(".mobile/leases")))
+        #expect(!runner.log.all.contains { $0.arguments.starts(with: ["exec", "pod"]) })
+        #expect(!runner.log.all.contains { $0.arguments.contains("-rbundler") })
+        #expect(result.plan?.steps.contains { $0.id == "ios.cocoapods.version" && $0.kind == "provider" } == true)
+        #expect(result.plan?.steps.first { $0.id == "dependencies.pods" }?.kind == "migration")
+        #expect(result.operation.completed.isEmpty)
+    }
+
     @Test("Pub graph permits omitted or null transitive dev dependencies but rejects malformed values", arguments: ["absent", "null", "empty", "string", "number", "element"])
     func transitiveDevDependencies(_ mode: String) async throws {
         let f = try FlutterFixture()
@@ -299,7 +350,7 @@ struct FlutterPreparationTests {
         }
     }
 
-    @Test("frozen Pods require a lock and a verified Ruby and preserve Bundle destination")
+    @Test("direct frozen Pods require a lock while a declared Bundle stays manual without evaluation")
     func frozenPodsAndBundle() async throws {
         for bundled in [false, true] {
             let f = try FlutterFixture()
@@ -311,17 +362,17 @@ struct FlutterPreparationTests {
             try f.repo.write("ios/Podfile.lock", "locked pods")
             let before = await PreparationExecution.run(input: input, planOnly: true, runner: runner, leases: leases)
             let plan = try #require(before.plan)
-            #expect(plan.steps.first { $0.id == "dependencies.pods" }?.kind == "align")
+            #expect(plan.steps.first { $0.id == "dependencies.pods" }?.kind == (bundled ? "migration" : "align"))
             let result = await PreparationExecution.run(input: input, approvedPlanID: plan.id, trustRepository: true, runner: runner, leases: leases)
-            #expect(result.operation.completed == (bundled ? ["dependencies.flutter", "dependencies.gems", "dependencies.pods"] : ["dependencies.flutter", "dependencies.pods"]))
-            let pod = try #require(runner.log.all.first { $0.arguments == (bundled ? ["exec", "pod", "install", "--deployment"] : ["install", "--deployment"]) })
-            #expect(pod.workingDirectory?.path == f.repo.url("ios").path)
-            #expect(pod.environment["FLUTTER_ROOT"] == f.repo.url("sdk").path)
+            #expect(result.operation.completed == (bundled ? ["dependencies.flutter"] : ["dependencies.flutter", "dependencies.pods"]))
             if bundled {
-                let gems = try #require(runner.log.all.first { $0.executable.hasSuffix("/bundle") && $0.arguments == ["install"] })
-                #expect(gems.environment["BUNDLE_FROZEN"] == "true")
-                #expect(gems.environment["BUNDLE_PATH"] == f.repo.url("vendor/bundle").path)
-                #expect(pod.environment["BUNDLE_FROZEN"] == "true")
+                #expect(plan.steps.first { $0.id == "dependencies.gems" }?.kind == "migration")
+                #expect(!runner.log.all.contains { $0.executable.hasSuffix("/bundle") && $0.arguments == ["install"] })
+                #expect(!runner.log.all.contains { $0.arguments.starts(with: ["exec", "pod"]) || $0.arguments.contains("-rbundler") })
+            } else {
+                let pod = try #require(runner.log.all.first { $0.arguments == ["install", "--deployment"] })
+                #expect(pod.workingDirectory?.path == f.repo.url("ios").path)
+                #expect(pod.environment["FLUTTER_ROOT"] == f.repo.url("sdk").path)
             }
             #expect(try String(contentsOf: f.repo.url("ios/Podfile.lock"), encoding: .utf8) == "locked pods")
         }
