@@ -602,6 +602,8 @@ public actor AndroidDoctorContext {
 enum AndroidGradleModelProbe {
     static let marker = "MOBILE_ANDROID_MODEL="
     static let artifactMarker = "MOBILE_ANDROID_ARTIFACT="
+    // The model init script uses cross-project callbacks, which require both cache and isolation off.
+    static let configurationArguments = ["--no-configuration-cache", "-Dorg.gradle.unsafe.isolated-projects=false"]
     static var scriptURL: URL? {
         Bundle.module.url(forResource: "mobile-doctor", withExtension: "gradle")
     }
@@ -614,8 +616,8 @@ enum AndroidGradleModelProbe {
         guard let script = scriptURL else {
             return nil
         }
-        var arguments = [
-            "--no-daemon", "--no-configuration-cache", "--console=plain",
+        var arguments = ["--no-daemon"] + configurationArguments + [
+            "--console=plain",
             "--warning-mode=none", "-Dorg.gradle.java.installations.auto-download=false",
             "-Pandroid.builder.sdkDownload=false",
             "-q", "-I", script.path, "help",

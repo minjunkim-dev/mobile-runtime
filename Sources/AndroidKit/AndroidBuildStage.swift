@@ -157,6 +157,7 @@ public struct AndroidBuildStage: Stage {
             [
                 assembleTask,
                 "--no-daemon",
+            ] + AndroidGradleModelProbe.configurationArguments + [
                 "--console=plain",
                 "-Dorg.gradle.java.installations.auto-download=false", "-Pandroid.builder.sdkDownload=false",
                 "-I",

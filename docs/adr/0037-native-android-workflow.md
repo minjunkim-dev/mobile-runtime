@@ -19,6 +19,11 @@ module과 variant 선택은 기존 `AndroidTargetSelector`를 사용한다.
 유효하지 않은 module·variant를 대신 고르지 않는다.
 launcher는 기존 merged manifest와 실제 APK의 aapt2 결과를 대조한다.
 
+모델 init script를 사용하는 조회와 build는 해당 실행에서 Configuration Cache와 Isolated Projects를 함께 끈다.
+모델의 cross-project callback과 cache 재사용을 섞지 않기 위해서다. 프로젝트의 선언 파일은 수정하지 않는다.
+Gradle은 Isolated Projects가 켜진 상태에서 Configuration Cache를 끄면 실패한다.
+근거는 [Gradle Isolated Projects 계약](https://docs.gradle.org/9.7.0/userguide/isolated_projects.html)이다.
+
 ## 공통 실행
 
 CLI와 GUI는 기존 `EnvironmentInspection`과 `WorkflowExecution`을 사용한다.
@@ -52,6 +57,6 @@ SDK root 실패는 #265의 도메인 실패·unknown 소유권 보존 계약을 
 Gradle root, RN 입력 부재, exact debug와 flavor 선택, APK·launcher 대조,
 native-only ABI 처리, 취소·설치 실패·lease 충돌과 기존 자원 보존을 확인한다.
 실제 Gradle·ADB·Emulator·GUI를 이 검사의 근거로 사용하지 않는다.
-#215 baseline과 원본 배포 checksum의 미확인 조건도 이 구현으로 해소되지 않는다.
+이 fixture는 #215 baseline과 원본 배포 checksum의 증거를 대신하지 않는다.
 실제 두 표본의 CLI·GUI 실행과 보존 검증은 별도 자원 lease 아래 수행해야 한다.
 fixture 성공을 AC01·AC04의 실제 실행 완료나 공동 출시 성공으로 표시하지 않는다.

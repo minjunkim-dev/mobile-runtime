@@ -198,7 +198,7 @@ private final class NativeAndroidFixture {
 
     func assemble(_ variant: String) -> String {
         let task = ":app:assemble" + variant.prefix(1).uppercased() + variant.dropFirst()
-        return "./gradlew \(task) --no-daemon --console=plain -Dorg.gradle.java.installations.auto-download=false -Pandroid.builder.sdkDownload=false -I \(modelScript.path)"
+        return "./gradlew \(task) --no-daemon --no-configuration-cache -Dorg.gradle.unsafe.isolated-projects=false --console=plain -Dorg.gradle.java.installations.auto-download=false -Pandroid.builder.sdkDownload=false -I \(modelScript.path)"
     }
 
     func runner(variants: [String] = ["debug"], builtVariant: String = "debug") throws -> FakeProcessRunner {

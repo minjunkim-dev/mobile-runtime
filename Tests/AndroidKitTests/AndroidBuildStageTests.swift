@@ -143,7 +143,7 @@ private func buildScenario(
         path("app/build/intermediates/merged_manifests/debug/processDebugManifest/AndroidManifest.xml")
     ).path
     let modelScript = try #require(AndroidGradleModelProbe.scriptURL)
-    let assemble = "./gradlew :app:assembleDebug --no-daemon --console=plain "
+    let assemble = "./gradlew :app:assembleDebug --no-daemon --no-configuration-cache -Dorg.gradle.unsafe.isolated-projects=false --console=plain "
         + "-Dorg.gradle.java.installations.auto-download=false -Pandroid.builder.sdkDownload=false -I \(modelScript.path)"
     let emittedArtifacts = AndroidGradleModelProbe.artifactMarker
         + "{\"variant\":\"debug\",\"apkDirectory\":\"\(apkDirectory)\","
