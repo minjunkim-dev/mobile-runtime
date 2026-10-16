@@ -130,6 +130,8 @@ enum ToolInstallationValidation {
     }
 
     private static func expand(_ value: String, binary: URL, main: URL) -> URL? {
+        if value == "@loader_path" { return binary.deletingLastPathComponent() }
+        if value == "@executable_path" { return main.deletingLastPathComponent() }
         if value.hasPrefix("@loader_path/") { return binary.deletingLastPathComponent().appendingPathComponent(String(value.dropFirst(13))) }
         if value.hasPrefix("@executable_path/") { return main.deletingLastPathComponent().appendingPathComponent(String(value.dropFirst(17))) }
         if value.hasPrefix("/") { return URL(fileURLWithPath: value) }

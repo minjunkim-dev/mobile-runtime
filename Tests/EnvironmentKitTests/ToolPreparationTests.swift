@@ -258,9 +258,9 @@ struct ToolPreparationTests {
 
     private func version(_ tool: PreparedTool) -> String { switch tool { case .node: "22.23.2"; case .ruby: "3.2.2"; case .java: "temurin-17.0.18+8" } }
 
-    @Test("bundled JVM install name resolves through a contained library rpath", arguments: [false, true])
-    func bundledJVMRpath(_ localPrecedence: Bool) async throws {
-        let fixture = try await libraryFixture(localPrecedence ? "local-precedence" : "none")
+    @Test("bundled JVM install name resolves through a contained library rpath", arguments: ["none", "local-precedence", "bare-loader", "bare-executable"])
+    func bundledJVMRpath(_ layout: String) async throws {
+        let fixture = try await libraryFixture(layout)
         try await ToolInstallationValidation.validate(stage: fixture.repo.url("stage"), executable: "bin/java", version: version(.java), tool: "java", host: host, runner: fixture.runner)
         #expect(fixture.runner.inspectionHits >= 3)
         #expect(fixture.runner.commands.contains { $0.executable == "/usr/bin/env" && $0.arguments.contains("-version") })
@@ -268,7 +268,7 @@ struct ToolPreparationTests {
 
     @Test("rpath fallback cannot hide ambiguous missing aliased or external libraries", arguments: [
         "ambiguous", "missing", "plain-file", "wrong-id", "self-link", "outside-link", "external-local", "escaping-local", "external-main", "external-pool",
-        "absolute-external", "usr-lookalike", "system-lookalike", "usr-traversal", "system-traversal", "alias-parent-traversal", "nul-rpath", "relative-local", "relative-main",
+        "absolute-external", "usr-lookalike", "system-lookalike", "usr-traversal", "system-traversal", "alias-parent-traversal", "nul-rpath", "relative-local", "relative-main", "loader-lookalike", "executable-lookalike",
     ])
     func rejectedLibraryFallback(_ fault: String) async throws {
         let fixture = try await libraryFixture(fault)
@@ -312,12 +312,16 @@ struct ToolPreparationTests {
             if fault == "external-local", relative == "lib/libjava.dylib" { rpath = fixture.repo.url("outside").path }
             if fault == "relative-main", relative == "bin/java" { rpath = "../outside" }
             if fault == "relative-local", relative == "lib/libjava.dylib" { rpath = "../outside" }
+            if fault == "loader-lookalike", relative == "lib/libjava.dylib" { rpath = "@loader_pathology" }
+            if fault == "executable-lookalike", relative == "bin/java" { rpath = "@executable_pathology" }
             if fault == "escaping-local", relative == "lib/libjava.dylib" { rpath = "@loader_path/../../outside" }
             if fault == "alias-parent-traversal", relative == "lib/libjava.dylib" { rpath = "@loader_path/alias/.." }
             if fault == "nul-rpath", relative == "lib/libjava.dylib" { rpath = "@loader_path/.\0/../../outside" }
             if fault == "external-pool", directory == "lib/server" { rpath = fixture.repo.url("outside").path }
             let installName = relative == "bin/java" ? nil : "@rpath/\((relative as NSString).lastPathComponent)"
             var settings = "cmd LC_BUILD_VERSION\nplatform 1\nminos 14.0\ncmd LC_RPATH\npath \(rpath) (offset 12)\n"
+            if fault == "bare-loader", relative == "lib/libjava.dylib" { settings += "cmd LC_RPATH\npath @loader_path (offset 12)\n" }
+            if fault == "bare-executable", relative == "bin/java" { settings += "cmd LC_RPATH\npath @executable_path (offset 12)\n" }
             if let installName { settings += "cmd LC_ID_DYLIB\nname \(fault == "wrong-id" && directory == "lib/server" ? "@rpath/wrong.dylib" : installName) (offset 24)\n" }
             var dependency = relative == "lib/libjava.dylib" ? "@rpath/libjvm.dylib" : "/usr/lib/libSystem.B.dylib"
             if relative == "lib/libjava.dylib" {
