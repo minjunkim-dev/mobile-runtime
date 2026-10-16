@@ -27,7 +27,8 @@ Flutter가 아닌 앱에 명시 entrypoint를 주면 도구 호출 전에 거부
 실행할 SDK의 발견 출처도 보존한다. `FLUTTER_ROOT`·`PATH`의 명시 선택과 Runstir 관리 설치를 실행 후보로 사용한다.
 자동 `.fvm/flutter_sdk`에서만 발견한 SDK는 metadata가 일치해도 Dart를 실행하지 않는다.
 그 경우 SDK·workspace를 미확인 수동 단계로 남긴다. 신뢰하는 SDK를 명시한 뒤 다시 계획한다.
-같은 공식 tuple의 명시 SDK가 따로 있으면 그 SDK를 우선한다. metadata와 Mach-O header는 archive 인증 근거가 아니다.
+프로젝트 constraint를 만족하는 명시 SDK를 자동 FVM 후보보다 우선한다. exact pin이 없으면 다른 호환 version도 우선 선택 대상이다.
+metadata와 Mach-O header는 archive 인증 근거가 아니다.
 다른 기존 SDK를 제거하거나 그 SDK에서 bootstrap하지 않는다.
 
 ## 정확한 공식 설치 입력
@@ -110,6 +111,9 @@ Flutter identity는 React Native package·RNGP·node_modules를 요구하지 않
 Flutter Pods는 기존 Podfile.lock과 frozen 명령을 요구한다.
 기존 React Native의 선언된 custom Pod 명령은 유지한다.
 Gemfile이 있으면 Gemfile.lock·검증한 Ruby/Bundler·기존 Bundle destination도 요구한다.
+Flutter의 bundled CocoaPods 버전과 Bundle destination은 실행 없이 수동 단계로 남긴다.
+계획 검사에서 `bundle exec`와 Ruby의 Bundler probe로 프로젝트 Gemfile을 평가하지 않는다.
+정적 lock·Manifest 일치만으로 bundled Pods를 준비 완료로 표시하지 않는다.
 Dart 뒤 generated 입력이나 선언 조건이 바뀌면 다음 Pod 명령을 시작하지 않는다.
 
 direct Dart 정렬은 Flutter 고유 native 생성·plugin 후처리 완료를 뜻하지 않는다.

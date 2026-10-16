@@ -53,13 +53,14 @@ setup fixture는 plan·approval·trust·stale·partial·failure·cancel·TTY·JS
 - 정확 declaration·entrypoint와 resolver workspace를 승인 입력으로 묶는다.
 - 끊어진 선언 symlink는 누락으로 취급하지 않는다. 읽기 오류를 전달하고 symlink를 보존한다.
 - 자동 `.fvm` SDK는 계획 검사에서 실행하지 않는다. SDK·workspace를 수동 단계로 남긴다.
-- 명시 ROOT·PATH와 관리 설치의 발견 출처를 보존한다. 같은 release의 명시 SDK를 자동 `.fvm` 후보보다 우선한다.
+- 명시 ROOT·PATH와 관리 설치의 발견 출처를 보존한다. constraint를 만족하는 명시 SDK를 자동 `.fvm` 후보보다 우선한다. exact pin이 없으면 다른 호환 version에도 적용한다.
 - workspace folder와 소유 Pub cache의 충돌을 실행 전에 거부한다.
 - locked Dart 정렬은 정확한 cwd·child environment를 사용한다.
 - 취소는 exit 130이다. 완료 cache와 기존 SDK를 보존한다.
 - source·lock 변경을 보고한다. 파일을 자동 복원하지 않는다.
 - frozen Pods는 기존 lock과 검증한 Ruby·CocoaPods를 요구한다.
-- Bundle 정렬은 BUNDLE_FROZEN과 기존 destination을 유지한다.
+- Flutter의 bundled CocoaPods와 Bundle destination은 실행 없이 수동 단계로 남긴다. 기존 destination을 보존한다.
+- planOnly·미승인·stale 승인 검사에서 `bundle exec`와 Ruby Bundler probe로 Gemfile을 평가하지 않는다.
 - Dart 정렬 후 generated 입력이 바뀌면 Pods를 시작하지 않는다.
 - 정상 합성 SDK ZIP 설치 뒤 처음 나타난 align을 remaining으로 남긴다. 새 plan-id 승인이 필요하다.
 - commit 전 임시 `.runstir-stage-*`는 기존 SDK 후보에서 제외한다.
