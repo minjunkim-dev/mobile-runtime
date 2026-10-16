@@ -58,6 +58,15 @@
     ],
     "reproducibleBuildClaim": false
   },
+  "verificationBoundary": {
+    "earlierImplementationHead": "7b58ed51a7bc8dff84979fd505e189e053024f33",
+    "earlierImplementationTests": 677,
+    "earlierImplementationSuites": 81,
+    "earlierCommandBaseField": "Root found an obsolete21959 candidate base field in old command.json. Actual HEAD/tree/command/logs identify7b58ed5. The original remains preserved.",
+    "fixedBaseValidationInferredFromThatField": false,
+    "sourceBaseAndDiffPinSource": "Separate source-isolation receipt, not the stale check-command base field",
+    "finalMainIntegratedHeadWerrorGUIAndCLI3": "pending separate Root verification"
+  },
   "execution": {
     "project": "Owned eight tracked declaration/compatibility files plus .git; no hardlinks. Not an OSS application run.",
     "projectAlias": "<GUI_PROJECT>",

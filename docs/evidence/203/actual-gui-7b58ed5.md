@@ -24,6 +24,14 @@ GUI 15파일과 함께 전송한 CLI 13파일의 host·guest bytes와 mode를 �
 ad hoc 서명과 strict 검증을 통과했다.
 이 서명은 배포 서명이나 공증 근거가 아니다.
 
+Root가 이전 `7b58ed5` 검사 기록의 `command.json`에서 과거 후보 base 필드를 발견했다.
+실제 HEAD·tree·명령·로그는 `7b58ed5` 기록이다.
+잘못된 base 필드가 있는 원본도 보존한다.
+이전 677개 테스트·81개 suite는 `7b58ed5` 구현 검증 근거다.
+이를 최종 main 통합 HEAD의 고정 base 검증으로 주장하지 않는다.
+최종 통합 HEAD의 Werror·GUI build·CLI3 검증은 별도 Root 작업이다.
+이 문서의 source base와 diff pin은 별도 source-isolation receipt에서 가져왔다.
+
 입력은 tracked 파일 8개와 `.git`을 복사한 소유 프로젝트다.
 hardlink는 없다.
 소유한 HOME·tmp를 재사용했다.
