@@ -1,4 +1,20 @@
-# #203 도구 준비 source/fixture 인계
+# #203 도구 준비 증거
+
+## 최신 실제 CLI 검증
+
+[b6329329 실제 CLI 검증](actual-cli-b6329329.md)과
+[curated JSON](actual-cli-b6329329.json)에 새 manager-absent store 실측을 기록했다.
+mise·Java·Node·Ruby 설치 4개와 실제 SIGINT 취소를 확인했다.
+4개 버전 조회도 통과했다.
+최종 setup은 수동 단계 12개를 남겨 `partial`, exit `1`을 반환했다.
+최종 `b6329329` GUI 실측은 아직 미완이다.
+이 기록으로 GUI·앱 실행이나 #203 전체 완료를 판정하지 않는다.
+[이전 CLI checkpoint](actual-cli-checkpoint.md)의 실패·미확인은 해당 후보의 기록으로 보존한다.
+
+## 최초 source/fixture 인계 범위
+
+아래 구현·검증·한계는 최초 source/fixture 인계 당시의 기록이다.
+후속 실제 CLI 결과는 위 문서에서 구분한다.
 
 이 묶음은 Node, Ruby, JDK 준비 provider와 공유 실행 연결의 source/fixture 근거다.
 실제 배포 payload를 받거나 실행하지 않았다.
