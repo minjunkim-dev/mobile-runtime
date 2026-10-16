@@ -38,6 +38,30 @@ struct ToolPreparationTests {
         #expect(try String(contentsOf: fixture.repo.url("store/existing/keep"), encoding: .utf8) == "original")
     }
 
+    @Test("creating an absent tool store preserves the approved artifact identity", arguments: ["MISE_DATA_DIR", "XDG_DATA_HOME", "HOME"])
+    func absentStoreApproval(_ key: String) async throws {
+        let fixture = try await fixture()
+        let directory = fixture.repo.root
+        let runner = fixture.runner
+        let environment = [key: fixture.repo.url("absent-parent/absent-store").path]
+        let observedHost = host
+        let request = ToolPreparationRequirement(tool: .node, version: "22.23.2", source: CheckSource(tier: 1, origin: ".nvmrc"))
+        let plan = try await ToolPreparation.inspect(requirements: [request], directory: directory,
+            environment: environment, runner: runner, host: observedHost)
+        let action = try #require(plan.actions["tools.node"])
+        let approved = action.metadata
+        #expect(!FileManager.default.fileExists(atPath: approved.resourceRoot.path))
+        try await action.run(runner: runner) { _ in
+            let current = try await ToolPreparation.inspect(requirements: [request], directory: directory,
+                environment: environment, runner: runner, host: observedHost)
+            guard current.actions["tools.node"]?.metadata == approved else {
+                throw DomainError(summary: "Approved tool identity changed after store creation", remediation: Remediation(summary: "Inspect again"))
+            }
+        }
+        #expect(FileManager.default.isExecutableFile(atPath: approved.destination.appendingPathComponent("bin/node").path))
+        #expect(runner.downloads == 1)
+    }
+
     @Test("manager absence proposes one pinned mise and leaves global selections unchanged")
     func missingManager() async throws {
         let fixture = try await fixture(manager: false)

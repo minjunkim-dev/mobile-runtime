@@ -266,7 +266,7 @@ public struct ToolPreparation: Sendable {
         let value = environment["MISE_DATA_DIR"] ?? environment["XDG_DATA_HOME"].map { $0 + "/mise" }
             ?? environment["HOME"].map { $0 + "/.local/share/mise" }
         guard let value, value.hasPrefix("/"), !value.contains(":"), !value.unicodeScalars.contains(where: { CharacterSet.controlCharacters.contains($0) }) else { return nil }
-        return URL(fileURLWithPath: value).standardizedFileURL
+        return URL(fileURLWithPath: value, isDirectory: true).standardizedFileURL
     }
 
     private static func manual(_ request: ToolPreparationRequirement, _ reason: String, target: String? = nil) -> PreparationStep {
