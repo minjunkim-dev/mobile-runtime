@@ -43,9 +43,7 @@ public struct PreparationPlan: Codable, Sendable {
                 "\(platform.platform.rawValue) \(check.id) [\(check.kind)] observed: \(check.observed ?? "unknown"); required: \(check.required ?? "none"); source: \(check.source.origin); target: \(check.target)"
             }
         } + installed.keys.sorted().map { "destination: \($0) — \(installed[$0] == true ? "present" : "absent")" }
-        + steps.compactMap { $0.installation }.map {
-            "install: \($0.package) revision \($0.revision); \($0.artifact.url.absoluteString); \($0.artifact.size) bytes; \($0.artifact.checksumAlgorithm) \($0.artifact.checksum); destination: \($0.destination.path); resource: \($0.resourceKey)"
-        }
+        + steps.compactMap(\.installation).map(\.inspectionLine)
     }
 }
 
