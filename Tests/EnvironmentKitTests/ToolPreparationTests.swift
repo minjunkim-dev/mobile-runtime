@@ -1,6 +1,6 @@
 import Core
 import CryptoKit
-import EnvironmentKit
+@testable import EnvironmentKit
 import Foundation
 import TestSupport
 import Testing
@@ -61,7 +61,7 @@ struct ToolPreparationTests {
         let fixture = try await fixture()
         let node = try fixture.repo.write("project tool/bin/node", "fixture node")
         try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: node.path)
-        let project = FakeProcessRunner(responses: ["which node": .ok(node.path), "\(node.path) --version": .ok(exact ? "v22.23.2\n" : "v22.23.2-rc.1\n")])
+        let project = FakeProcessRunner(responses: ["/usr/bin/which node": .ok(node.path), "\(node.path) --version": .ok(exact ? "v22.23.2\n" : "v22.23.2-rc.1\n")])
         let request = ToolPreparationRequirement(tool: .node, version: "22.23.2", source: CheckSource(tier: 1, origin: "mise.toml"))
         let plan = try await ToolPreparation.inspect(requirements: [request], directory: fixture.repo.root,
             environment: [:], runner: fixture.runner, currentToolRunner: project, host: host)
@@ -85,6 +85,103 @@ struct ToolPreparationTests {
         #expect(vendor.actions.isEmpty)
         #expect(vendor.steps.first?.required == "zulu-17.0.18+8")
         #expect(fixture.runner.downloads == 0)
+    }
+
+    @Test("existing Zulu satisfies vendorless or Zulu JDK 21, but never an explicit Temurin request", arguments: ["21", "zulu-21", "zulu-21.0.11+10", "temurin-21", "temurin-21.0.11+10"])
+    func selectedJavaProperties(_ declaration: String) async throws {
+        let fixture = try await fixture()
+        try fixture.repo.write("package.json", #"{"dependencies":{"react-native":"0.83.10"}}"#)
+        try fixture.repo.write(".java-version", declaration + "\n")
+        try fixture.repo.write("android/build.gradle", "plugins { id 'com.android.application' version '8.7.3' apply false }")
+        try fixture.repo.write("android/gradle/wrapper/gradle-wrapper.properties", "distributionUrl=https\\://services.gradle.org/distributions/gradle-8.10.2-bin.zip")
+        let java = try fixture.repo.write("selected jdk/bin/java", "existing JDK")
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: java.path)
+        let runner = SelectedJavaPropertiesRunner(base: fixture.runner, java: java)
+        let anchor = try #require(ProjectAnchor.detect(from: fixture.repo.root))
+        let requirements = try await ToolRequirements.resolve(anchor: anchor, platforms: [.android], runner: runner).filter { $0.tool == .java }
+        let plan = try await ToolPreparation.inspect(requirements: requirements, directory: fixture.repo.root,
+            environment: ["MISE_DATA_DIR": fixture.repo.url("store").path], runner: runner, currentToolRunner: runner, host: host)
+        #expect((plan.activeTools["java"] == java) == !declaration.hasPrefix("temurin-"))
+        #expect(plan.actions.isEmpty)
+        #expect(fixture.runner.downloads == 0)
+        #expect(try String(contentsOf: fixture.repo.url(".java-version"), encoding: .utf8) == declaration + "\n")
+    }
+
+    @Test("missing JDK runtime vendor architecture version or home is never promoted to exact reuse", arguments: ["java.version", "java.runtime.version", "java.vendor", "java.home", "os.arch"])
+    func missingJavaProperty(_ property: String) async throws {
+        let fixture = try await fixture()
+        let java = try fixture.repo.write("selected jdk/bin/java", "existing JDK")
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: java.path)
+        let runner = SelectedJavaPropertiesRunner(base: fixture.runner, java: java, omittedProperty: property)
+        let request = ToolPreparationRequirement(tool: .java, version: "zulu-21.0.11+10", source: CheckSource(tier: 1, origin: ".java-version"))
+        let plan = try await ToolPreparation.inspect(requirements: [request], directory: fixture.repo.root,
+            environment: ["MISE_DATA_DIR": fixture.repo.url("store").path], runner: runner, currentToolRunner: runner, host: host)
+        #expect(plan.activeTools["java"] == nil)
+        #expect(plan.actions.isEmpty)
+        #expect(plan.steps.first?.kind == "provider")
+    }
+
+    @Test("a shim's reported Java home must match that home's actual properties")
+    func verifyReportedJavaHome() async throws {
+        let fixture = try await fixture()
+        let shim = try fixture.repo.write("selected shim/java", "shim")
+        let actual = try fixture.repo.write("other jdk/bin/java", "different JDK")
+        for path in [shim, actual] { try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: path.path) }
+        let runner = SelectedJavaPropertiesRunner(base: fixture.runner, java: shim, reportedHome: actual.deletingLastPathComponent().deletingLastPathComponent())
+        #expect(try await ToolJavaObservation.observe(executable: shim.path, directory: fixture.repo.root, runner: runner) == nil)
+    }
+
+    @Test("shared setup plans and runs pinned tools even when the project toolchain is missing")
+    func sharedMissingToolchain() async throws {
+        let fixture = try await fixture(manager: false)
+        try fixture.repo.write("package.json", #"{"dependencies":{"react-native":"0.83.10"}}"#)
+        try fixture.repo.write(".nvmrc", "22.23.2\n")
+        try fixture.repo.directory("ios")
+        let runner = MissingProjectToolchainRunner(base: fixture.runner)
+        let input = ProjectInspectionInput(directory: fixture.repo.root,
+            environment: ["MISE_DATA_DIR": fixture.repo.url("store").path])
+        let planned = await PreparationExecution.run(input: input, planOnly: true, runner: runner)
+        #expect(planned.operation.state == "needs-approval")
+        let plan = try #require(planned.plan)
+        #expect(plan.steps.contains { $0.id == "tools.node" && $0.kind == "install" })
+        let result = await PreparationExecution.run(input: input, approvedPlanID: plan.id, runner: runner,
+            leases: ResourceLeases(directory: fixture.repo.url(".mobile/leases")))
+        #expect(result.operation.completed.contains("tools.node"))
+        #expect(FileManager.default.isExecutableFile(atPath: fixture.repo.url("store/installs/node/22.23.2/bin/node").path))
+        #expect(try String(contentsOf: fixture.repo.url(".nvmrc"), encoding: .utf8) == "22.23.2\n")
+    }
+
+    @Test("workflow and doctor observe the prepared child tool offline")
+    func sharedOfflineActivation() async throws {
+        let fixture = try await fixture()
+        try fixture.repo.write("package.json", #"{"dependencies":{"react-native":"0.83.10"}}"#)
+        try fixture.repo.write(".nvmrc", "22.23.2\n")
+        try fixture.repo.directory("ios")
+        let plan = try await inspect([.node], fixture: fixture)
+        try await #require(plan.actions["tools.node"]).run(runner: fixture.runner, beforeCommit: { _ in })
+        let runner = MissingProjectToolchainRunner(base: fixture.runner)
+        let input = ProjectInspectionInput(directory: fixture.repo.root, environment: ["MISE_DATA_DIR": fixture.repo.url("store").path])
+        let anchor = try #require(ProjectAnchor.detect(from: fixture.repo.root))
+        let before = fixture.runner.commands.count
+        let context = await WorkflowContext.make(input: input, platform: .ios, anchor: anchor, runner: runner)
+        #expect(try await context.projectRunner.run(ProcessCommand("node", ["--version"])).standardOutput == "v22.23.2")
+        _ = try await EnvironmentInspection.run(input: input, runner: runner)
+        let commands = Array(fixture.runner.commands.dropFirst(before))
+        #expect(commands.contains { $0.executable == fixture.repo.url("store/installs/node/22.23.2/bin/node").path })
+        #expect(!commands.contains { $0.executable == "curl" || $0.arguments.contains("install") })
+    }
+
+    @Test("doctor reports an unmet exact manager declaration without downloading tools")
+    func sharedDoctorMissingDeclaration() async throws {
+        let fixture = try await fixture()
+        try fixture.repo.write("package.json", #"{"dependencies":{"react-native":"0.83.10"}}"#)
+        try fixture.repo.write(".tool-versions", "nodejs 22.23.2\n")
+        try fixture.repo.directory("ios")
+        let runner = MissingProjectToolchainRunner(base: fixture.runner)
+        let result = try await EnvironmentInspection.run(input: ProjectInspectionInput(directory: fixture.repo.root,
+            environment: ["MISE_DATA_DIR": fixture.repo.url("store").path], platform: .ios), runner: runner)
+        #expect(result.report.checks.contains { $0.id == "tools.node" && $0.status == .error })
+        #expect(!fixture.runner.commands.contains { $0.executable == "curl" })
     }
 
     @Test("workflow observation stays offline and conflicting declarations remain manual")
@@ -162,6 +259,47 @@ struct ToolPreparationTests {
     }
 }
 
+private struct MissingProjectToolchainRunner: ProcessRunner {
+    let base: ToolPreparationFixtureRunner
+    func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+        do { return try await base.run(command, onLine: onLine) }
+        catch is FixtureMiss { return ProcessResult(terminationStatus: .exited(127), standardOutput: "", standardError: "fixture toolchain unavailable") }
+    }
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 { throw FixtureMiss(command: command.description) }
+}
+
+private struct SelectedJavaPropertiesRunner: ProcessRunner {
+    let base: ToolPreparationFixtureRunner
+    let java: URL
+    var omittedProperty: String? = nil
+    var reportedHome: URL? = nil
+    func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+        if command.executable == "node", command.arguments == ["--version"] {
+            return ProcessResult(terminationStatus: .exited(127), standardOutput: "", standardError: "fixture Node absent")
+        }
+        if command.executable == "/usr/bin/which", command.arguments == ["java"] {
+            return ProcessResult(terminationStatus: .exited(0), standardOutput: java.path, standardError: "")
+        }
+        if ["java", java.path].contains(command.executable), command.arguments.contains("-XshowSettings:properties") {
+            let home = reportedHome ?? java.deletingLastPathComponent().deletingLastPathComponent()
+            let properties = "java.version = 21.0.11\njava.runtime.version = 21.0.11+10-LTS\njava.vendor = Azul Systems, Inc.\njava.home = \(home.path)\nos.arch = aarch64\n"
+            let output = properties.components(separatedBy: .newlines).filter { line in
+                omittedProperty.map { !line.hasPrefix($0 + " =") } ?? true
+            }.joined(separator: "\n")
+            return ProcessResult(terminationStatus: .exited(0), standardOutput: "", standardError: output)
+        }
+        if let home = reportedHome, command.executable == home.appendingPathComponent("bin/java").path {
+            return ProcessResult(terminationStatus: .exited(0), standardOutput: "", standardError: "java.version = 17.0.18\njava.runtime.version = 17.0.18+8\njava.vendor = Eclipse Adoptium\njava.home = \(home.path)\nos.arch = aarch64\n")
+        }
+        // Deliberately misleading banner. Reuse must rely on the properties above.
+        if ["java", java.path].contains(command.executable), command.arguments == ["-version"] {
+            return ProcessResult(terminationStatus: .exited(0), standardOutput: "", standardError: "Temurin-17.0.18+8")
+        }
+        return try await base.run(command, onLine: onLine)
+    }
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 { throw FixtureMiss(command: command.description) }
+}
+
 private final class ToolPreparationFixtureRunner: ProcessRunner, @unchecked Sendable {
     enum Fault { case none, download(PreparedTool), cancel(PreparedTool), metadataCancel, minimumOS, externalLibrary, platformIOS }
     let payloads: [PreparedTool: Data]
@@ -177,7 +315,7 @@ private final class ToolPreparationFixtureRunner: ProcessRunner, @unchecked Send
     func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
         let fault = lock.withLock { calls.append(command); return self.fault }
         func ok(_ text: String) -> ProcessResult { ProcessResult(terminationStatus: .exited(0), standardOutput: text, standardError: "") }
-        if command.executable == "which" {
+        if command.executable == "/usr/bin/which" {
             if command.arguments == ["mise"], let mise { return ok(mise.path) }
             return ProcessResult(terminationStatus: .exited(1), standardOutput: "", standardError: "")
         }
@@ -193,6 +331,10 @@ private final class ToolPreparationFixtureRunner: ProcessRunner, @unchecked Send
         }
         if command.executable == "/usr/bin/env" || command.executable.contains("/installs/") {
             let text = command.description
+            if text.contains("bin/java"), command.arguments.contains("-XshowSettings:properties") {
+                let home = URL(fileURLWithPath: command.executable).deletingLastPathComponent().deletingLastPathComponent().path
+                return ok("java.version = 17.0.18\njava.runtime.version = 17.0.18+8\njava.vendor = Eclipse Adoptium\njava.home = \(home)\nos.arch = aarch64\n")
+            }
             if text.contains("--disable-gems") { return ok("3.2.2") }
             if text.contains("bin/ruby") { return ok("ruby 3.2.2p53") }
             if text.contains("bin/java") { return ok("openjdk version 17.0.18\nTemurin-17.0.18+8") }

@@ -337,6 +337,7 @@ private final class NativeAndroidFixture {
         modelScript = try #require(AndroidGradleModelProbe.scriptURL)
         try repo.write("project/settings.gradle.kts", source)
         try executable("project/gradlew")
+        try executable("jdk/bin/java")
         try repo.write("project/gradle/wrapper/gradle-wrapper.jar", "fixture jar")
         try repo.write("project/gradle/wrapper/gradle-wrapper.properties", "distributionUrl=https\\://services.gradle.org/distributions/gradle-8.13-bin.zip\n")
         try repo.write("project/local.properties", "sdk.dir=\(repo.url("sdk").path)\n")
@@ -377,9 +378,13 @@ private final class NativeAndroidFixture {
         let data = variants.map { name in
             "{\"name\":\"\(name)\",\"debuggable\":true,\"assembleTask\":\":app:assemble\(name.prefix(1).uppercased() + name.dropFirst())\",\"installTask\":\":app:install\(name.prefix(1).uppercased() + name.dropFirst())\",\"applicationId\":\"\(Self.appID)\",\"abiFilters\":[],\"apkDirectory\":\"\(outputs)\",\"mergedManifest\":\"\(manifest)\"}"
         }.joined(separator: ",")
-        let model = "{\"gradleVersion\":\"8.13\",\"daemonJavaVersion\":\"17.0.12\",\"daemonJavaHome\":\"/fixture-jdk\",\"modules\":[{\"path\":\":app\",\"agpVersion\":\"8.13.2\",\"compileSdk\":\"36\",\"buildToolsVersion\":\"35.0.0\",\"minSdk\":\"24\",\"targetSdk\":\"36\",\"nativeBuildConfigured\":false,\"abiFilters\":[],\"variants\":[\(data)]}]}"
+        let javaHome = repo.url("jdk").path
+        let properties = "java.version = 17.0.12\njava.runtime.version = 17.0.12+7\njava.vendor = Eclipse Adoptium\njava.home = \(javaHome)\nos.arch = aarch64\n"
+        let model = "{\"gradleVersion\":\"8.13\",\"daemonJavaVersion\":\"17.0.12\",\"daemonJavaHome\":\"\(javaHome)\",\"modules\":[{\"path\":\":app\",\"agpVersion\":\"8.13.2\",\"compileSdk\":\"36\",\"buildToolsVersion\":\"35.0.0\",\"minSdk\":\"24\",\"targetSdk\":\"36\",\"nativeBuildConfigured\":false,\"abiFilters\":[],\"variants\":[\(data)]}]}"
         var responses: [String: FakeProcessRunner.Response] = [
-            "java -XshowSettings:properties -version": .ok("java.version = 17.0.12\njava.home = /fixture-jdk\n"),
+            "java -XshowSettings:properties -version": .ok(properties),
+            "\(repo.url("jdk/bin/java").path) -XshowSettings:properties -version": .ok(properties),
+            "/usr/bin/which java": .ok(repo.url("jdk/bin/java").path),
             "emulator -accel-check": .ok("accel:\n0\nHypervisor.Framework\n"),
             "emulator -list-avds": .ok("Pixel\n"),
             "aapt2 dump badging \(apk.path)": .ok("package: name='\(Self.appID)' versionCode='1'\nminSdkVersion:'24'\ntargetSdkVersion:'36'\nlaunchable-activity: name='\(Self.appID).MainActivity' label='' icon=''\n"),

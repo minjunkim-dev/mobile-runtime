@@ -11,16 +11,17 @@ public struct ToolPreparationRequirement: Sendable {
     public let tool: PreparedTool
     public let version: String?
     public let source: CheckSource
+    public let blocker: String?
 
-    public init(tool: PreparedTool, version: String?, source: CheckSource) {
-        self.tool = tool; self.version = version; self.source = source
+    public init(tool: PreparedTool, version: String?, source: CheckSource, blocker: String? = nil) {
+        self.tool = tool; self.version = version; self.source = source; self.blocker = blocker
     }
 
     var exactVersion: String? {
         guard var version else { return nil }
         if tool == .node, version.hasPrefix("v") { version.removeFirst() }
         if tool == .ruby, version.hasPrefix("ruby-") { version = String(version.dropFirst(5)) }
-        let pattern = tool == .java ? #"^temurin-[0-9]+\.[0-9]+\.[0-9]+\+[0-9]+$"# : #"^[0-9]+\.[0-9]+\.[0-9]+$"#
+        let pattern = tool == .java ? #"^[a-z][a-z0-9-]*-[0-9]+\.[0-9]+\.[0-9]+(?:\.[0-9]+)?\+[0-9]+$"# : #"^[0-9]+\.[0-9]+\.[0-9]+$"#
         return version.range(of: pattern, options: .regularExpression) == nil ? nil : version
     }
 }
@@ -70,6 +71,10 @@ public struct ToolPreparation: Sendable {
             try Task.checkCancellation()
             let requests = grouped[tool]!
             guard let first = requests.first else { continue }
+            if let blocker = requests.compactMap(\.blocker).first {
+                plan.checks.append(manual(first, blocker))
+                continue
+            }
             guard Set(requests.map(\.exactVersion)).count == 1, let version = first.exactVersion else {
                 plan.checks.append(manual(first, "An exact compatible version is required. Ranges, conflicting declarations and unsupported Java vendors are not replaced with a default vendor."))
                 continue
@@ -80,10 +85,20 @@ public struct ToolPreparation: Sendable {
                     origin: Set(requests.map { $0.source.origin }).sorted().joined(separator: "; ")))
             let probeName = request.tool.rawValue
             let observedRunner = currentToolRunner ?? runner
-            if let path = try await which(probeName, directory: directory, runner: observedRunner),
-               FileManager.default.isExecutableFile(atPath: path.path),
-               try await matches(request, executable: path, runner: observedRunner) {
-                recordReuse(request, path: path, observed: "existing executable satisfies \(version)", plan: &plan)
+            if let path = try await which(probeName, directory: directory, runner: observedRunner), FileManager.default.isExecutableFile(atPath: path.path) {
+                if request.tool == .java {
+                    if let java = try await ToolJavaObservation.observe(executable: path.path, directory: directory, runner: observedRunner), java.identity == version {
+                        recordReuse(request, path: java.executable,
+                            observed: "existing JDK properties \(java.properties.propertiesVersion ?? "unknown"); runtime \(java.properties.runtimeVersion ?? "unknown"); vendor \(java.properties.vendor ?? "unknown"); architecture \(java.properties.architecture ?? "unknown")", plan: &plan)
+                        continue
+                    }
+                } else if try await matches(request, executable: path, runner: observedRunner) {
+                    recordReuse(request, path: path, observed: "existing executable satisfies \(version)", plan: &plan)
+                    continue
+                }
+            }
+            if request.tool == .java, !version.hasPrefix("temurin-") {
+                plan.checks.append(manual(request, "This exact vendor-qualified JDK was not verified in the selected project environment. Preserve its vendor and prepare it through the existing manager. Only an explicitly selected Temurin distribution can be newly installed."))
                 continue
             }
             guard let root = dataRoot(environment) else {
@@ -215,6 +230,10 @@ public struct ToolPreparation: Sendable {
     }
 
     private static func matches(_ request: ToolPreparationRequirement, executable: URL, runner: any ProcessRunner) async throws -> Bool {
+        if request.tool == .java {
+            guard let java = try await ToolJavaObservation.observe(executable: executable.path, directory: executable.deletingLastPathComponent(), runner: runner) else { return false }
+            return java.identity == request.exactVersion && java.executable.resolvingSymlinksInPath() == executable.resolvingSymlinksInPath()
+        }
         let arguments = request.tool == .java ? ["-version"] : ["--version"]
         let result = try await runner.run(ProcessCommand(executable.path, arguments, timeout: .seconds(15)))
         guard result.terminationStatus.isSuccess, let version = request.exactVersion else { return false }
@@ -223,7 +242,7 @@ public struct ToolPreparation: Sendable {
 
     private static func which(_ tool: String, directory: URL, runner: any ProcessRunner) async throws -> URL? {
         do {
-            let result = try await runner.run(ProcessCommand("which", [tool], workingDirectory: directory, timeout: .seconds(15)))
+            let result = try await runner.run(ProcessCommand("/usr/bin/which", [tool], workingDirectory: directory, timeout: .seconds(15)))
             let value = result.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines)
             guard result.terminationStatus.isSuccess, value.hasPrefix("/"), !value.unicodeScalars.contains(where: { CharacterSet.controlCharacters.contains($0) }) else { return nil }
             return URL(fileURLWithPath: value)

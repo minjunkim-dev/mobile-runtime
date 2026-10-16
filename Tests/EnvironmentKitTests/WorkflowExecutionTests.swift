@@ -6,6 +6,17 @@ import Testing
 
 @Suite("shared CLI and GUI RN workflows")
 struct WorkflowExecutionTests {
+    @Test("an unmet exact tool declaration blocks build and up before dependency or build changes", arguments: [WorkflowKind.build, .up])
+    func unmetToolDeclaration(_ kind: WorkflowKind) async throws {
+        let repo = try iosProject()
+        try repo.write(".tool-versions", "nodejs 24.14.0\n")
+        let runner = kind == .build ? iosRunner(repo) : iosUpRunner(repo)
+        let result = await WorkflowExecution.run(kind, input: WorkflowInput(project: ProjectInspectionInput(
+            directory: repo.root, environment: [:])), runner: runner, leases: temporaryLeases())
+        #expect(result.exitCode == 1)
+        #expect(result.up?.context.validation?.checks.contains { $0.id == "tools.node" && $0.status == .error } == true)
+        #expect(!runner.log.all.contains { $0.arguments.contains("install") || $0.arguments.contains("build") || $0.executable == "curl" })
+    }
     @Test("dual-platform app needs selection before any subprocess or mutation")
     func missingPlatform() async throws {
         let repo = try FixtureRepo()
@@ -322,6 +333,8 @@ struct WorkflowExecutionTests {
         try repo.write("yarn.lock", "")
         try repo.directory("node_modules")
         try repo.directory(workspaceOnly ? "ios/MyApp.xcworkspace" : "ios/MyApp.xcodeproj")
+        let node = try repo.write(".mobile/tool-fixtures/node", "fixture node")
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: node.path)
         return repo
     }
 
@@ -334,6 +347,8 @@ struct WorkflowExecutionTests {
             "xcodebuild -checkFirstLaunchStatus": .ok(""),
             "xcrun simctl list runtimes -j": .ok(#"{"runtimes":[{"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-27-0","name":"iOS 27.0","version":"27.0","isAvailable":true}]}"#),
             "node --version": .ok("v22.14.0"),
+            "/usr/bin/which node": .ok(repo.url(".mobile/tool-fixtures/node").path),
+            "\(repo.url(".mobile/tool-fixtures/node").path) --version": .ok("v22.14.0"),
             "yarn --version": .ok("1.22.22"),
             "yarn install --frozen-lockfile": .ok(""),
             "xcodebuild -list -json \(target)": .ok(workspaceOnly ? #"{"workspace":{"schemes":["MyApp"]}}"# : #"{"project":{"schemes":["MyApp"],"configurations":["Debug","Release"]}}"#),

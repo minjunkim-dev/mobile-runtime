@@ -6,7 +6,7 @@ import Testing
 
 @Suite("shared native iOS workflows")
 struct NativeIOSWorkflowTests {
-    @Test("native preparation preserves its selected container without RN plans or tools", arguments: [false, true])
+    @Test("native preparation preserves its selected container and only observes its declared Ruby tools", arguments: [false, true])
     func nativePreparation(multiple: Bool) async throws {
         let repo = try project()
         if multiple { try repo.write("Other.xcodeproj/project.pbxproj", "other app") }
@@ -28,8 +28,10 @@ struct NativeIOSWorkflowTests {
             runner: runner, leases: temporaryLeases())
         #expect(approved.exitCode == 1)
         #expect(approved.operation.state == "waiting-manual")
-        #expect(!runner.log.all.contains { ["node", "npm", "yarn", "pnpm", "pod", "bundle", "ruby"].contains($0.executable)
+        #expect(!runner.log.all.contains { ["node", "npm", "yarn", "pnpm", "pod", "bundle"].contains($0.executable)
+            || $0.executable == "ruby" && $0.arguments != ["--version"]
             || ($0.executable == "/usr/bin/which" && $0.arguments.contains("node")) })
+        #expect(!runner.log.all.contains { $0.executable == "curl" || $0.arguments.contains("install") })
         #expect(!FileManager.default.fileExists(atPath: repo.url("node_modules").path))
     }
 

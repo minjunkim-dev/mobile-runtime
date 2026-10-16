@@ -337,6 +337,16 @@ public enum PreparationExecution {
                 steps: [step], files: approvalFiles(root, excluding: excluding), installed: [:])
             return value
         }
+        let currentEnvironment = await ProjectExecutionEnvironment.resolve(anchor: anchor, hostRunner: runner)
+        let toolRequirements = try await ToolRequirements.resolve(anchor: anchor, platforms: preparationPlatforms, runner: currentEnvironment.runner)
+        let toolPreparation = try await ToolPreparation.inspect(requirements: toolRequirements, directory: anchor.directory,
+            environment: input.environment, runner: runner, currentToolRunner: currentEnvironment.runner)
+        steps += toolPreparation.steps
+        sdkInstalled.merge(toolPreparation.installed) { _, new in new }
+        value.installationActions.merge(toolPreparation.actions) { _, new in new }
+        // Missing project tools must not make their own approved installation
+        // depend on running Gradle, npm, or Bundle. Inspect those after tools exist.
+        let pendingTools = !toolPreparation.actions.isEmpty
         for platform in preparationPlatforms {
             try Task.checkCancellation()
             guard selected.platforms.contains(platform) else {
@@ -348,7 +358,8 @@ public enum PreparationExecution {
                 platforms.append(PreparationPlatform(platform: platform, state: "waiting-manual", checks: [item]))
                 continue
             }
-            let context = await WorkflowContext.make(input: input, platform: platform, anchor: anchor, runner: runner)
+            let context = await WorkflowContext.make(input: input, platform: platform, anchor: anchor, runner: runner,
+                includeProjectEnvironment: !pendingTools)
             contexts[platform] = context
             let report = await context.engine.run()
             var sdkPreparation: AndroidSDKPreparation?
@@ -366,14 +377,21 @@ public enum PreparationExecution {
                     required: check.outcome.required, source: check.outcome.source, command: nil,
                     remediation: check.outcome.remediation ?? (check.outcome.reason.map { Remediation(summary: $0) }))
             }
+            checks += toolPreparation.checks
+            if pendingTools {
+                checks.append(PreparationStep(id: "\(platform.rawValue).tools.reinspect", platform: platform, kind: "provider", target: selected.app.path,
+                    observed: "Project-dependent inspection is deferred until its tools are available", required: "Exact project tool paths",
+                    source: CheckSource(origin: "approved tool preparation"), command: nil,
+                    remediation: Remediation(summary: "Preserve completed tools. Inspect again and approve any newly observed dependency or SDK steps.")))
+            }
             if let sdkPreparation {
                 checks += sdkPreparation.checks
                 sdkInstalled.merge(sdkPreparation.installed) { _, new in new }
                 value.installationActions.merge(sdkPreparation.actions) { _, new in new }
             }
-            if anchor.framework == .reactNative, !checks.contains(where: { $0.id.hasSuffix(".package-manager.version") }) {
-                let output = try await context.projectRunner.run(ProcessCommand(anchor.packageManagerName, ["--version"],
-                    workingDirectory: anchor.workspaceRoot?.directory ?? anchor.directory, timeout: .seconds(15)))
+            if anchor.framework == .reactNative, !pendingTools, !checks.contains(where: { $0.id.hasSuffix(".package-manager.version") }) {
+                let output = try await optionalTool(ProcessCommand(anchor.packageManagerName, ["--version"],
+                    workingDirectory: anchor.workspaceRoot?.directory ?? anchor.directory, timeout: .seconds(15)), runner: context.projectRunner)
                 let version = output.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines)
                 let usable = output.terminationStatus.isSuccess && SemanticVersion(version) != nil
                 checks.append(PreparationStep(id: "\(platform.rawValue).package-manager.version", platform: platform,
@@ -383,7 +401,7 @@ public enum PreparationExecution {
                     command: nil, remediation: usable ? nil : Remediation(summary: "Prepare the existing package manager separately, then inspect again.")))
             }
             var selectedTools: [String] = []
-            if anchor.framework == .reactNative {
+            if anchor.framework == .reactNative, !pendingTools {
                 selectedTools = ["node", anchor.packageManagerName]
                 if anchor.gemInstallProcess != nil { selectedTools += ["ruby", "bundle"] }
                 else if FileManager.default.fileExists(atPath: anchor.directory.appendingPathComponent("ios/Podfile").path) { selectedTools += ["pod"] }
@@ -400,7 +418,7 @@ public enum PreparationExecution {
                     remediation: known ? nil : Remediation(summary: "Prepare the declared tool and inspect its executable path before approval.")))
             }
             // Scheme selection is a build input; setup does not silently pick one.
-            steps += checks.filter { $0.kind != "reuse" && !$0.id.hasSuffix(".config.values") }
+            steps += checks.filter { $0.kind != "reuse" && !$0.id.hasPrefix("tools.") && !$0.id.hasSuffix(".config.values") }
             platforms.append(PreparationPlatform(platform: platform, state: "waiting-manual", checks: checks))
         }
         let context = contexts[.ios] ?? contexts[.android]
@@ -489,6 +507,14 @@ public enum PreparationExecution {
         value.plan = try makePlan(project: selected.app, app: selected.id, kind: "react-native", platforms: platforms,
                                  steps: steps, files: approvalFiles(root, excluding: excluding), installed: installed, androidRequirements: androidRequirements)
         return value
+    }
+
+    private static func optionalTool(_ command: ProcessCommand, runner: any ProcessRunner) async throws -> ProcessResult {
+        do { return try await runner.run(command) }
+        catch let error as ProcessError {
+            guard case .spawnFailed = error else { throw error }
+            return ProcessResult(terminationStatus: .exited(127), standardOutput: "", standardError: "Selected project tool is not installed")
+        }
     }
 
     private static func manualKind(_ check: String) -> String {
