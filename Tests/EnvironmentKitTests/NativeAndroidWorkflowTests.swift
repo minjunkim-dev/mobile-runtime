@@ -94,6 +94,46 @@ struct NativeAndroidWorkflowTests {
         try fixture.assertPreserved()
     }
 
+    @Test("successful owned Emulator down clears its claim before another project observes an offline device")
+    func ownedEmulatorDownReleasesClaim() async throws {
+        let fixture = try NativeAndroidFixture()
+        let up = await WorkflowExecution.run(.up, input: fixture.workflowInput,
+            runner: try fixture.runner(), leases: fixture.leases)
+        #expect(up.exitCode == 0, Comment(rawValue: up.up?.failure?.message ?? ""))
+        let key = ResourceKey.device(.android, "avd:Pixel")
+        await #expect(throws: ResourceConflict.self) {
+            try await fixture.leases.check(device: key, project: "/next-project") { _ in
+                .running("the first project's app is still running")
+            }
+        }
+
+        // Seed the fixture's successful up as an owned Emulator lifecycle.
+        let store = AndroidActiveRunStore(project: fixture.project, logs: RunLogs(project: fixture.project))
+        var record = try #require(try store.read())
+        var device = try #require(record.device)
+        device.state = .started
+        device.launcherPID = 4242
+        record.device = device
+        try store.write(record)
+
+        var responses = try fixture.runner()
+        responses.responses["adb -s emulator-5554 shell pidof \(NativeAndroidFixture.appID)"] = .failed(1, "")
+        responses.responses["adb -s emulator-5554 emu kill"] = .ok("OK: killing emulator, bye bye\n")
+        let cleanup = OwnedEmulatorCleanupRunner(base: responses)
+        let down = await WorkflowExecution.run(.down, input: fixture.workflowInput,
+            runner: cleanup, leases: fixture.leases)
+        #expect(down.exitCode == 0, Comment(rawValue: down.down?.failure?.message ?? ""))
+        #expect(down.down?.status == .pass)
+        #expect(down.down?.items.contains { $0.id == "android.emulator" && $0.status == .stopped } == true)
+        #expect(responses.log.all.contains { $0.description == "adb -s emulator-5554 emu kill" })
+        #expect(try store.read() == nil)
+        try await fixture.leases.check(device: key, project: "/next-project") { _ in
+            Issue.record("a successfully stopped owned Emulator must not retain its project claim")
+            return .unknown("the Emulator is offline after successful down")
+        }
+        try fixture.assertPreserved()
+    }
+
     @Test("native cancellation preserves completed installation and existing runtime resources", arguments: [false, true])
     func cancellation(afterInstall: Bool) async throws {
         let fixture = try NativeAndroidFixture()
@@ -145,6 +185,29 @@ struct NativeAndroidWorkflowTests {
         #expect(result.operation.conflict != nil)
         #expect(!runner.log.all.contains { $0.arguments.contains(":app:assembleDebug") })
         try fixture.assertPreserved()
+    }
+}
+
+private actor OwnedEmulatorCleanupRunner: ProcessRunner {
+    let base: FakeProcessRunner
+    private var stopped = false
+
+    init(base: FakeProcessRunner) { self.base = base }
+
+    func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+        var runner = base
+        if stopped, command.description == "adb devices" {
+            runner.responses[command.description] = .ok("List of devices attached\n")
+        }
+        let result = try await runner.run(command, onLine: onLine)
+        if command.description == "adb -s emulator-5554 emu kill", result.terminationStatus.isSuccess {
+            stopped = true
+        }
+        return result
+    }
+
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+        try await base.spawnDetached(command, logFile: logFile)
     }
 }
 
