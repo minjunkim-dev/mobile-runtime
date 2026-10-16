@@ -281,6 +281,34 @@ struct ToolPreparationTests {
         #expect(try String(contentsOf: fixture.repo.url("store/existing/keep"), encoding: .utf8) == "original")
     }
 
+    @Test("ancestor rpaths cannot redirect a child's rpath dependency outside the stage", arguments: ["external", "unresolved"])
+    func rejectedAncestorRpath(_ fault: String) async throws {
+        let fixture = try await fixture()
+        let stage = fixture.repo.url("stage")
+        let magic = Data([0xcf, 0xfa, 0xed, 0xfe])
+        let parentRpath = fault == "external" ? fixture.repo.url("outside").path : "../outside"
+        let binaries = [
+            ("bin/java", "@loader_path/../lib", "@loader_path/../lib/libparent.dylib"),
+            ("lib/libparent.dylib", parentRpath, "@loader_path/child/libchild.dylib"),
+            ("lib/child/libchild.dylib", "@loader_path", "@rpath/libtarget.dylib"),
+            ("lib/libtarget.dylib", "@loader_path", "/usr/lib/libSystem.B.dylib"),
+        ]
+        try fixture.repo.write("outside/libtarget.dylib", "external")
+        for (relative, rpath, dependency) in binaries {
+            let file = try fixture.repo.write("stage/\(relative)", "fixture")
+            try (magic + Data(relative.utf8)).write(to: file)
+            let settings = "cmd LC_BUILD_VERSION\nplatform 1\nminos 14.0\ncmd LC_RPATH\npath \(rpath) (offset 12)\n"
+            let libraries = "fixture:\n\t\(dependency) (compatibility version 1.0.0, current version 1.0.0)\n"
+            fixture.runner.setInspection(file.path, settings: settings, libraries: libraries)
+        }
+        await #expect(throws: DomainError.self) {
+            try await ToolInstallationValidation.validate(stage: stage, executable: "bin/java", version: version(.java), tool: "java", host: host, runner: fixture.runner)
+        }
+        #expect(fixture.runner.inspectionHits >= 4)
+        #expect(!fixture.runner.commands.contains { $0.executable == "/usr/bin/env" })
+        #expect(try String(contentsOf: fixture.repo.url("outside/libtarget.dylib"), encoding: .utf8) == "external")
+    }
+
     private func libraryFixture(_ layout: String = "none") async throws -> (repo: FixtureRepo, runner: ToolPreparationFixtureRunner) {
         let fault = layout.hasSuffix("-contained") ? String(layout.dropLast("-contained".count)) : layout
         let fixture = try await fixture()

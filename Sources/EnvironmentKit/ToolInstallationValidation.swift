@@ -11,7 +11,6 @@ enum ToolInstallationValidation {
         let main = stage.appendingPathComponent(executable)
         let binaries = try machOBinaries(stage: stage, main: main)
         var executableRpaths: [URL] = []
-        var executableHasUnresolvedRpaths = false
         var inspections: [(binary: URL, rpaths: [URL], hasUnresolvedRpaths: Bool, libraryIDs: [String], dependencies: [String])] = []
         guard let root = canonical(stage)?.path else { throw InstallationExecution.failure("Tool stage cannot be inspected") }
         func contained(_ path: URL) -> Bool { canonical(path)?.path.hasPrefix(root + "/") == true }
@@ -46,7 +45,7 @@ enum ToolInstallationValidation {
             }
             let localRpaths = rpaths.compactMap { expand($0, binary: binary, main: main) }
             let hasUnresolvedRpaths = localRpaths.count != rpaths.count
-            if binary == main { executableRpaths = localRpaths; executableHasUnresolvedRpaths = hasUnresolvedRpaths }
+            if binary == main { executableRpaths = localRpaths }
             let libraries = try await runner.run(ProcessCommand("/usr/bin/otool", ["-arch", host.architecture, "-L", binary.path], timeout: .seconds(30)))
             guard libraries.terminationStatus.isSuccess else { throw InstallationExecution.failure("Pinned tool libraries cannot be inspected") }
             let dependencies = libraries.standardOutput.split(whereSeparator: \.isNewline).dropFirst()
@@ -56,6 +55,11 @@ enum ToolInstallationValidation {
         var internalRpaths: [URL] = []
         var identities: [String: Set<String>] = [:]
         for inspection in inspections {
+            // dyld inherits ancestor RPATHs even across loader-relative dependency edges.
+            guard !inspection.hasUnresolvedRpaths,
+                  inspection.rpaths.allSatisfy({ canonical($0)?.path == root || contained($0) }) else {
+                throw InstallationExecution.failure("Pinned tool needs an unapproved external library; prepare it manually without hidden downloads")
+            }
             if let binary = canonical(inspection.binary) { identities[binary.path, default: []].formUnion(inspection.libraryIDs) }
             for path in inspection.rpaths {
                 guard let resolved = canonical(path) else { continue }
@@ -77,8 +81,7 @@ enum ToolInstallationValidation {
                         .map { $0.appendingPathComponent(String(dependency.dropFirst(7))) }
                 } else { candidates = expand(dependency, binary: inspection.binary, main: main).map { [$0] } ?? [] }
                 if dependency.hasPrefix("@rpath/") {
-                    guard !inspection.hasUnresolvedRpaths, !executableHasUnresolvedRpaths,
-                          candidates.allSatisfy({ contained($0) }) else {
+                    guard candidates.allSatisfy({ contained($0) }) else {
                         throw InstallationExecution.failure("Pinned tool needs an unapproved external library; prepare it manually without hidden downloads")
                     }
                 }
