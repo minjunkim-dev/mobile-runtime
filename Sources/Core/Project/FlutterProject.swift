@@ -193,7 +193,8 @@ public struct FlutterProject: Sendable {
     }
 
     private static func optionalData(_ path: URL) throws -> Data? {
-        guard FileManager.default.fileExists(atPath: path.path) else { return nil }
+        guard FileManager.default.fileExists(atPath: path.path)
+            || (try? FileManager.default.destinationOfSymbolicLink(atPath: path.path)) != nil else { return nil }
         return try Data(contentsOf: path)
     }
     private static func validRange(_ value: String) -> Bool {

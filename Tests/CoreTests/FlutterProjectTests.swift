@@ -26,6 +26,19 @@ struct FlutterProjectTests {
         #expect(throws: (any Error).self) { try FlutterProject(directory: repo.root) }
     }
 
+    @Test("a dangling declaration link cannot become an absent Flutter declaration", arguments: [
+        ".fvmrc", ".flutter-version", ".tool-versions", "mise.toml", ".mise.toml", "pubspec_overrides.yaml",
+    ])
+    func danglingDeclaration(_ filename: String) throws {
+        let repo = try project()
+        let file = repo.url(filename)
+        let target = repo.url("missing-flutter-declaration")
+        try FileManager.default.createSymbolicLink(at: file, withDestinationURL: target)
+        #expect(!FileManager.default.fileExists(atPath: file.path))
+        #expect(throws: (any Error).self) { try FlutterProject(directory: repo.root) }
+        #expect(try FileManager.default.destinationOfSymbolicLink(atPath: file.path) == target.path)
+    }
+
     @Test("a Dart resolver preserves app and workspace roots and reports files Pub would delete")
     func workspaceIdentity() throws {
         let repo = try project("apps/client", workspace: true)
