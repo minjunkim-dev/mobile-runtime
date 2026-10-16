@@ -1,0 +1,65 @@
+{
+  "owner": "repository maintainer",
+  "operator": "Codex #214 context",
+  "storageAlias": "PRIVATE214_EVIDENCE",
+  "access": "Host-local directory mode 0700; each evidence file mode 0600. Actual path supplied privately to the coordinator, excluded from public reports.",
+  "durableCopyCreated": true,
+  "privateIndexSHA256": "14561104389e31bf312df1ee142e8bf5bfd1aea5739a2a245bee7f2be313d303",
+  "privateFileCount": 21,
+  "selectedEvidence": [
+    {"name": "food-build-private.log", "SHA256": "b00bd0d077c75db96232e7b83dc9d94a6d2750beda262419fa4307a7c8973a5e", "publicReference": "source-baseline/AC05/20261015-01/results.json"},
+    {"name": "netnewswire-build-private.log", "SHA256": "4da603b903039edcafc31b085db7395182d2aa6b1cd48533d9ee2d555ad7639d", "publicReference": "source-baseline/AC05/20261015-01/results.json"},
+    {"name": "netnewswire-build-02-private.log", "SHA256": "55467fd5bdd9b54d3230c6e31a05f83c5314af2f6749eb83d867f11edb45311f", "publicReference": "source-baseline/AC05/20261015-02/results.json"},
+    {"name": "food-truck-tracked-before.json / food-truck-tracked-after.json", "bothSHA256": "4e72b41c4405ff3f5c95d37fbcd6e75d71e11978595a9b27bf6a8cfc3630b2b6"},
+    {"name": "netnewswire-tracked-before.json / netnewswire-tracked-after.json", "bothSHA256": "5a6d7f086849f46bc40b2ef7f95242f0e35b1354753061ffda2e34056023aef8"},
+    {"name": "existing-apps-before.json / existing-apps-after.json", "bothSHA256": "b3f9e49628cf7b8dfec13cab084b3557ac1c34874a466a31919fdf0c27fbbcfd"}
+  ],
+  "privacyReview": "Public images were visually inspected. Public logs contain selected redacted excerpts only. Raw build logs were checked for nonempty credential-named assignments; none were found by that bounded check. No API credentials or signing identity were provided for this execution.",
+  "limitations": "The private index identifies retained evidence files. Its checksum does not prove an original Xcode/runtime distribution archive identity, application correctness, a complete secret audit, or release readiness.",
+  "additionalAttempts": [
+    {
+      "attemptID": "214-20261016-03",
+      "storageAlias": "PRIVATE214_ATTEMPT03",
+      "privateIndexSHA256": "aefb42cd851a91a6b8ac233daaa05c15515ad2904856b19e64f311da42eca107",
+      "indexedPrivateFileCount": 66,
+      "privateFileCountIncludingIndex": 67,
+      "access": "owner directory0700/files0600; actual path supplied privately to coordinator",
+      "selectedEvidence": [
+        {
+          "name": "bounded-before-snapshot.json",
+          "SHA256": "0887bfd0c34cd2d0ff270fff131c07c1d0a60c3c24311010dee9fb4b00098345"
+        },
+        {
+          "name": "bounded-after-snapshot.json",
+          "SHA256": "0a744da61313af54897e2918049104c5d2cc1cafbea842c8d180334d392f6c38"
+        },
+        {
+          "name": "bounded-before-artifact.json",
+          "SHA256": "9ec2737af62206c4482c79d406e4a6b82677afac9b95528aaddc55fb1e13d6f5"
+        },
+        {
+          "name": "bounded-after-artifact.json",
+          "SHA256": "9ec2737af62206c4482c79d406e4a6b82677afac9b95528aaddc55fb1e13d6f5"
+        },
+        {
+          "name": "launch-before-choice.png",
+          "SHA256": "ea6c678e6eca4b027feb3dab0cc3359064e0152fbf88955735dba914c9df3e9c"
+        },
+        {
+          "name": "launch-AX.txt",
+          "SHA256": "c6d888b70255f44aa13717973440a920985d1c2fb9b01ff574d92edab1e28ded"
+        },
+        {
+          "name": "final-audit-private.json",
+          "SHA256": "1b8b716270c436c39305bc68da75d9cbc201109c8a8f50d65027939cd4bea6b9"
+        },
+        {
+          "name": "installed-toolchain-metadata-private.json",
+          "SHA256": "df7d724c384448279e4192312c83925b65112d8bf0039a59f78cee68945ba17f"
+        }
+      ],
+      "publicReference": "source-baseline/AC05/20261016-03/results.json",
+      "limitations": "No original full attempt02 bundle manifest. Current notification authorization enum not measured. Original distribution archive checksums remain unknown."
+    }
+  ]
+}

@@ -1,0 +1,466 @@
+{
+  "build": "1",
+  "bundleID": "dev.runstir.runstirFlutterMinimal",
+  "entries": [
+    {
+      "kind": "file",
+      "mode": "0o644",
+      "path": "AppFrameworkInfo.plist",
+      "sha256": "275c1f7273e185d2d65f8b447af25841e2be7fbdb3df89feb6324634f33ce317",
+      "size": 347
+    },
+    {
+      "kind": "file",
+      "mode": "0o644",
+      "path": "AppIcon60x60@2x.png",
+      "sha256": "19be171481dc71a0b2803ebcd01dd8b0c5fd5778dee34c0a3cabc948c225f24e",
+      "size": 862
+    },
+    {
+      "kind": "file",
+      "mode": "0o644",
+      "path": "AppIcon76x76@2x~ipad.png",
+      "sha256": "41c7d42f6e61f8fe7f30b1ffa2256aecbc9682be06d18c4a3062043e1a2e547c",
+      "size": 1226
+    },
+    {
+      "kind": "file",
+      "mode": "0o644",
+      "path": "Assets.car",
+      "sha256": "7cdc0f5ef4149a0859e61bd53bd487c73923c0f774626a4f79f4e2559b42186b",
+      "size": 28328
+    },
+    {
+      "kind": "directory",
+      "mode": "0o755",
+      "path": "Base.lproj"
+    },
+    {
+      "kind": "directory",
+      "mode": "0o755",
+      "path": "Base.lproj/LaunchScreen.storyboardc"
+    },
+    {
+      "kind": "file",
+      "mode": "0o644",
+      "path": "Base.lproj/LaunchScreen.storyboardc/01J-lp-oVM-view-Ze5-6b-2t3.nib",
+      "sha256": "a241c1e1652c6231e5c157a595dd9095ddee4b6243c6e6bdbe17fb27d63791ed",
+      "size": 2309
+    },
+    {
+      "kind": "file",
+      "mode": "0o644",
+      "path": "Base.lproj/LaunchScreen.storyboardc/Info.plist",
+      "sha256": "1f255d5cc53b531e3f29a9406a8df49a958e2bf9443d3e20bd8374f707f7d5c8",
+      "size": 258
+    },
+    {
+      "kind": "file",
+      "mode": "0o644",
+      "path": "Base.lproj/LaunchScreen.storyboardc/UIViewController-01J-lp-oVM.nib",
+      "sha256": "54f3637f671feba5f19e82ec4f4a7fb448bb3cfc0fb180f089aa571fc8f053e2",
+      "size": 924
+    },
+    {
+      "kind": "directory",
+      "mode": "0o755",
+      "path": "Base.lproj/Main.storyboardc"
+    },
+    {
+      "kind": "file",
+      "mode": "0o644",
+      "path": "Base.lproj/Main.storyboardc/BYZ-38-t0r-view-8bC-Xf-vdC.nib",
+      "sha256": "a3bb094a3cc4ada29dce11898ae26fd164c9be5a2687a58560a8a048713e36c5",
+      "size": 1863
+    },
+    {
+      "kind": "file",
+      "mode": "0o644",
+      "path": "Base.lproj/Main.storyboardc/Info.plist",
+      "sha256": "3e9bdaa408d1eb6ae5e989b813a8644e0a4a981202c536905de52a7291e69aa4",
+      "size": 258
+    },
+    {
+      "kind": "file",
+      "mode": "0o644",
+      "path": "Base.lproj/Main.storyboardc/UIViewController-BYZ-38-t0r.nib",
+      "sha256": "cbdd28d89423b2c9beef2b27ce2c9608d30d6c6a9d2e7679f79a53814444e53f",
+      "size": 951
+    },
+    {
+      "kind": "directory",
+      "mode": "0o755",
+      "path": "Frameworks"
+    },
+    {
+      "kind": "directory",
+      "mode": "0o755",
+      "path": "Frameworks/App.framework"
+    },
+    {
+      "kind": "file",
+      "mode": "0o755",
+      "path": "Frameworks/App.framework/App",
+      "sha256": "13edb7efdb896545eb36868dc279c476db5ad616f4bf9ca47a434d7870cf6ab2",
+      "size": 16752
+    },
+    {
+      "kind": "file",
+      "mode": "0o644",
+      "path": "Frameworks/App.framework/Info.plist",
+      "sha256": "123bedefe591c05727973683a5f2d301cb3710fdcfca8c5914529dd47329beac",
+      "size": 754
+    },
+    {
+      "kind": "directory",
+      "mode": "0o755",
+      "path": "Frameworks/App.framework/_CodeSignature"
+    },
+    {
+      "kind": "file",
+      "mode": "0o644",
+      "path": "Frameworks/App.framework/_CodeSignature/CodeResources",
+      "sha256": "81c6399b63e7a55c0d34153cecd9b920352a60fc33fb1a049c0ea199a9a5c37e",
+      "size": 4686
+    },
+    {
+      "kind": "directory",
+      "mode": "0o755",
+      "path": "Frameworks/App.framework/flutter_assets"
+    },
+    {
+      "kind": "file",
+      "mode": "0o644",
+      "path": "Frameworks/App.framework/flutter_assets/AssetManifest.bin",
+      "sha256": "00af55ad3d6f21898fe77e0ff092d1a1cda52c941b6860e9928d45c8af8c095d",
+      "size": 117
+    },
+    {
+      "kind": "file",
+      "mode": "0o644",
+      "path": "Frameworks/App.framework/flutter_assets/FontManifest.json",
+      "sha256": "cd7e03645bc44b2dd47b7cb626f51c4ecbf55a197ab77241628b47ac165fbe21",
+      "size": 208
+    },
+    {
+      "kind": "file",
+      "mode": "0o644",
+      "path": "Frameworks/App.framework/flutter_assets/NOTICES.Z",
+      "sha256": "134eb6bf67615e38c333f3c49b982fc0d316f820070119f6bb77543ac725879a",
+      "size": 104558
+    },
+    {
+      "kind": "file",
+      "mode": "0o644",
+      "path": "Frameworks/App.framework/flutter_assets/NativeAssetsManifest.json",
+      "sha256": "9548a31e4a048135c1d94f919328bfb62ae2c7bb3cab96557c7941daa97776cb",
+      "size": 45
+    },
+    {
+      "kind": "directory",
+      "mode": "0o755",
+      "path": "Frameworks/App.framework/flutter_assets/fonts"
+    },
+    {
+      "kind": "file",
+      "mode": "0o664",
+      "path": "Frameworks/App.framework/flutter_assets/fonts/MaterialIcons-Regular.otf",
+      "sha256": "d9865b671a09d683d13a863089d8825e0f61a37696ce5d7d448bc8023aa62453",
+      "size": 1645184
+    },
+    {
+      "kind": "file",
+      "mode": "0o644",
+      "path": "Frameworks/App.framework/flutter_assets/isolate_snapshot_data",
+      "sha256": "4f7af034bce6375ec87a385a2c70e7b8ff106a53c1208376d8a2f9446516d8f8",
+      "size": 11028680
+    },
+    {
+      "kind": "file",
+      "mode": "0o644",
+      "path": "Frameworks/App.framework/flutter_assets/kernel_blob.bin",
+      "sha256": "42c457fb1fca15884ac8611ca915aae80072bd517b314f404ea96fd820dfbf3e",
+      "size": 41367488
+    },
+    {
+      "kind": "directory",
+      "mode": "0o755",
+      "path": "Frameworks/App.framework/flutter_assets/packages"
+    },
+    {
+      "kind": "directory",
+      "mode": "0o755",
+      "path": "Frameworks/App.framework/flutter_assets/packages/cupertino_icons"
+    },
+    {
+      "kind": "directory",
+      "mode": "0o755",
+      "path": "Frameworks/App.framework/flutter_assets/packages/cupertino_icons/assets"
+    },
+    {
+      "kind": "file",
+      "mode": "0o644",
+      "path": "Frameworks/App.framework/flutter_assets/packages/cupertino_icons/assets/CupertinoIcons.ttf",
+      "sha256": "67c44fe9183b002e79dde7f6977e2988661c9a3e4a3c5fce968787efdbed823c",
+      "size": 257628
+    },
+    {
+      "kind": "directory",
+      "mode": "0o755",
+      "path": "Frameworks/App.framework/flutter_assets/shaders"
+    },
+    {
+      "kind": "file",
+      "mode": "0o644",
+      "path": "Frameworks/App.framework/flutter_assets/shaders/ink_sparkle.frag",
+      "sha256": "468645d4b31c40c1741dabd66a8eca5fc0252633f662831d0a6a2876a11bad33",
+      "size": 11992
+    },
+    {
+      "kind": "file",
+      "mode": "0o644",
+      "path": "Frameworks/App.framework/flutter_assets/shaders/stretch_effect.frag",
+      "sha256": "2f5364c9aa7fb8b4d8d7cd4d52020080a625d958976e9c97d7f268032de022da",
+      "size": 10192
+    },
+    {
+      "kind": "file",
+      "mode": "0o644",
+      "path": "Frameworks/App.framework/flutter_assets/vm_snapshot_data",
+      "sha256": "be86b27a577670a3bfc5380a1ff3c6e900f8c732c3f66dfb578894bcd3cc830c",
+      "size": 15011
+    },
+    {
+      "kind": "directory",
+      "mode": "0o700",
+      "path": "Frameworks/Flutter.framework"
+    },
+    {
+      "kind": "file",
+      "mode": "0o755",
+      "path": "Frameworks/Flutter.framework/Flutter",
+      "sha256": "49493e38aa4c33e678351cd22ad245b3b31026e4e96509632dae2fa3d1f363d1",
+      "size": 40661856
+    },
+    {
+      "kind": "directory",
+      "mode": "0o700",
+      "path": "Frameworks/Flutter.framework/Headers"
+    },
+    {
+      "kind": "file",
+      "mode": "0o600",
+      "path": "Frameworks/Flutter.framework/Headers/Flutter.h",
+      "sha256": "c1f5b26a03d82c2451dbec13b8645bb56df3df3d80592f98171ba204e15d4a36",
+      "size": 921
+    },
+    {
+      "kind": "file",
+      "mode": "0o600",
+      "path": "Frameworks/Flutter.framework/Headers/FlutterAppDelegate.h",
+      "sha256": "7a1ba667654203dc4e5c123fee042e9cf980827f5c2698992834bda7c5d6aa46",
+      "size": 1821
+    },
+    {
+      "kind": "file",
+      "mode": "0o600",
+      "path": "Frameworks/Flutter.framework/Headers/FlutterBinaryMessenger.h",
+      "sha256": "1170e4e2dfbba82a724246abfaaf561ea63d6dc2bc7b2a210b0195b41261332f",
+      "size": 3761
+    },
+    {
+      "kind": "file",
+      "mode": "0o600",
+      "path": "Frameworks/Flutter.framework/Headers/FlutterCallbackCache.h",
+      "sha256": "d21f7ebcae4afabf26a13b221817ecebe4ccf50a20d3cf5a7c7032de06dcc035",
+      "size": 1724
+    },
+    {
+      "kind": "file",
+      "mode": "0o600",
+      "path": "Frameworks/Flutter.framework/Headers/FlutterChannels.h",
+      "sha256": "920d7de42def64b88e9fc29e150532ec3a15b80f55643a6aa012d59fae2e19a2",
+      "size": 18414
+    },
+    {
+      "kind": "file",
+      "mode": "0o600",
+      "path": "Frameworks/Flutter.framework/Headers/FlutterCodecs.h",
+      "sha256": "672aa51d8b996e915ebd57a7cbd59d974ad51604bbb33232b2c4a20b269a7853",
+      "size": 15290
+    },
+    {
+      "kind": "file",
+      "mode": "0o600",
+      "path": "Frameworks/Flutter.framework/Headers/FlutterDartProject.h",
+      "sha256": "53cabfd086edf6ae0ed8732c09d530213b49753c7c2e3865c7ed1a63cddf1fab",
+      "size": 3914
+    },
+    {
+      "kind": "file",
+      "mode": "0o600",
+      "path": "Frameworks/Flutter.framework/Headers/FlutterEngine.h",
+      "sha256": "29528cda49a2619ac88f2a31be72b314af4e543918315dfaf11e5622c200742a",
+      "size": 21724
+    },
+    {
+      "kind": "file",
+      "mode": "0o600",
+      "path": "Frameworks/Flutter.framework/Headers/FlutterEngineGroup.h",
+      "sha256": "4aacef231a815c427753d2c9df6842117b2b1f63f5ea0ba643e810c7a3dd95fe",
+      "size": 4755
+    },
+    {
+      "kind": "file",
+      "mode": "0o600",
+      "path": "Frameworks/Flutter.framework/Headers/FlutterHeadlessDartRunner.h",
+      "sha256": "9e6663669bc5097af281fe14f5a3e4362f15708edc2f902d03e098e6e51620bd",
+      "size": 3927
+    },
+    {
+      "kind": "file",
+      "mode": "0o600",
+      "path": "Frameworks/Flutter.framework/Headers/FlutterHourFormat.h",
+      "sha256": "43848b1528212ffe441493f22e0ecf362f49ff1a645557f3ae8d15422407b6b6",
+      "size": 536
+    },
+    {
+      "kind": "file",
+      "mode": "0o600",
+      "path": "Frameworks/Flutter.framework/Headers/FlutterMacros.h",
+      "sha256": "79b0551d265c52701b378851718ab7b6db7afbecf561b73c2954988554e80f99",
+      "size": 1823
+    },
+    {
+      "kind": "file",
+      "mode": "0o600",
+      "path": "Frameworks/Flutter.framework/Headers/FlutterPlatformViews.h",
+      "sha256": "d1a53db8ce90729ce6669b8560e6e3f5d1a51849132a8c0f304449410745d8fe",
+      "size": 1966
+    },
+    {
+      "kind": "file",
+      "mode": "0o600",
+      "path": "Frameworks/Flutter.framework/Headers/FlutterPlugin.h",
+      "sha256": "41c8e13a193971bd54edb9b2421f539c59b53364e0bfcd914926c9e8e21d32be",
+      "size": 18306
+    },
+    {
+      "kind": "file",
+      "mode": "0o600",
+      "path": "Frameworks/Flutter.framework/Headers/FlutterPluginAppLifeCycleDelegate.h",
+      "sha256": "f8f327fb94838f655de9153c09022dfc9625dd3fbc0e1a7b1c89aa033a1ca0d9",
+      "size": 5318
+    },
+    {
+      "kind": "file",
+      "mode": "0o600",
+      "path": "Frameworks/Flutter.framework/Headers/FlutterSceneDelegate.h",
+      "sha256": "1bdbab65e137d7695d6b391e3ffeecbadd2dda103795f72ec47452b8b9a3fa06",
+      "size": 893
+    },
+    {
+      "kind": "file",
+      "mode": "0o600",
+      "path": "Frameworks/Flutter.framework/Headers/FlutterSceneLifeCycle.h",
+      "sha256": "b4d90b84efbe3ce2f8db38397e312fe7f0c97d0ad7bbca8763a24b6ebf2d2217",
+      "size": 8387
+    },
+    {
+      "kind": "file",
+      "mode": "0o600",
+      "path": "Frameworks/Flutter.framework/Headers/FlutterTexture.h",
+      "sha256": "25ca4de1af6cbfac729e50f7462eb5d4de72f87a2ea545a9da1cab21707f23c6",
+      "size": 2263
+    },
+    {
+      "kind": "file",
+      "mode": "0o600",
+      "path": "Frameworks/Flutter.framework/Headers/FlutterViewController.h",
+      "sha256": "e2336e4d76c2899c2aa71d253a64dd292183b3ebaba237681a95ce2bac09a9a5",
+      "size": 10734
+    },
+    {
+      "kind": "file",
+      "mode": "0o600",
+      "path": "Frameworks/Flutter.framework/Info.plist",
+      "sha256": "ae52e1fe45437f6d73f57cd2ab393ef3b8c4a8216537d6d316b0ffa2875204bf",
+      "size": 1079
+    },
+    {
+      "kind": "directory",
+      "mode": "0o700",
+      "path": "Frameworks/Flutter.framework/Modules"
+    },
+    {
+      "kind": "file",
+      "mode": "0o600",
+      "path": "Frameworks/Flutter.framework/Modules/module.modulemap",
+      "sha256": "d158eb891a59ec065968fff498c00f3093e18ba2e8301e0c857ccbe63db8b46b",
+      "size": 95
+    },
+    {
+      "kind": "file",
+      "mode": "0o600",
+      "path": "Frameworks/Flutter.framework/PrivacyInfo.xcprivacy",
+      "sha256": "9f95d7e7862a4b56b66ed926bd6d622d2a6545a827d19847278b438d571d4212",
+      "size": 845
+    },
+    {
+      "kind": "directory",
+      "mode": "0o700",
+      "path": "Frameworks/Flutter.framework/_CodeSignature"
+    },
+    {
+      "kind": "file",
+      "mode": "0o644",
+      "path": "Frameworks/Flutter.framework/_CodeSignature/CodeResources",
+      "sha256": "5c1975f49929e233264cfa501371f0c222ed83815adee3eb774b3977b5669d11",
+      "size": 7070
+    },
+    {
+      "kind": "file",
+      "mode": "0o600",
+      "path": "Frameworks/Flutter.framework/icudtl.dat",
+      "sha256": "998367809a821d595928089c197b3f7959f0420f81f79d4d0daee53378492ed5",
+      "size": 862304
+    },
+    {
+      "kind": "file",
+      "mode": "0o644",
+      "path": "Info.plist",
+      "sha256": "67d059ae9c59deda8faf3842172c94c51b9248c6189438d6e73c95c78fda9a78",
+      "size": 2042
+    },
+    {
+      "kind": "file",
+      "mode": "0o644",
+      "path": "PkgInfo",
+      "sha256": "82502191c9484b04d685374f9879a0066069c49b8acae7a04b01d38d07e8eca0",
+      "size": 8
+    },
+    {
+      "kind": "file",
+      "mode": "0o755",
+      "path": "Runner",
+      "sha256": "34a1503b2ada99dba486df327d6b9cecd4c19b96f9114799e29f27c9c4f748d0",
+      "size": 40216
+    },
+    {
+      "kind": "file",
+      "mode": "0o755",
+      "path": "Runner.debug.dylib",
+      "sha256": "e942644b9dd3fbbf230d4ee2bc2cbfecb026feebd116975c274ae46211323841",
+      "size": 113696
+    },
+    {
+      "kind": "file",
+      "mode": "0o755",
+      "path": "__preview.dylib",
+      "sha256": "61c721491880cea516fba5bef341add820db7fe79c8b26e7b59b10b42791470d",
+      "size": 16752
+    }
+  ],
+  "sourceSHA": "66732bc18ed28d9eed71336b4a2b018e09ad20b9",
+  "version": "1.0.0"
+}

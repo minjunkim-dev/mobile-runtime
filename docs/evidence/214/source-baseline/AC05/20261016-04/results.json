@@ -1,0 +1,209 @@
+{
+  "AppleLoginRequestWithdrawal": "unchanged",
+  "CIAndIndependentFullDiffReview": "root-owned, pending for this public head",
+  "FoodTruck": {
+    "build": {
+      "elapsedSeconds": 102.022,
+      "exitCode": 0,
+      "rawCommandSHA256": "5bf9f0538de13354442a743e0e86919e98cc9d58ad30a34bdb055652c47e1aec"
+    },
+    "builtArtifact": {
+      "Info": {
+        "CFBundleIdentifier": "com.example.apple-samplecode.Food-Truck",
+        "CFBundleShortVersionString": "1.0",
+        "CFBundleSupportedPlatforms": [
+          "iPhoneSimulator"
+        ],
+        "CFBundleVersion": "1",
+        "DTSDKName": "iphonesimulator27.0",
+        "DTXcodeBuild": "27A266a"
+      },
+      "appID": "com.example.apple-samplecode.Food-Truck",
+      "executable": "Food Truck",
+      "executableBytes": 40216,
+      "executableSHA256": "daee85db2a138f72e8994b97a4710f5eea0ef37a6763a49293986aae3a9d775c",
+      "fileCount": 31,
+      "manifestSHA256": "f53c3554f559e74bf0a4384c4146fc9ada3d583251a16368767e3f4dded84d0e",
+      "regularBytes": 38551516
+    },
+    "captureFailures": "External file and stdout-dash attempts each exit1; same PID68644 captured once via owned internal staging. No relaunch/build/install to bypass capture failure.",
+    "firstScreen": {
+      "SHA256": "37aa9eb6891d95e2c77125048562f8816174bba2b313e77e5978d48bae7ad455",
+      "file": "food-truck-first-screen.png",
+      "result": "pass",
+      "review": "root directly opened original PNG and confirmed Truck/New Orders/Forecast without popup"
+    },
+    "install": {
+      "elapsedSeconds": 8.195,
+      "exitCode": 0,
+      "rawCommandSHA256": "c9baf0bf6b9a769d3779c03f6c7fe88ecfc8f4704c97486c65cdfbfd3ccff686"
+    },
+    "installedArtifact": {
+      "Info": {
+        "CFBundleIdentifier": "com.example.apple-samplecode.Food-Truck",
+        "CFBundleShortVersionString": "1.0",
+        "CFBundleSupportedPlatforms": [
+          "iPhoneSimulator"
+        ],
+        "CFBundleVersion": "1",
+        "DTSDKName": "iphonesimulator27.0",
+        "DTXcodeBuild": "27A266a"
+      },
+      "appID": "com.example.apple-samplecode.Food-Truck",
+      "executable": "Food Truck",
+      "executableBytes": 40216,
+      "executableSHA256": "daee85db2a138f72e8994b97a4710f5eea0ef37a6763a49293986aae3a9d775c",
+      "fileCount": 31,
+      "manifestSHA256": "5c0b3a9a335a37f4eda99e6304c5b6d278da8e48f8d633dfd1ab244bde0d2a32",
+      "regularBytes": 38551516
+    },
+    "launch": {
+      "elapsedSeconds": 1.654,
+      "exitCode": 0,
+      "rawCommandSHA256": "72d5e272e937ade4855b9da5131cb5c11a15ca92d25a06b5d843393a70c920c8"
+    },
+    "launchPID": 68644,
+    "sourceSHA": "3954a769e99f3cc53297d94f2b960ceb2665b3d6",
+    "terminate": "exit0; exact PID ps1 with empty stdout/stderr"
+  },
+  "NetNewsWire": {
+    "V1": {
+      "buildExitCode": 65,
+      "cause": "Planning chronology remains an inference; do not call it a proved Xcode timing bug.",
+      "elapsedSeconds": 22.807,
+      "failureReceiptSHA256": "45bd5e69a72d8b3126d0a72b17651953ee960a28cf2be31a9beed43e4f58ecce",
+      "observation": "Account target cannot find SecretKey in scope; first Secrets.SwiftFileList has2 sources and excludes generated SecretKey.swift. Generated ignored file exists after build.",
+      "result": "fail"
+    },
+    "V2": {
+      "build": {
+        "elapsedSeconds": 54.516,
+        "exitCode": 0,
+        "rawCommandSHA256": "a3ffd06ab417de3fef4d0202deeb610acfe9459487bc50b8bed8db0b79cb56e2"
+      },
+      "firstScreen": {
+        "SHA256": "c034a0c83c1c4c24ff1787de445f504937cd9d4613bb30695e6b90358ee98504",
+        "file": "netnewswire-v2-black.png",
+        "observation": "Black body/status bar only; root directly reviewed. A3-second image alone does not establish app failure.",
+        "result": "inconclusive",
+        "waitSeconds": 3
+      },
+      "generatedIgnoredOutput": {
+        "afterV2BuildSHA256": "304ef17b4f44e0e7d6a61e9cbe61c7c2d3ce9afc9341bf288451406dbb6dda4c",
+        "beforeV2BuildSHA256": "8a88b493f0721810f364648a3150c4ab4a543574f4a47abc661d46d64a13cb0c",
+        "bytes": 1821,
+        "contentsPublished": false,
+        "credentialValuesReadOrSupplied": false,
+        "sixCredentialVariablesAbsent": true,
+        "sourceTemplateRandomSaltByDesign": true
+      },
+      "install": {
+        "elapsedSeconds": 172.558,
+        "exitCode": 0,
+        "rawCommandSHA256": "be295b0fbdcd3790a8591e4dad0f77f36cbb48ccf25ec0d1e439e908a4fabb98"
+      },
+      "installDelayCause": "unknown",
+      "launch": {
+        "elapsedSeconds": 0.903,
+        "exitCode": 0,
+        "rawCommandSHA256": "aa92aa7363957a444df4beab525d866432699da0c6b0f7c1846a390fcdcb3b98"
+      },
+      "launchPID": 5844,
+      "manualPreparation": "Original tracked updateSecrets.sh explicitly executed under env-i whitelist before new own DerivedData build. No source or lock patch."
+    },
+    "V3": {
+      "SHA256": "7eb3ecbf4ed5a839faa90519fca842e563ce6e213b9704f7024fd4f3b4f85d6f",
+      "actualWaitSeconds": [
+        10.000083416,
+        30.005025166000003
+      ],
+      "buildOrInstallRepeated": false,
+      "file": "netnewswire-v3-notification.png",
+      "launchPID": 26987,
+      "observation": "Feeds/Smart Feeds/On My iPhone rendered, notification prompt covers part of body. No permission choice.",
+      "processScope": "Exact PID ps Rs/Ss and matching launchctl app job observed; not an independent UIKit foreground enum. No new crash filename is not proof of no crash.",
+      "result": "inconclusive",
+      "rootReviewed10sOriginal": true,
+      "second30sPrivatePNGSameSHA256": true
+    },
+    "builtArtifact": {
+      "Info": {
+        "CFBundleIdentifier": "com.ranchero.NetNewsWire.iOS-DEBUG",
+        "CFBundleShortVersionString": "7.2",
+        "CFBundleSupportedPlatforms": [
+          "iPhoneSimulator"
+        ],
+        "CFBundleVersion": "7219",
+        "DTSDKName": "iphonesimulator27.0",
+        "DTXcodeBuild": "27A266a"
+      },
+      "appID": "com.ranchero.NetNewsWire.iOS-DEBUG",
+      "executable": "NetNewsWire",
+      "executableBytes": 40216,
+      "executableSHA256": "c9b14d8826c298e813e58bc2d57885812208e27e6fd013ec30915858d73980db",
+      "fileCount": 170,
+      "manifestSHA256": "f48f6c30313717d20e6921b7d19e1da6d2b75dd7a6e55c8240e66b61bebefe86",
+      "regularBytes": 35136888
+    },
+    "installedArtifact": {
+      "Info": {
+        "CFBundleIdentifier": "com.ranchero.NetNewsWire.iOS-DEBUG",
+        "CFBundleShortVersionString": "7.2",
+        "CFBundleSupportedPlatforms": [
+          "iPhoneSimulator"
+        ],
+        "CFBundleVersion": "7219",
+        "DTSDKName": "iphonesimulator27.0",
+        "DTXcodeBuild": "27A266a"
+      },
+      "appID": "com.ranchero.NetNewsWire.iOS-DEBUG",
+      "executable": "NetNewsWire",
+      "executableBytes": 40216,
+      "executableSHA256": "c9b14d8826c298e813e58bc2d57885812208e27e6fd013ec30915858d73980db",
+      "fileCount": 170,
+      "manifestSHA256": "ce7355a4b7509a551a3e8db0917df0ce6c35874197ac77b6726608f8934780bc",
+      "regularBytes": 35136888
+    },
+    "notificationFollowup": {
+      "PIDAbsence": "ps exit1 with empty stdout/stderr",
+      "SHA256": "50f8eed721200f98aff67ffc4835a7f948e7a14d61e0a6775fd4e63645a2004b",
+      "appInputCount": 0,
+      "buildCount": 0,
+      "file": "netnewswire-unobscured.png",
+      "firstFollowupReceiptPendingReviewField": "Preserved as an earlier observation; later root-png-visual-review explicitly confirms PASS.",
+      "hostNavigation": "Root showed Device Hub sidebar, selected owned row, restored old selected row and hidden sidebar. No other-device Start. No whole-GUI preference byte equality claim.",
+      "installCount": 0,
+      "launchCount": 1,
+      "launchPID": 49586,
+      "notificationAuthorizationEnum": "unknown",
+      "notificationButtonInputCount": 0,
+      "observed": "Feeds/Smart Feeds/On My iPhone and bottom Settings/Add unobscured",
+      "permissionChangeOperations": 0,
+      "reasonPopupNotRedisplayed": "unknown",
+      "result": "pass",
+      "rootDirectDeviceHubAndPNGReview": true,
+      "sameInstalledArtifact": true,
+      "screenshotCount": 1,
+      "shutdownExit": 0,
+      "terminateExit": 0
+    },
+    "sourceSHA": "aea7795bcc0698ced6f28eba53da886eb6217e64"
+  },
+  "attemptID": "214-20261016-04",
+  "commandsReference": "commands.json",
+  "executionSurface": "plain native xcodebuild/simctl; Runstir execution0",
+  "firstPhaseHandoffSHA256": "c0fabc4ec681c5b87b9fd3b49c0044305b8bf891354d42eece8e16d02700f877",
+  "firstPhaseInconclusiveNNWField": "Frozen historical state before followup; not overwritten",
+  "followupHandoffSHA256": "ff3de46dc43649a44798c62eb87c848f7fffe68caf00b810511b82e1fa8f2072",
+  "freshCloneHandoffReference": "fresh-clone-handoff.json",
+  "gateID": "AC05",
+  "independentScreenReviewer": "root separate context; same model, not a different model",
+  "issue214StateAtPublication": "OPEN; author does not close it",
+  "nativeObservedResult": "pass for both fixed samples; final issue qualification/independent full-diff reviews/CI are pending root",
+  "operator": "Codex #214 author context",
+  "originalArchiveChecksums": "unknown; new Apple representation is separately identified, no retroactive substitution",
+  "productCandidateGateResult": "unverified; no Runstir product candidate executed",
+  "schemaVersion": 1,
+  "sourceAndPreservationReference": "source-preservation.json",
+  "tupleReference": "tuple.json"
+}

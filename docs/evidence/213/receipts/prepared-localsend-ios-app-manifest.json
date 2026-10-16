@@ -1,0 +1,1439 @@
+{
+  "app": "<evidence-root>/native/prepared-localsend-ios/Runner.app",
+  "architecture": "arm64",
+  "build": "64",
+  "bundleID": "org.localsend.localsendApp",
+  "entries": [
+    {
+      "bytes": 347,
+      "kind": "file",
+      "mode": 420,
+      "path": "AppFrameworkInfo.plist",
+      "sha256": "275c1f7273e185d2d65f8b447af25841e2be7fbdb3df89feb6324634f33ce317"
+    },
+    {
+      "bytes": 3054,
+      "kind": "file",
+      "mode": 420,
+      "path": "AppIcon60x60@2x.png",
+      "sha256": "c99724eb0518884032e1854b3c07f6765185e08a831796d65c3199d279d01387"
+    },
+    {
+      "bytes": 3632,
+      "kind": "file",
+      "mode": 420,
+      "path": "AppIcon76x76@2x~ipad.png",
+      "sha256": "a6eaaaf73377fd2cb4416c68af8cbdc2a43bfb3473a3cb6d125dc1dc21749618"
+    },
+    {
+      "bytes": 35336,
+      "kind": "file",
+      "mode": 420,
+      "path": "Assets.car",
+      "sha256": "a08820d5c5449374a08d7a929373160b509e9e67ccf38bc0e95954a2333f664e"
+    },
+    {
+      "bytes": 2309,
+      "kind": "file",
+      "mode": 420,
+      "path": "Base.lproj/LaunchScreen.storyboardc/01J-lp-oVM-view-Ze5-6b-2t3.nib",
+      "sha256": "a241c1e1652c6231e5c157a595dd9095ddee4b6243c6e6bdbe17fb27d63791ed"
+    },
+    {
+      "bytes": 258,
+      "kind": "file",
+      "mode": 420,
+      "path": "Base.lproj/LaunchScreen.storyboardc/Info.plist",
+      "sha256": "1f255d5cc53b531e3f29a9406a8df49a958e2bf9443d3e20bd8374f707f7d5c8"
+    },
+    {
+      "bytes": 924,
+      "kind": "file",
+      "mode": 420,
+      "path": "Base.lproj/LaunchScreen.storyboardc/UIViewController-01J-lp-oVM.nib",
+      "sha256": "54f3637f671feba5f19e82ec4f4a7fb448bb3cfc0fb180f089aa571fc8f053e2"
+    },
+    {
+      "bytes": 1863,
+      "kind": "file",
+      "mode": 420,
+      "path": "Base.lproj/Main.storyboardc/BYZ-38-t0r-view-8bC-Xf-vdC.nib",
+      "sha256": "a3bb094a3cc4ada29dce11898ae26fd164c9be5a2687a58560a8a048713e36c5"
+    },
+    {
+      "bytes": 258,
+      "kind": "file",
+      "mode": 420,
+      "path": "Base.lproj/Main.storyboardc/Info.plist",
+      "sha256": "3e9bdaa408d1eb6ae5e989b813a8644e0a4a981202c536905de52a7291e69aa4"
+    },
+    {
+      "bytes": 951,
+      "kind": "file",
+      "mode": 420,
+      "path": "Base.lproj/Main.storyboardc/UIViewController-BYZ-38-t0r.nib",
+      "sha256": "cbdd28d89423b2c9beef2b27ce2c9608d30d6c6a9d2e7679f79a53814444e53f"
+    },
+    {
+      "bytes": 16752,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/App.framework/App",
+      "sha256": "6eb76a8209d734360509eae869fec77ff49b208108054cb13ac235c49c66cc02"
+    },
+    {
+      "bytes": 754,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/Info.plist",
+      "sha256": "123bedefe591c05727973683a5f2d301cb3710fdcfca8c5914529dd47329beac"
+    },
+    {
+      "bytes": 11006,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/_CodeSignature/CodeResources",
+      "sha256": "651da2357eadfef067e46fdfe37a379cc14ee3ba79b25fb56e3aff16ac946cd9"
+    },
+    {
+      "bytes": 2015,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/AssetManifest.bin",
+      "sha256": "eb691e73a13bd917f26dc9a28445c329648f080cd0be72571994cd843a44e2d4"
+    },
+    {
+      "bytes": 923,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/FontManifest.json",
+      "sha256": "1666d6aebbb2a020ecf0648ea803bbc4874d28b0057d3fb4c3298b36d5763c9a"
+    },
+    {
+      "bytes": 127910,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/NOTICES.Z",
+      "sha256": "473c06ac7321bee12427222465652fcda47a9b3d7dd8ca1e4d891aa0827c853d"
+    },
+    {
+      "bytes": 147,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/NativeAssetsManifest.json",
+      "sha256": "625b2ddedce42e3d218ceb8869bc9119e8dea8650a6cb24ab779d5008055b141"
+    },
+    {
+      "bytes": 21100,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/assets/CHANGELOG.md",
+      "sha256": "2ea73ff2e46c596a553d6bd9f98d64ce6b6888ae6c9ee625776647d050b2fd63"
+    },
+    {
+      "bytes": 1042,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/assets/img/logo-128.png",
+      "sha256": "561fa660b1ee2b0a3ab29d36c157ae238a0b27d4db0b6aa4154e892b4699a7ef"
+    },
+    {
+      "bytes": 2098,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/assets/img/logo-256.png",
+      "sha256": "d2e8192cdcb02d5615eed91ecc3e9fe9c4289a3d2a4d7adecb9037d8f015fe33"
+    },
+    {
+      "bytes": 578,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/assets/img/logo-32-black.png",
+      "sha256": "ad3d89f9ecc9e0190fbb9d8196f9098bc2602760df6d1c1eb823c329a9934043"
+    },
+    {
+      "bytes": 913,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/assets/img/logo-32-white.png",
+      "sha256": "4a2b8875f9ea2055a15bca5cf939a509a4dcadfa1ce9021b06e0b8e6b85d866a"
+    },
+    {
+      "bytes": 599,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/assets/img/logo-32.png",
+      "sha256": "35115c12d9692491d9e47ef826af098ea2128f474ceb401b1cca8072e505afac"
+    },
+    {
+      "bytes": 6234,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/assets/img/logo-512-white.png",
+      "sha256": "24cd5a2cb577a8c438e8a97f3dd598de86340f08ac599a05a291114fc8e92919"
+    },
+    {
+      "bytes": 4688,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/assets/img/logo-512.png",
+      "sha256": "d7e6016dd11ff9ce48ed6f1f24d8090b85d70982a450f1f1e51943739e166a48"
+    },
+    {
+      "bytes": 109492,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/assets/img/logo.ico",
+      "sha256": "da340046a7506bc495e519cfd45569d5df025591eed173afc43e4c63a45a500b"
+    },
+    {
+      "bytes": 1645184,
+      "kind": "file",
+      "mode": 436,
+      "path": "Frameworks/App.framework/flutter_assets/fonts/MaterialIcons-Regular.otf",
+      "sha256": "d9865b671a09d683d13a863089d8825e0f61a37696ce5d7d448bc8023aa62453"
+    },
+    {
+      "bytes": 11028680,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/isolate_snapshot_data",
+      "sha256": "4f7af034bce6375ec87a385a2c70e7b8ff106a53c1208376d8a2f9446516d8f8"
+    },
+    {
+      "bytes": 106724392,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/kernel_blob.bin",
+      "sha256": "a872d1f552dd850b5b8d481442ef2888a32f124df12cc94fb92651fb852fbf36"
+    },
+    {
+      "bytes": 207,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/packages/flex_color_picker/assets/opacity.png",
+      "sha256": "8f40db314a0a7eab3ebc1817b78547496fbed922203783a1a8a4adb2afda0976"
+    },
+    {
+      "bytes": 923,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/packages/system_date_time_format/web/system_date_time_format.min.js",
+      "sha256": "7ae4210a905615f4f414953b95f5b0ce2d1d925c349a701be1910864b34344cc"
+    },
+    {
+      "bytes": 13669,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/packages/wakelock_plus/assets/no_sleep.js",
+      "sha256": "726c644cda17bf271d996fb629806a59409607e9b00e0dfbf75adfd3986bbb7e"
+    },
+    {
+      "bytes": 5977,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/packages/wechat_assets_picker/assets/icon/indicator-live-photos.png",
+      "sha256": "29745f6c40e5339675d4da9460393a3c7163aea03a1e7ea72c98d8bebd36f9f6"
+    },
+    {
+      "bytes": 293580,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/packages/yaru/assets/fonts/Ubuntu-B.ttf",
+      "sha256": "f7de62896e7045aff7d5d1061a320ce172c411b437d350d5e80d9120ffe826eb"
+    },
+    {
+      "bytes": 300500,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/packages/yaru/assets/fonts/Ubuntu-BI.ttf",
+      "sha256": "40bf740ef47724af39349644d028b73069b5dc66beaae3a12a5f14fc0514ef10"
+    },
+    {
+      "bytes": 282068,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/packages/yaru/assets/fonts/Ubuntu-L.ttf",
+      "sha256": "f1d38342828dd095d2f9367f5d556bd028f5fd9e3a0ab6a2b44f6b970e14caee"
+    },
+    {
+      "bytes": 300692,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/packages/yaru/assets/fonts/Ubuntu-LI.ttf",
+      "sha256": "f26d36217918f02e193bdf84c102ad3f9ed5753df0418919b6695a5db1bd79d9"
+    },
+    {
+      "bytes": 295812,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/packages/yaru/assets/fonts/Ubuntu-M.ttf",
+      "sha256": "98253e483955d28147ad428fbf9fb410fcfc19a32c40f53a97b8b7c75af8465a"
+    },
+    {
+      "bytes": 300724,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/packages/yaru/assets/fonts/Ubuntu-MI.ttf",
+      "sha256": "7c9bdd9d7e19b8c12e16a0367dc02f4ce41e768aec67ecd1d239bfa900abc3a6"
+    },
+    {
+      "bytes": 296324,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/packages/yaru/assets/fonts/Ubuntu-R.ttf",
+      "sha256": "27988e92167b4a4bd2333068f2e9f1657d3ffa5a45b70acbb24a1ee2db3d0b2d"
+    },
+    {
+      "bytes": 300588,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/packages/yaru/assets/fonts/Ubuntu-RI.ttf",
+      "sha256": "424434915edc481b7a32fd455bc21a27ef9ec8db32ab676d22beefd9b2ed7a0a"
+    },
+    {
+      "bytes": 189892,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/packages/yaru/assets/fonts/UbuntuMono-Regular.ttf",
+      "sha256": "3b83b9ca3a1186b4bf8fbcbc8078b360bdb78a77a859f8eeabc9b14fb165da9a"
+    },
+    {
+      "bytes": 203588,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/packages/yaru/assets/yaru_icons.otf",
+      "sha256": "17ebce595bdc436d2302d7cfed53704a0b6049593b7c20870940e6c7c9554b96"
+    },
+    {
+      "bytes": 11992,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/shaders/ink_sparkle.frag",
+      "sha256": "468645d4b31c40c1741dabd66a8eca5fc0252633f662831d0a6a2876a11bad33"
+    },
+    {
+      "bytes": 10192,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/shaders/stretch_effect.frag",
+      "sha256": "2f5364c9aa7fb8b4d8d7cd4d52020080a625d958976e9c97d7f268032de022da"
+    },
+    {
+      "bytes": 15011,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/App.framework/flutter_assets/vm_snapshot_data",
+      "sha256": "be86b27a577670a3bfc5380a1ff3c6e900f8c732c3f66dfb578894bcd3cc830c"
+    },
+    {
+      "bytes": 1563640,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/DKImagePickerController.framework/DKImagePickerController",
+      "sha256": "2037e60ad16df15450de04c14f8a598aabc238501fe738976750cdafc6ee0a04"
+    },
+    {
+      "bytes": 34504,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/DKImagePickerController.framework/DKImagePickerController.bundle/Assets.car",
+      "sha256": "8b9475efd15d173a76b6ea4e0d99e20b1cf3c881fef24951192d892f6cfc8891"
+    },
+    {
+      "bytes": 837,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/DKImagePickerController.framework/DKImagePickerController.bundle/Base.lproj/DKImagePickerController.strings",
+      "sha256": "10b8cc44b0a42e496c2923baac5631aed5350173c608cfe325c7fab36ee641f1"
+    },
+    {
+      "bytes": 775,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/DKImagePickerController.framework/DKImagePickerController.bundle/Info.plist",
+      "sha256": "501de3571d6bd511b99071c7cd05356c59ba2c97a2b33c203e947d2bf8c31206"
+    },
+    {
+      "bytes": 599,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/DKImagePickerController.framework/DKImagePickerController.bundle/PrivacyInfo.xcprivacy",
+      "sha256": "4b9fd41d57179be034b3399e6e5cc74879bc7dd915814baee665a1f44df98541"
+    },
+    {
+      "bytes": 1018,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/DKImagePickerController.framework/DKImagePickerController.bundle/ar.lproj/DKImagePickerController.strings",
+      "sha256": "f040447e16e0f56a78f2e6644815e1f37fc28ee6996d8d0f97930fd21ee4d7df"
+    },
+    {
+      "bytes": 883,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/DKImagePickerController.framework/DKImagePickerController.bundle/da.lproj/DKImagePickerController.strings",
+      "sha256": "49ee6aee1eeb245699002caec501ef5676cca59b8510f63682150ae67e28d3c2"
+    },
+    {
+      "bytes": 920,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/DKImagePickerController.framework/DKImagePickerController.bundle/de.lproj/DKImagePickerController.strings",
+      "sha256": "1fba0f73d14332cc814efd607b8cf343d9b0b17d05a01b8b67d6fb21eb05b8e3"
+    },
+    {
+      "bytes": 865,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/DKImagePickerController.framework/DKImagePickerController.bundle/en.lproj/DKImagePickerController.strings",
+      "sha256": "c1192d2009d5027ab2d77c889c1141018d03ac11e912d23da0ab732de5c3dd12"
+    },
+    {
+      "bytes": 886,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/DKImagePickerController.framework/DKImagePickerController.bundle/es.lproj/DKImagePickerController.strings",
+      "sha256": "4d86aefcf48ed45dcaf34624392186b2e51d2abf866dc6ced31926b28560b841"
+    },
+    {
+      "bytes": 942,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/DKImagePickerController.framework/DKImagePickerController.bundle/fr.lproj/DKImagePickerController.strings",
+      "sha256": "5dea8c4ed88a48ad49eae8ddc7bca15e9ec15aebca25823e4509d88989f2e03f"
+    },
+    {
+      "bytes": 886,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/DKImagePickerController.framework/DKImagePickerController.bundle/hu.lproj/DKImagePickerController.strings",
+      "sha256": "9285c3d6848c43a040806266702807eb699661a8c8dae04c0bd597f944860965"
+    },
+    {
+      "bytes": 891,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/DKImagePickerController.framework/DKImagePickerController.bundle/it.lproj/DKImagePickerController.strings",
+      "sha256": "9e148ad9bc3ff8f2c64ed5b6eed3e390e93bd53f8c9dc7ec929a8fc0ada58592"
+    },
+    {
+      "bytes": 967,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/DKImagePickerController.framework/DKImagePickerController.bundle/ja.lproj/DKImagePickerController.strings",
+      "sha256": "29e2f4a2b239d8f3836b186b57846f81b802e10ea4ac390efeca6bc6a9513df5"
+    },
+    {
+      "bytes": 931,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/DKImagePickerController.framework/DKImagePickerController.bundle/ko.lproj/DKImagePickerController.strings",
+      "sha256": "142ac0e06734323f746d15c42e292a1f7f084a6f95667fdf4c57405aa14d5a0c"
+    },
+    {
+      "bytes": 844,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/DKImagePickerController.framework/DKImagePickerController.bundle/nb-NO.lproj/DKImagePickerController.strings",
+      "sha256": "763546fcda56b515a3480dc6d62220e778207ac98b3d6c63dcbee873613a87c3"
+    },
+    {
+      "bytes": 893,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/DKImagePickerController.framework/DKImagePickerController.bundle/nl.lproj/DKImagePickerController.strings",
+      "sha256": "c0e6e6b7d0417742056229b0fae1b22868ca1002eb26c8d96bee18b5ba684798"
+    },
+    {
+      "bytes": 865,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/DKImagePickerController.framework/DKImagePickerController.bundle/pt_BR.lproj/DKImagePickerController.strings",
+      "sha256": "9fa8aef7948bb814454506dde9cacc5ac5b823a3791c90e8345d18373a18a41c"
+    },
+    {
+      "bytes": 1037,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/DKImagePickerController.framework/DKImagePickerController.bundle/ru.lproj/DKImagePickerController.strings",
+      "sha256": "335da04dc776d4b012f37be683bd08c4184cae4afd494cbe94c360a90aa0267d"
+    },
+    {
+      "bytes": 885,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/DKImagePickerController.framework/DKImagePickerController.bundle/tr.lproj/DKImagePickerController.strings",
+      "sha256": "0ae20302096ea83fc92ad13da534ef9eef6b192a2dfff212dd75791d894d2855"
+    },
+    {
+      "bytes": 1114,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/DKImagePickerController.framework/DKImagePickerController.bundle/ur.lproj/DKImagePickerController.strings",
+      "sha256": "397d54a11ff427081f4e485502e54b0bcae6f2992ca3a32cb01f936fe29e9b18"
+    },
+    {
+      "bytes": 909,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/DKImagePickerController.framework/DKImagePickerController.bundle/vi.lproj/DKImagePickerController.strings",
+      "sha256": "3797e2d8bb18e3791aecf245301a9373e1a3539cf8d7bc465d299e82bc715097"
+    },
+    {
+      "bytes": 782,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/DKImagePickerController.framework/DKImagePickerController.bundle/zh-Hans.lproj/DKImagePickerController.strings",
+      "sha256": "816e7cca0e00612485ca9cf3c5ad6c43cb5e0134586f7e1f8b826b7f06ac6eea"
+    },
+    {
+      "bytes": 778,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/DKImagePickerController.framework/DKImagePickerController.bundle/zh-Hant.lproj/DKImagePickerController.strings",
+      "sha256": "56834c35c8f7ba03a9435d098f152f3d7e4ca1204b7ed289762abdb09d628ec0"
+    },
+    {
+      "bytes": 800,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/DKImagePickerController.framework/Info.plist",
+      "sha256": "89ee39ed46090333e22973624fbf59eac45f114d2391c37d6e1321e0bd165cb4"
+    },
+    {
+      "bytes": 1272080,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/DKPhotoGallery.framework/DKPhotoGallery",
+      "sha256": "c9b25199af5a2417a0f996809658cf6699e8ff15c5cf3c39c5342e1964af72e5"
+    },
+    {
+      "bytes": 35000,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/DKPhotoGallery.framework/DKPhotoGallery.bundle/Assets.car",
+      "sha256": "54a381042f8dfb5d8025af2b3308b9a13975f8a141c023afd27936216e28f298"
+    },
+    {
+      "bytes": 824,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/DKPhotoGallery.framework/DKPhotoGallery.bundle/Base.lproj/DKPhotoGallery.strings",
+      "sha256": "48323c9991f72b12d5df9852aa33f50daa13fd4afb447ddb995f8c9e3327c79e"
+    },
+    {
+      "bytes": 756,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/DKPhotoGallery.framework/DKPhotoGallery.bundle/Info.plist",
+      "sha256": "0be3f038e265754468d06d6aaf2c7365c188855c5b778b739b876c28c38c2377"
+    },
+    {
+      "bytes": 599,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/DKPhotoGallery.framework/DKPhotoGallery.bundle/PrivacyInfo.xcprivacy",
+      "sha256": "4b9fd41d57179be034b3399e6e5cc74879bc7dd915814baee665a1f44df98541"
+    },
+    {
+      "bytes": 825,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/DKPhotoGallery.framework/DKPhotoGallery.bundle/en.lproj/DKPhotoGallery.strings",
+      "sha256": "efd39647cbb35228a962f5d397757839f13c1c6360417a7822ce428d1a44ae61"
+    },
+    {
+      "bytes": 839,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/DKPhotoGallery.framework/DKPhotoGallery.bundle/zh-Hans.lproj/DKPhotoGallery.strings",
+      "sha256": "288d39f3e5c57b1a268e746a96759c839077b2e7a0f42d5f025ba0060986373b"
+    },
+    {
+      "bytes": 781,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/DKPhotoGallery.framework/Info.plist",
+      "sha256": "2bc60ae7038a852ce5c51218a645c84d8767cd85418bbe31765f79971f95afb7"
+    },
+    {
+      "bytes": 40661856,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/Flutter.framework/Flutter",
+      "sha256": "49493e38aa4c33e678351cd22ad245b3b31026e4e96509632dae2fa3d1f363d1"
+    },
+    {
+      "bytes": 921,
+      "kind": "file",
+      "mode": 384,
+      "path": "Frameworks/Flutter.framework/Headers/Flutter.h",
+      "sha256": "c1f5b26a03d82c2451dbec13b8645bb56df3df3d80592f98171ba204e15d4a36"
+    },
+    {
+      "bytes": 1821,
+      "kind": "file",
+      "mode": 384,
+      "path": "Frameworks/Flutter.framework/Headers/FlutterAppDelegate.h",
+      "sha256": "7a1ba667654203dc4e5c123fee042e9cf980827f5c2698992834bda7c5d6aa46"
+    },
+    {
+      "bytes": 3761,
+      "kind": "file",
+      "mode": 384,
+      "path": "Frameworks/Flutter.framework/Headers/FlutterBinaryMessenger.h",
+      "sha256": "1170e4e2dfbba82a724246abfaaf561ea63d6dc2bc7b2a210b0195b41261332f"
+    },
+    {
+      "bytes": 1724,
+      "kind": "file",
+      "mode": 384,
+      "path": "Frameworks/Flutter.framework/Headers/FlutterCallbackCache.h",
+      "sha256": "d21f7ebcae4afabf26a13b221817ecebe4ccf50a20d3cf5a7c7032de06dcc035"
+    },
+    {
+      "bytes": 18414,
+      "kind": "file",
+      "mode": 384,
+      "path": "Frameworks/Flutter.framework/Headers/FlutterChannels.h",
+      "sha256": "920d7de42def64b88e9fc29e150532ec3a15b80f55643a6aa012d59fae2e19a2"
+    },
+    {
+      "bytes": 15290,
+      "kind": "file",
+      "mode": 384,
+      "path": "Frameworks/Flutter.framework/Headers/FlutterCodecs.h",
+      "sha256": "672aa51d8b996e915ebd57a7cbd59d974ad51604bbb33232b2c4a20b269a7853"
+    },
+    {
+      "bytes": 3914,
+      "kind": "file",
+      "mode": 384,
+      "path": "Frameworks/Flutter.framework/Headers/FlutterDartProject.h",
+      "sha256": "53cabfd086edf6ae0ed8732c09d530213b49753c7c2e3865c7ed1a63cddf1fab"
+    },
+    {
+      "bytes": 21724,
+      "kind": "file",
+      "mode": 384,
+      "path": "Frameworks/Flutter.framework/Headers/FlutterEngine.h",
+      "sha256": "29528cda49a2619ac88f2a31be72b314af4e543918315dfaf11e5622c200742a"
+    },
+    {
+      "bytes": 4755,
+      "kind": "file",
+      "mode": 384,
+      "path": "Frameworks/Flutter.framework/Headers/FlutterEngineGroup.h",
+      "sha256": "4aacef231a815c427753d2c9df6842117b2b1f63f5ea0ba643e810c7a3dd95fe"
+    },
+    {
+      "bytes": 3927,
+      "kind": "file",
+      "mode": 384,
+      "path": "Frameworks/Flutter.framework/Headers/FlutterHeadlessDartRunner.h",
+      "sha256": "9e6663669bc5097af281fe14f5a3e4362f15708edc2f902d03e098e6e51620bd"
+    },
+    {
+      "bytes": 536,
+      "kind": "file",
+      "mode": 384,
+      "path": "Frameworks/Flutter.framework/Headers/FlutterHourFormat.h",
+      "sha256": "43848b1528212ffe441493f22e0ecf362f49ff1a645557f3ae8d15422407b6b6"
+    },
+    {
+      "bytes": 1823,
+      "kind": "file",
+      "mode": 384,
+      "path": "Frameworks/Flutter.framework/Headers/FlutterMacros.h",
+      "sha256": "79b0551d265c52701b378851718ab7b6db7afbecf561b73c2954988554e80f99"
+    },
+    {
+      "bytes": 1966,
+      "kind": "file",
+      "mode": 384,
+      "path": "Frameworks/Flutter.framework/Headers/FlutterPlatformViews.h",
+      "sha256": "d1a53db8ce90729ce6669b8560e6e3f5d1a51849132a8c0f304449410745d8fe"
+    },
+    {
+      "bytes": 18306,
+      "kind": "file",
+      "mode": 384,
+      "path": "Frameworks/Flutter.framework/Headers/FlutterPlugin.h",
+      "sha256": "41c8e13a193971bd54edb9b2421f539c59b53364e0bfcd914926c9e8e21d32be"
+    },
+    {
+      "bytes": 5318,
+      "kind": "file",
+      "mode": 384,
+      "path": "Frameworks/Flutter.framework/Headers/FlutterPluginAppLifeCycleDelegate.h",
+      "sha256": "f8f327fb94838f655de9153c09022dfc9625dd3fbc0e1a7b1c89aa033a1ca0d9"
+    },
+    {
+      "bytes": 893,
+      "kind": "file",
+      "mode": 384,
+      "path": "Frameworks/Flutter.framework/Headers/FlutterSceneDelegate.h",
+      "sha256": "1bdbab65e137d7695d6b391e3ffeecbadd2dda103795f72ec47452b8b9a3fa06"
+    },
+    {
+      "bytes": 8387,
+      "kind": "file",
+      "mode": 384,
+      "path": "Frameworks/Flutter.framework/Headers/FlutterSceneLifeCycle.h",
+      "sha256": "b4d90b84efbe3ce2f8db38397e312fe7f0c97d0ad7bbca8763a24b6ebf2d2217"
+    },
+    {
+      "bytes": 2263,
+      "kind": "file",
+      "mode": 384,
+      "path": "Frameworks/Flutter.framework/Headers/FlutterTexture.h",
+      "sha256": "25ca4de1af6cbfac729e50f7462eb5d4de72f87a2ea545a9da1cab21707f23c6"
+    },
+    {
+      "bytes": 10734,
+      "kind": "file",
+      "mode": 384,
+      "path": "Frameworks/Flutter.framework/Headers/FlutterViewController.h",
+      "sha256": "e2336e4d76c2899c2aa71d253a64dd292183b3ebaba237681a95ce2bac09a9a5"
+    },
+    {
+      "bytes": 1079,
+      "kind": "file",
+      "mode": 384,
+      "path": "Frameworks/Flutter.framework/Info.plist",
+      "sha256": "ae52e1fe45437f6d73f57cd2ab393ef3b8c4a8216537d6d316b0ffa2875204bf"
+    },
+    {
+      "bytes": 95,
+      "kind": "file",
+      "mode": 384,
+      "path": "Frameworks/Flutter.framework/Modules/module.modulemap",
+      "sha256": "d158eb891a59ec065968fff498c00f3093e18ba2e8301e0c857ccbe63db8b46b"
+    },
+    {
+      "bytes": 845,
+      "kind": "file",
+      "mode": 384,
+      "path": "Frameworks/Flutter.framework/PrivacyInfo.xcprivacy",
+      "sha256": "9f95d7e7862a4b56b66ed926bd6d622d2a6545a827d19847278b438d571d4212"
+    },
+    {
+      "bytes": 7070,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/Flutter.framework/_CodeSignature/CodeResources",
+      "sha256": "5c1975f49929e233264cfa501371f0c222ed83815adee3eb774b3977b5669d11"
+    },
+    {
+      "bytes": 862304,
+      "kind": "file",
+      "mode": 384,
+      "path": "Frameworks/Flutter.framework/icudtl.dat",
+      "sha256": "998367809a821d595928089c197b3f7959f0420f81f79d4d0daee53378492ed5"
+    },
+    {
+      "bytes": 773,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/SDWebImage.framework/Info.plist",
+      "sha256": "6fe4469b3ab6b3fa4df24bf4fadc2a8dcba740eabfa5d382b7d337816ebcf3e8"
+    },
+    {
+      "bytes": 1036424,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/SDWebImage.framework/SDWebImage",
+      "sha256": "aa7f1224127c11b00a7bd707c1d75c88114e8ca829151621e7e6f208a4117e64"
+    },
+    {
+      "bytes": 748,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/SDWebImage.framework/SDWebImage.bundle/Info.plist",
+      "sha256": "5d412c828135ee8c73a267192fedf86b102d62182de2adb2f2a304234b604f9a"
+    },
+    {
+      "bytes": 599,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/SDWebImage.framework/SDWebImage.bundle/PrivacyInfo.xcprivacy",
+      "sha256": "03b2c70833a331a2b1efd11ff168ed02a8eadfd5e7d1fbf30eecc7509a4aea47"
+    },
+    {
+      "bytes": 770,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/SwiftyGif.framework/Info.plist",
+      "sha256": "87801c60befe55055cf3d3a1d5f9afacec32b41cc86c888a7e7ebc1f25022c9e"
+    },
+    {
+      "bytes": 254152,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/SwiftyGif.framework/SwiftyGif",
+      "sha256": "ee83f49cbffc1cd3145fe331b60e36b03af6a61eaa5b338ba4b2add600549e38"
+    },
+    {
+      "bytes": 745,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/SwiftyGif.framework/SwiftyGif.bundle/Info.plist",
+      "sha256": "d1dee3f7ac2a10526099b705b78f4bf8b5c46889da08317513927448b229652d"
+    },
+    {
+      "bytes": 373,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/SwiftyGif.framework/SwiftyGif.bundle/PrivacyInfo.xcprivacy",
+      "sha256": "8d65d0b43a1262cfe29e83396c00b3db94fb120d44d1188d927341f14a6c223c"
+    },
+    {
+      "bytes": 788,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/connectivity_plus.framework/Info.plist",
+      "sha256": "2daad9be34130c08995ecc9db0c1b25cc89498a6f37c45560913bfa89d76aef3"
+    },
+    {
+      "bytes": 147552,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/connectivity_plus.framework/connectivity_plus",
+      "sha256": "21e37750a1b8ee1034398b1a9c5f4c0445df20b9c2d53f3c27b17d855604ec4a"
+    },
+    {
+      "bytes": 779,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/connectivity_plus.framework/connectivity_plus_privacy.bundle/Info.plist",
+      "sha256": "06b4f478bdad48e6bc54c900457d00e3041e93e6e8e03617667023d55c615e55"
+    },
+    {
+      "bytes": 373,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/connectivity_plus.framework/connectivity_plus_privacy.bundle/PrivacyInfo.xcprivacy",
+      "sha256": "6d2da0d8d930227d428c1d9363b0ad6e3a12e2c9b68c5ce297158a7412fc8c31"
+    },
+    {
+      "bytes": 786,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/device_info_plus.framework/Info.plist",
+      "sha256": "a72568b5a70c762708b4824f66953753984fec18243905f8cb83921fb942e3c7"
+    },
+    {
+      "bytes": 76752,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/device_info_plus.framework/device_info_plus",
+      "sha256": "08ac3ec980a37d97a9be05d2e6620bb6af119a5ccf7aaeaf2c50436cdd99894a"
+    },
+    {
+      "bytes": 777,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/device_info_plus.framework/device_info_plus_privacy.bundle/Info.plist",
+      "sha256": "c461009500ac31e0bbd14c0a0665f906c4baeceed3d2af9d7a2ea21dcd2894f0"
+    },
+    {
+      "bytes": 373,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/device_info_plus.framework/device_info_plus_privacy.bundle/PrivacyInfo.xcprivacy",
+      "sha256": "6d2da0d8d930227d428c1d9363b0ad6e3a12e2c9b68c5ce297158a7412fc8c31"
+    },
+    {
+      "bytes": 774,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/file_picker.framework/Info.plist",
+      "sha256": "76642230f701bf44d6027696b67432975db6953a082729492be0c5da269f6353"
+    },
+    {
+      "bytes": 141352,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/file_picker.framework/file_picker",
+      "sha256": "8b7cb122211f11d1d109a4310199964320d7290f4e3a67adc44ff92b3dfc0ab6"
+    },
+    {
+      "bytes": 775,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/file_picker.framework/file_picker_ios_privacy.bundle/Info.plist",
+      "sha256": "051852c86522cbbeb3691595b3e0ffb8733d7b2d0377abde5cc685b9aeb110ea"
+    },
+    {
+      "bytes": 372,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/file_picker.framework/file_picker_ios_privacy.bundle/PrivacyInfo.xcprivacy",
+      "sha256": "47226a29608df206ad0a110e6afeb5a77ff575ac1df9c76bfdb2d6dfb3fafed1"
+    },
+    {
+      "bytes": 788,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/file_selector_ios.framework/Info.plist",
+      "sha256": "03f0b45fddb887d94eb9157bfd9d45c7f83b89752558bdbbd9584e7ea6d67c0f"
+    },
+    {
+      "bytes": 190128,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/file_selector_ios.framework/file_selector_ios",
+      "sha256": "33ed07056a0e4c3c645673d1f28fcb4b190f8d15b5f85baceca4a0c3a8066306"
+    },
+    {
+      "bytes": 779,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/file_selector_ios.framework/file_selector_ios_privacy.bundle/Info.plist",
+      "sha256": "8678c6d50facb1878e027a394378eae354c758bc9bb9e764f838338635e28c9b"
+    },
+    {
+      "bytes": 373,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/file_selector_ios.framework/file_selector_ios_privacy.bundle/PrivacyInfo.xcprivacy",
+      "sha256": "6d2da0d8d930227d428c1d9363b0ad6e3a12e2c9b68c5ce297158a7412fc8c31"
+    },
+    {
+      "bytes": 800,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/flutter_foreground_task.framework/Info.plist",
+      "sha256": "1c9839146dd5748429f9a2e9647298f1bb5e35cd14d20e92a0098f7c85bf8ac8"
+    },
+    {
+      "bytes": 443400,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/flutter_foreground_task.framework/flutter_foreground_task",
+      "sha256": "0b5238be81f00a3be39989617a99efb0a9200f483c9c9a4609610efa9b3b7813"
+    },
+    {
+      "bytes": 758,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/gal.framework/Info.plist",
+      "sha256": "b17baa81f9e7453c9e139a1a493bf2da5e82fb55659b6338c44780828f6b3466"
+    },
+    {
+      "bytes": 141344,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/gal.framework/gal",
+      "sha256": "9b1f0ae87c970c5e63af42ebc1d6ad29df9fe8f64e71c42fd4ef5b5baca25148"
+    },
+    {
+      "bytes": 749,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/gal.framework/gal_privacy.bundle/Info.plist",
+      "sha256": "08dce8acf6fae7a52aab728f0bf04185fac6a2203719bf2f1b82d7ddcdf18320"
+    },
+    {
+      "bytes": 372,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/gal.framework/gal_privacy.bundle/PrivacyInfo.xcprivacy",
+      "sha256": "47226a29608df206ad0a110e6afeb5a77ff575ac1df9c76bfdb2d6dfb3fafed1"
+    },
+    {
+      "bytes": 786,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/image_picker_ios.framework/Info.plist",
+      "sha256": "787c7dc058e051177ba8412d1e1a1e5ff5c9eb1e6585196bf3c6c7e69b7d546c"
+    },
+    {
+      "bytes": 203536,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/image_picker_ios.framework/image_picker_ios",
+      "sha256": "02fc2b4adc86327d4478e0416fcbb5137c2263e7b17e223acf1f382f552b990d"
+    },
+    {
+      "bytes": 777,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/image_picker_ios.framework/image_picker_ios_privacy.bundle/Info.plist",
+      "sha256": "aa86c72270a631abf51e42a8b02a412e31149cda290485b213851eab599b90d1"
+    },
+    {
+      "bytes": 373,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/image_picker_ios.framework/image_picker_ios_privacy.bundle/PrivacyInfo.xcprivacy",
+      "sha256": "6d2da0d8d930227d428c1d9363b0ad6e3a12e2c9b68c5ce297158a7412fc8c31"
+    },
+    {
+      "bytes": 802,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/in_app_purchase_storekit.framework/Info.plist",
+      "sha256": "93e7c92765c63b3848c1d585886963b0405c6f5016a883c2096bf646a162baf0"
+    },
+    {
+      "bytes": 932408,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/in_app_purchase_storekit.framework/in_app_purchase_storekit",
+      "sha256": "8840b72ee8cf3a04fd5bbf39e9f3c6b5d5d3486ab85e8165edb50e06ef181520"
+    },
+    {
+      "bytes": 793,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/in_app_purchase_storekit.framework/in_app_purchase_storekit_privacy.bundle/Info.plist",
+      "sha256": "2e41a4423c26083d9f1b4e3ab9aff190de98dbf1df1513b9f82a5b12c42e46d0"
+    },
+    {
+      "bytes": 373,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/in_app_purchase_storekit.framework/in_app_purchase_storekit_privacy.bundle/PrivacyInfo.xcprivacy",
+      "sha256": "6d2da0d8d930227d428c1d9363b0ad6e3a12e2c9b68c5ce297158a7412fc8c31"
+    },
+    {
+      "bytes": 788,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/network_info_plus.framework/Info.plist",
+      "sha256": "fb6d4c62f76df1a4c8069b4ae97beddb5c9b6978a4346992fa34610d18d29d7e"
+    },
+    {
+      "bytes": 85408,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/network_info_plus.framework/network_info_plus",
+      "sha256": "0bf318a13ce6b704b41c8e45aaecfcd50cfcda797f1cd78f02ded3f07c223f3f"
+    },
+    {
+      "bytes": 779,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/network_info_plus.framework/network_info_plus_privacy.bundle/Info.plist",
+      "sha256": "3964420eb1e77726e68fa5d89799a54c6f0a172be84b56f88c79741832f2263d"
+    },
+    {
+      "bytes": 373,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/network_info_plus.framework/network_info_plus_privacy.bundle/PrivacyInfo.xcprivacy",
+      "sha256": "6d2da0d8d930227d428c1d9363b0ad6e3a12e2c9b68c5ce297158a7412fc8c31"
+    },
+    {
+      "bytes": 791,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/objective_c.framework/Info.plist",
+      "sha256": "21eabba1ce090680496e14367008f7952305d214d3828af85e395761384e28b0"
+    },
+    {
+      "bytes": 1798,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/objective_c.framework/_CodeSignature/CodeResources",
+      "sha256": "7a252af6354af3aaa2889d61ec172fe729fff9c0f9a25f1395bed3c830cceebc"
+    },
+    {
+      "bytes": 248320,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/objective_c.framework/objective_c",
+      "sha256": "95e26c00e18701046b7217b32ed831737454fc74683eb3e6779c1457f7422c11"
+    },
+    {
+      "bytes": 778,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/open_file_ios.framework/Info.plist",
+      "sha256": "82b40c5db4938375dd3665188a04d736dd3dde2daf98ad93fc661f51ea2f8206"
+    },
+    {
+      "bytes": 79184,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/open_file_ios.framework/open_file_ios",
+      "sha256": "a43b5944951a36e6263f8c3f28e1e63e551dce9e0be619dfd2c4991b1c7b9b89"
+    },
+    {
+      "bytes": 788,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/package_info_plus.framework/Info.plist",
+      "sha256": "0a32e777694ac483a3cee80994ca562181a22da79e9120eeac54f53ed118b893"
+    },
+    {
+      "bytes": 57776,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/package_info_plus.framework/package_info_plus",
+      "sha256": "26e959fe7bcfe0b534c6ef54058f46e86c29d669e0f140b355d84af17b42fda4"
+    },
+    {
+      "bytes": 779,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/package_info_plus.framework/package_info_plus_privacy.bundle/Info.plist",
+      "sha256": "a6e503552f072014f9fd6120669e28bca7526c6f628835050a0ace454cb6249c"
+    },
+    {
+      "bytes": 373,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/package_info_plus.framework/package_info_plus_privacy.bundle/PrivacyInfo.xcprivacy",
+      "sha256": "6d2da0d8d930227d428c1d9363b0ad6e3a12e2c9b68c5ce297158a7412fc8c31"
+    },
+    {
+      "bytes": 772,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/pasteboard.framework/Info.plist",
+      "sha256": "ab6c84c9f7ade26f3329866bf23148888c105ba486d42ed8b76c205afffde623"
+    },
+    {
+      "bytes": 92536,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/pasteboard.framework/pasteboard",
+      "sha256": "ce731986584e3e2d9aef6e8bcc0e075041d6c6192dc9e276a1604a765081b918"
+    },
+    {
+      "bytes": 779,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/photo_manager.framework/Info.plist",
+      "sha256": "301b2d2b4097d18aef6c2d3b93aa08690095bf2f3afae90f36209d51a27b3a7c"
+    },
+    {
+      "bytes": 485008,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/photo_manager.framework/photo_manager",
+      "sha256": "487c9b54f4c16efabc5e1ac723ff7c49ed7cab5a25c6ddbc8f0b701ce8d5ba2d"
+    },
+    {
+      "bytes": 772,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/photo_manager.framework/photo_manager_privacy.bundle/Info.plist",
+      "sha256": "ef47762d6f307340f5e1b047ac77e9e9b3447ce81a04e7c48ad75c760aa2ca52"
+    },
+    {
+      "bytes": 1058,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/photo_manager.framework/photo_manager_privacy.bundle/PrivacyInfo.xcprivacy",
+      "sha256": "9c790c4520a6626c7ed88f2a681761e9f489f63598b9956405f6949497be4518"
+    },
+    {
+      "bytes": 798,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/rust_lib_localsend_app.framework/Info.plist",
+      "sha256": "a57e012cad3f013ced1b59c6b03297c89e3d2dbc58760b3b152aa4c4e4d37098"
+    },
+    {
+      "bytes": 127395800,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/rust_lib_localsend_app.framework/rust_lib_localsend_app",
+      "sha256": "543a816c91784f9e25037049584829a42a40fea77c53c1764e515d9e5dec336b"
+    },
+    {
+      "bytes": 789,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/share_handler_ios.framework/Info.plist",
+      "sha256": "81b4c7e69d92cd7402f445f57f38c04eeefdee3bfcedc03b06eb01314ce14f1d"
+    },
+    {
+      "bytes": 215184,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/share_handler_ios.framework/share_handler_ios",
+      "sha256": "ad2662ec50bb252ff1e3952ebccac296c06c463e5b589f9d1745302b8e8dfc81"
+    },
+    {
+      "bytes": 802,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/share_handler_ios_models.framework/Info.plist",
+      "sha256": "4e0399b76777ca9642da7883d9ea5cddc379a79a48ffc1dc303baa495208428d"
+    },
+    {
+      "bytes": 372520,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/share_handler_ios_models.framework/share_handler_ios_models",
+      "sha256": "b25e78cfee82bdfef0bd1b3a77f14e14716db6357b7679290b2fc6b946568c34"
+    },
+    {
+      "bytes": 812,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/shared_preferences_foundation.framework/Info.plist",
+      "sha256": "6a8cb179c4aaf9b4d67f3923a10003b346b792486b35f2036bb24ec50d87062b"
+    },
+    {
+      "bytes": 238416,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/shared_preferences_foundation.framework/shared_preferences_foundation",
+      "sha256": "2479493a64ced75209e136269ec9ad5a22707f918b9bc05443f9a7da96847cdb"
+    },
+    {
+      "bytes": 803,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/shared_preferences_foundation.framework/shared_preferences_foundation_privacy.bundle/Info.plist",
+      "sha256": "b998e25914a9bab06abb11ec7db37e82f28bae4102e4bc854519d0fa2c2cf6f7"
+    },
+    {
+      "bytes": 598,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/shared_preferences_foundation.framework/shared_preferences_foundation_privacy.bundle/PrivacyInfo.xcprivacy",
+      "sha256": "056428b938bd57018a60019d15c3c1ee2fa727f23687598bbbd934848b180b1a"
+    },
+    {
+      "bytes": 800,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/system_date_time_format.framework/Info.plist",
+      "sha256": "2310ec62806eb98e5f8c6eb900afc5fbb74b2b3c0c35358913bcbb28ad0b57c2"
+    },
+    {
+      "bytes": 88568,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/system_date_time_format.framework/system_date_time_format",
+      "sha256": "73c4d7fb0cb59b965ce686f03e55072ed8b764c139e9cf1441611efe1bfa7716"
+    },
+    {
+      "bytes": 788,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/system_settings_2.framework/Info.plist",
+      "sha256": "fc0e03c43a0e135f7e38aba284ab4f1953ae1bba0854827bbcd173ce1ab6a2cd"
+    },
+    {
+      "bytes": 103056,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/system_settings_2.framework/system_settings_2",
+      "sha256": "cef58b35fe457fb67e8a2cc761ebf2d4f0c8fbfd03fd611d2086ecc0282eaf10"
+    },
+    {
+      "bytes": 774,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/uri_content.framework/Info.plist",
+      "sha256": "8a11a5fa45783cbe564c09f4e6d9088f64724ebe8612483a54275ba50e0f0209"
+    },
+    {
+      "bytes": 68248,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/uri_content.framework/uri_content",
+      "sha256": "adfb69190e8d02966145af15761dbb41ded7ddd2ba0701d28d591fa7c5dd5734"
+    },
+    {
+      "bytes": 786,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/url_launcher_ios.framework/Info.plist",
+      "sha256": "6b07b7ffef84f16b4193d86753746403b19066bb7823ff5269be7d07d66d31d5"
+    },
+    {
+      "bytes": 220016,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/url_launcher_ios.framework/url_launcher_ios",
+      "sha256": "5bc30d98c0e9d450b31256cd9b808b6f4c937f16eae478757fc8856330299b6c"
+    },
+    {
+      "bytes": 777,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/url_launcher_ios.framework/url_launcher_ios_privacy.bundle/Info.plist",
+      "sha256": "abd024aa739401e11226c46e2bd3380e13cd754a266e034c4ef877f418a053f3"
+    },
+    {
+      "bytes": 373,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/url_launcher_ios.framework/url_launcher_ios_privacy.bundle/PrivacyInfo.xcprivacy",
+      "sha256": "6d2da0d8d930227d428c1d9363b0ad6e3a12e2c9b68c5ce297158a7412fc8c31"
+    },
+    {
+      "bytes": 804,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/video_player_avfoundation.framework/Info.plist",
+      "sha256": "4a33b8693659d9ebc8ecedddac239524f3d4cf486332ba52055e815ae38be174"
+    },
+    {
+      "bytes": 496696,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/video_player_avfoundation.framework/video_player_avfoundation",
+      "sha256": "21ced07ad469bef44ce96b26aa6f11c69b636fabba7be346082d3d6b5b1383c2"
+    },
+    {
+      "bytes": 795,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/video_player_avfoundation.framework/video_player_avfoundation_privacy.bundle/Info.plist",
+      "sha256": "1895f40c84c0c09d9537a6abb810e9a09205c89b2b8aa54cb652c49d0fcab215"
+    },
+    {
+      "bytes": 373,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/video_player_avfoundation.framework/video_player_avfoundation_privacy.bundle/PrivacyInfo.xcprivacy",
+      "sha256": "6d2da0d8d930227d428c1d9363b0ad6e3a12e2c9b68c5ce297158a7412fc8c31"
+    },
+    {
+      "bytes": 778,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/wakelock_plus.framework/Info.plist",
+      "sha256": "88a33934d846941c2f8774f810063cfa1fcef05c2c8336fae8e0b3b952e6f880"
+    },
+    {
+      "bytes": 85424,
+      "kind": "file",
+      "mode": 493,
+      "path": "Frameworks/wakelock_plus.framework/wakelock_plus",
+      "sha256": "0b0438a7830b1647ca47e036088cba417313f60cfc2a7b0e7bdfa17b5d9cf978"
+    },
+    {
+      "bytes": 771,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/wakelock_plus.framework/wakelock_plus_privacy.bundle/Info.plist",
+      "sha256": "df2d3e91b0e9e03d61c84619c4d5c4e3847bbf7b391e0f712d6dcbb559a949d7"
+    },
+    {
+      "bytes": 373,
+      "kind": "file",
+      "mode": 420,
+      "path": "Frameworks/wakelock_plus.framework/wakelock_plus_privacy.bundle/PrivacyInfo.xcprivacy",
+      "sha256": "6d2da0d8d930227d428c1d9363b0ad6e3a12e2c9b68c5ce297158a7412fc8c31"
+    },
+    {
+      "bytes": 3052,
+      "kind": "file",
+      "mode": 420,
+      "path": "Info.plist",
+      "sha256": "9e1da247f1dc72ee56bea3ecec4e71ec4ed6dd221eabe52a7852c96367afe2be"
+    },
+    {
+      "bytes": 3263,
+      "kind": "file",
+      "mode": 420,
+      "path": "MyLocalSendStoreKit.storekit",
+      "sha256": "669def29f55f5eb1a59f23267730e5e5b1f80b9ba2f3b8f40ec2c8bd2b7c7911"
+    },
+    {
+      "bytes": 8,
+      "kind": "file",
+      "mode": 420,
+      "path": "PkgInfo",
+      "sha256": "82502191c9484b04d685374f9879a0066069c49b8acae7a04b01d38d07e8eca0"
+    },
+    {
+      "bytes": 258,
+      "kind": "file",
+      "mode": 420,
+      "path": "PlugIns/ShareExtension.appex/Base.lproj/MainInterface.storyboardc/Info.plist",
+      "sha256": "427a79a55a8bfe54424842120d866cd5504bc5f7049dfa4ecc783a5a07202e09"
+    },
+    {
+      "bytes": 971,
+      "kind": "file",
+      "mode": 420,
+      "path": "PlugIns/ShareExtension.appex/Base.lproj/MainInterface.storyboardc/UIViewController-j1y-V4-xli.nib",
+      "sha256": "34a96a70bd78898eef47b9fb3abdde165e11acc4dd5b36986ad00dca3028af83"
+    },
+    {
+      "bytes": 1192,
+      "kind": "file",
+      "mode": 420,
+      "path": "PlugIns/ShareExtension.appex/Base.lproj/MainInterface.storyboardc/j1y-V4-xli-view-wbc-yd-nQP.nib",
+      "sha256": "34f7656858af217d76df428dc53e73f72a73fa450544233b99c2b62bc051364b"
+    },
+    {
+      "bytes": 1404,
+      "kind": "file",
+      "mode": 420,
+      "path": "PlugIns/ShareExtension.appex/Info.plist",
+      "sha256": "ef24f118b95678cde3541eff8fecee74f1339623f49b5b2711efa43f5ad8e494"
+    },
+    {
+      "bytes": 37584,
+      "kind": "file",
+      "mode": 493,
+      "path": "PlugIns/ShareExtension.appex/ShareExtension",
+      "sha256": "6178a00a12bd4808d28dbde1efefd7e4d5e936ce6434d28c9ea6508f1dc5b811"
+    },
+    {
+      "bytes": 69400,
+      "kind": "file",
+      "mode": 493,
+      "path": "PlugIns/ShareExtension.appex/ShareExtension.debug.dylib",
+      "sha256": "3751f1e52dc3dcd62b2d8036bf117209c8222ed9c6f6a0bdb7341b45e7e8bca6"
+    },
+    {
+      "bytes": 16760,
+      "kind": "file",
+      "mode": 493,
+      "path": "PlugIns/ShareExtension.appex/__preview.dylib",
+      "sha256": "b2f2c82e134994b714c4cd695ce8a607f86731c8a33eea56d8138716dfa16aa6"
+    },
+    {
+      "bytes": 40216,
+      "kind": "file",
+      "mode": 493,
+      "path": "Runner",
+      "sha256": "5f207a5e44c002e0f25ce2b8e8954a323906372946ea35c5f4fb209ae36a80d2"
+    },
+    {
+      "bytes": 166000,
+      "kind": "file",
+      "mode": 493,
+      "path": "Runner.debug.dylib",
+      "sha256": "2d9ea886e923a87a6bde672432f566ccac1d7e5b2eca58e1c0f3c7e6c0eaf38c"
+    },
+    {
+      "bytes": 16752,
+      "kind": "file",
+      "mode": 493,
+      "path": "__preview.dylib",
+      "sha256": "61c721491880cea516fba5bef341add820db7fe79c8b26e7b59b10b42791470d"
+    },
+    {
+      "bytes": 793,
+      "kind": "file",
+      "mode": 420,
+      "path": "permission_handler_apple_privacy.bundle/Info.plist",
+      "sha256": "7eb0fee770aeaf840c357ffe0291696cd97ca983c2e11fda669d0aefe3eb2777"
+    },
+    {
+      "bytes": 659,
+      "kind": "file",
+      "mode": 420,
+      "path": "permission_handler_apple_privacy.bundle/PrivacyInfo.xcprivacy",
+      "sha256": "11365689963a1191e96a22e0b39f62f05b86d0d24abe80405c1a5ceef09a9b1b"
+    }
+  ],
+  "minimumOSVersion": "15.0",
+  "sourceSHA": "61145cf100522363e9658af97137097551c64832",
+  "version": "1.18.2"
+}

@@ -1,0 +1,1170 @@
+{
+  "aliases": {
+    "HOST_HOME": "host user path, withheld",
+    "OWN_INTERNAL_SCREEN_STAGE": "unique owned internal staging preserved after byte-copy",
+    "OWN_SIM214_REPIN": "owned device identity privately bound to tuple SHA",
+    "PRIVATE214_NOTIFICATION_FOLLOWUP": "separate owner-only followup namespace",
+    "PRIVATE214_REPIN": "owner-only native attempt root",
+    "PRIVATE_APPLE_PREPIN": "owner-only pre-baseline provenance root",
+    "PROTECTED_SIM_N": "preexisting device identity; read-only listapps/list observations"
+  },
+  "commands": [
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "listapps",
+        "${PROTECTED_SIM_9}"
+      ],
+      "cwd": "${PRIVATE214_REPIN}",
+      "elapsedSeconds": 0.185,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792124605.718025,
+      "finishedAtUTC": "2026-10-16T04:23:25.718025+00:00",
+      "id": "native/after-apps",
+      "privateCommandReceiptSHA256": "6237133062ff4746fd0e6769578d59eff9df6e2e55d5d7d57f86478aa9755450",
+      "rawCommandSHA256": "816bd2a12c2c0de67aefa1a97cdeaa0d8723e43743cf4bc28d474be09d217a39",
+      "startedAtEpoch": 1792124605.533403,
+      "startedAtUTC": "2026-10-16T04:23:25.533403+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "028947c2ac786d9c2d3089601ae6d06a1f406628e414dca383d64f34f7956f52"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "list",
+        "devices",
+        "--json"
+      ],
+      "cwd": "${PRIVATE214_REPIN}",
+      "elapsedSeconds": 0.201,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792124605.532921,
+      "finishedAtUTC": "2026-10-16T04:23:25.532921+00:00",
+      "id": "native/after-devices",
+      "privateCommandReceiptSHA256": "e6a4a0c982814a092f5fd557d9e04b4bce7f5cabf12c13d4977f56fe26990944",
+      "rawCommandSHA256": "8256fb061c23526e219a153e0cd08368475425bbccbfb55fb653af5fd1ddec27",
+      "startedAtEpoch": 1792124605.332394,
+      "startedAtUTC": "2026-10-16T04:23:25.332394+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "cd3d8fdbb54eb42c6b8cf2bdf1e66330dba7b25896efdec675011fa2ff3d0a58"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "listapps",
+        "${PROTECTED_SIM_9}"
+      ],
+      "cwd": "${PRIVATE214_REPIN}",
+      "elapsedSeconds": 0.141,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792123096.313128,
+      "finishedAtUTC": "2026-10-16T03:58:16.313128+00:00",
+      "id": "native/before-apps",
+      "privateCommandReceiptSHA256": "e9e22af21fb4ed69296b3985dea8f13d5eca79dbb35c3275b75ffbd14ca56723",
+      "rawCommandSHA256": "816bd2a12c2c0de67aefa1a97cdeaa0d8723e43743cf4bc28d474be09d217a39",
+      "startedAtEpoch": 1792123096.172312,
+      "startedAtUTC": "2026-10-16T03:58:16.172312+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "028947c2ac786d9c2d3089601ae6d06a1f406628e414dca383d64f34f7956f52"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "list",
+        "devices",
+        "--json"
+      ],
+      "cwd": "${PRIVATE214_REPIN}",
+      "elapsedSeconds": 0.19,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792123096.171654,
+      "finishedAtUTC": "2026-10-16T03:58:16.171654+00:00",
+      "id": "native/before-devices",
+      "privateCommandReceiptSHA256": "b0b35f0b9193663e1b8ae7ff562df716840127da666d2c6803f54195de99dec7",
+      "rawCommandSHA256": "8256fb061c23526e219a153e0cd08368475425bbccbfb55fb653af5fd1ddec27",
+      "startedAtEpoch": 1792123095.981751,
+      "startedAtUTC": "2026-10-16T03:58:15.981751+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "def1915f7c0a8fa644e7040adbebb46f87e8b2bd52f93016df7049dfbb6d1657"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "boot",
+        "${OWN_SIM214_REPIN}"
+      ],
+      "cwd": "${PRIVATE214_REPIN}",
+      "elapsedSeconds": 0.631,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792123097.279773,
+      "finishedAtUTC": "2026-10-16T03:58:17.279773+00:00",
+      "id": "native/boot-own-simulator",
+      "privateCommandReceiptSHA256": "f4ab78a72fc1c1ee11237b6f669c3e6b8cf02cfa937cf33c4f1fe952c8d238fe",
+      "rawCommandSHA256": "58d7454a9a523c7dff16c379c89d3d0fb38c816bbadcdb76d948baafd8321ad2",
+      "startedAtEpoch": 1792123096.648606,
+      "startedAtUTC": "2026-10-16T03:58:16.648606+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "bootstatus",
+        "${OWN_SIM214_REPIN}",
+        "-b"
+      ],
+      "cwd": "${PRIVATE214_REPIN}",
+      "elapsedSeconds": 28.668,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792123125.948003,
+      "finishedAtUTC": "2026-10-16T03:58:45.948003+00:00",
+      "id": "native/bootstatus-own-simulator",
+      "privateCommandReceiptSHA256": "b2d3dcf4c77a406561d1668209d14b8717fdecbac7847f95683c9eb725aa57a9",
+      "rawCommandSHA256": "66c5cf391b75d7ad249d40638e986ac64481e1c2764277d86ab475529010e498",
+      "startedAtEpoch": 1792123097.280323,
+      "startedAtUTC": "2026-10-16T03:58:17.280323+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "2d5f01687a59ffbb852d4014557ef8d7f923e5247384aa083aeef16a6d1c8413"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "create",
+        "${OWN_SIM214_REPIN_NAME}",
+        "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro",
+        "com.apple.CoreSimulator.SimRuntime.iOS-27-0"
+      ],
+      "cwd": "${PRIVATE214_REPIN}",
+      "elapsedSeconds": 0.213,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792123096.536947,
+      "finishedAtUTC": "2026-10-16T03:58:16.536947+00:00",
+      "id": "native/create-own-simulator",
+      "privateCommandReceiptSHA256": "6f09eceb3cf387626fea536ab1486bc228091101e433ac9c627c5043f228266c",
+      "rawCommandSHA256": "e8360db733c72ac5d78c9e6f9fa3522d0350921b2acb8e07a85a7af3caaf6931",
+      "startedAtEpoch": 1792123096.3241029,
+      "startedAtUTC": "2026-10-16T03:58:16.324103+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "ad0fc739f58b0e97c310edf85ec5e716d11f38b1ce04bc2f28a98e7e267818c9"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild",
+        "-project",
+        "Food Truck.xcodeproj",
+        "-scheme",
+        "Food Truck",
+        "-configuration",
+        "Debug",
+        "-sdk",
+        "iphonesimulator",
+        "-destination",
+        "platform=iOS Simulator,id=${OWN_SIM214_REPIN}",
+        "-derivedDataPath",
+        "${PRIVATE214_REPIN}/derived-data/food-truck",
+        "-clonedSourcePackagesDirPath",
+        "${PRIVATE214_REPIN}/packages/native-food-truck",
+        "-packageCachePath",
+        "${PRIVATE214_REPIN}/package-cache/food-truck",
+        "-disablePackageRepositoryCache",
+        "-disableAutomaticPackageResolution",
+        "-onlyUsePackageVersionsFromResolvedFile",
+        "-skipPackageUpdates",
+        "CODE_SIGNING_ALLOWED=NO",
+        "CODE_SIGNING_REQUIRED=NO",
+        "CODE_SIGN_IDENTITY=",
+        "DEVELOPMENT_TEAM=",
+        "build"
+      ],
+      "cwd": "${PRIVATE214_REPIN}/sources/native/food-truck",
+      "elapsedSeconds": 102.022,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792123256.510747,
+      "finishedAtUTC": "2026-10-16T04:00:56.510747+00:00",
+      "id": "native/food-truck-build",
+      "privateCommandReceiptSHA256": "5c6e49eeb3452b06651a9af0fba0f4627c224abd490ffc354ab20ba6c149c494",
+      "rawCommandSHA256": "5bf9f0538de13354442a743e0e86919e98cc9d58ad30a34bdb055652c47e1aec",
+      "startedAtEpoch": 1792123154.488499,
+      "startedAtUTC": "2026-10-16T03:59:14.488499+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "c02d8f42d876adb5b9615c18662a8e95ab32efe3000121d86840f14236473b1d"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "install",
+        "${OWN_SIM214_REPIN}",
+        "${PRIVATE214_REPIN}/derived-data/food-truck/Build/Products/Debug-iphonesimulator/Food Truck.app"
+      ],
+      "cwd": "${PRIVATE214_REPIN}",
+      "elapsedSeconds": 8.195,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792123265.1669,
+      "finishedAtUTC": "2026-10-16T04:01:05.166900+00:00",
+      "id": "native/food-truck-install",
+      "privateCommandReceiptSHA256": "69caee69770d1bf663b8f323573c6e65df79d4d919b2ca55e2562d8e4ee84af0",
+      "rawCommandSHA256": "c9baf0bf6b9a769d3779c03f6c7fe88ecfc8f4704c97486c65cdfbfd3ccff686",
+      "startedAtEpoch": 1792123256.972336,
+      "startedAtUTC": "2026-10-16T04:00:56.972336+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "get_app_container",
+        "${OWN_SIM214_REPIN}",
+        "com.example.apple-samplecode.Food-Truck",
+        "app"
+      ],
+      "cwd": "${PRIVATE214_REPIN}",
+      "elapsedSeconds": 0.953,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792123266.1218848,
+      "finishedAtUTC": "2026-10-16T04:01:06.121885+00:00",
+      "id": "native/food-truck-installed-container",
+      "privateCommandReceiptSHA256": "c1d72500f3a1367b4ed0e8c75231ea53a559c5a5535953bfcebac192fe2fafe8",
+      "rawCommandSHA256": "12c17374f11db4acac64fe4e7978b5c3d8216d4c2a62d611b624d44439d2562d",
+      "startedAtEpoch": 1792123265.16857,
+      "startedAtUTC": "2026-10-16T04:01:05.168570+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "a7fa64ebc33d6920c0152d188cb6cc4ae4211272cfb6aef54dca14d9fb561c63"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "launch",
+        "${OWN_SIM214_REPIN}",
+        "com.example.apple-samplecode.Food-Truck"
+      ],
+      "cwd": "${PRIVATE214_REPIN}",
+      "elapsedSeconds": 1.654,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792123267.837139,
+      "finishedAtUTC": "2026-10-16T04:01:07.837139+00:00",
+      "id": "native/food-truck-launch",
+      "privateCommandReceiptSHA256": "e3e1f766d7703ed520c658033989704aa209783eb589d6170e1cd85c2aac28cc",
+      "rawCommandSHA256": "72d5e272e937ade4855b9da5131cb5c11a15ca92d25a06b5d843393a70c920c8",
+      "startedAtEpoch": 1792123266.183037,
+      "startedAtUTC": "2026-10-16T04:01:06.183037+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "fdbb064b0728a1d3a9bd19d4e01fdff102547065c4a16492538791e6d6695b35"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "io",
+        "${OWN_SIM214_REPIN}",
+        "screenshot",
+        "${PRIVATE214_REPIN}/screens/food-truck-first-screen.png"
+      ],
+      "cwd": "${PRIVATE214_REPIN}",
+      "elapsedSeconds": 0.851,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "TMPDIR"
+      ],
+      "exitCode": 1,
+      "finishedAtEpoch": 1792123271.6970198,
+      "finishedAtUTC": "2026-10-16T04:01:11.697020+00:00",
+      "id": "native/food-truck-screenshot",
+      "privateCommandReceiptSHA256": "638af5a9ef7938efb61251d4852a8d62449e1713a62b6717efaf02607e066c9a",
+      "rawCommandSHA256": "3b69f2b34a84eca09585cc27c8004caa3b194d574ffbbfc7f530b8ada08cfa0a",
+      "startedAtEpoch": 1792123270.845825,
+      "startedAtUTC": "2026-10-16T04:01:10.845825+00:00",
+      "stderrSHA256": "19d8c8a9c64a36b1aa4d2acab493b0da475a8f48a0eb95ded8fa729416a77b2b",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "io",
+        "${OWN_SIM214_REPIN}",
+        "screenshot",
+        "${OWN_INTERNAL_SCREEN_STAGE}/food-truck-first-screen.png"
+      ],
+      "cwd": "${PRIVATE214_REPIN}",
+      "elapsedSeconds": 1.654,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792123494.401029,
+      "finishedAtUTC": "2026-10-16T04:04:54.401029+00:00",
+      "id": "native/food-truck-screenshot-staging",
+      "privateCommandReceiptSHA256": "211d00ebff1e4cab7f9f24c63deb18f6fcef20b042b398aaf45a1000c31049b6",
+      "rawCommandSHA256": "5d4c10028c03da2e187849b410456928e3d6a5d28ca77381af2667199d6366f3",
+      "startedAtEpoch": 1792123492.746782,
+      "startedAtUTC": "2026-10-16T04:04:52.746782+00:00",
+      "stderrSHA256": "012b1a0f65eec049edd37b5656ee4610c8abf081758f19a30ce9c32ce80a50c2",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "io",
+        "${OWN_SIM214_REPIN}",
+        "screenshot",
+        "--type=png",
+        "-"
+      ],
+      "cwd": "${PRIVATE214_REPIN}",
+      "elapsedSeconds": 0.78,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "TMPDIR"
+      ],
+      "exitCode": 1,
+      "finishedAtEpoch": 1792123389.9331682,
+      "finishedAtUTC": "2026-10-16T04:03:09.933168+00:00",
+      "id": "native/food-truck-screenshot-stdout",
+      "privateCommandReceiptSHA256": "4472f1e32b46f13d2bfe0bb2a9b62c51a3a5e65a353e386ae043e062e776c2c1",
+      "rawCommandSHA256": "3fc6aac98594ed33f556893e957ead4cbd5c3f44183314585519de83d3ca4653",
+      "startedAtEpoch": 1792123389.153665,
+      "startedAtUTC": "2026-10-16T04:03:09.153665+00:00",
+      "stderrSHA256": "7accf346226cb54fab7d0245ec3b4c5ffbebafee419b122bac7c487477476141",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "terminate",
+        "${OWN_SIM214_REPIN}",
+        "com.example.apple-samplecode.Food-Truck"
+      ],
+      "cwd": "${PRIVATE214_REPIN}",
+      "elapsedSeconds": 0.531,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792123494.9359858,
+      "finishedAtUTC": "2026-10-16T04:04:54.935986+00:00",
+      "id": "native/food-truck-terminate",
+      "privateCommandReceiptSHA256": "f354942dcb42cbc02c1cb8706c73f6a1e478cb462ed972367d09311021f1b376",
+      "rawCommandSHA256": "0e7960fd634510b773749aead9e9e4e7ee10eba9c9eadcbed744a157175912ce",
+      "startedAtEpoch": 1792123494.405078,
+      "startedAtUTC": "2026-10-16T04:04:54.405078+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild",
+        "-project",
+        "NetNewsWire.xcodeproj",
+        "-scheme",
+        "NetNewsWire-iOS",
+        "-configuration",
+        "Debug",
+        "-destination",
+        "platform=iOS Simulator,id=${OWN_SIM214_REPIN}",
+        "-derivedDataPath",
+        "${PRIVATE214_REPIN}/derived-data/netnewswire",
+        "-clonedSourcePackagesDirPath",
+        "${PRIVATE214_REPIN}/packages/native-netnewswire",
+        "-packageCachePath",
+        "${PRIVATE214_REPIN}/package-cache/netnewswire",
+        "-disablePackageRepositoryCache",
+        "-disableAutomaticPackageResolution",
+        "-onlyUsePackageVersionsFromResolvedFile",
+        "-skipPackageUpdates",
+        "CODE_SIGNING_ALLOWED=NO",
+        "CODE_SIGNING_REQUIRED=NO",
+        "CODE_SIGN_IDENTITY=",
+        "DEVELOPMENT_TEAM=",
+        "build"
+      ],
+      "cwd": "${PRIVATE214_REPIN}/sources/native/netnewswire",
+      "elapsedSeconds": 22.807,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "TMPDIR"
+      ],
+      "exitCode": 65,
+      "finishedAtEpoch": 1792123534.991692,
+      "finishedAtUTC": "2026-10-16T04:05:34.991692+00:00",
+      "id": "native/netnewswire-build",
+      "privateCommandReceiptSHA256": "5f27d06d213a65531ecc7a2ba98410a7616bb055f1c5e79533fa24f63342bdba",
+      "rawCommandSHA256": "78d07a390bb0749ebf05c3cf3886bdec3dd3d4f76162609e06384bf73a5d8732",
+      "startedAtEpoch": 1792123512.184326,
+      "startedAtUTC": "2026-10-16T04:05:12.184326+00:00",
+      "stderrSHA256": "840d26169cdf27d92869f73c44ab8481aae858668d0c1e2940a0f5192d1de512",
+      "stdoutSHA256": "53b43454bd9ef7393892a04e4f340baa352728515d31293b9c508dde3e723934"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild",
+        "-project",
+        "NetNewsWire.xcodeproj",
+        "-scheme",
+        "NetNewsWire-iOS",
+        "-configuration",
+        "Debug",
+        "-destination",
+        "platform=iOS Simulator,id=${OWN_SIM214_REPIN}",
+        "-derivedDataPath",
+        "${PRIVATE214_REPIN}/derived-data/netnewswire-v2",
+        "-clonedSourcePackagesDirPath",
+        "${PRIVATE214_REPIN}/packages/native-netnewswire",
+        "-packageCachePath",
+        "${PRIVATE214_REPIN}/package-cache/netnewswire",
+        "-disablePackageRepositoryCache",
+        "-disableAutomaticPackageResolution",
+        "-onlyUsePackageVersionsFromResolvedFile",
+        "-skipPackageUpdates",
+        "CODE_SIGNING_ALLOWED=NO",
+        "CODE_SIGNING_REQUIRED=NO",
+        "CODE_SIGN_IDENTITY=",
+        "DEVELOPMENT_TEAM=",
+        "build"
+      ],
+      "cwd": "${PRIVATE214_REPIN}/sources/native/netnewswire",
+      "elapsedSeconds": 54.516,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONNOUSERSITE",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792123889.160409,
+      "finishedAtUTC": "2026-10-16T04:11:29.160409+00:00",
+      "id": "native/netnewswire-v2-build",
+      "privateCommandReceiptSHA256": "dd3628761d9275001d6d5ecf323ade1b24c96f4766b1477a82af31890ab8c403",
+      "rawCommandSHA256": "a3ffd06ab417de3fef4d0202deeb610acfe9459487bc50b8bed8db0b79cb56e2",
+      "startedAtEpoch": 1792123834.644504,
+      "startedAtUTC": "2026-10-16T04:10:34.644504+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "c0f27ba3b40004166716c83f3060d099b775d708395d61dc7a3e001263658253"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "install",
+        "${OWN_SIM214_REPIN}",
+        "${PRIVATE214_REPIN}/derived-data/netnewswire-v2/Build/Products/Debug-iphonesimulator/NetNewsWire.app"
+      ],
+      "cwd": "${PRIVATE214_REPIN}",
+      "elapsedSeconds": 172.558,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONNOUSERSITE",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792124061.888973,
+      "finishedAtUTC": "2026-10-16T04:14:21.888973+00:00",
+      "id": "native/netnewswire-v2-install",
+      "privateCommandReceiptSHA256": "3cb201023dee2189417bd06156746600b2e66b24589d064ebaedc0061d57bd68",
+      "rawCommandSHA256": "be295b0fbdcd3790a8591e4dad0f77f36cbb48ccf25ec0d1e439e908a4fabb98",
+      "startedAtEpoch": 1792123889.3306298,
+      "startedAtUTC": "2026-10-16T04:11:29.330630+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "get_app_container",
+        "${OWN_SIM214_REPIN}",
+        "com.ranchero.NetNewsWire.iOS-DEBUG",
+        "app"
+      ],
+      "cwd": "${PRIVATE214_REPIN}",
+      "elapsedSeconds": 0.759,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONNOUSERSITE",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792124062.649396,
+      "finishedAtUTC": "2026-10-16T04:14:22.649396+00:00",
+      "id": "native/netnewswire-v2-installed-container",
+      "privateCommandReceiptSHA256": "f9c52ef87fdc44f5ff3d31d42efdbfc4b22b5f01b22e3a6dd51ba706f24c8f3f",
+      "rawCommandSHA256": "5d2e9b441c45571d1b2b230bcdd5e699f82f18e183cd2e45c848394ae41f8c8f",
+      "startedAtEpoch": 1792124061.890023,
+      "startedAtUTC": "2026-10-16T04:14:21.890023+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "4de8566e1467ad8508b2726ac4746d2dc17be5d26ee61657425644ef5f4e5c98"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "launch",
+        "${OWN_SIM214_REPIN}",
+        "com.ranchero.NetNewsWire.iOS-DEBUG"
+      ],
+      "cwd": "${PRIVATE214_REPIN}",
+      "elapsedSeconds": 0.903,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONNOUSERSITE",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792124063.6232698,
+      "finishedAtUTC": "2026-10-16T04:14:23.623270+00:00",
+      "id": "native/netnewswire-v2-launch",
+      "privateCommandReceiptSHA256": "a0e7ab769995e4a0c829b621b3ae5202c9f4bb2d8044908f1bb03f90da5b9b27",
+      "rawCommandSHA256": "aa92aa7363957a444df4beab525d866432699da0c6b0f7c1846a390fcdcb3b98",
+      "startedAtEpoch": 1792124062.720021,
+      "startedAtUTC": "2026-10-16T04:14:22.720021+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "3f8742aaca960b87082d29df97ffa8483ad9cfadb276d36767ac51ddd38a2073"
+    },
+    {
+      "argv": [
+        "/usr/bin/env",
+        "-i",
+        "DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer",
+        "HOME=${PRIVATE214_REPIN}/preparation-home",
+        "LANG=en_US.UTF-8",
+        "PATH=/usr/bin:/bin:/usr/sbin:/sbin",
+        "PROJECT_DIR=${PRIVATE214_REPIN}/sources/native/netnewswire",
+        "PYTHONDONTWRITEBYTECODE=1",
+        "PYTHONNOUSERSITE=1",
+        "TMPDIR=${PRIVATE214_REPIN}/tmp/",
+        "/bin/bash",
+        "${PRIVATE214_REPIN}/sources/native/netnewswire/buildscripts/updateSecrets.sh"
+      ],
+      "cwd": "${PRIVATE214_REPIN}/sources/native/netnewswire",
+      "elapsedSeconds": 0.373,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "PROJECT_DIR",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONNOUSERSITE",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792123834.642838,
+      "finishedAtUTC": "2026-10-16T04:10:34.642838+00:00",
+      "id": "native/netnewswire-v2-manual-generator",
+      "privateCommandReceiptSHA256": "40e1398b313fdc32aea7229374afd2e456a08258fe5f4e74518a1a6e25e936a8",
+      "rawCommandSHA256": "46a236de30a16a2ba4f324da539040506554c1de9ea6fb60a3314f088c8a3635",
+      "startedAtEpoch": 1792123834.2702038,
+      "startedAtUTC": "2026-10-16T04:10:34.270204+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "601d1705da2a6e73c5cf7e325141edff29498bc3cfd5443a3b37612dba0b1827"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "io",
+        "${OWN_SIM214_REPIN}",
+        "screenshot",
+        "${OWN_INTERNAL_SCREEN_STAGE}/netnewswire-v2-first-screen.png"
+      ],
+      "cwd": "${PRIVATE214_REPIN}",
+      "elapsedSeconds": 1.345,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONNOUSERSITE",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792124067.9865332,
+      "finishedAtUTC": "2026-10-16T04:14:27.986533+00:00",
+      "id": "native/netnewswire-v2-screenshot",
+      "privateCommandReceiptSHA256": "05ede5860e388e4539b4deecd5d422afdce7f811961f4b8bb3d43c1a8ff311ac",
+      "rawCommandSHA256": "f3f58add5f629f51537cdca7bb02ac44615cdde1042a319234211569f8ff38f2",
+      "startedAtEpoch": 1792124066.6417751,
+      "startedAtUTC": "2026-10-16T04:14:26.641775+00:00",
+      "stderrSHA256": "64e109240e3691680ed1fe7215e565b592d2bf06fb88876a63b1788cc9de2ce7",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "terminate",
+        "${OWN_SIM214_REPIN}",
+        "com.ranchero.NetNewsWire.iOS-DEBUG"
+      ],
+      "cwd": "${PRIVATE214_REPIN}",
+      "elapsedSeconds": 0.51,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONNOUSERSITE",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792124068.4987788,
+      "finishedAtUTC": "2026-10-16T04:14:28.498779+00:00",
+      "id": "native/netnewswire-v2-terminate",
+      "privateCommandReceiptSHA256": "08737e92e762040d1c9dc04a4989d319197f805d208e3ef892722a7505fec002",
+      "rawCommandSHA256": "256c14ed15d3fd15e1797302c4b1279888a649e2b70e609054f0e30d396b1694",
+      "startedAtEpoch": 1792124067.9888341,
+      "startedAtUTC": "2026-10-16T04:14:27.988834+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "io",
+        "${OWN_SIM214_REPIN}",
+        "screenshot",
+        "${OWN_INTERNAL_SCREEN_STAGE}/netnewswire-v3-10s.png"
+      ],
+      "elapsedSeconds": 0.4011199474334717,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONNOUSERSITE",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792124543.544766,
+      "finishedAtUTC": "2026-10-16T04:22:23.544766+00:00",
+      "id": "native/netnewswire-v3-10s-screenshot",
+      "privateCommandReceiptSHA256": "cc6fe9d992295723c8a25b4e45b350fc89333cb24777e21609dc5db17b5c0591",
+      "rawCommandSHA256": "4181854646fb814ddc9105ea1c9f547079207480cdf6b5554d49874efd129cc8",
+      "startedAtEpoch": 1792124543.143646,
+      "startedAtUTC": "2026-10-16T04:22:23.143646+00:00",
+      "stderrSHA256": "9480225e86eded52460e0864bbd0c57400c2c2f3fdaa28861d1a009b4be0564b",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "io",
+        "${OWN_SIM214_REPIN}",
+        "screenshot",
+        "${OWN_INTERNAL_SCREEN_STAGE}/netnewswire-v3-30s.png"
+      ],
+      "elapsedSeconds": 0.4210638999938965,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONNOUSERSITE",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792124564.0801659,
+      "finishedAtUTC": "2026-10-16T04:22:44.080166+00:00",
+      "id": "native/netnewswire-v3-30s-screenshot",
+      "privateCommandReceiptSHA256": "9bdd55de04383a400648e69d8f4b6905ce00b96ced355fb0765f596174a00fcd",
+      "rawCommandSHA256": "f7b2d12662671300cbef0d2d33ff7188fdd35c172109c06471313c25244cc8b2",
+      "startedAtEpoch": 1792124563.659102,
+      "startedAtUTC": "2026-10-16T04:22:43.659102+00:00",
+      "stderrSHA256": "2c11af35649aaee5cd6fb85c7cf83a806995ead2afb3955e0a6594d3d1e999d3",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "launch",
+        "${OWN_SIM214_REPIN}",
+        "com.ranchero.NetNewsWire.iOS-DEBUG"
+      ],
+      "elapsedSeconds": 13.856766939163208,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONNOUSERSITE",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792124532.857093,
+      "finishedAtUTC": "2026-10-16T04:22:12.857093+00:00",
+      "id": "native/netnewswire-v3-launch",
+      "privateCommandReceiptSHA256": "6897923fac71360335fc0af64842788e3ea7c077d954a37f2000b0718e67e027",
+      "rawCommandSHA256": "d0627678816c851d878de78d91ff3f7b3f66944d93d18c5c9f5d49e5c5e135f2",
+      "startedAtEpoch": 1792124519.0003269,
+      "startedAtUTC": "2026-10-16T04:21:59.000327+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "e0e5b7023984259a000792d592934a3f6ec253ab0796df77c95114051dc329ad"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "terminate",
+        "${OWN_SIM214_REPIN}",
+        "com.ranchero.NetNewsWire.iOS-DEBUG"
+      ],
+      "elapsedSeconds": 0.1305708885192871,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONNOUSERSITE",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792124564.494263,
+      "finishedAtUTC": "2026-10-16T04:22:44.494263+00:00",
+      "id": "native/netnewswire-v3-terminate",
+      "privateCommandReceiptSHA256": "05621369d6d31c822f49b2b1ce4618d7e6d1213d540f1fd4af03b83d07c161e0",
+      "rawCommandSHA256": "c71961bcf92532e8279ea340c3e1e478907f008770a905e860fbdf6649532204",
+      "startedAtEpoch": 1792124564.363692,
+      "startedAtUTC": "2026-10-16T04:22:44.363692+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "shutdown",
+        "${OWN_SIM214_REPIN}"
+      ],
+      "cwd": "${PRIVATE214_REPIN}",
+      "elapsedSeconds": 3.187,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792124605.331956,
+      "finishedAtUTC": "2026-10-16T04:23:25.331956+00:00",
+      "id": "native/shutdown-own-simulator",
+      "privateCommandReceiptSHA256": "22876c44fd8c8bee5765406d8eb1f982056f3835b9316256a4914a04d16b8953",
+      "rawCommandSHA256": "62f10933c4ba418da7f4e649413baf3762ac65de95c51b3a902c830ccc3ce593",
+      "startedAtEpoch": 1792124602.145139,
+      "startedAtUTC": "2026-10-16T04:23:22.145139+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/usr/bin/curl",
+        "--disable",
+        "--fail",
+        "--location",
+        "--silent",
+        "--show-error",
+        "--output",
+        "${PRIVATE214_REPIN}/inputs/Sparkle-for-Swift-Package-Manager-2.9.5.zip",
+        "https://github.com/sparkle-project/Sparkle/releases/download/2.9.5/Sparkle-for-Swift-Package-Manager.zip"
+      ],
+      "environmentKeys": [
+        "GIT_CONFIG_GLOBAL",
+        "GIT_CONFIG_NOSYSTEM",
+        "GIT_OPTIONAL_LOCKS",
+        "GIT_TERMINAL_PROMPT",
+        "HOME",
+        "LANG",
+        "PATH"
+      ],
+      "exitCode": 0,
+      "id": "native/sparkle-download",
+      "privateCommandReceiptSHA256": "3e5cef5f49d74bc7dfbe522e3fb2cce474fd7a8ae527cd2bdac760f0554bdb56",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "listapps",
+        "${PROTECTED_SIM_9}"
+      ],
+      "elapsedSeconds": 0.20106792449951172,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONNOUSERSITE",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792125280.351276,
+      "finishedAtUTC": "2026-10-16T04:34:40.351276+00:00",
+      "id": "notification-followup/after-apps",
+      "privateCommandReceiptSHA256": "5c659e636e8cfdb87f976e6274fc7f68d69c40cea05cffde9d025b01d0036d70",
+      "rawCommandSHA256": "107ea84ff2b2365566adc0de964c4dbefceb4f33f31a472735873cae38fd61a6",
+      "startedAtEpoch": 1792125280.150208,
+      "startedAtUTC": "2026-10-16T04:34:40.150208+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "028947c2ac786d9c2d3089601ae6d06a1f406628e414dca383d64f34f7956f52"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "list",
+        "devices",
+        "--json"
+      ],
+      "elapsedSeconds": 0.15764403343200684,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONNOUSERSITE",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792125280.149211,
+      "finishedAtUTC": "2026-10-16T04:34:40.149211+00:00",
+      "id": "notification-followup/after-devices",
+      "privateCommandReceiptSHA256": "0b460d4d03630ff9678906f5ffa9edb802544f4b467e5b806ffb8276f9672187",
+      "rawCommandSHA256": "0cc4173355629a5f730cb0df41353151b560b04c99138ae6843b226fa295c800",
+      "startedAtEpoch": 1792125279.9915679,
+      "startedAtUTC": "2026-10-16T04:34:39.991568+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "2b63af715557fa2fabf97c92918f14cfc04d38278665cc28e2cd6658c736da7b"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "listapps",
+        "${PROTECTED_SIM_9}"
+      ],
+      "elapsedSeconds": 0.1245579719543457,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONNOUSERSITE",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792124960.240278,
+      "finishedAtUTC": "2026-10-16T04:29:20.240278+00:00",
+      "id": "notification-followup/before-apps",
+      "privateCommandReceiptSHA256": "539b63e37b2899d2db8e89257b45a4b87c25b24e648a059f54c986336794ce89",
+      "rawCommandSHA256": "107ea84ff2b2365566adc0de964c4dbefceb4f33f31a472735873cae38fd61a6",
+      "startedAtEpoch": 1792124960.11572,
+      "startedAtUTC": "2026-10-16T04:29:20.115720+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "028947c2ac786d9c2d3089601ae6d06a1f406628e414dca383d64f34f7956f52"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "list",
+        "devices",
+        "--json"
+      ],
+      "elapsedSeconds": 0.2363879680633545,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONNOUSERSITE",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792124960.114722,
+      "finishedAtUTC": "2026-10-16T04:29:20.114722+00:00",
+      "id": "notification-followup/before-devices",
+      "privateCommandReceiptSHA256": "18f16a3ccffa8e8e15e945fc3f9dcaeb7c5dc2cd583f02d61e1fd922356a0851",
+      "rawCommandSHA256": "0cc4173355629a5f730cb0df41353151b560b04c99138ae6843b226fa295c800",
+      "startedAtEpoch": 1792124959.878334,
+      "startedAtUTC": "2026-10-16T04:29:19.878334+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "3c2e13c659dc1ac928c05ab63f0bbca1c9b7485538865f0ecf60ccdb81f71b31"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "boot",
+        "${OWN_SIM214_REPIN}"
+      ],
+      "elapsedSeconds": 0.4996800422668457,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONNOUSERSITE",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792124960.9359949,
+      "finishedAtUTC": "2026-10-16T04:29:20.935995+00:00",
+      "id": "notification-followup/boot-own",
+      "privateCommandReceiptSHA256": "4f6b08b0cb81de3ada500c36b1ac7fc0245a5d88e5b2848ea68153b9f1b4ee66",
+      "rawCommandSHA256": "20f33971ae9501d8468a3f87278e50f5736a19e871bb06a4fa4dfb16a6e267ae",
+      "startedAtEpoch": 1792124960.4363148,
+      "startedAtUTC": "2026-10-16T04:29:20.436315+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "bootstatus",
+        "${OWN_SIM214_REPIN}",
+        "-b"
+      ],
+      "elapsedSeconds": 3.1418161392211914,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONNOUSERSITE",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792124964.0783339,
+      "finishedAtUTC": "2026-10-16T04:29:24.078334+00:00",
+      "id": "notification-followup/bootstatus-own",
+      "privateCommandReceiptSHA256": "474eb8330990de29d8916df6ad475f364b857f312842ca64a2c7b87f8ddaf6d8",
+      "rawCommandSHA256": "d0b3cb6db7a35c1d38ed74b09fc0ceed549d7f29ad7f3e100dd4eab70b6ed846",
+      "startedAtEpoch": 1792124960.936519,
+      "startedAtUTC": "2026-10-16T04:29:20.936519+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "545fbe8c5b8c96f8f75277110f92c55cc5300a49a69c21158b85880920823354"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "launch",
+        "${OWN_SIM214_REPIN}",
+        "com.ranchero.NetNewsWire.iOS-DEBUG"
+      ],
+      "elapsedSeconds": 7.485620975494385,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONNOUSERSITE",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792124972.110358,
+      "finishedAtUTC": "2026-10-16T04:29:32.110358+00:00",
+      "id": "notification-followup/launch-once",
+      "privateCommandReceiptSHA256": "bd6e78abf374ce6cdee551afe91fe2da453820eac65e57ece191f054d9158be0",
+      "rawCommandSHA256": "d0627678816c851d878de78d91ff3f7b3f66944d93d18c5c9f5d49e5c5e135f2",
+      "startedAtEpoch": 1792124964.624738,
+      "startedAtUTC": "2026-10-16T04:29:24.624738+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "6d9629568ddb9752d7df8db750039b8015da010a2f806e4bbf229947aff05346"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "io",
+        "${OWN_SIM214_REPIN}",
+        "screenshot",
+        "${OWN_INTERNAL_SCREEN_STAGE}/notification-followup-5ad0234d.png"
+      ],
+      "elapsedSeconds": 0.45932793617248535,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONNOUSERSITE",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792125124.438747,
+      "finishedAtUTC": "2026-10-16T04:32:04.438747+00:00",
+      "id": "notification-followup/post-root-observation-screenshot",
+      "privateCommandReceiptSHA256": "d020860a6df153c6ba36e377f4df6ddafc4a4961abb2d6e03a24043a33036284",
+      "rawCommandSHA256": "0bafe26a2e27cb4e550e17644b54fdfdc41effa64a8a3a00f07cbb3b06e2bba6",
+      "startedAtEpoch": 1792125123.979419,
+      "startedAtUTC": "2026-10-16T04:32:03.979419+00:00",
+      "stderrSHA256": "5dd31ec675e1e795911ced9b8e6b72c9076c31809815f354f4e5dbfb63b1f3ea",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "shutdown",
+        "${OWN_SIM214_REPIN}"
+      ],
+      "elapsedSeconds": 5.176978826522827,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONNOUSERSITE",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792125279.990975,
+      "finishedAtUTC": "2026-10-16T04:34:39.990975+00:00",
+      "id": "notification-followup/shutdown-own",
+      "privateCommandReceiptSHA256": "950faf555e2b392be493085d6eadfab5340cf68a4efa960c74abbe853a5da85e",
+      "rawCommandSHA256": "264c9894024aa00eaf135cb5a545b2f892dab267573b145fb6f42b6f2dc9ee0f",
+      "startedAtEpoch": 1792125274.813996,
+      "startedAtUTC": "2026-10-16T04:34:34.813996+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "terminate",
+        "${OWN_SIM214_REPIN}",
+        "com.ranchero.NetNewsWire.iOS-DEBUG"
+      ],
+      "elapsedSeconds": 23.613631010055542,
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONNOUSERSITE",
+        "TMPDIR"
+      ],
+      "exitCode": 0,
+      "finishedAtEpoch": 1792125274.808844,
+      "finishedAtUTC": "2026-10-16T04:34:34.808844+00:00",
+      "id": "notification-followup/terminate-own-app",
+      "privateCommandReceiptSHA256": "86d3716baa7e87ad604f69a2a4c7eb34fd0840f9c3717bf5b5c6912a3a01c03a",
+      "rawCommandSHA256": "c71961bcf92532e8279ea340c3e1e478907f008770a905e860fbdf6649532204",
+      "startedAtEpoch": 1792125251.195213,
+      "startedAtUTC": "2026-10-16T04:34:11.195213+00:00",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "format": "Normalized argv and safe environment references, not raw log output",
+  "rawCommandHashMeaning": "Exact raw-command digest as recorded by each private execution wrapper. Private receipt digest also binds its cwd/environment/timing fields. Public normalization changes paths and device identities without changing argv order.",
+  "schemaVersion": 1
+}
