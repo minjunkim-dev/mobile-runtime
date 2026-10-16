@@ -1,0 +1,45 @@
+# Normalized selected native command receipts; not raw stdout/stderr.
+# Exact order, paths and env are bound by privateCommandReceiptSHA256 and rawCommandSHA256 in commands.json.
+native/after-apps exit=0 seconds=0.185
+native/after-devices exit=0 seconds=0.201
+native/before-apps exit=0 seconds=0.141
+native/before-devices exit=0 seconds=0.19
+native/boot-own-simulator exit=0 seconds=0.631
+native/bootstatus-own-simulator exit=0 seconds=28.668
+native/create-own-simulator exit=0 seconds=0.213
+native/food-truck-build exit=0 seconds=102.022
+native/food-truck-install exit=0 seconds=8.195
+native/food-truck-installed-container exit=0 seconds=0.953
+native/food-truck-launch exit=0 seconds=1.654
+native/food-truck-screenshot exit=1 seconds=0.851
+native/food-truck-screenshot-staging exit=0 seconds=1.654
+native/food-truck-screenshot-stdout exit=1 seconds=0.78
+native/food-truck-terminate exit=0 seconds=0.531
+native/netnewswire-build exit=65 seconds=22.807
+native/netnewswire-v2-build exit=0 seconds=54.516
+native/netnewswire-v2-install exit=0 seconds=172.558
+native/netnewswire-v2-installed-container exit=0 seconds=0.759
+native/netnewswire-v2-launch exit=0 seconds=0.903
+native/netnewswire-v2-manual-generator exit=0 seconds=0.373
+native/netnewswire-v2-screenshot exit=0 seconds=1.345
+native/netnewswire-v2-terminate exit=0 seconds=0.51
+native/netnewswire-v3-10s-screenshot exit=0 seconds=0.4011199474334717
+native/netnewswire-v3-30s-screenshot exit=0 seconds=0.4210638999938965
+native/netnewswire-v3-launch exit=0 seconds=13.856766939163208
+native/netnewswire-v3-terminate exit=0 seconds=0.1305708885192871
+native/shutdown-own-simulator exit=0 seconds=3.187
+native/sparkle-download exit=0 seconds=not-recorded
+notification-followup/after-apps exit=0 seconds=0.20106792449951172
+notification-followup/after-devices exit=0 seconds=0.15764403343200684
+notification-followup/before-apps exit=0 seconds=0.1245579719543457
+notification-followup/before-devices exit=0 seconds=0.2363879680633545
+notification-followup/boot-own exit=0 seconds=0.4996800422668457
+notification-followup/bootstatus-own exit=0 seconds=3.1418161392211914
+notification-followup/launch-once exit=0 seconds=7.485620975494385
+notification-followup/post-root-observation-screenshot exit=0 seconds=0.45932793617248535
+notification-followup/shutdown-own exit=0 seconds=5.176978826522827
+notification-followup/terminate-own-app exit=0 seconds=23.613631010055542
+# Native NNW V1: cannot find SecretKey in scope; first SwiftFileList excludes generated file. Exact planning chronology unknown.
+# Food external screenshot and stdout-dash capture each failed; same original app PID later captured via owned internal staging.
+# NNW V2 black3s and V3 notification occlusion remain inconclusive; followup unobscured PNG root-reviewed PASS.
+# Notification click0/permission operation0; popup absence reason and authorization enum unknown.

@@ -1,0 +1,56 @@
+{
+  "issue": 214,
+  "preparedDate": "2026-10-15",
+  "tupleManifest": "source-baseline/AC05/20261015-01/tuple.json",
+  "state": "prepared separate source clones; not authorized proof of a completed known-good baseline",
+  "runstirExecuted": false,
+  "privateRootAlias": "PRIVATE214",
+  "samples": [
+    {
+      "sampleIdentity": "food-truck-minimum",
+      "sourceURL": "https://github.com/apple/sample-food-truck",
+      "sourceSHA": "3954a769e99f3cc53297d94f2b960ceb2665b3d6",
+      "baselineClone": "$PRIVATE214/food-truck",
+      "separateFreshClone": "$PRIVATE214/fresh-food-truck",
+      "appRoot": ".",
+      "dependencyRoot": ".",
+      "project": "Food Truck.xcodeproj",
+      "scheme": "Food Truck",
+      "configuration": "Debug",
+      "appID": "com.example.apple-samplecode.Food-Truck",
+      "rawTrackedSHA256": "4e72b41c4405ff3f5c95d37fbcd6e75d71e11978595a9b27bf6a8cfc3630b2b6",
+      "freshMatchesBaselineOriginal": true,
+      "freshTrackedGitStatus": "clean",
+      "freshDependencyPreparationExecuted": false,
+      "freshBuildInstallLaunchExecuted": false
+    },
+    {
+      "sampleIdentity": "netnewswire-oss",
+      "sourceURL": "https://github.com/Ranchero-Software/NetNewsWire",
+      "sourceSHA": "aea7795bcc0698ced6f28eba53da886eb6217e64",
+      "baselineClone": "$PRIVATE214/netnewswire",
+      "separateFreshClone": "$PRIVATE214/fresh-netnewswire",
+      "appRoot": ".",
+      "dependencyRoot": ".",
+      "project": "NetNewsWire.xcodeproj",
+      "scheme": "NetNewsWire-iOS",
+      "configuration": "Debug",
+      "appID": "org.runstir.baseline214.NetNewsWire.iOS-DEBUG",
+      "lockfileSHA256": "451402e67a2e01ab03d23ddbe7d73b2509956811e5265a689760b9d70d3e0097",
+      "rawTrackedSHA256": "5a6d7f086849f46bc40b2ef7f95242f0e35b1354753061ffda2e34056023aef8",
+      "freshMatchesBaselineOriginal": true,
+      "freshTrackedGitStatus": "clean",
+      "freshDependencyPreparationExecuted": false,
+      "freshBuildInstallLaunchExecuted": false
+    }
+  ],
+  "manualPreparationToRepeat": [
+    "Acquire a fresh exclusive iOS runtime/device lease; preserve existing devices and global Xcode selection.",
+    "Use the same exact installed toolchain, runtime and device profile; acquire original distribution checksum evidence before a known-good claim.",
+    "For NetNewsWire use original frozen lock, isolated SPM/cache and original target SDK declarations; pass the recorded non-secret development settings and remove the six gyb credential variables from the child environment.",
+    "Confirm NetNewsWire's first notification choice and capture an unobscured first screen in a new recorded attempt.",
+    "Keep baseline observations separate from future Runstir CLI and GUI results; do not inherit success across changed inputs."
+  ],
+  "sourcePreservation": "No source patch or lock update is allowed by this handoff. A changed input requires a new identity and evidence record.",
+  "storageLimitation": "These disposable clones are temporary. If absent, create new remote clones at the exact recorded SHA and compare raw tracked hashes before use. Restricted evidence has a separate durable owner-only copy."
+}
