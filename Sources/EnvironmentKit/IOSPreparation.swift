@@ -160,7 +160,8 @@ struct IOSPreparation {
               !before.runtimes.contains(where: { $0.identifier == pin.identifier }) else {
             throw failure("Runtime or existing Simulator conditions changed before installation")
         }
-        for process in ["xcodebuild", "Simulator"] {
+        // Headless Simulators can belong to device sets outside the selected HOME.
+        for process in ["xcodebuild", "Simulator", "launchd_sim"] {
             let result = try await runner.run(ProcessCommand("pgrep", ["-x", process], timeout: .seconds(10)))
             guard result.terminationStatus == .exited(1), result.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
                 throw failure("Another \(process) operation may be active. Finish it and inspect again. Setup will not stop it.")

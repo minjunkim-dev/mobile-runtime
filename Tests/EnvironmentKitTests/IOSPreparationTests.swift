@@ -242,6 +242,19 @@ struct IOSPreparationProviderTests {
         try fixture.assertPreserved()
     }
 
+    @Test("a headless Simulator outside the selected device set blocks global runtime installation")
+    func headlessSimulatorBusy() async throws {
+        let fixture = try IOSPreparationFixture()
+        let runner = IOSPreparationRunner(fixture, runtime: false)
+        let plan = try await inspect(fixture, runner)
+        let action = try #require(plan.actions["ios.runtime.install"])
+        await #expect(throws: DomainError.self) {
+            try await action.run(runner: HeadlessSimulatorRunner(base: runner)) { _ in }
+        }
+        #expect(runner.installations == 0 && runner.creations == 0)
+        try fixture.assertPreserved()
+    }
+
     @Test("failed or cancelled creation reports actual or unknown resources and prevents blind retry",
           arguments: [IOSPreparationRunner.Fault.failBefore, .failAfter, .cancelBefore, .cancelAfter])
     private func creationRecovery(fault: IOSPreparationRunner.Fault) async throws {
@@ -328,6 +341,7 @@ private final class IOSPreparationFixture {
             "yarn install --frozen-lockfile": .ok(""),
             "pgrep -x xcodebuild": .failed(1, ""),
             "pgrep -x Simulator": .failed(1, ""),
+            "pgrep -x launchd_sim": .failed(1, ""),
             "xcodebuild -list -json -project \(repo.url("ios/MyApp.xcodeproj").path)": .ok(#"{"project":{"schemes":["MyApp"]}}"#),
         ])
     }
@@ -411,6 +425,21 @@ private final class IOSPreparationRunner: ProcessRunner, @unchecked Sendable {
             else { answer.responses[command.description] = .ok(installation ? "" : "B38C3447-963B-42CB-959F-F5234F5A1092\n") }
         }
         return try await answer.run(command, onLine: onLine)
+    }
+
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+        try await base.spawnDetached(command, logFile: logFile)
+    }
+}
+
+private struct HeadlessSimulatorRunner: ProcessRunner {
+    let base: IOSPreparationRunner
+
+    func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+        if command.executable == "pgrep", command.arguments == ["-x", "launchd_sim"] {
+            return ProcessResult(terminationStatus: .exited(0), standardOutput: "12345\n", standardError: "")
+        }
+        return try await base.run(command, onLine: onLine)
     }
 
     func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
