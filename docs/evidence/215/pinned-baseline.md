@@ -135,6 +135,19 @@ AGP 후속 연결 receipt는 그 index에 포함되지 않은 추가 증거다.
 
 ## 실패 이력과 종료
 
+### 별도 Runstir fresh clone 인계
+
+새 baseline의 archive 12개·source tuple과 같은 입력을 별도 Runstir 검증 경로에 연결했다.
+각 앱의 CLI·GUI용 source를 `--no-hardlinks --no-checkout`으로 새로 복제한 뒤 정확한 SHA를 checkout했다.
+native baseline의 build 산출물이나 source 작업 폴더를 복사하지 않았다.
+4개 source의 tracked bytes·mode·symlink target은 native source와 같았다.
+각 raw index·stage·flags와 명시적 사용자 선택 `mobile.yml`을 첫 Runstir 검사 전에 기록했다.
+Gradle wrapper의 regular file 314개·712개도 같은 공식 archive와 비교했다.
+모든 fresh snapshot 시각은 첫 Runstir command보다 앞선다.
+이 인계 시점의 fresh 상태와 이후 #211의 실행 결과는 구분한다. 현재도 미사용이라고 주장하지 않는다.
+정확한 source·시각·index·snapshot hash와 비공개 receipt 17개의 연결은 [fresh-runstir-handoff.json](./fresh-runstir-handoff.json)에 있다.
+이 추가 handoff receipt는 native 증거 index 293개를 덮어쓰거나 그 안에 소급 추가하지 않는다.
+
 1. 첫 before 감사의 마지막 process 조회는 write guard 안에서 `EPERM`으로 끝났다. 자원 snapshot 8개는 이미 저장돼 있었다. process 조회만 guard 밖의 read-only 관측으로 분리했다. 쓰기 허용 범위를 넓히지 않았다.
 2. ADB 첫 시도는 `-L tcp:127.0.0.1:5044`를 거부했다. 오류는 `listening on specified hostname currently unsupported`다. ADB는 `SIGABRT`, exit `-6`으로 끝났다. Emulator는 시작하지 않았다. listener 부재를 확인했다.
 3. 승인받은 단일 infra 교정으로 `adb -P 5044 --one-device emulator-5566 server nodaemon`을 사용했다. child `ADB_SERVER_SOCKET`은 `tcp:5044`다. host 전역 환경이나 기본 ADB `5037`은 바꾸지 않았다.

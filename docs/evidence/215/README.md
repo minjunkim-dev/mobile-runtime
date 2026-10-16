@@ -13,6 +13,7 @@ AGP 원본 Maven JAR 두 개의 checksum은 실측 전 cache 감사에 있었다
 최신 판정과 실패·한계는 [pinned-baseline.md](./pinned-baseline.md)에 있다.
 입력은 [pinned-inputs.json](./pinned-inputs.json)에 있다.
 실행은 [pinned-runtime.json](./pinned-runtime.json)에 있다.
+새 tuple과 별도 Runstir fresh clone 4개의 연결은 [fresh-runstir-handoff.json](./fresh-runstir-handoff.json)에 있다.
 비공개 원본 293개와 새 AGP receipt의 연결은 [pinned-provenance.json](./pinned-provenance.json)에 있다.
 선택한 원본 줄은 [pinned-excerpts.md](./pinned-excerpts.md)에 있다.
 Runstir CLI·GUI와 #199 전체 완료는 이 native baseline 판정과 구분한다.
