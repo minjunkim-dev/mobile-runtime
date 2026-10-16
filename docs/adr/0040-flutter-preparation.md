@@ -24,6 +24,10 @@ Flutter가 아닌 앱에 명시 entrypoint를 주면 도구 호출 전에 거부
 각 파일의 순서·size·SHA256을 구분해서 묶는다. 파일 경계가 바뀐 입력을 같은 fingerprint로 취급하지 않는다.
 이 fingerprint는 SDK 배포 archive의 checksum이나 전체 SDK 무결성 증명과 다르다.
 기존 SDK의 version·revision·Dart가 공식 정식 arm64 release와 맞고 프로젝트 constraint를 만족하면 재사용한다.
+실행할 SDK의 발견 출처도 보존한다. `FLUTTER_ROOT`·`PATH`의 명시 선택과 Runstir 관리 설치를 실행 후보로 사용한다.
+자동 `.fvm/flutter_sdk`에서만 발견한 SDK는 metadata가 일치해도 Dart를 실행하지 않는다.
+그 경우 SDK·workspace를 미확인 수동 단계로 남긴다. 신뢰하는 SDK를 명시한 뒤 다시 계획한다.
+같은 공식 tuple의 명시 SDK가 따로 있으면 그 SDK를 우선한다. metadata와 Mach-O header는 archive 인증 근거가 아니다.
 다른 기존 SDK를 제거하거나 그 SDK에서 bootstrap하지 않는다.
 
 ## 정확한 공식 설치 입력

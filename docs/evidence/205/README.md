@@ -51,6 +51,9 @@ setup fixture는 plan·approval·trust·stale·partial·failure·cancel·TTY·JS
 
 - SDK reuse와 두 플랫폼 계획을 연결한다.
 - 정확 declaration·entrypoint와 resolver workspace를 승인 입력으로 묶는다.
+- 끊어진 선언 symlink는 누락으로 취급하지 않는다. 읽기 오류를 전달하고 symlink를 보존한다.
+- 자동 `.fvm` SDK는 계획 검사에서 실행하지 않는다. SDK·workspace를 수동 단계로 남긴다.
+- 명시 ROOT·PATH와 관리 설치의 발견 출처를 보존한다. 같은 release의 명시 SDK를 자동 `.fvm` 후보보다 우선한다.
 - workspace folder와 소유 Pub cache의 충돌을 실행 전에 거부한다.
 - locked Dart 정렬은 정확한 cwd·child environment를 사용한다.
 - 취소는 exit 130이다. 완료 cache와 기존 SDK를 보존한다.
