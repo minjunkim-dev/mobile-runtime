@@ -90,11 +90,14 @@ func androidAVDName(from output: String) -> String? {
     return name.isEmpty ? nil : name
 }
 
-struct AndroidJavaObservation: Sendable, Equatable {
-    let version: SemanticVersion
-    let versionText: String
-    let vendor: String?
-    let home: String?
+public struct AndroidJavaObservation: Sendable, Equatable {
+    public let version: SemanticVersion
+    public let versionText: String
+    public let vendor: String?
+    public let home: String?
+    public let propertiesVersion: String?
+    public let runtimeVersion: String?
+    public let architecture: String?
 }
 
 struct AndroidDaemonJDKRequirement: Sendable, Equatable {
@@ -104,8 +107,8 @@ struct AndroidDaemonJDKRequirement: Sendable, Equatable {
     let origin: String
 }
 
-struct AndroidObservationFailure: Error, Sendable, Equatable, CustomStringConvertible {
-    let description: String
+public struct AndroidObservationFailure: Error, Sendable, Equatable, CustomStringConvertible {
+    public let description: String
 
     init(_ description: String) { self.description = description }
 }
@@ -263,11 +266,18 @@ public actor AndroidDoctorContext {
     }
 
     func java() async throws -> Result<AndroidJavaObservation, AndroidObservationFailure> {
+        try await Self.observeJava(directory: androidDirectory, runner: projectRunner)
+    }
+
+    /// Observe the selected executable. Missing properties stay absent; a banner
+    /// fallback remains available to the existing Android doctor verdict only.
+    public static func observeJava(executable: String = "java", directory: URL,
+                                   runner: any ProcessRunner) async throws -> Result<AndroidJavaObservation, AndroidObservationFailure> {
         let command = ProcessCommand(
-            "java", ["-XshowSettings:properties", "-version"],
-            workingDirectory: androidDirectory, timeout: .seconds(15)
+            executable, ["-XshowSettings:properties", "-version"],
+            workingDirectory: directory, timeout: .seconds(15)
         )
-        let result = try await projectRunner.run(command)
+        let result = try await runner.run(command)
         guard result.terminationStatus.isSuccess else {
             let detail = result.combinedOutput.lastLines(8)
             return .failure(AndroidObservationFailure(detail.isEmpty ? "java exited unsuccessfully" : detail))
@@ -283,7 +293,10 @@ public actor AndroidDoctorContext {
                 version: version,
                 versionText: versionText,
                 vendor: Self.property(named: "java.vendor", in: output),
-                home: Self.property(named: "java.home", in: output)
+                home: Self.property(named: "java.home", in: output),
+                propertiesVersion: Self.property(named: "java.version", in: output),
+                runtimeVersion: Self.property(named: "java.runtime.version", in: output),
+                architecture: Self.property(named: "os.arch", in: output)
             )
         )
     }

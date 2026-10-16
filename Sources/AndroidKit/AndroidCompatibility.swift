@@ -7,11 +7,25 @@ struct AndroidCompatibilityEvaluation: Sendable, Equatable {
     let unknown: [String]
 }
 
-enum AndroidCompatibility {
+public enum AndroidCompatibility {
     static let source = CheckSource(
         tier: 2,
         origin: "Android AGP compatibility table + Gradle Java compatibility table (2026-10-15); https://developer.android.com/build/releases/about-agp; https://docs.gradle.org/current/userguide/compatibility.html"
     )
+
+    /// Preparation uses the same official tables as the evaluated build checks.
+    /// Unknown compatibility never authorizes a new JDK candidate.
+    public static func preparationJDKBlocker(major: Int, gradle: SemanticVersion, agp: SemanticVersion) -> String? {
+        guard let agpGradle = minimumGradle(for: agp), let agpJDK = minimumJDK(for: agp),
+              let javaGradle = minimumGradleForJava(major) else {
+            return "The bundled AGP/Gradle/JDK tables do not cover this exact toolchain"
+        }
+        guard gradle >= agpGradle else { return "AGP \(agp) requires Gradle \(agpGradle) or newer" }
+        guard major >= agpJDK else { return "AGP \(agp) requires JDK \(agpJDK) or newer" }
+        guard gradle >= javaGradle else { return "JDK \(major) requires Gradle \(javaGradle) or newer" }
+        guard gradle < SemanticVersion(major: 9) || major >= 17 else { return "Gradle 9 and newer require JDK 17 or newer" }
+        return nil
+    }
 
     static func effectiveBuildTools(declared: String?, agp: String?) -> String? {
         guard let declared, let version = SemanticVersion(declared) else { return nil }

@@ -38,7 +38,7 @@ struct PreparationExecutionTests {
     @Test("approval does not grant repository trust and changed declarations invalidate approval")
     func approvalBoundary() async throws {
         let repo = try project()
-        let runner = tools(repo)
+        let runner = try tools(repo)
         let input = ProjectInspectionInput(directory: repo.root, environment: [:])
         let plan = await PreparationExecution.run(input: input, planOnly: true, runner: runner)
         let id = try #require(plan.plan?.id)
@@ -47,12 +47,12 @@ struct PreparationExecutionTests {
         let diagnostic = try plan.encoded(toolVersion: "test")
         #expect(untrusted.operation.requiredInput == ["--trust-repository"], Comment(rawValue: diagnostic))
         #expect(!runner.log.all.contains { $0.description == "yarn install --frozen-lockfile" })
-        var selectedTool = tools(repo)
+        var selectedTool = try tools(repo)
         selectedTool.responses["/usr/bin/which node"] = .ok("/another/bin/node")
         let changedPath = await PreparationExecution.run(input: input, approvedPlanID: id, trustRepository: true, runner: selectedTool)
         #expect(changedPath.operation.state == "needs-approval")
         #expect(!selectedTool.log.all.contains { $0.description == "yarn install --frozen-lockfile" })
-        var unknownTool = tools(repo)
+        var unknownTool = try tools(repo)
         unknownTool.responses["/usr/bin/which node"] = .failed(1, "no known node executable")
         let unknownPlan = await PreparationExecution.run(input: input, planOnly: true, runner: unknownTool)
         #expect(unknownPlan.plan?.steps.first { $0.id == "dependencies.node" }?.kind == "migration")
@@ -70,7 +70,7 @@ struct PreparationExecutionTests {
     @Test("completed Node alignment is preserved while the other platform waits manually")
     func partialPreparation() async throws {
         let repo = try project()
-        let runner = tools(repo)
+        let runner = try tools(repo)
         let input = ProjectInspectionInput(directory: repo.root, environment: [:])
         let plan = await PreparationExecution.run(input: input, planOnly: true, runner: runner)
         let id = try #require(plan.plan?.id)
@@ -84,10 +84,56 @@ struct PreparationExecutionTests {
         #expect(try Data(contentsOf: repo.url("yarn.lock")) == Data())
     }
 
+    @Test("tool-only approval preserves newly available dependency alignment for a new approval", arguments: [false, true])
+    func newlyAvailableAlignment(trustRepository: Bool) async throws {
+        let fixture = try await ToolPreparationTests().fixture()
+        let repo = fixture.repo
+        try repo.write("package.json", #"{"dependencies":{"react-native":"0.83.10"}}"#)
+        try repo.write(".nvmrc", "22.23.2\n")
+        try repo.write("yarn.lock", "")
+        try repo.directory("ios/MyApp.xcodeproj")
+        let projectTools = try tools(repo)
+        let runner = NewlyAvailableNodeRunner(base: fixture.runner, projectTools: projectTools,
+            node: repo.url("store/installs/node/22.23.2/bin/node"))
+        let input = ProjectInspectionInput(directory: repo.root,
+            environment: ["MISE_DATA_DIR": repo.url("store").path])
+        let initial = await PreparationExecution.run(input: input, planOnly: true, runner: runner)
+        let plan = try #require(initial.plan)
+        let diagnostic = try initial.encoded(toolVersion: "test")
+        try #require(plan.steps.contains { $0.id == "tools.node" && $0.kind == "install" },
+            Comment(rawValue: diagnostic))
+        #expect(!plan.steps.contains { $0.kind == "align" })
+
+        let result = await PreparationExecution.run(input: input, approvedPlanID: plan.id,
+            trustRepository: trustRepository, runner: runner,
+            leases: ResourceLeases(directory: repo.url(".mobile/leases")))
+        #expect(result.operation.completed == ["tools.node"], Comment(rawValue: result.operation.error ?? ""))
+        #expect(result.plan?.steps.contains { $0.id == "dependencies.node" && $0.kind == "align" } == true)
+        #expect(result.operation.remaining.contains("dependencies.node"))
+        #expect(result.plan?.platforms.first { $0.platform == .ios }?.state == "needs-approval")
+        #expect(result.operation.state == "partial")
+        #expect(result.exitCode == 1)
+        #expect(!projectTools.log.all.contains { $0.description == "yarn install --frozen-lockfile" })
+        #expect(!FileManager.default.fileExists(atPath: repo.url("node_modules").path))
+
+        let stale = await PreparationExecution.run(input: input, approvedPlanID: plan.id,
+            trustRepository: true, runner: runner)
+        #expect(stale.operation.state == "needs-approval")
+        #expect(stale.plan?.id != plan.id)
+        let nextID = try #require(stale.plan?.id)
+        let aligned = await PreparationExecution.run(input: input, approvedPlanID: nextID,
+            trustRepository: true, runner: runner,
+            leases: ResourceLeases(directory: repo.url(".mobile/leases")))
+        #expect(aligned.operation.completed == ["dependencies.node"], Comment(rawValue: aligned.operation.error ?? ""))
+        #expect(!aligned.operation.remaining.contains("dependencies.node"))
+        #expect(aligned.plan?.platforms.first { $0.platform == .ios }?.state == "succeeded")
+        #expect(FileManager.default.fileExists(atPath: repo.url("node_modules").path))
+    }
+
     @Test("a dependency script's source change stops later commands and is never restored")
     func sourceMutation() async throws {
         let repo = try project()
-        let runner = MutatingRunner(base: tools(repo), file: repo.url("package.json"))
+        let runner = MutatingRunner(base: try tools(repo), file: repo.url("package.json"))
         let input = ProjectInspectionInput(directory: repo.root, environment: [:])
         let plan = await PreparationExecution.run(input: input, planOnly: true, runner: runner)
         let prepared = await PreparationExecution.run(input: input, approvedPlanID: try #require(plan.plan?.id), trustRepository: true, runner: runner)
@@ -123,7 +169,7 @@ struct PreparationExecutionTests {
     @Test("cancellation preserves a completed install and prevents further preparation commands")
     func cancelledAfterInstall() async throws {
         let repo = try project()
-        let base = tools(repo)
+        let base = try tools(repo)
         let runner = CancellingRunner(base: base)
         let input = ProjectInspectionInput(directory: repo.root, environment: [:])
         let plan = await PreparationExecution.run(input: input, planOnly: true, runner: runner)
@@ -141,7 +187,7 @@ struct PreparationExecutionTests {
     @Test("failed installer reports domain failure and retains its partial dependency marker for retry")
     func installFailure() async throws {
         let repo = try project()
-        var runner = tools(repo)
+        var runner = try tools(repo)
         runner.responses["yarn install --frozen-lockfile"] = .failed(1, "fixture installer failed")
         let input = ProjectInspectionInput(directory: repo.root, environment: [:])
         let plan = await PreparationExecution.run(input: input, planOnly: true, runner: runner)
@@ -160,7 +206,7 @@ struct PreparationExecutionTests {
         let repo = try project()
         try repo.write(".env", "API_KEY=first-private-value")
         try repo.write("debug.log", "one")
-        let runner = tools(repo)
+        let runner = try tools(repo)
         let input = ProjectInspectionInput(directory: repo.root, environment: [:])
         let initial = await PreparationExecution.run(input: input, planOnly: true, runner: runner)
         try repo.write(".env", "API_KEY=second-private-value")
@@ -177,15 +223,15 @@ struct PreparationExecutionTests {
     func overlappingSetup() async throws {
         let repo = try project()
         let gate = InstallGate()
-        let runner = WaitingRunner(base: tools(repo), gate: gate)
+        let runner = WaitingRunner(base: try tools(repo), gate: gate)
         let input = ProjectInspectionInput(directory: repo.root, environment: [:])
         let initial = await PreparationExecution.run(input: input, planOnly: true, runner: runner)
         let id = try #require(initial.plan?.id)
         let first = Task { await PreparationExecution.run(input: input, approvedPlanID: id, trustRepository: true, runner: runner) }
         await gate.waitUntilStarted()
         #expect(await gate.started)
-        let current = await PreparationExecution.run(input: input, planOnly: true, runner: tools(repo))
-        let second = await PreparationExecution.run(input: input, approvedPlanID: try #require(current.plan?.id), trustRepository: true, runner: tools(repo))
+        let current = await PreparationExecution.run(input: input, planOnly: true, runner: try tools(repo))
+        let second = await PreparationExecution.run(input: input, approvedPlanID: try #require(current.plan?.id), trustRepository: true, runner: try tools(repo))
         #expect(second.exitCode == 1)
         #expect(second.operation.conflict?.owner?.command == "setup")
         #expect(second.operation.conflict?.owner?.operationId != second.operation.id)
@@ -203,11 +249,11 @@ struct PreparationExecutionTests {
         try repo.write("Gemfile.lock", "GEM\n  specs:\n    cocoapods (1.16.1)\n")
         try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
         try repo.write("ios/Podfile.lock", "locked pods")
-        var runner = tools(repo)
+        var runner = try tools(repo)
         runner.responses["bundle exec pod --version"] = .ok("1.16.1")
         runner.responses["bundle --version"] = .ok("Bundler version 2.6.9")
         runner.responses["bundle config get path --parseable"] = .ok("path=vendor/bundle")
-        runner.responses["ruby -rbundler -e print Bundler.bundle_path"] = .ok(repo.url("vendor/bundle/ruby/3.3.0").path)
+        runner.responses["\(repo.url(".mobile/tool-fixtures/ruby").path) -rbundler -e print Bundler.bundle_path"] = .ok(repo.url("vendor/bundle/ruby/3.3.0").path)
         runner.responses["bundle check"] = .failed(1, "missing locked gems")
         runner.responses["bundle install"] = .ok("")
         runner.responses["bundle exec pod install --deployment"] = .ok("")
@@ -219,7 +265,7 @@ struct PreparationExecutionTests {
         #expect(initial.plan?.steps.first { $0.id == "dependencies.gems" }?.target == repo.url("vendor/bundle/ruby/3.3.0").path)
         var moved = runner
         moved.responses["bundle config get path --parseable"] = .ok("path=other-bundle")
-        moved.responses["ruby -rbundler -e print Bundler.bundle_path"] = .ok(repo.url("other-bundle/ruby/3.3.0").path)
+        moved.responses["\(repo.url(".mobile/tool-fixtures/ruby").path) -rbundler -e print Bundler.bundle_path"] = .ok(repo.url("other-bundle/ruby/3.3.0").path)
         let stale = await PreparationExecution.run(input: input, approvedPlanID: id, trustRepository: true, runner: moved)
         #expect(stale.operation.state == "needs-approval")
         #expect(!moved.log.all.contains { $0.description == "bundle install" })
@@ -234,7 +280,7 @@ struct PreparationExecutionTests {
         var tilde = runner
         tilde.responses["bundle config get path --parseable"] = .ok("path=~/runstir-202-probe")
         let expanded = ("~/runstir-202-probe" as NSString).expandingTildeInPath
-        tilde.responses["ruby -rbundler -e print Bundler.bundle_path"] = .ok(expanded + "/ruby/3.3.0")
+        tilde.responses["\(repo.url(".mobile/tool-fixtures/ruby").path) -rbundler -e print Bundler.bundle_path"] = .ok(expanded + "/ruby/3.3.0")
         let tildePlan = await PreparationExecution.run(input: input, planOnly: true, runner: tilde)
         #expect(tildePlan.plan?.steps.first { $0.id == "dependencies.gems" }?.environment["BUNDLE_PATH"] == expanded)
         #expect(tildePlan.plan?.steps.first { $0.id == "dependencies.gems" }?.target == expanded + "/ruby/3.3.0")
@@ -269,11 +315,11 @@ struct PreparationExecutionTests {
             try repo.write("Gemfile.lock", "GEM\n  specs:\n    cocoapods (1.16.1)\n")
             try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
             try repo.write("ios/Podfile.lock", "locked pods")
-            var runner = tools(repo)
+            var runner = try tools(repo)
             runner.responses["bundle exec pod --version"] = .ok("1.16.1")
             runner.responses["bundle --version"] = .ok("Bundler version 2.6.9")
             runner.responses["bundle config get path --parseable"] = .ok("path=\(shared.url("bundle").path)")
-            runner.responses["ruby -rbundler -e print Bundler.bundle_path"] = .ok(shared.url("bundle/ruby/3.3.0").path)
+            runner.responses["\(repo.url(".mobile/tool-fixtures/ruby").path) -rbundler -e print Bundler.bundle_path"] = .ok(shared.url("bundle/ruby/3.3.0").path)
             runner.responses["bundle check"] = .failed(1, "missing gems")
             runner.responses["bundle install"] = .ok("")
             runner.responses["bundle exec pod install --deployment"] = .ok("")
@@ -312,16 +358,22 @@ struct PreparationExecutionTests {
         return repo
     }
 
-    private func tools(_ repo: FixtureRepo) -> FakeProcessRunner {
-        FakeProcessRunner(responses: [
+    private func tools(_ repo: FixtureRepo) throws -> FakeProcessRunner {
+        let node = try repo.write(".mobile/tool-fixtures/node", "fixture node")
+        let ruby = try repo.write(".mobile/tool-fixtures/ruby", "fixture ruby")
+        for file in [node, ruby] { try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: file.path) }
+        return FakeProcessRunner(responses: [
             "xcode-select -p": .ok("/test/Xcode"),
             "xcodebuild -version": .ok("Xcode 27.0\nBuild version 18A100"),
             "xcodebuild -checkFirstLaunchStatus": .ok(""),
             "xcrun simctl list runtimes -j": .ok(#"{"runtimes":[{"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-27-0","name":"iOS 27.0","version":"27.0","isAvailable":true}]}"#),
             "node --version": .ok("v22.14.0"),
-            "/usr/bin/which node": .ok("/test/bin/node"),
+            "/usr/bin/which node": .ok(node.path),
+            "\(node.path) --version": .ok("v22.14.0"),
+            "ruby --version": .ok("ruby 3.3.0"),
+            "\(ruby.path) --version": .ok("ruby 3.3.0"),
             "/usr/bin/which yarn": .ok("/test/bin/yarn"),
-            "/usr/bin/which ruby": .ok("/test/bin/ruby"),
+            "/usr/bin/which ruby": .ok(ruby.path),
             "/usr/bin/which bundle": .ok("/test/bin/bundle"),
             "/usr/bin/which pod": .ok("/test/bin/pod"),
             "yarn --version": .ok("1.22.22"),
@@ -331,11 +383,37 @@ struct PreparationExecutionTests {
     }
 }
 
+private struct NewlyAvailableNodeRunner: ProcessRunner {
+    let base: ToolPreparationFixtureRunner
+    let projectTools: FakeProcessRunner
+    let node: URL
+
+    func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+        if command.executable == "/usr/bin/which", command.arguments == ["node"] {
+            return ProcessResult(terminationStatus: .exited(FileManager.default.isExecutableFile(atPath: node.path) ? 0 : 1),
+                standardOutput: node.path, standardError: "")
+        }
+        if command.executable == "node", command.arguments == ["--version"] {
+            return ProcessResult(terminationStatus: .exited(FileManager.default.isExecutableFile(atPath: node.path) ? 0 : 127),
+                standardOutput: "v22.23.2", standardError: "")
+        }
+        if projectTools.responses[command.description] != nil {
+            return try await projectTools.run(command, onLine: onLine)
+        }
+        do { return try await base.run(command, onLine: onLine) }
+        catch is FixtureMiss { return ProcessResult(terminationStatus: .exited(127), standardOutput: "", standardError: "fixture tool unavailable") }
+    }
+
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+        throw FixtureMiss(command: command.description)
+    }
+}
+
 private struct ChangedBundleDestinationRunner: ProcessRunner {
     let base: FakeProcessRunner
     func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
         let result = try await base.run(command, onLine: onLine)
-        if command.description == "ruby -rbundler -e print Bundler.bundle_path", command.environment["BUNDLE_PATH"] != nil {
+        if (command.executable == "ruby" || command.executable.hasSuffix("/tool-fixtures/ruby")) && command.arguments == ["-rbundler", "-e", "print Bundler.bundle_path"], command.environment["BUNDLE_PATH"] != nil {
             return ProcessResult(terminationStatus: .exited(0), standardOutput: "/different/destination", standardError: "")
         }
         return result
@@ -349,7 +427,7 @@ private struct ChangedNodeVersionRunner: ProcessRunner {
     let base: FakeProcessRunner
     func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
         let result = try await base.run(command, onLine: onLine)
-        if command.description == "node --version", base.log.all.contains(where: { $0.description == "yarn install --frozen-lockfile" }) {
+        if (command.executable == "node" || command.executable.hasSuffix("/tool-fixtures/node")) && command.arguments == ["--version"], base.log.all.contains(where: { $0.description == "yarn install --frozen-lockfile" }) {
             return ProcessResult(terminationStatus: .exited(0), standardOutput: "v22.15.0", standardError: "")
         }
         return result
@@ -363,7 +441,7 @@ private struct ChangedEffectiveBundleRunner: ProcessRunner {
     let base: FakeProcessRunner
     func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
         let result = try await base.run(command, onLine: onLine)
-        if command.description == "ruby -rbundler -e print Bundler.bundle_path", command.environment["BUNDLE_PATH"] != nil,
+        if (command.executable == "ruby" || command.executable.hasSuffix("/tool-fixtures/ruby")) && command.arguments == ["-rbundler", "-e", "print Bundler.bundle_path"], command.environment["BUNDLE_PATH"] != nil,
            base.log.all.contains(where: { $0.description == "yarn install --frozen-lockfile" }) {
             return ProcessResult(terminationStatus: .exited(0), standardOutput: "/different/effective/destination", standardError: "")
         }

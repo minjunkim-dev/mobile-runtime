@@ -93,7 +93,8 @@ public enum WorkflowExecution {
             if kind != .down {
                 let report = await wiring.engine.run()
                 try Task.checkCancellation()
-                let ids = platform == .ios ? IOSWorkflowValidation.checkIDs : AndroidWorkflowValidation.checkIDs
+                let ids = (platform == .ios ? IOSWorkflowValidation.checkIDs : AndroidWorkflowValidation.checkIDs)
+                    .union(report.checks.filter { $0.id.hasPrefix("tools.") }.map(\.id))
                 let blocking = report.checks.filter { ids.contains($0.id) && $0.status == .error }
                 if report.hasToolFailure {
                     var context = UpContext()

@@ -39,11 +39,23 @@ public struct WorkflowContext: Sendable {
         // Tier 2 checks compare against.
         let config = selectedConfig ?? ConfigContext.detect(anchor: anchor, workingDirectory: workingDirectory)
         let lookup = anchor.map { MatrixLookup.resolve(anchor: $0, config: config.configuration) }
-        let projectEnvironment: ProjectExecutionEnvironment?
+        var projectEnvironment: ProjectExecutionEnvironment?
+        var toolObservationChecks: [any Check] = []
         if includeProjectEnvironment, let anchor {
             projectEnvironment = await ProjectExecutionEnvironment.resolve(
                 anchor: anchor, hostRunner: runner
             )
+            if let current = projectEnvironment, anchor.framework != .flutter {
+                do {
+                    let requirements = try await ToolRequirements.resolve(anchor: anchor, platforms: [platform], runner: current.runner)
+                    let tools = try await ToolPreparation.inspect(requirements: requirements, directory: anchor.directory,
+                        environment: input.environment, runner: runner, currentToolRunner: current.runner, planInstallations: false)
+                    projectEnvironment = current.activatingTools(tools.activeTools, environment: input.environment)
+                    toolObservationChecks += tools.checks.map { ToolRequirementCheck(step: $0) }
+                } catch {
+                    toolObservationChecks.append(ToolObservationFailureCheck(error: error))
+                }
+            }
         } else {
             projectEnvironment = nil
         }
@@ -120,7 +132,7 @@ public struct WorkflowContext: Sendable {
 
         return WorkflowContext(
             anchor: anchor,
-            engine: DoctorEngine(checks: checks),
+            engine: DoctorEngine(checks: toolObservationChecks + checks),
             config: config,
             lookup: lookup,
             runner: runner,
@@ -128,5 +140,27 @@ public struct WorkflowContext: Sendable {
             androidContext: androidContext,
             locator: locator
         )
+    }
+}
+
+private struct ToolObservationFailureCheck: Check {
+    let error: any Error
+    let id = "tools.observation"
+    let category = "Project tools"
+    let title = "Observe exact project tools without installation"
+    func run() async throws -> CheckOutcome { throw error }
+}
+
+private struct ToolRequirementCheck: Check {
+    let step: PreparationStep
+    var id: String { step.id }
+    let category = "Project tools"
+    var title: String { "Exact prepared tool: \(step.id)" }
+    func run() async throws -> CheckOutcome {
+        if step.kind == "reuse" {
+            return .pass(observed: step.observed, required: step.required, source: step.source)
+        }
+        return .error(observed: step.observed ?? "The exact project tool is not available", required: step.required,
+            source: step.source, remediation: step.remediation ?? Remediation(summary: "Inspect and approve an exact setup plan before building."))
     }
 }

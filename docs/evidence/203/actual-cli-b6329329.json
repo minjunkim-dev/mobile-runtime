@@ -1,0 +1,562 @@
+{
+  "schemaVersion": 1,
+  "issue": 203,
+  "measurementDateUTC": "2026-10-16",
+  "verdict": {
+    "freshManagerAbsentCLIInstall": "verified-four-tools",
+    "actualCancellation": "verified-SIGINT-exit130",
+    "setupState": "partial",
+    "setupExitCode": 1,
+    "guiFinalB6329329": "pending",
+    "wholeIssueCompletedByThisEvidence": false
+  },
+  "source": {
+    "base": "c3dfcf806e7250ecef8b0fe2dfeac2a1d8348502",
+    "measuredHead": "b6329329a95b93e39283fa3cc11b9b73af73205f",
+    "cleanAtMeasurement": true,
+    "canonicalWhole31DiffSHA256": "a501a1a9d3d924702d4aa5ce9f6ba81cd79ba38b1e4f2aef796127444907534d",
+    "canonicalDiffRecipe": "git -c color.ui=false diff --binary --full-index --no-ext-diff --no-textconv <base>...<measuredHead>",
+    "codeBlobMapping": {
+      "recipe": "git ls-tree -r <measuredHead> -- Sources Tests Package.swift Package.resolved scripts",
+      "entries": 204,
+      "sha256": "1e47491525d9e33687cdff4c9df2eee79c66452162f9917c3ba0ba2755a14bf7",
+      "workingTreeCodeMatchedMeasuredHeadAtDocumentation": true
+    },
+    "laterDocumentation": "README.md and actual-cli-b6329329.md/json are later evidence edits. No rebuild was performed for these edits."
+  },
+  "candidate": {
+    "cliSHA256": "23bcc69031678029a62c7618bde9fca00d81ace1d77ddfc0072011f09447a1aa",
+    "cliFiles": 13,
+    "allThirteenHostGuestBytesModesEqual": true,
+    "cliFileMapCanonicalSHA256": "4a0de3ab5df48961d32f93ed151c6f958ebdcc06af59ff2d45cacd00fb5faf78",
+    "cliArchive": {
+      "bytes": 4997373,
+      "sha256": "cf627137c8ecd6ac9306bdd76c5a61e8bfdb5ef2a5e02ffa14a3b46767533af7"
+    },
+    "mappingLimit": "Pinned source/build manifest and exact transferred files; no reproducible-build claim."
+  },
+  "execution": {
+    "project": "Owned copy of eight tracked declaration/compatibility input files plus .git; no hardlinks. This is not an OSS application execution.",
+    "initialManagerAbsent": true,
+    "initialStoreEmpty": true,
+    "initialPATH": "/usr/bin:/bin:/usr/sbin:/sbin",
+    "homeAlias": "<CLI_ROOT>/home",
+    "tmpAlias": "<CLI_ROOT>/tmp/",
+    "storeAlias": "<CLI_ROOT>/tool-store",
+    "stockCurl": {
+      "path": "/usr/bin/curl",
+      "sha256": "625cd93eb0043214d5f74974d34f0b4d748977473e236a2e7f4704ecc2b95950",
+      "observedKernelPath": "/usr/bin/curl",
+      "wrapperProxyAuthConfigOrPayloadSubstitution": false
+    }
+  },
+  "officialPins": [
+    {
+      "stepID": "tools.00.mise",
+      "package": "tools.mise",
+      "revision": "2026.10.7",
+      "artifact": {
+        "url": "https://github.com/jdx/mise/releases/download/v2026.10.7/mise-v2026.10.7-macos-arm64",
+        "bytes": 127277984,
+        "sha256": "f5171e341518a57e8c4e9280e28443e35d66212c51164c83be76794e0a78b014",
+        "format": "raw executable"
+      },
+      "metadata": {
+        "url": "https://api.github.com/repos/jdx/mise/releases/tags/v2026.10.7",
+        "sha256": "6f9172f22d2e171de36d5fdbb0439d86156f30f5f85dd34c6d1c328e981be47d"
+      },
+      "destinationRelativeToStore": "manager/2026.10.7",
+      "requiredFile": "bin/mise",
+      "resourceRootAlias": "<CLI_ROOT>/tool-store/",
+      "versionResult": {
+        "version": "2026.10.7",
+        "exitCode": 0,
+        "binaryBytes": 127277984,
+        "binarySHA256": "f5171e341518a57e8c4e9280e28443e35d66212c51164c83be76794e0a78b014",
+        "mode": "0o755",
+        "argument": "--version",
+        "childEnvironment": {
+          "PATH": "Exact four selected bin directories followed by system paths",
+          "JAVA_HOME": "<CLI_ROOT>/tool-store/installs/java/temurin-17.0.18+8",
+          "MISE_AUTO_INSTALL": "false"
+        }
+      }
+    },
+    {
+      "stepID": "tools.java",
+      "package": "tools.java",
+      "revision": "temurin-17.0.18+8",
+      "artifact": {
+        "url": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.18%2B8/OpenJDK17U-jdk_aarch64_mac_hotspot_17.0.18_8.tar.gz",
+        "bytes": 185658966,
+        "sha256": "d81de06d938384fe76c4aa3c13395933aa11e2d19b0428743f810db06b05e312",
+        "format": "tar.gz"
+      },
+      "metadata": {
+        "url": "https://api.github.com/repos/adoptium/temurin17-binaries/releases/tags/jdk-17.0.18%2B8",
+        "sha256": "7012aecf9ee3ca4451342387e65f91b81cb95b32c55d69bbe85cb090c1f7e8c5"
+      },
+      "destinationRelativeToStore": "installs/java/temurin-17.0.18+8",
+      "requiredFile": "bin/java",
+      "resourceRootAlias": "<CLI_ROOT>/tool-store/",
+      "versionResult": {
+        "version": "Temurin 17.0.18+8",
+        "exitCode": 0,
+        "binaryBytes": 70464,
+        "binarySHA256": "bf8efe506d54531fbab37b4cc52e004dfa203583d1aa086f132348d484ce456f",
+        "mode": "0o755",
+        "argument": "-version",
+        "childEnvironment": {
+          "PATH": "Exact four selected bin directories followed by system paths",
+          "JAVA_HOME": "<CLI_ROOT>/tool-store/installs/java/temurin-17.0.18+8",
+          "MISE_AUTO_INSTALL": "false"
+        }
+      }
+    },
+    {
+      "stepID": "tools.node",
+      "package": "tools.node",
+      "revision": "22.23.2",
+      "artifact": {
+        "url": "https://nodejs.org/dist/v22.23.2/node-v22.23.2-darwin-arm64.tar.gz",
+        "bytes": 50068815,
+        "sha256": "61130f394c1630d211dd50aecc4353d379480f36d3ac913cd85dbba1aed585c6",
+        "format": "tar.gz"
+      },
+      "metadata": {
+        "url": "https://nodejs.org/dist/v22.23.2/SHASUMS256.txt",
+        "sha256": "778ac5b2fcdbd68d9c0ae9f4310674faa3af0910bd0d18e7f6597787c40a3e39"
+      },
+      "destinationRelativeToStore": "installs/node/22.23.2",
+      "requiredFile": "bin/node",
+      "resourceRootAlias": "<CLI_ROOT>/tool-store/",
+      "versionResult": {
+        "version": "22.23.2",
+        "exitCode": 0,
+        "binaryBytes": 112937728,
+        "binarySHA256": "18e387c90ab8a8400183e8bdd396376e1e875b91b4c874b894dcade7b35bf572",
+        "mode": "0o755",
+        "argument": "--version",
+        "childEnvironment": {
+          "PATH": "Exact four selected bin directories followed by system paths",
+          "JAVA_HOME": "<CLI_ROOT>/tool-store/installs/java/temurin-17.0.18+8",
+          "MISE_AUTO_INSTALL": "false"
+        }
+      }
+    },
+    {
+      "stepID": "tools.ruby",
+      "package": "tools.ruby",
+      "revision": "3.2.2",
+      "artifact": {
+        "url": "https://github.com/jdx/ruby/releases/download/3.2.2/ruby-3.2.2.macos.tar.gz",
+        "bytes": 39479292,
+        "sha256": "13521c64d1d5579d97707b54321b82e7c7a7c779a919868ac9b4eb8e36da9ba9",
+        "format": "tar.gz"
+      },
+      "metadata": {
+        "url": "https://api.github.com/repos/jdx/ruby/releases/tags/3.2.2",
+        "sha256": "3a82e4c582003942ec09dcc48e81b2a6b73e7be1fb6380de5cdaa83b983a5283"
+      },
+      "destinationRelativeToStore": "installs/ruby/3.2.2",
+      "requiredFile": "bin/ruby",
+      "resourceRootAlias": "<CLI_ROOT>/tool-store/",
+      "versionResult": {
+        "version": "3.2.2",
+        "exitCode": 0,
+        "binaryBytes": 6775752,
+        "binarySHA256": "5869cb2f27470ac17a79e2b582998c56a595c7ab867e1f83e0886e403c380808",
+        "mode": "0o755",
+        "argument": "--version",
+        "childEnvironment": {
+          "PATH": "Exact four selected bin directories followed by system paths",
+          "JAVA_HOME": "<CLI_ROOT>/tool-store/installs/java/temurin-17.0.18+8",
+          "MISE_AUTO_INSTALL": "false"
+        }
+      }
+    }
+  ],
+  "plan": {
+    "initialID": "13c1cde2a78bef9d0e2874597fdd8d854e50688d12e18bcf8e4a60fe8e4009e1",
+    "automaticInstallIDs": [
+      "tools.00.mise",
+      "tools.java",
+      "tools.node",
+      "tools.ruby"
+    ],
+    "initialManualIDs": [
+      "android.tools.reinspect",
+      "dependencies.node",
+      "ios.tools.reinspect"
+    ],
+    "sharedResourceKeyAlias": "destination:<CLI_ROOT>/tool-store",
+    "sharedResourceKeyRawSHA256": "48d7a37cbad6798773cb8b7c3130e3fd37f40da859afe71e1fa28f8da5efea2c",
+    "resourceBoundary": "One selected-store root lease shared by all four; no per-version exception."
+  },
+  "cancel": {
+    "trigger": "First approved mise raw payload download output size > 0",
+    "observedBytes": 585728,
+    "signal": "SIGINT",
+    "signalCount": 1,
+    "target": "Only launcher-owned mobile parent PID",
+    "identityChecked": [
+      "PID",
+      "PPID",
+      "startTime",
+      "kernelExecutable",
+      "PGID"
+    ],
+    "state": "cancelled",
+    "exitCode": 130,
+    "elapsedSeconds": 7.944994688034058,
+    "completed": [],
+    "storeEntriesAfter": 0,
+    "activeOwnedCLIOrToolsAfter": 0,
+    "sharedRootLeaseBytesAfter": 0,
+    "scope": "Only this fresh store was measured. This is not an atomic rollback or existing SDK deletion claim."
+  },
+  "replan": {
+    "count": 1,
+    "id": "13c1cde2a78bef9d0e2874597fdd8d854e50688d12e18bcf8e4a60fe8e4009e1",
+    "sameIDAsInitial": true,
+    "wholeInstallationDictionariesEqual": true,
+    "wholeStepsEqual": true,
+    "manualAndRemainingEqual": true,
+    "newAutomaticSteps": 0,
+    "remainingApprovalCount": 1,
+    "completedToolsReinstalled": [],
+    "wholeInstallationDictionaryCanonicalSHA256": "73c1d92b81aa1a0b9812323de3755eae94301bca2f8129527317b014c5744ea3",
+    "wholeStepsCanonicalSHA256": "ff6f5c5159e7c1d44f726ab4deaffb3fadb0fd797fade0a3870b931ffabb0f6a"
+  },
+  "remainingApprovalResult": {
+    "state": "partial",
+    "exitCode": 1,
+    "elapsedSeconds": 126.33361315727234,
+    "stagesSucceeded": [
+      "tools.00.mise",
+      "tools.java",
+      "tools.node",
+      "tools.ruby"
+    ],
+    "completed": [
+      "tools.00.mise",
+      "tools.java",
+      "tools.node",
+      "tools.ruby"
+    ],
+    "error": null,
+    "returnedPlanID": "654c6c7d906d9bad3c1216e609f80c6f5946afce008ea1d5081f4c738af30383",
+    "manualRemaining": [
+      {
+        "id": "android.android.avd",
+        "kind": "provider"
+      },
+      {
+        "id": "android.android.emulator.acceleration",
+        "kind": "provider"
+      },
+      {
+        "id": "android.android.gradle.compatibility",
+        "kind": "provider"
+      },
+      {
+        "id": "android.android.gradle.wrapper",
+        "kind": "provider"
+      },
+      {
+        "id": "android.android.jdk",
+        "kind": "provider"
+      },
+      {
+        "id": "android.android.project",
+        "kind": "provider"
+      },
+      {
+        "id": "android.android.sdk",
+        "kind": "provider"
+      },
+      {
+        "id": "android.android.target",
+        "kind": "provider"
+      },
+      {
+        "id": "android.sdk.root",
+        "kind": "provider"
+      },
+      {
+        "id": "dependencies.node",
+        "kind": "migration"
+      },
+      {
+        "id": "ios.cocoapods.version",
+        "kind": "provider"
+      },
+      {
+        "id": "ios.project.detected",
+        "kind": "provider"
+      }
+    ],
+    "manualRemainingCount": 12,
+    "newPlanOrActionAfterFinalReturn": false,
+    "allFourExactVersionQueriesExit0": true
+  },
+  "payloadPreservation": {
+    "javaNodeRuby": "Three original downloaded archives retained; observed bytes and SHA256 equal each approved official pin.",
+    "mise": {
+      "downloadPathSnapshot": "missed; output already absent when curl exit was observed",
+      "installedRawCopyBytes": 127277984,
+      "installedRawCopySHA256": "f5171e341518a57e8c4e9280e28443e35d66212c51164c83be76794e0a78b014",
+      "equalApprovedRawArtifactPin": true,
+      "redownloadedForEvidence": false
+    }
+  },
+  "preservation": {
+    "trackedOriginalAndFreshProjectFiles": 8,
+    "trackedBytesIndexStageFlagsConfigEqual": true,
+    "globalPATHAndSelectedConfigurationEqual": true,
+    "oldCandidateRoots": 6,
+    "oldMiseBinaries": 2,
+    "oldThreeToolTrees": "All regular bytes/SHA/modes and symlink targets equal. Directory entries/modes included.",
+    "oldThreeToolTreeEntryCounts": {
+      "java": 543,
+      "node": 5865,
+      "ruby": 16721
+    },
+    "oldDfcActual02IndexedFilesEqual": 166,
+    "protectedVMs": {
+      "count": 6,
+      "allStoppedBeforeAfter": true,
+      "smallMetadataFullSHAEqual": true,
+      "diskStatEqual": true,
+      "wholeDiskBytesHashed": false,
+      "activeRootOwned203Excluded": true
+    },
+    "selectedHOME": {
+      "scope": "Selected root stat and selected configuration file bytes only.",
+      "delta": {
+        "Library/Caches": {
+          "before": {
+            "exists": true,
+            "bytes": 1824,
+            "mode": "0o700",
+            "mtimeNs": "1792131112656649023"
+          },
+          "after": {
+            "exists": true,
+            "bytes": 1824,
+            "mode": "0o700",
+            "mtimeNs": "1792133405170279874"
+          }
+        }
+      },
+      "mtimeNsEncoding": "decimal string; preserves original nanosecond precision",
+      "deltaCause": "unknown",
+      "wholeHOMEOrCacheBytesPreservedClaim": false
+    },
+    "finalOwnedChildren": 0,
+    "finalStageRoots": 0,
+    "finalLeaseFiles": {
+      "selectedStoreRoot": {
+        "filename": "ce0849dfd49eb1d9.lock",
+        "bytes": 0,
+        "mode": "0o600"
+      },
+      "ownedProjectFolder": {
+        "filename": "2362f447feb68909.lock",
+        "bytes": 0,
+        "mode": "0o600"
+      }
+    },
+    "VMlifecycle": "CLI worker did not boot, stop, or run GUI. Root retained graphics VM ownership; stop/runexit is outside this CLI receipt."
+  },
+  "auditHarnessFailure": {
+    "originalScriptSHA256": "656c4576f92fba2e34434fe70830f45fecd2d8007526d578f195f838daeee3e6",
+    "failedAssertion": "allFourRawPayloadsCaptured",
+    "reason": "Only three download-path snapshots existed. Stock CLI had already moved the mise raw payload.",
+    "correction": "Retain three archive snapshots and separately hash/copy installed raw mise; no product receipt or payload rewrite.",
+    "failedScriptAndFailureRecordPreserved": true
+  },
+  "limits": [
+    "Final b6329329 GUI actual remains pending.",
+    "This proves the named CLI tool installation/cancellation/version scope, not application execution or completion of #203.",
+    "No dependency alignment, SDK installation/removal, migration, or project build was authorized by this run.",
+    "Previous failed candidates and unknown dfc guard failure cause remain unchanged.",
+    "Documentation does not repeat code tests, builds, VM actions, downloads, or API calls."
+  ],
+  "privateEvidence": {
+    "bundleID": "b6329329-cli-actual-01",
+    "pathPolicy": "Receipt paths below are relative to the private bundle. Guest/private absolute paths are normalized; public values are curated, not raw log byte copies.",
+    "handoff": {
+      "file": "HANDOFF.json",
+      "sha256": "38f29db83b21d4a2f6fdbe6e6ba89bacae1fdc3c65df5ee1ed9ada1329a3c20c"
+    },
+    "index": {
+      "file": "FINAL-INDEX.json",
+      "files": 188,
+      "sha256": "083cc7613c8672f5902a74673ccd7c31f78d483db6a5b20b2da3da457cd5185e",
+      "all188SHABytesModesVerified": true
+    },
+    "receipts": {
+      "plan": {
+        "path": "guest-final/evidence/receipts/01-plan/stdout",
+        "sha256": "d40f4f52b50eb2a7158744f85d8206bc1a35a112158e827cac0238aca22b5595",
+        "bytes": 33928,
+        "bounds": [
+          "plan.id",
+          "plan.steps[*].installation",
+          "operation.state"
+        ]
+      },
+      "cancelSignal": {
+        "path": "guest-final/evidence/receipts/02-approved-cancel/signal.ndjson",
+        "sha256": "cc5f97b86f39873ae433dc4d6cdf26fa55009be2862a5f3fb7d91cdd452b62b8",
+        "bytes": 1593,
+        "bounds": {
+          "ndjsonLines": [
+            1,
+            2
+          ]
+        }
+      },
+      "cancelExit": {
+        "path": "guest-final/evidence/receipts/02-approved-cancel/exit.json",
+        "sha256": "3440044918097cbe2340885bf53c5284fc87822f48a4181b5236b6dc64b7b134",
+        "bytes": 136,
+        "bounds": [
+          "exitCode",
+          "elapsedSeconds",
+          "SIGINTSentExactlyOnce"
+        ]
+      },
+      "cancelPreservation": {
+        "path": "guest-final/evidence/after-cancel.json",
+        "sha256": "47b97b8a0d16c68f669c02dd9712191e8256117ce119e5fb7b18295dbd743083",
+        "bytes": 5588549,
+        "bounds": [
+          "checks",
+          "activeOwnedCLIOrTools",
+          "store.entries",
+          "sharedRootLease"
+        ]
+      },
+      "replanGate": {
+        "path": "REPLAN-GATE.json",
+        "sha256": "6622f2936b38ae9e31d7ff77219e2e18acf38c071100849f8e09f8064fc4b408",
+        "bytes": 4153,
+        "bounds": [
+          "checks",
+          "initialPlanID",
+          "replanID",
+          "approvedRemaining"
+        ]
+      },
+      "result": {
+        "path": "guest-final/evidence/receipts/04-approved-remaining/stdout",
+        "sha256": "559c1ed8558091951f3722396975a9ace20e3603f06473cdd236ada2c25907ce",
+        "bytes": 41105,
+        "bounds": [
+          "operation.state",
+          "operation.completed",
+          "operation.remaining",
+          "operation.manual",
+          "operation.error",
+          "plan.id"
+        ]
+      },
+      "stages": {
+        "path": "guest-final/evidence/receipts/04-approved-remaining/stderr",
+        "sha256": "77d86e38cf17ba0caf54f316b81c119bd0b49f89ef7dead76afde155a6ccdb63",
+        "bytes": 1710,
+        "bounds": {
+          "ndjsonLines": [
+            1,
+            10
+          ]
+        }
+      },
+      "resultExit": {
+        "path": "guest-final/evidence/receipts/04-approved-remaining/exit.json",
+        "sha256": "42109270075efd0f8f3e375b12d62278f4f42dcebc47bedc90763e56e181356c",
+        "bytes": 137,
+        "bounds": [
+          "exitCode",
+          "elapsedSeconds"
+        ]
+      },
+      "versions": {
+        "path": "guest-final/evidence/versions.json",
+        "sha256": "e483117972049e54e500a456a6e7b52244b0721859584f16fac7868e162d24a6",
+        "bytes": 5267,
+        "bounds": [
+          "tools.*.exitCode",
+          "tools.*.binarySHA256",
+          "tools.*.binaryBytes",
+          "tools.*.canonicalPath"
+        ]
+      },
+      "payloadSnapshots": {
+        "path": "guest-final/evidence/receipts/04-approved-remaining/artifacts.ndjson",
+        "sha256": "d6e210355e4758a764577035bb9da43bb9481e93332d8892bdbdee8d2d39ebae",
+        "bytes": 2295,
+        "bounds": {
+          "ndjsonLines": [
+            1,
+            4
+          ]
+        }
+      },
+      "preservation": {
+        "path": "guest-final/evidence/after-final.json",
+        "sha256": "f203a63661f3f76cdc75bb20d180b1c0365eb6e841b9803f3b8573a42151ed89",
+        "bytes": 11110853,
+        "bounds": [
+          "checks",
+          "activeOwnedCLIOrTools",
+          "old.oldFullToolTrees",
+          "newCandidate",
+          "sharedRootLease"
+        ]
+      },
+      "leases": {
+        "path": "guest-final/evidence/leases-after-final.json",
+        "sha256": "92f3373c3f771cddf1a017348512eb859b3280fb802043eec6a142ee415ce52a",
+        "bytes": 824,
+        "bounds": [
+          "leases.*.bytes",
+          "leases.*.mode"
+        ]
+      },
+      "hostSourceCandidate": {
+        "path": "host-final.json",
+        "sha256": "3121379efc42e0d4e42d615dc95d41769beba9cd07d95179504b8115577ca33d",
+        "bytes": 3048,
+        "bounds": [
+          "head",
+          "clean",
+          "canonicalDiffSHA256",
+          "checks"
+        ]
+      },
+      "protectedVMs": {
+        "path": "final-protected.json",
+        "sha256": "ff89b2b700f401c7bff5b285d7d64d92f3b28ee265a6cabae0fc818326a9d371",
+        "bytes": 7213,
+        "bounds": [
+          "VMs",
+          "states"
+        ]
+      },
+      "auditFinalizerFailure": {
+        "path": "finalize-01-failure.json",
+        "sha256": "2ac28b716292bf631b55ac7a64ba11305e62d4b61ddc5a11a3ac57af9dd90527",
+        "bytes": 828,
+        "bounds": [
+          "scriptSHA256",
+          "result",
+          "cause",
+          "correction"
+        ]
+      }
+    }
+  }
+}

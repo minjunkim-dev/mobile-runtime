@@ -2,6 +2,7 @@ import Core
 import CryptoKit
 import Darwin
 import Foundation
+import SimulatorKit
 
 /// Providers pin one immutable payload. Credentials and inherited environments are never plan data.
 public struct InstallationArtifact: Codable, Sendable, Equatable {
@@ -20,21 +21,106 @@ public struct InstallationMetadata: Codable, Sendable, Equatable {
     public let revision: String
     public let destination: URL
     public let resourceRoot: URL
-    public let artifact: InstallationArtifact
-    public let repositoryURL: URL
-    public let repositorySHA256: String
+    public let artifact: InstallationArtifact?
+    public let managed: ManagedInstallation?
+    public let repositoryURL: URL?
+    public let repositorySHA256: String?
     public let licenseID: String?
     public let licenseSHA1: String?
     public let requiredFile: String
     public let executable: Bool
     public var resourceKey: ResourceKey { .destination(resourceRoot) }
+    public var resourceKeys: [ResourceKey] {
+        switch managed {
+        case .iosRuntime(let pin):
+            [resourceKey, .destination(pin.deviceSet)] + pin.existingDeviceIDs.map { .device(.ios, $0) }
+        case .iosSimulator:
+            [resourceKey, .destination(URL(fileURLWithPath: "/Library/Developer/CoreSimulator"))]
+        case nil:
+            [resourceKey]
+        }
+    }
 
     public init(package: String, revision: String, destination: URL, resourceRoot: URL,
-                artifact: InstallationArtifact, repositoryURL: URL, repositorySHA256: String,
+                artifact: InstallationArtifact? = nil, managed: ManagedInstallation? = nil,
+                repositoryURL: URL? = nil, repositorySHA256: String? = nil,
                 licenseID: String? = nil, licenseSHA1: String? = nil, requiredFile: String, executable: Bool = false) {
         self.package = package; self.revision = revision; self.destination = destination; self.resourceRoot = resourceRoot
-        self.artifact = artifact; self.repositoryURL = repositoryURL; self.repositorySHA256 = repositorySHA256
+        self.artifact = artifact; self.managed = managed
+        self.repositoryURL = repositoryURL; self.repositorySHA256 = repositorySHA256
         self.licenseID = licenseID; self.licenseSHA1 = licenseSHA1; self.requiredFile = requiredFile; self.executable = executable
+    }
+
+    public var inspectionLine: String {
+        let location = "destination: \(destination.path); resource: \(resourceKey)"
+        if let artifact {
+            return "install: \(package) revision \(revision); \(artifact.url.absoluteString); \(artifact.size) bytes; \(artifact.checksumAlgorithm) \(artifact.checksum); \(location)"
+        }
+        switch managed {
+        case .iosRuntime(let pin):
+            return "install: iOS \(pin.version) build \(pin.build) \(pin.architecture); asset: \(pin.assetIdentifier); \(pin.downloadSize) bytes; catalog SHA-256 \(pin.catalogSHA256); payload checksum: unavailable; \(location)"
+        case .iosSimulator(let request):
+            return "create: \(request.name); type: \(request.deviceTypeIdentifier); runtime: \(request.runtimeIdentifier) build \(request.runtimeBuild) \(request.architecture); \(location)"
+        case nil:
+            return "install: \(package) revision \(revision); artifact identity unavailable; \(location)"
+        }
+    }
+
+    /// Archive and platform-managed identities are mutually exclusive.
+    public func validate() throws {
+        let digest = #"^[0-9a-f]{64}$"#
+        switch (artifact, managed) {
+        case (.some, nil):
+            guard let repositoryURL, repositoryURL.scheme == "https", repositoryURL.user == nil,
+                  repositoryURL.password == nil,
+                  repositorySHA256?.range(of: digest, options: .regularExpression) != nil else {
+                throw InstallationExecution.failure("Archive installation requires its official repository identity")
+            }
+        case (nil, .iosRuntime(let pin)):
+            guard destination == resourceRoot, resourceRoot.standardizedFileURL.path == "/Library/Developer/CoreSimulator",
+                  repositoryURL == pin.catalogURL, repositorySHA256 == pin.catalogSHA256,
+                  pin.catalogURL.absoluteString == "https://devimages-cdn.apple.com/downloads/xcode/simulators/index2.dvtdownloadableindex",
+                  pin.catalogSHA256.range(of: digest, options: .regularExpression) != nil,
+                  pin.downloadSize > 0, !pin.assetIdentifier.isEmpty, pin.architecture == "arm64",
+                  pin.identifier.hasPrefix("com.apple.CoreSimulator.SimRuntime.iOS-"),
+                  SemanticVersion(pin.version) != nil, !pin.build.isEmpty,
+                  pin.developerDirectory.hasPrefix("/"), !pin.xcodeVersion.isEmpty, !pin.xcodeBuild.isEmpty,
+                  pin.deviceSet.path.hasPrefix("/") else {
+                throw InstallationExecution.failure("Invalid platform-managed iOS runtime identity")
+            }
+        case (nil, .iosSimulator(let request)):
+            guard destination == resourceRoot, resourceRoot == request.deviceSet,
+                  repositoryURL == nil, repositorySHA256 == nil,
+                  !request.name.isEmpty, !request.name.contains("\n"), request.architecture == "arm64",
+                  request.deviceTypeIdentifier.hasPrefix("com.apple.CoreSimulator.SimDeviceType."),
+                  request.runtimeIdentifier.hasPrefix("com.apple.CoreSimulator.SimRuntime.iOS-"),
+                  SemanticVersion(request.runtimeVersion) != nil, !request.runtimeBuild.isEmpty,
+                  request.developerDirectory.hasPrefix("/"), !request.xcodeVersion.isEmpty, !request.xcodeBuild.isEmpty,
+                  request.deviceSet.path.hasPrefix("/") else {
+                throw InstallationExecution.failure("Invalid Simulator creation identity")
+            }
+        default:
+            throw InstallationExecution.failure("Installation requires exactly one archive or platform-managed identity")
+        }
+    }
+}
+
+public enum ManagedInstallation: Codable, Sendable, Equatable {
+    case iosRuntime(IOSRuntimePin)
+    case iosSimulator(IOSSimulatorRequest)
+}
+
+public struct InstallationActionResult: Sendable, Equatable {
+    public let resources: [IOSPreparationResource]
+    public init(resources: [IOSPreparationResource] = []) { self.resources = resources }
+}
+
+/// Failure or cancellation can leave completed system-managed resources.
+public struct InstallationActionFailure: Error, Sendable {
+    public let underlying: any Error
+    public let result: InstallationActionResult
+    public init(underlying: any Error, result: InstallationActionResult) {
+        self.underlying = underlying; self.result = result
     }
 }
 
@@ -42,18 +128,29 @@ public struct InstallationMetadata: Codable, Sendable, Equatable {
 /// Providers reuse the same lease, approval checks, runner, cancellation and completion loop.
 public struct InstallationAction: Sendable {
     public let metadata: InstallationMetadata
-    private let operation: @Sendable (any ProcessRunner, @Sendable ([URL]) async throws -> Void) async throws -> Void
+    private let operation: @Sendable (any ProcessRunner, @Sendable ([URL]) async throws -> Void) async throws -> InstallationActionResult
 
     public init(metadata: InstallationMetadata,
                 operation: @escaping @Sendable (any ProcessRunner, @Sendable ([URL]) async throws -> Void) async throws -> Void) {
+        self.metadata = metadata
+        self.operation = { runner, beforeCommit in
+            try await operation(runner, beforeCommit)
+            return InstallationActionResult()
+        }
+    }
+
+    public init(metadata: InstallationMetadata,
+                returning operation: @escaping @Sendable (any ProcessRunner, @Sendable ([URL]) async throws -> Void) async throws -> InstallationActionResult) {
         self.metadata = metadata; self.operation = operation
     }
 
     /// A trusted provider reports only its exact owned temporary paths for source observation.
-    public func run(runner: any ProcessRunner, beforeCommit: @escaping @Sendable ([URL]) async throws -> Void) async throws {
+    @discardableResult
+    public func run(runner: any ProcessRunner, beforeCommit: @escaping @Sendable ([URL]) async throws -> Void) async throws -> InstallationActionResult {
         try Task.checkCancellation()
+        try metadata.validate()
         try await beforeCommit([])
-        try await operation(runner, beforeCommit)
+        return try await operation(runner, beforeCommit)
     }
 }
 
@@ -88,13 +185,17 @@ public enum InstallationExecution {
     public static func installSDKZip(_ metadata: InstallationMetadata, localMetadata: Data,
                                      runner: any ProcessRunner,
                                      beforeCommit: @Sendable ([URL]) async throws -> Void = { _ in }) async throws {
+        try metadata.validate()
+        guard let artifact = metadata.artifact, metadata.managed == nil else {
+            throw failure("An SDK archive action requires its pinned archive metadata")
+        }
         try validateSDKLicense(metadata)
         try validateDestination(metadata)
         let manager = FileManager.default
         let scratch = metadata.resourceRoot.appendingPathComponent(".runstir-install-\(UUID().uuidString)")
         try manager.createDirectory(at: scratch, withIntermediateDirectories: false)
         defer { try? manager.removeItem(at: scratch) }
-        let payload = try await download(metadata.artifact, to: scratch, runner: runner)
+        let payload = try await download(artifact, to: scratch, runner: runner)
         let archive = try SafeZIP(data: Data(contentsOf: payload, options: .mappedIfSafe))
         try await archive.validateLinks(payload: payload, runner: runner)
         let extracted = scratch.appendingPathComponent("contents")
