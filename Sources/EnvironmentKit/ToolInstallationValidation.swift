@@ -11,7 +11,8 @@ enum ToolInstallationValidation {
         let main = stage.appendingPathComponent(executable)
         let binaries = try machOBinaries(stage: stage, main: main)
         var executableRpaths: [URL] = []
-        var inspections: [(binary: URL, rpaths: [URL], libraryIDs: [String], dependencies: [String])] = []
+        var executableHasUnresolvedRpaths = false
+        var inspections: [(binary: URL, rpaths: [URL], hasUnresolvedRpaths: Bool, libraryIDs: [String], dependencies: [String])] = []
         guard let root = canonical(stage)?.path else { throw InstallationExecution.failure("Tool stage cannot be inspected") }
         func contained(_ path: URL) -> Bool { canonical(path)?.path.hasPrefix(root + "/") == true }
         for binary in binaries {
@@ -44,12 +45,13 @@ enum ToolInstallationValidation {
                 throw InstallationExecution.failure("Pinned tool minimum macOS is unknown or newer than this host")
             }
             let localRpaths = rpaths.compactMap { expand($0, binary: binary, main: main) }
-            if binary == main { executableRpaths = localRpaths }
+            let hasUnresolvedRpaths = localRpaths.count != rpaths.count
+            if binary == main { executableRpaths = localRpaths; executableHasUnresolvedRpaths = hasUnresolvedRpaths }
             let libraries = try await runner.run(ProcessCommand("/usr/bin/otool", ["-arch", host.architecture, "-L", binary.path], timeout: .seconds(30)))
             guard libraries.terminationStatus.isSuccess else { throw InstallationExecution.failure("Pinned tool libraries cannot be inspected") }
             let dependencies = libraries.standardOutput.split(whereSeparator: \.isNewline).dropFirst()
                 .map { $0.trimmingCharacters(in: .whitespaces).components(separatedBy: " (compatibility version")[0] }
-            inspections.append((binary, localRpaths, libraryIDs, dependencies))
+            inspections.append((binary, localRpaths, hasUnresolvedRpaths, libraryIDs, dependencies))
         }
         var internalRpaths: [URL] = []
         var identities: [String: Set<String>] = [:]
@@ -75,7 +77,8 @@ enum ToolInstallationValidation {
                         .map { $0.appendingPathComponent(String(dependency.dropFirst(7))) }
                 } else { candidates = expand(dependency, binary: inspection.binary, main: main).map { [$0] } ?? [] }
                 if candidates.contains(where: { contained($0) && manager.fileExists(atPath: $0.path) }) { continue }
-                let matches: Set<String> = if dependency.hasPrefix("@rpath/"), candidates.allSatisfy({ contained($0) }) {
+                let matches: Set<String> = if dependency.hasPrefix("@rpath/"), !inspection.hasUnresolvedRpaths, !executableHasUnresolvedRpaths,
+                    candidates.allSatisfy({ contained($0) }) {
                     Set(internalRpaths.compactMap { path in
                         guard let target = canonical(path.appendingPathComponent(String(dependency.dropFirst(7)))) else { return nil }
                         guard contained(target), manager.fileExists(atPath: target.path), identities[target.path]?.contains(dependency) == true else { return nil }

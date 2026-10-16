@@ -268,7 +268,7 @@ struct ToolPreparationTests {
 
     @Test("rpath fallback cannot hide ambiguous missing aliased or external libraries", arguments: [
         "ambiguous", "missing", "plain-file", "wrong-id", "self-link", "outside-link", "external-local", "escaping-local", "external-main", "external-pool",
-        "absolute-external", "usr-lookalike", "system-lookalike", "usr-traversal", "system-traversal", "alias-parent-traversal", "nul-rpath",
+        "absolute-external", "usr-lookalike", "system-lookalike", "usr-traversal", "system-traversal", "alias-parent-traversal", "nul-rpath", "relative-local", "relative-main",
     ])
     func rejectedLibraryFallback(_ fault: String) async throws {
         let fixture = try await libraryFixture(fault)
@@ -310,6 +310,8 @@ struct ToolPreparationTests {
             var rpath = relative == "bin/java" ? "@loader_path/../lib" : "@loader_path/."
             if fault == "external-main", relative == "bin/java" { rpath = fixture.repo.url("outside").path }
             if fault == "external-local", relative == "lib/libjava.dylib" { rpath = fixture.repo.url("outside").path }
+            if fault == "relative-main", relative == "bin/java" { rpath = "../outside" }
+            if fault == "relative-local", relative == "lib/libjava.dylib" { rpath = "../outside" }
             if fault == "escaping-local", relative == "lib/libjava.dylib" { rpath = "@loader_path/../../outside" }
             if fault == "alias-parent-traversal", relative == "lib/libjava.dylib" { rpath = "@loader_path/alias/.." }
             if fault == "nul-rpath", relative == "lib/libjava.dylib" { rpath = "@loader_path/.\0/../../outside" }
