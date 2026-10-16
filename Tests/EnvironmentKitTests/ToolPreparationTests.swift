@@ -309,6 +309,47 @@ struct ToolPreparationTests {
         #expect(try String(contentsOf: fixture.repo.url("outside/libtarget.dylib"), encoding: .utf8) == "external")
     }
 
+    @Test("an unreadable stage directory cannot hide a dependency from Mach-O validation")
+    func unreadableStageDirectory() async throws {
+        let fixture = try await fixture()
+        let stage = fixture.repo.url("stage")
+        let hidden = stage.appendingPathComponent("hidden")
+        let manager = FileManager.default
+        defer { try? manager.setAttributes([.posixPermissions: 0o755], ofItemAtPath: hidden.path) }
+        for (relative, dependency, rpath) in [
+            ("bin/java", "@loader_path/../hidden/libparent.dylib", "@loader_path"),
+            ("hidden/libparent.dylib", "/usr/lib/libSystem.B.dylib", fixture.repo.url("outside").path),
+        ] {
+            let file = try fixture.repo.write("stage/\(relative)", "fixture")
+            try (Data([0xcf, 0xfa, 0xed, 0xfe]) + Data(relative.utf8)).write(to: file)
+            let settings = "cmd LC_BUILD_VERSION\nplatform 1\nminos 14.0\ncmd LC_RPATH\npath \(rpath) (offset 12)\n"
+            let libraries = "fixture:\n\t\(dependency) (compatibility version 1.0.0, current version 1.0.0)\n"
+            fixture.runner.setInspection(file.path, settings: settings, libraries: libraries)
+        }
+        try manager.setAttributes([.posixPermissions: 0o111], ofItemAtPath: hidden.path)
+        try #require(!manager.isReadableFile(atPath: hidden.path))
+        #expect(manager.fileExists(atPath: hidden.appendingPathComponent("libparent.dylib").path))
+        await #expect(throws: DomainError.self) {
+            try await ToolInstallationValidation.validate(stage: stage, executable: "bin/java", version: version(.java), tool: "java", host: host, runner: fixture.runner)
+        }
+        #expect(!fixture.runner.commands.contains { $0.executable == "/usr/bin/env" })
+    }
+
+    @Test("secondary fat64 libraries cannot hide an external rpath", arguments: ["big", "little"])
+    func fat64SecondaryLibrary(_ byteOrder: String) async throws {
+        let fixture = try await libraryFixture("external-local-contained")
+        let stage = fixture.repo.url("stage")
+        let magic: [UInt8] = byteOrder == "big" ? [0xca, 0xfe, 0xba, 0xbf] : [0xbf, 0xba, 0xfe, 0xca]
+        try (Data(magic) + Data("fixture fat64".utf8)).write(to: stage.appendingPathComponent("lib/libjava.dylib"))
+        fixture.runner.setInspection(stage.appendingPathComponent("bin/java").path,
+            settings: "cmd LC_BUILD_VERSION\nplatform 1\nminos 14.0\ncmd LC_RPATH\npath @loader_path/../lib (offset 12)\n",
+            libraries: "fixture:\n\t@loader_path/../lib/libjava.dylib (compatibility version 1.0.0, current version 1.0.0)\n")
+        await #expect(throws: DomainError.self) {
+            try await ToolInstallationValidation.validate(stage: stage, executable: "bin/java", version: version(.java), tool: "java", host: host, runner: fixture.runner)
+        }
+        #expect(!fixture.runner.commands.contains { $0.executable == "/usr/bin/env" })
+    }
+
     private func libraryFixture(_ layout: String = "none") async throws -> (repo: FixtureRepo, runner: ToolPreparationFixtureRunner) {
         let fault = layout.hasSuffix("-contained") ? String(layout.dropLast("-contained".count)) : layout
         let fixture = try await fixture()

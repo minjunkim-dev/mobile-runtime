@@ -123,17 +123,22 @@ enum ToolInstallationValidation {
 
     private static func machOBinaries(stage: URL, main: URL) throws -> [URL] {
         var binaries = [main]
-        guard let members = FileManager.default.enumerator(at: stage, includingPropertiesForKeys: [.isRegularFileKey, .isSymbolicLinkKey]) else {
+        var enumerationError: (any Error)?
+        guard let members = FileManager.default.enumerator(at: stage, includingPropertiesForKeys: [.isRegularFileKey, .isSymbolicLinkKey],
+            errorHandler: { _, error in enumerationError = error; return false }) else {
             throw InstallationExecution.failure("Tool stage cannot be inspected")
         }
         for case let member as URL in members where member != main {
             let values = try member.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey])
             guard values.isRegularFile == true, values.isSymbolicLink != true else { continue }
             let magic = Array(try Data(contentsOf: member, options: .mappedIfSafe).prefix(4))
-            if [[UInt8(0xcf), 0xfa, 0xed, 0xfe], [0xfe, 0xed, 0xfa, 0xcf], [0xca, 0xfe, 0xba, 0xbe], [0xbe, 0xba, 0xfe, 0xca]].contains(magic) {
+            if [[UInt8(0xcf), 0xfa, 0xed, 0xfe], [0xfe, 0xed, 0xfa, 0xcf],
+                [0xca, 0xfe, 0xba, 0xbe], [0xbe, 0xba, 0xfe, 0xca],
+                [0xca, 0xfe, 0xba, 0xbf], [0xbf, 0xba, 0xfe, 0xca]].contains(magic) {
                 binaries.append(member)
             }
         }
+        if enumerationError != nil { throw InstallationExecution.failure("Tool stage cannot be inspected") }
         return binaries
     }
 

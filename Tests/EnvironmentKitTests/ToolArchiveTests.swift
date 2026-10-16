@@ -39,6 +39,29 @@ struct ToolArchiveTests {
         #expect(try String(contentsOf: fixture.repo.url("store/existing/keep"), encoding: .utf8) == "original")
     }
 
+    @Test("a later unreadable directory entry cannot bypass extracted link inspection")
+    func unreadableExtractedDirectory() async throws {
+        let fixture = try await fixture("node", entries: [
+            (path: "tool/bin/node", body: Data("fixture node".utf8), type: 48, link: ""),
+            (path: "tool/hidden/child", body: Data("hidden".utf8), type: 48, link: ""),
+            (path: "tool/hidden", body: Data(), type: 53, link: ""),
+        ], modes: ["tool/hidden": 0o111])
+        let manager = FileManager.default
+        defer {
+            let scratch = (try? manager.contentsOfDirectory(at: fixture.repo.url("store"), includingPropertiesForKeys: nil)) ?? []
+            let roots = [fixture.metadata.destination] + scratch.filter { $0.lastPathComponent.hasPrefix(".runstir-tool-") }
+                .map { $0.appendingPathComponent("contents/tool") }
+            for root in roots { try? manager.setAttributes([.posixPermissions: 0o755], ofItemAtPath: root.appendingPathComponent("hidden").path) }
+        }
+        await #expect(throws: DomainError.self) {
+            try await ToolArchive.installTarGzip(fixture.metadata, payloadRoot: "tool", runner: ToolPayloadRunner(data: fixture.data), validate: { _, _ in
+                Issue.record("Unreadable extracted directory reached tool validation")
+            })
+        }
+        #expect(!manager.fileExists(atPath: fixture.metadata.destination.path))
+        #expect(try String(contentsOf: fixture.repo.url("store/existing/keep"), encoding: .utf8) == "original")
+    }
+
     @Test("special permissions other than directory setgid never install", arguments: [
         (UInt8(48), 0o4755), (UInt8(48), 0o2755), (UInt8(48), 0o1755),
         (UInt8(53), 0o4755), (UInt8(53), 0o1755), (UInt8(53), 0o6755), (UInt8(53), 0o3755),

@@ -267,7 +267,9 @@ private struct ToolTAR {
     static func validatePayloadLinks(_ root: URL) throws {
         let manager = FileManager.default
         let prefix = root.resolvingSymlinksInPath().path + "/"
-        guard let members = manager.enumerator(at: root, includingPropertiesForKeys: [.isSymbolicLinkKey]) else { throw failure() }
+        var enumerationError: (any Error)?
+        guard let members = manager.enumerator(at: root, includingPropertiesForKeys: [.isSymbolicLinkKey],
+            errorHandler: { _, error in enumerationError = error; return false }) else { throw failure() }
         for case let member as URL in members {
             if try member.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink == true {
                 members.skipDescendants()
@@ -275,5 +277,6 @@ private struct ToolTAR {
                 guard resolved.hasPrefix(prefix), manager.fileExists(atPath: resolved) else { throw failure() }
             }
         }
+        if enumerationError != nil { throw failure() }
     }
 }
