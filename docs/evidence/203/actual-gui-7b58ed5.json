@@ -331,7 +331,7 @@
     "CLIPlanProgressIsGUIStageLog": false,
     "resultEvidence": "Root UI captures plus separate watcher/filesystem/version observations",
     "failedWhiteOrUnavailableCaptures": "Preserved privately; not app failure or visual PASS evidence",
-    "lifecycle": "Normal quit and VM stop/runexit are pending separate Root receipts at this documentation checkpoint"
+    "lifecycle": "Separate Root normal-quit-v1 evidence below. Detached GUI child exit status remains unknown; Tart stop/run exit0 are separate."
   },
   "screenshots": [
     {
@@ -642,5 +642,216 @@
     "This GUI run installed only Java/Node/Ruby beside existing versions. No SDK installation, Gradle execution, dependency installation, migration or dependency alignment was performed.",
     "Full HOME/cache/disk preservation and advisory lock availability remain unproven.",
     "Current public documentation does not reproduce code tests/builds/guest actions/downloads/API calls."
-  ]
+  ],
+  "normalQuitLifecycle": {
+    "bundleID": "normal-quit-v1",
+    "GUIQuit": {
+      "RootObservedAppMenuQuitAndReturn": true,
+      "RootObservedSettledFinderAndRunstirWindowAbsence": true,
+      "GUI1239PSAndKernelAbsent": true,
+      "detachedGUIChildExitCode": "unknown; not collected",
+      "manualSignalCount": 0,
+      "privateScreenNames": [
+        "61-quit-selected.png",
+        "62-after-normal-quit.png",
+        "63-after-normal-quit-settled.png"
+      ]
+    },
+    "separateGuestAudit": {
+      "recordedAtUTC": "2026-10-16T11:25:37.344113+00:00",
+      "comparisonBaseline": "GUI setup after03. This separate audit does not change the original after03 time boundary.",
+      "GUIChildren": 0,
+      "priorOwnedIdentitiesAlive": 0,
+      "ownedExecutableProcesses": 0,
+      "storeAndTmpStageRoots": 0,
+      "sourceThreeProjects": {
+        "sourceProject": {
+          "trackedCount": 8,
+          "tracked8BytesModesAndHashesSame": true,
+          "rawIndexSame": true,
+          "stageSame": true,
+          "flagsSame": true,
+          "HEADSame": true,
+          "configSame": true,
+          "gitTreeSame": true
+        },
+        "GUIproject": {
+          "trackedCount": 8,
+          "tracked8BytesModesAndHashesSame": true,
+          "rawIndexSame": true,
+          "stageSame": true,
+          "flagsSame": true,
+          "HEADSame": true,
+          "configSame": true,
+          "gitTreeSame": true
+        },
+        "CLIproject": {
+          "trackedCount": 8,
+          "tracked8BytesModesAndHashesSame": true,
+          "rawIndexSame": true,
+          "stageSame": true,
+          "flagsSame": true,
+          "HEADSame": true,
+          "configSame": true,
+          "gitTreeSame": true
+        }
+      },
+      "newToolBinsAndFullTreesSame": {
+        "java": {
+          "binarySame": true,
+          "treeSame": true,
+          "treeEntries": 543,
+          "contained": true,
+          "versionExecuted": false
+        },
+        "node": {
+          "binarySame": true,
+          "treeSame": true,
+          "treeEntries": 5865,
+          "contained": true,
+          "versionExecuted": false
+        },
+        "ruby": {
+          "binarySame": true,
+          "treeSame": true,
+          "treeEntries": 16721,
+          "contained": true,
+          "versionExecuted": false
+        }
+      },
+      "namedTreesSame": {
+        "oldCandidates": true,
+        "readonlyMiseManager": true,
+        "readonlyMiseSHA256": true,
+        "oldFullToolTrees": true,
+        "CLIcompletedStore": true,
+        "vendorArtifactTrees": true,
+        "GUIcandidate": true,
+        "newGUIcandidate": true,
+        "newPackageCLI": true,
+        "CLIcandidate": true,
+        "GUIstore": true
+      },
+      "selectedHOMEdeltaSinceAfter03": {},
+      "systemPathsSame": {
+        "GuestAgentPATH": true,
+        "launchctlPATH": true,
+        "curl": true,
+        "systemRuby": true
+      },
+      "exactLeaseFileBytes": [
+        0,
+        0
+      ],
+      "lsofOpenHolderOutputBytes": [
+        0,
+        0
+      ],
+      "advisoryLockAvailability": "unproven; no new flock test"
+    },
+    "VM": {
+      "normalStopCount": 1,
+      "normalStopExitCode": 0,
+      "normalStopAtUTC": "2026-10-16T11:26:36.836826+00:00",
+      "RootRunExitCode": 0,
+      "RootRunCollected": true,
+      "RootBootPIDAbsent": true,
+      "allVMsStopped": true,
+      "protectedVMs": 6,
+      "protectedSmallMetadataSHAAndLargeFileStatEqual": true,
+      "largeOverlayAndNVRAM": "stat only; no whole-disk byte hash",
+      "freeMemoryPercent": 52
+    },
+    "additionalActions": {
+      "GUIReopen": 0,
+      "setupOrPLAN": 0,
+      "install": 0,
+      "versionRerun": 0,
+      "manualSignal": 0,
+      "kill": 0,
+      "delete": 0
+    },
+    "earlierLifecycleAnomalyCause": "unknown; no cause inferred",
+    "privateEvidence": {
+      "handoff": {
+        "path": "HANDOFF-v1.json",
+        "sha256": "deec8dd3d3a8b3321c30c8b9e2640edeea270784021de47dabadb8d1878a1992",
+        "bytes": 11186,
+        "mode": "0o644",
+        "bounds": [
+          "GUIQuit",
+          "observedCleanup",
+          "normalTartStop",
+          "rootBoot.exit",
+          "hostAudit",
+          "actions",
+          "limits"
+        ]
+      },
+      "index": {
+        "path": "FINAL-INDEX-v1.json",
+        "sha256": "2faaffe799def0a3260fef8742c329890a90c5d42470f4c7a130c00ab8819ad8",
+        "bytes": 6993,
+        "mode": "0o644",
+        "files": 48,
+        "all48SHAAndBytesVerified": true,
+        "originalIndexModePins": false
+      },
+      "receipts": {
+        "guestAudit": {
+          "path": "01-guest-audit/stdout",
+          "sha256": "b709e5dbe4b63cbd7dad27efaeb8ec7ed97fa24ed087e803ea79dd09d1e3aff9",
+          "bytes": 17981239,
+          "mode": "0o644",
+          "bounds": [
+            "GUIidentity",
+            "GUIdescendants",
+            "observedOwnedIdentitiesStillAlive",
+            "ownedExecutableProcesses",
+            "stageRootsRemaining",
+            "sources",
+            "newTools",
+            "preservedNamedTrees",
+            "selectedHOMEdelta",
+            "leases"
+          ]
+        },
+        "summary": {
+          "path": "guest-audit-summary-v1.json",
+          "sha256": "0e53fd8c3fcc9467bc6e53d721d011ff3ea878d1aa6a8c800d119d463ddea669",
+          "bytes": 3989,
+          "mode": "0o644",
+          "bounds": [
+            "GUIidentity",
+            "sources",
+            "newTools",
+            "namedTreesSame"
+          ]
+        },
+        "hostBefore": {
+          "path": "host-before.json",
+          "sha256": "a076f9ed84c6d30e247dc3cd95922a23eeda6c3bcad823cf04f79cf7f7265dc3",
+          "bytes": 8698,
+          "mode": "0o644",
+          "bounds": [
+            "protectedSix",
+            "sameAsBefore",
+            "vmStates"
+          ]
+        },
+        "hostAfter": {
+          "path": "host-after.json",
+          "sha256": "2be53232a3de42770016cd1ab47d91b82a1861f1776d568a8bc5a1f0c0186144",
+          "bytes": 8274,
+          "mode": "0o644",
+          "bounds": [
+            "protectedSix",
+            "sameAsBefore",
+            "vmStates",
+            "rootBootPID33800"
+          ]
+        }
+      }
+    }
+  }
 }

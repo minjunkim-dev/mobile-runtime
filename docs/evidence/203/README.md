@@ -11,6 +11,9 @@ iOS·Android 수동 작업과 앱 실행은 수행하지 않았다.
 이 기록으로 #203 전체 완료를 판정하지 않는다.
 실행한 GUI와 같은 환경의 새 mirror CLI를 구분했다.
 이전 CLI와 새 mirror CLI의 binary SHA256은 다르다.
+별도 메뉴 Quit 관측과 GUI PID 부재를 확인했다.
+분리된 GUI의 exit code는 미확인이다.
+Tart stop과 Tart run의 exit `0`은 별도 근거다.
 
 ## 최신 실제 CLI 검증
 

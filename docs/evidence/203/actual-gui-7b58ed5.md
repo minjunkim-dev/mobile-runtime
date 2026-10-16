@@ -119,4 +119,29 @@ PNG는 Root가 보존한 원본이다.
 두 source 사이의 `Sources`·package 입력 차이는 GUI 파일 하나다.
 이를 byte가 같은 rebuild나 이전 CLI 실측의 대체로 주장하지 않는다.
 기존 CLI 취소·실패·미확인 기록과 그 한계를 보존한다.
-Root의 후속 종료·VM lifecycle 결과는 이 문서의 측정 범위 밖이다.
+
+## 별도 정상 종료 감사
+
+Root가 앱 메뉴의 종료를 선택하고 Return을 눌렀다.
+Root가 Finder 화면과 Runstir 창 부재를 확인했다.
+UTC `11:25:37` 별도 guest 감사에서 GUI1239의 ps·kernel 경로는 없었다.
+GUI 자식·이전 소유 identity·소유 실행 파일 process·store/tmp stage는 0개다.
+분리된 GUI 자식의 exit code는 수집하지 못했다.
+메뉴 Quit 관측과 PID 부재를 exit `0`으로 대신하지 않는다.
+
+이 별도 감사는 after03와 source3x8·index·flags·HEAD·config·git tree를 대조했다.
+새 bin3과 full tree, 후보와 지정 readonly tree도 같았다.
+선택한 HOME 항목과 PATH의 추가 변화는 없었다.
+정확한 lease 파일 2개는 0B다.
+`lsof`는 열린 핸들을 찾지 못했다.
+flock 가용성은 검사하지 않았다.
+이 별도 감사가 앞선 after03의 시간 범위를 바꾸지는 않는다.
+
+일반 `tart stop` 1회는 exit `0`이다.
+Root가 Tart run session의 exit `0`도 회수했다.
+두 exit code는 GUI 자식 exit code와 다르다.
+모든 VM이 stopped였다.
+보호 VM 6개의 작은 metadata SHA256과 큰 파일 stat이 같았다.
+큰 overlay·NVRAM에는 stat 범위만 적용했다.
+전체 disk bytes나 이전 lifecycle 이상 원인을 입증하지 않는다.
+추가 GUI 기동·PLAN·설치·version 실행·수동 신호는 없었다.
