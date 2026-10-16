@@ -279,7 +279,10 @@ struct IOSPreparation {
             guard values.isRegularFile == true, values.isSymbolicLink != true, (values.fileSize ?? 65_537) <= 65_536,
                   let attempt = try? JSONDecoder().decode(Attempt.Record.self, from: Data(contentsOf: file)) else { return true }
             switch attempt.identity {
-            case .iosRuntime(let pin): if exactRuntime(pin, in: inventory) == nil { return true }
+            case .iosRuntime(let pin):
+                if exactRuntime(pin, in: inventory) == nil {
+                    throw failure("An earlier iOS preparation has an unresolved system state for iOS \(pin.version) build \(pin.build) \(pin.architecture). Check the selected Xcode's Components and Simulator state first. Complete its manual installation in the selected Xcode's Components before inspecting again. Preserve the recovery journal and existing resources while installation or system state remains unconfirmed. Do not start another installation or creation while that state is unknown.")
+                }
             case .iosSimulator(let request):
                 guard let device = matchingDevice(request, in: inventory), device.available,
                       ["Shutdown", "Booted"].contains(device.state) else { return true }

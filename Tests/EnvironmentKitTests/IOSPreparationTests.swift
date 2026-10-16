@@ -133,13 +133,26 @@ struct IOSPreparationTests {
         #expect((observed.identifier != nil) == fault.after)
         #expect(observed.origin == .unknown)
         #expect(runner.installations == 1 && runner.creations == 0)
+        let journal = try fixture.journalSnapshot()
+        #expect(journal.count == 1)
         let retry = await PreparationExecution.run(input: fixture.input, planOnly: true, runner: runner)
+        #expect(retry.plan != nil)
+        #expect(retry.exitCode == 0 && retry.operation.state == "needs-approval")
+        #expect(retry.operation.error == nil && retry.operation.completed.isEmpty)
+        #expect(retry.operation.nextAction == "Review this plan. Approve only its exact plan-id; repository trust is separate.")
+        if !fault.after {
+            let blocked = try #require(retry.plan?.steps.first { $0.id == "ios.resources" })
+            try fixture.assertManualRecovery(blocked)
+            #expect(retry.operation.manual.contains { $0.id == "ios.resources" && $0.kind == "provider" })
+            #expect(retry.operation.resources.isEmpty)
+        }
         #expect(retry.plan?.steps.contains { $0.id == "ios.runtime.install" } == false)
         #expect(retry.plan?.steps.contains { $0.id == "ios.simulator.create" } == fault.after)
         let stale = await PreparationExecution.run(input: fixture.input, approvedPlanID: try #require(plan.plan?.id),
             trustRepository: true, runner: runner, leases: fixture.leases)
         #expect(stale.operation.state == "needs-approval")
         #expect(runner.installations == 1 && runner.creations == 0)
+        #expect(try fixture.journalSnapshot() == journal)
         try fixture.assertPreserved()
     }
 
@@ -292,10 +305,18 @@ struct IOSPreparationProviderTests {
             #expect((error.result.resources.first?.identifier != nil) == fault.after)
             if !fault.after { #expect(error.result.resources.first?.runtimeBuild == nil) }
         }
+        let journal = try fixture.journalSnapshot()
+        #expect(journal.count == 1)
         let retry = try await inspect(fixture, runner)
+        if !fault.after {
+            let blocked = try #require(retry.checks.first { $0.id == "ios.resources" })
+            try fixture.assertManualRecovery(blocked)
+            #expect(retry.actions.isEmpty && retry.resources.isEmpty)
+        }
         #expect(retry.actions["ios.runtime.install"] == nil)
         #expect((retry.actions["ios.simulator.create"] != nil) == fault.after)
         #expect(runner.creations == 0)
+        #expect(try fixture.journalSnapshot() == journal)
         try fixture.assertPreserved()
     }
 
@@ -344,6 +365,23 @@ private final class IOSPreparationFixture {
             "pgrep -x launchd_sim": .failed(1, ""),
             "xcodebuild -list -json -project \(repo.url("ios/MyApp.xcodeproj").path)": .ok(#"{"project":{"schemes":["MyApp"]}}"#),
         ])
+    }
+
+    func journalSnapshot() throws -> [String: Data] {
+        let directory = home.url("Library/Caches/dev.runstir/ios-preparation")
+        return try Dictionary(uniqueKeysWithValues: FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)
+            .filter { $0.lastPathComponent.hasPrefix("attempt-") && $0.pathExtension == "json" }
+            .map { ($0.lastPathComponent, try Data(contentsOf: $0)) })
+    }
+
+    func assertManualRecovery(_ step: PreparationStep) throws {
+        #expect(step.id == "ios.resources" && step.kind == "provider")
+        #expect(step.command == nil && step.installation == nil)
+        let message = try #require(step.remediation?.summary)
+        #expect(step.observed == message)
+        #expect(message.contains("iOS 27.0 build 24A434 arm64"))
+        #expect(message.contains("Complete its manual installation in the selected Xcode's Components before inspecting again."))
+        #expect(message.contains("Preserve the recovery journal and existing resources"))
     }
 
     func assertPreserved() throws {
