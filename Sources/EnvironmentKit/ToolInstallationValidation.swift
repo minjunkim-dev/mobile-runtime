@@ -1,4 +1,5 @@
 import Core
+import Darwin
 import Foundation
 
 /// Build-runner labels are not deployment targets. Read each staged Mach-O's
@@ -10,6 +11,9 @@ enum ToolInstallationValidation {
         let main = stage.appendingPathComponent(executable)
         let binaries = try machOBinaries(stage: stage, main: main)
         var executableRpaths: [URL] = []
+        var inspections: [(binary: URL, rpaths: [URL], libraryIDs: [String], dependencies: [String])] = []
+        guard let root = canonical(stage)?.path else { throw InstallationExecution.failure("Tool stage cannot be inspected") }
+        func contained(_ path: URL) -> Bool { canonical(path)?.path.hasPrefix(root + "/") == true }
         for binary in binaries {
             try Task.checkCancellation()
             let architecture = try await runner.run(ProcessCommand("/usr/bin/lipo", ["-archs", binary.path], timeout: .seconds(30)))
@@ -43,19 +47,42 @@ enum ToolInstallationValidation {
             if binary == main { executableRpaths = localRpaths }
             let libraries = try await runner.run(ProcessCommand("/usr/bin/otool", ["-arch", host.architecture, "-L", binary.path], timeout: .seconds(30)))
             guard libraries.terminationStatus.isSuccess else { throw InstallationExecution.failure("Pinned tool libraries cannot be inspected") }
-            for line in libraries.standardOutput.split(whereSeparator: \.isNewline).dropFirst() {
-                let dependency = line.trimmingCharacters(in: .whitespaces).components(separatedBy: " (compatibility version")[0]
-                if libraryIDs.contains(dependency) { continue }
-                if dependency.hasPrefix("/usr/lib/") || dependency.hasPrefix("/System/Library/") { continue }
+            let dependencies = libraries.standardOutput.split(whereSeparator: \.isNewline).dropFirst()
+                .map { $0.trimmingCharacters(in: .whitespaces).components(separatedBy: " (compatibility version")[0] }
+            inspections.append((binary, localRpaths, libraryIDs, dependencies))
+        }
+        var internalRpaths: [URL] = []
+        var identities: [String: Set<String>] = [:]
+        for inspection in inspections {
+            if let binary = canonical(inspection.binary) { identities[binary.path, default: []].formUnion(inspection.libraryIDs) }
+            for path in inspection.rpaths {
+                guard let resolved = canonical(path) else { continue }
+                var directory: ObjCBool = false
+                if (resolved.path == root || contained(resolved)), manager.fileExists(atPath: resolved.path, isDirectory: &directory), directory.boolValue {
+                    internalRpaths.append(resolved)
+                }
+            }
+        }
+        for inspection in inspections {
+            try Task.checkCancellation()
+            for dependency in inspection.dependencies {
+                if inspection.libraryIDs.contains(dependency) { continue }
+                let absolute = dependency.hasPrefix("/") ? URL(fileURLWithPath: dependency).standardizedFileURL.path : dependency
+                if absolute.hasPrefix("/usr/lib/") || absolute.hasPrefix("/System/Library/") { continue }
                 let candidates: [URL]
                 if dependency.hasPrefix("@rpath/") {
-                    candidates = (localRpaths + executableRpaths)
+                    candidates = (inspection.rpaths + executableRpaths)
                         .map { $0.appendingPathComponent(String(dependency.dropFirst(7))) }
-                } else { candidates = expand(dependency, binary: binary, main: main).map { [$0] } ?? [] }
-                guard candidates.contains(where: { path in
-                    let resolved = path.resolvingSymlinksInPath()
-                    return resolved.path.hasPrefix(stage.resolvingSymlinksInPath().path + "/") && manager.fileExists(atPath: resolved.path)
-                }) else { throw InstallationExecution.failure("Pinned tool needs an unapproved external library; prepare it manually without hidden downloads") }
+                } else { candidates = expand(dependency, binary: inspection.binary, main: main).map { [$0] } ?? [] }
+                if candidates.contains(where: { contained($0) && manager.fileExists(atPath: $0.path) }) { continue }
+                let matches: Set<String> = if dependency.hasPrefix("@rpath/"), candidates.allSatisfy({ contained($0) }) {
+                    Set(internalRpaths.compactMap { path in
+                        guard let target = canonical(path.appendingPathComponent(String(dependency.dropFirst(7)))) else { return nil }
+                        guard contained(target), manager.fileExists(atPath: target.path), identities[target.path]?.contains(dependency) == true else { return nil }
+                        return target.path
+                    })
+                } else { [] }
+                guard matches.count == 1 else { throw InstallationExecution.failure("Pinned tool needs an unapproved external library; prepare it manually without hidden downloads") }
             }
         }
         var arguments = ["-i", "PATH=/usr/bin:/bin", "HOME=\(stage.path)"]
@@ -104,5 +131,30 @@ enum ToolInstallationValidation {
         if value.hasPrefix("@executable_path/") { return main.deletingLastPathComponent().appendingPathComponent(String(value.dropFirst(17))) }
         if value.hasPrefix("/") { return URL(fileURLWithPath: value) }
         return nil
+    }
+
+    private static func canonical(_ path: URL) -> URL? {
+        guard !path.path.utf8.contains(0) else { return nil }
+        let manager = FileManager.default
+        var ancestor = path.path
+        guard ancestor.hasPrefix("/") else { return nil }
+        var missing: [String] = []
+        while !manager.fileExists(atPath: ancestor), ancestor != "/" {
+            let attributes = try? manager.attributesOfItem(atPath: ancestor)
+            if attributes?[.type] as? FileAttributeType == .typeSymbolicLink { return nil }
+            guard let slash = ancestor.lastIndex(of: "/") else { return nil }
+            let component = String(ancestor[ancestor.index(after: slash)...])
+            if !component.isEmpty { missing.append(component) }
+            ancestor = slash == ancestor.startIndex ? "/" : String(ancestor[..<slash])
+        }
+        guard let buffer = realpath(ancestor, nil) else { return nil }
+        defer { free(buffer) }
+        var components = String(cString: buffer).split(separator: "/").map(String.init)
+        for component in missing.reversed() {
+            if component == "." { continue }
+            if component == ".." { if !components.isEmpty { components.removeLast() } }
+            else { components.append(component) }
+        }
+        return URL(fileURLWithPath: "/" + components.joined(separator: "/"))
     }
 }

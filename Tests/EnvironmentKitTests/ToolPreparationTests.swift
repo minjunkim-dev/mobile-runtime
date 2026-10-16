@@ -258,6 +258,82 @@ struct ToolPreparationTests {
 
     private func version(_ tool: PreparedTool) -> String { switch tool { case .node: "22.23.2"; case .ruby: "3.2.2"; case .java: "temurin-17.0.18+8" } }
 
+    @Test("bundled JVM install name resolves through a contained library rpath", arguments: [false, true])
+    func bundledJVMRpath(_ localPrecedence: Bool) async throws {
+        let fixture = try await libraryFixture(localPrecedence ? "local-precedence" : "none")
+        try await ToolInstallationValidation.validate(stage: fixture.repo.url("stage"), executable: "bin/java", version: version(.java), tool: "java", host: host, runner: fixture.runner)
+        #expect(fixture.runner.inspectionHits >= 3)
+        #expect(fixture.runner.commands.contains { $0.executable == "/usr/bin/env" && $0.arguments.contains("-version") })
+    }
+
+    @Test("rpath fallback cannot hide ambiguous missing aliased or external libraries", arguments: [
+        "ambiguous", "missing", "plain-file", "wrong-id", "self-link", "outside-link", "external-local", "escaping-local", "external-main", "external-pool",
+        "absolute-external", "usr-lookalike", "system-lookalike", "usr-traversal", "system-traversal", "alias-parent-traversal", "nul-rpath",
+    ])
+    func rejectedLibraryFallback(_ fault: String) async throws {
+        let fixture = try await libraryFixture(fault)
+        await #expect(throws: DomainError.self) {
+            try await ToolInstallationValidation.validate(stage: fixture.repo.url("stage"), executable: "bin/java", version: version(.java), tool: "java", host: host, runner: fixture.runner)
+        }
+        #expect(fixture.runner.inspectionHits > 0)
+        #expect(!fixture.runner.commands.contains { $0.executable == "/usr/bin/env" })
+        #expect(try String(contentsOf: fixture.repo.url("store/existing/keep"), encoding: .utf8) == "original")
+    }
+
+    private func libraryFixture(_ fault: String = "none") async throws -> (repo: FixtureRepo, runner: ToolPreparationFixtureRunner) {
+        let fixture = try await fixture()
+        let stage = fixture.repo.url("stage")
+        let magic = Data([0xcf, 0xfa, 0xed, 0xfe])
+        let binaries = ["bin/java", "lib/libjava.dylib", "lib/server/libjvm.dylib"]
+            + (["ambiguous", "local-precedence"].contains(fault) ? ["lib/other/libjvm.dylib"] : [])
+            + (fault == "local-precedence" ? ["lib/libjvm.dylib"] : [])
+        for relative in binaries {
+            let file = try fixture.repo.write("stage/\(relative)", "fixture")
+            try (magic + Data(relative.utf8)).write(to: file)
+        }
+        if fault == "missing" { try FileManager.default.removeItem(at: stage.appendingPathComponent("lib/server/libjvm.dylib")) }
+        if fault == "plain-file" { try Data("not Mach-O".utf8).write(to: stage.appendingPathComponent("lib/server/libjvm.dylib")) }
+        if ["external-local", "escaping-local", "external-main", "external-pool", "absolute-external"].contains(fault) {
+            try fixture.repo.write("outside/libjvm.dylib", "external")
+        }
+        if fault == "alias-parent-traversal" {
+            try fixture.repo.write("outside/subdir/keep", "outside")
+            try fixture.repo.write("outside/libjvm.dylib", "external")
+            try FileManager.default.createSymbolicLink(atPath: stage.appendingPathComponent("lib/alias").path, withDestinationPath: fixture.repo.url("outside/subdir").path)
+        }
+        if fault == "self-link" || fault == "outside-link" {
+            let target = fault == "self-link" ? "libjvm.dylib" : try fixture.repo.write("outside/libjvm.dylib", "outside").path
+            try FileManager.default.createSymbolicLink(atPath: stage.appendingPathComponent("lib/libjvm.dylib").path, withDestinationPath: target)
+        }
+        for relative in binaries {
+            let directory = (relative as NSString).deletingLastPathComponent
+            var rpath = relative == "bin/java" ? "@loader_path/../lib" : "@loader_path/."
+            if fault == "external-main", relative == "bin/java" { rpath = fixture.repo.url("outside").path }
+            if fault == "external-local", relative == "lib/libjava.dylib" { rpath = fixture.repo.url("outside").path }
+            if fault == "escaping-local", relative == "lib/libjava.dylib" { rpath = "@loader_path/../../outside" }
+            if fault == "alias-parent-traversal", relative == "lib/libjava.dylib" { rpath = "@loader_path/alias/.." }
+            if fault == "nul-rpath", relative == "lib/libjava.dylib" { rpath = "@loader_path/.\0/../../outside" }
+            if fault == "external-pool", directory == "lib/server" { rpath = fixture.repo.url("outside").path }
+            let installName = relative == "bin/java" ? nil : "@rpath/\((relative as NSString).lastPathComponent)"
+            var settings = "cmd LC_BUILD_VERSION\nplatform 1\nminos 14.0\ncmd LC_RPATH\npath \(rpath) (offset 12)\n"
+            if let installName { settings += "cmd LC_ID_DYLIB\nname \(fault == "wrong-id" && directory == "lib/server" ? "@rpath/wrong.dylib" : installName) (offset 24)\n" }
+            var dependency = relative == "lib/libjava.dylib" ? "@rpath/libjvm.dylib" : "/usr/lib/libSystem.B.dylib"
+            if relative == "lib/libjava.dylib" {
+                switch fault {
+                case "absolute-external": dependency = fixture.repo.url("outside/libjvm.dylib").path
+                case "usr-lookalike": dependency = "/usr/library/libjvm.dylib"
+                case "system-lookalike": dependency = "/System/LibraryEvil/libjvm.dylib"
+                case "usr-traversal": dependency = "/usr/lib/../../outside/libjvm.dylib"
+                case "system-traversal": dependency = "/System/Library/../../outside/libjvm.dylib"
+                default: break
+                }
+            }
+            let libraries = "fixture:\n\t\(dependency) (compatibility version 1.0.0, current version 1.0.0)\n"
+            fixture.runner.setInspection(stage.appendingPathComponent(relative).path, settings: settings, libraries: libraries)
+        }
+        return fixture
+    }
+
     private func inspect(_ tools: [PreparedTool], fixture: (repo: FixtureRepo, runner: ToolPreparationFixtureRunner)) async throws -> ToolPreparation {
         try await ToolPreparation.inspect(requirements: tools.map { ToolPreparationRequirement(tool: $0, version: version($0), source: CheckSource(tier: 1, origin: "fixture declaration")) },
             directory: fixture.repo.root, environment: ["MISE_DATA_DIR": fixture.repo.url("store").path], runner: fixture.runner, host: host)
@@ -331,10 +407,16 @@ private final class ToolPreparationFixtureRunner: ProcessRunner, @unchecked Send
     private let lock = NSLock()
     private var fault: Fault = .none
     private var calls: [ProcessCommand] = []
+    private var inspections: [String: (settings: String, libraries: String)] = [:]
+    private var hits = 0
+    var inspectionHits: Int { lock.withLock { hits } }
     var commands: [ProcessCommand] { lock.withLock { calls } }
     var downloads: Int { commands.filter { $0.executable == "curl" && $0.arguments.contains("--output") }.count }
     init(payloads: [PreparedTool: Data], mise: URL?) { self.payloads = payloads; self.mise = mise }
     func setFault(_ value: Fault) { lock.withLock { fault = value } }
+    func setInspection(_ path: String, settings: String, libraries: String) {
+        lock.withLock { inspections[URL(fileURLWithPath: path).resolvingSymlinksInPath().path] = (settings, libraries) }
+    }
 
     func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
         let fault = lock.withLock { calls.append(command); return self.fault }
@@ -347,6 +429,13 @@ private final class ToolPreparationFixtureRunner: ProcessRunner, @unchecked Send
         if command.executable == "/usr/bin/lipo" { return ok("arm64\n") }
         if command.executable.hasSuffix("/bin/mise") { return ok("2026.10.7 macos-arm64") }
         if command.executable == "/usr/bin/otool" {
+            if let path = command.arguments.last, let inspection = lock.withLock({ () -> (settings: String, libraries: String)? in
+                guard let inspection = inspections[URL(fileURLWithPath: path).resolvingSymlinksInPath().path] else { return nil }
+                hits += 1
+                return inspection
+            }) {
+                return ok(command.arguments.contains("-l") ? inspection.settings : inspection.libraries)
+            }
             let minimum = if case .minimumOS = fault { "99.0" } else { "14.0" }
             let platform = if case .platformIOS = fault { "2" } else { "1" }
             let library = if case .externalLibrary = fault { "/opt/homebrew/lib/unapproved.dylib" } else { "/usr/lib/libSystem.B.dylib" }
