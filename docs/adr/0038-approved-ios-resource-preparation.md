@@ -54,6 +54,13 @@ journal은 `Library/Caches/dev.runstir/ios-preparation` 아래에 둔다.
 journal을 runtime 설치 위치나 설치 성공 receipt라고 부르지 않는다.
 실패·취소 뒤에는 bounded read로 실제 완료 자원을 관측한다.
 관측할 수 없는 identity·state는 `unknown`이다. 상태 확인 없이 재설치·재생성하지 않는다.
+정확한 runtime이 없는 상태에서 journal이 남으면 자동 재설치를 차단한다.
+수동 복구 안내는 journal의 runtime version·build·architecture를 표시한다.
+선택한 Xcode의 Components와 Simulator 상태를 먼저 확인한다.
+해당 runtime의 수동 설치를 완료한 뒤 다시 검사해야 남은 준비를 계획할 수 있다.
+수동 설치 완료를 관측하면 journal을 유지한 채 남은 Simulator 준비를 다시 계획한다.
+설치나 시스템 상태가 확인 불가이면 journal과 기존 자원을 보존한다.
+이 수동 복구를 제품의 자동 다운로드 재시도 성공으로 표시하지 않는다.
 확인한 완료 자원과 기존 자원은 보존한다. OS 작업의 원자적 취소나 rollback을 약속하지 않는다.
 Xcode 설치·로그인·라이선스·관리자 권한은 수동 행동과 다시 확인으로 남긴다.
 전역 Xcode 선택을 변경하거나 계정·비밀값을 수집하지 않는다.
