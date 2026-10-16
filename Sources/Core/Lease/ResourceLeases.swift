@@ -198,17 +198,22 @@ extension ResourceLeases {
         try JSONEncoder().encode(reservation).write(to: file(device, "claim"), options: .atomic)
     }
 
-    /// Call while holding `device`. Another project's claim is observed again; only an
-    /// observed stop removes it. A running or unobservable app blocks the device.
-    public func check(device: ResourceKey, project: String,
-                      observe: (ResourceClaim) async throws -> ClaimObservation) async throws {
+    /// Call under the device lease only after its owning runtime has been verified stopped.
+    public func releaseAfterTeardown(device: ResourceKey, project: String) throws {
+        guard let reservation = try reservation(device: device) else { return }
+        guard reservation.owner.project == project else {
+            throw ResourceConflict(key: device, owner: reservation.owner,
+                reason: "the device claim belongs to another project and was preserved")
+        }
+        try FileManager.default.removeItem(at: file(device, "claim"))
+    }
+
+    private func reservation(device: ResourceKey) throws -> DeviceReservation? {
         let file = file(device, "claim")
-        guard FileManager.default.fileExists(atPath: file.path) else { return }
+        guard FileManager.default.fileExists(atPath: file.path) else { return nil }
         let unreadable = ResourceConflict(key: device, owner: nil,
             reason: "a previous run's claim on this device is unreadable or inconsistent: \(file.path)")
-        guard let data = try? Data(contentsOf: file) else {
-            throw unreadable
-        }
+        guard let data = try? Data(contentsOf: file) else { throw unreadable }
         let reservation: DeviceReservation
         // Existing installations wrote ResourceClaim directly rather than a reservation.
         if let claim = try? JSONDecoder().decode(ResourceClaim.self, from: data) {
@@ -221,6 +226,15 @@ extension ResourceLeases {
         if let claim = reservation.claim {
             guard claim.device == device, claim.owner == reservation.owner else { throw unreadable }
         }
+        return reservation
+    }
+
+    /// Call while holding `device`. Another project's claim is observed again; only an
+    /// observed stop removes it. A running or unobservable app blocks the device.
+    public func check(device: ResourceKey, project: String,
+                      observe: (ResourceClaim) async throws -> ClaimObservation) async throws {
+        let file = file(device, "claim")
+        guard let reservation = try reservation(device: device) else { return }
         guard reservation.owner.project != project else { return }
         guard let claim = reservation.claim else {
             let owner = reservation.owner
