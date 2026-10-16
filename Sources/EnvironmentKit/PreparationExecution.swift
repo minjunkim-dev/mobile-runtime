@@ -538,7 +538,7 @@ public enum PreparationExecution {
         if FileManager.default.fileExists(atPath: ios.appendingPathComponent("Podfile").path) {
             let generatedReady = flutter == nil || flutter?.checks.contains { $0.id == "ios.flutter.generated" && $0.kind == "reuse" } == true
             var podReady = platforms.first { $0.platform == .ios }?.checks.contains { $0.id.hasSuffix(".cocoapods.version") && $0.kind == "reuse" } == true
-            if anchor.gemInstallProcess == nil, let context {
+            if anchor.gemInstallProcess == nil, (flutter == nil || anchor.cocoapods == nil), let context {
                 let podVersion = try await optionalTool(anchor.podVersionProcess, runner: context.projectRunner)
                 podReady = podVersion.terminationStatus.isSuccess == true
                     && platforms.flatMap(\.checks).contains { $0.id.hasSuffix(".tool.pod.path") && $0.kind == "reuse" }

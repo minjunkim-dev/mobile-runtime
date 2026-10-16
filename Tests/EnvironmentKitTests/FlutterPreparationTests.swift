@@ -350,6 +350,33 @@ struct FlutterPreparationTests {
         }
     }
 
+    @Test("direct Pods preserve a declared CocoaPods version while an undeclared version uses availability", arguments: ["wrong", "matching", "unrequired"])
+    func directPodVersionRequirement(_ mode: String) async throws {
+        let fixture = try FlutterFixture()
+        var runner = try podTools(fixture, bundled: false)
+        try fixture.repo.write("ios/Podfile.lock", "locked pods")
+        if mode != "unrequired" {
+            try fixture.repo.write("Gemfile.lock", "GEM\n  specs:\n    cocoapods (1.16.1)\n")
+        }
+        let version = mode == "matching" ? "1.16.1" : "1.15.0"
+        runner.responses["pod --version"] = .ok(version)
+        runner.responses[fixture.repo.url(".mobile/tool-fixtures/pod").path + " --version"] = .ok(version)
+        let input = ProjectInspectionInput(directory: fixture.repo.root, environment: fixture.environment)
+        let leases = ResourceLeases(directory: fixture.repo.url(".mobile/leases"))
+        let before = await PreparationExecution.run(input: input, planOnly: true, runner: runner, leases: leases)
+        let plan = try #require(before.plan)
+        let usable = mode != "wrong"
+        #expect(plan.steps.first { $0.id == "dependencies.pods" }?.kind == (usable ? "align" : "migration"))
+        if mode != "unrequired" {
+            let versionCheck = plan.platforms.first { $0.platform == .ios }?.checks.first { $0.id == "ios.cocoapods.version" }
+            #expect(versionCheck?.kind == (usable ? "reuse" : "provider"))
+        }
+        let result = await PreparationExecution.run(input: input, approvedPlanID: plan.id, trustRepository: true, runner: runner, leases: leases)
+        #expect(result.operation.completed == (usable ? ["dependencies.flutter", "dependencies.pods"] : ["dependencies.flutter"]))
+        #expect(runner.log.all.contains { $0.arguments == ["install", "--deployment"] } == usable)
+        #expect(try String(contentsOf: fixture.repo.url("ios/Podfile.lock"), encoding: .utf8) == "locked pods")
+    }
+
     @Test("direct frozen Pods require a lock while a declared Bundle stays manual without evaluation")
     func frozenPodsAndBundle() async throws {
         for bundled in [false, true] {
