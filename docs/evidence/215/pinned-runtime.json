@@ -1,0 +1,629 @@
+{
+  "date": "2026-10-16",
+  "classification": "Independent native baseline; Runstir CLI/GUI not executed.",
+  "measuredBaselinePASS": true,
+  "apps": [
+    {
+      "name": "todo",
+      "SHA256": "f3de56fe499fa3b31b0d74778f12d67150e8136753cd04f25a4afe10eec21139",
+      "bytes": 24681592,
+      "package": "com.example.android.architecture.blueprints.main",
+      "versionCode": "1",
+      "versionName": "1.0",
+      "launchActivity": "com.example.android.architecture.blueprints.todoapp.TodoActivity",
+      "buildToolsInspector": "34.0.0",
+      "sourceSHA": "ee66e1526b84c026615df032c705842b7d2a521f",
+      "build": {
+        "at": 1792109946.4932458,
+        "exitCode": 0,
+        "seconds": 25.058,
+        "timedOut": false,
+        "PID": 50114,
+        "log": "${PINNED_ROOT}/state/build-todo-v1/output.log"
+      },
+      "model": {
+        "at": 1792109946.4940212,
+        "modelLines": [
+          "RUNSTIR215_PINNED_TOOLCHAIN compileSdk=35 buildTools=34.0.0 agp=Android Gradle Plugin version 8.7.3 gradle=8.11.1 javaHome=${JDK17_HOME} javaVersion=17.0.19 javaRuntime=17.0.19+10-LTS javaVendor=Azul Systems, Inc. arch=aarch64"
+        ],
+        "buildResult": {
+          "at": 1792109946.4932458,
+          "exitCode": 0,
+          "seconds": 25.058,
+          "timedOut": false,
+          "PID": 50114,
+          "log": "${PINNED_ROOT}/state/build-todo-v1/output.log"
+        },
+        "sourceTask": ":app:assembleDebug",
+        "directVerifiedDistribution": true,
+        "wrapperNotInvoked": true
+      },
+      "buildInvocation": {
+        "at": 1792109921.43547,
+        "command": [
+          "/usr/bin/sandbox-exec",
+          "-f",
+          "${PINNED_ROOT}/owned-writes-v1.sb",
+          "${PINNED_ROOT}/gradle-distributions/gradle-8.11.1/bin/gradle",
+          "--no-daemon",
+          "--console=plain",
+          "--offline",
+          "-Dorg.gradle.java.installations.auto-download=false",
+          "-Dorg.gradle.java.installations.auto-detect=false",
+          "-Dorg.gradle.java.installations.paths=${JDK17_HOME}",
+          "-Dorg.gradle.java.home=${JDK17_HOME}",
+          "-Pandroid.builder.sdkDownload=false",
+          "-Duser.home=${PINNED_ROOT}/home",
+          "-Djava.io.tmpdir=${PINNED_ROOT}/tmp",
+          "-Djava.util.prefs.userRoot=${PINNED_ROOT}/home/prefs",
+          "-Pkotlin.compiler.execution.strategy=in-process",
+          "-I",
+          "${PINNED_ROOT}/scripts/inspect-toolchain-v1.gradle",
+          ":app:assembleDebug"
+        ],
+        "cwd": "${PINNED_ROOT}/sources/todo",
+        "environment": {
+          "HOME": "${PINNED_ROOT}/home",
+          "PATH": "${JDK17_HOME}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+          "TMPDIR": "${PINNED_ROOT}/tmp/",
+          "LANG": "en_US.UTF-8",
+          "ANDROID_HOME": "${PINNED_ROOT}/sdk",
+          "ANDROID_SDK_ROOT": "${PINNED_ROOT}/sdk",
+          "ANDROID_USER_HOME": "${PINNED_ROOT}/android-home",
+          "ANDROID_EMULATOR_HOME": "${PINNED_ROOT}/emulator-home",
+          "ANDROID_AVD_HOME": "${PINNED_ROOT}/avd",
+          "ANDROID_ADB_SERVER_PORT": "5044",
+          "GIT_OPTIONAL_LOCKS": "0",
+          "GIT_CONFIG_GLOBAL": "/dev/null",
+          "GIT_CONFIG_NOSYSTEM": "1",
+          "JAVA_HOME": "${JDK17_HOME}",
+          "JAVA_TOOL_OPTIONS": "-Duser.home=${PINNED_ROOT}/home -Djava.io.tmpdir=${PINNED_ROOT}/tmp",
+          "GRADLE_USER_HOME": "${PINNED_ROOT}/gradle/todo"
+        },
+        "timeoutSeconds": 1800,
+        "stdinDescription": "DEVNULL"
+      },
+      "visual": {
+        "at": 1792110278.256802,
+        "method": "Direct view_image of directADB PNG; no crop/redraw/image edit",
+        "PNG": "${PINNED_ROOT}/screenshots/todo-first-observed-v1.png",
+        "SHA256": "3844885cc85266512692a6e09eeed1d855638e1da3c1ba4991d6eaf972645257",
+        "observed": [
+          "Todo title",
+          "You have no tasks! empty state",
+          "navigation/filter/menu controls",
+          "plus action button"
+        ],
+        "firstScreenPASS": true,
+        "APKExact": true,
+        "PID": "3726",
+        "focusReceipt": "todo-focus-supplement-v1.json",
+        "sourceSHA": "ee66e1526b84c026615df032c705842b7d2a521f",
+        "runtimeClass": "Freshpinned nativeAndroid baseline; not Runstir CLI/GUI product flow."
+      },
+      "sourceHEAD": {
+        "app": "todo",
+        "actualHEAD": "ee66e1526b84c026615df032c705842b7d2a521f",
+        "expectedHEAD": "ee66e1526b84c026615df032c705842b7d2a521f",
+        "same": true
+      }
+    },
+    {
+      "name": "nia",
+      "SHA256": "72dd36d06cc13f9c2aeceb6b3ba0e62a129e6a48b043d5091b9080e319f630a2",
+      "bytes": 37211209,
+      "package": "com.google.samples.apps.nowinandroid.demo.debug",
+      "versionCode": "8",
+      "versionName": "0.1.2",
+      "launchActivity": "com.google.samples.apps.nowinandroid.MainActivity",
+      "buildToolsInspector": "36.0.0",
+      "sourceSHA": "a49ed253d75e61a2b6ab80a8da677b57437b08eb",
+      "build": {
+        "at": 1792109960.642459,
+        "exitCode": 0,
+        "seconds": 13.458,
+        "timedOut": false,
+        "PID": 51844,
+        "log": "${PINNED_ROOT}/state/build-nia-v1/output.log"
+      },
+      "model": {
+        "at": 1792109960.643044,
+        "modelLines": [
+          "RUNSTIR215_PINNED_TOOLCHAIN compileSdk=36 buildTools=36.0.0 agp=Android Gradle Plugin version 9.3.2 gradle=9.7.1 javaHome=${JDK21_HOME} javaVersion=21.0.12.1 javaRuntime=21.0.12.1+1-LTS javaVendor=Azul Systems, Inc. arch=aarch64"
+        ],
+        "buildResult": {
+          "at": 1792109960.642459,
+          "exitCode": 0,
+          "seconds": 13.458,
+          "timedOut": false,
+          "PID": 51844,
+          "log": "${PINNED_ROOT}/state/build-nia-v1/output.log"
+        },
+        "sourceTask": ":app:assembleDemoDebug",
+        "directVerifiedDistribution": true,
+        "wrapperNotInvoked": true
+      },
+      "buildInvocation": {
+        "at": 1792109947.184455,
+        "command": [
+          "/usr/bin/sandbox-exec",
+          "-f",
+          "${PINNED_ROOT}/owned-writes-v1.sb",
+          "${PINNED_ROOT}/gradle-distributions/gradle-9.7.1/bin/gradle",
+          "--no-daemon",
+          "--console=plain",
+          "--offline",
+          "-Dorg.gradle.java.installations.auto-download=false",
+          "-Dorg.gradle.java.installations.auto-detect=false",
+          "-Dorg.gradle.java.installations.paths=${JDK21_HOME}",
+          "-Dorg.gradle.java.home=${JDK21_HOME}",
+          "-Pandroid.builder.sdkDownload=false",
+          "-Duser.home=${PINNED_ROOT}/home",
+          "-Djava.io.tmpdir=${PINNED_ROOT}/tmp",
+          "-Djava.util.prefs.userRoot=${PINNED_ROOT}/home/prefs",
+          "-Pkotlin.compiler.execution.strategy=in-process",
+          "-I",
+          "${PINNED_ROOT}/scripts/inspect-toolchain-v1.gradle",
+          ":app:assembleDemoDebug"
+        ],
+        "cwd": "${PINNED_ROOT}/sources/nia",
+        "environment": {
+          "HOME": "${PINNED_ROOT}/home",
+          "PATH": "${JDK21_HOME}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+          "TMPDIR": "${PINNED_ROOT}/tmp/",
+          "LANG": "en_US.UTF-8",
+          "ANDROID_HOME": "${PINNED_ROOT}/sdk",
+          "ANDROID_SDK_ROOT": "${PINNED_ROOT}/sdk",
+          "ANDROID_USER_HOME": "${PINNED_ROOT}/android-home",
+          "ANDROID_EMULATOR_HOME": "${PINNED_ROOT}/emulator-home",
+          "ANDROID_AVD_HOME": "${PINNED_ROOT}/avd",
+          "ANDROID_ADB_SERVER_PORT": "5044",
+          "GIT_OPTIONAL_LOCKS": "0",
+          "GIT_CONFIG_GLOBAL": "/dev/null",
+          "GIT_CONFIG_NOSYSTEM": "1",
+          "JAVA_HOME": "${JDK21_HOME}",
+          "JAVA_TOOL_OPTIONS": "-Duser.home=${PINNED_ROOT}/home -Djava.io.tmpdir=${PINNED_ROOT}/tmp",
+          "GRADLE_USER_HOME": "${PINNED_ROOT}/gradle/nia"
+        },
+        "timeoutSeconds": 1800,
+        "stdinDescription": "DEVNULL"
+      },
+      "visual": {
+        "at": 1792110399.10448,
+        "method": "Direct view_image of directADBPNG; no crop/redraw/edit",
+        "PNG": "${PINNED_ROOT}/screenshots/nia-first-screen-v2.png",
+        "SHA256": "2897815c865bfd41a3404fab46f78a2e311e4374c767aa9e87c21bf167ec9f44",
+        "observed": [
+          "Now in Android title",
+          "What are you interested in? onboarding",
+          "Headlines/UI/Compose topic cards",
+          "For you/Saved/Interests navigation"
+        ],
+        "firstScreenPASS": true,
+        "installedAPKExact": true,
+        "PID": "4148",
+        "focusLines": [
+          "mCurrentFocus=Window{c1f0868 u0 com.google.samples.apps.nowinandroid.demo.debug/com.google.samples.apps.nowinandroid.MainActivity}",
+          "mFocusedApp=ActivityRecord{33e0d62 u0 com.google.samples.apps.nowinandroid.demo.debug/com.google.samples.apps.nowinandroid.MainActivity t9}"
+        ],
+        "notificationPromptSeparate": "nia-first-observed-v1.png; visibleDontallow tap then actual appfocus/content confirmed",
+        "sourceSHA": "a49ed253d75e61a2b6ab80a8da677b57437b08eb",
+        "runtimeClass": "Freshpinned nativeAndroid baseline, not Runstir productflow"
+      },
+      "sourceHEAD": {
+        "app": "nia",
+        "actualHEAD": "a49ed253d75e61a2b6ab80a8da677b57437b08eb",
+        "expectedHEAD": "a49ed253d75e61a2b6ab80a8da677b57437b08eb",
+        "same": true
+      }
+    }
+  ],
+  "guest": {
+    "API": 35,
+    "ABI": "arm64-v8a",
+    "imageRevision": 9,
+    "profile": "Pixel 7",
+    "display": "1080x2400",
+    "density": 420,
+    "RAMMiB": 2048,
+    "heapMiB": 228,
+    "diskGiB": 6,
+    "EmulatorVersion": "37.1.11",
+    "EmulatorBuild": "15917651",
+    "HVFAvailableProbeExit": 0,
+    "bootCompleted": true,
+    "consolePort": 5566,
+    "ADBTransportPort": 5567,
+    "ADBServerPort": 5044,
+    "ADBServerInvocation": {
+      "at": 1792110199.109331,
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${PINNED_ROOT}/owned-writes-v1.sb",
+        "${PINNED_ROOT}/sdk/platform-tools/adb",
+        "-P",
+        "5044",
+        "--one-device",
+        "emulator-5566",
+        "server",
+        "nodaemon"
+      ],
+      "environment": {
+        "HOME": "${PINNED_ROOT}/home",
+        "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
+        "TMPDIR": "${PINNED_ROOT}/tmp/",
+        "LANG": "en_US.UTF-8",
+        "ANDROID_HOME": "${PINNED_ROOT}/sdk",
+        "ANDROID_SDK_ROOT": "${PINNED_ROOT}/sdk",
+        "ANDROID_USER_HOME": "${PINNED_ROOT}/android-home",
+        "ANDROID_EMULATOR_HOME": "${PINNED_ROOT}/emulator-home",
+        "ANDROID_AVD_HOME": "${PINNED_ROOT}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5044",
+        "GIT_OPTIONAL_LOCKS": "0",
+        "GIT_CONFIG_GLOBAL": "/dev/null",
+        "GIT_CONFIG_NOSYSTEM": "1",
+        "JAVA_HOME": "${JDK21_HOME}",
+        "JAVA_TOOL_OPTIONS": "-Duser.home=${PINNED_ROOT}/home -Djava.io.tmpdir=${PINNED_ROOT}/tmp",
+        "ADB_SERVER_SOCKET": "tcp:5044",
+        "ADB_VENDOR_KEYS": "${PINNED_ROOT}/android-home",
+        "ADB_MDNS_AUTO_CONNECT": "0"
+      },
+      "cwd": "${PINNED_ROOT}"
+    },
+    "EmulatorInvocation": {
+      "at": 1792110200.267487,
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${PINNED_ROOT}/owned-writes-v1.sb",
+        "${PINNED_ROOT}/sdk/emulator/emulator",
+        "-avd",
+        "runstir215-pinned-api35",
+        "-port",
+        "5566",
+        "-accel",
+        "on",
+        "-gpu",
+        "swiftshader",
+        "-no-window",
+        "-no-snapshot",
+        "-no-audio",
+        "-no-boot-anim"
+      ],
+      "environment": {
+        "HOME": "${PINNED_ROOT}/home",
+        "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
+        "TMPDIR": "${PINNED_ROOT}/tmp/",
+        "LANG": "en_US.UTF-8",
+        "ANDROID_HOME": "${PINNED_ROOT}/sdk",
+        "ANDROID_SDK_ROOT": "${PINNED_ROOT}/sdk",
+        "ANDROID_USER_HOME": "${PINNED_ROOT}/android-home",
+        "ANDROID_EMULATOR_HOME": "${PINNED_ROOT}/emulator-home",
+        "ANDROID_AVD_HOME": "${PINNED_ROOT}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5044",
+        "GIT_OPTIONAL_LOCKS": "0",
+        "GIT_CONFIG_GLOBAL": "/dev/null",
+        "GIT_CONFIG_NOSYSTEM": "1",
+        "JAVA_HOME": "${JDK21_HOME}",
+        "JAVA_TOOL_OPTIONS": "-Duser.home=${PINNED_ROOT}/home -Djava.io.tmpdir=${PINNED_ROOT}/tmp",
+        "ADB_SERVER_SOCKET": "tcp:5044",
+        "ADB_VENDOR_KEYS": "${PINNED_ROOT}/android-home",
+        "ADB_MDNS_AUTO_CONNECT": "0"
+      },
+      "cwd": "${PINNED_ROOT}"
+    },
+    "serialScope": "Task-owned emulator-5566 endpoint; no physical device identity."
+  },
+  "preservation": {
+    "measuredScopePASS": true,
+    "resources": [
+      {
+        "resource": "globalSDK",
+        "before": "${PINNED_ROOT}/state/audit-before-globalSDK.json",
+        "after": "${PINNED_ROOT}/state/audit-after-globalSDK.json",
+        "beforeEntries": 124165,
+        "afterEntries": 124165,
+        "added": [],
+        "removed": [],
+        "changed": [],
+        "SHA256Differences": [],
+        "contentHashedBefore": 104472,
+        "statOnlyFileBefore": 6,
+        "PASS": true
+      },
+      {
+        "resource": "baselineTodoGradle",
+        "before": "${PINNED_ROOT}/state/audit-before-baselineTodoGradle.json",
+        "after": "${PINNED_ROOT}/state/audit-after-baselineTodoGradle.json",
+        "beforeEntries": 27023,
+        "afterEntries": 27023,
+        "added": [],
+        "removed": [],
+        "changed": [],
+        "SHA256Differences": [],
+        "contentHashedBefore": 14516,
+        "statOnlyFileBefore": 6,
+        "PASS": true
+      },
+      {
+        "resource": "baselineNIAGradle",
+        "before": "${PINNED_ROOT}/state/audit-before-baselineNIAGradle.json",
+        "after": "${PINNED_ROOT}/state/audit-after-baselineNIAGradle.json",
+        "beforeEntries": 56229,
+        "afterEntries": 56229,
+        "added": [],
+        "removed": [],
+        "changed": [],
+        "SHA256Differences": [],
+        "contentHashedBefore": 32353,
+        "statOnlyFileBefore": 8,
+        "PASS": true
+      },
+      {
+        "resource": "globalGradle",
+        "before": "${PINNED_ROOT}/state/audit-before-globalGradle.json",
+        "after": "${PINNED_ROOT}/state/audit-after-globalGradle.json",
+        "beforeEntries": 715568,
+        "afterEntries": 715568,
+        "added": [],
+        "removed": [],
+        "changed": [],
+        "SHA256Differences": [],
+        "contentHashedBefore": 441356,
+        "statOnlyFileBefore": 930,
+        "PASS": true
+      },
+      {
+        "resource": "globalAndroid",
+        "before": "${PINNED_ROOT}/state/audit-before-globalAndroid.json",
+        "after": "${PINNED_ROOT}/state/audit-after-globalAndroid.json",
+        "beforeEntries": 13,
+        "afterEntries": 13,
+        "added": [],
+        "removed": [],
+        "changed": [],
+        "SHA256Differences": [],
+        "contentHashedBefore": 0,
+        "statOnlyFileBefore": 10,
+        "PASS": true
+      },
+      {
+        "resource": "existingConsoleAuthenticationFile",
+        "statOnly": true,
+        "PASS": true,
+        "contentReadOrHash": false
+      },
+      {
+        "resource": "todoSource",
+        "before": "${PINNED_ROOT}/state/audit-before-todoSource.json",
+        "after": "${PINNED_ROOT}/state/audit-after-todoSource.json",
+        "beforeEntries": 119,
+        "afterEntries": 119,
+        "added": [],
+        "removed": [],
+        "changed": [],
+        "SHA256Differences": [],
+        "contentHashedBefore": 119,
+        "statOnlyFileBefore": 0,
+        "otherFields": {
+          "HEAD": {
+            "before": "ee66e1526b84c026615df032c705842b7d2a521f",
+            "after": "ee66e1526b84c026615df032c705842b7d2a521f",
+            "same": true
+          },
+          "indexSHA256": {
+            "before": "a03f90d03813a9c07e76b1d2212fddab1f5ddd6d5e37d9c96d99cd4317a38f6f",
+            "after": "a03f90d03813a9c07e76b1d2212fddab1f5ddd6d5e37d9c96d99cd4317a38f6f",
+            "same": true
+          },
+          "indexStat": {
+            "before": {
+              "st_size": 18361,
+              "st_mode": 33188,
+              "st_mtime_ns": 1792070878298907253,
+              "st_ctime_ns": 1792070878299018170
+            },
+            "after": {
+              "st_size": 18361,
+              "st_mode": 33188,
+              "st_mtime_ns": 1792070878298907253,
+              "st_ctime_ns": 1792070878299018170
+            },
+            "same": true
+          },
+          "stageSHA256": {
+            "before": "9218b8f57e37b188a267acdae94e2817238b31a84f9fba57e4572275abe51740",
+            "after": "9218b8f57e37b188a267acdae94e2817238b31a84f9fba57e4572275abe51740",
+            "same": true
+          },
+          "flagsSHA256": {
+            "before": "3d6b77ca5549f3a0809c101b26338198204794b8309011c208f59edddfcbce90",
+            "after": "3d6b77ca5549f3a0809c101b26338198204794b8309011c208f59edddfcbce90",
+            "same": true
+          }
+        },
+        "PASS": true
+      },
+      {
+        "resource": "niaSource",
+        "before": "${PINNED_ROOT}/state/audit-before-niaSource.json",
+        "after": "${PINNED_ROOT}/state/audit-after-niaSource.json",
+        "beforeEntries": 715,
+        "afterEntries": 715,
+        "added": [],
+        "removed": [],
+        "changed": [],
+        "SHA256Differences": [],
+        "contentHashedBefore": 715,
+        "statOnlyFileBefore": 0,
+        "otherFields": {
+          "HEAD": {
+            "before": "a49ed253d75e61a2b6ab80a8da677b57437b08eb",
+            "after": "a49ed253d75e61a2b6ab80a8da677b57437b08eb",
+            "same": true
+          },
+          "indexSHA256": {
+            "before": "5dcf523ec293fca1d494f4fd59af0b8d6c2d0c44d14e55b60cbea08e739884f3",
+            "after": "5dcf523ec293fca1d494f4fd59af0b8d6c2d0c44d14e55b60cbea08e739884f3",
+            "same": true
+          },
+          "indexStat": {
+            "before": {
+              "st_size": 129151,
+              "st_mode": 33188,
+              "st_mtime_ns": 1792070878471253681,
+              "st_ctime_ns": 1792070878471722765
+            },
+            "after": {
+              "st_size": 129151,
+              "st_mode": 33188,
+              "st_mtime_ns": 1792070878471253681,
+              "st_ctime_ns": 1792070878471722765
+            },
+            "same": true
+          },
+          "stageSHA256": {
+            "before": "6dea22c5ce8e8e2c031d016a901e51f8e4423de90531b37fc63f402202c210de",
+            "after": "6dea22c5ce8e8e2c031d016a901e51f8e4423de90531b37fc63f402202c210de",
+            "same": true
+          },
+          "flagsSHA256": {
+            "before": "d0b009bfb88de4ff9f3ba094d2a18dfb8135d6a83ed013b22915885a4022ce88",
+            "after": "d0b009bfb88de4ff9f3ba094d2a18dfb8135d6a83ed013b22915885a4022ce88",
+            "same": true
+          }
+        },
+        "PASS": true
+      }
+    ],
+    "ownedSources": [
+      {
+        "app": "todo",
+        "trackedCount": 119,
+        "trackedBytesModeDifferences": [],
+        "stageSame": true,
+        "flagsSame": true,
+        "rawIndexSHA256Before": "a1cd92ebb7e50e41cb4a4292c805dc273394b990616bc48ec1303c5b4270d6d7",
+        "rawIndexSHA256After": "a1cd92ebb7e50e41cb4a4292c805dc273394b990616bc48ec1303c5b4270d6d7",
+        "GIT_OPTIONAL_LOCKS": "0",
+        "rawIndexSame": true
+      },
+      {
+        "app": "nia",
+        "trackedCount": 715,
+        "trackedBytesModeDifferences": [],
+        "stageSame": true,
+        "flagsSame": true,
+        "rawIndexSHA256Before": "d6b8b5d9b3decbbd82ff257a3b2ff62c34f842cf8a1a72669eb00755d36c2e9e",
+        "rawIndexSHA256After": "d6b8b5d9b3decbbd82ff257a3b2ff62c34f842cf8a1a72669eb00755d36c2e9e",
+        "GIT_OPTIONAL_LOCKS": "0",
+        "rawIndexSame": true
+      }
+    ],
+    "generatedPackageMetadata": [
+      {
+        "receipt": "metadata-copy-platform-tools.json",
+        "expectedSHA256": "55d46ccebf3bba4ad4349d3747643bb0ed38aac843ce6c87782b009328f73e1e",
+        "afterSHA256": "55d46ccebf3bba4ad4349d3747643bb0ed38aac843ce6c87782b009328f73e1e",
+        "same": true
+      },
+      {
+        "receipt": "metadata-copy-system-images-android-35-google_apis-arm64-v8a.json",
+        "expectedSHA256": "9fa764ca7b0832e846afc5473bc9b5b92ebc4b399de1b3ae07a5e52d4a6a4bdc",
+        "afterSHA256": "9fa764ca7b0832e846afc5473bc9b5b92ebc4b399de1b3ae07a5e52d4a6a4bdc",
+        "same": true
+      },
+      {
+        "receipt": "metadata-copy-build-tools-34.0.0.json",
+        "expectedSHA256": "fa31c22b82c3e36ecaa5269f119b27ef0f78f9d7b78874e5c143d3e0a1dafcc0",
+        "afterSHA256": "fa31c22b82c3e36ecaa5269f119b27ef0f78f9d7b78874e5c143d3e0a1dafcc0",
+        "same": true
+      },
+      {
+        "receipt": "metadata-copy-emulator.json",
+        "expectedSHA256": "3e750b5f361806c2c246a9bc1c37830ebde5efe6fdda673e54874334cb620245",
+        "afterSHA256": "3e750b5f361806c2c246a9bc1c37830ebde5efe6fdda673e54874334cb620245",
+        "same": true
+      },
+      {
+        "receipt": "metadata-copy-cmdline-tools-21.0.json",
+        "expectedSHA256": "0117826346335093e7943187da8be009b6c7b078aa1d98359617c78f3f40e9e7",
+        "afterSHA256": "0117826346335093e7943187da8be009b6c7b078aa1d98359617c78f3f40e9e7",
+        "same": true
+      },
+      {
+        "receipt": "metadata-copy-platforms-android-36.json",
+        "expectedSHA256": "9c54aa15c2f4680941a780ad238bc9cdf6e2a9a72cfd15d5ba24d8dc0d33495d",
+        "afterSHA256": "9c54aa15c2f4680941a780ad238bc9cdf6e2a9a72cfd15d5ba24d8dc0d33495d",
+        "same": true
+      },
+      {
+        "receipt": "metadata-copy-build-tools-36.0.0.json",
+        "expectedSHA256": "eb583b801b4ca009b87f79678729e651560568500ddf7000db9e369445fa930f",
+        "afterSHA256": "eb583b801b4ca009b87f79678729e651560568500ddf7000db9e369445fa930f",
+        "same": true
+      },
+      {
+        "receipt": "metadata-copy-platforms-android-35.json",
+        "expectedSHA256": "be43080629a7cacfc86480233e585083a387c14722a7f641c286eb0ace9f8a4d",
+        "afterSHA256": "be43080629a7cacfc86480233e585083a387c14722a7f641c286eb0ace9f8a4d",
+        "same": true
+      }
+    ],
+    "licensesUnchanged": true,
+    "licenseAcceptanceCount": 0,
+    "wholeHOMEInvariant": "Not measured or claimed.",
+    "sensitiveBoundary": "Stat-only files have no content checksum proof. No key/token/keystore content or checksum is public.",
+    "OSDiagnostic": "One global HOME adb .ips observed by stat only after attempt1. Contents/hash/restore not performed; attribution not established.",
+    "existingAVD": "Existing AVD was not booted. The global Android home audit covers only observed path stat metadata. Full existing AVD file-byte invariance was not independently established in this new run."
+  },
+  "normalOwnedStop": {
+    "EmulatorPID": 77629,
+    "EmulatorExitCode": 0,
+    "ADBServerPID": 77479,
+    "ADBExitCode": 0,
+    "bothAbsent": true,
+    "runtimeFailure": null,
+    "finalPorts": {
+      "exitCode": 1,
+      "stdout": "",
+      "stderr": ""
+    }
+  },
+  "leaseReturn": {
+    "at": 1792110428.741663,
+    "leaseReturnedToRoot": true,
+    "EmulatorPID": 77629,
+    "emulatorExitCode": 0,
+    "ADBServerPID": 77479,
+    "ADBExitCode": 0,
+    "managerUnifiedExecSession": 27274,
+    "managerExitCode": 0,
+    "reservedPorts": [
+      5044,
+      5566,
+      5567
+    ],
+    "listenersObserved": 0,
+    "furtherVMExecutionAuthorized": false,
+    "remaining": "Read-only final preservation audit and privateevidence handoff only."
+  },
+  "failureHistory": [
+    "beforeaudit finalpsEPERM after all8snapshots preserved; processread separatelyoutsideguard",
+    "ADBattempt1hostname socket unsupported/SIGABRT-6/noEmulatorstarted; authorizedattempt2portonly correction succeeded",
+    "Todo initialdumpsys window windows omittedglobalfocus; preservedempty receipt andsupplementedfullwindow/activity",
+    "NIApermissionprompt capturedseparately; normalDontallowUIaction then appfocus+firstscreen observed",
+    "AVDhelper staticexistingAVDUnchanged intentionfield withdrawn byseparatecorrectionreceipt; finalauditsauthority"
+  ],
+  "remainingLimits": [
+    "Azul API size vsactual/CDN +28/-315B remains unexplained; exactactualsizes andproviderSHA256verified underrootapproval.",
+    "Azul OpenPGPsignature verification not performed.",
+    "SDKgeneratedpackage.xml absentfromarchive; copiedoriginalbytes stayedsame.",
+    "Sensitive/authfiles are statonly; no wholeHOME byteaudit.",
+    "NIA235tasks executed/316fromcopiedcache; To-do43executed. No claim allNIAcompilerwork fresh.",
+    "Runstir product CLI/GUI/installation integration not measured by this independent nativebaseline.",
+    "PublicWT/PR/CI/merge/mainCI/issuecompletion remain parent-owned gates."
+  ],
+  "oldBaselineBoundary": "Do not retroactivelycall original baseline archive-pinned. OldmiseJDK layout/linkmode strictFAIL and historicalacquisition receiptunknown remain. FreshstandardJDK content/modes match archives."
+}

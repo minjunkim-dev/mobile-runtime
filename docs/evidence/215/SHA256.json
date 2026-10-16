@@ -1,11 +1,11 @@
 {
   "README.md": {
-    "bytes": 11061,
-    "sha256": "5d46b19751c4b2d843e45882460663c66916b22a914241c94e748cae80b319d1"
+    "bytes": 12702,
+    "sha256": "f3354865acc57e31b72121a142f912a75181fe7641781cf3e45d724131f7115a"
   },
   "attempts.md": {
-    "bytes": 14831,
-    "sha256": "96a116bab87809869b806a2211fd0663e08660af195c15b1d7d4e3f328f27950"
+    "bytes": 14319,
+    "sha256": "c3ba362338a0e038c8e024799a7068a5f38f3882926897c9e9ff8ebbe3da25f7"
   },
   "inputs.json": {
     "bytes": 10559,
@@ -19,9 +19,41 @@
     "bytes": 192097,
     "sha256": "b9da207d3f55bdbf2f41ee901a211a7911f14a99084f26f181f679cb333e5630"
   },
+  "pinned-baseline.md": {
+    "bytes": 11347,
+    "sha256": "25794184eacbb0a56473a1849102ec797c8357efb8b86e76973a40fb6a39357d"
+  },
+  "pinned-excerpts.md": {
+    "bytes": 2635,
+    "sha256": "84ff62946ab9f6a417fe5eb189889c1c36987908bf1d2da9983238172f2c25cb"
+  },
+  "pinned-inputs.json": {
+    "bytes": 21711,
+    "sha256": "2a80ff8bfa13146689f67bb3e9fa2e311c3ee94864457b3bc098b72be714c3db"
+  },
+  "pinned-nia-first-screen.png": {
+    "bytes": 294447,
+    "sha256": "2897815c865bfd41a3404fab46f78a2e311e4374c767aa9e87c21bf167ec9f44"
+  },
+  "pinned-nia-notification-prompt.png": {
+    "bytes": 208683,
+    "sha256": "3e847c158e03c9dfbfcc1da99651dd65ec68751e468684ff1651d5d36605ea8d"
+  },
+  "pinned-provenance.json": {
+    "bytes": 9698,
+    "sha256": "9295da3d0b8454811cba8f1dc5014dc502030bb0688af13207554d70982e9058"
+  },
+  "pinned-runtime.json": {
+    "bytes": 24669,
+    "sha256": "7d4b16cf4db1ad026a8911d2a1247b6f3e6e10cc6e1f5fd9202e8eb7f9a46fff"
+  },
+  "pinned-todo-first-screen.png": {
+    "bytes": 56282,
+    "sha256": "3844885cc85266512692a6e09eeed1d855638e1da3c1ba4991d6eaf972645257"
+  },
   "preservation-rerun.json": {
-    "bytes": 12744,
-    "sha256": "09009e83b7bdf2c398c7ef41b7bdc2a89f40e6681e6cb67f3fdecdbe6f1a7bfc"
+    "bytes": 12655,
+    "sha256": "e3c3c7810b1cef471e5dfc5af817ea6726e6ac42227ac1211b7fed7422d80381"
   },
   "rerun-nia-first-screen.png": {
     "bytes": 295380,

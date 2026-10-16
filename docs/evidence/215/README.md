@@ -1,6 +1,29 @@
 # #215 네이티브 Android baseline
 
-## 작업 소유 SDK에서 재실측
+## 현재 기록: 배포 archive 고정 후 새 실측
+
+2026-10-16의 새 native baseline은 두 앱의 build/install/launch/첫 화면을 통과했다.
+JDK 2개·SDK 8개·Gradle 2개의 정확한 archive와 source 입력을 먼저 고정했다.
+실제 toolchain model은 build 중에 관측했다.
+AGP 원본 Maven JAR 두 개의 checksum은 실측 전 cache 감사에 있었다.
+공식 Maven checksum은 실측 후에 다시 관측했다. 두 관측 시점을 구분했다.
+측정한 SDK/cache/source 보호 범위는 전후 같았다. 민감 파일은 stat만 비교했다.
+전체 HOME와 기존 AVD 전체 bytes의 불변은 이 새 실측의 입증 범위가 아니다.
+
+최신 판정과 실패·한계는 [pinned-baseline.md](./pinned-baseline.md)에 있다.
+입력은 [pinned-inputs.json](./pinned-inputs.json)에 있다.
+실행은 [pinned-runtime.json](./pinned-runtime.json)에 있다.
+비공개 원본 293개와 새 AGP receipt의 연결은 [pinned-provenance.json](./pinned-provenance.json)에 있다.
+선택한 원본 줄은 [pinned-excerpts.md](./pinned-excerpts.md)에 있다.
+Runstir CLI·GUI와 #199 전체 완료는 이 native baseline 판정과 구분한다.
+
+아래 기록은 2026-10-15의 이전 시도다. 당시의 `unknown`·`inconclusive`·실패를 보존했다.
+이전 시도를 소급해서 archive가 고정된 성공으로 바꾸지 않았다.
+경로 표시만 비식별 별칭으로 바꿨다. 과거 관측 사실은 바꾸지 않았다.
+초기 PNG 3개의 별도 private 원본 위치는 여전히 `unknown`이다.
+기존 공개 PNG 6개는 bytes 그대로 보존했다.
+
+## 이전 기록: 작업 소유 SDK에서 첫 재실측 (2026-10-15)
 
 두 앱의 build/install/launch/실제 첫 화면을 별도 SDK 복제본에서 다시 확인했다.
 원본 SDK 124,165개 항목과 기존 AVD 41개 항목의 전체 regular file bytes·mode·size·mtime·symlink target이 종료 전후 같았다.
@@ -34,7 +57,7 @@ fresh clone의 native build와 Runstir CLI/GUI는 실행하지 않았다.
 ![재실측 To-do 첫 화면](./rerun-todo-first-screen.png)
 ![재실측 Now in Android 첫 화면](./rerun-nia-first-screen.png)
 
-## 1차 시도와 실패 이력
+## 이전 기록: 1차 시도와 실패 이력 (2026-10-15)
 
 검증 날짜는 2026-10-15다. 명세는 [#199](https://github.com/minjunkim-dev/mobile-runtime/issues/199)다.
 범위는 [#215](https://github.com/minjunkim-dev/mobile-runtime/issues/215)의 Runstir 없는 baseline이다.
@@ -88,7 +111,7 @@ Emulator는 별도 AVD home에 한 대만 생성했다. 공통 자원 lease를 �
 ## host와 기존 자원
 
 실제 Mac은 macOS `27.0.1` (`26A434`), `arm64`다.
-SDK root는 `/Volumes/P41_USB4/Developer/sdk/android`다.
+SDK root는 `${EXISTING_SDK}`다.
 기존 JDK `17.0.19`, `21.0.12.1`을 절대경로로 선택한다.
 기존 SDK Platform `35` revision `2`와 `36` revision `2`가 있다.
 기존 Build Tools `35.0.0`와 `36.0.0`이 있다.

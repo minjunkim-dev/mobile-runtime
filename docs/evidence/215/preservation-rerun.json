@@ -63,7 +63,7 @@
           "-Djava.util.prefs.userRoot=${TASK_ROOT}/state-todo/prefs",
           "-Pkotlin.compiler.execution.strategy=in-process",
           "-I",
-          "/Volumes/P41_USB4/Developer/validation/goal215-20261015/inspect-todo.gradle",
+          "${INITIAL_ROOT}/inspect-todo.gradle",
           ":app:assembleDebug"
         ],
         "environment": {
@@ -283,5 +283,5 @@
     "Android physical device is unverified.",
     "Original preservation failure history is retained; this rerun does not restore its prior marker."
   ],
-  "privateEvidenceRoot": "/Volumes/P41_USB4/Developer/validation/goal215-preservation-20261015"
+  "privateEvidenceRoot": "${PRIOR_RERUN_ROOT}"
 }

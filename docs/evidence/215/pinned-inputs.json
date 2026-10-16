@@ -1,0 +1,540 @@
+{
+  "scope": "New 2026-10-16 native Android tuple only. Not all #199 tuples.",
+  "archiveFreezeBeforeConfigurationAt": 1792081315.408242,
+  "archiveCount": 12,
+  "actualArchiveBytes": 3314484326,
+  "archives": [
+    {
+      "component": "platforms;android-36",
+      "revision": "2",
+      "distribution": "platform-36_r02.zip",
+      "URL": "https://dl.google.com/android/repository/platform-36_r02.zip",
+      "providerChecksumAlgorithm": "sha1",
+      "providerChecksum": "2c1a80dd4d9f7d0e6dd336ec603d9b5c55a6f576",
+      "providerMetadataBytes": 65878410,
+      "CDNHeadBytes": 65878410,
+      "actualArchiveBytes": 65878410,
+      "actualArchiveSHA256": "37607369a28c5b640b3a7998868d45898ebcb777565a0e85f9acf36f29631d2e",
+      "providerChecksumVerifiedBeforeRun": true,
+      "providerMetadataSHA256": "237eefe28e55619d3e63d730f8994cc1ae6d9c171096f07a6c147297145787e6",
+      "providerMetadataURL": "https://dl.google.com/android/repository/repository2-3.xml",
+      "typeDetails": {
+        "api-level": "36",
+        "extension-level": "17",
+        "base-extension": "true",
+        "layoutlib": null
+      },
+      "sizeConflict": null
+    },
+    {
+      "component": "platforms;android-35",
+      "revision": "2",
+      "distribution": "platform-35_r02.zip",
+      "URL": "https://dl.google.com/android/repository/platform-35_r02.zip",
+      "providerChecksumAlgorithm": "sha1",
+      "providerChecksum": "0bb560a90a7a2cbd0dd8348224d518b638fe7949",
+      "providerMetadataBytes": 64273788,
+      "CDNHeadBytes": 64273788,
+      "actualArchiveBytes": 64273788,
+      "actualArchiveSHA256": "0988cacad01b38a18a47bac14a0695f246bc76c1b06c0eeb8eb0dc825ab0c8e0",
+      "providerChecksumVerifiedBeforeRun": true,
+      "providerMetadataSHA256": "237eefe28e55619d3e63d730f8994cc1ae6d9c171096f07a6c147297145787e6",
+      "providerMetadataURL": "https://dl.google.com/android/repository/repository2-3.xml",
+      "typeDetails": {
+        "api-level": "35",
+        "extension-level": "13",
+        "base-extension": "true",
+        "layoutlib": null
+      },
+      "sizeConflict": null
+    },
+    {
+      "component": "build-tools;36.0.0",
+      "revision": "36.0.0",
+      "distribution": "build-tools_r36_macosx.zip",
+      "URL": "https://dl.google.com/android/repository/build-tools_r36_macosx.zip",
+      "providerChecksumAlgorithm": "sha1",
+      "providerChecksum": "199ae0047ee61e842f8ee0c6d3918e44fb9a1f83",
+      "providerMetadataBytes": 79121749,
+      "CDNHeadBytes": 79121749,
+      "actualArchiveBytes": 79121749,
+      "actualArchiveSHA256": "04e7f3a72044de4926fa038fa0e251a37bba1e1c3fb8beab6f8401bfd9eb4bf3",
+      "providerChecksumVerifiedBeforeRun": true,
+      "providerMetadataSHA256": "237eefe28e55619d3e63d730f8994cc1ae6d9c171096f07a6c147297145787e6",
+      "providerMetadataURL": "https://dl.google.com/android/repository/repository2-3.xml",
+      "typeDetails": {},
+      "sizeConflict": null
+    },
+    {
+      "component": "build-tools;34.0.0",
+      "revision": "34.0.0",
+      "distribution": "build-tools_r34-macosx.zip",
+      "URL": "https://dl.google.com/android/repository/build-tools_r34-macosx.zip",
+      "providerChecksumAlgorithm": "sha1",
+      "providerChecksum": "00e1301387028f33753e38274401694e1a27c62f",
+      "providerMetadataBytes": 76559180,
+      "CDNHeadBytes": 76559180,
+      "actualArchiveBytes": 76559180,
+      "actualArchiveSHA256": "76bf668fe037b1a69197e298ddae5633d4d7f0f41af7ed17e537c80c1ed8a6f3",
+      "providerChecksumVerifiedBeforeRun": true,
+      "providerMetadataSHA256": "237eefe28e55619d3e63d730f8994cc1ae6d9c171096f07a6c147297145787e6",
+      "providerMetadataURL": "https://dl.google.com/android/repository/repository2-3.xml",
+      "typeDetails": {},
+      "sizeConflict": null
+    },
+    {
+      "component": "cmdline-tools;21.0",
+      "revision": "21.0",
+      "distribution": "commandlinetools-mac-15641748_latest.zip",
+      "URL": "https://dl.google.com/android/repository/commandlinetools-mac-15641748_latest.zip",
+      "providerChecksumAlgorithm": "sha1",
+      "providerChecksum": "b62a5d8cf63ded173b47be867be4ee058ceda6df",
+      "providerMetadataBytes": 152127646,
+      "CDNHeadBytes": 152127646,
+      "actualArchiveBytes": 152127646,
+      "actualArchiveSHA256": "a2253766e128f6d4ff594d23857b67f52028a7e8773b2634dcc3d3e60d13b290",
+      "providerChecksumVerifiedBeforeRun": true,
+      "providerMetadataSHA256": "237eefe28e55619d3e63d730f8994cc1ae6d9c171096f07a6c147297145787e6",
+      "providerMetadataURL": "https://dl.google.com/android/repository/repository2-3.xml",
+      "typeDetails": {},
+      "sizeConflict": null
+    },
+    {
+      "component": "platform-tools",
+      "revision": "37.0.1",
+      "distribution": "platform-tools_r37.0.1-darwin.zip",
+      "URL": "https://dl.google.com/android/repository/platform-tools_r37.0.1-darwin.zip",
+      "providerChecksumAlgorithm": "sha1",
+      "providerChecksum": "6ae73f4de6452dc57e62ec02b68eed92a4c21661",
+      "providerMetadataBytes": 16110554,
+      "CDNHeadBytes": 16110554,
+      "actualArchiveBytes": 16110554,
+      "actualArchiveSHA256": "ee39ad5967e95c2a07f04dbcbde96b1a0c916ba376096db5d2f498b7727a5d1d",
+      "providerChecksumVerifiedBeforeRun": true,
+      "providerMetadataSHA256": "237eefe28e55619d3e63d730f8994cc1ae6d9c171096f07a6c147297145787e6",
+      "providerMetadataURL": "https://dl.google.com/android/repository/repository2-3.xml",
+      "typeDetails": {},
+      "sizeConflict": null
+    },
+    {
+      "component": "system-images;android-35;google_apis;arm64-v8a",
+      "revision": "9",
+      "distribution": "arm64-v8a-35_r09.zip",
+      "URL": "https://dl.google.com/android/repository/sys-img/google_apis/arm64-v8a-35_r09.zip",
+      "providerChecksumAlgorithm": "sha1",
+      "providerChecksum": "16f5bceca236b2737008977c4aaf826e46a8de7d",
+      "providerMetadataBytes": 1778933980,
+      "CDNHeadBytes": 1778933980,
+      "actualArchiveBytes": 1778933980,
+      "actualArchiveSHA256": "d2e7c6076e5df54d3677605a324daf9edf813b2808c216bdb1687f6b2b6aed99",
+      "providerChecksumVerifiedBeforeRun": true,
+      "providerMetadataSHA256": "ad71946ba2d002f86d9ece1121b74aec494b420aa6b8fdac83fa5ce52b51dcb4",
+      "providerMetadataURL": "https://dl.google.com/android/repository/sys-img/google_apis/sys-img2-3.xml",
+      "typeDetails": {
+        "api-level": "35",
+        "extension-level": "13",
+        "base-extension": "true",
+        "tag": "",
+        "vendor": "",
+        "abi": "arm64-v8a",
+        "tagId": "google_apis",
+        "vendorId": "google"
+      },
+      "sizeConflict": null
+    },
+    {
+      "component": "jdk17",
+      "revision": "17.0.19+10",
+      "distribution": "zulu17.66.19-ca-jdk17.0.19-macosx_aarch64.tar.gz",
+      "URL": "https://cdn.azul.com/zulu/bin/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64.tar.gz",
+      "providerChecksumAlgorithm": "sha256",
+      "providerChecksum": "f2bd5afaaaa4c23eb4bf2c78913c7eb7d3d228e44209ffec652fb72388a2f25c",
+      "providerMetadataBytes": 192646000,
+      "CDNHeadBytes": 192646028,
+      "actualArchiveBytes": 192646028,
+      "actualArchiveSHA256": "f2bd5afaaaa4c23eb4bf2c78913c7eb7d3d228e44209ffec652fb72388a2f25c",
+      "providerChecksumVerifiedBeforeRun": true,
+      "providerMetadataSHA256": "91657a891eb5407b578e8b898a529b807fb19e96dfce8fe7120f0ea90edcdbc1",
+      "providerMetadataURL": "https://api.azul.com/metadata/v1/zulu/packages/90232e53-106a-4c3d-b2ba-810fe46165fb",
+      "typeDetails": null,
+      "sizeConflict": "unresolved API-vs-CDN size discrepancy; OpenAPI only says integer and does not define rounding"
+    },
+    {
+      "component": "jdk21",
+      "revision": "21.0.12.1+1",
+      "distribution": "zulu21.52.203-ca-jdk21.0.12.1-macosx_aarch64.tar.gz",
+      "URL": "https://cdn.azul.com/zulu/bin/zulu21.52.203-ca-jdk21.0.12.1-macosx_aarch64.tar.gz",
+      "providerChecksumAlgorithm": "sha256",
+      "providerChecksum": "042093e0895c940a02d68e727bc37b59f3958e58aa1463ec9080845d77af0a45",
+      "providerMetadataBytes": 205924000,
+      "CDNHeadBytes": 205923685,
+      "actualArchiveBytes": 205923685,
+      "actualArchiveSHA256": "042093e0895c940a02d68e727bc37b59f3958e58aa1463ec9080845d77af0a45",
+      "providerChecksumVerifiedBeforeRun": true,
+      "providerMetadataSHA256": "adabe076412d92b10c487f361b8c25fa2b4d578edc21d0f4564cd03d991830d9",
+      "providerMetadataURL": "https://api.azul.com/metadata/v1/zulu/packages/b4998dfa-d693-42ae-b745-e2140eb4ecb9",
+      "typeDetails": null,
+      "sizeConflict": "unresolved API-vs-CDN size discrepancy; OpenAPI only says integer and does not define rounding"
+    },
+    {
+      "component": "emulator",
+      "revision": "37.1.11",
+      "distribution": "emulator-darwin_aarch64-15917651.zip",
+      "URL": "https://redirector.gvt1.com/edgedl/android/repository/emulator-darwin_aarch64-15917651.zip",
+      "providerChecksumAlgorithm": "sha256",
+      "providerChecksum": "22530de9363f34ea945ecb5cad74523abd4b615f27f3c1a9899efb183ea9e144",
+      "providerMetadataBytes": 394555844,
+      "CDNHeadBytes": 394555844,
+      "actualArchiveBytes": 394555844,
+      "actualArchiveSHA256": "22530de9363f34ea945ecb5cad74523abd4b615f27f3c1a9899efb183ea9e144",
+      "providerChecksumVerifiedBeforeRun": true,
+      "providerMetadataSHA256": "06b9dc37e0a30013d7faa355c0884e5d1ee6200945252e946dc89c1eb5b45672",
+      "providerMetadataURL": "https://developer.android.com/studio/emulator_archive",
+      "typeDetails": null,
+      "sizeConflict": null
+    },
+    {
+      "component": "gradle8.11.1",
+      "revision": "8.11.1",
+      "distribution": "gradle-8.11.1-bin.zip",
+      "URL": "https://services.gradle.org/distributions/gradle-8.11.1-bin.zip",
+      "providerChecksumAlgorithm": "sha256",
+      "providerChecksum": "f397b287023acdba1e9f6fc5ea72d22dd63669d59ed4a289a29b1a76eee151c6",
+      "providerMetadataBytes": 136920070,
+      "CDNHeadBytes": 136920070,
+      "actualArchiveBytes": 136920070,
+      "actualArchiveSHA256": "f397b287023acdba1e9f6fc5ea72d22dd63669d59ed4a289a29b1a76eee151c6",
+      "providerChecksumVerifiedBeforeRun": true,
+      "providerMetadataSHA256": null,
+      "providerMetadataURL": "https://services.gradle.org/distributions/gradle-8.11.1-bin.zip.sha256",
+      "typeDetails": null,
+      "sizeConflict": null
+    },
+    {
+      "component": "gradle9.7.1",
+      "revision": "9.7.1",
+      "distribution": "gradle-9.7.1-bin.zip",
+      "URL": "https://services.gradle.org/distributions/gradle-9.7.1-bin.zip",
+      "providerChecksumAlgorithm": "sha256",
+      "providerChecksum": "acd53f1edaf02f1a8ff99879f8a34b302661a057d9b063ae9e35b552f804d20a",
+      "providerMetadataBytes": 151433392,
+      "CDNHeadBytes": 151433392,
+      "actualArchiveBytes": 151433392,
+      "actualArchiveSHA256": "acd53f1edaf02f1a8ff99879f8a34b302661a057d9b063ae9e35b552f804d20a",
+      "providerChecksumVerifiedBeforeRun": true,
+      "providerMetadataSHA256": null,
+      "providerMetadataURL": "https://services.gradle.org/distributions/gradle-9.7.1-bin.zip.sha256",
+      "typeDetails": null,
+      "sizeConflict": null
+    }
+  ],
+  "AGPMainDistributionJARs": [
+    {
+      "sample": "todo",
+      "mavenCoordinate": "com.android.tools.build:gradle:8.7.3",
+      "originalDistributionJAR": true,
+      "transformedJARSubstitute": false,
+      "beforeSnapshot": "${PINNED_ROOT}/state/audit-before-baselineTodoGradle.json",
+      "beforeSnapshotSHA256": "b5bf6b7a1d874bd36c11fd838a841efded59f20fcf4ee549383e323a043ed9bc",
+      "beforeSnapshotAt": 1792081287.08673,
+      "buildProcessStartAt": 1792109921.437349,
+      "beforePredatesBuild": true,
+      "relativeCachePath": "caches/modules-2/files-2.1/com.android.tools.build/gradle/8.7.3/557c0eaed243df7b293d8b1f2c252d97fcc71dda/gradle-8.7.3.jar",
+      "beforeRecord": {
+        "mode": 33188,
+        "size": 12429787,
+        "mtimeNs": 1792063174607282136,
+        "ctimeNs": 1792069802473953385,
+        "SHA256": "abb4f9e92c9838bd9989ba05968ec892189e16e23f42adba2e063843da04070d"
+      },
+      "afterRecord": {
+        "mode": 33188,
+        "size": 12429787,
+        "mtimeNs": 1792063174607282136,
+        "ctimeNs": 1792069802473953385,
+        "SHA256": "abb4f9e92c9838bd9989ba05968ec892189e16e23f42adba2e063843da04070d"
+      },
+      "actualCurrentRawJARSHA256": "abb4f9e92c9838bd9989ba05968ec892189e16e23f42adba2e063843da04070d",
+      "actualCurrentRawJARSHA1": "557c0eaed243df7b293d8b1f2c252d97fcc71dda",
+      "actualCopiedRuntimeJARSHA256": "abb4f9e92c9838bd9989ba05968ec892189e16e23f42adba2e063843da04070d",
+      "providerJARURL": "https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/8.7.3/gradle-8.7.3.jar",
+      "providerHEAD": {
+        "HTTP": 200,
+        "ContentLength": 12429787,
+        "resolvedURL": "https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/8.7.3/gradle-8.7.3.jar",
+        "bodyBytesRead": 0,
+        "at": 1792111045.541692
+      },
+      "providerCheckObservedAfterRuntime": true,
+      "sourceTrackedVerificationMetadataPaths": [],
+      "PASS": true,
+      "officialChecksumObservation": {
+        "sha1": {
+          "URL": "https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/8.7.3/gradle-8.7.3.jar.sha1",
+          "HTTP": 200,
+          "bytes": 40,
+          "SHA256": "3b8f70642ba13d9e2d0ebe6bf18a4193d604ec788039835d0f40c0f202057337",
+          "body": "557c0eaed243df7b293d8b1f2c252d97fcc71dda",
+          "at": 1792110984.00618
+        },
+        "sha256": {
+          "URL": "https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/8.7.3/gradle-8.7.3.jar.sha256",
+          "HTTP": 200,
+          "bytes": 64,
+          "SHA256": "8d38f0d11bd3c0d845a155c989aa8dbfd6cadfa2819e87613bb9ee84fb2b170d",
+          "body": "abb4f9e92c9838bd9989ba05968ec892189e16e23f42adba2e063843da04070d",
+          "at": 1792110984.0272682
+        }
+      }
+    },
+    {
+      "sample": "nia",
+      "mavenCoordinate": "com.android.tools.build:gradle:9.3.2",
+      "originalDistributionJAR": true,
+      "transformedJARSubstitute": false,
+      "beforeSnapshot": "${PINNED_ROOT}/state/audit-before-baselineNIAGradle.json",
+      "beforeSnapshotSHA256": "64ee3ed868d1e19814d2afb6317bfeb44e7c1f070ffd0f86a13e01477e15bd34",
+      "beforeSnapshotAt": 1792081295.561742,
+      "buildProcessStartAt": 1792109947.186194,
+      "beforePredatesBuild": true,
+      "relativeCachePath": "caches/modules-2/files-2.1/com.android.tools.build/gradle/9.3.2/141fa146cec89cac3e59c0d484b661bf906308fc/gradle-9.3.2.jar",
+      "beforeRecord": {
+        "mode": 33188,
+        "size": 13156012,
+        "mtimeNs": 1792063791356575490,
+        "ctimeNs": 1792069807577319873,
+        "SHA256": "f3a1004508daeb00c4535bd56207c7ec2f958a40d7543466379e4de6bb947873"
+      },
+      "afterRecord": {
+        "mode": 33188,
+        "size": 13156012,
+        "mtimeNs": 1792063791356575490,
+        "ctimeNs": 1792069807577319873,
+        "SHA256": "f3a1004508daeb00c4535bd56207c7ec2f958a40d7543466379e4de6bb947873"
+      },
+      "actualCurrentRawJARSHA256": "f3a1004508daeb00c4535bd56207c7ec2f958a40d7543466379e4de6bb947873",
+      "actualCurrentRawJARSHA1": "141fa146cec89cac3e59c0d484b661bf906308fc",
+      "actualCopiedRuntimeJARSHA256": "f3a1004508daeb00c4535bd56207c7ec2f958a40d7543466379e4de6bb947873",
+      "providerJARURL": "https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/9.3.2/gradle-9.3.2.jar",
+      "providerHEAD": {
+        "HTTP": 200,
+        "ContentLength": 13156012,
+        "resolvedURL": "https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/9.3.2/gradle-9.3.2.jar",
+        "bodyBytesRead": 0,
+        "at": 1792111046.013126
+      },
+      "providerCheckObservedAfterRuntime": true,
+      "sourceTrackedVerificationMetadataPaths": [],
+      "PASS": true,
+      "officialChecksumObservation": {
+        "sha1": {
+          "URL": "https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/9.3.2/gradle-9.3.2.jar.sha1",
+          "HTTP": 200,
+          "bytes": 40,
+          "SHA256": "ff487130b6e857d0505de6ae716947d33fc70c76b40caad608a713e8525a6fb1",
+          "body": "141fa146cec89cac3e59c0d484b661bf906308fc",
+          "at": 1792110984.063167
+        },
+        "sha256": {
+          "URL": "https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/9.3.2/gradle-9.3.2.jar.sha256",
+          "HTTP": 200,
+          "bytes": 64,
+          "SHA256": "dfa79264fcb4d79e84e6def5bbb4f962fb8f5eca6ad466ee94c4ea3a7692028a",
+          "body": "f3a1004508daeb00c4535bd56207c7ec2f958a40d7543466379e4de6bb947873",
+          "at": 1792110984.063096
+        }
+      }
+    }
+  ],
+  "AGPBoundary": "Main JAR bytes were SHA256-recorded in pre-run cache snapshots. Official Maven checksums/HEAD were observed after runtime. Neither source tracks verification-metadata.xml. All transitive dependencies are outside independent attestation scope.",
+  "configuration": {
+    "freshStandardJDKLayout": true,
+    "SDKGeneratedPackageXMLCount": 8,
+    "SDKGeneratedPackageXML": "Absent from distribution ZIPs; copied original local metadata bytes separately, unchanged before/after.",
+    "licenses": "Existing SDK license records copied as-is; no new acceptance or new record.",
+    "acceptanceCount": 0,
+    "cmdlineTools": "Exact 21.0 archive at owned cmdline-tools/latest to match copied local metadata; no resolution of current remote latest.",
+    "Gradle": "Direct verified distribution executable; wrapper not invoked; version matches source wrapper declaration."
+  },
+  "archiveToConfiguredBefore": {
+    "at": 1792109872.7794108,
+    "archives": [
+      {
+        "component": "platforms;android-36",
+        "regularCount": 11342,
+        "linkCount": 0,
+        "problems": [],
+        "PASS": true
+      },
+      {
+        "component": "platforms;android-35",
+        "regularCount": 11162,
+        "linkCount": 0,
+        "problems": [],
+        "PASS": true
+      },
+      {
+        "component": "build-tools;36.0.0",
+        "regularCount": 169,
+        "linkCount": 0,
+        "problems": [],
+        "PASS": true
+      },
+      {
+        "component": "build-tools;34.0.0",
+        "regularCount": 170,
+        "linkCount": 0,
+        "problems": [],
+        "PASS": true
+      },
+      {
+        "component": "cmdline-tools;21.0",
+        "regularCount": 140,
+        "linkCount": 0,
+        "problems": [],
+        "PASS": true
+      },
+      {
+        "component": "platform-tools",
+        "regularCount": 12,
+        "linkCount": 0,
+        "problems": [],
+        "PASS": true
+      },
+      {
+        "component": "system-images;android-35;google_apis;arm64-v8a",
+        "regularCount": 29,
+        "linkCount": 0,
+        "problems": [],
+        "PASS": true
+      },
+      {
+        "component": "jdk17",
+        "regularCount": 374,
+        "linkCount": 214,
+        "problems": [],
+        "PASS": true
+      },
+      {
+        "component": "jdk21",
+        "regularCount": 336,
+        "linkCount": 205,
+        "problems": [],
+        "PASS": true
+      },
+      {
+        "component": "emulator",
+        "regularCount": 351,
+        "linkCount": 0,
+        "problems": [],
+        "PASS": true
+      },
+      {
+        "component": "gradle8.11.1",
+        "regularCount": 314,
+        "linkCount": 0,
+        "problems": [],
+        "PASS": true
+      },
+      {
+        "component": "gradle9.7.1",
+        "regularCount": 712,
+        "linkCount": 0,
+        "problems": [],
+        "PASS": true
+      }
+    ],
+    "PASS": true
+  },
+  "archiveToConfiguredAfter": {
+    "at": 1792110488.0005472,
+    "archives": [
+      {
+        "component": "platforms;android-36",
+        "regularCount": 11342,
+        "linkCount": 0,
+        "problems": [],
+        "PASS": true
+      },
+      {
+        "component": "platforms;android-35",
+        "regularCount": 11162,
+        "linkCount": 0,
+        "problems": [],
+        "PASS": true
+      },
+      {
+        "component": "build-tools;36.0.0",
+        "regularCount": 169,
+        "linkCount": 0,
+        "problems": [],
+        "PASS": true
+      },
+      {
+        "component": "build-tools;34.0.0",
+        "regularCount": 170,
+        "linkCount": 0,
+        "problems": [],
+        "PASS": true
+      },
+      {
+        "component": "cmdline-tools;21.0",
+        "regularCount": 140,
+        "linkCount": 0,
+        "problems": [],
+        "PASS": true
+      },
+      {
+        "component": "platform-tools",
+        "regularCount": 12,
+        "linkCount": 0,
+        "problems": [],
+        "PASS": true
+      },
+      {
+        "component": "system-images;android-35;google_apis;arm64-v8a",
+        "regularCount": 29,
+        "linkCount": 0,
+        "problems": [],
+        "PASS": true
+      },
+      {
+        "component": "jdk17",
+        "regularCount": 374,
+        "linkCount": 214,
+        "problems": [],
+        "PASS": true
+      },
+      {
+        "component": "jdk21",
+        "regularCount": 336,
+        "linkCount": 205,
+        "problems": [],
+        "PASS": true
+      },
+      {
+        "component": "emulator",
+        "regularCount": 351,
+        "linkCount": 0,
+        "problems": [],
+        "PASS": true
+      },
+      {
+        "component": "gradle8.11.1",
+        "regularCount": 314,
+        "linkCount": 0,
+        "problems": [],
+        "PASS": true
+      },
+      {
+        "component": "gradle9.7.1",
+        "regularCount": 712,
+        "linkCount": 0,
+        "problems": [],
+        "PASS": true
+      }
+    ],
+    "PASS": true
+  },
+  "providerMetadataBoundary": "For Emulator, metadata SHA256 names the preserved official archive iframe document, linked from the official archive page. For JDK, metadata bytes differ from CDN/actual bytes as recorded."
+}

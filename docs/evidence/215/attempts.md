@@ -1,6 +1,6 @@
 # 실행 이력
 
-모든 명령은 Runstir를 사용하지 않았다. 작업 root는 `/Volumes/P41_USB4/Developer/validation/goal215-20261015`다.
+모든 명령은 Runstir를 사용하지 않았다. 작업 root는 `${INITIAL_ROOT}`다.
 원본 실행 로그는 이 root의 `logs/`에 보존한다. 자격 파일과 전체 환경값을 공개 증거에 복사하지 않는다.
 공개 명령의 `${JDK17_HOME}`과 `${JDK21_HOME}`은 각각 기존 Zulu `17.0.19`와 `21.0.12.1`의 설치 경로 별칭이다.
 실제 사용자 경로는 비공개 원본에만 보존한다.
@@ -11,10 +11,10 @@
 `todo-baseline/`에서 다음 명령을 실행했다.
 
 ```sh
-env ANDROID_HOME=/Volumes/P41_USB4/Developer/sdk/android \
-  ANDROID_SDK_ROOT=/Volumes/P41_USB4/Developer/sdk/android \
-  ANDROID_USER_HOME=/Volumes/P41_USB4/Developer/validation/goal215-20261015/android-user \
-  GRADLE_USER_HOME=/Volumes/P41_USB4/Developer/validation/goal215-20261015/gradle-todo \
+env ANDROID_HOME=${EXISTING_SDK} \
+  ANDROID_SDK_ROOT=${EXISTING_SDK} \
+  ANDROID_USER_HOME=${INITIAL_ROOT}/android-user \
+  GRADLE_USER_HOME=${INITIAL_ROOT}/gradle-todo \
   JAVA_HOME=${JDK17_HOME} \
   ./gradlew --no-daemon --console=plain \
   -Dorg.gradle.java.installations.auto-download=false \
@@ -61,16 +61,16 @@ launchable-activity: name='com.example.android.architecture.blueprints.todoapp.T
 Emulator의 정확한 옵션은 다음과 같다.
 
 ```sh
-env ANDROID_HOME=/Volumes/P41_USB4/Developer/sdk/android \
-  ANDROID_SDK_ROOT=/Volumes/P41_USB4/Developer/sdk/android \
-  ANDROID_USER_HOME=/Volumes/P41_USB4/Developer/validation/goal215-20261015/android-user \
-  ANDROID_EMULATOR_HOME=/Volumes/P41_USB4/Developer/validation/goal215-20261015/android-user \
-  ANDROID_AVD_HOME=/Volumes/P41_USB4/Developer/validation/goal215-20261015/avd \
+env ANDROID_HOME=${EXISTING_SDK} \
+  ANDROID_SDK_ROOT=${EXISTING_SDK} \
+  ANDROID_USER_HOME=${INITIAL_ROOT}/android-user \
+  ANDROID_EMULATOR_HOME=${INITIAL_ROOT}/android-user \
+  ANDROID_AVD_HOME=${INITIAL_ROOT}/avd \
   ADB_SERVER_SOCKET=tcp:localhost:5041 ANDROID_ADB_SERVER_PORT=5041 \
-  /Volumes/P41_USB4/Developer/sdk/android/emulator/emulator \
+  ${EXISTING_SDK}/emulator/emulator \
   @runstir215-api35 -port 5560 -no-snapshot -no-audio -no-boot-anim \
   -gpu swiftshader -no-direct-adb \
-  -adb-path /Volumes/P41_USB4/Developer/sdk/android/platform-tools/adb -no-metrics
+  -adb-path ${EXISTING_SDK}/platform-tools/adb -no-metrics
 ```
 
 qemu PID는 `54841`이었다. 이 PID가 console `5560`과 ADB `5561`을 소유했다.
@@ -120,10 +120,10 @@ source/resource 보존 최종 감사 전에는 #215 전체 완료로 세지 않�
 `nia-baseline/`에서 다음 명령을 실행했다. A1의 build 종료 후 시작했다.
 
 ```sh
-env ANDROID_HOME=/Volumes/P41_USB4/Developer/sdk/android \
-  ANDROID_SDK_ROOT=/Volumes/P41_USB4/Developer/sdk/android \
-  ANDROID_USER_HOME=/Volumes/P41_USB4/Developer/validation/goal215-20261015/android-user \
-  GRADLE_USER_HOME=/Volumes/P41_USB4/Developer/validation/goal215-20261015/gradle-nia \
+env ANDROID_HOME=${EXISTING_SDK} \
+  ANDROID_SDK_ROOT=${EXISTING_SDK} \
+  ANDROID_USER_HOME=${INITIAL_ROOT}/android-user \
+  GRADLE_USER_HOME=${INITIAL_ROOT}/gradle-nia \
   JAVA_HOME=${JDK21_HOME} \
   ./gradlew --no-daemon --console=plain \
   -Dorg.gradle.java.installations.auto-download=false \
