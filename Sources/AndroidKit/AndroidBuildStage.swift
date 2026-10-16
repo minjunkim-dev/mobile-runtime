@@ -37,9 +37,11 @@ public func androidBuildStages(
     validationCheckIDs: Set<String> = AndroidWorkflowValidation.checkIDs,
     note: @escaping @Sendable (String) -> Void
 ) -> [any Stage] {
-    [
-        ValidateStage(engine: doctor, checkIDs: validationCheckIDs),
-        DependenciesStage(anchor: anchor, runner: projectRunner, includePods: false),
+    var stages: [any Stage] = [ValidateStage(engine: doctor, checkIDs: validationCheckIDs)]
+    if anchor.framework == .reactNative {
+        stages.append(DependenciesStage(anchor: anchor, runner: projectRunner, includePods: false))
+    }
+    stages.append(
         AndroidBuildStage(
             anchor: anchor,
             config: config,
@@ -47,8 +49,9 @@ public func androidBuildStages(
             projectRunner: projectRunner,
             environment: environment,
             note: note
-        ),
-    ]
+        )
+    )
+    return stages
 }
 
 public struct AndroidBuildStage: Stage {
@@ -97,7 +100,7 @@ public struct AndroidBuildStage: Stage {
                 observed: reason,
                 remediation: Remediation(
                     summary: "Fix or materialize the declared Gradle inputs, then run the same wrapper model query.",
-                    command: "cd \(shellArgument(anchor.directory.appendingPathComponent("android").path)) && ./gradlew help"
+                    command: "cd \(shellArgument(context.androidDirectory.path)) && ./gradlew help"
                 )
             )
         }
@@ -154,12 +157,13 @@ public struct AndroidBuildStage: Stage {
             [
                 assembleTask,
                 "--no-daemon",
+            ] + AndroidGradleModelProbe.configurationArguments + [
                 "--console=plain",
                 "-Dorg.gradle.java.installations.auto-download=false", "-Pandroid.builder.sdkDownload=false",
                 "-I",
                 modelScript.path,
             ],
-            workingDirectory: anchor.directory.appendingPathComponent("android"),
+            workingDirectory: context.androidDirectory,
             timeout: nil,
             output: .streamed(to: log)
         )
@@ -234,10 +238,10 @@ public struct AndroidBuildStage: Stage {
         try require("targetSdk", targetSdk, aapt.targetSdk)
 
         let declaredABIs = Set(variant.abiFilters.flatMap { $0.isEmpty ? nil : $0 } ?? module.abiFilters)
-        guard !aapt.abis.isEmpty else {
+        guard anchor.framework == .nativeAndroid || !aapt.abis.isEmpty else {
             throw unsupportedOutput("the APK exposes no native ABI metadata")
         }
-        if !declaredABIs.isEmpty, declaredABIs != Set(aapt.abis) {
+        if !aapt.abis.isEmpty, !declaredABIs.isEmpty, declaredABIs != Set(aapt.abis) {
             throw mismatch(
                 "native ABI",
                 expected: declaredABIs.sorted().joined(separator: ","),

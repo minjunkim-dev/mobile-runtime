@@ -1,0 +1,745 @@
+{
+  "schemaVersion": 1,
+  "status": "local-evidence-record-with-limitations",
+  "snapshotAtEpoch": 1792119128.829741,
+  "candidateSourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+  "overall": "four-first-screens-and-bounded-endpoint-audit-observed; historical-gap-and-child-exit-unknown-preserved",
+  "todoCLI": {
+    "up": {
+      "at": 1792114942.170398,
+      "exitCode": 0,
+      "seconds": 46.527,
+      "state": "succeeded",
+      "sourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+      "completed": [
+        "validate",
+        "android.build",
+        "android.device",
+        "android.install",
+        "android.launch"
+      ],
+      "privateResult": "${RUN211}/state/todo-v4-up/result.json",
+      "rawResultSHA256": "9222b947c1520b0d1da670229e2f207b8c32493ed0daabbbcbd6dfb64c7fd543"
+    },
+    "firstScreen": {
+      "status": "pass-agent-visually-reviewed",
+      "publicPNG": "screenshots/todo-v4-cli-first-screen.png",
+      "SHA256": "178f4ed4191ea7ffcd4c870aa2edc97b3768f05b75f39f3f6c34bb1d0b4db4df",
+      "appPID": 4712,
+      "package": "com.example.android.architecture.blueprints.main",
+      "observedUI": "Todo toolbar; empty tasks message; leaf; add button. No obstructing dialog, crash, red box or blank screen visible."
+    },
+    "down": {
+      "at": 1792115175.027283,
+      "exitCode": 0,
+      "seconds": 9.233,
+      "state": "succeeded",
+      "sourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+      "completed": [
+        "android.app",
+        "android.emulator"
+      ],
+      "privateResult": "${RUN211}/state/todo-v4-down/result.json",
+      "rawResultSHA256": "832626102097bb4a64b128626188a415ba3cb2d22e93990734fad52f37718a01"
+    }
+  },
+  "todoGUI": {
+    "upExitCode": 0,
+    "firstScreen": {
+      "status": "pass-agent-visually-reviewed",
+      "publicPNG": "screenshots/todo-v4-gui-first-screen.png",
+      "SHA256": "2608d74aa6b75cec490f4c905f4a8265ad7f75467cc7a112cf2b17fd27b51a84",
+      "appPID": 4961,
+      "package": "com.example.android.architecture.blueprints.main",
+      "observedUI": "Todo toolbar; empty tasks message; leaf; add button. No obstructing dialog, crash, red box or blank screen visible."
+    },
+    "downExitCode": 0,
+    "downObservation": "app stopped; owned Emulator stopped; claim absent; no listener on 5554/5555; GUI Cmd-Q exit 0",
+    "source": "${RUN211}/state/gui-v4-observations.json"
+  },
+  "todoConflicts": {
+    "guiDuringCLI": "GUI up exit 1. Existing CLI app PID 4712 remains. No queue/switch/stop action.",
+    "cliDuringGUI": {
+      "at": 1792115800.222323,
+      "exitCode": 1,
+      "seconds": 15.439,
+      "state": "failed",
+      "sourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+      "completed": [],
+      "privateResult": "${RUN211}/state/todo-v4-cli-conflict-gui/result.json",
+      "rawResultSHA256": "be24b731d6439f9cb7ab26b914fc408119e5b70f6d8a5b11cdfe317a4868caca"
+    },
+    "existingGUIAppPIDPreserved": 4961
+  },
+  "niaCLI": {
+    "buildCancellation": {
+      "at": 1792115622.634458,
+      "exitCode": 130,
+      "seconds": 39.877,
+      "state": "cancelled",
+      "sourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+      "completed": [
+        "validate"
+      ],
+      "privateResult": "${RUN211}/state/nia-v4-build-cancel/result.json",
+      "rawResultSHA256": "31efe139b8262bdf3bb6eb0f1aef1e4305b030a697fd2a298e396b1b55e2bee0"
+    },
+    "buildRetry": {
+      "at": 1792115772.446582,
+      "exitCode": 0,
+      "seconds": 69.262,
+      "state": "succeeded",
+      "sourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+      "completed": [
+        "validate",
+        "android.build"
+      ],
+      "privateResult": "${RUN211}/state/nia-v4-build-retry/result.json",
+      "rawResultSHA256": "035a1860a52585b6b5a583a2fd5944d3a5fd42924465ebcd4eed136af20f716b"
+    },
+    "initialUp": {
+      "at": 1792115924.716025,
+      "exitCode": 0,
+      "seconds": 60.699,
+      "state": "succeeded",
+      "sourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+      "completed": [
+        "validate",
+        "android.build",
+        "android.device",
+        "android.install",
+        "android.launch"
+      ],
+      "privateResult": "${RUN211}/state/nia-v4-up/result.json",
+      "rawResultSHA256": "d5088b9dba77dc88704b192e9027fdd1b8f48ea835cb8fde18e471b8d79b7092"
+    },
+    "initialFirstScreen": {
+      "status": "not-pass-obstructed-by-notification-dialog",
+      "privatePNG": "${RUN211}/screenshots/nia-v4-cli-first-screen-initial.png",
+      "SHA256": "9464b5f2ff2239790705c684d4f837e587e2f776a2cdab2d9325faba30ef775c"
+    },
+    "manualPreparation": {
+      "method": "Android pm revoke and pm set-permission-flags user-set user-fixed on owned AVD. Not a UI click.",
+      "permission": "android.permission.POST_NOTIFICATIONS",
+      "revoke": {
+        "at": 1792116004.376837,
+        "exitCode": 0,
+        "seconds": 0.053,
+        "completed": [],
+        "privateResult": "${RUN211}/state/nia-v4-cli-notification-revoke/result.json",
+        "rawResultSHA256": "bd0d7d15fe689051312e0744442f8ce066df1958ba216b257b66ffee53382fd9"
+      },
+      "setFlags": {
+        "at": 1792116004.4330199,
+        "exitCode": 0,
+        "seconds": 0.055,
+        "completed": [],
+        "privateResult": "${RUN211}/state/nia-v4-cli-notification-denied-fixed/result.json",
+        "rawResultSHA256": "1140de03688cfba0549591aa7f328577a671eb925ed36ba409aa0f088242acc4"
+      }
+    },
+    "downAfterInitial": {
+      "at": 1792116013.93331,
+      "exitCode": 0,
+      "seconds": 8.967,
+      "state": "succeeded",
+      "sourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+      "completed": [
+        "android.app",
+        "android.emulator"
+      ],
+      "privateResult": "${RUN211}/state/nia-v4-down-initial/result.json",
+      "rawResultSHA256": "0e91bee09ef36c43ed932c7879b5569f36762e180d53d3af4f64dbc155f777a2"
+    },
+    "upAfterNotificationPreparation": {
+      "at": 1792116140.7574232,
+      "exitCode": 1,
+      "seconds": 98.255,
+      "state": "failed",
+      "sourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+      "completed": [
+        "validate",
+        "android.build",
+        "android.device",
+        "android.install"
+      ],
+      "privateResult": "${RUN211}/state/nia-v4-up-after-notification-prep/result.json",
+      "rawResultSHA256": "78391d8dc717100aabfef47ff4491c296c0bb2eca9e88582300ea39edb03e7f0"
+    },
+    "finalFirstScreen": {
+      "status": "pass-agent-visually-reviewed",
+      "publicPNG": "screenshots/nia-v4-cli-first-screen.png",
+      "privatePNG": "${RUN211}/screenshots/nia-v4-cli-first-screen-settled.png",
+      "SHA256": "44f1b164aefbce7efa781479ef4e39405389777dbfe0067b97b8847454b6b976",
+      "rawCaptureSHA256": "b468e142ac181c555ad2dd786316829433fc8f181c4bf21691a3b30400d074c3",
+      "package": "com.google.samples.apps.nowinandroid.demo.debug",
+      "observedUI": "Now in Android; What are you interested in?; Headlines, UI and Compose cards; For you/Saved/Interests tabs. No permission dialog, loading indicator, crash, red box or blank screen visible.",
+      "reviewer": "Codex root agent and evidence drafter through view_image; not human release approval"
+    },
+    "finalDown": {
+      "at": 1792116456.388809,
+      "exitCode": 0,
+      "seconds": 2.572,
+      "state": "succeeded",
+      "sourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+      "rawResultSHA256": "5aba2bc11bc1443534c76aec528284030059c2ec19b97d41738752d9678ade6c"
+    },
+    "failedPostPreparationObservers": {
+      "status": "failed-no-valid-capture",
+      "observerCount": 7,
+      "allExitCodes": 1,
+      "observed": "Device not found; zero-byte or absent PNG; traceback. No successful first-screen capture exists for this failed attempt.",
+      "cases": [
+        "nia-v4-cli-after-prep-launch-observation-activity",
+        "nia-v4-cli-after-prep-launch-observation-focus",
+        "nia-v4-cli-after-prep-launch-observation-installed",
+        "nia-v4-cli-after-prep-launch-observation-package",
+        "nia-v4-cli-after-prep-launch-observation-pid",
+        "nia-v4-cli-after-prep-launch-observation-reverse",
+        "nia-v4-cli-after-prep-launch-observation-runtime"
+      ]
+    },
+    "alreadyStoppedCleanup": {
+      "method": "Same V4 stock mobile down, once outside the guard. Only this owned cleanup had guard=false because guard prevented required ps observation. Other actual product flows retain guard=true. No product or guard source change.",
+      "recordedEmulatorPID": 49852,
+      "recordedSerial": "emulator-5554",
+      "outsideGuardPS": {
+        "exitCode": 1,
+        "stdoutEmpty": true,
+        "stderrEmpty": true
+      },
+      "result": 0,
+      "seconds": 0.104,
+      "status": "pass",
+      "teardownItem": {
+        "id": "android.emulator",
+        "status": "skipped",
+        "detail": "owned Emulator already stopped",
+        "ownedRuntimeStopped": true
+      },
+      "ownedActiveRunAbsent": true,
+      "matchingClaimAbsent": true,
+      "rawResultSHA256": "da40849ff2973ab6e1db62d65bee9219982c811654541cbd38676ed4dceb703f",
+      "activeRunBeforeCleanupSHA256": "90b7b5aca0d0fce1532a2e9fccc5f8722b6470904ec5e58c3537349aec0a8547"
+    },
+    "coldBootPreparation": {
+      "scope": "Owned validation AVD config only. Existing global AVD and project source unchanged.",
+      "manualChanges": {
+        "fastboot.forceColdBoot": "yes",
+        "fastboot.forceFastBoot": "no"
+      },
+      "originalConfigSHA256": "a792622ca6ac0843c0c69fcbd1031dc7ffb02dbe2672ad6229f80718afe2d0e0",
+      "cause": "Unknown; cold boot success is not causal proof for earlier timeout."
+    },
+    "coldBootRetry": {
+      "at": 1792116387.321308,
+      "exitCode": 0,
+      "seconds": 98.686,
+      "state": "succeeded",
+      "sourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+      "completed": [
+        "validate",
+        "android.build",
+        "android.device",
+        "android.install",
+        "android.launch"
+      ],
+      "rawResultSHA256": "cded6ee6626e184637513077c4c3eeee752f32215ccacdc7a985bb5451d46fb9"
+    }
+  },
+  "niaGUI": {
+    "doctor": "Observed JDK 21; Gradle 9.7.1; AGP 9.3.2; SDK 36; Build Tools 36.0.0. ABI unknown before build.",
+    "build": "succeeded exit 0; :app/demoDebug; validate and android.build completed; no install/launch stage",
+    "up": {
+      "exitCode": 0,
+      "appPID": 2059,
+      "selection": {
+        "module": ":app",
+        "variant": "demoDebug",
+        "device": "emulator-5554"
+      },
+      "source": "${RUN211}/state/gui-v4-observations.json"
+    },
+    "firstScreen": {
+      "status": "pass-agent-visually-reviewed",
+      "publicPNG": "screenshots/nia-v4-gui-first-screen.png",
+      "SHA256": "50ac6dd207d134d16709ef56188ad6ddd773b01a871b55297c1708585c6290b8",
+      "rawCaptureSHA256": "0c49fe61f5cb40f7e0372653852329aefb4807a8ca471e081aded2c4707ebdf7",
+      "package": "com.google.samples.apps.nowinandroid.demo.debug",
+      "observedUI": "Now in Android; What are you interested in?; Headlines, UI and Compose cards; For you/Saved/Interests tabs. No dialog, loading indicator, crash, red box or blank screen visible.",
+      "reviewer": "Codex evidence drafter through view_image; not human release approval"
+    },
+    "down": {
+      "finalResult": "succeeded / exit 0",
+      "case": "nia-gui-down-after-reconnect-with-scoped-ps-profile",
+      "emulatorItem": "skipped — owned Emulator already stopped",
+      "boundary": "Current cleanup success is separate from unknown original child exit statuses during SSD disconnection."
+    },
+    "downInitialGuard": {
+      "exitCode": 1,
+      "app": "stopped",
+      "emulator": "reported still running; ownership retained",
+      "source": "${RUN211}/state/gui-v4-observations.json"
+    }
+  },
+  "guiObservations": {
+    "rawReceipt": "${RUN211}/state/gui-v4-observations.json",
+    "rawReceiptSHA256": "0dd98c91b6a803d897e7806aa20c253acd5168c702bad11f4aaf07042afe251d",
+    "observations": [
+      {
+        "atMilliseconds": 1792115153846,
+        "case": "todo-gui-up-during-cli-active-run",
+        "result": "up: failed / exit 1",
+        "resourceKey": "app:android:emulator-5554:com.example.android.architecture.blueprints.main",
+        "existingOperation": "10D9E340-BDB5-4865-92A0-F7C4D995ED8F",
+        "diagnostic": "com.example.android.architecture.blueprints.main is still running on this device after its run finished: pid 4712 on emulator-5554",
+        "nextAction": "Select another resource or explicitly stop the owning operation, then check again. Nothing was switched, stopped, queued or removed.",
+        "selection": {
+          "module": ":app",
+          "variant": "debug"
+        },
+        "preservedPIDObservation": "todo-v4-gui-conflict-cli-pid-after",
+        "preservedPID": 4712
+      },
+      {
+        "atMilliseconds": 1792115539178,
+        "case": "todo-gui-cancel-at-android-build",
+        "result": "build: cancelled / exit 130",
+        "selection": {
+          "module": ":app",
+          "variant": "debug"
+        },
+        "events": "started: running; validate: running; validate: pass; android.build: running; android.build: failed — cancelled; cancelled: cancelled",
+        "nextAction": "Inspect completed stages and run down for any remaining runtime resources.",
+        "remainingWork": "Completed changes remain. Inspect this project's resources before retrying or running down."
+      },
+      {
+        "atMilliseconds": 1792115595702,
+        "case": "todo-gui-up-after-cancel-initial-guard",
+        "result": "up: failed / exit 2",
+        "diagnostic": "NSCocoaErrorDomain 513 / NSPOSIXErrorDomain 1: permission denied saving 01b688977656d9ab.claim in leases",
+        "events": "started: running; finished: failed",
+        "classification": "validation guard failure before product stages; precise temporary path not directly observed",
+        "guardHypothesis": "Foundation replacement directory uses CFBundleName Runstir211Validation, which the initial guard omitted"
+      },
+      {
+        "atMilliseconds": 1792115765737,
+        "applicationPID": 12631,
+        "case": "todo-gui-up-after-scoped-guard-restart",
+        "result": "up: succeeded / exit 0",
+        "selection": {
+          "module": ":app",
+          "variant": "debug",
+          "device": "emulator-5554"
+        },
+        "appPID": 4961,
+        "events": "validate: pass; android.build: pass; android.device: pass — started runstir211-api35; android.install: pass; android.launch: pass; finished: succeeded",
+        "firstScreenObservation": "todo-v4-gui-first-screen",
+        "APKObservation": "todo-v4-gui-apk.json"
+      },
+      {
+        "atMilliseconds": 1792115847101,
+        "applicationPID": 12631,
+        "case": "todo-gui-down",
+        "result": "down: succeeded / exit 0",
+        "items": "android.app: stopped; android.adb.reverse: skipped — not recorded; metro: skipped — not recorded; android.emulator: stopped — runstir211-api35 — emulator-5554",
+        "events": "started: running; down: running; finished: succeeded"
+      },
+      {
+        "atMilliseconds": 1792116058170,
+        "applicationPID": 29210,
+        "case": "nia-gui-build",
+        "result": "build: succeeded / exit 0",
+        "selection": {
+          "module": ":app",
+          "variant": "demoDebug"
+        },
+        "moduleCandidates": [
+          ":app",
+          ":app-nia-catalog"
+        ],
+        "variantCandidates": [
+          "demoDebug",
+          "prodDebug"
+        ],
+        "events": "started: running; validate: pass; android.build: pass — :app demoDebug; finished: succeeded",
+        "executionBoundary": "build only; no install/launch stages"
+      },
+      {
+        "atMilliseconds": 1792116698317,
+        "applicationPID": 29210,
+        "case": "nia-gui-up",
+        "result": "up: succeeded / exit 0",
+        "selection": {
+          "module": ":app",
+          "variant": "demoDebug",
+          "device": "emulator-5554"
+        },
+        "appPID": 2059,
+        "events": "validate: pass; android.build: pass — :app demoDebug; android.device: pass — started runstir211-api35; android.install: pass; android.launch: pass; finished: succeeded",
+        "firstScreenObservation": "nia-v4-gui-first-screen",
+        "APKObservation": "nia-v4-gui-apk.json"
+      },
+      {
+        "atMilliseconds": 1792116774592,
+        "applicationPID": 29210,
+        "case": "nia-gui-down-initial-guard",
+        "result": "down: failed / exit 1",
+        "items": "android.app: stopped; android.adb.reverse: skipped — not recorded; metro: skipped — not recorded; android.emulator: failed — the owned Emulator is still running — emulator-5554",
+        "events": "started: running; down: running; finished: failed",
+        "boundary": "Initial validation guard blocks native ps; retained ownership requires a separate native cleanup observation."
+      },
+      {
+        "atMilliseconds": 1792118757532,
+        "applicationPID": 59627,
+        "case": "nia-gui-down-after-reconnect-with-scoped-ps-profile",
+        "result": "down: succeeded / exit 0",
+        "items": "android.app: skipped — not recorded; android.adb.reverse: skipped — not recorded; metro: skipped — not recorded; android.emulator: skipped — owned Emulator already stopped",
+        "events": "started: running; down: running; finished: succeeded",
+        "boundary": "Same V4 executable and isolated child environment. owned-writes-ps.sb allows only /bin/ps to run without inherited sandbox; all other prior write restrictions remain. Original GUI/ADB child exit statuses during SSD disconnection are unknown."
+      }
+    ]
+  },
+  "firstScreenReview": {
+    "rawReceipt": "${RUN211}/state/first-screen-human-review-v4.json",
+    "rawReceiptSHA256": "0a25708b836920c386b2316984f2dace135b7ac149af7f066b8c9411f735237c",
+    "reviewer": "Codex root agent through view_image; evidence drafter also inspected all four final PNGs",
+    "captureDefaultFlag": "Raw capture.json firstScreenHumanReviewed=false remains unchanged. Later agent visual review is recorded separately. This is not human release approval.",
+    "observations": [
+      {
+        "capture": "todo-v4-cli-first-screen",
+        "SHA256": "178f4ed4191ea7ffcd4c870aa2edc97b3768f05b75f39f3f6c34bb1d0b4db4df",
+        "review": "Todo toolbar, empty-state leaf and You have no tasks!, add button; unobscured, no crash/red box/blank screen visible"
+      },
+      {
+        "capture": "todo-v4-gui-first-screen",
+        "SHA256": "2608d74aa6b75cec490f4c905f4a8265ad7f75467cc7a112cf2b17fd27b51a84",
+        "review": "Todo toolbar, empty-state leaf and You have no tasks!, add button; unobscured, no crash/red box/blank screen visible"
+      },
+      {
+        "capture": "nia-v4-cli-first-screen-settled",
+        "SHA256": "44f1b164aefbce7efa781479ef4e39405389777dbfe0067b97b8847454b6b976",
+        "review": "Now in Android onboarding: What are you interested in?, Headlines/UI/Compose topics, For you/Saved/Interests navigation. No permission dialog, loading indicator, crash/red box/blank screen visible.",
+        "manualPreparation": "Owned AVD notification permission denied through pm APIs; subsequent launch timeout preserved; stock down cleanup and owned AVD cold-boot settings precede this successful attempt. No UI denial click was performed."
+      },
+      {
+        "capture": "nia-v4-gui-first-screen",
+        "SHA256": "50ac6dd207d134d16709ef56188ad6ddd773b01a871b55297c1708585c6290b8",
+        "review": "Now in Android onboarding: What are you interested in?, Headlines/UI/Compose topics, For you/Saved/Interests navigation. No permission dialog, loading indicator, crash/red box/blank screen visible.",
+        "manualPreparation": "Same owned AVD retains the recorded notification denial and cold-boot settings from the CLI preparation."
+      }
+    ]
+  },
+  "apkIdentity": [
+    {
+      "receipt": "${RUN211}/state/todo-v4-cli-apk.json",
+      "rawReceiptSHA256": "167986dc83a954c93899bbbbb321e22be52f07c7d1d87acbb37a2580b0737ed5",
+      "at": 1792114998.195255,
+      "app": "todo",
+      "surface": "cli",
+      "package": "com.example.android.architecture.blueprints.main",
+      "builtAPK": "${RUN211}/sources/todo-cli/app/build/outputs/apk/debug/app-debug.apk",
+      "builtSHA256": "2eb53d7dfd51a60f904045cc0fc2c9b5e8d8b74754253a9be33baa32a6b5989a",
+      "builtBytes": 24681592,
+      "installedCopy": "${RUN211}/apks/todo-v4-cli-installed.apk",
+      "installedSHA256": "2eb53d7dfd51a60f904045cc0fc2c9b5e8d8b74754253a9be33baa32a6b5989a",
+      "metadataSHA256": "264638ff6f1dea22e925dd8d071004405ea30573e6a658874c2cd7c6aeb38ebd",
+      "installedBytesMatchBuilt": true
+    },
+    {
+      "receipt": "${RUN211}/state/todo-v4-gui-apk.json",
+      "rawReceiptSHA256": "8be281275c32849830b0cbc6caf53f0d09e1b592de66bae464acc9777a4ee764",
+      "at": 1792115775.7548108,
+      "app": "todo",
+      "surface": "gui",
+      "package": "com.example.android.architecture.blueprints.main",
+      "builtAPK": "${RUN211}/sources/todo-gui/app/build/outputs/apk/debug/app-debug.apk",
+      "builtSHA256": "2eb53d7dfd51a60f904045cc0fc2c9b5e8d8b74754253a9be33baa32a6b5989a",
+      "builtBytes": 24681592,
+      "installedCopy": "${RUN211}/apks/todo-v4-gui-installed.apk",
+      "installedSHA256": "2eb53d7dfd51a60f904045cc0fc2c9b5e8d8b74754253a9be33baa32a6b5989a",
+      "metadataSHA256": "264638ff6f1dea22e925dd8d071004405ea30573e6a658874c2cd7c6aeb38ebd",
+      "installedBytesMatchBuilt": true
+    },
+    {
+      "receipt": "${RUN211}/state/nia-v4-cli-apk.json",
+      "rawReceiptSHA256": "de0c8767a2c5df9b066498fa80a28bb36502c1f37fff5e09b32627378d841b3e",
+      "at": 1792115967.115812,
+      "app": "nia",
+      "surface": "cli",
+      "package": "com.google.samples.apps.nowinandroid.demo.debug",
+      "builtAPK": "${RUN211}/sources/nia-cli/app/build/outputs/apk/demo/debug/app-demo-debug.apk",
+      "builtSHA256": "fb84e3e51e1bcad1fbe4b365cc4c18fb5857aedac011b63fab8fbad66aece344",
+      "builtBytes": 37211208,
+      "installedCopy": "${RUN211}/apks/nia-v4-cli-installed.apk",
+      "installedSHA256": "fb84e3e51e1bcad1fbe4b365cc4c18fb5857aedac011b63fab8fbad66aece344",
+      "metadataSHA256": "baa938b8aff19d8e297aa1bd15d2ed2ea296288123b157b2bf21cb4f57ee3e80",
+      "installedBytesMatchBuilt": true
+    },
+    {
+      "receipt": "${RUN211}/state/nia-v4-cli-cold-apk.json",
+      "rawReceiptSHA256": "484f0f5eb307dfcffb37f9596021de8660b9489442f95409425238aab50f62e9",
+      "at": 1792116404.801196,
+      "app": "nia",
+      "surface": "cli",
+      "package": "com.google.samples.apps.nowinandroid.demo.debug",
+      "builtAPK": "${RUN211}/sources/nia-cli/app/build/outputs/apk/demo/debug/app-demo-debug.apk",
+      "builtSHA256": "fb84e3e51e1bcad1fbe4b365cc4c18fb5857aedac011b63fab8fbad66aece344",
+      "builtBytes": 37211208,
+      "installedCopy": "${RUN211}/apks/nia-v4-cli-cold-installed.apk",
+      "installedSHA256": "fb84e3e51e1bcad1fbe4b365cc4c18fb5857aedac011b63fab8fbad66aece344",
+      "metadataSHA256": "baa938b8aff19d8e297aa1bd15d2ed2ea296288123b157b2bf21cb4f57ee3e80",
+      "installedBytesMatchBuilt": true
+    },
+    {
+      "receipt": "${RUN211}/state/nia-v4-gui-apk.json",
+      "rawReceiptSHA256": "3b0f76951e061cf975ab29c93faa2dbd945330710be78861000dc7239d8f3b28",
+      "at": 1792116707.134203,
+      "app": "nia",
+      "surface": "gui",
+      "package": "com.google.samples.apps.nowinandroid.demo.debug",
+      "builtAPK": "${RUN211}/sources/nia-gui/app/build/outputs/apk/demo/debug/app-demo-debug.apk",
+      "builtSHA256": "fb84e3e51e1bcad1fbe4b365cc4c18fb5857aedac011b63fab8fbad66aece344",
+      "builtBytes": 37211208,
+      "installedCopy": "${RUN211}/apks/nia-v4-gui-installed.apk",
+      "installedSHA256": "fb84e3e51e1bcad1fbe4b365cc4c18fb5857aedac011b63fab8fbad66aece344",
+      "metadataSHA256": "baa938b8aff19d8e297aa1bd15d2ed2ea296288123b157b2bf21cb4f57ee3e80",
+      "installedBytesMatchBuilt": true
+    }
+  ],
+  "preservation": "Endpoint audit is recorded in preservation.json. No continuous custody claim across SSD disconnection.",
+  "remaining": [
+    "Final evidence-inclusive full-diff independent review",
+    "Required CI on final head",
+    "Risk-based human approval; merge; main CI"
+  ],
+  "notProven": [
+    "All six framework-platform combinations",
+    "Physical Android device",
+    "Official signed/notarized GUI distribution",
+    "Whole HOME or global SDK file contents unchanged"
+  ],
+  "guiLaunchReceipts": [
+    {
+      "case": "gui-v4-todo",
+      "rawCommandFileSHA256": "830faba5a1a9957ae96d8b2603a5eec853dca38eac8afe6ec8ae92633bbd37b5",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/Runstir211ValidationV4.app/Contents/MacOS/Runstir"
+      ],
+      "sourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+      "executableSHA256": "2468f4c57ac8d056012ed7c76e24e2fa7a701807070346124c2db424eb86c2f8",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/todo-gui",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "gui-v4r1-todo",
+      "rawCommandFileSHA256": "a6c9ff7ce930910078b897018babbacaf73bdb4f7a6c6449732a1ba6f8a6966e",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/Runstir211ValidationV4.app/Contents/MacOS/Runstir"
+      ],
+      "sourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+      "executableSHA256": "2468f4c57ac8d056012ed7c76e24e2fa7a701807070346124c2db424eb86c2f8",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/todo-gui",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "gui-v4-nia",
+      "rawCommandFileSHA256": "3e1e21d37756aea281be88a32983e9cf194408f154ea5b82da9d36ed653aca7b",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/Runstir211ValidationV4.app/Contents/MacOS/Runstir"
+      ],
+      "sourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+      "executableSHA256": "2468f4c57ac8d056012ed7c76e24e2fa7a701807070346124c2db424eb86c2f8",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu21.52.203-ca-jdk21.0.12.1-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/nia-gui",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    }
+  ],
+  "executionInterruption": {
+    "event": "External validation SSD disconnected; user reconnected it.",
+    "interval": "No continuous custody or full-window preservation claim across this gap.",
+    "reconnectedWorktree": "${WORKTREE211}",
+    "HEAD": "8862bcad5c003514cee73c41debe65b9301edf1e",
+    "recoveryCheck": "All 12 public draft files matched the pre-gap SHA256 manifest. Only docs/evidence/211 is untracked; no tracked dirty files.",
+    "QemuPID14767": "Native ps exit 1 with empty stdout/stderr after reconnect; process absent.",
+    "GUIProcessPID29210": "Native ps after reconnect found no process; child exit status unknown.",
+    "ADBProcessPID88450": "Native ps after reconnect found no process; child exit status unknown.",
+    "managerExit": "GUI and ADB managers reached terminal traceback exit 1 when creating a path on the offline volume. This is not the original child exit status.",
+    "normalExitClaimed": false
+  },
+  "validationGuardRefinement": {
+    "scope": "Same candidate GUI remains sandboxed. Only exact /bin/ps executes with no-sandbox. No whole GUI exemption.",
+    "profile": "${RUN211}/owned-writes-ps.sb",
+    "SHA256": "360a6771bd62c269318991c350fba77a16a9df1f6f11b9eace0c70f5d7ae4173",
+    "exactRule": "(allow process-exec (with no-sandbox) (literal \"/bin/ps\"))",
+    "reference": "Parent verified this with installed Apple local SBPL profiles. No new SDK or runtime was installed.",
+    "boundedProbes": {
+      "oldProfilePs": {
+        "exitCode": 71,
+        "stderrClassification": "Operation not permitted"
+      },
+      "nativePs": {
+        "exitCode": 1,
+        "stdoutEmpty": true,
+        "stderrEmpty": true
+      },
+      "newProfilePs": {
+        "exitCode": 1,
+        "stdoutEmpty": true,
+        "stderrEmpty": true
+      },
+      "outsideProtectedControlWrite": {
+        "exitCode": 1,
+        "bytesPreserved": {
+          "expectedLiteralSHA256": "ed5795a0b60255d38d9a7fcca255cc969e6dc2a20795087d9e021a0277183499",
+          "afterSHA256": "ed5795a0b60255d38d9a7fcca255cc969e6dc2a20795087d9e021a0277183499",
+          "bytes": 41,
+          "unchanged": true
+        }
+      }
+    },
+    "productSourceChanged": false,
+    "nextAction": "Same-candidate GUI down completed with exit 0; final bounded PID/port absence and endpoint audit are recorded in the canonical receipt."
+  },
+  "finalRestartedProcesses": {
+    "GUI": {
+      "managerReceipt": "${RUN211}/state/gui-v4r2-nia-cleanup/exit.json",
+      "exitCode": 0,
+      "rawReceiptSHA256": "dd12bb397566bbd6206923ced36e36123783915c4e03b83e109e1a9f9d007258"
+    },
+    "ADB": {
+      "managerReceipt": "${RUN211}/state/adb-server-reconnect/exit.json",
+      "exitCode": 0,
+      "rawReceiptSHA256": "32e6e3121fc388f0498e92b33bbb92a0af43829b22d0e0f45abf3b0a63ca0089"
+    },
+    "originalProcesses": "Original GUI PID29210 and ADB PID88450 exit status remain unknown."
+  },
+  "canonicalCleanupReceipt": {
+    "public": "cleanup-and-preservation-v4.json",
+    "private": "${RUN211}/state/cleanup-and-preservation-v4.json",
+    "SHA256": "172d77fb8043299d62f0c8c750c7d2695d40f5cd06f8cd7c7012fa0b7919315e",
+    "publicBytesIdenticalToNormalizedPrivateReceipt": true
+  },
+  "ownershipAfterCleanup": {
+    "claim": "01b688977656d9ab.claim",
+    "claimExists": false,
+    "activeRun": "${DARWIN_RUNLOGS}/nia-gui-025ef6b9/android-active-run.json",
+    "activeRunExists": false,
+    "checkedAtEpoch": 1792119072.061333
+  },
+  "boundedFinalAbsenceProbes": [
+    {
+      "case": "final-owned-pids-absent",
+      "normalizedArgv": [
+        "/bin/ps",
+        "-p",
+        "59627,59556,14767",
+        "-o",
+        "pid="
+      ],
+      "commandSHA256": "46df5b3598e7ee67955b4d0a3bffbf70ea869734982651b75ed93ef57c2166c8",
+      "resultSHA256": "89e78eae8cd0fb4d33c50b74e8682177edef115402b640735a3382735cfcd88b",
+      "exitCode": 1,
+      "at": 1792118926.779003,
+      "stdoutBytes": 0,
+      "stderrBytes": 0,
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "final-port-5045",
+      "normalizedArgv": [
+        "/usr/sbin/lsof",
+        "-nP",
+        "-iTCP:5045",
+        "-sTCP:LISTEN"
+      ],
+      "commandSHA256": "1e026ed0ceab28fffca35c7c66a12ecb8a57c5dd1ee002c64f22ce4d87c09550",
+      "resultSHA256": "59f7f53fc818038ef6239a84328c8bffc9612eeb5bb9a4b8d8457ba4d17b2fb9",
+      "exitCode": 1,
+      "at": 1792118926.893091,
+      "stdoutBytes": 0,
+      "stderrBytes": 0,
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "final-port-5554",
+      "normalizedArgv": [
+        "/usr/sbin/lsof",
+        "-nP",
+        "-iTCP:5554",
+        "-sTCP:LISTEN"
+      ],
+      "commandSHA256": "f27429df569bc25359e072c07c10df3a06618781d4ac8c84be88d929a182c9d3",
+      "resultSHA256": "0baa99244f3ac26cf6806e864101ea5714e805abacd6a774f8588f40e37b8c8c",
+      "exitCode": 1,
+      "at": 1792118926.9508731,
+      "stdoutBytes": 0,
+      "stderrBytes": 0,
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "final-port-5555",
+      "normalizedArgv": [
+        "/usr/sbin/lsof",
+        "-nP",
+        "-iTCP:5555",
+        "-sTCP:LISTEN"
+      ],
+      "commandSHA256": "717c5bfcbaa871b805cc7d595142f732a9faed34a4f7a41b5235c144dbdcdce9",
+      "resultSHA256": "8a6f54d5480cf3e0957102b68379e2a622135c5fddde12c7cb5219bd9d8b09bb",
+      "exitCode": 1,
+      "at": 1792118927.008193,
+      "stdoutBytes": 0,
+      "stderrBytes": 0,
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}
