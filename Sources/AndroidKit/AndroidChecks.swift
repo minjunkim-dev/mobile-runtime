@@ -16,26 +16,44 @@ public func androidChecks(
         projectRunner: projectRunner,
         environment: environment
     )
-    return [
+    return androidChecks(context: context, includeRuntimeSDKTools: includeRuntimeSDKTools)
+}
+
+/// Reuses the same opaque model cache for doctor and approved SDK preparation.
+public func androidChecks(
+    context: AndroidDoctorContext,
+    includeRuntimeSDKTools: Bool = true
+) -> [any Check] {
+    var checks: [any Check] = [
         AndroidProjectCheck(context: context),
         AndroidGradleWrapperCheck(context: context),
         AndroidJDKCheck(context: context),
         AndroidTargetCheck(context: context),
         AndroidGradleCompatibilityCheck(context: context),
         AndroidSDKCheck(context: context, includeRuntimeTools: includeRuntimeSDKTools),
-        AndroidAVDCheck(context: context),
-        AndroidEmulatorAccelerationCheck(context: context),
     ]
+    if includeRuntimeSDKTools {
+        checks += [AndroidAVDCheck(context: context), AndroidEmulatorAccelerationCheck(context: context)]
+    }
+    return checks
 }
 
 private struct AndroidProjectCheck: Check {
     let id = "android.project"
     let category = "Android project"
-    let title = "React Native Android project and exact framework inputs are present"
+    var title: String {
+        context.anchor.framework == .nativeAndroid
+            ? "Native Android Gradle application inputs are present"
+            : "React Native Android project and exact framework inputs are present"
+    }
     let context: AndroidDoctorContext
 
     func run() async throws -> CheckOutcome {
         let anchor = context.anchor
+        if anchor.framework == .nativeAndroid {
+            return .pass(observed: "native Android host", required: "checked-in Gradle application",
+                         source: CheckSource(tier: 1, origin: "Gradle settings + application model"))
+        }
         guard anchor.hasAndroidDirectory else {
             return .error(
                 observed: "the React Native anchor has no android/ directory",
@@ -119,7 +137,7 @@ private struct AndroidGradleWrapperCheck: Check {
             return .error(
                 observed: failure.description,
                 required: "executable gradlew, wrapper JAR/properties, and an exact distributionUrl",
-                source: CheckSource(tier: 1, origin: "android/gradle/wrapper"),
+                source: CheckSource(tier: 1, origin: context.projectRelativePath("gradle/wrapper")),
                 remediation: Remediation(
                     summary: "Restore the project's Gradle wrapper from its source repository; mobile will not substitute system Gradle."
                 )
@@ -494,8 +512,8 @@ private struct AndroidSDKCheck: Check {
             return .error(
                 observed: message,
                 required: "one unambiguous Android SDK root",
-                source: CheckSource(tier: 1, origin: "android/local.properties + ANDROID_HOME"),
-                remediation: AndroidDoctorContext.sdkRootRemediation
+                source: CheckSource(tier: 1, origin: "\(context.projectRelativePath("local.properties")) + ANDROID_HOME"),
+                remediation: context.sdkRootRemediation
             )
         case .resolved(let url, let source): (sdk, rootSource) = (url, source)
         }
@@ -509,7 +527,7 @@ private struct AndroidSDKCheck: Check {
             return .unknown(reason: "the selected Gradle target is unavailable", source: rootSource)
         }
         guard let compileSDK = variant.compileSdk ?? module.compileSdk,
-            let buildTools = module.buildToolsVersion
+            let buildTools = module.effectiveBuildToolsVersion
         else {
             return .unknown(
                 reason: "the evaluated application module did not expose compileSdk and effective Build Tools",
@@ -525,20 +543,31 @@ private struct AndroidSDKCheck: Check {
         var cmakeVersion = module.cmakeVersion
         var cmakeDirectory: URL?
         var source = CheckSource(tier: 1, origin: "evaluated Gradle model; \(rootSource.origin)")
-        if module.cmakeConfigured == true, cmakeVersion == nil {
+        if module.cmakeConfigured == true {
             do {
-                cmakeDirectory = try await context.cmakeDirectory()
+                if let installed = try await context.cmakeInstallation() {
+                    if let cmakeVersion, cmakeVersion != installed.version {
+                        return .error(
+                            observed: "cmake.dir reports CMake \(installed.version)",
+                            required: "CMake \(cmakeVersion) declared by \(module.path)",
+                            source: CheckSource(tier: 1, origin: "evaluated Gradle model; \(context.projectRelativePath("local.properties")) cmake.dir + cmake --version"),
+                            remediation: Remediation(summary: "Point cmake.dir to the declared CMake version, then inspect again.")
+                        )
+                    }
+                    cmakeDirectory = installed.directory
+                    cmakeVersion = installed.version
+                }
             } catch {
                 return .unknown(
-                    reason: "android/local.properties cmake.dir could not be read or did not report a CMake version",
-                    source: CheckSource(tier: 1, origin: "android/local.properties cmake.dir")
+                    reason: "\(context.projectRelativePath("local.properties")) cmake.dir could not be read or did not report a CMake version",
+                    source: CheckSource(tier: 1, origin: "\(context.projectRelativePath("local.properties")) cmake.dir")
                 )
             }
         }
         if cmakeDirectory != nil {
             source = CheckSource(
                 tier: 1,
-                origin: "evaluated Gradle model; android/local.properties cmake.dir + cmake --version; \(rootSource.origin)"
+                origin: "evaluated Gradle model; \(context.projectRelativePath("local.properties")) cmake.dir + cmake --version; \(rootSource.origin)"
             )
         } else if module.cmakeConfigured == true, cmakeVersion == nil {
             guard let agpText = module.agpVersion, let agp = SemanticVersion(agpText),
@@ -574,7 +603,7 @@ private struct AndroidSDKCheck: Check {
         if module.nativeBuildConfigured, let ndk = module.ndkVersion {
             require("ndk/\(ndk)", "NDK \(ndk)", "ndk;\(ndk)")
         }
-        if module.nativeBuildConfigured, let cmake = cmakeVersion {
+        if module.nativeBuildConfigured, cmakeDirectory == nil, let cmake = cmakeVersion {
             require("cmake/\(cmake)", "CMake \(cmake)", "cmake;\(cmake)")
         }
 
@@ -586,9 +615,9 @@ private struct AndroidSDKCheck: Check {
                 required: "all SDK packages required by \(module.path)",
                 source: source,
                 remediation: Remediation(
-                    summary: "Install the missing SDK packages explicitly; mobile will not download or license them.",
+                    summary: "Review mobile setup --plan for approved SDK package installation. Runtime provisioning and license acceptance remain manual.",
                     command: sdkmanager.map {
-                        ([shellArgument($0.path)] + packages.map(shellArgument)).joined(separator: " ")
+                        ([shellArgument($0.path), shellArgument("--sdk_root=\(sdk.path)")] + packages.map(shellArgument)).joined(separator: " ")
                     },
                     url: sdkmanager == nil ? "https://developer.android.com/tools/sdkmanager" : nil
                 )

@@ -1,0 +1,458 @@
+{
+  "schemaVersion": 1,
+  "kind": "derived-local-cleanup-and-endpoint-preservation-receipt",
+  "generatedAtEpoch": 1792119072.047504,
+  "productSourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+  "baseSHA": "b2c4cd6fd8077c71c31e31f0d721c6bf9d53cc16",
+  "releaseReadiness": "Not declared. Independent review, final CI, human approval, merge and main CI remain parent-owned and incomplete.",
+  "candidate": {
+    "receipt": "${RUN211}/state/candidate-v4.json",
+    "receiptSHA256": "31a9078bb4970b545e201d9be28f4748e2fd739282e868d66dd1a327d4e21fe3",
+    "CLI": {
+      "ref": "${RUN211}/bin/mobile-v4",
+      "SHA256": "60b5bfa34624e1812c7a858b85d1270426b82aa626a92d97656dcfa85edeb753",
+      "matchesCandidate": true
+    },
+    "GUI": {
+      "ref": "${RUN211}/Runstir211ValidationV4.app/Contents/MacOS/Runstir",
+      "SHA256": "2468f4c57ac8d056012ed7c76e24e2fa7a701807070346124c2db424eb86c2f8",
+      "matchesCandidate": true,
+      "localAdhocOnly": true
+    },
+    "SourcesTestsUnchangedFromProductSource": true
+  },
+  "auditProducerObservation": {
+    "source": "Parent completed after-snapshot task; retained before/after files were directly compared by evidence author.",
+    "taskPID": 49260,
+    "exitCode": 0
+  },
+  "audits": [
+    {
+      "scope": "globalSDK",
+      "before": {
+        "ref": "${RUN211}/state/audit-before-globalSDK.json",
+        "SHA256": "3ffdcfc7e9e63e9d7b3c875493372a2b420002a1e563a63d03e3b7d7d5701724",
+        "at": 1792111484.818601,
+        "entries": 124165
+      },
+      "after": {
+        "ref": "${RUN211}/state/audit-after-globalSDK.json",
+        "SHA256": "9c0c623d1af5a71a6c7591b1a92a431681859e0e33171f801517db8bca14759c",
+        "at": 1792118827.626293,
+        "entries": 124165
+      },
+      "added": 0,
+      "removed": 0,
+      "changedPreExistingRows": 0,
+      "regularContentScope": "statOnly"
+    },
+    {
+      "scope": "baselineTodoCache",
+      "before": {
+        "ref": "${RUN211}/state/audit-before-baselineTodoCache.json",
+        "SHA256": "8ddc80d3d1d2129910888cecf88c21ad7ef2f537b291f5ab890a1c27723422c7",
+        "at": 1792111485.948239,
+        "entries": 27023
+      },
+      "after": {
+        "ref": "${RUN211}/state/audit-after-baselineTodoCache.json",
+        "SHA256": "80b573c03b25e62f1111125a28d558739ba39a60166e12cbddeb09b147fff9f3",
+        "at": 1792118829.01842,
+        "entries": 27023
+      },
+      "added": 0,
+      "removed": 0,
+      "changedPreExistingRows": 0,
+      "regularContentScope": "statOnly"
+    },
+    {
+      "scope": "baselineNIACache",
+      "before": {
+        "ref": "${RUN211}/state/audit-before-baselineNIACache.json",
+        "SHA256": "639dba4fc212ecbc5e2e86e6c7ada9dd1ff2aa8033375f36e0747ee65e517325",
+        "at": 1792111487.4526532,
+        "entries": 56229
+      },
+      "after": {
+        "ref": "${RUN211}/state/audit-after-baselineNIACache.json",
+        "SHA256": "1dda37d0fef8cee21c01bb23bcc4cb345df5913cabc0186d2506d7efdbcb3ba6",
+        "at": 1792118830.945565,
+        "entries": 56229
+      },
+      "added": 0,
+      "removed": 0,
+      "changedPreExistingRows": 0,
+      "regularContentScope": "statOnly"
+    },
+    {
+      "scope": "globalAndroid",
+      "before": {
+        "ref": "${RUN211}/state/audit-before-globalAndroid.json",
+        "SHA256": "e5a65ee7cd755cbfbbc3073c4ce446c0b0e764acbc8e7dd6ae6bbd3013c4c477",
+        "at": 1792111487.646209,
+        "entries": 13
+      },
+      "after": {
+        "ref": "${RUN211}/state/audit-after-globalAndroid.json",
+        "SHA256": "2cd7f630b582f9f79339a4d7d3dc106b1cd6b5c324da9efe322c7ed571af18b7",
+        "at": 1792118831.144096,
+        "entries": 13
+      },
+      "added": 0,
+      "removed": 0,
+      "changedPreExistingRows": 0,
+      "regularContentScope": "statOnly"
+    },
+    {
+      "scope": "globalLeases",
+      "before": {
+        "ref": "${RUN211}/state/audit-before-globalLeases.json",
+        "SHA256": "a76f9e66e9c6826f5b906d5468a89cf0b85ecbc4c34d422a3ebe9b08ae6f07a4",
+        "at": 1792111487.7146199,
+        "entries": 1151
+      },
+      "after": {
+        "ref": "${RUN211}/state/audit-after-globalLeases.json",
+        "SHA256": "a341197c010c786445cfbfd0631e56572e58640504c4295103086dc51659d47a",
+        "at": 1792118831.255496,
+        "entries": 1931
+      },
+      "added": 780,
+      "removed": 0,
+      "changedPreExistingRows": 0,
+      "regularContentScope": "hashRegularExceptSensitive",
+      "addedEntries": "780 zero-byte regular .lock files; retained; not deleted; no per-entry actor attribution"
+    },
+    {
+      "scope": "selectedHost",
+      "before": {
+        "ref": "${RUN211}/state/audit-before-selectedHost.json",
+        "SHA256": "671eefec64172f4b5a635cd87a231b99a16e745f2b091007c2ccf38e052e07fd",
+        "at": 1792111488.271256,
+        "entries": 4
+      },
+      "after": {
+        "ref": "${RUN211}/state/audit-after-selectedHost.json",
+        "SHA256": "e76b6167283934cbef51f678e1769a161cdedcc6627b84ec90dc772568d81e9d",
+        "at": 1792118832.005891,
+        "entries": 4
+      },
+      "added": 0,
+      "removed": 0,
+      "changedPreExistingRows": 1,
+      "comparisonScope": "Existing authentication and global Gradle root stat rows; selected preference bytes. No authentication key bytes or entire global Gradle content bytes.",
+      "changedRow": {
+        "ref": "${HOST_HOME}/Library/Preferences/dev.runstir.gui.validation211.plist",
+        "beforeExists": false,
+        "afterExists": true,
+        "afterSHA256": "315cc3bcec614656187d0e29a2c3b9606e7bbc4cd9e841d537d650f7765fc368",
+        "classification": "owned unique validation GUI preference created"
+      }
+    },
+    {
+      "scope": "todo-cli",
+      "before": {
+        "ref": "${RUN211}/state/audit-before-todo-cli.json",
+        "SHA256": "363c1a508458e1da54457f38b662d80f7a292a6a387fbce1bb805e3ed546f6cf",
+        "at": 1792111487.821942,
+        "entries": 119
+      },
+      "after": {
+        "ref": "${RUN211}/state/audit-after-todo-cli.json",
+        "SHA256": "95e0407e8047b68f2893250b99ef284dcf0b6da296758f6ba3374d40dde72d5f",
+        "at": 1792118831.525305,
+        "entries": 119
+      },
+      "added": 0,
+      "removed": 0,
+      "changedPreExistingRows": 0,
+      "comparisonScope": "tracked regular bytes, mode, symlink target; HEAD; raw Git index; stage; flags; user selection hash",
+      "HEADSame": true,
+      "indexSHA256Same": true,
+      "stageSHA256Same": true,
+      "flagsSHA256Same": true,
+      "userSelectionSHA256Same": true
+    },
+    {
+      "scope": "todo-gui",
+      "before": {
+        "ref": "${RUN211}/state/audit-before-todo-gui.json",
+        "SHA256": "7bb838d0802b99d7d930c49cdfbb4e9d8e62f625342b5f46ea11e4644009342e",
+        "at": 1792111487.868747,
+        "entries": 119
+      },
+      "after": {
+        "ref": "${RUN211}/state/audit-after-todo-gui.json",
+        "SHA256": "3ace148576a34a742e162b5d4df7f42be62591f4b52f0aa5bb6d2794ba621379",
+        "at": 1792118831.57351,
+        "entries": 119
+      },
+      "added": 0,
+      "removed": 0,
+      "changedPreExistingRows": 0,
+      "comparisonScope": "tracked regular bytes, mode, symlink target; HEAD; raw Git index; stage; flags; user selection hash",
+      "HEADSame": true,
+      "indexSHA256Same": true,
+      "stageSHA256Same": true,
+      "flagsSHA256Same": true,
+      "userSelectionSHA256Same": true
+    },
+    {
+      "scope": "nia-cli",
+      "before": {
+        "ref": "${RUN211}/state/audit-before-nia-cli.json",
+        "SHA256": "ee69e3234b2f08b4e79ac98aefb2f40f382a19e7c6a1150643d3bcbcbd044feb",
+        "at": 1792111488.1408079,
+        "entries": 715
+      },
+      "after": {
+        "ref": "${RUN211}/state/audit-after-nia-cli.json",
+        "SHA256": "ffdac1865373659c4392edd3ff335a079f81b7ba0226f61e039d2e519a3b79b7",
+        "at": 1792118831.8641338,
+        "entries": 715
+      },
+      "added": 0,
+      "removed": 0,
+      "changedPreExistingRows": 0,
+      "comparisonScope": "tracked regular bytes, mode, symlink target; HEAD; raw Git index; stage; flags; user selection hash",
+      "HEADSame": true,
+      "indexSHA256Same": true,
+      "stageSHA256Same": true,
+      "flagsSHA256Same": true,
+      "userSelectionSHA256Same": true
+    },
+    {
+      "scope": "nia-gui",
+      "before": {
+        "ref": "${RUN211}/state/audit-before-nia-gui.json",
+        "SHA256": "d7028da3bc610317953825f5b771510d2ce3fb91a95409801567cbbf3c1f57f9",
+        "at": 1792111488.267688,
+        "entries": 715
+      },
+      "after": {
+        "ref": "${RUN211}/state/audit-after-nia-gui.json",
+        "SHA256": "8be3b2ab2eebd74f7c4c112de5dd54f3163d84d0aef0f1cee7240df08e34c9fb",
+        "at": 1792118832.00176,
+        "entries": 715
+      },
+      "added": 0,
+      "removed": 0,
+      "changedPreExistingRows": 0,
+      "comparisonScope": "tracked regular bytes, mode, symlink target; HEAD; raw Git index; stage; flags; user selection hash",
+      "HEADSame": true,
+      "indexSHA256Same": true,
+      "stageSHA256Same": true,
+      "flagsSHA256Same": true,
+      "userSelectionSHA256Same": true
+    },
+    {
+      "scope": "original-todo",
+      "before": {
+        "ref": "${RUN211}/state/audit-before-original-todo.json",
+        "SHA256": "fc950b9061dbae10130d2bff3b03224f4285f03aa030c2bfb08a5d178c7e85e0",
+        "at": 1792111487.773267,
+        "entries": 119
+      },
+      "after": {
+        "ref": "${RUN211}/state/audit-after-original-todo.json",
+        "SHA256": "a601293fba2819029b2e963add78474b1e0708fa6d02d4ddfdb5091d406108ac",
+        "at": 1792118831.4734862,
+        "entries": 119
+      },
+      "added": 0,
+      "removed": 0,
+      "changedPreExistingRows": 0,
+      "comparisonScope": "tracked regular bytes, mode, symlink target; HEAD; raw Git index; stage; flags; user selection hash",
+      "HEADSame": true,
+      "indexSHA256Same": true,
+      "stageSHA256Same": true,
+      "flagsSHA256Same": true,
+      "userSelectionSHA256Same": true
+    },
+    {
+      "scope": "original-nia",
+      "before": {
+        "ref": "${RUN211}/state/audit-before-original-nia.json",
+        "SHA256": "d66bd9e2562b3c82888c8973875440e23164a42f68a832773c1d69bb610737b8",
+        "at": 1792111488.014914,
+        "entries": 715
+      },
+      "after": {
+        "ref": "${RUN211}/state/audit-after-original-nia.json",
+        "SHA256": "f7ea270daf227b5c994be41f8dd460c02bf31f531a7b23afb71e9f58c5d8398a",
+        "at": 1792118831.720365,
+        "entries": 715
+      },
+      "added": 0,
+      "removed": 0,
+      "changedPreExistingRows": 0,
+      "comparisonScope": "tracked regular bytes, mode, symlink target; HEAD; raw Git index; stage; flags; user selection hash",
+      "HEADSame": true,
+      "indexSHA256Same": true,
+      "stageSHA256Same": true,
+      "flagsSHA256Same": true,
+      "userSelectionSHA256Same": true
+    }
+  ],
+  "finalDown": {
+    "surface": "GUI",
+    "case": "nia-gui-down-after-reconnect-with-scoped-ps-profile",
+    "exitCode": 0,
+    "emulatorItem": "skipped: owned Emulator already stopped",
+    "observations": "${RUN211}/state/gui-v4-observations.json",
+    "observationsSHA256": "0dd98c91b6a803d897e7806aa20c253acd5168c702bad11f4aaf07042afe251d"
+  },
+  "finalProcesses": [
+    {
+      "process": "restartedGUI",
+      "PID": 59627,
+      "exitCode": 0,
+      "at": 1792118811.417865,
+      "receipt": "${RUN211}/state/gui-v4r2-nia-cleanup/exit.json",
+      "receiptSHA256": "dd12bb397566bbd6206923ced36e36123783915c4e03b83e109e1a9f9d007258"
+    },
+    {
+      "process": "restartedADB",
+      "PID": 59556,
+      "exitCode": 0,
+      "at": 1792118818.049827,
+      "receipt": "${RUN211}/state/adb-server-reconnect/exit.json",
+      "receiptSHA256": "32e6e3121fc388f0498e92b33bbb92a0af43829b22d0e0f45abf3b0a63ca0089"
+    }
+  ],
+  "boundedFinalAbsenceProbes": [
+    {
+      "case": "final-owned-pids-absent",
+      "normalizedArgv": [
+        "/bin/ps",
+        "-p",
+        "59627,59556,14767",
+        "-o",
+        "pid="
+      ],
+      "commandSHA256": "46df5b3598e7ee67955b4d0a3bffbf70ea869734982651b75ed93ef57c2166c8",
+      "resultSHA256": "89e78eae8cd0fb4d33c50b74e8682177edef115402b640735a3382735cfcd88b",
+      "exitCode": 1,
+      "at": 1792118926.779003,
+      "stdoutBytes": 0,
+      "stderrBytes": 0,
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "final-port-5045",
+      "normalizedArgv": [
+        "/usr/sbin/lsof",
+        "-nP",
+        "-iTCP:5045",
+        "-sTCP:LISTEN"
+      ],
+      "commandSHA256": "1e026ed0ceab28fffca35c7c66a12ecb8a57c5dd1ee002c64f22ce4d87c09550",
+      "resultSHA256": "59f7f53fc818038ef6239a84328c8bffc9612eeb5bb9a4b8d8457ba4d17b2fb9",
+      "exitCode": 1,
+      "at": 1792118926.893091,
+      "stdoutBytes": 0,
+      "stderrBytes": 0,
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "final-port-5554",
+      "normalizedArgv": [
+        "/usr/sbin/lsof",
+        "-nP",
+        "-iTCP:5554",
+        "-sTCP:LISTEN"
+      ],
+      "commandSHA256": "f27429df569bc25359e072c07c10df3a06618781d4ac8c84be88d929a182c9d3",
+      "resultSHA256": "0baa99244f3ac26cf6806e864101ea5714e805abacd6a774f8588f40e37b8c8c",
+      "exitCode": 1,
+      "at": 1792118926.9508731,
+      "stdoutBytes": 0,
+      "stderrBytes": 0,
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "final-port-5555",
+      "normalizedArgv": [
+        "/usr/sbin/lsof",
+        "-nP",
+        "-iTCP:5555",
+        "-sTCP:LISTEN"
+      ],
+      "commandSHA256": "717c5bfcbaa871b805cc7d595142f732a9faed34a4f7a41b5235c144dbdcdce9",
+      "resultSHA256": "8a6f54d5480cf3e0957102b68379e2a622135c5fddde12c7cb5219bd9d8b09bb",
+      "exitCode": 1,
+      "at": 1792118927.008193,
+      "stdoutBytes": 0,
+      "stderrBytes": 0,
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "ownership": {
+    "claim": "01b688977656d9ab.claim",
+    "claimExists": false,
+    "activeRun": "${DARWIN_RUNLOGS}/nia-gui-025ef6b9/android-active-run.json",
+    "activeRunExists": false,
+    "checkedAtEpoch": 1792119072.061333
+  },
+  "validationProfile": {
+    "ref": "${RUN211}/owned-writes-ps.sb",
+    "SHA256": "360a6771bd62c269318991c350fba77a16a9df1f6f11b9eace0c70f5d7ae4173",
+    "exactRule": "(allow process-exec (with no-sandbox) (literal \"/bin/ps\"))",
+    "exception": "Only exact /bin/ps runs with no-sandbox. GUI as a whole remains sandboxed.",
+    "oldVsNewProbeCases": [
+      "reconnect-guarded-ps14767",
+      "reconnect-native-ps14767",
+      "reconnect-scoped-native-ps14767"
+    ],
+    "oldProfileExitCode": 71,
+    "newAndNativeExitCode": 1,
+    "newAndNativeStdoutStderrEmpty": true,
+    "outsideWriteProbe": {
+      "case": "reconnect-scoped-outside-write-denied",
+      "exitCode": 1,
+      "commandSHA256": "4b1aa16c1f60c935cb705adc221f6771f4f1b1af4c6639c428c70512bcd5699e",
+      "resultSHA256": "02f4ffd191e15967813720386f93ad40700584aa49ace3d5dbf694090c53b561"
+    },
+    "protectedControl": {
+      "ref": "${PROTECTED_CONTROL}",
+      "expectedBytes": 41,
+      "observedBytes": 41,
+      "expectedLiteralSHA256": "ed5795a0b60255d38d9a7fcca255cc969e6dc2a20795087d9e021a0277183499",
+      "afterSHA256": "ed5795a0b60255d38d9a7fcca255cc969e6dc2a20795087d9e021a0277183499",
+      "unchanged": true,
+      "contentPublished": false
+    }
+  },
+  "historicalInterruption": {
+    "event": "External SSD disconnected and user reconnected it.",
+    "originalGUI": {
+      "PID": 29210,
+      "observedAfterReconnect": "absent",
+      "childExitStatus": "unknown"
+    },
+    "originalADB": {
+      "PID": 88450,
+      "observedAfterReconnect": "absent",
+      "childExitStatus": "unknown"
+    },
+    "originalManagers": "Offline path mkdir failed with traceback and terminal exit 1. Manager status is not original child exit status.",
+    "Qemu": {
+      "PID": 14767,
+      "observedAfterReconnect": "native bounded ps exit 1, empty stdout/stderr"
+    },
+    "normalOriginalChildExitClaimed": false,
+    "continuousWholeWindowPreservationClaimed": false
+  },
+  "limits": [
+    "Endpoint comparisons do not prove continuous preservation through the SSD disconnection gap.",
+    "SDK and old cache metadata equality is statOnly, not whole-file-byte equality.",
+    "No whole HOME, whole SDK or whole cache byte-preservation claim.",
+    "780 new empty lease lock files and a unique owned GUI preference were created and retained.",
+    "Full-host ps outputs and raw Emulator logs/authentication rows are excluded from public content and hash indexes.",
+    "During this evidence-documentation task, the evidence author made no product, source, test, SDK, runtime or existing AVD changes. Earlier product fixes remain recorded separately."
+  ]
+}

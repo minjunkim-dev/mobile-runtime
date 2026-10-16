@@ -19,7 +19,7 @@ public struct EnvironmentInspection: Sendable {
         let selection = try input.selection()
         let anchor = selection.error == nil && selection.requiredInput.isEmpty
             ? selection.selected.flatMap { ProjectAnchor.detect(candidate: $0) } : nil
-        if let anchor, anchor.framework != .reactNative && anchor.framework != .nativeIOS {
+        if let anchor, anchor.framework != .reactNative && anchor.framework != .nativeIOS && anchor.framework != .nativeAndroid {
             let report = DoctorReport(checks: [CheckResult(id: "project.framework", category: "Project",
                 title: "Project framework support", outcome: .error(
                     observed: "\(anchor.framework.displayName) inspection is not implemented yet.",

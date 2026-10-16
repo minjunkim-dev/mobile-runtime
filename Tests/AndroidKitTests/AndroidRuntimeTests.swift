@@ -72,12 +72,17 @@ private struct RuntimeScenario {
     let product: AndroidBuiltProduct
 }
 
-private func runtimeScenario() throws -> RuntimeScenario {
+private func runtimeScenario(native: Bool = false, abis: [String] = ["arm64-v8a"]) throws -> RuntimeScenario {
     let repo = try FixtureRepo()
-    try repo.write("package.json", #"{"dependencies":{"react-native":"0.83.1"}}"#)
-    try repo.directory("android")
+    if native {
+        try repo.write("settings.gradle.kts", "include(\":app\")")
+        try repo.write("gradlew", "wrapper")
+    } else {
+        try repo.write("package.json", #"{"dependencies":{"react-native":"0.83.1"}}"#)
+        try repo.directory("android")
+    }
     let sdk = try repo.directory("sdk")
-    try repo.write("android/local.properties", "sdk.dir=\(sdk.path)\n")
+    try repo.write(native ? "local.properties" : "android/local.properties", "sdk.dir=\(sdk.path)\n")
     try repo.directory("sdk/system-images/android-35/google_apis/arm64-v8a")
     let avdHome = try repo.directory("avds")
     try repo.write(
@@ -104,7 +109,7 @@ private func runtimeScenario() throws -> RuntimeScenario {
             applicationId: "dev.mobile.fixture",
             minSdk: "24",
             targetSdk: "35",
-            abis: ["arm64-v8a"],
+            abis: abis,
             launcherActivity: "dev.mobile.fixture.MainActivity"
         )
     )
@@ -260,6 +265,69 @@ struct AndroidRuntimeTests {
         #expect(record.device?.state == .reused)
         #expect(record.metro?.state == .reused)
         #expect(record.reverse?.state == .created)
+        #expect(record.app?.launched == true)
+        #expect(record.app?.pid == 8123)
+        #expect(state.all.contains { ["avdmanager", "sdkmanager"].contains($0.executable) } == false)
+    }
+
+    @Test("native Android universal APK uses the owned lifecycle without Metro or reverse")
+    func nativeRuntimeStages() async throws {
+        let scenario = try runtimeScenario(native: true, abis: [])
+        let responses: [String: [FakeProcessRunner.Response]] = [
+            command("emulator", ["-list-avds"]): [.ok("Pixel\n")],
+            command("adb", ["devices"]): [.ok("List of devices attached\n\(serial) device\n")],
+            command("adb", ["-s", serial, "emu", "avd", "name"]): [.ok("Pixel\n")],
+            command("adb", ["-s", serial, "shell", "getprop", "sys.boot_completed"]): [.ok("1\n")],
+            command("adb", ["-s", serial, "shell", "getprop", "ro.build.version.sdk"]): [.ok("35\n")],
+            command("adb", ["-s", serial, "shell", "getprop", "ro.product.cpu.abilist"]): [.ok("arm64-v8a\n")],
+            command("adb", ["-s", serial, "shell", "pm", "path", "android"]): [.ok("package:/system/framework/framework-res.apk\n")],
+            command("adb", ["-s", serial, "install", "-r", scenario.product.apkPath]): [.ok("Success\n")],
+            command("adb", ["-s", serial, "shell", "pm", "path", scenario.product.applicationId]): [.ok("package:/data/app/base.apk\n")],
+            command(
+                "adb",
+                [
+                    "-s", serial, "shell", "cmd", "package", "resolve-activity", "--brief",
+                    "-a", "android.intent.action.MAIN",
+                    "-c", "android.intent.category.LAUNCHER",
+                    scenario.product.applicationId,
+                ]
+            ): [.ok("dev.mobile.fixture/.MainActivity\n")],
+            command("adb", ["-s", serial, "shell", "am", "force-stop", scenario.product.applicationId]): [.ok("")],
+            command(
+                "adb",
+                [
+                    "-s", serial, "shell", "am", "start", "-W", "-n",
+                    "dev.mobile.fixture/dev.mobile.fixture.MainActivity",
+                ]
+            ): [.ok("Status: ok\n")],
+            command("adb", ["-s", serial, "shell", "pidof", scenario.product.applicationId]): [.ok("8123\n")],
+            command("adb", ["-s", serial, "shell", "dumpsys", "activity", "activities"]): [.ok("mResumedActivity dev.mobile.fixture/dev.mobile.fixture.MainActivity\n")],
+        ]
+        let state = ScriptedProcessState(responses)
+        let runner = ScriptedProcessRunner(state: state)
+        let stages = androidUpStages(anchor: scenario.anchor, doctor: DoctorEngine(checks: []),
+            config: scenario.config, hostRunner: runner, projectRunner: runner,
+            environment: scenario.environment, logs: scenario.logs,
+            timeouts: AndroidRuntimeTimeouts(poll: .zero), note: { _ in })
+        var context = UpContext()
+        context.androidProduct = scenario.product
+        for stage in stages.drop(while: { $0.id != "android.device" }) {
+            _ = try await stage.run(&context)
+        }
+        let device = try #require(context.androidProduct?.device)
+        let pid = context.androidProduct?.appPid
+        #expect(device.state == .reused)
+        #expect(device.avd == "Pixel")
+        #expect(pid == 8123)
+        #expect(context.metro == nil)
+        #expect(!state.all.contains { $0.arguments.contains("reverse") || ["node", "npm", "lsof"].contains($0.executable) })
+        let saved = try AndroidActiveRunStore(
+            project: scenario.repo.root, logs: scenario.logs
+        ).read()
+        let record = try #require(saved)
+        #expect(record.device?.state == .reused)
+        #expect(record.metro == nil)
+        #expect(record.reverse == nil)
         #expect(record.app?.launched == true)
         #expect(record.app?.pid == 8123)
         #expect(state.all.contains { ["avdmanager", "sdkmanager"].contains($0.executable) } == false)

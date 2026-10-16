@@ -66,7 +66,8 @@ public enum WorkflowExecution {
                 let anchor = ProjectAnchor.detect(candidate: candidate) else {
                 throw selectionFailure("No app selected. Choose a reported project candidate.")
             }
-            guard anchor.framework == .reactNative || (anchor.framework == .nativeIOS && platform == .ios) else {
+            guard anchor.framework == .reactNative || (anchor.framework == .nativeIOS && platform == .ios)
+                || (anchor.framework == .nativeAndroid && platform == .android) else {
                 throw selectionFailure("\(anchor.framework.displayName) execution is not implemented yet.")
             }
             if kind == .down && [input.device, input.scheme, input.configuration, input.module, input.variant].contains(where: { $0 != nil }) {
@@ -216,6 +217,18 @@ public enum WorkflowExecution {
                 started("down")
                 down = await androidTeardown(anchor: anchor, config: config, runner: runner, projectRunner: runner,
                                              environment: AndroidEnvironment(values: input.project.environment))
+                if let device, let report = down, report.status == .pass,
+                    report.items.contains(where: { $0.id == "android.emulator"
+                        && ($0.status == .stopped || $0.ownedRuntimeStopped == true) }) {
+                    do {
+                        try leases.releaseAfterTeardown(device: device, project: folder.path)
+                    } catch {
+                        let detail = "The device claim cleanup could not be confirmed: \(error)"
+                        operation.remaining.append(detail)
+                        down = TeardownReport(items: report.items, toolFailures: report.toolFailures + [detail],
+                            failure: report.failure, blockedIsFailure: report.blockedIsFailure, cancelled: report.cancelled)
+                    }
+                }
             case (.up, .android):
                 up = await runAndroidUp(anchor: anchor, doctor: wiring.engine, config: config,
                     hostRunner: runner, projectRunner: wiring.projectRunner,

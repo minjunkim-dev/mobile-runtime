@@ -335,14 +335,14 @@ struct NativeIOSWorkflowTests {
         #expect(!runner.log.all.contains { $0.executable == "xcodebuild" && $0.arguments.contains("-project") })
     }
 
-    @Test("future framework candidates remain classified without entering React Native workflows")
+    @Test("Flutter candidates remain classified without entering React Native workflows")
     func futureFramework() async throws {
         let repo = try FixtureRepo()
-        try repo.write("settings.gradle", "rootProject.name = 'native'")
-        try repo.write("gradlew", "#!/bin/sh")
+        try repo.write("pubspec.yaml", "name: fixture\ndependencies:\n  flutter:\n    sdk: flutter\n")
+        try repo.directory("android")
         let runner = FakeProcessRunner()
         let inspection = try await EnvironmentInspection.run(input: ProjectInspectionInput(directory: repo.root, environment: [:]), runner: runner)
-        #expect(inspection.selection.selected?.framework == .nativeAndroid)
+        #expect(inspection.selection.selected?.framework == .flutter)
         #expect(inspection.exitCode == 1)
         let result = await WorkflowExecution.run(.up, input: input(repo), runner: runner)
         #expect(result.exitCode == 1)

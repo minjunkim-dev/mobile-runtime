@@ -1,0 +1,99 @@
+{
+  "attemptID": "214-20261016-04",
+  "bothMatchPreExecutionPin": true,
+  "doNotReuseOldOrganizationOverride": true,
+  "manualNNWPreparationRequired": {
+    "executeBeforeFirstSPMBuildGraph": true,
+    "expectedGeneratedOutput": "SecretKey.swift is ignored. Its random salt causes by-design output SHA variation. No credential values may be supplied or published.",
+    "expectedTrackedChanges": 0,
+    "futureRunstirSourceAndArtifactIdentity": "not selected; root must pin final source/CLI/GUI/Core/CI before execution.",
+    "method": "env -i with only the native-v2 receipt whitelist and clone-specific owned PROJECT_DIR/HOME/TMPDIR path mapping. Run original tracked script via /bin/bash. Do not invoke setup.sh. No source/lock patch or OAuth/token/signing key environment.",
+    "nativeV2ManualReceipt": "PRIVATE214_REPIN:state/netnewswire-v2-manual-preparation.json",
+    "requiredBeforeAndAfterEvidence": [
+      "HEAD/source-tree",
+      "all tracked bytes and filesystem modes",
+      "raw Git index SHA256",
+      "Git stage and flags",
+      "ignored generated output absent/present and SHA256 only",
+      "script and template SHA256",
+      "exact argv and effective whitelist variable names/safe path values"
+    ],
+    "script": "buildscripts/updateSecrets.sh",
+    "scriptSHA256": "8c64a305bc24a28b966a23f4d8728cafa26f9b4910bd0bad311eb9af726210bc",
+    "template": "Modules/Secrets/Sources/Secrets/SecretKey.swift.gyb"
+  },
+  "nextAuthorization": "Root must separately pin final product source/CLI/GUI/Core/CI identities and exact resource lease; this source handoff is not execution permission.",
+  "requiredPrePostEvidence": [
+    "tracked bytes/modes",
+    "HEAD/tree",
+    "raw Git index",
+    "stage/flags",
+    "ignored generator output hash only",
+    "exact script/template SHA and env-i whitelist",
+    "same source/scheme/configuration/default appID",
+    "owned device and existing-resource preservation"
+  ],
+  "requiredSelection": {
+    "food-truck": {
+      "appID": "com.example.apple-samplecode.Food-Truck",
+      "configuration": "Debug",
+      "scheme": "Food Truck"
+    },
+    "netnewswire": {
+      "appID": "com.ranchero.NetNewsWire.iOS-DEBUG",
+      "configuration": "Debug",
+      "scheme": "NetNewsWire-iOS"
+    }
+  },
+  "sampleSources": [
+    {
+      "allNormalFlags": true,
+      "allStageZero": true,
+      "appID": "com.example.apple-samplecode.Food-Truck",
+      "cloneAlias": "${PRIVATE214_REPIN}/sources/runstir-fresh/food-truck",
+      "cloneMode": "--local --no-hardlinks --no-checkout; exact detached checkout",
+      "configuration": "Debug",
+      "flagsRawSHA256": "f3e53812a7afe82504620990a15e1da74e099aab9e62e9bc28fbfc1b68c2ca90",
+      "project": "Food Truck.xcodeproj",
+      "rawIndexSHA256": "40dc4c6631bab649c827f8addfc5022562de6de2435520390d2c4f70c6493559",
+      "sample": "food-truck",
+      "scheme": "Food Truck",
+      "sourceObjectHardlinks": [],
+      "sourceSHA": "3954a769e99f3cc53297d94f2b960ceb2665b3d6",
+      "sourceTree": "1ad91dc9d969793ff96336c571fb191e2046067b",
+      "sourceURL": "https://github.com/apple/sample-food-truck",
+      "stageRawSHA256": "5544a9bbad29c2d32149d6366da967d105d6757b066e591403a500d61b57fdc3",
+      "surface": "runstir-fresh",
+      "trackedByteMapSHA256": "4e72b41c4405ff3f5c95d37fbcd6e75d71e11978595a9b27bf6a8cfc3630b2b6",
+      "trackedBytes": 28480618,
+      "trackedBytesModesManifestSHA256": "4f3d79291f7552e253ca6faf013f31264296a45752f4659a3eab4ad3d6c5c327",
+      "trackedCount": 553
+    },
+    {
+      "allNormalFlags": true,
+      "allStageZero": true,
+      "appID": "com.ranchero.NetNewsWire.iOS-DEBUG",
+      "cloneAlias": "${PRIVATE214_REPIN}/sources/runstir-fresh/netnewswire",
+      "cloneMode": "--local --no-hardlinks --no-checkout; exact detached checkout",
+      "configuration": "Debug",
+      "flagsRawSHA256": "5c799fa4ede4536ea2bd1b74fe399383ddec677c7f6045bfed467197f809cef6",
+      "project": "NetNewsWire.xcodeproj",
+      "rawIndexSHA256": "14ccebc434adc1562b0c73cfc45284bf65718bb48a45209161fce8f6d545ced5",
+      "sample": "netnewswire",
+      "scheme": "NetNewsWire-iOS",
+      "sourceObjectHardlinks": [],
+      "sourceSHA": "aea7795bcc0698ced6f28eba53da886eb6217e64",
+      "sourceTree": "57d45813a3066fddd9172a417fe45b03c76040a0",
+      "sourceURL": "https://github.com/Ranchero-Software/NetNewsWire",
+      "stageRawSHA256": "73c037500047ae7a05cfaa987ccfebf501987a3e805a9968feb4b190a8befd2f",
+      "surface": "runstir-fresh",
+      "trackedByteMapSHA256": "5a6d7f086849f46bc40b2ef7f95242f0e35b1354753061ffda2e34056023aef8",
+      "trackedBytes": 49946083,
+      "trackedBytesModesManifestSHA256": "e2454fc0f4e250dff36aa52785b9f5ac31896a4325475466577029ae0822c7eb",
+      "trackedCount": 1352
+    }
+  ],
+  "schemaVersion": 1,
+  "scope": "This is pure-native source baseline evidence. It does not inherit previous #210 Runstir success or complete AC05 CLI/GUI gates.",
+  "state": "separate source-only clones; Runstir/generator/dependencies/build/install/launch not executed"
+}

@@ -29,7 +29,9 @@ native iOS 후보는 앱 루트와 선택한 `.xcodeproj` 또는 `.xcworkspace`�
 복수 컨테이너는 보고된 `--app` 후보 id로 선택한다.
 RN 후보 id는 기존 값을 유지한다.
 RN·Flutter의 `ios/`와 `android/`는 독립 네이티브 후보로 중복 등록하지 않는다.
-Flutter·native Android는 이 계약에서 탐지만 제공한다. 실행 연결은 각 후속 티켓에서 구현한다.
+Flutter는 이 계약에서 탐지만 제공한다. 준비 연결은 #205에서 구현한다.
+native Android는 평가한 Gradle application module·runnable variant를 공통 Android doctor/build/up/down에 연결한다.
+native Android의 공유 CLI·GUI 실행 경계는 ADR-0037을 따른다. 실제 실행 검증 범위는 #211의 근거에 기록한다.
 native iOS의 공유 CLI·GUI 실행 경계는 ADR-0036과 `docs/native-ios.md`를 따른다.
 
 **플랫폼 (Platform)**:

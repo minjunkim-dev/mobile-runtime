@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "method": "SHA256 over public file bytes; this manifest is excluded from itself.",
+  "files": {
+    "README.md": {
+      "bytes": 10373,
+      "SHA256": "4ff44d8188c27d071a4d733afdc50bd17fe4f42ea35092707f46b86b242ab7ea"
+    },
+    "attempts.md": {
+      "bytes": 9204,
+      "SHA256": "eab8fdc973f58c59e1f3b44b8bff67bdc6c451976888ef34897f679dd18ba4bb"
+    },
+    "cleanup-and-preservation-v4.json": {
+      "bytes": 17133,
+      "SHA256": "172d77fb8043299d62f0c8c750c7d2695d40f5cd06f8cd7c7012fa0b7919315e"
+    },
+    "commands.json": {
+      "bytes": 92316,
+      "SHA256": "d179d7aeae4da239b64ccbe0f3d68f3008509b65751fb1912c8ce96f4d5e4dea"
+    },
+    "input-tuple.json": {
+      "bytes": 20404,
+      "SHA256": "8d97982eaa3390e46c68535908bc6912c7d4677778d9fec5a09de6f2221d52cd"
+    },
+    "preservation.json": {
+      "bytes": 9215,
+      "SHA256": "9d195b57c3a35035157325d4369182d0eea02c6b7245ae3bc1e2a35b23e8635f"
+    },
+    "private-evidence-index.json": {
+      "bytes": 79624,
+      "SHA256": "6e8e4bd7d7a70c22622c905b0f194a7666c9453a8bb216d0dbada9e46079698d"
+    },
+    "results.json": {
+      "bytes": 34121,
+      "SHA256": "2f9323ac79156aa783ccc9fb0ed090d72b17f01ea657a5634b942c3952a7f99c"
+    },
+    "screenshots/nia-v4-cli-first-screen.png": {
+      "bytes": 293603,
+      "SHA256": "44f1b164aefbce7efa781479ef4e39405389777dbfe0067b97b8847454b6b976"
+    },
+    "screenshots/nia-v4-gui-first-screen.png": {
+      "bytes": 292607,
+      "SHA256": "50ac6dd207d134d16709ef56188ad6ddd773b01a871b55297c1708585c6290b8"
+    },
+    "screenshots/todo-v4-cli-first-screen.png": {
+      "bytes": 56346,
+      "SHA256": "178f4ed4191ea7ffcd4c870aa2edc97b3768f05b75f39f3f6c34bb1d0b4db4df"
+    },
+    "screenshots/todo-v4-gui-first-screen.png": {
+      "bytes": 56493,
+      "SHA256": "2608d74aa6b75cec490f4c905f4a8265ad7f75467cc7a112cf2b17fd27b51a84"
+    }
+  }
+}

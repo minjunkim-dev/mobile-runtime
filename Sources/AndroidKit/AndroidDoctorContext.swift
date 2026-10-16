@@ -54,6 +54,9 @@ struct AndroidGradleModel: Sendable, Decodable, Equatable {
         let agpVersion: String?
         let compileSdk: String?
         let buildToolsVersion: String?
+        var effectiveBuildToolsVersion: String? {
+            AndroidCompatibility.effectiveBuildTools(declared: buildToolsVersion, agp: agpVersion)
+        }
         let minSdk: String?
         let targetSdk: String?
         let ndkVersion: String?
@@ -122,7 +125,7 @@ struct AndroidAVD: Sendable, Equatable {
     let systemImageDirectory: URL?
 }
 
-actor AndroidDoctorContext {
+public actor AndroidDoctorContext {
     nonisolated let anchor: ProjectAnchor
     nonisolated let config: ConfigContext
     nonisolated let hostRunner: any ProcessRunner
@@ -131,7 +134,7 @@ actor AndroidDoctorContext {
 
     private var modelTask: Task<AndroidModelProbeOutcome, any Error>?
 
-    init(
+    public init(
         anchor: ProjectAnchor,
         config: ConfigContext,
         hostRunner: any ProcessRunner,
@@ -145,7 +148,13 @@ actor AndroidDoctorContext {
         self.environment = environment
     }
 
-    nonisolated var androidDirectory: URL { anchor.directory.appendingPathComponent("android") }
+    nonisolated var androidDirectory: URL {
+        anchor.framework == .nativeAndroid ? anchor.directory : anchor.directory.appendingPathComponent("android")
+    }
+
+    nonisolated func projectRelativePath(_ path: String) -> String {
+        anchor.framework == .nativeAndroid ? path : "android/\(path)"
+    }
 
     nonisolated func gradlePluginVersion() -> AndroidPackageVersion? {
         Self.packageVersion("@react-native/gradle-plugin", anchor: anchor)
@@ -159,12 +168,12 @@ actor AndroidDoctorContext {
         let manager = FileManager.default
 
         var missing: [String] = []
-        if !manager.isExecutableFile(atPath: script.path) { missing.append("executable android/gradlew") }
+        if !manager.isExecutableFile(atPath: script.path) { missing.append("executable \(projectRelativePath("gradlew"))") }
         if (try? jar.resourceValues(forKeys: [.fileSizeKey]).fileSize).map({ $0 > 0 }) != true {
-            missing.append("android/gradle/wrapper/gradle-wrapper.jar")
+            missing.append(projectRelativePath("gradle/wrapper/gradle-wrapper.jar"))
         }
         guard let data = manager.contents(atPath: properties.path) else {
-            missing.append("android/gradle/wrapper/gradle-wrapper.properties")
+            missing.append(projectRelativePath("gradle/wrapper/gradle-wrapper.properties"))
             return .failure(AndroidObservationFailure("missing \(missing.joined(separator: ", "))"))
         }
         guard missing.isEmpty else {
@@ -214,7 +223,7 @@ actor AndroidDoctorContext {
                 versionText: match[1],
                 distributionURL: distributionURL,
                 distributionName: distributionName,
-                source: CheckSource(tier: 1, origin: "android/gradle/wrapper/gradle-wrapper.properties"),
+                source: CheckSource(tier: 1, origin: projectRelativePath("gradle/wrapper/gradle-wrapper.properties")),
                 materialized: materialized
             )
         )
@@ -228,11 +237,11 @@ actor AndroidDoctorContext {
                 version: values["toolchainVersion"].flatMap(Int.init),
                 vendor: values["toolchainVendor"],
                 home: nil,
-                origin: "android/gradle/gradle-daemon-jvm.properties"
+                origin: projectRelativePath("gradle/gradle-daemon-jvm.properties")
             )
         }
         for (file, origin) in [
-            (androidDirectory.appendingPathComponent("gradle.properties"), "android/gradle.properties"),
+            (androidDirectory.appendingPathComponent("gradle.properties"), projectRelativePath("gradle.properties")),
             (environment.gradleHome?.appendingPathComponent("gradle.properties"), "GRADLE_USER_HOME/gradle.properties"),
         ] {
             guard let file, let data = FileManager.default.contents(atPath: file.path),
@@ -281,6 +290,10 @@ actor AndroidDoctorContext {
 
     func model() async throws -> AndroidModelProbeOutcome {
         try Task.checkCancellation()
+        guard case .success(let wrapper) = wrapper(), wrapper.materialized,
+              anchor.framework != .reactNative || anchor.hasNodeModules else {
+            return .unavailable("The wrapper and project inputs must already exist locally; inspection never downloads them")
+        }
         let task: Task<AndroidModelProbeOutcome, any Error>
         if let modelTask { task = modelTask }
         else {
@@ -340,10 +353,11 @@ actor AndroidDoctorContext {
         let deprecatedPath = environment.values["ANDROID_SDK_ROOT"]
 
         func normalized(_ path: String) -> URL {
-            URL(fileURLWithPath: path).standardizedFileURL.resolvingSymlinksInPath()
+            let declared = path.hasPrefix("/") ? URL(fileURLWithPath: path) : androidDirectory.appendingPathComponent(path)
+            return declared.standardizedFileURL.resolvingSymlinksInPath()
         }
         if let localPath, let homePath, normalized(localPath).path != normalized(homePath).path {
-            return .conflict("android/local.properties sdk.dir and ANDROID_HOME point to different SDK roots")
+            return .conflict("\(projectRelativePath("local.properties")) sdk.dir and ANDROID_HOME point to different SDK roots")
         }
         if let homePath, let deprecatedPath, normalized(homePath).path != normalized(deprecatedPath).path {
             return .conflict("ANDROID_SDK_ROOT disagrees with ANDROID_HOME")
@@ -352,17 +366,17 @@ actor AndroidDoctorContext {
             return .missing("ANDROID_SDK_ROOT is deprecated and is not promoted to the SDK root")
         }
         if let localPath {
-            return .resolved(normalized(localPath), source: CheckSource(tier: 1, origin: "android/local.properties sdk.dir"))
+            return .resolved(normalized(localPath), source: CheckSource(tier: 1, origin: "\(projectRelativePath("local.properties")) sdk.dir"))
         }
         if let homePath {
             return .resolved(normalized(homePath), source: CheckSource(tier: 1, origin: "ANDROID_HOME"))
         }
-        return .missing("neither android/local.properties sdk.dir nor ANDROID_HOME declares the SDK root")
+        return .missing("neither \(projectRelativePath("local.properties")) sdk.dir nor ANDROID_HOME declares the SDK root")
     }
 
-    static let sdkRootRemediation = Remediation(
-        summary: "Make android/local.properties sdk.dir and ANDROID_HOME name one installed SDK."
-    )
+    nonisolated var sdkRootRemediation: Remediation {
+        Remediation(summary: "Make \(projectRelativePath("local.properties")) sdk.dir and ANDROID_HOME name one installed SDK.")
+    }
 
     nonisolated func requiredSDKRoot() throws -> URL {
         switch sdkRoot() {
@@ -370,12 +384,16 @@ actor AndroidDoctorContext {
         case .conflict(let reason), .missing(let reason):
             throw DomainError(
                 summary: reason,
-                remediation: Self.sdkRootRemediation
+                remediation: sdkRootRemediation
             )
         }
     }
 
     func cmakeDirectory() async throws -> URL? {
+        try await cmakeInstallation()?.directory
+    }
+
+    func cmakeInstallation() async throws -> (directory: URL, version: String)? {
         let local = androidDirectory.appendingPathComponent("local.properties")
         let text: String
         do {
@@ -398,7 +416,7 @@ actor AndroidDoctorContext {
             let version = result.standardOutput.firstMatch(#"(?m)^cmake version (\S+)"#)?.last,
             SemanticVersion(version) != nil
         else { throw CocoaError(.fileReadCorruptFile) }
-        return directory
+        return (directory, version)
     }
 
     /// `adb reverse --list` as a source → target map. `up` and `down` both decide
@@ -539,7 +557,7 @@ actor AndroidDoctorContext {
         return nil
     }
 
-    private static func properties(_ text: String) -> [String: String] {
+    static func properties(_ text: String) -> [String: String] {
         text.split(separator: "\n").reduce(into: [:]) { values, raw in
             let line = raw.trimmingCharacters(in: .whitespaces)
             guard !line.isEmpty, !line.hasPrefix("#"), !line.hasPrefix("!"),
@@ -588,6 +606,8 @@ actor AndroidDoctorContext {
 enum AndroidGradleModelProbe {
     static let marker = "MOBILE_ANDROID_MODEL="
     static let artifactMarker = "MOBILE_ANDROID_ARTIFACT="
+    // The model init script uses cross-project callbacks, which require both cache and isolation off.
+    static let configurationArguments = ["--no-configuration-cache", "-Dorg.gradle.unsafe.isolated-projects=false"]
     static var scriptURL: URL? {
         Bundle.module.url(forResource: "mobile-doctor", withExtension: "gradle")
     }
@@ -600,9 +620,10 @@ enum AndroidGradleModelProbe {
         guard let script = scriptURL else {
             return nil
         }
-        var arguments = [
-            "--no-daemon", "--no-configuration-cache", "--console=plain",
-            "--warning-mode=none", "-Porg.gradle.java.installations.auto-download=false",
+        var arguments = ["--no-daemon"] + configurationArguments + [
+            "--console=plain",
+            "--warning-mode=none", "-Dorg.gradle.java.installations.auto-download=false",
+            "-Pandroid.builder.sdkDownload=false",
             "-q", "-I", script.path, "help",
         ]
         if offline { arguments.insert("--offline", at: 0) }

@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "ticket": 204,
+  "observedAt": "2026-10-15T14:36:14.523454+00:00",
+  "source": {
+    "repository": "https://github.com/android/architecture-samples.git",
+    "sha": "ee66e1526b84c026615df032c705842b7d2a521f",
+    "trackedFiles": 119
+  },
+  "host": {
+    "macOS": "27.0.1",
+    "architecture": "arm64",
+    "swift": "6.4 swiftlang-6.4.0.34.1"
+  },
+  "toolchain": {
+    "gradle": "8.11.1",
+    "agp": "8.7.3",
+    "daemonJDK": "17.0.19",
+    "compileSDK": "35",
+    "buildTools": "34.0.0",
+    "nativeBuildRequired": false
+  },
+  "products": {
+    "buildToolsInstallHead": "0b0cd7d642e4595b8c46888bf3751df9f092cb0e",
+    "platformInstallHead": "a50d6528dfc49bd6fb5199e2140adb0587eeeb97",
+    "finalCodeBase": "cf384de1019f52341a731ce3d0f9e837a84c5696",
+    "finalCodeHead": "73f20f95ba6073c313c4570550e638af51285275",
+    "cancellationHead": "c45fe2e461b484348591c3d276f1274ccc62ad05"
+  },
+  "prefix": "/PREVIOUS_OWNED_ROOT",
+  "pins": [
+    {
+      "destination": "/PREVIOUS_OWNED_ROOT/sdk/build-tools/34.0.0",
+      "licenseAccepted": "true",
+      "licenseID": "android-sdk-license",
+      "licenseSHA1": "24333f8a63b6825ea9c5514f83c2829b004d1fee",
+      "package": "build-tools;34.0.0",
+      "repositorySHA256": "237eefe28e55619d3e63d730f8994cc1ae6d9c171096f07a6c147297145787e6",
+      "revision": "34.0.0",
+      "sha1": "00e1301387028f33753e38274401694e1a27c62f",
+      "size": "76559180",
+      "url": "https://dl.google.com/android/repository/build-tools_r34-macosx.zip"
+    },
+    {
+      "destination": "/PREVIOUS_OWNED_ROOT/sdk/platforms/android-35",
+      "licenseAccepted": "true",
+      "licenseID": "android-sdk-license",
+      "licenseSHA1": "24333f8a63b6825ea9c5514f83c2829b004d1fee",
+      "package": "platforms;android-35",
+      "repositorySHA256": "237eefe28e55619d3e63d730f8994cc1ae6d9c171096f07a6c147297145787e6",
+      "revision": "2",
+      "sha1": "0bb560a90a7a2cbd0dd8348224d518b638fe7949",
+      "size": "64273788",
+      "url": "https://dl.google.com/android/repository/platform-35_r02.zip"
+    }
+  ],
+  "license": {
+    "id": "android-sdk-license",
+    "acceptedHash": "24333f8a63b6825ea9c5514f83c2829b004d1fee",
+    "newAcceptance": false,
+    "rule": "official JAXB TrimStringAdapter then UTF-8 SHA1",
+    "acceptanceHashAdded": false,
+    "existingRecordSource": "preserved by the whole SDK COW clone; no separate license-record copying or edits"
+  },
+  "boundary": {
+    "install": "public PreparationExecution.run with custom ResourceLeases under owned prefix",
+    "cli": "actual mobile setup --plan --non-interactive --json only",
+    "gui": "source wiring and executable contract tests; no driven GUI installation",
+    "appBuildInstallLaunch": "not part of this measurement",
+    "vm": "not measured",
+    "originalSDKCacheBytes": "full before/after bytes not collected"
+  }
+}

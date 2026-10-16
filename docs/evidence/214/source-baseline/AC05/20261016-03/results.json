@@ -1,0 +1,314 @@
+{
+  "candidateIdentity": "source-baseline",
+  "scenarioID": "AC05",
+  "attemptID": "214-20261016-03",
+  "observedLocalDate": "2026-10-16, Asia/Seoul",
+  "tupleManifest": "../20261015-01/tuple.json",
+  "previousAttempt": "../20261015-02/results.json",
+  "sampleIdentity": "netnewswire-oss",
+  "sourceSHA": "aea7795bcc0698ced6f28eba53da886eb6217e64",
+  "executionSurface": "plain simctl and CUA observation; neither Runstir CLI nor Runstir GUI",
+  "operator": "Codex #214 context; exclusive GUI/iOS lease assigned by coordinator",
+  "overallVerdict": "inconclusive",
+  "actualCaseCount": 1,
+  "build": {
+    "status": "not-repeated",
+    "originalNativeBuildEvidence": "../20261015-02/results.json",
+    "originalNativeBuildExitCode": 0,
+    "originalBuildLogSHA256": "55467fd5bdd9b54d3230c6e31a05f83c5314af2f6749eb83d867f11edb45311f",
+    "artifactOrigin": "Original attempt02 DerivedData product; no #210 product or fresh clone artifact used.",
+    "identityMatch": {
+      "bundleID": "org.runstir.baseline214.NetNewsWire.iOS-DEBUG",
+      "executableSHA256": "377d8c1a8cdf228772558ee71041ba727297ce428650f6103679218b15fb73f2",
+      "fileCount": 170,
+      "platforms": [
+        "iPhoneSimulator"
+      ],
+      "sdk": "iphonesimulator27.0",
+      "sizeBytes": 35094448,
+      "xcodeBuild": "27A266a"
+    },
+    "originalIdentityScope": "Attempt02 recorded executable SHA256, bundle metadata, file count and total bytes. All match now. Attempt02 did not retain a complete per-file bundle manifest; historical equality of every resource byte is not established.",
+    "currentWholeBundleManifestSHA256": "6ce76b18ea1d5aee497a91e7773a85c8464bf6f41bfd0340a12939b90752b4eb",
+    "wholeBundleManifestMethod": "SHA256 of compact sorted JSON mapping all 170 relative file paths to SHA256; symlinks use UTF-8 target bytes. Captured before and after this case, equal."
+  },
+  "commands": [
+    {
+      "name": "boot",
+      "normalizedArgv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "boot",
+        "${OWN_SIMULATOR}"
+      ],
+      "startedUTC": "2026-10-15T15:45:15.322697+00:00",
+      "endedUTC": "2026-10-15T15:45:15.896419+00:00",
+      "elapsedSeconds": 0.574,
+      "exitCode": 0,
+      "rawCommandReceiptSHA256": "b74248782fd320b73cd2367d3cdf0690db28bbe069b86b001f103013b90e8275",
+      "rawStdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rawStderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "TMPDIR"
+      ]
+    },
+    {
+      "name": "bootstatus",
+      "normalizedArgv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "bootstatus",
+        "${OWN_SIMULATOR}",
+        "-b"
+      ],
+      "startedUTC": "2026-10-15T15:45:16.044658+00:00",
+      "endedUTC": "2026-10-15T15:45:18.204288+00:00",
+      "elapsedSeconds": 2.16,
+      "exitCode": 0,
+      "rawCommandReceiptSHA256": "3097ccdc9e025e6e7992b45b4d48ea67f65bf06e27b470802998951e9b12a4d4",
+      "rawStdoutSHA256": "474a3430987f24e2439438213fd7feab340beacc250343956721fa6556db05ec",
+      "rawStderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "TMPDIR"
+      ]
+    },
+    {
+      "name": "install",
+      "normalizedArgv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "install",
+        "${OWN_SIMULATOR}",
+        "${ORIGINAL_NATIVE214_APP}"
+      ],
+      "startedUTC": "2026-10-15T15:45:42.008376+00:00",
+      "endedUTC": "2026-10-15T15:46:07.470552+00:00",
+      "elapsedSeconds": 25.462,
+      "exitCode": 0,
+      "rawCommandReceiptSHA256": "4803f55085a9b1c1e52657a8257e8a4ca2035849c27ac8e3bf212dedba93c0d4",
+      "rawStdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rawStderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "TMPDIR"
+      ]
+    },
+    {
+      "name": "launch",
+      "normalizedArgv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "launch",
+        "${OWN_SIMULATOR}",
+        "org.runstir.baseline214.NetNewsWire.iOS-DEBUG"
+      ],
+      "startedUTC": "2026-10-15T15:46:21.675654+00:00",
+      "endedUTC": "2026-10-15T15:46:24.391952+00:00",
+      "elapsedSeconds": 2.716,
+      "exitCode": 0,
+      "rawCommandReceiptSHA256": "73e7863200723d7c97746612b5fb8dca4ad68689e065bf8afc67d4c9bacae026",
+      "rawStdoutSHA256": "6fdd9865d3dc0eff773ac769db891199bbe50df851fd16948beb99573af51232",
+      "rawStderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "TMPDIR"
+      ]
+    },
+    {
+      "name": "installed-container",
+      "normalizedArgv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "get_app_container",
+        "${OWN_SIMULATOR}",
+        "org.runstir.baseline214.NetNewsWire.iOS-DEBUG",
+        "app"
+      ],
+      "startedUTC": "2026-10-15T15:46:52.719788+00:00",
+      "endedUTC": "2026-10-15T15:46:52.920191+00:00",
+      "elapsedSeconds": 0.2,
+      "exitCode": 0,
+      "rawCommandReceiptSHA256": "e9825a24de856fb960cda72380f102bbf8954b4b9d27189c7173ef92413f76f7",
+      "rawStdoutSHA256": "72cdc9d37ca50cda52a84335d27475022057faf3cb37943830a7c6d2fc850603",
+      "rawStderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "TMPDIR"
+      ]
+    },
+    {
+      "name": "terminate",
+      "normalizedArgv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "terminate",
+        "${OWN_SIMULATOR}",
+        "org.runstir.baseline214.NetNewsWire.iOS-DEBUG"
+      ],
+      "startedUTC": "2026-10-15T15:46:52.979988+00:00",
+      "endedUTC": "2026-10-15T15:46:53.224531+00:00",
+      "elapsedSeconds": 0.245,
+      "exitCode": 0,
+      "rawCommandReceiptSHA256": "d5332008e585018724ffc34b68f8194d7dc768f453d4872f2fa3738f682274ef",
+      "rawStdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rawStderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "TMPDIR"
+      ]
+    },
+    {
+      "name": "shutdown",
+      "normalizedArgv": [
+        "/Applications/Xcode.app/Contents/Developer/usr/bin/simctl",
+        "shutdown",
+        "${OWN_SIMULATOR}"
+      ],
+      "startedUTC": "2026-10-15T15:46:53.332789+00:00",
+      "endedUTC": "2026-10-15T15:46:56.606295+00:00",
+      "elapsedSeconds": 3.277,
+      "exitCode": 0,
+      "rawCommandReceiptSHA256": "24bd5b6dc6e952e245be8884103dedc50d6efe01d2b2ea449dbe856920a9b246",
+      "rawStdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rawStderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "environmentKeys": [
+        "DEVELOPER_DIR",
+        "HOME",
+        "LANG",
+        "PATH",
+        "TMPDIR"
+      ]
+    }
+  ],
+  "install": {
+    "status": "pass",
+    "exitCode": 0,
+    "installedExecutableSHA256": "377d8c1a8cdf228772558ee71041ba727297ce428650f6103679218b15fb73f2",
+    "originalBuiltArtifactUsed": true
+  },
+  "launch": {
+    "status": "pass",
+    "exitCode": 0,
+    "processObservedAlive": true,
+    "appID": "org.runstir.baseline214.NetNewsWire.iOS-DEBUG",
+    "runstir210AppID": "com.ranchero.NetNewsWire.iOS-DEBUG",
+    "identityBoundary": "These app IDs differ. This observation does not prove the #210 same-app-ID or same-tuple gate.",
+    "dataState": "Previously used own simulator and original app data retained; not a fresh-device or fresh-user-data first launch."
+  },
+  "firstScreen": {
+    "status": "pass",
+    "observedUTC": "2026-10-15T15:46:52.920693+00:00",
+    "evidence": "netnewswire-feeds-unobscured.jpg",
+    "format": "JPEG",
+    "SHA256": "ea6c678e6eca4b027feb3dab0cc3359064e0152fbf88955735dba914c9df3e9c",
+    "privateAXSHA256": "c6d888b70255f44aa13717973440a920985d1c2fb9b01ff574d92edab1e28ded",
+    "observed": "Feeds title, Smart Feeds, Today, All Unread, Starred and original stock public feed list are visible. No notification alert, crash UI, red box or blank screen is visible. Updating appears below the title; network refresh completion and full app behavior are not asserted.",
+    "notificationAlertThisAttempt": "not visible",
+    "notificationChoiceThisAttempt": "none; no permission dialog appeared, so no UI choice was made",
+    "priorNotificationAuthorization": "unknown; attempt02 choice completion was unverified. #210 notification denial concerned a different app ID and is not reused as evidence.",
+    "oldPopupHistory": "Attempt02 screenshots and inconclusive selection record remain unchanged. This attempt proves an unobscured screen only; it does not retroactively prove the earlier tap succeeded.",
+    "publicImagePrivacyReview": "Unmodified CUA screenshot. Test simulator alias, iOS version, clock, app UI, stock public feeds/counts only. No device UDID, personal local path, account or credential appears."
+  },
+  "preservation": {
+    "status": "pass-with-bounded-scope",
+    "windowStartUTC": "2026-10-15T15:45:11.103120+00:00",
+    "windowEndUTC": "2026-10-15T15:46:58.425088+00:00",
+    "existingAppCountBeforeAndAfter": 43,
+    "existingAppFullMetadataCanonicalSHA256BeforeAndAfter": "fec15fd4bfa93f4e21ea728c5168ea220caa4ce1b493a57b93d982284ace027e",
+    "existingAppNormalizedSHA256BeforeAndAfter": "b3f9e49628cf7b8dfec13cab084b3557ac1c34874a466a31919fdf0c27fbbcfd",
+    "fullMetadataComparison": "Complete parsed simctl listapps dictionary, including container paths and all returned metadata. Compact sorted JSON digest; dictionary diff empty. Raw output retained privately.",
+    "existingAppMetadataDiff": {},
+    "allSimulatorStateDiff": {},
+    "simulatorComparedFields": [
+      "state",
+      "name",
+      "deviceTypeIdentifier",
+      "isAvailable",
+      "runtime"
+    ],
+    "scopeLimit": "App-user-data contents, unreturned metadata and changes outside this 107-second window were not audited.",
+    "trackedFileCount": 1352,
+    "matchesOriginalTrackedBytes": true,
+    "trackedDigestBeforeAndAfter": "5a6d7f086849f46bc40b2ef7f95242f0e35b1354753061ffda2e34056023aef8",
+    "sourceAndIndexTree": "57d45813a3066fddd9172a417fe45b03c76040a0",
+    "rawIndexSHA256BeforeAndAfter": "7fb1e62a01189a445b608f4cefeb33d1b13388fbd8242c9669c25120d92c753c",
+    "lockSHA256BeforeAndAfter": "451402e67a2e01ab03d23ddbe7d73b2509956811e5265a689760b9d70d3e0097",
+    "trackedGitStatus": "clean",
+    "stagedDiff": "empty",
+    "packageCheckoutsBeforeAndAfter": {
+      "Sparkle": "79bc9e872948e47877e76f194cb0c8e0412b0b90",
+      "Tidemark": "2a5cd8a715ad1145d36009f5d3f146704d3f7ec0",
+      "Zip": "bca30f6d6c7d37cbc4aa8f6b0002e281dcc36195",
+      "plcrashreporter": "0254f941c646b1ed17b243654723d0f071e990d0"
+    },
+    "ignoredGeneratedSecretKey": {
+      "SHA256BeforeAndAfter": "fd57fe74abe8a4e6cccf4bad91ea2dee83a786fac7581a56fab216ab11f47a8a",
+      "ignored": true,
+      "generatorSHA256": "8c64a305bc24a28b966a23f4d8728cafa26f9b4910bd0bad311eb9af726210bc",
+      "generationThisAttempt": false,
+      "contentsPublished": false,
+      "history": "Original build generated this ignored file by the repository pre-action. The original six credential variables were removed from the native build environment. This install/launch attempt does not execute the generator or read credential values. The current ignored output hash is distinct from tracked-source evidence; no original attempt02 output hash was recorded for historical comparison."
+    },
+    "sourceAndIndexAndArtifactEqual": true,
+    "ownDeviceIdentitySHA256": "7c25d960e97f1cf0d932f7ab7b3f3a119afd9e3d8d728f12e2ace8ddb178114f",
+    "existingDeviceIdentitySHA256": "e86293ab1e9b78a5e7007ec5ab709f06e45f681d0f2df4264559039e6178e2e0",
+    "ownSimulatorInitialAndFinalState": "Shutdown",
+    "existingSimulatorInitialAndFinalState": "Booted",
+    "ownAppTerminateExitCode": 0,
+    "ownedAppPIDAbsentAfterTerminate": true,
+    "ownSimulatorShutdownExitCode": 0,
+    "globalXcodeSelectionBeforeAndAfter": "/Applications/Xcode.app/Contents/Developer",
+    "otherWorkloads": "A concurrent generic Simulator source build was observed before this case. The coordinator confirmed separate device/write targets. Its process and resources were not changed. No other app metadata or Simulator state drift was observed within this case.",
+    "leaseReturned": true
+  },
+  "installedTupleRecheck": {
+    "host": "macOS27.0.1 26A434 / Mac16,8 / arm64",
+    "xcodebuildBinarySHA256": "c493a97b720c6afabad03b00577d4387fe9b01d44e57be26caae81511e5820bb",
+    "runtimeVersion": "27.0",
+    "runtimeBuild": "24A434",
+    "runtimeMetadataSHA256": "87c0dc59cebc228fc5fee40bfacd854a3cc4dd68dce6131ba4e5c30f20a572b5",
+    "runtimeSystemMetadataSHA256": "41ca552b38198d022aefb099e3fa40c530474456933613ada8365a078ad2cf0b",
+    "sdkMetadataSHA256": "d217fa1ae2a58d197871b59b93ac5970dc6422e8782a7b486d67768285cbbffa",
+    "matchesOriginalInstalledMetadata": true,
+    "originalDistributionChecksums": "unknown; installed metadata hashes are not distribution archive hashes"
+  },
+  "evidenceCaptureIncident": "The first pre-action inventory reader could not parse simctl OpenStep plist. Raw output and successful read command were retained. The reader was corrected to use plutil conversion before the bounded-before snapshot and before any boot/install/launch. This was a capture error, not an application failure.",
+  "privateEvidence": {
+    "storageAlias": "PRIVATE214_ATTEMPT03",
+    "indexSHA256": "aefb42cd851a91a6b8ac233daaa05c15515ad2904856b19e64f311da42eca107",
+    "beforeSnapshotSHA256": "0887bfd0c34cd2d0ff270fff131c07c1d0a60c3c24311010dee9fb4b00098345",
+    "afterSnapshotSHA256": "0a744da61313af54897e2918049104c5d2cc1cafbea842c8d180334d392f6c38",
+    "finalAuditSHA256": "1b8b716270c436c39305bc68da75d9cbc201109c8a8f50d65027939cd4bea6b9",
+    "installedTupleReceiptSHA256": "df7d724c384448279e4192312c83925b65112d8bf0039a59f78cee68945ba17f"
+  },
+  "requiredUnknown": [
+    "Original Xcode distribution archive SHA256",
+    "Original iOS runtime distribution archive SHA256"
+  ],
+  "unverified": [
+    "Previous notification choice and current authorization enum",
+    "Historical equality of unrecorded attempt02 bundle resource bytes",
+    "Runstir CLI and GUI AC05",
+    "Physical device",
+    "macOS26.6 execution",
+    "Preserved VM",
+    "Fresh user-data launch",
+    "Full feature behavior and long-running stability",
+    "Release readiness"
+  ],
+  "issueCompletion": "#214 remains OPEN; overall inconclusive. Apple login request remains withdrawn."
+}

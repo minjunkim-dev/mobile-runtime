@@ -1,0 +1,210 @@
+{
+  "AppleLoginRequestWithdrawal": "unchanged; no account/credential access requested",
+  "acceptanceScope": "Separate installed App Store bundle and signed host Restore DMG representations were pinned before the new native baseline. Root confirmed separate-context contract Spec review with zero findings and granted execution. The original prepin receipt itself remains unchanged.",
+  "attemptID": "214-20261016-04",
+  "exclusions": [
+    "XIP/PKG original archive SHA unknown",
+    "Vendor-published whole-Xcode-bundle checksum not established",
+    "MAS receipt stat-only; no read/decode/hash",
+    "Two omitted PkgInfo origins unknown",
+    "Unreadable runtime modelmanagerd subtree excluded from metadata inventory",
+    "No complete runtime plaintext tree hash",
+    "No original catalog archive equality",
+    "No new full Xcode/runtime rehash during baseline or publication"
+  ],
+  "historicalVerdict": "Earlier attempts remain inconclusive; this is a new representation and new baseline, not a retroactive archive-checksum substitution.",
+  "prepinUTC": "2026-10-16T03:41:05.885999+00:00",
+  "privatePrepinSHA256": "93ad655b95b357fa489c92d49fa0ad0e7e6a55ba4cf70c8be25df31f9f1eac70",
+  "runtime": {
+    "CDHash": "03a47797eb34efc8e9de415849b228fadacf33ac",
+    "OSPayload": {
+      "architectureFiles": [
+        "Contents/Resources/RuntimeRoot/usr/lib/dyld_sim",
+        "Contents/Resources/RuntimeRoot/System/Library/CoreServices/SpringBoard.app/SpringBoard"
+      ],
+      "build": "24A434",
+      "coreCodeArchitectures": [
+        "arm64"
+      ],
+      "version": "27.0"
+    },
+    "SHA256": "5136453f500b73dc3518f262d8a51e4be0c136e38a550998febf7759de6ba0fd",
+    "authorityChain": [
+      "macOS Software Signing",
+      "Apple Code Signing Certification Authority",
+      "Apple Root CA"
+    ],
+    "binding": {
+      "independentTwoPlaintextTreeHashComparisonPerformed": false,
+      "method": "The existing installed runtime bundle is the same filesystem object under the exact DMG-backed read-only, unshadowed volume. This is backing-image identity, not an independent comparison of two plaintext trees.",
+      "sameFilesystemObject": true,
+      "shadowPathPresent": false,
+      "sourceReadOnly": true,
+      "volumeReadOnly": true
+    },
+    "bytes": 8067000161,
+    "catalogRepresentationBytes": 8053150208,
+    "catalogWireArchiveEqualsThisRestoreDMG": "not established; representations must remain separate",
+    "codesignStrictExitCode": 0,
+    "finalSourceCheckUTC": "2026-10-16T03:38:47.608558+00:00",
+    "finalSourceRehashMatchesInitial": true,
+    "guest206ExportRelation": "A separate guest-export representation; matching recorded fields do not establish original catalog/download archive equality.",
+    "metadataInventory": {
+      "boundaryMeaning": "Listed counts and bytes exclude unreadable descendants. No permission changes or further retries.",
+      "completePlaintextInventoryClaim": false,
+      "directories": 228320,
+      "finishedAtUTC": "2026-10-16T03:35:51.616374+00:00",
+      "fullPlaintextHashPerformed": false,
+      "metadataManifestSHA256": "94ded53b532df158a31262d780ef89d2a959ac1a8e34e8957a9be3256fa2dfc1",
+      "regular": 576775,
+      "regularBytes": 17333966220,
+      "scope": "One final metadata-only scan. No regular-file content read. Symlinks and other filesystem boundaries are not followed. Previously denied subtree was not retried. No user device container or user key data accessed.",
+      "symlinks": 261,
+      "unreadableOrDifferentFilesystemBoundaries": [
+        {
+          "errno": 13,
+          "kind": "initial-permission-denied-not-retried",
+          "path": "Contents/Resources/RuntimeRoot/private/var/db/modelmanagerd"
+        }
+      ]
+    },
+    "originalCatalogDownloadArchiveChecksum": "unknown",
+    "packagingMetadataKeptSeparate": {
+      "DTPlatformBuild": "23A344",
+      "DTPlatformVersion": "14.0",
+      "assetBundleShortVersion": "1.0.0",
+      "runtimeBundleShortVersion": "392",
+      "runtimeBundleVersion": "392"
+    },
+    "representation": "host installed MobileAsset restore DMG; separate from catalog/download archive and guest exported DMG observations",
+    "sourceAlias": "${HOST_RUNTIME_RESTORE_DMG}/043-70362-657.dmg"
+  },
+  "schemaVersion": 1,
+  "xcode": {
+    "CDHash": "4b64db30979f5ba4a76018d8084991d566b8f4ed",
+    "DTXcodeBuildFromInfoPlist": "27A266",
+    "MASReceipt": {
+      "exists": true,
+      "policy": "stat-only in restricted evidence; no receipt bytes read, decoded or hashed",
+      "publicStatValues": "withheld; raw receipt metadata remains private"
+    },
+    "authorityChain": [
+      "Apple Mac OS Application Signing",
+      "Apple Worldwide Developer Relations Certification Authority",
+      "Apple Root CA"
+    ],
+    "bundleVersion": "25183.107.5",
+    "codesignDeepStrictExitCode": 0,
+    "fulltree": {
+      "archiveIdentity": "This is a pinned installed Xcode.app representation, not an original XIP/PKG archive checksum.",
+      "changedInputs": [],
+      "directories": 29868,
+      "finishedAtEpoch": 1792120770.766021,
+      "finishedAtUTC": "2026-10-16T03:19:30.766021+00:00",
+      "manifestSHA256": "39083c4c2ce5740154ce48a238226957326c88caa97adbe72a21915c0b1b625a",
+      "namesModesSymlinksAndPerRegularFileHashesPinned": true,
+      "regularBytesHashed": 10236890127,
+      "regularHashed": 125827,
+      "regularInventoryCountIncludingReceipt": 125828,
+      "schemaVersion": 1,
+      "scope": "Every inventory regular file except Contents/_MASReceipt/receipt is content hashed. No symlink is followed. MAS receipt is stat-only. The 15 sealed Python vendored fixture/CA resources are classified as non-user credentials by parent authorization and included without content output.",
+      "seconds": 52.279,
+      "semanticManifestSHA256": "7e0eae08c2b7eec61fdd0936f3413f79772df58a9dca3ad739ecfc13f4827e45",
+      "semanticTreeSHA256": "7e0eae08c2b7eec61fdd0936f3413f79772df58a9dca3ad739ecfc13f4827e45",
+      "startedAtEpoch": 1792120718.487207,
+      "statOnlyExcluded": 1,
+      "symlinks": 11140
+    },
+    "identifier": "com.apple.dt.Xcode",
+    "installReceipts": {
+      "IDs": [
+        "com.apple.pkg.Xcode",
+        "com.apple.pkg.XcodeSystemResources",
+        "com.apple.pkg.CLTools_Executables"
+      ],
+      "scope": "pkgutil package metadata only; not original installation archive or MAS receipt bytes"
+    },
+    "omittedPkgInfo": [
+      {
+        "SHA256": "82502191c9484b04d685374f9879a0066069c49b8acae7a04b01d38d07e8eca0",
+        "bytes": 8,
+        "classification": "omitted package metadata; source chronology unknown",
+        "control": "Contents/_CodeSignature/CodeResources",
+        "explicitlyListed": false,
+        "matchingResourceRules": {
+          "^.*": true,
+          "^PkgInfo$": {
+            "omit": true,
+            "weight": 20.0
+          },
+          "^[^/]+$": {
+            "nested": true,
+            "weight": 10.0
+          }
+        },
+        "path": "Contents/PkgInfo"
+      },
+      {
+        "SHA256": "e079b5c8da7c98ad0b93984550aa9cbe921d34d1a3d7e25d1410d9c74f5dad83",
+        "bytes": 8,
+        "classification": "omitted package metadata; source chronology unknown",
+        "control": "Contents/SharedFrameworks/DeviceKit.framework/Versions/A/PlugIns/CarPlaySimulator.devicekitplugin/Contents/_CodeSignature/CodeResources",
+        "explicitlyListed": false,
+        "matchingResourceRules": {
+          "^.*": true,
+          "^PkgInfo$": {
+            "omit": true,
+            "weight": 20.0
+          },
+          "^[^/]+$": {
+            "nested": true,
+            "weight": 10.0
+          }
+        },
+        "path": "Contents/SharedFrameworks/DeviceKit.framework/Versions/A/PlugIns/CarPlaySimulator.devicekitplugin/Contents/PkgInfo"
+      }
+    ],
+    "originalXIPOrPKGChecksum": "unknown",
+    "preservation": {
+      "hashReadInputChanges": 0,
+      "limit": "Full content hashing occurred once. The later no-change check compares names/type/mode/size/mtime/ctime/symlink targets, not a second content hash.",
+      "metadataChanges": 0,
+      "metadataEntriesAfter": 166836,
+      "metadataEntriesBefore": 166836
+    },
+    "productBuildVersionFromVersionPlist": "27A266a",
+    "productVersion": "27.0",
+    "regularNotExplicitlyResourceListed": {
+      "CodeResourcesSignatureControls": 527,
+      "MASReceiptStatOnly": 1,
+      "MachOCodeDirectoryMetadataVerified": 532,
+      "bundleInfoPlistsWithPairedCodeResources": 76,
+      "count": 1146,
+      "externalSignatureControls": 8,
+      "meaning": "These categories use distinct signing/control mechanisms or explicit omissions. Absence from a CodeResources resource list does not prove post-install addition. The two omitted PkgInfo origins remain unknown. The fulltree pins observed bytes separately from origin classification.",
+      "omittedPkgInfo": 2
+    },
+    "representation": "installed Apple-signed Mac App Store Xcode.app bundle; separate from original XIP/PKG archive",
+    "resourceSeal": {
+      "CodeResourcesControls": 999,
+      "checkedHashEntries": 359098,
+      "checkedSymlinkEntries": 19053,
+      "explicitEntries": 378745,
+      "mismatches": 0,
+      "missing": 0,
+      "nestedCodeTargets": 594,
+      "rootCodeResourcesSHA256": "eb5d1041e8b47cba1ad458c5338796052a941b764e829fb0195b04cc80926d8a",
+      "uniqueExplicitTargetPaths": 134438
+    },
+    "spctlAssessment": "accepted; source=Mac App Store",
+    "spctlAssessmentExitCode": 0,
+    "teamIdentifier": "59GAB85EFG",
+    "vendorPublishedWholeBundleChecksum": "not established",
+    "vendoredPEMClassification": {
+      "count": 15,
+      "fileContentOutput": false,
+      "matchingSeals": true,
+      "type": "Apple-sealed Python vendored test fixtures or certifi CA resources; not user keys"
+    }
+  }
+}

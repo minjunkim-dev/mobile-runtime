@@ -133,6 +133,62 @@ struct ResourceLeasesTests {
             }
         }
         #expect(conflict.key == claim.app)
+        try leases.releaseAfterTeardown(device: device, project: claim.owner.project)
+        #expect(!FileManager.default.fileExists(atPath: leases.file(device, "claim").path))
+    }
+
+    @Test("verified owned runtime teardown releases only its own claim file", arguments: [false, true])
+    func releaseOwnedRuntime(confirmed: Bool) throws {
+        let leases = store()
+        let device = ResourceKey.device(.android, "avd:Pixel")
+        let first = owner("first")
+        if confirmed {
+            try leases.record(ResourceClaim(device: device, platform: .android, handle: "emulator-5554",
+                appID: "com.first", owner: first))
+        } else {
+            try leases.reserve(device: device, owner: first)
+        }
+        let held = try leases.acquire([device], owner: first)
+        defer { held.release() }
+        let lock = leases.file(device, "lock")
+        let lockBytes = try Data(contentsOf: lock)
+        try leases.releaseAfterTeardown(device: device, project: first.project)
+        #expect(!FileManager.default.fileExists(atPath: leases.file(device, "claim").path))
+        #expect(try Data(contentsOf: lock) == lockBytes)
+        try leases.releaseAfterTeardown(device: device, project: first.project)
+    }
+
+    @Test("runtime teardown preserves another project's reservation", arguments: [false, true])
+    func releaseOtherRuntime(confirmed: Bool) throws {
+        let leases = store()
+        let device = ResourceKey.device(.android, "avd:Pixel")
+        let first = owner("first", project: "/work/first")
+        if confirmed {
+            try leases.record(ResourceClaim(device: device, platform: .android, handle: "emulator-5554",
+                appID: "com.first", owner: first))
+        } else {
+            try leases.reserve(device: device, owner: first)
+        }
+        let file = leases.file(device, "claim")
+        let data = try Data(contentsOf: file)
+        #expect(throws: ResourceConflict.self) {
+            try leases.releaseAfterTeardown(device: device, project: "/work/other")
+        }
+        #expect(try Data(contentsOf: file) == data)
+    }
+
+    @Test("runtime teardown preserves an unreadable claim")
+    func releaseUnreadableRuntime() throws {
+        let leases = store()
+        let device = ResourceKey.device(.android, "avd:Pixel")
+        try FileManager.default.createDirectory(at: leases.directory, withIntermediateDirectories: true)
+        let file = leases.file(device, "claim")
+        let data = Data("unreadable fixture".utf8)
+        try data.write(to: file)
+        #expect(throws: ResourceConflict.self) {
+            try leases.releaseAfterTeardown(device: device, project: "/work/a")
+        }
+        #expect(try Data(contentsOf: file) == data)
     }
 
     @Test("a claim for a different device stays unknown without observing or deleting it")
@@ -152,6 +208,10 @@ struct ResourceLeasesTests {
         }
         #expect(conflict.key == device)
         #expect(conflict.owner == nil)
+        #expect(try Data(contentsOf: file) == data)
+        #expect(throws: ResourceConflict.self) {
+            try leases.releaseAfterTeardown(device: device, project: claim.owner.project)
+        }
         #expect(try Data(contentsOf: file) == data)
     }
 

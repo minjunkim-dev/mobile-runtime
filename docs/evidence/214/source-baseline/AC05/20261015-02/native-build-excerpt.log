@@ -1,0 +1,10 @@
+# Public excerpt, not the complete raw log. Paths are redacted.
+# NetNewsWire attempt 214-20261015-02
+# Complete private raw UTF-8 log SHA256:
+# 55467fd5bdd9b54d3230c6e31a05f83c5314af2f6749eb83d867f11edb45311f
+$PRIVATE214/netnewswire/Modules/RSTree/Package.swift: RSTree-product: clang: warning: using sysroot for 'macOS 27.0' but targeting 'arm64-apple-ios17.0.0-simulator' [-Wincompatible-sysroot]
+$PRIVATE214/netnewswire/Modules/RSDatabase/Package.swift: RSDatabase-product: clang: warning: using sysroot for 'macOS 27.0' but targeting 'arm64-apple-ios17.0.0-simulator' [-Wincompatible-sysroot]
+# Similar warnings occur for other original local packages. No warning was removed.
+** BUILD SUCCEEDED **
+exitCode=0
+elapsedSeconds=223.896

@@ -1,0 +1,9 @@
+{
+  "algorithm": "SHA256",
+  "files": {
+    "commands.md": "43e4db9efbc363629d4a69e5583dc0986fdcea1a6263852164b1d7426a0391c9",
+    "native-command-excerpt.log": "596790003c2c4b8fa8d17ac3466fc961820e51d05690baf94cfb9b48dd3abc37",
+    "netnewswire-feeds-unobscured.jpg": "ea6c678e6eca4b027feb3dab0cc3359064e0152fbf88955735dba914c9df3e9c",
+    "results.json": "44a1a1f6d77e6028f50593285ac81697081bfa71096010d4ee44954dd848c0d9"
+  }
+}

@@ -1,0 +1,2128 @@
+{
+  "schemaVersion": 1,
+  "status": "final-selected-private-file-index",
+  "snapshotAtEpoch": 1792119128.9667761,
+  "method": "SHA256 of explicitly selected private receipt, PNG and unit-log file bytes. Runtime and manager raw stdout/stderr logs, full-host ps outputs, raw Emulator logs and authentication files are excluded from public content and hash indexes. Only enumerated bounded PID/port/control probe stdout/stderr hashes are included. No authentication key bytes were read. Files excluded from this public index remain private and were not deleted.",
+  "files": [
+    {
+      "ref": "${RUN211}/screenshots/nia-v4-cli-after-prep-launch-observation.png",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "ref": "${RUN211}/screenshots/nia-v4-cli-first-screen-initial.png",
+      "bytes": 191946,
+      "SHA256": "9464b5f2ff2239790705c684d4f837e587e2f776a2cdab2d9325faba30ef775c"
+    },
+    {
+      "ref": "${RUN211}/screenshots/todo-v4-cli-first-screen.png",
+      "bytes": 56346,
+      "SHA256": "178f4ed4191ea7ffcd4c870aa2edc97b3768f05b75f39f3f6c34bb1d0b4db4df"
+    },
+    {
+      "ref": "${RUN211}/screenshots/todo-v4-gui-first-screen.png",
+      "bytes": 56493,
+      "SHA256": "2608d74aa6b75cec490f4c905f4a8265ad7f75467cc7a112cf2b17fd27b51a84"
+    },
+    {
+      "ref": "${RUN211}/state/audit-before-baselineNIACache.json",
+      "bytes": 12130329,
+      "SHA256": "639dba4fc212ecbc5e2e86e6c7ada9dd1ff2aa8033375f36e0747ee65e517325"
+    },
+    {
+      "ref": "${RUN211}/state/audit-before-baselineTodoCache.json",
+      "bytes": 5951593,
+      "SHA256": "8ddc80d3d1d2129910888cecf88c21ad7ef2f537b291f5ab890a1c27723422c7"
+    },
+    {
+      "ref": "${RUN211}/state/audit-before-globalAndroid.json",
+      "bytes": 2079,
+      "SHA256": "e5a65ee7cd755cbfbbc3073c4ce446c0b0e764acbc8e7dd6ae6bbd3013c4c477"
+    },
+    {
+      "ref": "${RUN211}/state/audit-before-globalLeases.json",
+      "bytes": 270670,
+      "SHA256": "a76f9e66e9c6826f5b906d5468a89cf0b85ecbc4c34d422a3ebe9b08ae6f07a4"
+    },
+    {
+      "ref": "${RUN211}/state/audit-before-globalSDK.json",
+      "bytes": 25981567,
+      "SHA256": "3ffdcfc7e9e63e9d7b3c875493372a2b420002a1e563a63d03e3b7d7d5701724"
+    },
+    {
+      "ref": "${RUN211}/state/audit-before-nia-cli.json",
+      "bytes": 218140,
+      "SHA256": "ee69e3234b2f08b4e79ac98aefb2f40f382a19e7c6a1150643d3bcbcbd044feb"
+    },
+    {
+      "ref": "${RUN211}/state/audit-before-nia-gui.json",
+      "bytes": 218139,
+      "SHA256": "d7028da3bc610317953825f5b771510d2ce3fb91a95409801567cbbf3c1f57f9"
+    },
+    {
+      "ref": "${RUN211}/state/audit-before-original-nia.json",
+      "bytes": 218079,
+      "SHA256": "d66bd9e2562b3c82888c8973875440e23164a42f68a832773c1d69bb610737b8"
+    },
+    {
+      "ref": "${RUN211}/state/audit-before-original-todo.json",
+      "bytes": 35156,
+      "SHA256": "fc950b9061dbae10130d2bff3b03224f4285f03aa030c2bfb08a5d178c7e85e0"
+    },
+    {
+      "ref": "${RUN211}/state/audit-before-selectedHost.json",
+      "bytes": 1001,
+      "SHA256": "671eefec64172f4b5a635cd87a231b99a16e745f2b091007c2ccf38e052e07fd"
+    },
+    {
+      "ref": "${RUN211}/state/audit-before-todo-cli.json",
+      "bytes": 35216,
+      "SHA256": "363c1a508458e1da54457f38b662d80f7a292a6a387fbce1bb805e3ed546f6cf"
+    },
+    {
+      "ref": "${RUN211}/state/audit-before-todo-gui.json",
+      "bytes": 35216,
+      "SHA256": "7bb838d0802b99d7d930c49cdfbb4e9d8e62f625342b5f46ea11e4644009342e"
+    },
+    {
+      "ref": "${RUN211}/state/candidate-v2.json",
+      "bytes": 770,
+      "SHA256": "53ddb7b3d54d9eefd383cf3984064d5c533de0c2aa034672d8c65afb0e6ca392"
+    },
+    {
+      "ref": "${RUN211}/state/candidate-v3.json",
+      "bytes": 968,
+      "SHA256": "de95a3e7955ac9636ec8f61e2dbb3d979b7c210c03c3c117c43221cf76e6c302"
+    },
+    {
+      "ref": "${RUN211}/state/candidate-v4.json",
+      "bytes": 1137,
+      "SHA256": "31a9078bb4970b545e201d9be28f4748e2fd739282e868d66dd1a327d4e21fe3"
+    },
+    {
+      "ref": "${RUN211}/state/cli-resource-packaging-correction.json",
+      "bytes": 1072,
+      "SHA256": "5c3d91caf6441864ea5ea6eff0c1915477b17182a14c168b525e279cdb7d47c7"
+    },
+    {
+      "ref": "${RUN211}/state/emulator-startup-guard-failure-excerpt.json",
+      "bytes": 669,
+      "SHA256": "477e4803b4047a6fb1d50a9a06e9afd4a03ebcd6c510c7eed841973e7fb8c85f"
+    },
+    {
+      "ref": "${RUN211}/state/first-screen-human-review-v4.json",
+      "bytes": 1912,
+      "SHA256": "0a25708b836920c386b2316984f2dace135b7ac149af7f066b8c9411f735237c"
+    },
+    {
+      "ref": "${RUN211}/state/fresh-source-handoff-215.json",
+      "bytes": 7087,
+      "SHA256": "75dffe1aace71d1344850c8cd1a54e384623502f33f97d4771990e4d17de3e08"
+    },
+    {
+      "ref": "${RUN211}/state/gui-after-quit-cua-relaunch.json",
+      "bytes": 503,
+      "SHA256": "81713a20113fc4506bf5604865269bf480a45358cd6cba77f4d2ae83aaa05936"
+    },
+    {
+      "ref": "${RUN211}/state/gui-v4-nia/command.json",
+      "bytes": 2460,
+      "SHA256": "3e1e21d37756aea281be88a32983e9cf194408f154ea5b82da9d36ed653aca7b"
+    },
+    {
+      "ref": "${RUN211}/state/gui-v4-nia/pid.json",
+      "bytes": 88,
+      "SHA256": "9f86c6c059f1fdeb2b65b32e25a37771ae9b5c41e98be7f904706151fb758227"
+    },
+    {
+      "ref": "${RUN211}/state/gui-v4-observations.json",
+      "bytes": 5504,
+      "SHA256": "0dd98c91b6a803d897e7806aa20c253acd5168c702bad11f4aaf07042afe251d"
+    },
+    {
+      "ref": "${RUN211}/state/gui-v4-todo/command.json",
+      "bytes": 2456,
+      "SHA256": "830faba5a1a9957ae96d8b2603a5eec853dca38eac8afe6ec8ae92633bbd37b5"
+    },
+    {
+      "ref": "${RUN211}/state/gui-v4-todo/exit.json",
+      "bytes": 62,
+      "SHA256": "257e08759b05798f482656fa27d7ba295499abb311e67a8ce1fcc78c79d5f837"
+    },
+    {
+      "ref": "${RUN211}/state/gui-v4-todo/pid.json",
+      "bytes": 88,
+      "SHA256": "35e7b322031fbeeda841c39704d14dc68788dccbedc6b22792fbfb5efdb45e7c"
+    },
+    {
+      "ref": "${RUN211}/state/gui-v4r1-todo/command.json",
+      "bytes": 2456,
+      "SHA256": "a6c9ff7ce930910078b897018babbacaf73bdb4f7a6c6449732a1ba6f8a6966e"
+    },
+    {
+      "ref": "${RUN211}/state/gui-v4r1-todo/exit.json",
+      "bytes": 63,
+      "SHA256": "c9f47ebb183973e39ba88bbb1d8f301689c5a94c2e6c897179774ac7617b7d92"
+    },
+    {
+      "ref": "${RUN211}/state/gui-v4r1-todo/pid.json",
+      "bytes": 89,
+      "SHA256": "49d15570446f0d225bf681a26b9e98e8399b755b393d7ac0874d0d8bb1be6bde"
+    },
+    {
+      "ref": "${RUN211}/state/input-tuple-before-config.json",
+      "bytes": 16437,
+      "SHA256": "934f87b35f5f002540fb077f14aa7be44eef7d437c010981b39ce73cd993f335"
+    },
+    {
+      "ref": "${RUN211}/state/nia-doctor/command.json",
+      "bytes": 2385,
+      "SHA256": "a9e19d777e11564a66e62e65fcd1173dad8af6cea6d925241d6cb629e06ff227"
+    },
+    {
+      "ref": "${RUN211}/state/nia-doctor/pid.json",
+      "bytes": 109,
+      "SHA256": "5f6fa5d3afaa880d35937806a57d5a5b67c13b6828afe5b5bad227ea4a6ee1ab"
+    },
+    {
+      "ref": "${RUN211}/state/nia-doctor/result.json",
+      "bytes": 195,
+      "SHA256": "06a03a58fef901b9b23e6ea02c8f03c40d218fb8d39c23d60525269f3e190d5b"
+    },
+    {
+      "ref": "${RUN211}/state/nia-doctor-isolation-fixed/command.json",
+      "bytes": 2388,
+      "SHA256": "71dc27ec3d8aad41c4dcce55ba7b0fc5bb9cee8f63ae0f0006dc93487e742e78"
+    },
+    {
+      "ref": "${RUN211}/state/nia-doctor-isolation-fixed/pid.json",
+      "bytes": 111,
+      "SHA256": "6afc7bed2d8594bc7741127b94c7afe18bf3e5167008cd19fccd8f4282a60e26"
+    },
+    {
+      "ref": "${RUN211}/state/nia-doctor-isolation-fixed/result.json",
+      "bytes": 196,
+      "SHA256": "8e276dd5ce4778c36d34a02feb4b15e972148ab980429f8bf13423b7314630a2"
+    },
+    {
+      "ref": "${RUN211}/state/nia-missing-variant-input-change.json",
+      "bytes": 464,
+      "SHA256": "415dfd7badf0935ff6c014115eb1cfd508d7be54dc9bef471c80395073f37297"
+    },
+    {
+      "ref": "${RUN211}/state/nia-selection-config-restored.json",
+      "bytes": 245,
+      "SHA256": "b9aa7d7382e492ee6969892a8df9eb186b8c8dc5fcf43e620c365c1c2e6805c1"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v3-missing-variant/command.json",
+      "bytes": 2483,
+      "SHA256": "d9ad0a4c37c6415f0dcc97038217a6e89abfab0616d5e39a3eb9876513fdf69b"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v3-missing-variant/pid.json",
+      "bytes": 111,
+      "SHA256": "8af9443ec3b16a5899e0ea77b98699920bec1489938f8ffe117766cb64f8a6af"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v3-missing-variant/result.json",
+      "bytes": 1636,
+      "SHA256": "6c270f7f3482491b23af58f9927b7c8ceb2455a1496d3a35c8897d2f7715c86e"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v3-unknown-variant/command.json",
+      "bytes": 2528,
+      "SHA256": "38d42883b7c0f19cb7ee90879775e5d4e23530f408755c618eae5c646b09e4bd"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v3-unknown-variant/pid.json",
+      "bytes": 109,
+      "SHA256": "a42950ad6b07ee336ad600c490e5d93a15113ca3e9a804992eb8022d6618da87"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v3-unknown-variant/result.json",
+      "bytes": 1544,
+      "SHA256": "23c9832b8c2bffa3909fc2a884fe4e05503801f3f427c5099f17e9b1ba165d4d"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-already-stopped-down-native-ps/command.json",
+      "bytes": 2356,
+      "SHA256": "6e3818b89fe32fbb63a4ef1012e463fa6a27a9cd8535cb4d61f31ba1b74b572b"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-already-stopped-down-native-ps/pid.json",
+      "bytes": 112,
+      "SHA256": "6bcfd8ad3ad9561b2523a72ac1ad1b464a550cafadf2a3dc1db6ad6353a4fe2a"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-already-stopped-down-native-ps/result.json",
+      "bytes": 1427,
+      "SHA256": "da40849ff2973ab6e1db62d65bee9219982c811654541cbd38676ed4dceb703f"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-already-stopped-owned-pid-native/command.json",
+      "bytes": 2146,
+      "SHA256": "70d89670e22f314a3ac7a798afdabded8e32665a485c214f97221036bd7ad2bf"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-already-stopped-owned-pid-native/pid.json",
+      "bytes": 112,
+      "SHA256": "a15e8077e6ab3262a18bec2d04cf2718bbf90ebbc8ced8516cc94fb30f3c9940"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-already-stopped-owned-pid-native/result.json",
+      "bytes": 100,
+      "SHA256": "793e78ba347b649242350264bde73df54fddbcd59af641d3c8d43ba9e7245be3"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-already-stopped-owned-pid-native/stderr.log",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-already-stopped-owned-pid-native/stdout.log",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-build-cancel/command.json",
+      "bytes": 2483,
+      "SHA256": "0993c980a472e7c2873279198c13660f201d0a1373dd1d78c9afb146a1993358"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-build-cancel/pid.json",
+      "bytes": 110,
+      "SHA256": "5de29d00209d68ff4244099c6f421bc3257d18ce9924b57572cd02ff42e677f1"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-build-cancel/result.json",
+      "bytes": 1913,
+      "SHA256": "31efe139b8262bdf3bb6eb0f1aef1e4305b030a697fd2a298e396b1b55e2bee0"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-build-retry/command.json",
+      "bytes": 2483,
+      "SHA256": "3008418321df0f77ed3adc53b6a8457436aca5e12ca1b89c5c11481c7c3db7e8"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-build-retry/pid.json",
+      "bytes": 111,
+      "SHA256": "0170de3f89d350d968947f4611f4bf7767b40ed90ab98a077baad9b2dcf37cae"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-build-retry/result.json",
+      "bytes": 1610,
+      "SHA256": "035a1860a52585b6b5a583a2fd5944d3a5fd42924465ebcd4eed136af20f716b"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-apk.json",
+      "bytes": 718,
+      "SHA256": "de0c8767a2c5df9b066498fa80a28bb36502c1f37fff5e09b32627378d841b3e"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-initial/capture.json",
+      "bytes": 1487,
+      "SHA256": "ebbcc171c9d28517b1eb0ab5bf8fbe86423bb86d091641dc0427303c6d2b5aeb"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-initial-activity/command.json",
+      "bytes": 2416,
+      "SHA256": "dad7686e7b2917cf5c9973c3999d297eb12616fe2acfebeb01b3d54d25257b05"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-initial-activity/pid.json",
+      "bytes": 111,
+      "SHA256": "34af1fa484829aec9d410a92f2570ff239b9db8501264ca337ba3defa64ea7ba"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-initial-activity/result.json",
+      "bytes": 101,
+      "SHA256": "ea6f74e9fc24a4f277db04f8a336a9f2c7ea5c628d78c68dcabf3f1a1eb6054b"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-initial-focus/command.json",
+      "bytes": 2399,
+      "SHA256": "f83cc6e5670aa07ff35eb81c8ce9511607cc753223a28755aa0d1ae1d4c1ecc5"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-initial-focus/pid.json",
+      "bytes": 112,
+      "SHA256": "f4ad9719662a5cac2d9649c408c4c99275e11de4f607d03104fb52063430a566"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-initial-focus/result.json",
+      "bytes": 100,
+      "SHA256": "8c36452e557ddd9786f3d2d906851ac0d70fce437e6d70d0a5bf32456c95858f"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-initial-installed/command.json",
+      "bytes": 2418,
+      "SHA256": "701b278382242e77821f418f58b95a95d6dd75eb4c8904b2f46454941d10aaad"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-initial-installed/pid.json",
+      "bytes": 111,
+      "SHA256": "d992a481ad10474bf53fce155202cca25547a814ad61f52268aa3fad4491a69c"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-initial-installed/result.json",
+      "bytes": 100,
+      "SHA256": "82f2015c8279129b160736987a4276a1e065cfcdae16bc2c900a2df1469125d7"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-initial-package/command.json",
+      "bytes": 2446,
+      "SHA256": "000f5bb2fbfa8087103109f887d6a5869d8edd4dbc7f9c6744fe30b97da807c5"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-initial-package/pid.json",
+      "bytes": 109,
+      "SHA256": "4f6e7a8c91957c7216e5140a9793cc6eda4d96d89cfe05e772bbb23f2c2d1cc9"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-initial-package/result.json",
+      "bytes": 100,
+      "SHA256": "5eca17eed73a96ecfd9a70099a3e1c8f34b9d1bc31c67336c549bf8662f6208e"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-initial-pid/command.json",
+      "bytes": 2436,
+      "SHA256": "d32c8284f655c76d177c28c9180d5bffa984b42046eab76ccc596a697335503a"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-initial-pid/pid.json",
+      "bytes": 111,
+      "SHA256": "65c7b605b2577a39dc71f9a322aa995ca346ab9e5196b4c1c2e3d2b76171aff0"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-initial-pid/result.json",
+      "bytes": 124,
+      "SHA256": "f2ac5d07f51076836d039505429813f53ce81755feb74fcaa2b2a57473ed4c53"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-initial-reverse/command.json",
+      "bytes": 2386,
+      "SHA256": "c46e5a6695af8ab8f3116c0665e955fd3a692de027f64831198547d881b66119"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-initial-reverse/pid.json",
+      "bytes": 111,
+      "SHA256": "207b91f7089cd6efd66e42baccb5ee45302acd84dcf6dd2af97fef7d43d7c229"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-initial-reverse/result.json",
+      "bytes": 100,
+      "SHA256": "3a4dd63f6b72106b894f3707a69fdffa70608fdd3446bfccecc628aa43bc86bc"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-initial-runtime/command.json",
+      "bytes": 2384,
+      "SHA256": "71c67ea4508fbf4aacb4399563b90f6cb20441cea9d58935fe265baaf363a7dc"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-initial-runtime/pid.json",
+      "bytes": 112,
+      "SHA256": "411344a637f6c863b8db6341ac1939149459f9b1b53d817e3aea8f0fd21f0247"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-initial-runtime/result.json",
+      "bytes": 100,
+      "SHA256": "16bdb74eeaf063d0d7daed82413bf556c6afe8bfa432e09c7f3efae722da35d1"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-notification-denied-fixed/command.json",
+      "bytes": 2543,
+      "SHA256": "6faffe953279ea906775ee4f10b657bd7954df708bc535892e86ff4804dd4614"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-notification-denied-fixed/pid.json",
+      "bytes": 111,
+      "SHA256": "b1c514b9c07fec463cdc57ffcb30b193af6361bdfa96d0f41f7a308929f2282c"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-notification-denied-fixed/result.json",
+      "bytes": 101,
+      "SHA256": "1140de03688cfba0549591aa7f328577a671eb925ed36ba409aa0f088242acc4"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-notification-revoke/command.json",
+      "bytes": 2495,
+      "SHA256": "6c70be589ad3802d0446eb47f717298a51ca028ab7f0c7bf0d05a2bc71a518b2"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-notification-revoke/pid.json",
+      "bytes": 112,
+      "SHA256": "aae32818c4f4c281ca8b9f0325532778e39925c9e4701d7b99eabf166c48deea"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-notification-revoke/result.json",
+      "bytes": 100,
+      "SHA256": "bd0d7d15fe689051312e0744442f8ce066df1958ba216b257b66ffee53382fd9"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-down-initial/command.json",
+      "bytes": 2482,
+      "SHA256": "e13741089997e3b84bca4cb95cb4f8eb0ebd4617acf85daa0e7e9a7f9d43f80a"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-down-initial/pid.json",
+      "bytes": 111,
+      "SHA256": "ec78800770dc0e94aa592b4441096234bb9428b894423c0219187cc6dd777640"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-down-initial/result.json",
+      "bytes": 1477,
+      "SHA256": "0e91bee09ef36c43ed932c7879b5569f36762e180d53d3af4f64dbc155f777a2"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-up/command.json",
+      "bytes": 2479,
+      "SHA256": "2ca5d2bfa426dc5c54c9b77fa05a28b61d4f60b3214c4fd53acb11c8bc696807"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-up/pid.json",
+      "bytes": 110,
+      "SHA256": "0fa2a9663f18dae9e878663a6c978c57b916c35cacbb1de0618bff08f8161b46"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-up/result.json",
+      "bytes": 1852,
+      "SHA256": "d5088b9dba77dc88704b192e9027fdd1b8f48ea835cb8fde18e471b8d79b7092"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-up-after-notification-prep/command.json",
+      "bytes": 2480,
+      "SHA256": "6cff35f4955d3b936a8141b0d84d05b33fe8f2bf108fb08259e647e66d0e5921"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-up-after-notification-prep/pid.json",
+      "bytes": 111,
+      "SHA256": "bae01aaa71fb17c17dba218f56baeb0e99f7db8e45d9b3eafe3f5df4615cee3e"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-up-after-notification-prep/result.json",
+      "bytes": 2019,
+      "SHA256": "78391d8dc717100aabfef47ff4491c296c0bb2eca9e88582300ea39edb03e7f0"
+    },
+    {
+      "ref": "${RUN211}/state/prepare-checkout-nia-cli.json",
+      "bytes": 450,
+      "SHA256": "3cce0f909b44a536977e3177da1222fdff6be918481a52508e4b10f80fd54042"
+    },
+    {
+      "ref": "${RUN211}/state/prepare-checkout-nia-gui.json",
+      "bytes": 450,
+      "SHA256": "0f0832c99c0c874541660b29ef0bb59d8a621b725c19bf5c60f6cd6ff38108a4"
+    },
+    {
+      "ref": "${RUN211}/state/prepare-checkout-todo-cli.json",
+      "bytes": 433,
+      "SHA256": "a3c5a6fb0c941d15407c3ceb1ad4aae91eabf581b9503b027327cae500eedad5"
+    },
+    {
+      "ref": "${RUN211}/state/prepare-checkout-todo-gui.json",
+      "bytes": 433,
+      "SHA256": "f40f66226f9308e417f31702281d50db4b296922fd772b3817c13067bf5d84cd"
+    },
+    {
+      "ref": "${RUN211}/state/prepare-clone-nia-cli.json",
+      "bytes": 555,
+      "SHA256": "69db0b1c5be54fea68c70195fcd7fe838f660204368a0062868472145b00e242"
+    },
+    {
+      "ref": "${RUN211}/state/prepare-clone-nia-gui.json",
+      "bytes": 554,
+      "SHA256": "ee26cd43b9190de59dd6a2ca7d98a40476f560cecdd360b2d8840608f461982d"
+    },
+    {
+      "ref": "${RUN211}/state/prepare-clone-todo-cli.json",
+      "bytes": 557,
+      "SHA256": "911111883f21fd660c7304ed5050c5016009d64727458412f21d0cec298cf36b"
+    },
+    {
+      "ref": "${RUN211}/state/prepare-clone-todo-gui.json",
+      "bytes": 557,
+      "SHA256": "bcb519ab42e3f17a7b546d04102462957ebed2703205ef4a3d330d8e5ad74116"
+    },
+    {
+      "ref": "${RUN211}/state/todo-build/command.json",
+      "bytes": 2429,
+      "SHA256": "3fc13268c837483853b15c804c5e1bb391d987bbf497f3dda488a54b7992b20d"
+    },
+    {
+      "ref": "${RUN211}/state/todo-build/pid.json",
+      "bytes": 108,
+      "SHA256": "47b26c8a4d5d799d835896f5d748a72a517a5652e4593ea943c20914621ecd36"
+    },
+    {
+      "ref": "${RUN211}/state/todo-build/result.json",
+      "bytes": 1645,
+      "SHA256": "a98da3784bbe2d738aa21a5921ebd9bc2edf6dbb7623095a5fa80797651805c1"
+    },
+    {
+      "ref": "${RUN211}/state/todo-build-owned-logs/command.json",
+      "bytes": 2432,
+      "SHA256": "691e191fd17776804f7e0c1d66505b653862f72294cb1df31b70b72e0ce963c3"
+    },
+    {
+      "ref": "${RUN211}/state/todo-build-owned-logs/pid.json",
+      "bytes": 112,
+      "SHA256": "4518d8ed105c7308d00b7a66a426e3429432a5bdc542f91b668613454e50219e"
+    },
+    {
+      "ref": "${RUN211}/state/todo-build-owned-logs/result.json",
+      "bytes": 1560,
+      "SHA256": "2f17d8d728181935ffa4988c834858d7767b299cd6f51101cdb92839caa0f005"
+    },
+    {
+      "ref": "${RUN211}/state/todo-cli-apk.json",
+      "bytes": 709,
+      "SHA256": "77162a167a4b73ee20f483cc303c109f73b788217897bfc22413b89842b3d63d"
+    },
+    {
+      "ref": "${RUN211}/state/todo-cli-down/command.json",
+      "bytes": 2505,
+      "SHA256": "9917c238c1b72c574c8b2e93943002de5850854982059a69e94205cc995fa1b9"
+    },
+    {
+      "ref": "${RUN211}/state/todo-cli-down/pid.json",
+      "bytes": 112,
+      "SHA256": "e631298bf084108b482074672b8d633d6faae79fb49a4a57d3e7e1148a1da235"
+    },
+    {
+      "ref": "${RUN211}/state/todo-cli-down/result.json",
+      "bytes": 1481,
+      "SHA256": "8761a0618adc2c49e40dc5d5a94b570a10d80834a4a982f89bbaa41a68b88411"
+    },
+    {
+      "ref": "${RUN211}/state/todo-doctor-correct-args/command.json",
+      "bytes": 2383,
+      "SHA256": "5204a984662423ce9936a7e745f95dc9158c9728118b3586cbf6df4230edbd13"
+    },
+    {
+      "ref": "${RUN211}/state/todo-doctor-correct-args/pid.json",
+      "bytes": 111,
+      "SHA256": "114f45eeea09b82f42d8bc5e1135bec9cf59ba61465e0165fcecadf2ac76e852"
+    },
+    {
+      "ref": "${RUN211}/state/todo-doctor-correct-args/result.json",
+      "bytes": 101,
+      "SHA256": "769a85187cfe91104c052d53c478565b4634f1ea058aac7c12372ac72842107f"
+    },
+    {
+      "ref": "${RUN211}/state/todo-doctor-initial/command.json",
+      "bytes": 2405,
+      "SHA256": "921f9108fbda8f13b460dca858f517400e02015a0526e3bcbc992eb0c04072c3"
+    },
+    {
+      "ref": "${RUN211}/state/todo-doctor-initial/pid.json",
+      "bytes": 111,
+      "SHA256": "30e9172dda2602264a27b72040442e38b7b1337de86ed2df32462b21737672d6"
+    },
+    {
+      "ref": "${RUN211}/state/todo-doctor-initial/result.json",
+      "bytes": 101,
+      "SHA256": "0828547a7a0680cc15d0fc5c4ed846d8b1574db977ddf328a01225c2a3c189a3"
+    },
+    {
+      "ref": "${RUN211}/state/todo-doctor-resources-fixed/command.json",
+      "bytes": 2382,
+      "SHA256": "855f042d1300fe3c5ffed362b86befd1f0e79424710a67b7a1cbf21f2084c8b9"
+    },
+    {
+      "ref": "${RUN211}/state/todo-doctor-resources-fixed/pid.json",
+      "bytes": 111,
+      "SHA256": "9b56b7322a33b4dcb46c6cce96187c8cddc7fc53d6fe7b95d6c93402024051f4"
+    },
+    {
+      "ref": "${RUN211}/state/todo-doctor-resources-fixed/result.json",
+      "bytes": 195,
+      "SHA256": "23211663380663f7be68b94ab13bbbd31899796e2b69c95fa959c3f1370969ca"
+    },
+    {
+      "ref": "${RUN211}/state/todo-doctor-temp-permission/command.json",
+      "bytes": 2383,
+      "SHA256": "5f1dcb28199300566ae54df39c683a492ac00417cb0ef9db2a9f1bba2f1ffeef"
+    },
+    {
+      "ref": "${RUN211}/state/todo-doctor-temp-permission/pid.json",
+      "bytes": 111,
+      "SHA256": "8436c8a8fb0ff302e41c27c874cad274a5d3517fade46633ddc66a995552219c"
+    },
+    {
+      "ref": "${RUN211}/state/todo-doctor-temp-permission/result.json",
+      "bytes": 195,
+      "SHA256": "e95ccace30e2005c0355ff1066ae168e7ab9d20cb9c7d6bf0b70029b4d9ec00f"
+    },
+    {
+      "ref": "${RUN211}/state/todo-setup-plan/command.json",
+      "bytes": 2382,
+      "SHA256": "1aba489832ae2a3cca468f50ce8739da93553a989aa0cb4a9611ec27a48aa331"
+    },
+    {
+      "ref": "${RUN211}/state/todo-setup-plan/pid.json",
+      "bytes": 111,
+      "SHA256": "cfb10b3b4193a8c698b61d6d68b41a2e884fd245b140e6ac83a512d343389c94"
+    },
+    {
+      "ref": "${RUN211}/state/todo-setup-plan/result.json",
+      "bytes": 2257,
+      "SHA256": "f6617a1724d96a4e6f2abcea9c6dae48b6e18e8227baa136669f915c90aa3a25"
+    },
+    {
+      "ref": "${RUN211}/state/todo-up/command.json",
+      "bytes": 2473,
+      "SHA256": "23c717a522351804d8504d7a64a58e08a24260f8df6b64726dac77cef8607e84"
+    },
+    {
+      "ref": "${RUN211}/state/todo-up/pid.json",
+      "bytes": 112,
+      "SHA256": "5f4470761c37d679a9568ccd085878713da32dcc0d49fe9d860995315d3df1e0"
+    },
+    {
+      "ref": "${RUN211}/state/todo-up/result.json",
+      "bytes": 1792,
+      "SHA256": "7eb88ae1a7f6f4f2f5fb14c0799502a477bf84dd6d4eb9659542fc4158f3e637"
+    },
+    {
+      "ref": "${RUN211}/state/todo-up-internal-temp/command.json",
+      "bytes": 2491,
+      "SHA256": "9de5089f3781c692c9be3a5b7e1f71e20379ce3225dc089e065d770c7b33d83c"
+    },
+    {
+      "ref": "${RUN211}/state/todo-up-internal-temp/pid.json",
+      "bytes": 111,
+      "SHA256": "a283c986ca2c20435dfe411515f0edd8deb2ac9fd3cf0233fd145d6a132ca915"
+    },
+    {
+      "ref": "${RUN211}/state/todo-up-internal-temp/result.json",
+      "bytes": 1791,
+      "SHA256": "5fb009bf180b7bd7f3028116b6e3bee4afb9fb79e17273e0ed1ef3b0df1e5adf"
+    },
+    {
+      "ref": "${RUN211}/state/todo-up-owned-home/command.json",
+      "bytes": 2546,
+      "SHA256": "1e61e147ae77147c4f33334d27a7db0009203579b2cd311028acf4aa53e64282"
+    },
+    {
+      "ref": "${RUN211}/state/todo-up-owned-home/pid.json",
+      "bytes": 111,
+      "SHA256": "71a6780112079079afe32abe36434605a39b347bcea897a65b2a1dc6901882cf"
+    },
+    {
+      "ref": "${RUN211}/state/todo-up-owned-home/result.json",
+      "bytes": 1802,
+      "SHA256": "a956add1de67b76d8cc4139ef1ef952900a5ea2c268f4f4cd727c1341242c50a"
+    },
+    {
+      "ref": "${RUN211}/state/todo-up-scoped-foundation/command.json",
+      "bytes": 2491,
+      "SHA256": "d3768a3889024e6e3957041bdd3c5089fdf8ea5399d56c1603a39ecb6648defd"
+    },
+    {
+      "ref": "${RUN211}/state/todo-up-scoped-foundation/pid.json",
+      "bytes": 111,
+      "SHA256": "89f193931ff12e8bb9cc6aeef70e4b110b117b621ecc725cb541d0e33cdf2d87"
+    },
+    {
+      "ref": "${RUN211}/state/todo-up-scoped-foundation/result.json",
+      "bytes": 1836,
+      "SHA256": "adfdc26fae865643878ab94a38c58180df1e12128b301126751a43aaee13d9ba"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v3-build-cancel/command.json",
+      "bytes": 2481,
+      "SHA256": "a8460412bcb29fcbae0bd4b992b248e68c728f3687b5c097c4f67f5f6d041898"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v3-build-cancel/pid.json",
+      "bytes": 111,
+      "SHA256": "2b2d480846c7de7059592084fb8b2321f3ccb1f60aff01850284cb4d81967e1a"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v3-build-cancel/result.json",
+      "bytes": 1866,
+      "SHA256": "27abb698c7881e6d7655b2d41ae0fee172426a347482cad2bb4aa58bae3c76ce"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v3-cli-apk.json",
+      "bytes": 713,
+      "SHA256": "197bb0557bc60b6dc869eadc5176a6458413b32385cbda099392b53dc3ed7608"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v3-down/command.json",
+      "bytes": 2479,
+      "SHA256": "35e9c54742803b4573f4c096a462c86a46ae2b4ba3e139e287b8fd600994134d"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v3-down/pid.json",
+      "bytes": 111,
+      "SHA256": "e8359a423fd7256e9613a29e13f6303a1a2b93d2137e749870a9c40357e33d96"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v3-down/result.json",
+      "bytes": 1481,
+      "SHA256": "75ff9edfd883b1badd47024898f220d4746e49e8260ef9411100ef3f6ff9b058"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v3-down-claim-observation.json",
+      "bytes": 273,
+      "SHA256": "cf6d7b109f32cfd468ddc35c84d6073112c5c0eff84692d9976b9248dedbb184"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v3-up/command.json",
+      "bytes": 2478,
+      "SHA256": "ad870c7150a5e9fa842ef10245bcf9bec6605ea65447a60a4f3bbdbe44c8d4fe"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v3-up/pid.json",
+      "bytes": 111,
+      "SHA256": "8b0a4cb5dbfe8ff18d40c03954648c05e796bfb50dbbf78b531d7a1463775252"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v3-up/result.json",
+      "bytes": 1802,
+      "SHA256": "d70460d5d82a62fcda65f82d0e38ad68ca77883586dd50b3a7e81d103a5caefb"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-apk.json",
+      "bytes": 712,
+      "SHA256": "167986dc83a954c93899bbbbb321e22be52f07c7d1d87acbb37a2580b0737ed5"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-conflict-gui/command.json",
+      "bytes": 2477,
+      "SHA256": "322349e981ef69841f61b1803544cd600d1e2ae320f32cdeaf1422f6356628a5"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-conflict-gui/pid.json",
+      "bytes": 111,
+      "SHA256": "745972ea1be5190726bec6daf937f49153e513405e5e449d004ac6eb407dc46d"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-conflict-gui/result.json",
+      "bytes": 2522,
+      "SHA256": "be24b731d6439f9cb7ab26b914fc408119e5b70f6d8a5b11cdfe317a4868caca"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-conflict-gui-pid-after/command.json",
+      "bytes": 2437,
+      "SHA256": "4a3c8485674112311ff889230618b826f8a8b529ed781dcbe33d9837fa104a74"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-conflict-gui-pid-after/pid.json",
+      "bytes": 111,
+      "SHA256": "65053071685beccba9994b7e9916691ad8afe38556b966f6fabe22be0a2ecc53"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-conflict-gui-pid-after/result.json",
+      "bytes": 125,
+      "SHA256": "73aefce632658c768647295f9d07603f5d2e58cc6bd6bf3a5b5d0296f57b1867"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-first-screen/capture.json",
+      "bytes": 1470,
+      "SHA256": "2d7a6687f1e0441cce5f915164f528edfd806c000375890ef19fda546a74a042"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-first-screen-activity/command.json",
+      "bytes": 2413,
+      "SHA256": "e74d27a6119116c125a26a78bf0f6483e2ee2319468207cfbeeee62639548a67"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-first-screen-activity/pid.json",
+      "bytes": 111,
+      "SHA256": "8d0db8b04bbc354a0aa32e3067350e4b374d30d7d6e4276d1677e5aaa10d3eb8"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-first-screen-activity/result.json",
+      "bytes": 100,
+      "SHA256": "ad549221ed3dd00caf6b89134eb9d46cecbcebce35c94236fc027ffedf86755d"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-first-screen-focus/command.json",
+      "bytes": 2395,
+      "SHA256": "f8a6f49b11555f476582e388f75c4bd9acfcccdaa62fa57ee8e3d895816de70f"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-first-screen-focus/pid.json",
+      "bytes": 111,
+      "SHA256": "27513d34e7cd4469991e0d1c23bdaaa2a4d57455e0f83bcf04f8aa298b37ed19"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-first-screen-focus/result.json",
+      "bytes": 99,
+      "SHA256": "646de736e28483d8ca704c83f4c63bfe935951293277e9f66816e3c095e10ad9"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-first-screen-installed/command.json",
+      "bytes": 2414,
+      "SHA256": "90e8817de982640eb7637c3225f6e4b0f58cea2270fff91ce2cb95f25aa93514"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-first-screen-installed/pid.json",
+      "bytes": 112,
+      "SHA256": "17739b1b206e63d9077dfa4389305932156fc0cc7774ab4ce5332ed9bb6b6a07"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-first-screen-installed/result.json",
+      "bytes": 101,
+      "SHA256": "ee6e69c71ccb5a5ab074b589cf399d76440955193a11bfe81555bd89687c04da"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-first-screen-package/command.json",
+      "bytes": 2444,
+      "SHA256": "01596b634f3a7da8961ab41c6017e39fae8b84581bd5d444db671ff035b8f924"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-first-screen-package/pid.json",
+      "bytes": 112,
+      "SHA256": "34fb3b50ddced4fd3ff3f8124e398fec2af97e8cbccbae4b2a88cda055456381"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-first-screen-package/result.json",
+      "bytes": 99,
+      "SHA256": "fd650da28f56632303eff321b60c1d62080a26f1523e8ee69e134a79bb8c4b70"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-first-screen-pid/command.json",
+      "bytes": 2435,
+      "SHA256": "aaeadaec58c1a57ce203a2d66c07d9dbbb943215c4a09bcc0839a7d8d171b126"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-first-screen-pid/pid.json",
+      "bytes": 111,
+      "SHA256": "6227cc78cb54a6611e746f85a6ec4ac343352d01a82c6c28f56cdddfcbe5e9f5"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-first-screen-pid/result.json",
+      "bytes": 123,
+      "SHA256": "31736721aea7c1ee2de82c075623e6e8e4822f764517d74beb191d8fcdfe2f74"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-first-screen-reverse/command.json",
+      "bytes": 2381,
+      "SHA256": "6c919ef95c8d1e5acc5fea225b9e522d9a9f8a0402e55e48d19752bc51273db0"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-first-screen-reverse/pid.json",
+      "bytes": 111,
+      "SHA256": "3f5fe295628b81d97c9cf87930d26580d28643debce808fc9737df8adf69e95e"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-first-screen-reverse/result.json",
+      "bytes": 101,
+      "SHA256": "155bd506d86eb332bb448ecf80ad2f43699638a016da73cebb71c55f579dfc4c"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-first-screen-runtime/command.json",
+      "bytes": 2380,
+      "SHA256": "3fae16376ca8070706b364bf0a4092b9593da5dfac710259072afff4410874e9"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-first-screen-runtime/pid.json",
+      "bytes": 111,
+      "SHA256": "74acb306ac5bd7e3126a1b3ddb306d569e0def4f3ffca3d6ec276bbc6fde8b1c"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-cli-first-screen-runtime/result.json",
+      "bytes": 100,
+      "SHA256": "c47a66a49e3159513511ef878c3323c0271a1f309d4ff4acc78ff535f21c080e"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-down/command.json",
+      "bytes": 2478,
+      "SHA256": "198db2069a9fb9acfcacfbbf6b9eda71aea95ae8f34e92eb33aefd20b00c3f2e"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-down/pid.json",
+      "bytes": 111,
+      "SHA256": "1476eefcf1cc911613531fa7ed7d2a02bf45395ca6ac58c567f51b7b68d43a39"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-down/result.json",
+      "bytes": 1481,
+      "SHA256": "832626102097bb4a64b128626188a415ba3cb2d22e93990734fad52f37718a01"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-apk.json",
+      "bytes": 713,
+      "SHA256": "8be281275c32849830b0cbc6caf53f0d09e1b592de66bae464acc9777a4ee764"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-conflict-cli-pid-after/command.json",
+      "bytes": 2436,
+      "SHA256": "ea79f21f04401ce9df67c521f560fcc7c059c8c82e65d6eb754cd0cbd40ad04d"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-conflict-cli-pid-after/pid.json",
+      "bytes": 111,
+      "SHA256": "7703919771810fab9aade619e6e7bc903e7c58d755f6f8c7300c186b615c49f4"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-conflict-cli-pid-after/result.json",
+      "bytes": 125,
+      "SHA256": "d1a60ba0f03b29949340937840c22da23ffa67902f8cebd15e7f9b2b1ca8c559"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-down-claim.json",
+      "bytes": 86,
+      "SHA256": "2e8af11f58e25cc585dabda503fa89b9d3904d55b0d794be52de3fa45edffd0a"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-down-port-5554/command.json",
+      "bytes": 2152,
+      "SHA256": "672b960af2c360dd6ec8d511207af46a0cbedddf27a701cbfb05cdf34251ece8"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-down-port-5554/pid.json",
+      "bytes": 111,
+      "SHA256": "44818bc292147615642228496d4d0eca23a64e8e42320201e48e045547c7746e"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-down-port-5554/result.json",
+      "bytes": 101,
+      "SHA256": "4d7896a7ba01d89d8520ccc1fdfe04657b0a6e7cb1b7a6d4a503c50dc6959cf9"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-down-port-5555/command.json",
+      "bytes": 2152,
+      "SHA256": "4962532dbcff2e5465da1d96286337fd2e7634a5a9fc582fd255a0645c10f589"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-down-port-5555/pid.json",
+      "bytes": 112,
+      "SHA256": "a06e1d013b692d3b39b34566624d656257e14399b424dcd6df8d9a19285cc08c"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-down-port-5555/result.json",
+      "bytes": 100,
+      "SHA256": "87c79761ff98d15774f4fec755e831d757b9c1c24af727f8f50ff16e5c1eb431"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-first-screen/capture.json",
+      "bytes": 1473,
+      "SHA256": "2c49fd43c52ea2a83bfd8ee66efdbe078466efc2dfca94a72bfd7d0352087fd3"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-first-screen-activity/command.json",
+      "bytes": 2413,
+      "SHA256": "acec5ec41c92d651a21d739ee84907910a362a45f4123d09682bc80e8981f7bc"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-first-screen-activity/pid.json",
+      "bytes": 111,
+      "SHA256": "b4479bb61c095614f72722129797b8b9904df079367803560fb1e074c053b4eb"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-first-screen-activity/result.json",
+      "bytes": 100,
+      "SHA256": "6d99cf049e479a916e684ab8509d3003de35cfd5cc0b5b5ac96a365c99e7f5b7"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-first-screen-focus/command.json",
+      "bytes": 2394,
+      "SHA256": "d6bbcab85f7aa6337cdd7f8c38dcc2bef8bde452047cb62bf543c7739a407714"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-first-screen-focus/pid.json",
+      "bytes": 112,
+      "SHA256": "f1008b9f80499cad96d197eef3cfd534b88c7a891fa3f58c94d59cc95ef0709f"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-first-screen-focus/result.json",
+      "bytes": 100,
+      "SHA256": "9666581a06dd90d21919e07b8a25fbbb00d3adee74f674a850f905bbac555f7d"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-first-screen-installed/command.json",
+      "bytes": 2412,
+      "SHA256": "fcc3a5697a73e7d81f79082f5fdbb1933cfd052baa6baca0a46a74b848f4eba5"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-first-screen-installed/pid.json",
+      "bytes": 111,
+      "SHA256": "f13f9771243d758073446a605053be748c0dca8d35e73322d09ca950b994d9d5"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-first-screen-installed/result.json",
+      "bytes": 100,
+      "SHA256": "611ab2015af0eefeea4b53727ce115f6c4a97c1a9de037870188c50902364c21"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-first-screen-package/command.json",
+      "bytes": 2444,
+      "SHA256": "c0386703dea18637708be06c802716e67a8a7b35ab4846f053aadb3e6b7a91cb"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-first-screen-package/pid.json",
+      "bytes": 112,
+      "SHA256": "24a376e4e488c5f4546e4b6feda315d238915fc88576b8feb3c36b196a02965d"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-first-screen-package/result.json",
+      "bytes": 100,
+      "SHA256": "a795fb5959f8a88d8e20151eb875233d3c59c20d2966fdf1681bd61c278b9f82"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-first-screen-pid/command.json",
+      "bytes": 2434,
+      "SHA256": "cb9cb6e663b1b3d01b9d36e201c62c88f13a9038437b4b97dabf80ac18e16871"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-first-screen-pid/pid.json",
+      "bytes": 111,
+      "SHA256": "5776b5aaf4ba5b38d2dfade6b150a11a857777518df02dc641d17963d2f2a76c"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-first-screen-pid/result.json",
+      "bytes": 125,
+      "SHA256": "fcef99a73c61469411f204daf01bd7e5d8efd032d66f8c2f142938e604d1abd4"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-first-screen-reverse/command.json",
+      "bytes": 2380,
+      "SHA256": "88aa6ea39125369995ba912befd52edb76e2d1ba952079e31737c8071f1130d8"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-first-screen-reverse/pid.json",
+      "bytes": 111,
+      "SHA256": "47fff448dd30269ae889656b08a2fdfa89899e51ff448dd7f48d12ee5cbe5b98"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-first-screen-reverse/result.json",
+      "bytes": 100,
+      "SHA256": "e3e801b57c53363fc67a5d652905f6e5a94a3722ce3cdc477b59cf1a5a8a7880"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-first-screen-runtime/command.json",
+      "bytes": 2380,
+      "SHA256": "9f78bc10e0e46e0f906785715e7f009adaf55e021bc250e0ebef293ecfa3d69d"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-first-screen-runtime/pid.json",
+      "bytes": 111,
+      "SHA256": "6da38f6bcb699d47f15d1df9d67284a37321ee9fdf94a677e0fedfd164060dad"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-gui-first-screen-runtime/result.json",
+      "bytes": 100,
+      "SHA256": "8fc6c49c38f1cc41a24d0b160acd161d97042f69cef60edb2fc9374c222139db"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-up/command.json",
+      "bytes": 2476,
+      "SHA256": "3c1d29d2cb96ed58e754b59d2afbfe1637fc7a61933d92edde2f9baefa0e4cc3"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-up/pid.json",
+      "bytes": 111,
+      "SHA256": "b4c4a57f70854e2c07e6027ee3e596ddf390a5b6ce9372deeb8fbcda0c42c502"
+    },
+    {
+      "ref": "${RUN211}/state/todo-v4-up/result.json",
+      "bytes": 1802,
+      "SHA256": "9222b947c1520b0d1da670229e2f207b8c32493ed0daabbbcbd6dfb64c7fd543"
+    },
+    {
+      "ref": "${RUN211}/state/wrapper-pin-nia-cli.json",
+      "bytes": 362,
+      "SHA256": "a2403c1cbeeadde9553ab85e9e9edbead13db1c2774d9aab7485640ebeb9c31c"
+    },
+    {
+      "ref": "${RUN211}/state/wrapper-pin-nia-gui.json",
+      "bytes": 363,
+      "SHA256": "331495b827bdf9dd2446b25c82a144977bb0ee879fc29535ef6c4594b51da69b"
+    },
+    {
+      "ref": "${RUN211}/state/wrapper-pin-todo-cli.json",
+      "bytes": 367,
+      "SHA256": "376a56bb4750467b32a85b7e2cc853815e969613a7f2f17902da92e585848b96"
+    },
+    {
+      "ref": "${RUN211}/state/wrapper-pin-todo-gui.json",
+      "bytes": 367,
+      "SHA256": "3daa141f0e1cde7463f4290b1f69855492d9afbd21228a9534f151042c7da89a"
+    },
+    {
+      "ref": "${NATIVE215}/state/input-tuple-before-config-v1.json",
+      "bytes": 16508,
+      "SHA256": "9cd0c718f6d63206d8ff636cc772097fb40879272feca0ec345249332f01c1ac"
+    },
+    {
+      "ref": "${NATIVE215}/EVIDENCE-SHA256-v1.json",
+      "bytes": 56408,
+      "SHA256": "5317cb97ab8bdc02cf61475ef8e9df840bbcc151888454297e9d8e275e1e1ed1"
+    },
+    {
+      "ref": "${UNIT_LOGS}/runstir211-input-path-red02.log",
+      "bytes": 8628,
+      "SHA256": "18dbc37bb3af417411ae6c4955a84cc06122d0fb6515f5d7f586ae3bab318cd6"
+    },
+    {
+      "ref": "${UNIT_LOGS}/runstir211-input-path-related-green.log",
+      "bytes": 12372,
+      "SHA256": "7373e1b6f02022c0e5d283dcbb13360aa3d0d87b46042a75558729339bc661f6"
+    },
+    {
+      "ref": "${UNIT_LOGS}/runstir211-owned-down-claim-red02.log",
+      "bytes": 2274,
+      "SHA256": "adffbcd115d6ab8fbafbfadf6dade88073d6f2c98dd1dcefb31b19fb8653cab6"
+    },
+    {
+      "ref": "${UNIT_LOGS}/runstir211-owned-down-claim-related-green.log",
+      "bytes": 10697,
+      "SHA256": "5d75326a1faf9d4463715c5a4008a69a514dc264ffc1e068959a56dcad7b7568"
+    },
+    {
+      "ref": "${UNIT_LOGS}/runstir211-already-stopped-red02.log",
+      "bytes": 4853,
+      "SHA256": "17028c983880ae6a89fd4dcdfe24715789a0efecba4b55d4ebb4f97418402c94"
+    },
+    {
+      "ref": "${UNIT_LOGS}/runstir211-already-stopped-related-green.log",
+      "bytes": 23528,
+      "SHA256": "476fd3182969db25f6a6df11a4fea0c3470c0efc508c12c747ab69ce4c76f0c0"
+    },
+    {
+      "ref": "${UNIT_LOGS}/runstir211-already-stopped-related-green02.log",
+      "bytes": 23370,
+      "SHA256": "7a8b13d52c783c7f6cac5d2caafe6b8b3f5041e03eb53b3edb6901e54b40855e"
+    },
+    {
+      "ref": "${UNIT_LOGS}/runstir211-already-stopped-full-werror.log",
+      "bytes": 145609,
+      "SHA256": "3a08095ba7672efc684abcdf3238771603e5111af64291ca140e141ca2af34e4"
+    },
+    {
+      "ref": "${UNIT_LOGS}/runstir211-isolated-werror.log",
+      "bytes": 140844,
+      "SHA256": "b5779692a20a30b18065f3e5d4a008b3338ce3ff3cb3754ae5a58368fb1563c0"
+    },
+    {
+      "ref": "${UNIT_LOGS}/runstir211-cleanup-werror.log",
+      "bytes": 143546,
+      "SHA256": "29ac088ec734d7be694a66fe3a92fcd668664729d86b2d80616512ebbf2182b0"
+    },
+    {
+      "ref": "${UNIT_LOGS}/runstir211-v4-doctor-input.log",
+      "bytes": 65,
+      "SHA256": "2bd2116680690859fa36c3eaf4947e39d0aafeef9399eec6d8709288b0a25474"
+    },
+    {
+      "ref": "${UNIT_LOGS}/runstir211-v4-setup-input.log",
+      "bytes": 122,
+      "SHA256": "cbc2e74c9490593dd9805dc6251b19f934972c76662f8d17c73e8cf8d65367c8"
+    },
+    {
+      "ref": "${UNIT_LOGS}/runstir211-v4-workflow-input.log",
+      "bytes": 79,
+      "SHA256": "6ca0d009e4a297358a0822b12950453350c1e52027bf417bdd2fc0c6b0d34b31"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-up-cold-boot/result.json",
+      "bytes": 1852,
+      "SHA256": "cded6ee6626e184637513077c4c3eeee752f32215ccacdc7a985bb5451d46fb9"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-up-cold-boot/command.json",
+      "bytes": 2480,
+      "SHA256": "a85396db7be648f8d87f8ce668ec9838dd4f2b02e28db471707bf50f9b02fd7e"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-up-cold-boot/pid.json",
+      "bytes": 111,
+      "SHA256": "b0ba388fa32f24ff0cbe6d4da44ac73b2fac319d31264d328995f5f533d62e2b"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-activity/result.json",
+      "bytes": 101,
+      "SHA256": "083d28141c844b84ed7a19573df92f80b2b0579053b05db18c65e9588c2bee5a"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-activity/command.json",
+      "bytes": 2418,
+      "SHA256": "96ff9225d61112bcdbafe7b29e5df6db59b2d9258a8b28ea76510164398e803b"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-activity/pid.json",
+      "bytes": 111,
+      "SHA256": "0ba43bf6eddc3355a8105a4e6c3f99e1d565a48607ceaf49d8c753f89adec51c"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-focus/result.json",
+      "bytes": 101,
+      "SHA256": "dd55ae6a52dc561b0c472f4704e64a3e2ac63b219fcf755e45256f8b0ec6a680"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-focus/command.json",
+      "bytes": 2398,
+      "SHA256": "de5a84fbe383ce3ccbf6376fba8e9c5b2aa56ce30a36f11bfbd8330ef78cf603"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-focus/pid.json",
+      "bytes": 111,
+      "SHA256": "5ba9c3200516493cdff75d95fc166aeb377759dfa08f72ee3166f06ca95c001d"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-installed/result.json",
+      "bytes": 100,
+      "SHA256": "0746c6d878bd7f5bcb98bfce240a3c7b3e027990c26bac89a3cd37468dda3234"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-installed/command.json",
+      "bytes": 2417,
+      "SHA256": "d5b1dfc31191412a6cd5886f0e69ce8f2f8870e69c3aaaf6bd2e5d39a633f936"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-installed/pid.json",
+      "bytes": 112,
+      "SHA256": "5514871fac235b9177a4b9945a4c5d182a42ae8ae5bdbfd4e441bca6c4531b78"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-package/result.json",
+      "bytes": 101,
+      "SHA256": "00f59a166d37f60bd9c67bb2717f727ff109a0eed66c5fb529618d98d2c099c3"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-package/command.json",
+      "bytes": 2446,
+      "SHA256": "7a479209d5d8df586879cc4c08b1b46f731dbca4c1fadd9d118033216cc04950"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-package/pid.json",
+      "bytes": 111,
+      "SHA256": "75bb8c1a4ea9a7d53d42388db6238c45db855f311d8734be6f186a017f59dcd2"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-pid/result.json",
+      "bytes": 100,
+      "SHA256": "5293bfc26c933a266b466c3d0d7d5730eb88b9e2e4b0702ffba64b165267ef45"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-pid/command.json",
+      "bytes": 2437,
+      "SHA256": "ce4e134493fb15be4c3ace08381d7c131f9be39206c1a24802212b3aa7f96db3"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-pid/pid.json",
+      "bytes": 111,
+      "SHA256": "9de8537ab633d8a12473af831848ffb93f5bdcc17e843410a5789d7794a79ec0"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-reverse/result.json",
+      "bytes": 101,
+      "SHA256": "f19af226165d263ea09e285c5339dc96466fc8ead929268752a7da2046730418"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-reverse/command.json",
+      "bytes": 2385,
+      "SHA256": "9a9477ee91c4a01e0e3cbbb0ac15ff1a6e6028c4f2fae2cceac54b0ca6396218"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-reverse/pid.json",
+      "bytes": 111,
+      "SHA256": "5e5f949f245bc8d03ba544f91f1071b692abdf410225b87adabb26d8e6b2da5d"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-runtime/result.json",
+      "bytes": 101,
+      "SHA256": "2381e9df682b25415ed348540981b9025250d220857648832c36429274437e02"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-runtime/command.json",
+      "bytes": 2384,
+      "SHA256": "1ef75efd007bd866fa141de007ca7a195ef8d004901a4c0c9d94b255eb642447"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-runtime/pid.json",
+      "bytes": 111,
+      "SHA256": "bf36e8447aadb17b77d8437eb2cfcf57f922caafe706c3aeeeb3d395632f6484"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-after-launch-timeout-active-run.json",
+      "bytes": 463,
+      "SHA256": "90b7b5aca0d0fce1532a2e9fccc5f8722b6470904ec5e58c3537349aec0a8547"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-avd-before-cold-boot.ini",
+      "bytes": 3579,
+      "SHA256": "a792622ca6ac0843c0c69fcbd1031dc7ffb02dbe2672ad6229f80718afe2d0e0"
+    },
+    {
+      "ref": "${UNIT_LOGS}/runstir211-input-path-red.log",
+      "bytes": 13071,
+      "SHA256": "2feb5d144c98e01c56860152f2116cf4e5fda1f36df0297b5f0e361c608ccdd8"
+    },
+    {
+      "ref": "${UNIT_LOGS}/runstir211-owned-down-claim-red.log",
+      "bytes": 12054,
+      "SHA256": "9a3cc20483232bfd00f7f364f3b667322d7225861b12c3e9ba0ba634285ff1d4"
+    },
+    {
+      "ref": "${UNIT_LOGS}/runstir211-already-stopped-red.log",
+      "bytes": 11056,
+      "SHA256": "d87e487d91b37f0d941dd2ddc28d29404eb22399c1d0d17ff5c329e9dd4fa48e"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-settled-runtime/result.json",
+      "bytes": 99,
+      "SHA256": "d39e9aea189efc9d6a1592f0101824cd2822a183b8bc9765d3e88320e2c45f96"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-settled-runtime/command.json",
+      "bytes": 2385,
+      "SHA256": "5b5e85087235464d3b9cf042c4e0d37fc9c18222d8e93c6e5821a1546174eef3"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-settled-runtime/pid.json",
+      "bytes": 109,
+      "SHA256": "d3134ccc460344341c97ad1ec69465db26e15cb8b3c914424ade652a82e3a0ce"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-settled-reverse/result.json",
+      "bytes": 99,
+      "SHA256": "799a20e359196763eeb83302e64122ee491ea761537ed12200312a8003c13619"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-settled-reverse/command.json",
+      "bytes": 2386,
+      "SHA256": "deb0e28ae42cabc4fec3060b8176f25b379583886a696b6eafb1a472cabb3f58"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-settled-reverse/pid.json",
+      "bytes": 109,
+      "SHA256": "5c76b6612862adc559ff1be0c31448d598b4ca05c0b2dc80d0bab728468c7999"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-settled-focus/result.json",
+      "bytes": 99,
+      "SHA256": "517451b8015978541077803c4f4b3ff5c06bf65ad467fdb12bc841d8da73c3d3"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-settled-focus/command.json",
+      "bytes": 2398,
+      "SHA256": "359c5275df8048270f5a786b8aacc7f8a8ff7ff75527f6a04681c7d2f72ba085"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-settled-focus/pid.json",
+      "bytes": 109,
+      "SHA256": "de28f3148fb7fdfbb6e3e7cfb2b48745f6d201cec67fd1dbf50687b836d45aca"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-settled/capture.json",
+      "bytes": 1478,
+      "SHA256": "b468e142ac181c555ad2dd786316829433fc8f181c4bf21691a3b30400d074c3"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-settled-activity/result.json",
+      "bytes": 99,
+      "SHA256": "143d59f867dec0ce8ac88c580befe51918198f919197745897c0cb99c21850c6"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-settled-activity/command.json",
+      "bytes": 2418,
+      "SHA256": "f7fb8ca3b29ead747db92cd62acda8958f1e8d8e9099867e9b291cf3517261dc"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-settled-activity/pid.json",
+      "bytes": 109,
+      "SHA256": "c341c14d3b062830e2479e5dcc4494b0befad185e952db0cd3fef0b7bd0a0a4b"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-settled-package/result.json",
+      "bytes": 99,
+      "SHA256": "8733d13d5e9f8b7d449bd1702fc5b88975fec8e6405142ae16638141b8c235ac"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-settled-package/command.json",
+      "bytes": 2446,
+      "SHA256": "c75e7d531b92909a6c6fefeef39b36fc03eaba64b4e7ae7a82fbf3ed4261928b"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-settled-package/pid.json",
+      "bytes": 109,
+      "SHA256": "1703054a65fd75f7cdab2903bfce4aea61fe84f1a5de19a8ba9624d50ea43759"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-settled-pid/result.json",
+      "bytes": 123,
+      "SHA256": "827c936b253441c6ffe135e9524e5d0a4835b6ea7c49fa9a0134a6fabebc0c8c"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-settled-pid/command.json",
+      "bytes": 2437,
+      "SHA256": "d5529a03479b2bae93ea94a74795fde93f599820d560c750b85efdd57deaba9b"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-settled-pid/pid.json",
+      "bytes": 109,
+      "SHA256": "5f62a1bf6c9083b37ae0cf84f49959f61e592efcbb1d88b414d9f333814cf036"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-settled-installed/result.json",
+      "bytes": 99,
+      "SHA256": "9556fb88dfaa00ed17251adb1aa6247ad49290e966e04f48c001ca880ddfe297"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-settled-installed/command.json",
+      "bytes": 2417,
+      "SHA256": "bf512a405b8c6cd7deeb284d693664d275fbaf0acaf17382a0b7ad22261fd412"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-settled-installed/pid.json",
+      "bytes": 110,
+      "SHA256": "23811c404f67ed67ca8bf8b4d3fce0fcf37837bcd3f572ef64b9f7c9aa98f6db"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-installed/result.json",
+      "bytes": 100,
+      "SHA256": "e00453485a5748b7d1109a50f031a7da2214e771b740aa246bda5354778ed33e"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-installed/command.json",
+      "bytes": 2418,
+      "SHA256": "78fff86dd68e3eff94a2f7dc853e955df0d4169abbd867b32b80d49e1964df67"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-installed/pid.json",
+      "bytes": 110,
+      "SHA256": "7b60f08ebe255b6d2ab756f326192b2973c9ec1b8e17a12fb8dad692397f3157"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-runtime/result.json",
+      "bytes": 100,
+      "SHA256": "825847aeddba1e160c7dba3215cc2dd702847949279daa686dca289702abb943"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-runtime/command.json",
+      "bytes": 2385,
+      "SHA256": "358b798ea86799c195a6f4ffb8d32442cc61898c9c948eb77fa1187069eb8583"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-runtime/pid.json",
+      "bytes": 110,
+      "SHA256": "a6ff83cc796c04840713eb0093a2b92c6c6dfa6b3933fb95fc299538c1bfd71e"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-reverse/result.json",
+      "bytes": 99,
+      "SHA256": "5e985282890de2c6ecac3dc3e54d1a82c780ee35685c64d839735de624e30ef4"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-reverse/command.json",
+      "bytes": 2386,
+      "SHA256": "c2168d6321f3852a78f415b23af86cf660987fb364774a5a73ab278072a6f0d5"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-reverse/pid.json",
+      "bytes": 108,
+      "SHA256": "3fe2c67bb419120b720bd6b4e03314e046ef3f281e627dcd5677f1b891fcbecd"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-focus/result.json",
+      "bytes": 100,
+      "SHA256": "782fcdc3e30d909c846efd42b0bc4228f1a31df2e2e2df3f537e7e510b441b52"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-focus/command.json",
+      "bytes": 2398,
+      "SHA256": "53bfd9c10b8e96cefc4a1637e843f43c80058ad0e602c9e64954405b48948a95"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-focus/pid.json",
+      "bytes": 109,
+      "SHA256": "18c07a55a92f26abc7074296e064858e36399b1a18a7f90fcb10ca7a33482c31"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-activity/result.json",
+      "bytes": 100,
+      "SHA256": "f43f59d0e6c44681e23d0a9c4cefd3b2914940bb98a35cce944aac5d5b1f55d0"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-activity/command.json",
+      "bytes": 2419,
+      "SHA256": "0b0e5878a3a483c3f125b9f7970407541cd5bac9f975996eb797e37dbf693fb3"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-activity/pid.json",
+      "bytes": 109,
+      "SHA256": "358eda943cef8a4ad2f79b7e430235f4a528672f6f584e4a20da131f03108628"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen/capture.json",
+      "bytes": 1466,
+      "SHA256": "86d34e84c52b3b2b9312baa867553d61071cfd8e1f969473c583c8086a23288c"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-package/result.json",
+      "bytes": 99,
+      "SHA256": "0840b005bb398eeb6af196d739accc5167130b335cd3e3eba2504d90981cdb6e"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-package/command.json",
+      "bytes": 2447,
+      "SHA256": "df0590599cf1782f79b4e56868574af788af02253b1f11833a20837b8e68a93e"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-package/pid.json",
+      "bytes": 108,
+      "SHA256": "8d6209e56be7ec0823ace1286af16fc515a944f7879af9661e85f09118449560"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-pid/result.json",
+      "bytes": 123,
+      "SHA256": "e3611601d7508141fdec7a9ac9c465fe87123455fced92b3cd21ea17527a4a01"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-pid/command.json",
+      "bytes": 2437,
+      "SHA256": "6ccfe955aa8f32b349f4b7e74a11728c38bed6573d3026b281c681003def8af9"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-first-screen-pid/pid.json",
+      "bytes": 109,
+      "SHA256": "ecbd3630ab5a293e5f13a032ee2e9dcddceb280256bba1735d666206b79804d0"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-down-cold/result.json",
+      "bytes": 1477,
+      "SHA256": "5aba2bc11bc1443534c76aec528284030059c2ec19b97d41738752d9678ade6c"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-down-cold/command.json",
+      "bytes": 2483,
+      "SHA256": "e67e6cd2a1fd5020fb58138dc7a0a047c7e753044abc505ad0a154343c286809"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-down-cold/pid.json",
+      "bytes": 109,
+      "SHA256": "f2e1db7bd10b153502dacb9b70e8d8f4e06bf2873898ab04c7ad7c7808119cbd"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-cold-pm-path/result.json",
+      "bytes": 99,
+      "SHA256": "3b5009afc1d1578afa98d34e1507fbb193caad71614918ecac3c0499a7ebdf5b"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-cold-pm-path/command.json",
+      "bytes": 2446,
+      "SHA256": "9636aae236d887c212b299e0a6563e5cb40bc9f450749d976b2aec8b69382e9d"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-cold-pm-path/pid.json",
+      "bytes": 109,
+      "SHA256": "a7f913624cdccab8d823495893b2e279282774a80702312e949ca444d1843b94"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-cold-pull/result.json",
+      "bytes": 99,
+      "SHA256": "2d3cbbe8bf54ff2db915a891b14cc3e95544fa2ddac8b10b82912e191b95f8aa"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-cold-pull/command.json",
+      "bytes": 2600,
+      "SHA256": "580ba6de87ba838ced1365f025b22861df3284e4c9f61df9b9ed53c2d6292a79"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-cold-pull/pid.json",
+      "bytes": 109,
+      "SHA256": "5ee0db1d968fcdfe83e9f8ad6be30b129beca54b6b2117eb4b58eee7eae5f78f"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-cold-apk.json",
+      "bytes": 723,
+      "SHA256": "484f0f5eb307dfcffb37f9596021de8660b9489442f95409425238aab50f62e9"
+    },
+    {
+      "ref": "${RUN211}/screenshots/nia-v4-cli-first-screen-settled.png",
+      "bytes": 293603,
+      "SHA256": "44f1b164aefbce7efa781479ef4e39405389777dbfe0067b97b8847454b6b976"
+    },
+    {
+      "ref": "${RUN211}/screenshots/nia-v4-cli-first-screen.png",
+      "bytes": 322990,
+      "SHA256": "ec23c0c3a6674ee79bca4dea7b336726ab163950118aba5d2b721b33d76c40af"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-first-screen-pid/result.json",
+      "bytes": 124,
+      "SHA256": "b4d9a370055cfb2fb9679d047b1aa5bedaade493aef647378b1c4e73e56299e1"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-first-screen-pid/command.json",
+      "bytes": 2437,
+      "SHA256": "efa80e05cec929f6228f92c33b949844912d901a1d3f88357573a2a4ac567a19"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-first-screen-pid/pid.json",
+      "bytes": 111,
+      "SHA256": "c2188b20da6ca518bb7b212d033def65e85ee1c27c4841f92b60078dbbab564a"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-first-screen/capture.json",
+      "bytes": 1469,
+      "SHA256": "0c49fe61f5cb40f7e0372653852329aefb4807a8ca471e081aded2c4707ebdf7"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-first-screen-activity/result.json",
+      "bytes": 100,
+      "SHA256": "edef955d00789d4652593b5a0fbb7253300b03d9698f3d9ec94449642c325a73"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-first-screen-activity/command.json",
+      "bytes": 2418,
+      "SHA256": "b40f48972329cbd78ddfabb855f9e3a1af115990711ac086c065febd4a7fa102"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-first-screen-activity/pid.json",
+      "bytes": 111,
+      "SHA256": "dc1bb3af876ea1e432f4631ed875496ac18f77f5266789eadafaa35dc2e41c23"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-first-screen-reverse/result.json",
+      "bytes": 100,
+      "SHA256": "3303b5c5c38d12bffd23da39fdfe0b5f2f04fa532649507896026dc72d2d0e39"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-first-screen-reverse/command.json",
+      "bytes": 2385,
+      "SHA256": "40cee0e1cc618744d1eed434dc8215850405af5d69cd98797e0de9eac6c2e992"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-first-screen-reverse/pid.json",
+      "bytes": 111,
+      "SHA256": "45a1a724c8aaecda4fa3a147141e8c1f37f58f9b6e6830d994d54c6a796381a1"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-first-screen-installed/result.json",
+      "bytes": 100,
+      "SHA256": "a69d7fe4139ce7d08ef675535c5e6ecf64f60378bd41a2ec0bdec8f12517a252"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-first-screen-installed/command.json",
+      "bytes": 2418,
+      "SHA256": "45a9a3a4db8ca2686e8401f19647419efb731e32023934d207f3388fae7a92b9"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-first-screen-installed/pid.json",
+      "bytes": 112,
+      "SHA256": "dc57b52315944d6e018e1fbfdb0a7243fff33978350a3b0a36f5040d521d4480"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-first-screen-runtime/result.json",
+      "bytes": 100,
+      "SHA256": "e45a02af2255029325a177f99928c277f62c830072fcabbdf6a800b1a9b741da"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-first-screen-runtime/command.json",
+      "bytes": 2384,
+      "SHA256": "8c0d143f7420674794125902233f6849d8031db53205299beb0c5f26b120c5b5"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-first-screen-runtime/pid.json",
+      "bytes": 111,
+      "SHA256": "ccb94f12781242694577f22a360c74fc45e505c7e21ef47b8af144aa410cbf65"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-first-screen-focus/result.json",
+      "bytes": 100,
+      "SHA256": "6a1e6cfdafa6c0e0d1105f9ab5d7719fdf8ce95952ec030793d268842e28913d"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-first-screen-focus/command.json",
+      "bytes": 2398,
+      "SHA256": "ac03b30513230c31288ee97794ae6e9fdccd57ffd05c62c1af5573364d4a2cab"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-first-screen-focus/pid.json",
+      "bytes": 110,
+      "SHA256": "a8e0a13a9cb7fa541d523bef630e8a2d08d60858c6702be4a5cc6dfb53f74d82"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-pm-path/result.json",
+      "bytes": 100,
+      "SHA256": "5c469476dfadb8da6e07957e69ab7999d691c722880a53aee1f6361f1b19e020"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-pm-path/command.json",
+      "bytes": 2444,
+      "SHA256": "d798834617f4f023677884091d03582eaf1ab57b9322bcf91f7b9b20c350fdc6"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-pm-path/pid.json",
+      "bytes": 110,
+      "SHA256": "58238d9cac4429fdd0ed86965f275c2cf8e4fc238f8f9b50ef17724e131cb11d"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-first-screen-package/result.json",
+      "bytes": 99,
+      "SHA256": "ff60242179d88a52e188f51d6bcf95732b2162e4e7b24663cbb6132010c32e90"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-first-screen-package/command.json",
+      "bytes": 2447,
+      "SHA256": "04939578456c1067e27c3c48256cfaa085cc75ae5f0e29d034f4c1cee25ac4fc"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-first-screen-package/pid.json",
+      "bytes": 111,
+      "SHA256": "6353486723df294e3cef2c7b5385518770fb9e9a857ea79b2c96b9e93769c8aa"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-pull/result.json",
+      "bytes": 101,
+      "SHA256": "bb79d396272530b10b3ec61a9a71b1c1293427a8a8199cd09553aba2dbbd37b3"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-pull/command.json",
+      "bytes": 2595,
+      "SHA256": "e62bc9d65980f01af1ab191c212659c4fa077ee1090bbea6819f77cbc4d87e31"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-pull/pid.json",
+      "bytes": 111,
+      "SHA256": "5907b2c0048cb7f7ff26f970cde774ca57d5b1640a7a6dbb1910735f4f62dc6f"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-apk.json",
+      "bytes": 718,
+      "SHA256": "3b0f76951e061cf975ab29c93faa2dbd945330710be78861000dc7239d8f3b28"
+    },
+    {
+      "ref": "${RUN211}/screenshots/nia-v4-gui-first-screen.png",
+      "bytes": 292607,
+      "SHA256": "50ac6dd207d134d16709ef56188ad6ddd773b01a871b55297c1708585c6290b8"
+    },
+    {
+      "ref": "${RUN211}/state/reconnect-native-ps14767/stderr.log",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "ref": "${RUN211}/state/reconnect-native-ps14767/result.json",
+      "bytes": 100,
+      "SHA256": "d54cf0aa1994ba3cd8cf733adbb3da550314364322b152aeeaec332290a326a5"
+    },
+    {
+      "ref": "${RUN211}/state/reconnect-native-ps14767/stdout.log",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "ref": "${RUN211}/state/reconnect-native-ps14767/command.json",
+      "bytes": 2142,
+      "SHA256": "1adf631c13d3fda1db1358e28aaf8230f41c7fdf6adf145b5f85a06edd470e51"
+    },
+    {
+      "ref": "${RUN211}/state/reconnect-native-ps14767/pid.json",
+      "bytes": 111,
+      "SHA256": "d25fef1c1904c173b0fb23f1048cd45dce9b59b78db43a4dd1f2f29952b914c3"
+    },
+    {
+      "ref": "${RUN211}/state/reconnect-scoped-native-ps14767/stderr.log",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "ref": "${RUN211}/state/reconnect-scoped-native-ps14767/result.json",
+      "bytes": 101,
+      "SHA256": "eb57e8b33cd2407ed1e2c158ee50b658134c49f49ea66b8c319a8879e68e5b04"
+    },
+    {
+      "ref": "${RUN211}/state/reconnect-scoped-native-ps14767/stdout.log",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "ref": "${RUN211}/state/reconnect-scoped-native-ps14767/command.json",
+      "bytes": 2269,
+      "SHA256": "cc1c35d1396a004403de5d501a8642678faa41882a3be017cc99e396b8a75d04"
+    },
+    {
+      "ref": "${RUN211}/state/reconnect-scoped-native-ps14767/pid.json",
+      "bytes": 111,
+      "SHA256": "4594d4de94d24652db6c287da8d27a6421e05834a46931a3a59043a4bff3c489"
+    },
+    {
+      "ref": "${RUN211}/state/reconnect-guarded-ps14767/stderr.log",
+      "bytes": 68,
+      "SHA256": "49a79983bd60e97530c01898b9d94226e8fb5c43d5118f508956228575bbdb76"
+    },
+    {
+      "ref": "${RUN211}/state/reconnect-guarded-ps14767/result.json",
+      "bytes": 99,
+      "SHA256": "7337c7d9b89e3e7936d63befa0c84a406b3967a875c83879f6f99ff278ea147e"
+    },
+    {
+      "ref": "${RUN211}/state/reconnect-guarded-ps14767/stdout.log",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "ref": "${RUN211}/state/reconnect-guarded-ps14767/command.json",
+      "bytes": 2267,
+      "SHA256": "e1f22531140f53e204a0247e6de4f9686f6672872e060ea3a38702db571dc75a"
+    },
+    {
+      "ref": "${RUN211}/state/reconnect-guarded-ps14767/pid.json",
+      "bytes": 111,
+      "SHA256": "e50582e906f94cc4f6bcef6c29e1be31fcb10db70abb7dc2f4bcb55fc014c137"
+    },
+    {
+      "ref": "${RUN211}/state/reconnect-scoped-outside-write-denied/stderr.log",
+      "bytes": 104,
+      "SHA256": "a776f1767615545d7f5951a165358e6454046e23361ea05806efbc7920920460"
+    },
+    {
+      "ref": "${RUN211}/state/reconnect-scoped-outside-write-denied/result.json",
+      "bytes": 100,
+      "SHA256": "02f4ffd191e15967813720386f93ad40700584aa49ace3d5dbf694090c53b561"
+    },
+    {
+      "ref": "${RUN211}/state/reconnect-scoped-outside-write-denied/stdout.log",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "ref": "${RUN211}/state/reconnect-scoped-outside-write-denied/command.json",
+      "bytes": 2329,
+      "SHA256": "4b1aa16c1f60c935cb705adc221f6771f4f1b1af4c6639c428c70512bcd5699e"
+    },
+    {
+      "ref": "${RUN211}/state/reconnect-scoped-outside-write-denied/pid.json",
+      "bytes": 112,
+      "SHA256": "58e92fb383d498c50fd6b0430d7573b79fb08e4517e6b2ca0cfeda558ce1e04a"
+    },
+    {
+      "ref": "${RUN211}/owned-writes-ps.sb",
+      "bytes": 1486,
+      "SHA256": "360a6771bd62c269318991c350fba77a16a9df1f6f11b9eace0c70f5d7ae4173"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-gui-before-native-cleanup-active-run.json",
+      "bytes": 463,
+      "SHA256": "4e3ea6c5131abb8f6cae29776d1310a53e68494e297200f5332f641361f1228f"
+    },
+    {
+      "ref": "${RUN211}/state/audit-after-baselineNIACache.json",
+      "bytes": 12130328,
+      "SHA256": "1dda37d0fef8cee21c01bb23bcc4cb345df5913cabc0186d2506d7efdbcb3ba6"
+    },
+    {
+      "ref": "${RUN211}/state/audit-after-globalAndroid.json",
+      "bytes": 2079,
+      "SHA256": "2cd7f630b582f9f79339a4d7d3dc106b1cd6b5c324da9efe322c7ed571af18b7"
+    },
+    {
+      "ref": "${RUN211}/state/audit-after-original-nia.json",
+      "bytes": 218079,
+      "SHA256": "f7ea270daf227b5c994be41f8dd460c02bf31f531a7b23afb71e9f58c5d8398a"
+    },
+    {
+      "ref": "${RUN211}/state/audit-after-todo-gui.json",
+      "bytes": 35215,
+      "SHA256": "3ace148576a34a742e162b5d4df7f42be62591f4b52f0aa5bb6d2794ba621379"
+    },
+    {
+      "ref": "${RUN211}/state/audit-after-nia-gui.json",
+      "bytes": 218138,
+      "SHA256": "8be3b2ab2eebd74f7c4c112de5dd54f3163d84d0aef0f1cee7240df08e34c9fb"
+    },
+    {
+      "ref": "${RUN211}/state/audit-after-selectedHost.json",
+      "bytes": 1215,
+      "SHA256": "e76b6167283934cbef51f678e1769a161cdedcc6627b84ec90dc772568d81e9d"
+    },
+    {
+      "ref": "${RUN211}/state/audit-after-globalSDK.json",
+      "bytes": 25981567,
+      "SHA256": "9c0c623d1af5a71a6c7591b1a92a431681859e0e33171f801517db8bca14759c"
+    },
+    {
+      "ref": "${RUN211}/state/audit-after-baselineTodoCache.json",
+      "bytes": 5951592,
+      "SHA256": "80b573c03b25e62f1111125a28d558739ba39a60166e12cbddeb09b147fff9f3"
+    },
+    {
+      "ref": "${RUN211}/state/audit-after-globalLeases.json",
+      "bytes": 453969,
+      "SHA256": "a341197c010c786445cfbfd0631e56572e58640504c4295103086dc51659d47a"
+    },
+    {
+      "ref": "${RUN211}/state/audit-after-nia-cli.json",
+      "bytes": 218140,
+      "SHA256": "ffdac1865373659c4392edd3ff335a079f81b7ba0226f61e039d2e519a3b79b7"
+    },
+    {
+      "ref": "${RUN211}/state/audit-after-original-todo.json",
+      "bytes": 35157,
+      "SHA256": "a601293fba2819029b2e963add78474b1e0708fa6d02d4ddfdb5091d406108ac"
+    },
+    {
+      "ref": "${RUN211}/state/audit-after-todo-cli.json",
+      "bytes": 35216,
+      "SHA256": "95e0407e8047b68f2893250b99ef284dcf0b6da296758f6ba3374d40dde72d5f"
+    },
+    {
+      "ref": "${RUN211}/state/gui-v4r2-nia-cleanup/command.json",
+      "bytes": 2463,
+      "SHA256": "83da2d3eea3c05639ca857626dcf5d4f8be56e240096672afdfbc7aead756ab9"
+    },
+    {
+      "ref": "${RUN211}/state/gui-v4r2-nia-cleanup/pid.json",
+      "bytes": 89,
+      "SHA256": "eeffcd70aea086c6cf8be06e14bf0fd2bebf14d18e26a1bd06ef3be5b9e68699"
+    },
+    {
+      "ref": "${RUN211}/state/gui-v4r2-nia-cleanup/exit.json",
+      "bytes": 62,
+      "SHA256": "dd12bb397566bbd6206923ced36e36123783915c4e03b83e109e1a9f9d007258"
+    },
+    {
+      "ref": "${RUN211}/state/adb-server-reconnect/command.json",
+      "bytes": 2238,
+      "SHA256": "7cda2d0604630d255607ef0a8b4ef4abb0aca897ef60437d08c4685314836364"
+    },
+    {
+      "ref": "${RUN211}/state/adb-server-reconnect/pid.json",
+      "bytes": 86,
+      "SHA256": "ab7cae72d99b60a4424a2f06445e7684768c4e446ef8fb7835d0f8e65c237e2d"
+    },
+    {
+      "ref": "${RUN211}/state/adb-server-reconnect/exit.json",
+      "bytes": 62,
+      "SHA256": "32e6e3121fc388f0498e92b33bbb92a0af43829b22d0e0f45abf3b0a63ca0089"
+    },
+    {
+      "ref": "${RUN211}/state/adb-server-reconnect/normal-stop-request.json",
+      "bytes": 79,
+      "SHA256": "1aac42ec30a8bcfa67d8b987074295be7c299d7e745330cc91f0fd66c8fe4c14"
+    },
+    {
+      "ref": "${RUN211}/state/cleanup-and-preservation-v4.json",
+      "bytes": 17133,
+      "SHA256": "172d77fb8043299d62f0c8c750c7d2695d40f5cd06f8cd7c7012fa0b7919315e"
+    },
+    {
+      "ref": "${RUN211}/state/final-owned-pids-absent/stderr.log",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "ref": "${RUN211}/state/final-owned-pids-absent/result.json",
+      "bytes": 100,
+      "SHA256": "89e78eae8cd0fb4d33c50b74e8682177edef115402b640735a3382735cfcd88b"
+    },
+    {
+      "ref": "${RUN211}/state/final-owned-pids-absent/stdout.log",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "ref": "${RUN211}/state/final-owned-pids-absent/command.json",
+      "bytes": 2153,
+      "SHA256": "46df5b3598e7ee67955b4d0a3bffbf70ea869734982651b75ed93ef57c2166c8"
+    },
+    {
+      "ref": "${RUN211}/state/final-owned-pids-absent/pid.json",
+      "bytes": 111,
+      "SHA256": "4b8e470ce161c6b9b68258936ba739f03ac0be24a4c70e71a0fa321dbea31f7b"
+    },
+    {
+      "ref": "${RUN211}/state/final-port-5045/stderr.log",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "ref": "${RUN211}/state/final-port-5045/result.json",
+      "bytes": 100,
+      "SHA256": "59f7f53fc818038ef6239a84328c8bffc9612eeb5bb9a4b8d8457ba4d17b2fb9"
+    },
+    {
+      "ref": "${RUN211}/state/final-port-5045/stdout.log",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "ref": "${RUN211}/state/final-port-5045/command.json",
+      "bytes": 2152,
+      "SHA256": "1e026ed0ceab28fffca35c7c66a12ecb8a57c5dd1ee002c64f22ce4d87c09550"
+    },
+    {
+      "ref": "${RUN211}/state/final-port-5045/pid.json",
+      "bytes": 112,
+      "SHA256": "f0972e9ce0cb48fb46bb23bc689c3d9725401229e9885a5539d9f8f52ec982cb"
+    },
+    {
+      "ref": "${RUN211}/state/final-port-5554/stderr.log",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "ref": "${RUN211}/state/final-port-5554/result.json",
+      "bytes": 101,
+      "SHA256": "0baa99244f3ac26cf6806e864101ea5714e805abacd6a774f8588f40e37b8c8c"
+    },
+    {
+      "ref": "${RUN211}/state/final-port-5554/stdout.log",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "ref": "${RUN211}/state/final-port-5554/command.json",
+      "bytes": 2152,
+      "SHA256": "f27429df569bc25359e072c07c10df3a06618781d4ac8c84be88d929a182c9d3"
+    },
+    {
+      "ref": "${RUN211}/state/final-port-5554/pid.json",
+      "bytes": 112,
+      "SHA256": "959c3f94ae838bca72d50a2e8cb8728dbdf447efadff1364d16856f6517d6fff"
+    },
+    {
+      "ref": "${RUN211}/state/final-port-5555/stderr.log",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "ref": "${RUN211}/state/final-port-5555/result.json",
+      "bytes": 100,
+      "SHA256": "8a6f54d5480cf3e0957102b68379e2a622135c5fddde12c7cb5219bd9d8b09bb"
+    },
+    {
+      "ref": "${RUN211}/state/final-port-5555/stdout.log",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "ref": "${RUN211}/state/final-port-5555/command.json",
+      "bytes": 2152,
+      "SHA256": "717c5bfcbaa871b805cc7d595142f732a9faed34a4f7a41b5235c144dbdcdce9"
+    },
+    {
+      "ref": "${RUN211}/state/final-port-5555/pid.json",
+      "bytes": 110,
+      "SHA256": "19d0b5fc43c605b7460862bc949e953949246effcae37c4e14b25667322c7fb9"
+    },
+    {
+      "ref": "${RUN211}/state/nia-v4-cli-down-claim.json",
+      "bytes": 85,
+      "SHA256": "3c9c882397205d2100588bb6273881eed8d207b7ba19a5ed96564fa7e7e617e8"
+    },
+    {
+      "ref": "${RUN211}/state/owned-writes-v2-final.sb",
+      "bytes": 1386,
+      "SHA256": "47db8d610851ea134b0d6c207ea3958167d4f966197996ee668ec81e241f0ecc"
+    },
+    {
+      "ref": "${RUN211}/state/owned-writes-v3-final.sb",
+      "bytes": 1396,
+      "SHA256": "d11ec7c4aa9a748bb0eefafeafc371e5a9284e30dc5686653061ad5f197f9a2d"
+    },
+    {
+      "ref": "${RUN211}/state/owned-writes-v4-initial.sb",
+      "bytes": 1406,
+      "SHA256": "3195dbefad6b047052ebc63ac27b03917acc0d58a39e37311ac8ed7828655960"
+    }
+  ]
+}
