@@ -35,6 +35,22 @@ struct PreparationExecutionTests {
         #expect(!FileManager.default.fileExists(atPath: repo.url("node_modules").path))
     }
 
+    @Test("RN preparation preserves its declared custom Pod installer")
+    func declaredRNPodInstaller() async throws {
+        let repo = try project()
+        try repo.write("package.json", #"{"dependencies":{"react-native":"0.81.0"},"scripts":{"pod-install":"cd ios && pod install"}}"#)
+        try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
+        try repo.write("ios/Podfile.lock", "locked pods")
+        var runner = try tools(repo)
+        runner.responses["pod --version"] = .ok("1.16.1")
+        let result = await PreparationExecution.run(
+            input: ProjectInspectionInput(directory: repo.root, environment: [:]), planOnly: true, runner: runner)
+        let pods = try #require(result.plan?.steps.first { $0.id == "dependencies.pods" })
+        #expect(pods.kind == "align")
+        #expect(pods.command == "yarn run pod-install")
+        #expect(!runner.log.all.contains { $0.description == "yarn run pod-install" })
+    }
+
     @Test("approval does not grant repository trust and changed declarations invalidate approval")
     func approvalBoundary() async throws {
         let repo = try project()

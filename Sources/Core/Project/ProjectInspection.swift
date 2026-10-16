@@ -71,12 +71,15 @@ public struct ProjectInspectionInput: Sendable {
     public let environment: [String: String]
     public let app: String?
     public let platform: ProjectPlatform?
+    /// Explicit Flutter entrypoint. Nil keeps the existing lib/main.dart default.
+    public let entrypoint: String?
 
-    public init(directory: URL, environment: [String: String], app: String? = nil, platform: ProjectPlatform? = nil) {
+    public init(directory: URL, environment: [String: String], app: String? = nil, platform: ProjectPlatform? = nil, entrypoint: String? = nil) {
         self.directory = directory
         self.environment = environment
         self.app = app
         self.platform = platform
+        self.entrypoint = entrypoint
     }
 
     public func selection() throws -> ProjectSelection {

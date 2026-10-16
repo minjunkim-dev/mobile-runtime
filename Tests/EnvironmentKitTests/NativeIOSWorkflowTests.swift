@@ -38,7 +38,7 @@ struct NativeIOSWorkflowTests {
         #expect(!FileManager.default.fileExists(atPath: repo.url("node_modules").path))
     }
 
-    @Test("future framework preparation stays manual without invoking an execution provider", arguments: [
+    @Test("invalid Flutter or incomplete native preparation stays manual without executing tools", arguments: [
         ProjectFramework.flutter, .nativeAndroid
     ])
     func futurePreparation(framework: ProjectFramework) async throws {
@@ -57,7 +57,11 @@ struct NativeIOSWorkflowTests {
         #expect(result.exitCode == 0)
         #expect(result.plan?.projectKind == framework.rawValue)
         #expect(result.plan?.platforms.map(\.platform) == (framework == .flutter ? [.ios, .android] : [.android]))
-        #expect(result.plan?.steps.contains { $0.kind == "provider" } == true)
+        if framework == .flutter {
+            #expect(result.plan?.steps.contains { $0.id == "flutter.declarations" && $0.kind == "migration" } == true)
+        } else {
+            #expect(result.plan?.steps.contains { $0.kind == "provider" } == true)
+        }
         let approved = await PreparationExecution.run(input: input,
             approvedPlanID: try #require(result.plan?.id), trustRepository: true, runner: runner)
         #expect(approved.exitCode == 1)

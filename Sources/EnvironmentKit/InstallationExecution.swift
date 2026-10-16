@@ -185,11 +185,35 @@ public enum InstallationExecution {
     public static func installSDKZip(_ metadata: InstallationMetadata, localMetadata: Data,
                                      runner: any ProcessRunner,
                                      beforeCommit: @Sendable ([URL]) async throws -> Void = { _ in }) async throws {
+        try await installZIP(metadata, runner: runner, beforeCommit: beforeCommit,
+            revalidate: { try validateSDKLicense(metadata) }) { source, _ in
+            let properties = try String(contentsOf: source.appendingPathComponent("source.properties"), encoding: .utf8)
+            let revisions = properties.split(whereSeparator: \.isNewline).compactMap { line -> String? in
+                let parts = line.split(separator: "=", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespaces) }
+                return parts.count == 2 && parts[0] == "Pkg.Revision" ? parts[1] : nil
+            }
+            guard revisions.count == 1, normalizedRevision(revisions[0]) == normalizedRevision(metadata.revision),
+                  normalizedRevision(metadata.revision) != nil else { throw failure("Archive package revision differs from the approved plan") }
+            let packageXML = source.appendingPathComponent("package.xml")
+            // Replacing staged metadata must never overwrite another archive member through a link.
+            if FileManager.default.fileExists(atPath: packageXML.path)
+                || (try? FileManager.default.destinationOfSymbolicLink(atPath: packageXML.path)) != nil {
+                try FileManager.default.removeItem(at: packageXML)
+            }
+            try localMetadata.write(to: packageXML)
+        }
+    }
+
+    /// SDK and Flutter ZIP providers share extraction checks and the exclusive destination commit.
+    static func installZIP(_ metadata: InstallationMetadata, payloadRoot: String? = nil,
+                           runner: any ProcessRunner, beforeCommit: @Sendable ([URL]) async throws -> Void,
+                           revalidate: @Sendable () throws -> Void = {},
+                           validate: @Sendable (URL, any ProcessRunner) async throws -> Void) async throws {
         try metadata.validate()
         guard let artifact = metadata.artifact, metadata.managed == nil else {
-            throw failure("An SDK archive action requires its pinned archive metadata")
+            throw failure("An archive action requires its pinned archive metadata")
         }
-        try validateSDKLicense(metadata)
+        try revalidate()
         try validateDestination(metadata)
         let manager = FileManager.default
         let scratch = metadata.resourceRoot.appendingPathComponent(".runstir-install-\(UUID().uuidString)")
@@ -206,35 +230,29 @@ public enum InstallationExecution {
         try validateExtractedLinks(extracted)
         let children = try manager.contentsOfDirectory(at: extracted, includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey])
         let source: URL
-        if manager.fileExists(atPath: extracted.appendingPathComponent("source.properties").path) { source = extracted }
+        if let payloadRoot {
+            let components = payloadRoot.split(separator: "/", omittingEmptySubsequences: false)
+            guard !payloadRoot.hasPrefix("/"), components.allSatisfy({ !$0.isEmpty && $0 != "." && $0 != ".." }) else {
+                throw failure("Invalid approved archive root")
+            }
+            source = extracted.appendingPathComponent(payloadRoot)
+            let values = try source.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
+            guard values.isDirectory == true, values.isSymbolicLink != true else { throw failure("Archive root is not a directory") }
+        } else if manager.fileExists(atPath: extracted.appendingPathComponent("source.properties").path) { source = extracted }
         else if children.count == 1,
                 try children[0].resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey]).isDirectory == true,
                 try children[0].resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink != true {
             source = children[0]
         } else { throw failure("Archive does not contain one SDK package") }
-        let properties = try String(contentsOf: source.appendingPathComponent("source.properties"), encoding: .utf8)
-        let revisions = properties.split(whereSeparator: \.isNewline).compactMap { line -> String? in
-            let parts = line.split(separator: "=", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespaces) }
-            return parts.count == 2 && parts[0] == "Pkg.Revision" ? parts[1] : nil
-        }
-        guard revisions.count == 1, normalizedRevision(revisions[0]) == normalizedRevision(metadata.revision),
-              normalizedRevision(metadata.revision) != nil else { throw failure("Archive package revision differs from the approved plan") }
         let marker = source.appendingPathComponent(metadata.requiredFile)
         guard manager.fileExists(atPath: marker.path),
               let sourcePath = canonicalPath(source), let markerPath = canonicalPath(marker),
               markerPath.hasPrefix(sourcePath + "/"),
-              !metadata.executable || manager.isExecutableFile(atPath: marker.path) else { throw failure("Archive is missing the required SDK package content") }
-        let packageXML = source.appendingPathComponent("package.xml")
-        // This private stage becomes public only through the final exclusive rename.
-        // Replacing a staged metadata link must never overwrite another archive member.
-        if manager.fileExists(atPath: packageXML.path)
-            || (try? manager.destinationOfSymbolicLink(atPath: packageXML.path)) != nil {
-            try manager.removeItem(at: packageXML)
-        }
-        try localMetadata.write(to: packageXML)
+              !metadata.executable || manager.isExecutableFile(atPath: marker.path) else { throw failure("Archive is missing the required package content") }
+        try await validate(source, runner)
         try Task.checkCancellation()
         try await beforeCommit([scratch])
-        try validateSDKLicense(metadata)
+        try revalidate()
         try validateDestination(metadata)
         let parent = metadata.destination.deletingLastPathComponent()
         try manager.createDirectory(at: parent, withIntermediateDirectories: true)
@@ -243,7 +261,7 @@ public enum InstallationExecution {
         try manager.copyItem(at: source, to: staged)
         try Task.checkCancellation()
         try await beforeCommit([scratch, staged])
-        try validateSDKLicense(metadata)
+        try revalidate()
         try validateDestination(metadata)
         guard renamex_np(staged.path, metadata.destination.path, UInt32(RENAME_EXCL)) == 0 else {
             throw failure("Installation destination appeared or could not be committed; existing content was preserved")
