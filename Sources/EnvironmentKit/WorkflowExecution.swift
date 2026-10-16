@@ -66,7 +66,8 @@ public enum WorkflowExecution {
                 let anchor = ProjectAnchor.detect(candidate: candidate) else {
                 throw selectionFailure("No app selected. Choose a reported project candidate.")
             }
-            guard anchor.framework == .reactNative || (anchor.framework == .nativeIOS && platform == .ios) else {
+            guard anchor.framework == .reactNative || (anchor.framework == .nativeIOS && platform == .ios)
+                || (anchor.framework == .nativeAndroid && platform == .android) else {
                 throw selectionFailure("\(anchor.framework.displayName) execution is not implemented yet.")
             }
             if kind == .down && [input.device, input.scheme, input.configuration, input.module, input.variant].contains(where: { $0 != nil }) {

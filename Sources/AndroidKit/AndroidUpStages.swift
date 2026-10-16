@@ -458,10 +458,12 @@ actor AndroidRuntime {
             activities.standardOutput.contains(product.applicationId),
             activities.standardOutput.contains(product.launcherActivity)
         else { return nil }
-        let source = "tcp:\(MetroVerdict.port)"
-        guard try await doctorContext.reverseMappings(serial: serial, sdk: sdk, runner: hostRunner)[source] == source,
-            try await MetroVerdict.ask(anchor: anchor.directory, runner: projectRunner) == .mine
-        else { return nil }
+        if anchor.framework == .reactNative {
+            let source = "tcp:\(MetroVerdict.port)"
+            guard try await doctorContext.reverseMappings(serial: serial, sdk: sdk, runner: hostRunner)[source] == source,
+                try await MetroVerdict.ask(anchor: anchor.directory, runner: projectRunner) == .mine
+            else { return nil }
+        }
         return pid
     }
 
@@ -527,7 +529,7 @@ actor AndroidRuntime {
                 avd.config != nil,
                 avd.systemImagePresent
             else { return false }
-            return product.abis.contains(abi)
+            return (anchor.framework == .nativeAndroid && product.abis.isEmpty) || product.abis.contains(abi)
         }
         guard !compatible.isEmpty else {
             let observed = avds.isEmpty
@@ -540,8 +542,9 @@ actor AndroidRuntime {
                 summary: "no existing AVD is compatible with the built APK",
                 observed: observed,
                 remediation: Remediation(
-                    summary: "Select an existing AVD with API >= \(minSDK) and one of "
-                        + "\(product.abis.joined(separator: ", ")); mobile will not provision it."
+                    summary: "Select an existing AVD with API >= \(minSDK)"
+                        + (product.abis.isEmpty ? "" : " and ABI \(product.abis.joined(separator: ", "))")
+                        + "; mobile will not provision it."
                 )
             )
         }
@@ -666,7 +669,9 @@ actor AndroidRuntime {
         let abis = abiResult.standardOutput
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .split(separator: ",").map(String.init)
-        guard let abi = abis.first(where: product.abis.contains) else { return nil }
+        guard let abi = abis.first(where: {
+            (anchor.framework == .nativeAndroid && product.abis.isEmpty) || product.abis.contains($0)
+        }) else { return nil }
         return (api, abi)
     }
 
@@ -775,6 +780,7 @@ public func androidUpStages(
             try await runtime.install(product, on: device)
             return .pass(product.applicationId)
         },
+    ] + (anchor.framework == .reactNative ? [
         AndroidRuntimeStage(id: "metro") { context in
             let metro = try await runtime.metro(afterReinstall: context.nodeModulesReinstalled)
             context.metro = metro
@@ -793,6 +799,7 @@ public func androidUpStages(
                 ? .pass("tcp:\(MetroVerdict.port)")
                 : .skipped("tcp:\(MetroVerdict.port) already mapped")
         },
+    ] : []) + [
         AndroidRuntimeStage(id: "android.launch") { context in
             guard var product = context.androidProduct, let device = product.device else {
                 throw AndroidStateError("android.launch requires a selected Emulator")

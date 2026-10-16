@@ -24,22 +24,28 @@ public func androidChecks(
     context: AndroidDoctorContext,
     includeRuntimeSDKTools: Bool = true
 ) -> [any Check] {
-    [
+    var checks: [any Check] = [
         AndroidProjectCheck(context: context),
         AndroidGradleWrapperCheck(context: context),
         AndroidJDKCheck(context: context),
         AndroidTargetCheck(context: context),
         AndroidGradleCompatibilityCheck(context: context),
         AndroidSDKCheck(context: context, includeRuntimeTools: includeRuntimeSDKTools),
-        AndroidAVDCheck(context: context),
-        AndroidEmulatorAccelerationCheck(context: context),
     ]
+    if includeRuntimeSDKTools {
+        checks += [AndroidAVDCheck(context: context), AndroidEmulatorAccelerationCheck(context: context)]
+    }
+    return checks
 }
 
 private struct AndroidProjectCheck: Check {
     let id = "android.project"
     let category = "Android project"
-    let title = "React Native Android project and exact framework inputs are present"
+    var title: String {
+        context.anchor.framework == .nativeAndroid
+            ? "Native Android Gradle application inputs are present"
+            : "React Native Android project and exact framework inputs are present"
+    }
     let context: AndroidDoctorContext
 
     func run() async throws -> CheckOutcome {
