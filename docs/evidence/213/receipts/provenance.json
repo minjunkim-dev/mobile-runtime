@@ -1,0 +1,1275 @@
+{
+  "records": {
+    "FoundationAtomicProbe.m": {
+      "compression": "none",
+      "publicBytes": 716,
+      "publicSHA256": "9c4132ea984f3650042171af9f377ac3a03e61d0dce76307f1c38d59cf9bad0d",
+      "rawBytes": 716,
+      "rawSHA256": "9c4132ea984f3650042171af9f377ac3a03e61d0dce76307f1c38d59cf9bad0d",
+      "source": "FoundationAtomicProbe.m",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "9c4132ea984f3650042171af9f377ac3a03e61d0dce76307f1c38d59cf9bad0d"
+    },
+    "android-accel-check.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 279,
+      "publicSHA256": "bc5b94744e5f39ade2a2e4f0f9ab17bc55eb414199ffe650a8ee8d271a6f4048",
+      "rawBytes": 54,
+      "rawSHA256": "186bda30d60a92e151f776650afe3f394fff777318da8d4b0181930e7c741638",
+      "source": "logs/android-accel-check.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          3,
+          3
+        ]
+      ],
+      "originalLineCount": 4,
+      "publicContentSHA256": "767ca218bade75b0c1a460b69c3d23cb433815eef4d4c307d756864b3018b274"
+    },
+    "android-location-probe-attempt2.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 323,
+      "publicSHA256": "8c85ef4183f6721c67c486b05e937d144986888e708870444b10e2850e847e44",
+      "rawBytes": 569,
+      "rawSHA256": "03e1a6790f9157a5f669c0adad1c84f0e7c27344de6b50c9722b56fde100edf5",
+      "source": "logs/android-location-probe-attempt2.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          2,
+          4
+        ]
+      ],
+      "originalLineCount": 4,
+      "publicContentSHA256": "1d6ef45949ab82bab66f4a1fd55e579b5fed8f952262d16fe7645c7b98310d58"
+    },
+    "android-location-probe.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 451,
+      "publicSHA256": "72ac00b9054af99bb2599ea450e5bd126853f4fa47588bd32d7dc894197057af",
+      "rawBytes": 1485,
+      "rawSHA256": "b3f41e6d0fc9dfc062ba44049f7436a2b239d0ac2ef6cf1f9fa46c2ebaaf8849",
+      "source": "logs/android-location-probe.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          2,
+          4
+        ],
+        [
+          10,
+          10
+        ]
+      ],
+      "originalLineCount": 14,
+      "publicContentSHA256": "000fcb4159ab14b2764d20d9dee73b649bdea20b0c7d670d9ecd2d4190c5d219"
+    },
+    "android-runtime-identity.txt": {
+      "compression": "none",
+      "publicBytes": 100,
+      "publicSHA256": "7631df4b266dc47e22025e3c5d549a6f639da4797e109e1d8fd2ecc09bad4fcc",
+      "rawBytes": 100,
+      "rawSHA256": "7631df4b266dc47e22025e3c5d549a6f639da4797e109e1d8fd2ecc09bad4fcc",
+      "source": "logs/android-runtime-identity.txt",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "7631df4b266dc47e22025e3c5d549a6f639da4797e109e1d8fd2ecc09bad4fcc"
+    },
+    "android-sdk-boundary.json": {
+      "compression": "none",
+      "publicBytes": 1651,
+      "publicSHA256": "efb42becf3560001c49398d590c80b0759ea9beace49483e091372d803959d51",
+      "rawBytes": 1651,
+      "rawSHA256": "efb42becf3560001c49398d590c80b0759ea9beace49483e091372d803959d51",
+      "source": "logs/android-sdk-boundary.json",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "efb42becf3560001c49398d590c80b0759ea9beace49483e091372d803959d51"
+    },
+    "android-selected-tools.json": {
+      "compression": "none",
+      "publicBytes": 5054,
+      "publicSHA256": "636a65086b7b3e1ee87fcf9b3ec9e0574ac5a1a1cb2a0cfbc4e4a549aec9b192",
+      "rawBytes": 5754,
+      "rawSHA256": "d4bba52fc9a6ec296dfbe40051a20e9c9a8d21a24c73cd0974c4ea5dc4507c0f",
+      "source": "logs/android-selected-tools.json",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "636a65086b7b3e1ee87fcf9b3ec9e0574ac5a1a1cb2a0cfbc4e4a549aec9b192"
+    },
+    "avd-create-attempt2.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 274,
+      "publicSHA256": "8fc6d8520d7fbcceb44a79fdc0088290ba4772d55dfd7c9cac9d547c950b2ba6",
+      "rawBytes": 387,
+      "rawSHA256": "51dd66febaa24e2539b9fc8ef9bea0c4a340b335865461df48159c5e7357c633",
+      "source": "logs/avd-create-attempt2.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          2,
+          2
+        ]
+      ],
+      "originalLineCount": 2,
+      "publicContentSHA256": "9fec250a76f8fb6751b52798970b9ca3b8ea1d872cdb38948fb5c73fdd9dc4e4"
+    },
+    "avd-create.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 349,
+      "publicSHA256": "20f17b89f841bc00e51bb7662066566bace507b1fbb2842d3fd7086f75cd42e5",
+      "rawBytes": 508,
+      "rawSHA256": "063a24792f44cd73079e66d49141df9ad95e5b8049b9690f56c2a4217d02d7ae",
+      "source": "logs/avd-create.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          2,
+          3
+        ]
+      ],
+      "originalLineCount": 4,
+      "publicContentSHA256": "f8e521fe01872efb81d2c926bc6bd2a84c82504cb963899335b59f9b02b7e6e0"
+    },
+    "baseline-localsend-cargokit-runner.pubspec.lock.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 1688,
+      "publicSHA256": "6905dee704c4355cb53c18493b22a4dff8724062b1ae4ab541c9f5a501066d62",
+      "rawBytes": 5853,
+      "rawSHA256": "8c3560578ef653bb421ccfb23c7bbbed6add61080eb8167a293d1ab587038a0a",
+      "source": "logs/baseline-localsend-cargokit-runner.pubspec.lock",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "79aa92ccb0e12c82be8b803f0f031a41729e676e2c9617184000b74ea5287084"
+    },
+    "capture213.py": {
+      "compression": "none",
+      "publicBytes": 979,
+      "publicSHA256": "927cab39e431979589e1e3a3baa0b72326b3e1597e746dedd5dea43236de2556",
+      "rawBytes": 979,
+      "rawSHA256": "927cab39e431979589e1e3a3baa0b72326b3e1597e746dedd5dea43236de2556",
+      "source": "capture213.py",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "927cab39e431979589e1e3a3baa0b72326b3e1597e746dedd5dea43236de2556"
+    },
+    "cargokit-runner-resolved-locks.json": {
+      "compression": "none",
+      "publicBytes": 1215,
+      "publicSHA256": "944355c0f88d6695cc559dd329b2ecdd0ec746eec17294f0135e7e74939c01f0",
+      "rawBytes": 1415,
+      "rawSHA256": "88541ac22228d5d971bb0d9dd30535a4365cfb5663c4264a8aac28d1a8c0c427",
+      "source": "logs/cargokit-runner-resolved-locks.json",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "944355c0f88d6695cc559dd329b2ecdd0ec746eec17294f0135e7e74939c01f0"
+    },
+    "cargokit-tracked-locks.json": {
+      "compression": "none",
+      "publicBytes": 515,
+      "publicSHA256": "bb4ac8d96e702daa406ee5817cb4359cb0dad9fcc3ae6d0453e7992478a033f7",
+      "rawBytes": 515,
+      "rawSHA256": "bb4ac8d96e702daa406ee5817cb4359cb0dad9fcc3ae6d0453e7992478a033f7",
+      "source": "logs/cargokit-tracked-locks.json",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "bb4ac8d96e702daa406ee5817cb4359cb0dad9fcc3ae6d0453e7992478a033f7"
+    },
+    "channel-rust-1.97.1.toml.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 77316,
+      "publicSHA256": "127a662dfc02dcaef732e7a4ae3b2573503818973f4e18f315302ebb814c306e",
+      "rawBytes": 845916,
+      "rawSHA256": "03569b1886ceb5c05276b50c8431ab111de944cd6140fe1fa7d821dd8e0f29cf",
+      "source": "downloads/channel-rust-1.97.1.toml",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "03569b1886ceb5c05276b50c8431ab111de944cd6140fe1fa7d821dd8e0f29cf"
+    },
+    "channel-rust-1.97.1.toml.sha256": {
+      "compression": "none",
+      "publicBytes": 91,
+      "publicSHA256": "3cd57815146650e28e1756549952f655c683a6576a689fbbc7a5ee9d1c6ffab2",
+      "rawBytes": 91,
+      "rawSHA256": "3cd57815146650e28e1756549952f655c683a6576a689fbbc7a5ee9d1c6ffab2",
+      "source": "downloads/channel-rust-1.97.1.toml.sha256",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "3cd57815146650e28e1756549952f655c683a6576a689fbbc7a5ee9d1c6ffab2"
+    },
+    "emulator-attempt3-redacted.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 683,
+      "publicSHA256": "2634cce3171db10d828a7c831b7b0c2dfb7f482a9349b0297f74b118a222945f",
+      "rawBytes": 6934,
+      "rawSHA256": "279cb0c1151b3d450098588eeae548147225bd6f3945149c17f25063e3084b59",
+      "source": "logs/emulator-attempt3-redacted.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          1,
+          1
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          47,
+          47
+        ],
+        [
+          58,
+          58
+        ],
+        [
+          84,
+          84
+        ],
+        [
+          86,
+          86
+        ],
+        [
+          88,
+          88
+        ]
+      ],
+      "originalLineCount": 92,
+      "publicContentSHA256": "8f94007a424ffed95cfcf09bdb634b4f666c970e6ce1f16db9017be3e74c4ab9"
+    },
+    "emulator-attempt3-redacted.log.receipt.json": {
+      "compression": "none",
+      "publicBytes": 83,
+      "publicSHA256": "c23bcb73af71afef2bcb82dfc9da3b2b377dbded5e03f89d778e2713deac5b46",
+      "rawBytes": 83,
+      "rawSHA256": "c23bcb73af71afef2bcb82dfc9da3b2b377dbded5e03f89d778e2713deac5b46",
+      "source": "logs/emulator-attempt3-redacted.log.receipt.json",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "c23bcb73af71afef2bcb82dfc9da3b2b377dbded5e03f89d778e2713deac5b46"
+    },
+    "emulator-attempt4-redacted.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 681,
+      "publicSHA256": "5f64708404ecb6cdafb3a9320cd29c92217164a0fcbeda6d7a8e32e43ebd81d9",
+      "rawBytes": 6930,
+      "rawSHA256": "33caa4e8a16eca2747784bcb1ae235c2efa818561d7420f3f378359a68a2ed3e",
+      "source": "logs/emulator-attempt4-redacted.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          1,
+          1
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          47,
+          47
+        ],
+        [
+          58,
+          58
+        ],
+        [
+          84,
+          84
+        ],
+        [
+          86,
+          86
+        ],
+        [
+          88,
+          88
+        ]
+      ],
+      "originalLineCount": 92,
+      "publicContentSHA256": "0c96c799b49da3d71c3efbc0d5479b7c212e2f36a55458900dcfc2a8fa16bbc2"
+    },
+    "emulator-attempt4-redacted.log.receipt.json": {
+      "compression": "none",
+      "publicBytes": 82,
+      "publicSHA256": "970adc60ab093b7415eede8d4a043d081a596a3ba90ac52f8aa67254dacdb423",
+      "rawBytes": 82,
+      "rawSHA256": "970adc60ab093b7415eede8d4a043d081a596a3ba90ac52f8aa67254dacdb423",
+      "source": "logs/emulator-attempt4-redacted.log.receipt.json",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "970adc60ab093b7415eede8d4a043d081a596a3ba90ac52f8aa67254dacdb423"
+    },
+    "emulator-redaction-receipt.json": {
+      "compression": "none",
+      "publicBytes": 325,
+      "publicSHA256": "11417c3df88ecc3768c50067be92fd923d324c740400ebd383acf15be81fc786",
+      "rawBytes": 325,
+      "rawSHA256": "11417c3df88ecc3768c50067be92fd923d324c740400ebd383acf15be81fc786",
+      "source": "logs/emulator-redaction-receipt.json",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "11417c3df88ecc3768c50067be92fd923d324c740400ebd383acf15be81fc786"
+    },
+    "final-preservation-audit.json": {
+      "compression": "none",
+      "publicBytes": 2063,
+      "publicSHA256": "23aa16c01d258a5c39ce28e5a4b40e4eb6ecbb466ec351b00e8b8ac8d41c63c9",
+      "rawBytes": 2063,
+      "rawSHA256": "23aa16c01d258a5c39ce28e5a4b40e4eb6ecbb466ec351b00e8b8ac8d41c63c9",
+      "source": "logs/final-preservation-audit.json",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "23aa16c01d258a5c39ce28e5a4b40e4eb6ecbb466ec351b00e8b8ac8d41c63c9"
+    },
+    "final-resource-status.json": {
+      "compression": "none",
+      "publicBytes": 822,
+      "publicSHA256": "beb14af931782f321c7287a29e47e95e257e389d0bcb3b31ecf20137b0a7a02c",
+      "rawBytes": 841,
+      "rawSHA256": "2a231c0747e57e6afa67fcbf020d82ab0e161fe9727f0c8300c5b98f61a1aff6",
+      "source": "logs/final-resource-status.json",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "beb14af931782f321c7287a29e47e95e257e389d0bcb3b31ecf20137b0a7a02c"
+    },
+    "flutter-release-row.json": {
+      "compression": "none",
+      "publicBytes": 609,
+      "publicSHA256": "da4bd6a1edc04c6813d4912b7556ed63351073a056ecd59588752c2af407be16",
+      "rawBytes": 609,
+      "rawSHA256": "da4bd6a1edc04c6813d4912b7556ed63351073a056ecd59588752c2af407be16",
+      "source": "logs/flutter-release-row.json",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "da4bd6a1edc04c6813d4912b7556ed63351073a056ecd59588752c2af407be16"
+    },
+    "foundation-probe-final-ephemeral.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 425,
+      "publicSHA256": "46d087b34cb92c5822c755ef6660e624899a3f73a444a81e6c6c3b21c980d70a",
+      "rawBytes": 494,
+      "rawSHA256": "0852de91633bfc466661fe5dffb46f8b875886bcbcaac32a84b360a02eaf1c55",
+      "source": "logs/foundation-probe-final-ephemeral.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          1,
+          3
+        ]
+      ],
+      "originalLineCount": 3,
+      "publicContentSHA256": "f0999bd398bf4c7c4edfab7e99c3d2d113d608ef335811831d04fb3ee6c7cd72"
+    },
+    "foundation-probe-native.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 556,
+      "publicSHA256": "b719d3c6e3b53ecff164a8521d3e6768f0398757cc96e1b4e505101df93cd376",
+      "rawBytes": 878,
+      "rawSHA256": "fc34cbe3de8fef672d04f64be95be45e0cca2088e41107b88df2d383d7e742fb",
+      "source": "logs/foundation-probe-native.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          1,
+          2
+        ]
+      ],
+      "originalLineCount": 2,
+      "publicContentSHA256": "1ebbee4d0939bce3ee0a619b5b443af46cdfe6bd0a0c9c260c9e8dff8971f246"
+    },
+    "fresh-localsend-handoff.json": {
+      "compression": "none",
+      "publicBytes": 736,
+      "publicSHA256": "b556d43024a0b1ebf8e0764842fe6424328c4e07193f489c3b9530233e8a8cea",
+      "rawBytes": 836,
+      "rawSHA256": "edf9b771dfb0e6c346c88a52982fb14be7448e5c328328562916cd67286c4883",
+      "source": "logs/fresh-localsend-handoff.json",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "b556d43024a0b1ebf8e0764842fe6424328c4e07193f489c3b9530233e8a8cea"
+    },
+    "fresh-minimal-handoff.json": {
+      "compression": "none",
+      "publicBytes": 688,
+      "publicSHA256": "ee436abf1b975b2c28a4fec6cca0fdbef55ef980324d2d396e6df153f7f5d390",
+      "rawBytes": 688,
+      "rawSHA256": "ee436abf1b975b2c28a4fec6cca0fdbef55ef980324d2d396e6df153f7f5d390",
+      "source": "logs/fresh-minimal-handoff.json",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "ee436abf1b975b2c28a4fec6cca0fdbef55ef980324d2d396e6df153f7f5d390"
+    },
+    "fresh-minimal-pub-get.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 263,
+      "publicSHA256": "db77f500e97027105935df90bf0d5fdebbe0e2d6d9e39fd18911d55ecca46935",
+      "rawBytes": 503,
+      "rawSHA256": "b1b6a1b6d20082fb5fbe33a0a6739680e84a2fabb4cd6a4610ce256a1cec8095",
+      "source": "logs/fresh-minimal-pub-get.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          11,
+          11
+        ]
+      ],
+      "originalLineCount": 13,
+      "publicContentSHA256": "d4dba3ce7a43606c1fb3c1cfb4626be5a448c829f2969cdbb2cc472155a51e3d"
+    },
+    "fresh-prepared-localsend-handoff.json": {
+      "compression": "none",
+      "publicBytes": 1750,
+      "publicSHA256": "1b2d3f588978e4244aed71062121f4134f7b4995ed269f16b1c55b93371f7e96",
+      "rawBytes": 1750,
+      "rawSHA256": "1b2d3f588978e4244aed71062121f4134f7b4995ed269f16b1c55b93371f7e96",
+      "source": "logs/fresh-prepared-localsend-handoff.json",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "1b2d3f588978e4244aed71062121f4134f7b4995ed269f16b1c55b93371f7e96"
+    },
+    "fresh-prepared-localsend-ios-config-frozen.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 287,
+      "publicSHA256": "7ed7a4c92d7d611586838beb73f5ac408cbe3d2b5fab14aab5597359e1d1f03c",
+      "rawBytes": 134,
+      "rawSHA256": "0c1ef49eb07288820c2bf5e58800ae8c3640fcb826faf299043dfed6aaaf280f",
+      "source": "logs/fresh-prepared-localsend-ios-config-frozen.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          2,
+          2
+        ]
+      ],
+      "originalLineCount": 2,
+      "publicContentSHA256": "2634efbe4a4995651ddeaa1d8b32d35297c6233bdbcd03c38221d435a49346a0"
+    },
+    "fresh-prepared-localsend-pub-get.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 293,
+      "publicSHA256": "67c1d1b2bf74def85d7bb314556d2bf88a7a7b9fe948f26a1da1025c876587ee",
+      "rawBytes": 5640,
+      "rawSHA256": "4652e077a263af1aa47ccb80d6e0966989257468528e75bdaa1a11eedc7420a9",
+      "source": "logs/fresh-prepared-localsend-pub-get.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          122,
+          122
+        ]
+      ],
+      "originalLineCount": 124,
+      "publicContentSHA256": "b78ada83c461cc87ae92268a98da269be8a2ebd5c002120f12113a79ae4d4c87"
+    },
+    "gems-checksums.json": {
+      "compression": "none",
+      "publicBytes": 17675,
+      "publicSHA256": "aeff7e8635c3a89bd5e36a632b11a3763de4b3b9698702efb44960c3c06a1387",
+      "rawBytes": 19475,
+      "rawSHA256": "c80d7d24f8a259a67e39c422b3018bdc7d67d1ad762d01a217b9da945bd7ea02",
+      "source": "logs/gems-checksums.json",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "aeff7e8635c3a89bd5e36a632b11a3763de4b3b9698702efb44960c3c06a1387"
+    },
+    "ios-ephemeral-temp-summary.json": {
+      "compression": "none",
+      "publicBytes": 1040,
+      "publicSHA256": "47e44bce47a6fff0d0e3f77d4a2800a2409737cd1f4cb193aa48362d02e9a115",
+      "rawBytes": 1148,
+      "rawSHA256": "bae271ebda9bbd25f623db153afdb5bc329e012810d4371b67069c2f7d52f074",
+      "source": "logs/ios-ephemeral-temp-summary.json",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "47e44bce47a6fff0d0e3f77d4a2800a2409737cd1f4cb193aa48362d02e9a115"
+    },
+    "ios-final-inventory-diff.json": {
+      "compression": "none",
+      "publicBytes": 3,
+      "publicSHA256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356",
+      "rawBytes": 3,
+      "rawSHA256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356",
+      "source": "logs/ios-final-inventory-diff.json",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
+    },
+    "ios-final-writes.sb": {
+      "compression": "none",
+      "publicBytes": 328,
+      "publicSHA256": "89a42f2648b95d7aac27c6cdaa4e54a329fa32f5eb9b07ea8562dd0c117abd13",
+      "rawBytes": 421,
+      "rawSHA256": "4bbc25c67dbe800de479c6b6c00de488f539716c1a66dfa17a376487f80e37ef",
+      "source": "ios-final-writes.sb",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "89a42f2648b95d7aac27c6cdaa4e54a329fa32f5eb9b07ea8562dd0c117abd13"
+    },
+    "ios-owned-volume-final.json": {
+      "compression": "none",
+      "publicBytes": 543,
+      "publicSHA256": "b3e0d35e927ab637cabc41a42b757cbc0e78fa17aa7d85daa2efb92b81015e93",
+      "rawBytes": 593,
+      "rawSHA256": "ac1eabb493cfda18cb8f97344019502e12c5a7fba353e4d5e858575800f00b73",
+      "source": "logs/ios-owned-volume-final.json",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "b3e0d35e927ab637cabc41a42b757cbc0e78fa17aa7d85daa2efb92b81015e93"
+    },
+    "ios-tuple-record-correction.json": {
+      "compression": "none",
+      "publicBytes": 589,
+      "publicSHA256": "ff44c5c0d190d0074debc2a353e4d32ada709f88faf8f54872dbefb18fae65eb",
+      "rawBytes": 589,
+      "rawSHA256": "ff44c5c0d190d0074debc2a353e4d32ada709f88faf8f54872dbefb18fae65eb",
+      "source": "logs/ios-tuple-record-correction.json",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "ff44c5c0d190d0074debc2a353e4d32ada709f88faf8f54872dbefb18fae65eb"
+    },
+    "localsend-android-build-attempt1.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 594,
+      "publicSHA256": "ca39709fe39a3401f4f6c2b340bae4dbb8f999481729a252f6d3deed3a4fe744",
+      "rawBytes": 6635,
+      "rawSHA256": "0f9e68708af077cb084a4c7187c4af33e34b84ccdb92982a7860dbb3af8abed6",
+      "source": "logs/localsend-android-build-attempt1.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          38,
+          38
+        ],
+        [
+          42,
+          42
+        ],
+        [
+          46,
+          47
+        ],
+        [
+          52,
+          53
+        ],
+        [
+          83,
+          83
+        ],
+        [
+          89,
+          89
+        ],
+        [
+          98,
+          98
+        ],
+        [
+          100,
+          100
+        ]
+      ],
+      "originalLineCount": 100,
+      "publicContentSHA256": "6edcfa1ac5c7e96c29bc2d06aa5eb95d66c20ae20b11af149d991ea7c1ab8f9d"
+    },
+    "localsend-android-build-attempt2.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 428,
+      "publicSHA256": "330e05522612647d7e81e18404080f47c99ce5d3474f7b9ec20e7c4c23067f7c",
+      "rawBytes": 911,
+      "rawSHA256": "c148f83fe7ed4f4b2d7b5ca7ee7bfa10a7938ea038340330e8c85ef6713cfc9d",
+      "source": "logs/localsend-android-build-attempt2.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          3,
+          9
+        ],
+        [
+          11,
+          11
+        ]
+      ],
+      "originalLineCount": 11,
+      "publicContentSHA256": "d6e2c5a8941e08fecde9c56d3f5418345f6ba1bb65104df41b4974e162bf9980"
+    },
+    "localsend-android-tuple.json": {
+      "compression": "none",
+      "publicBytes": 1436,
+      "publicSHA256": "c3bcc071005c59bd446a7ea423d78ff00f24ff769a955b6d878f6ad725c5911a",
+      "rawBytes": 1638,
+      "rawSHA256": "f19b8b057f6d01390196e687e83e37eaaed6c76c80ea5f2eb8e632c1f346ea96",
+      "source": "logs/localsend-android-tuple.json",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "c3bcc071005c59bd446a7ea423d78ff00f24ff769a955b6d878f6ad725c5911a"
+    },
+    "localsend-ios-config.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 393,
+      "publicSHA256": "d37670bc609056f5d3a23a0da0139143647669bb2b09d5d7285445c58ba2069d",
+      "rawBytes": 125115,
+      "rawSHA256": "2cc035d10242c35eb61213c041e525180183c739d52e6e5772ed5cceea7d2b4e",
+      "source": "logs/localsend-ios-config.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          2,
+          2
+        ],
+        [
+          14,
+          16
+        ],
+        [
+          741,
+          741
+        ],
+        [
+          750,
+          750
+        ],
+        [
+          758,
+          761
+        ]
+      ],
+      "originalLineCount": 775,
+      "publicContentSHA256": "5d157c3282f717fd5820001646105022bab93a2773847f5a022554daecfbaafa"
+    },
+    "localsend-original-android-execution.json": {
+      "compression": "none",
+      "publicBytes": 1269,
+      "publicSHA256": "3bb23a7082872752076c1b0d928143f6535664367727dc27f837b719be692e21",
+      "rawBytes": 1269,
+      "rawSHA256": "3bb23a7082872752076c1b0d928143f6535664367727dc27f837b719be692e21",
+      "source": "logs/localsend-original-android-execution.json",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "3bb23a7082872752076c1b0d928143f6535664367727dc27f837b719be692e21"
+    },
+    "localsend-original-android-final-tuple.json": {
+      "compression": "none",
+      "publicBytes": 2785,
+      "publicSHA256": "b962bf5fe6c3baf1f8c2a2a41e600345ce13fabad2efb4720dd08da3e80adfc2",
+      "rawBytes": 2987,
+      "rawSHA256": "7f5031072634e685d57d98b9ae78bedffe16b72fe212646bcd166990d0c00c2c",
+      "source": "logs/localsend-original-android-final-tuple.json",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "b962bf5fe6c3baf1f8c2a2a41e600345ce13fabad2efb4720dd08da3e80adfc2"
+    },
+    "minimal-android-build-attempt1.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 519,
+      "publicSHA256": "5dfdc5f38ffa5d4bae31bc2a8052f53ab982b59949f5d694d7414383b7890857",
+      "rawBytes": 1496,
+      "rawSHA256": "8e9bfcaf9cf2528f00be3b27f519896a16b87c7836d1b1d68742ca96b9a88a8a",
+      "source": "logs/minimal-android-build-attempt1.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          4,
+          4
+        ],
+        [
+          11,
+          14
+        ],
+        [
+          22,
+          22
+        ],
+        [
+          24,
+          24
+        ]
+      ],
+      "originalLineCount": 24,
+      "publicContentSHA256": "fa39f4b013c972527dfbae8a8286394cdf124200b6458b83fc428ce2b5cce1e6"
+    },
+    "minimal-android-build-attempt2.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 299,
+      "publicSHA256": "1c49db71408799c06dbdaa23838de1b9d48283ec4f79a13cb8bdac18ead369f1",
+      "rawBytes": 1599,
+      "rawSHA256": "b6c5e90106774a6d230cc2008294040ce2a4eb060092cfdf7b0bf3f4dc9eba17",
+      "source": "logs/minimal-android-build-attempt2.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          10,
+          10
+        ]
+      ],
+      "originalLineCount": 10,
+      "publicContentSHA256": "8c4bd948af646180a899c2836e0388dd14dc8759b8c38aad28c34d6bcf626b64"
+    },
+    "minimal-android-execution.json": {
+      "compression": "none",
+      "publicBytes": 1402,
+      "publicSHA256": "c7eb52ac834ff5f6dd641877e3e458ef1b9a7ddfa0838b186ed31e5e802df970",
+      "rawBytes": 1402,
+      "rawSHA256": "c7eb52ac834ff5f6dd641877e3e458ef1b9a7ddfa0838b186ed31e5e802df970",
+      "source": "logs/minimal-android-execution.json",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "c7eb52ac834ff5f6dd641877e3e458ef1b9a7ddfa0838b186ed31e5e802df970"
+    },
+    "minimal-android-final-tuple.json": {
+      "compression": "none",
+      "publicBytes": 2654,
+      "publicSHA256": "c3773a82f367838a13433b5c60ddd3dd37f77aa4e61032dbcabf2ca52de095c8",
+      "rawBytes": 2856,
+      "rawSHA256": "f21a0497c191300a5774b053f0add138370786bf7a9ca109d922f8841b6baccb",
+      "source": "logs/minimal-android-final-tuple.json",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "c3773a82f367838a13433b5c60ddd3dd37f77aa4e61032dbcabf2ca52de095c8"
+    },
+    "minimal-android-tuple.json": {
+      "compression": "none",
+      "publicBytes": 1699,
+      "publicSHA256": "389da342bebfe8d275782180bc586e74f07ebd1512d4a8489ded70a8334d4a85",
+      "rawBytes": 1901,
+      "rawSHA256": "cf76282aa0e8865ef7a09755c9e2b6af2ced2d8378466a05376e9273c3fb31cf",
+      "source": "logs/minimal-android-tuple.json",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "389da342bebfe8d275782180bc586e74f07ebd1512d4a8489ded70a8334d4a85"
+    },
+    "minimal-fresh-cache-pub-get-misdirected.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 274,
+      "publicSHA256": "1796afb30c6a62188b1478ce1bab9aa7bdbbb6db670f9541ad0c51c35c38a50f",
+      "rawBytes": 503,
+      "rawSHA256": "b1b6a1b6d20082fb5fbe33a0a6739680e84a2fabb4cd6a4610ce256a1cec8095",
+      "source": "logs/minimal-fresh-cache-pub-get-misdirected.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          11,
+          11
+        ]
+      ],
+      "originalLineCount": 13,
+      "publicContentSHA256": "1be09c2e4c91c7de34fa7427d6ce01497934dd7d8ec2fc3fb9db958c4594ca30"
+    },
+    "minimal-ios-build.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 413,
+      "publicSHA256": "26580ffc76cb75746e989c90ee4525a26c65382cc6d945cc66631d6d00359d97",
+      "rawBytes": 562,
+      "rawSHA256": "7ea1ce28ba92e77058449d025642ced8c680292274acf003f8ac72caa9c2e49e",
+      "source": "logs/minimal-ios-build.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          4,
+          5
+        ],
+        [
+          8,
+          8
+        ]
+      ],
+      "originalLineCount": 8,
+      "publicContentSHA256": "d5be2defac6cf12088968ef71594ac8e8eda1bd1332ce19e996f8ea8e48e2c8d"
+    },
+    "minimal-ios15-app-manifest.json": {
+      "compression": "none",
+      "publicBytes": 14362,
+      "publicSHA256": "17101bdee5fb25c9ab4c869e1961d0059465c1994eae7ac7f93b8f4d307a83f1",
+      "rawBytes": 14362,
+      "rawSHA256": "17101bdee5fb25c9ab4c869e1961d0059465c1994eae7ac7f93b8f4d307a83f1",
+      "source": "logs/minimal-ios15-app-manifest.json",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "17101bdee5fb25c9ab4c869e1961d0059465c1994eae7ac7f93b8f4d307a83f1"
+    },
+    "minimal-ios15-arm64-build.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 579,
+      "publicSHA256": "f32a955e9f0fe8ed472e8c499e5c921d220cf5c7ebb6cac236aceeb5143dd5e7",
+      "rawBytes": 219347,
+      "rawSHA256": "8cd64bd8d299bf785fb37db1de370216ccfcfbf48e39eb27101878daa2e0e5a2",
+      "source": "logs/minimal-ios15-arm64-build.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          1,
+          2
+        ],
+        [
+          1928,
+          1928
+        ]
+      ],
+      "originalLineCount": 1929,
+      "publicContentSHA256": "35d77c321c219d2684cf33fa49a96f64cee55d7733398c7123fe490a38bfcea1"
+    },
+    "minimal-ios15-arm64-tuple.json": {
+      "compression": "none",
+      "publicBytes": 2822,
+      "publicSHA256": "886a19f4d833f5dd619e5b2c3c341d66ccbb995dbfd226ffecbdcbeff484f530",
+      "rawBytes": 3010,
+      "rawSHA256": "f3496411f6b5b58c8fe2494f56d67b8d8a5282d86a7b77980cedcb1071d25193",
+      "source": "logs/minimal-ios15-arm64-tuple.json",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "886a19f4d833f5dd619e5b2c3c341d66ccbb995dbfd226ffecbdcbeff484f530"
+    },
+    "minimal-ios15-build.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 474,
+      "publicSHA256": "2f41ee7a147d3bef27e4eb297202adbf04d93b5059e07fc66dfca035a359917e",
+      "rawBytes": 1630,
+      "rawSHA256": "2391fde386808083b0bea16000803d38e40abe969b1274934ceadf1cf2b9e25e",
+      "source": "logs/minimal-ios15-build.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          4,
+          4
+        ],
+        [
+          7,
+          7
+        ],
+        [
+          15,
+          15
+        ],
+        [
+          18,
+          18
+        ],
+        [
+          24,
+          24
+        ]
+      ],
+      "originalLineCount": 24,
+      "publicContentSHA256": "9558d36c36eaa6ba1ed2d53acb6a3f14582a9008494e101750d752ab3967e962"
+    },
+    "minimal-ios15-execution.json": {
+      "compression": "none",
+      "publicBytes": 855,
+      "publicSHA256": "198ef233bf1cff24a6c66595b426479ef3ff9c27e81f98dda26166da0d25531d",
+      "rawBytes": 892,
+      "rawSHA256": "0b5cca183dc802dd91768c251f68294bd0c1a7975569fbe455226b8470164066",
+      "source": "logs/minimal-ios15-execution.json",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "198ef233bf1cff24a6c66595b426479ef3ff9c27e81f98dda26166da0d25531d"
+    },
+    "owned-writes.sb": {
+      "compression": "none",
+      "publicBytes": 198,
+      "publicSHA256": "a7b44319d4a1d8802c3af5c2565ddefe01ead41cfa7481d5ebf182ccdcd4df23",
+      "rawBytes": 248,
+      "rawSHA256": "492f2d3a1f2e11122eed1407719b13cf6dc990d5290e594596e4f341550a17cc",
+      "source": "owned-writes.sb",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "a7b44319d4a1d8802c3af5c2565ddefe01ead41cfa7481d5ebf182ccdcd4df23"
+    },
+    "pod-frozen-wrapper.sh": {
+      "compression": "none",
+      "publicBytes": 230,
+      "publicSHA256": "3c4b64330eb75e4346c139fbd804dadf77a1969c5cc3690a8bb824faad1ac72d",
+      "rawBytes": 326,
+      "rawSHA256": "61ae8cf8669db377d8c08f699c6be021c2ca464adc5747ecb09687f712db247b",
+      "source": "tools/pod-frozen/pod",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "3c4b64330eb75e4346c139fbd804dadf77a1969c5cc3690a8bb824faad1ac72d"
+    },
+    "pod-prepared-wrapper.sh": {
+      "compression": "none",
+      "publicBytes": 399,
+      "publicSHA256": "a3c2ad96fe26be2e9ef209dcc4adfc0879d68712b90ee851f6f6d205ee989f64",
+      "rawBytes": 447,
+      "rawSHA256": "3d1f39bb28ca5262d8b676fafad400fdcd41daf539915aaff17d0862b1e7ff84",
+      "source": "tools/pod-prepared/pod",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "a3c2ad96fe26be2e9ef209dcc4adfc0879d68712b90ee851f6f6d205ee989f64"
+    },
+    "prepared-localsend-android-build-attempt1.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 439,
+      "publicSHA256": "6194f4db96ebeddeb92f1749274ac3f0f841f0cf11dcf013252a9e8e72e55f1d",
+      "rawBytes": 2286,
+      "rawSHA256": "df0ce0597ab8923fa64a51c43c09f7cdc60fbbc6e5134077d361415d8f9d69f1",
+      "source": "logs/prepared-localsend-android-build-attempt1.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          32,
+          32
+        ],
+        [
+          36,
+          40
+        ],
+        [
+          42,
+          42
+        ]
+      ],
+      "originalLineCount": 42,
+      "publicContentSHA256": "01530ce4a1f9786b55b0efc9c2ab7b3d9c5b017589219562971c690d0ffbd0d6"
+    },
+    "prepared-localsend-android-execution.json": {
+      "compression": "none",
+      "correction": {
+        "corrected": "exit0 Status ok WARM",
+        "evidence": "prepared-localsend-android-launch.log.gz",
+        "field": "launch",
+        "original": "exit0 Status ok COLD",
+        "scope": "Summary correction only. Original receipt retained at source; build/install/first-screen evidence unchanged."
+      },
+      "publicBytes": 1473,
+      "publicSHA256": "007e71ceae50f69167661324bcdfd3d6fea55a314c3232e0f59f69043ab391cd",
+      "rawBytes": 1314,
+      "rawSHA256": "ce07ace613a69560c4c89b7c116d504aa752a0a88832b5a81ec9b77ca92fa1a9",
+      "source": "logs/prepared-localsend-android-execution.json",
+      "representation": "corrected summary with path/device aliases; original correction history retained",
+      "publicContentSHA256": "007e71ceae50f69167661324bcdfd3d6fea55a314c3232e0f59f69043ab391cd"
+    },
+    "prepared-localsend-android-launch.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 325,
+      "publicSHA256": "63e44274d11f30e9403df47a2a7c2ee26a327070023ce3d843dda2528ec5b98c",
+      "rawBytes": 254,
+      "rawSHA256": "61bbce99bc0d1643876e4daef6ae6d41ea702590d96decc40e2c83e51d790101",
+      "source": "logs/prepared-localsend-android-launch.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          2,
+          4
+        ],
+        [
+          7,
+          7
+        ]
+      ],
+      "originalLineCount": 7,
+      "publicContentSHA256": "7ca4ae9f76bb1b30da244f0ac577c2055d9d3e1707e6124d1a7e751b14e3cb4d"
+    },
+    "prepared-localsend-android-tuple.json": {
+      "compression": "none",
+      "publicBytes": 2974,
+      "publicSHA256": "5bad7cbee0575e1f03370909c09c104ca919442c284766e84e3fcd7fe7487a07",
+      "rawBytes": 3176,
+      "rawSHA256": "2d11d8354e73758a0b8f62135f02088d9cf58c2f0f1a984b81ad98270a008123",
+      "source": "logs/prepared-localsend-android-tuple.json",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "5bad7cbee0575e1f03370909c09c104ca919442c284766e84e3fcd7fe7487a07"
+    },
+    "prepared-localsend-cargokit-runner.pubspec.lock.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 1687,
+      "publicSHA256": "4bf28c6284d61f2b57c1b69b9e7157fc753eb911fc76388e14b321304883c409",
+      "rawBytes": 5853,
+      "rawSHA256": "a084a3090725b120fc3f4547048001e905cdb87a89de6cedab35ae0314a66826",
+      "source": "logs/prepared-localsend-cargokit-runner.pubspec.lock",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "43c10db7a41eb69e053dcc671517cd15478f019093c321711c550d9753ed2a2b"
+    },
+    "prepared-localsend-input.patch.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 3282,
+      "publicSHA256": "ee0fd0c4119e1e4a168be3f42c6b0f05dc1fad63b2f136455dc50110f631fa64",
+      "rawBytes": 8929,
+      "rawSHA256": "743a7c9f8ce9bd98b7ccc68a767b280bb393e2f6ee7e380f4e2782a53567d358",
+      "source": "logs/prepared-localsend-input.patch",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "743a7c9f8ce9bd98b7ccc68a767b280bb393e2f6ee7e380f4e2782a53567d358"
+    },
+    "prepared-localsend-ios-app-manifest.json": {
+      "compression": "none",
+      "publicBytes": 49838,
+      "publicSHA256": "bbf8d56ee4270ab394d4d50881837a01672ab581b338bcae3d7f892b71e00d77",
+      "rawBytes": 49888,
+      "rawSHA256": "d32bc6ec5515c93b60d2d2c82954814f964ddb3b055f7adf2c7a4a7c9ec1604e",
+      "source": "logs/prepared-localsend-ios-app-manifest.json",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "bbf8d56ee4270ab394d4d50881837a01672ab581b338bcae3d7f892b71e00d77"
+    },
+    "prepared-localsend-ios-build-attempt1.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 943,
+      "publicSHA256": "c2814b953cf12d0397a5312fb9de070ee4f124ea4b6bae0c0d1ab9bada7de9cf",
+      "rawBytes": 2581,
+      "rawSHA256": "6d0165228b243798608ec603f4714429c49db1d18ae346a0dff25153c3f4fc63",
+      "source": "logs/prepared-localsend-ios-build-attempt1.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          1,
+          2
+        ],
+        [
+          14,
+          14
+        ],
+        [
+          16,
+          16
+        ],
+        [
+          18,
+          18
+        ],
+        [
+          21,
+          21
+        ]
+      ],
+      "originalLineCount": 26,
+      "publicContentSHA256": "809b43cf2c6ef1b99a4a4f90982bf6cfa980c35378ee889ca3266dc6adb204c5"
+    },
+    "prepared-localsend-ios-build-final.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 766,
+      "publicSHA256": "5490e8b4f6f16d8a602cbeeb5bc5495e5f8941e2ea4c18abb16c015f7556b633",
+      "rawBytes": 5227562,
+      "rawSHA256": "e3d2c8ebb4367d9ac57135528c8da944a42cbe03dcf9f5e091b63c30b38e5e36",
+      "source": "logs/prepared-localsend-ios-build-final.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          1,
+          2
+        ],
+        [
+          4275,
+          4275
+        ],
+        [
+          4279,
+          4281
+        ],
+        [
+          10005,
+          10005
+        ],
+        [
+          10019,
+          10019
+        ],
+        [
+          12370,
+          12370
+        ],
+        [
+          18175,
+          18175
+        ]
+      ],
+      "originalLineCount": 18176,
+      "publicContentSHA256": "2e0e5d4681d091033b387186e35f95e71a6c90b3358663e2c861dfd5ec01df1c"
+    },
+    "prepared-localsend-ios-config.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 278,
+      "publicSHA256": "ee087ca1a592b4e4c4a25a4a6906fc08a9fe2288f1f396d3e3aa4a61fcf8727d",
+      "rawBytes": 134,
+      "rawSHA256": "63780ba43ac0f11e447dcac5f949b70503ce15c3e3669dc3dc7ec4e5acbcb3e6",
+      "source": "logs/prepared-localsend-ios-config.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          2,
+          2
+        ]
+      ],
+      "originalLineCount": 2,
+      "publicContentSHA256": "7f2db91ea790ddbfc1e8ebee1616a5a229158bd9e6b3b4b54e1c80dc21a4ee22"
+    },
+    "prepared-localsend-ios-execution.json": {
+      "compression": "none",
+      "publicBytes": 1991,
+      "publicSHA256": "4de713ba393b8b379f47e001e4fd6f1b3ea2cd8fb8c3c0abb6cb3ce327630ab6",
+      "rawBytes": 2097,
+      "rawSHA256": "336a770e04dc52213ab46b0d869ad863b3fb67544b95ee93cb6561874d0b5169",
+      "source": "logs/prepared-localsend-ios-execution.json",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "4de713ba393b8b379f47e001e4fd6f1b3ea2cd8fb8c3c0abb6cb3ce327630ab6"
+    },
+    "prepared-localsend-ios-final-tuple.json": {
+      "compression": "none",
+      "publicBytes": 4940,
+      "publicSHA256": "9765d3abcc521749479883ac7a569e82adfb01c06b1b5f28ccaeef2dda5eef5f",
+      "rawBytes": 5832,
+      "rawSHA256": "73877c3c08888de7faf2662aa445b2ff3d665552d3729be529ff47b5a9ca68a9",
+      "source": "logs/prepared-localsend-ios-final-tuple.json",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "9765d3abcc521749479883ac7a569e82adfb01c06b1b5f28ccaeef2dda5eef5f"
+    },
+    "prepared-localsend-ios-install.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 292,
+      "publicSHA256": "1d02fbcc59cc2f5f5066a37d41cbc9fcae0fec51d5f5970378191612156b2923",
+      "rawBytes": 0,
+      "rawSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source": "logs/prepared-localsend-ios-install.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [],
+      "originalLineCount": 0,
+      "publicContentSHA256": "32a483b0898d4c396b4676c057c9b900f5f92e4e2608c8d151d5e640244e38d3"
+    },
+    "prepared-localsend-ios-launch.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 272,
+      "publicSHA256": "e204bd7dc565fd07de1e2be732b030faba3001cbfd50a7167c486c3c025c7537",
+      "rawBytes": 34,
+      "rawSHA256": "a3bbf714556b3b9ab8faae226feed9c72a352bc536e479f0960a068c8d4ec062",
+      "source": "logs/prepared-localsend-ios-launch.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          1,
+          1
+        ]
+      ],
+      "originalLineCount": 1,
+      "publicContentSHA256": "a524a9168336b22b574b89d8f7b4f2aea471bf5307e569b3b0df1d33dc359783"
+    },
+    "prepared-localsend-ios-pid-path.txt.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 349,
+      "publicSHA256": "c143ca322c1199448f01d41ab4a1a5dceab24ff08ef072f7e151084a477b47c4",
+      "rawBytes": 187,
+      "rawSHA256": "cff30d1ab4398a6f503eddc6c1374e4b29e98e0fcd28227fcac0343d8cbc3d8c",
+      "source": "logs/prepared-localsend-ios-pid-path.txt",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [
+        [
+          1,
+          1
+        ]
+      ],
+      "originalLineCount": 1,
+      "publicContentSHA256": "83ba2ea2f42b5c8833c19fce95175396bc1ada24ebebf81c8a28f8774a66b671"
+    },
+    "prepared-localsend-ios-shutdown.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 293,
+      "publicSHA256": "3dbfd475a006f96422adf44ce0f9cee63a9a702cd49ba2f93b71a77d07e3333b",
+      "rawBytes": 0,
+      "rawSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source": "logs/prepared-localsend-ios-shutdown.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [],
+      "originalLineCount": 0,
+      "publicContentSHA256": "75344db817f1862e489d4e55c53f4247c411c5381f2bc0053a0c5984abafdb6b"
+    },
+    "prepared-localsend-ios-terminate.log.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 293,
+      "publicSHA256": "523cdb72c66685261adba6c744e97ebcedd7543829f5a462a16eb90277f481ae",
+      "rawBytes": 0,
+      "rawSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source": "logs/prepared-localsend-ios-terminate.log",
+      "representation": "redacted diagnostic line excerpt; not a complete original log",
+      "selectedOriginalLineRanges": [],
+      "originalLineCount": 0,
+      "publicContentSHA256": "0870f2674e1079f23261860427aad35d8774c27ed5a25298cbbb6dd08eec1009"
+    },
+    "prepared-localsend-native-input.json": {
+      "compression": "none",
+      "publicBytes": 21329,
+      "publicSHA256": "eb742953e73a94d1be7c316966106d804e31b4f13f42b46a1f1c094ea7eba2a5",
+      "rawBytes": 21329,
+      "rawSHA256": "eb742953e73a94d1be7c316966106d804e31b4f13f42b46a1f1c094ea7eba2a5",
+      "source": "logs/prepared-localsend-native-input.json",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "eb742953e73a94d1be7c316966106d804e31b4f13f42b46a1f1c094ea7eba2a5"
+    },
+    "prepared-localsend-remote-pods-sources.json": {
+      "compression": "none",
+      "publicBytes": 1586,
+      "publicSHA256": "cf75814f38b1cc65eaf3d251756c38751e3be77222a55ef80598cefef125a635",
+      "rawBytes": 1586,
+      "rawSHA256": "cf75814f38b1cc65eaf3d251756c38751e3be77222a55ef80598cefef125a635",
+      "source": "logs/prepared-localsend-remote-pods-sources.json",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "cf75814f38b1cc65eaf3d251756c38751e3be77222a55ef80598cefef125a635"
+    },
+    "prepared-localsend-source.json": {
+      "compression": "none",
+      "publicBytes": 587,
+      "publicSHA256": "f2417577261cba569115496f3f261cd62f4e6cd7af4e85d2246a69613b429a12",
+      "rawBytes": 587,
+      "rawSHA256": "f2417577261cba569115496f3f261cd62f4e6cd7af4e85d2246a69613b429a12",
+      "source": "logs/prepared-localsend-source.json",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "f2417577261cba569115496f3f261cd62f4e6cd7af4e85d2246a69613b429a12"
+    },
+    "run213.sh": {
+      "compression": "none",
+      "publicBytes": 2344,
+      "publicSHA256": "c9d0304bc84db67c91fda40b91fdd6e1731ca07c93e11465099e0399724af1c6",
+      "rawBytes": 2396,
+      "rawSHA256": "446b045555b5ac74b9450ce303c2438794a16b8af0513148b994a49935bc3842",
+      "source": "run213",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "c9d0304bc84db67c91fda40b91fdd6e1731ca07c93e11465099e0399724af1c6"
+    },
+    "rust-resolved-target-artifacts.json": {
+      "compression": "none",
+      "publicBytes": 2572,
+      "publicSHA256": "028e7267e64260cd119db1a016acf4bc19a5333eb16edd0c2c4982f54e54ceac",
+      "rawBytes": 2572,
+      "rawSHA256": "028e7267e64260cd119db1a016acf4bc19a5333eb16edd0c2c4982f54e54ceac",
+      "source": "logs/rust-resolved-target-artifacts.json",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "028e7267e64260cd119db1a016acf4bc19a5333eb16edd0c2c4982f54e54ceac"
+    },
+    "rust-stable-quarantine.json": {
+      "compression": "none",
+      "publicBytes": 546,
+      "publicSHA256": "2cd3796f32a8c979dab5dfccbb526a0e420f76b2ffc4c65a79a3b79c706d5956",
+      "rawBytes": 646,
+      "rawSHA256": "7c6f37cac86fac431259c2cc00c5d546f05cb0370a72f16ff21b079566c976c8",
+      "source": "logs/rust-stable-quarantine.json",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "2cd3796f32a8c979dab5dfccbb526a0e420f76b2ffc4c65a79a3b79c706d5956"
+    },
+    "sandbox-selfcheck.json": {
+      "compression": "none",
+      "publicBytes": 215,
+      "publicSHA256": "bd8ebe27fbf8bbfc8792eb1ea2398fc032e25b48eaae57184faec209a59a12da",
+      "rawBytes": 246,
+      "rawSHA256": "03d2b579d35c0fbd24500c1e6d55485529b1a378cf5f196a3d4242a3d0a75f35",
+      "source": "logs/sandbox-selfcheck.json",
+      "representation": "path/device aliases applied; content hash is not the restricted raw hash",
+      "publicContentSHA256": "bd8ebe27fbf8bbfc8792eb1ea2398fc032e25b48eaae57184faec209a59a12da"
+    },
+    "source-audit-fresh-prepared-localsend-final.json.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 54085,
+      "publicSHA256": "9b4a977bd0f9ad571253d379b825319d4f7a05fed0ffdd25b168d466dfe39daf",
+      "rawBytes": 366076,
+      "rawSHA256": "7874b358d538f5baa3fe2e89ded3b541acf27967ca056ac09f97591c4649419d",
+      "source": "source-audits/fresh-prepared-localsend-final.json",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "7874b358d538f5baa3fe2e89ded3b541acf27967ca056ac09f97591c4649419d"
+    },
+    "source-audit-localsend-original-final.json.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 54086,
+      "publicSHA256": "ffb4f0e74f5b6a50736809eaf60ddffa04476d14fd072fef08ac073bc62f9271",
+      "rawBytes": 366076,
+      "rawSHA256": "2fa192906de197400d5eadfc3dac4004bd770fed61a6efcbc3f65efe120d271a",
+      "source": "source-audits/localsend-original-final.json",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "2fa192906de197400d5eadfc3dac4004bd770fed61a6efcbc3f65efe120d271a"
+    },
+    "source-audit-minimal-final.json.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 3785,
+      "publicSHA256": "a619179586223c783234198005353c17d29d969643f5f89e551d15f9b47a2f43",
+      "rawBytes": 24176,
+      "rawSHA256": "81a73c87db8ec31b9454dbb55113a9947806f6614b10bf29bd10c9e2ee860fb3",
+      "source": "source-audits/minimal-final.json",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "81a73c87db8ec31b9454dbb55113a9947806f6614b10bf29bd10c9e2ee860fb3"
+    },
+    "source-audit-prepared-localsend-after-ios-final.json.gz": {
+      "compression": "gzip mtime=0",
+      "publicBytes": 54085,
+      "publicSHA256": "7239b8fbeaa94a893bb8ec747116ec978d3fe4b3d2694964eb306aa599d995df",
+      "rawBytes": 366076,
+      "rawSHA256": "6fe9fbb48c15f88927426ddfa49105da0860824733980c648f235795cd82e769",
+      "source": "source-audits/prepared-localsend-after-ios-final.json",
+      "representation": "exact non-log input or structured receipt",
+      "publicContentSHA256": "6fe9fbb48c15f88927426ddfa49105da0860824733980c648f235795cd82e769"
+    }
+  },
+  "scope": "Public diagnostic excerpts and redacted structured evidence. Complete original logs, original paths/device identifiers, and private global/temp snapshots remain restricted. rawSHA256/rawBytes identify the preserved restricted source; publicSHA256/publicBytes identify the published representation. Existing correction history remains intact.",
+  "restrictedAccess": "Task evidence custodian/maintainer only; request access through the coordinating maintainer. The public repository does not grant raw-evidence access.",
+  "aliases": {
+    "<evidence-root>": "restricted task-owned evidence root; exact prefix is retained privately",
+    "<user-home>": "operator home, including read-only installed tool paths",
+    "<darwin-temp>": "current user Darwin T; approved ephemeral exception only",
+    "<owned-native-temp>": "task-owned final native build directory below Darwin T",
+    "<owned-native-temp-attempt>": "task-owned earlier native build directory",
+    "<emulator-temp>": "Emulator temporary location outside the allowed task root; recorded denial",
+    "<owned-simulator>": "the single task-owned iOS Simulator; same identity across the recorded cases",
+    "<owned-installation>": "task-owned installed application container",
+    "<evidence-parent>": "parent of the task root; the forbidden-write probe stayed outside the allowed task root",
+    "<shared-sdk-root>": "pre-existing SDK used only as the read source of the owned COW clone"
+  }
+}

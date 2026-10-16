@@ -1,0 +1,51 @@
+{
+  "globalAndroidMetadataDiff": {},
+  "globalConfigDiff": {},
+  "sharedSDKSelectedSnapshotDiff": {},
+  "simulatorStateDiff": {},
+  "sourceAudits": {
+    "fresh-prepared-localsend-final.json": {
+      "hiddenFlags": [],
+      "indexDiffExit": 0,
+      "manifestSHA256": "7874b358d538f5baa3fe2e89ded3b541acf27967ca056ac09f97591c4649419d",
+      "rawOrModeDifferences": [],
+      "sourceSHA": "61145cf100522363e9658af97137097551c64832",
+      "timeUTC": "2026-10-15T13:40:32.143705+00:00",
+      "trackedCount": 1030,
+      "trackedDiffExit": 0
+    },
+    "localsend-original-final.json": {
+      "hiddenFlags": [],
+      "indexDiffExit": 0,
+      "manifestSHA256": "2fa192906de197400d5eadfc3dac4004bd770fed61a6efcbc3f65efe120d271a",
+      "rawOrModeDifferences": [],
+      "sourceSHA": "c1ce322fb3acf08e44f329b8b7208b8b0d91e244",
+      "timeUTC": "2026-10-15T13:40:17.571047+00:00",
+      "trackedCount": 1030,
+      "trackedDiffExit": 0
+    },
+    "minimal-final.json": {
+      "hiddenFlags": [],
+      "indexDiffExit": 0,
+      "manifestSHA256": "81a73c87db8ec31b9454dbb55113a9947806f6614b10bf29bd10c9e2ee860fb3",
+      "rawOrModeDifferences": [],
+      "sourceSHA": "66732bc18ed28d9eed71336b4a2b018e09ad20b9",
+      "timeUTC": "2026-10-15T13:40:33.448480+00:00",
+      "trackedCount": 67,
+      "trackedDiffExit": 0
+    },
+    "prepared-localsend-after-ios-final.json": {
+      "hiddenFlags": [],
+      "indexDiffExit": 0,
+      "manifestSHA256": "6fe9fbb48c15f88927426ddfa49105da0860824733980c648f235795cd82e769",
+      "rawOrModeDifferences": [],
+      "sourceSHA": "61145cf100522363e9658af97137097551c64832",
+      "timeUTC": "2026-10-15T13:40:16.987436+00:00",
+      "trackedCount": 1030,
+      "trackedDiffExit": 0
+    }
+  },
+  "sourceBoundary": "only docs/evidence/213 changes in Runstir; sample changes limited to explicitly approved new inputs",
+  "timeUTC": "2026-10-15T13:42:12.475550+00:00",
+  "unknownScope": "SDK snapshot covers .knownPackages and selected source.properties only; not every SDK byte. Android key/token comparison is lstat only."
+}

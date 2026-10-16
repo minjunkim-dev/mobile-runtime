@@ -1,0 +1,1091 @@
+{
+  "schemaVersion": 1,
+  "scope": "Prospective native inputs and later per-LocalSend preparation; historical native4/4 not carried forward.",
+  "host": {
+    "macOSVersion": "27.0.1",
+    "build": "26A434",
+    "architecture": "arm64",
+    "officialMinimumMacOS": "26.6",
+    "meetsOfficialMinimum": true,
+    "hardware": "Apple Silicon arm64; actual host Mac, not a VM. No serial/hostUUID collected.",
+    "OSReceipt": "<android-native-root>/state/host-readonly-receipt-v1.json"
+  },
+  "sources": [
+    {
+      "sample": "minimal",
+      "path": "<ios-native-root>/sources/native-minimal",
+      "sourceSHA": "66732bc18ed28d9eed71336b4a2b018e09ad20b9",
+      "tree": "1b2c0f69a98890901706439215227d533bb69b7a",
+      "trackedCount": 67,
+      "snapshotSHA256": "75b9793c44445da1a8d8e4745e5496d342b4daa7c480c513ac0d090c51cdec89",
+      "sameTrackedBytesAsAndroidInput": true,
+      "noObjectAlternatesOrHardlinkClone": true
+    },
+    {
+      "sample": "localsend",
+      "path": "<ios-native-root>/sources/native-localsend",
+      "sourceSHA": "61145cf100522363e9658af97137097551c64832",
+      "tree": "2346d8051c3f556fa545e9c48aa5c1bc7fc2446b",
+      "trackedCount": 1030,
+      "snapshotSHA256": "054cfd6edeed0233dfcc429aa0a88f30f91a2de81dead706cda94ccde1900d01",
+      "sameTrackedBytesAsAndroidInput": true,
+      "noObjectAlternatesOrHardlinkClone": true
+    }
+  ],
+  "sourceRoleAndRoot": {
+    "minimal": {
+      "appRoot": ".",
+      "dependencyRoot": ".",
+      "entrypoint": "lib/main.dart",
+      "iOSScheme": "Runner",
+      "iOSConfiguration": "Debug",
+      "androidModule": ":app",
+      "androidVariant": "debug"
+    },
+    "localsend": {
+      "appRoot": "app",
+      "dependencyRoot": ".",
+      "entrypoint": "lib/main.dart relative to app",
+      "iOSScheme": "Runner",
+      "iOSConfiguration": "Debug",
+      "androidModule": ":app",
+      "androidVariant": "debug"
+    }
+  },
+  "flutter": {
+    "version": "3.41.9",
+    "Dart": "3.11.5",
+    "SDK": "<ios-native-root>/tools/flutter",
+    "officialZIP": {
+      "path": "<android-native-root>/downloads/flutter_macos_arm64_3.41.9-stable.zip",
+      "bytes": 2147160009,
+      "SHA256": "d692b030a63466c44d6b2bc88583380371ecbe328f22cc4057835f59739821a1"
+    },
+    "selectedOfficialMembers": "17918 regular +15 symlink compared to official ZIP",
+    "comparison": {
+      "path": "<ios-native-root>/state/flutter-ios-sdk-selected-official-member-compare-v1.json",
+      "bytes": 1162,
+      "SHA256": "7188f05c8bf3b514e236b1fbc7f15cf2dc88f5337019721439bd7de569661cda"
+    }
+  },
+  "android": {
+    "prepinV2": "<android-native-root>/state/android-tool-tuple-prepin-v2.json",
+    "additionalPrepinV5": "<android-native-root>/state/android-tool-tuple-prepin-v5.json",
+    "sourceDeclarations": {
+      "minimal": {
+        "Gradle": "8.14-all",
+        "AGP": "8.11.1",
+        "Kotlin": "2.2.20",
+        "compileSDK": 36,
+        "targetSDK": 36,
+        "minSDK": 24,
+        "NDK": "28.2.13676358",
+        "JavaLanguageLevel": 17,
+        "BuildTools": "AGP8.11.1 documented default35.0.0; runtime selection unmeasured"
+      },
+      "localsend": {
+        "Gradle": "8.13-all",
+        "AGP": "8.12.1",
+        "Kotlin": "2.2.0",
+        "compileSDK": 36,
+        "targetSDK": 37,
+        "minSDK": 24,
+        "NDK": "28.2.13676358",
+        "JavaLanguageLevel": 17,
+        "BuildTools": "36.0.0 explicit afterEvaluate for selected Android application/library projects",
+        "rustPluginBuildscriptAGPDeclaration": "7.3.0; actual conflict resolution unmeasured",
+        "JNIPluginCMake": "jni1.0.3 declares CMake >=3.10, no exact version; provided3.22.1 is a pinned input, not a source declaration"
+      }
+    },
+    "officialArtifacts": [
+      {
+        "component": "platforms;android-36",
+        "name": "platform-36_r02.zip",
+        "URL": "https://dl.google.com/android/repository/platform-36_r02.zip",
+        "actualBytes": 65878410,
+        "SHA256": "37607369a28c5b640b3a7998868d45898ebcb777565a0e85f9acf36f29631d2e",
+        "publisherChecksumAlgorithm": "sha1",
+        "publisherChecksum": "2c1a80dd4d9f7d0e6dd336ec603d9b5c55a6f576",
+        "publisherMetadataSHA256": "237eefe28e55619d3e63d730f8994cc1ae6d9c171096f07a6c147297145787e6",
+        "publisherChecksumVerified": true
+      },
+      {
+        "component": "build-tools;36.0.0",
+        "name": "build-tools_r36_macosx.zip",
+        "URL": "https://dl.google.com/android/repository/build-tools_r36_macosx.zip",
+        "actualBytes": 79121749,
+        "SHA256": "04e7f3a72044de4926fa038fa0e251a37bba1e1c3fb8beab6f8401bfd9eb4bf3",
+        "publisherChecksumAlgorithm": "sha1",
+        "publisherChecksum": "199ae0047ee61e842f8ee0c6d3918e44fb9a1f83",
+        "publisherMetadataSHA256": "237eefe28e55619d3e63d730f8994cc1ae6d9c171096f07a6c147297145787e6",
+        "publisherChecksumVerified": true
+      },
+      {
+        "component": "cmdline-tools;21.0",
+        "name": "commandlinetools-mac-15641748_latest.zip",
+        "URL": "https://dl.google.com/android/repository/commandlinetools-mac-15641748_latest.zip",
+        "actualBytes": 152127646,
+        "SHA256": "a2253766e128f6d4ff594d23857b67f52028a7e8773b2634dcc3d3e60d13b290",
+        "publisherChecksumAlgorithm": "sha1",
+        "publisherChecksum": "b62a5d8cf63ded173b47be867be4ee058ceda6df",
+        "publisherMetadataSHA256": "237eefe28e55619d3e63d730f8994cc1ae6d9c171096f07a6c147297145787e6",
+        "publisherChecksumVerified": true
+      },
+      {
+        "component": "platform-tools",
+        "name": "platform-tools_r37.0.1-darwin.zip",
+        "URL": "https://dl.google.com/android/repository/platform-tools_r37.0.1-darwin.zip",
+        "actualBytes": 16110554,
+        "SHA256": "ee39ad5967e95c2a07f04dbcbde96b1a0c916ba376096db5d2f498b7727a5d1d",
+        "publisherChecksumAlgorithm": "sha1",
+        "publisherChecksum": "6ae73f4de6452dc57e62ec02b68eed92a4c21661",
+        "publisherMetadataSHA256": "237eefe28e55619d3e63d730f8994cc1ae6d9c171096f07a6c147297145787e6",
+        "publisherChecksumVerified": true
+      },
+      {
+        "component": "system-images;android-35;google_apis;arm64-v8a",
+        "name": "arm64-v8a-35_r09.zip",
+        "URL": "https://dl.google.com/android/repository/sys-img/google_apis/arm64-v8a-35_r09.zip",
+        "actualBytes": 1778933980,
+        "SHA256": "d2e7c6076e5df54d3677605a324daf9edf813b2808c216bdb1687f6b2b6aed99",
+        "publisherChecksumAlgorithm": "sha1",
+        "publisherChecksum": "16f5bceca236b2737008977c4aaf826e46a8de7d",
+        "publisherMetadataSHA256": "ad71946ba2d002f86d9ece1121b74aec494b420aa6b8fdac83fa5ce52b51dcb4",
+        "publisherChecksumVerified": true
+      },
+      {
+        "component": "jdk17",
+        "name": "zulu17.66.19-ca-jdk17.0.19-macosx_aarch64.tar.gz",
+        "URL": "https://cdn.azul.com/zulu/bin/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64.tar.gz",
+        "actualBytes": 192646028,
+        "SHA256": "f2bd5afaaaa4c23eb4bf2c78913c7eb7d3d228e44209ffec652fb72388a2f25c",
+        "publisherChecksumAlgorithm": "sha256",
+        "publisherChecksum": "f2bd5afaaaa4c23eb4bf2c78913c7eb7d3d228e44209ffec652fb72388a2f25c",
+        "publisherMetadataSHA256": "91657a891eb5407b578e8b898a529b807fb19e96dfce8fe7120f0ea90edcdbc1",
+        "publisherChecksumVerified": true
+      },
+      {
+        "component": "emulator",
+        "name": "emulator-darwin_aarch64-15917651.zip",
+        "URL": "https://redirector.gvt1.com/edgedl/android/repository/emulator-darwin_aarch64-15917651.zip",
+        "actualBytes": 394555844,
+        "SHA256": "22530de9363f34ea945ecb5cad74523abd4b615f27f3c1a9899efb183ea9e144",
+        "publisherChecksumAlgorithm": "sha256",
+        "publisherChecksum": "22530de9363f34ea945ecb5cad74523abd4b615f27f3c1a9899efb183ea9e144",
+        "publisherMetadataSHA256": "06b9dc37e0a30013d7faa355c0884e5d1ee6200945252e946dc89c1eb5b45672",
+        "publisherChecksumVerified": true
+      },
+      {
+        "component": "gradle8.13",
+        "name": "gradle-8.13-all.zip",
+        "URL": "https://services.gradle.org/distributions/gradle-8.13-all.zip",
+        "actualBytes": 232036537,
+        "SHA256": "fba8464465835e74f7270bbf43d6d8a8d7709ab0a43ce1aa3323f73e9aa0c612",
+        "publisherChecksumAlgorithm": "sha256",
+        "publisherChecksum": "fba8464465835e74f7270bbf43d6d8a8d7709ab0a43ce1aa3323f73e9aa0c612",
+        "publisherMetadataSHA256": null,
+        "publisherChecksumVerified": true
+      },
+      {
+        "component": "gradle8.14",
+        "name": "gradle-8.14-all.zip",
+        "URL": "https://services.gradle.org/distributions/gradle-8.14-all.zip",
+        "actualBytes": 224116304,
+        "SHA256": "efe9a3d147d948d7528a9887fa35abcf24ca1a43ad06439996490f77569b02d1",
+        "publisherChecksumAlgorithm": "sha256",
+        "publisherChecksum": "efe9a3d147d948d7528a9887fa35abcf24ca1a43ad06439996490f77569b02d1",
+        "publisherMetadataSHA256": null,
+        "publisherChecksumVerified": true
+      },
+      {
+        "component": "flutter3.41.9",
+        "name": "flutter_macos_arm64_3.41.9-stable.zip",
+        "URL": "https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/flutter_macos_arm64_3.41.9-stable.zip",
+        "actualBytes": 2147160009,
+        "SHA256": "d692b030a63466c44d6b2bc88583380371ecbe328f22cc4057835f59739821a1",
+        "publisherChecksumAlgorithm": "sha256",
+        "publisherChecksum": "d692b030a63466c44d6b2bc88583380371ecbe328f22cc4057835f59739821a1",
+        "publisherMetadataSHA256": null,
+        "publisherChecksumVerified": true
+      },
+      {
+        "component": "ndk;28.2.13676358",
+        "name": "android-ndk-r28c-darwin.zip",
+        "URL": "https://dl.google.com/android/repository/android-ndk-r28c-darwin.zip",
+        "actualBytes": 952495160,
+        "SHA256": "0d4599e8bbf1a1668a0d51a541729b2246360f350018a2081d0b302dbb594f2a",
+        "publisherChecksumAlgorithm": "sha1",
+        "publisherChecksum": "fc20a6bf15a30fb3428c9b60a7308793a362dc6d",
+        "publisherMetadataSHA256": "237eefe28e55619d3e63d730f8994cc1ae6d9c171096f07a6c147297145787e6",
+        "publisherChecksumVerified": true
+      },
+      {
+        "component": "build-tools;35.0.0",
+        "name": "build-tools_r35_macosx.zip",
+        "URL": "https://dl.google.com/android/repository/build-tools_r35_macosx.zip",
+        "actualBytes": 76857898,
+        "SHA256": "530cdbd1ec315e1477624d7ed2f0f2962108d69f36eddba5894cef9ea2cedb48",
+        "publisherChecksumAlgorithm": "sha1",
+        "publisherChecksum": "93ab8ce91230e067b5add4bfa79919c52b27f072",
+        "publisherMetadataSHA256": "237eefe28e55619d3e63d730f8994cc1ae6d9c171096f07a6c147297145787e6",
+        "publisherChecksumVerified": true
+      },
+      {
+        "component": "cmake;3.22.1",
+        "name": "cmake-3.22.1-darwin.zip",
+        "URL": "https://dl.google.com/android/repository/cmake-3.22.1-darwin.zip",
+        "actualBytes": 38223266,
+        "SHA256": "c25d4072e70bbae1bfb0483a85c9237e4c7ceebfd67fe77bbe87d79571f0394f",
+        "publisherChecksumAlgorithm": "sha1",
+        "publisherChecksum": "8604eeef9adadb626dbb70a7ff58a87e6a7b967a",
+        "publisherMetadataSHA256": "237eefe28e55619d3e63d730f8994cc1ae6d9c171096f07a6c147297145787e6",
+        "publisherChecksumVerified": true
+      },
+      {
+        "component": "AGP8.11.1",
+        "name": "gradle-8.11.1.jar",
+        "URL": "https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/8.11.1/gradle-8.11.1.jar",
+        "actualBytes": 12686403,
+        "SHA256": "3f71d6d3bf4226a2c83131fe28980842f834b84375f04bf124cb00ab72506ea2",
+        "publisherChecksumAlgorithm": "sha256",
+        "publisherChecksum": "3f71d6d3bf4226a2c83131fe28980842f834b84375f04bf124cb00ab72506ea2",
+        "publisherMetadataSHA256": null,
+        "publisherChecksumVerified": true
+      },
+      {
+        "component": "AGP8.12.1",
+        "name": "gradle-8.12.1.jar",
+        "URL": "https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/8.12.1/gradle-8.12.1.jar",
+        "actualBytes": 12965611,
+        "SHA256": "bf703e8d92c598a73764a4ce9a06f60a0dddd9834ff90a8ce1e5e1308b50a37a",
+        "publisherChecksumAlgorithm": "sha256",
+        "publisherChecksum": "bf703e8d92c598a73764a4ce9a06f60a0dddd9834ff90a8ce1e5e1308b50a37a",
+        "publisherMetadataSHA256": null,
+        "publisherChecksumVerified": true
+      },
+      {
+        "component": "AGP7.3.0",
+        "name": "gradle-7.3.0.jar",
+        "URL": "https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/7.3.0/gradle-7.3.0.jar",
+        "actualBytes": 9320289,
+        "SHA256": "5994adcffffa90419c85be42f848860cb95f4df6a1b8eadf7cfcfd9ffd7758de",
+        "publisherChecksumAlgorithm": "sha256",
+        "publisherChecksum": "5994adcffffa90419c85be42f848860cb95f4df6a1b8eadf7cfcfd9ffd7758de",
+        "publisherMetadataSHA256": null,
+        "publisherChecksumVerified": true
+      }
+    ],
+    "actuallyReceivedLocalSendGradle": [
+      {
+        "receipt": "<android-native-root>/logs/received-gradle/localsend/android-1792126608656-92913.json",
+        "SHA256": "f812d780abbb3c7a3b6f7f324b4df53852415e8205b6219b44f71c9c2318f07b",
+        "rootProject": "android",
+        "gradle": "8.13",
+        "java": "17.0.19+10-LTS",
+        "actualJavaHome": "<android-native-root>/tools/jdks/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64/Contents/Home",
+        "sdkRoot": "<android-native-root>/tools/sdk",
+        "sdkDownload": "false",
+        "projects": [
+          {
+            "path": ":",
+            "projectDir": "<android-native-root>/sources/native-localsend/app/android"
+          },
+          {
+            "path": ":app",
+            "projectDir": "<android-native-root>/sources/native-localsend/app/android/app",
+            "compileSdk": "android-36",
+            "buildTools": "36.0.0",
+            "ndkVersion": "28.2.13676358",
+            "cmakeDeclaredVersion": null,
+            "agpPluginClass": "com.android.build.gradle.AppPlugin",
+            "agpCodeSource": "file:<android-native-root>/cache/gradle/caches/modules-2/files-2.1/com.android.tools.build/gradle-api/8.12.1/8366350534c8fdfdb03dc28a5b5a4b206152379d/gradle-api-8.12.1.jar",
+            "agpVersion": "8.12.1",
+            "kotlinPluginClass": "org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper",
+            "kotlinCodeSource": "file:<android-native-root>/cache/gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-gradle-plugin/2.2.0/ad5f7bcb67076dd92a7dcddf67262bf1008e1d3f/kotlin-gradle-plugin-2.2.0-gradle813.jar",
+            "kotlinCompilerVersion": "2.2.0"
+          },
+          {
+            "path": ":jni",
+            "projectDir": "<android-native-root>/cache/pub/native-localsend/hosted/pub.dev/jni-1.0.3/android",
+            "compileSdk": "android-36",
+            "buildTools": "36.0.0",
+            "ndkVersion": "28.2.13676358",
+            "cmakeDeclaredVersion": null,
+            "agpPluginClass": "com.android.build.gradle.LibraryPlugin",
+            "agpCodeSource": "file:<android-native-root>/cache/gradle/caches/modules-2/files-2.1/com.android.tools.build/gradle-api/8.12.1/8366350534c8fdfdb03dc28a5b5a4b206152379d/gradle-api-8.12.1.jar",
+            "agpVersion": "8.12.1"
+          },
+          {
+            "path": ":rust_lib_localsend_app",
+            "projectDir": "<android-native-root>/sources/native-localsend/packages/localsend_isolates/rust_builder/android",
+            "compileSdk": "android-36",
+            "buildTools": "36.0.0",
+            "ndkVersion": "27.0.12077973",
+            "cmakeDeclaredVersion": null,
+            "agpPluginClass": "com.android.build.gradle.LibraryPlugin",
+            "agpCodeSource": "file:<android-native-root>/cache/gradle/caches/modules-2/files-2.1/com.android.tools.build/gradle-api/8.12.1/8366350534c8fdfdb03dc28a5b5a4b206152379d/gradle-api-8.12.1.jar",
+            "agpVersion": "8.12.1"
+          }
+        ]
+      },
+      {
+        "receipt": "<android-native-root>/logs/received-gradle/localsend/gradle-1792126599474-92913.json",
+        "SHA256": "acd0f3288b8226189722d04127783852c5987a18c1c1b26dc274bc2675ccbfb8",
+        "rootProject": "gradle",
+        "gradle": "8.13",
+        "java": "17.0.19+10-LTS",
+        "actualJavaHome": "<android-native-root>/tools/jdks/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64/Contents/Home",
+        "sdkRoot": "<android-native-root>/tools/sdk",
+        "sdkDownload": "false",
+        "projects": [
+          {
+            "path": ":",
+            "projectDir": "<android-native-root>/tools/flutter/packages/flutter_tools/gradle",
+            "kotlinPluginClass": "org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper",
+            "kotlinCodeSource": "file:<android-native-root>/cache/gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-gradle-plugin/2.0.21/ea69d8de091115a98ce7f3901994b2fb3432480b/kotlin-gradle-plugin-2.0.21-gradle85.jar",
+            "kotlinCompilerVersion": "2.0.21"
+          }
+        ]
+      }
+    ],
+    "SDKEndpoint": "<android-native-root>/state/native-sdk-installation-endpoint-v7.json",
+    "runtime": "API35 Google APIs arm64-v8a r9 input/config; separate runtime ro.build.version.sdk getprop was not collected.",
+    "NDKAndCMakeLimits": {
+      "NDK": "App/selected Cargokit/CMake input28.2.13676358. rust_lib Android extension metadata reports AGP default27.0.12077973; NDK27 is not installed or claimed used.",
+      "CMake": "Configured caches bind owned3.22.1/NDK28.2. Seven caches current-owned paths, four retained old caches excluded. Cache timestamps predate V6; no clean/new CMake compilation claim."
+    },
+    "JDKSizeLimit": "Official API192646000B versus actual CDN/archive192646028B remains unresolved. Exact whole archive SHA256 matches official metadata. No rounding explanation claimed.",
+    "preparedToolInputsAtV2": {
+      "Flutter": {
+        "version": "3.41.9",
+        "frameworkRevision": "00b0c91f06209d9e4a41f71b7a512d6eb3b9c694",
+        "engineRevision": "42d3d75a56efe1a2e9902f52dc8006099c45d937",
+        "Dart": "3.11.5",
+        "archiveSHA256": "d692b030a63466c44d6b2bc88583380371ecbe328f22cc4057835f59739821a1",
+        "root": "<android-native-root>/tools/flutter",
+        "identityBasis": "exact official ZIP members, no Flutter invocation"
+      },
+      "JDK": {
+        "version": "17.0.19+10-LTS",
+        "vendor": "Azul Zulu17.66.19",
+        "root": "<android-native-root>/tools/jdks/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64/Contents/Home",
+        "archiveSHA256": "f2bd5afaaaa4c23eb4bf2c78913c7eb7d3d228e44209ffec652fb72388a2f25c",
+        "actualBytes": 192646028,
+        "publisherAPIBytes": 192646000,
+        "APITransportSizeConflict": "retained unresolved; no rounding explanation claimed; exact whole archive SHA256 matches official metadata"
+      },
+      "SDK": {
+        "root": "<android-native-root>/tools/sdk",
+        "packages": [
+          "platforms;android-36 r2",
+          "build-tools;35.0.0",
+          "build-tools;36.0.0",
+          "cmdline-tools;21.0 at physical latest with existing matching localPackage metadata",
+          "platform-tools37.0.1",
+          "emulator37.1.11 build15917651",
+          "system-images;android-35;google_apis;arm64-v8a r9",
+          "ndk;28.2.13676358",
+          "cmake;3.22.1"
+        ],
+        "origin": "independent extraction of checksum-verified official archives; copied package.xml/license files are separate configuration inputs",
+        "automaticSDKDownloads": "proposed false via owned Gradle properties; not executed or measured"
+      },
+      "Rust": {
+        "toolchain": "1.97.1-aarch64-apple-darwin",
+        "rustup": "1.29.1",
+        "rustupSHA256": "ec1b9233e7f72990ecd8e62063fa7f6c3dfc2bec8e97f88bff165f9100ac696a",
+        "rustupRoot": "<android-native-root>/cache/rustup",
+        "officialManifestSHA256": "03569b1886ceb5c05276b50c8431ab111de944cd6140fe1fa7d821dd8e0f29cf",
+        "selectedComponentArchiveMatch": [
+          "rustc host",
+          "cargo host",
+          "clippy host",
+          "rust-std host",
+          "rust-std aarch64-linux-android",
+          "rust-std i686-linux-android",
+          "rust-std x86_64-linux-android"
+        ],
+        "requestedFlutterTarget": "android-arm64",
+        "staticCargokitDebugAdditionalTargets": [
+          "android-x86",
+          "android-x64"
+        ],
+        "sourceSpan": "LocalSend packages/localsend_isolates/rust_builder/cargokit/gradle/plugin.gradle135–140; app NDK160",
+        "APKABIs": "unknown until new build; not inferred from requested Flutter target",
+        "armv7Status": "declared target archive verified and retained; not installed into historical COW toolchain; not selected by specified Cargokit debug target mapping",
+        "retainedUnusedHistoricalIOSComponent": "aarch64-apple-ios-sim; outside Android selected-component byte comparison; no iOS execution claim"
+      }
+    }
+  },
+  "apple": {
+    "prepin": "<ios-native-root>/apple-distribution-v2/state/apple-distribution-prepin-v2.json",
+    "representation": "Current installed Apple-signed Mac App Store Xcode.app. Distinct input from old27.0, original XIP and any image-preserved VM.",
+    "productVersion": "27.1",
+    "versionPlistBuild": "27A9275",
+    "InfoPlistBuild": "27A9274",
+    "CFBundleVersion": "25183.120.5",
+    "CDHash": "4ad8d2340894b2a0cb66b2baa4812b90dd858071",
+    "authorities": [
+      "Apple Mac OS Application Signing",
+      "Apple Worldwide Developer Relations Certification Authority",
+      "Apple Root CA"
+    ],
+    "rootCodeResources": {
+      "path": "/Applications/Xcode.app/Contents/_CodeSignature/CodeResources",
+      "bytes": 32696036,
+      "SHA256": "24c5a57ebcaea84428f754e379108c61dd5830795d17bd2d6500222dcfa1bde8"
+    },
+    "wholeTree": {
+      "regularHashed": 125859,
+      "regularBytesHashed": 10248479408,
+      "symlinks": 11146,
+      "statOnlyExcluded": 1,
+      "semanticTreeSHA256": "fb03a57623b64d43c10b4e10f20fc3c0b06908a0913b23db9569e02dfd779924",
+      "meaning": "Current installed Apple-signed MAS bundle representation. Original XIP/PKG and vendor whole-bundle checksum remain unknown. One full hash plus final metadata/names comparison, not two independent content hashes."
+    },
+    "strictSignatureAndSpctlExit0": true,
+    "compileSDK": "iphonesimulator27.1/24A94232",
+    "executionRuntime": "iOS27.0/24A434",
+    "exactRuntimeBinding": "<ios-native-root>/apple-distribution-v2/state/runtime27-exact-dmg-readonly-binding-v2.json",
+    "limits": [
+      "Old XIP/PKG/archive provenance unknown remains unresolved.",
+      "Two old omitted PkgInfo origin unknown remains unchanged; current whole-tree bytes are pinned without origin chronology inference.",
+      "Current27.1 whole bytes do not establish the tool tree used by historical214 build receipts.",
+      "Native213 iOS execution still requires separate Root lease. This prepin is input preparation only.",
+      "MAS receipt stat-only; originalXIP/PKG and vendor wholebundle checksum unknown.",
+      "Runtime full plaintexttree hash not performed; prior modelmanagerd unreadable retained."
+    ],
+    "officialRequirements": "<ios-native-root>/apple-distribution-v2/state/apple-official27_1-requirements-primary.json"
+  },
+  "ruby": {
+    "version": "3.2.2",
+    "selection": "Explicit NEW native input only. Existing global3.3.12 remains unchanged.",
+    "officialDistributionURL": "https://github.com/jdx/ruby/releases/download/3.2.2/ruby-3.2.2.macos.tar.gz",
+    "archive": {
+      "path": "<ios-native-root>/downloads/ruby-3.2.2.macos.tar.gz",
+      "bytes": 39479292,
+      "SHA256": "13521c64d1d5579d97707b54321b82e7c7a7c779a919868ac9b4eb8e36da9ba9"
+    },
+    "regularMembers": 14832,
+    "symlinks": 2,
+    "archiveBytePatches": false,
+    "old3312Limit": "Exact3.3.12 archive candidate exists; its checksum sidecar returned404 and existing installed binary-to-distribution binding was not established. Not used as NEW Ruby input."
+  },
+  "cocoaPods": {
+    "version": "1.16.2",
+    "root": "<ios-native-root>/gems",
+    "gemClosureCount": 38,
+    "closureUnresolvedDependencies": [],
+    "originalFixed36PlusApprovedTwo": [
+      "benchmark0.3.0",
+      "securerandom0.3.1"
+    ],
+    "installation": "Offline exact local archives only; full38 Ruby/RubyGems constraints and1705 installed original members verified.",
+    "newThirdGemOrNativePayload": false,
+    "ffi": "1.17.4-arm64-darwin precompiled3.2 native bundle from fixed archive; no source compilation"
+  },
+  "exactGemArchives38": [
+    {
+      "name": "CFPropertyList",
+      "version": "3.0.8",
+      "platform": "ruby",
+      "bytes": 18432,
+      "SHA256": "2c99d0d980536d3d7ab252f7bd59ac8be50fbdd1ff487c98c949bb66bb114261",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/CFPropertyList.json",
+      "publisherMetadataSHA256": "b9f1bdc62a48a29f23acfd781eb2fb27d0f3840bad484c1083514de428f099a2",
+      "archiveURL": "https://rubygems.org/downloads/CFPropertyList-3.0.8.gem"
+    },
+    {
+      "name": "activesupport",
+      "version": "7.2.4",
+      "platform": "ruby",
+      "bytes": 251904,
+      "SHA256": "b97027b31e111675dba67b86edcd589acc25a0dddf8eecacca18d33a703a0788",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/activesupport.json",
+      "publisherMetadataSHA256": "6112bc0730e1b74be4b19426431d25baee4a99ef3e5b069a326108ffe8ef72b8",
+      "archiveURL": "https://rubygems.org/downloads/activesupport-7.2.4.gem"
+    },
+    {
+      "name": "addressable",
+      "version": "2.9.0",
+      "platform": "ruby",
+      "bytes": 78336,
+      "SHA256": "7fdf6ac3660f7f4e867a0838be3f6cf722ace541dd97767fa42bc6cfa980c7af",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/addressable.json",
+      "publisherMetadataSHA256": "a3e7eea9202b7acdeb2b0c650af266354e89196ab056a5c2d0525d78b751557a",
+      "archiveURL": "https://rubygems.org/downloads/addressable-2.9.0.gem"
+    },
+    {
+      "name": "algoliasearch",
+      "version": "1.27.5",
+      "platform": "ruby",
+      "bytes": 224768,
+      "SHA256": "26c1cddf3c2ec4bd60c148389e42702c98fdac862881dc6b07a4c0b89ffec853",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/algoliasearch.json",
+      "publisherMetadataSHA256": "d0dc5b1caf4644a3b2ca01ee98a0b95ee3294400196dcb8176fe6e834fec4025",
+      "archiveURL": "https://rubygems.org/downloads/algoliasearch-1.27.5.gem"
+    },
+    {
+      "name": "atomos",
+      "version": "0.1.3",
+      "platform": "ruby",
+      "bytes": 10240,
+      "SHA256": "7d43b22f2454a36bace5532d30785b06de3711399cb1c6bf932573eda536789f",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/atomos.json",
+      "publisherMetadataSHA256": "14f548e2a24f531ddc33d170f163c613642575ec7e2241b1eed86b4f81b824a0",
+      "archiveURL": "https://rubygems.org/downloads/atomos-0.1.3.gem"
+    },
+    {
+      "name": "claide",
+      "version": "1.1.0",
+      "platform": "ruby",
+      "bytes": 28160,
+      "SHA256": "6d3c5c089dde904d96aa30e73306d0d4bd444b1accb9b3125ce14a3c0183f82e",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/claide.json",
+      "publisherMetadataSHA256": "79499ac459349bce76aa35c3fa8bf0996faace25e9dfbdebbf2898da733298b6",
+      "archiveURL": "https://rubygems.org/downloads/claide-1.1.0.gem"
+    },
+    {
+      "name": "cocoapods",
+      "version": "1.16.2",
+      "platform": "ruby",
+      "bytes": 298496,
+      "SHA256": "0ff1c860f32df3db8b16df09b58da1a6bb2a12fe55f6d5e8be994a74fadd1e5e",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/cocoapods.json",
+      "publisherMetadataSHA256": "144d1277c9af602c80b1f2fb21d2555f1c5eb336a8d286cfca1797bd0aa7ef84",
+      "archiveURL": "https://rubygems.org/downloads/cocoapods-1.16.2.gem"
+    },
+    {
+      "name": "cocoapods-core",
+      "version": "1.16.2",
+      "platform": "ruby",
+      "bytes": 104448,
+      "SHA256": "4bb1b5c420691e60cf36fa227dec6bc48c096c34c97bb7aa512ea7f3246fc12b",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/cocoapods-core.json",
+      "publisherMetadataSHA256": "63d5441ead2bc0eb2fdc2df38223b327567fd81ebbc533029de201bc72a0db8a",
+      "archiveURL": "https://rubygems.org/downloads/cocoapods-core-1.16.2.gem"
+    },
+    {
+      "name": "cocoapods-deintegrate",
+      "version": "1.0.5",
+      "platform": "ruby",
+      "bytes": 7680,
+      "SHA256": "517c2a448ef563afe99b6e7668704c27f5de9e02715a88ee9de6974dc1b3f6a2",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/cocoapods-deintegrate.json",
+      "publisherMetadataSHA256": "1bb0713e533b50440ab0c66d237d58495172085bc0c1a36dd01efebd66b7486c",
+      "archiveURL": "https://rubygems.org/downloads/cocoapods-deintegrate-1.0.5.gem"
+    },
+    {
+      "name": "cocoapods-downloader",
+      "version": "2.1",
+      "platform": "ruby",
+      "bytes": 13312,
+      "SHA256": "bb6ebe1b3966dc4055de54f7a28b773485ac724fdf575d9bee2212d235e7b6d1",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/cocoapods-downloader.json",
+      "publisherMetadataSHA256": "6670a9110c4a477d3771ca80a726f25a31d3d698d1f31de9f539033e79cbf9bf",
+      "archiveURL": "https://rubygems.org/downloads/cocoapods-downloader-2.1.gem"
+    },
+    {
+      "name": "cocoapods-plugins",
+      "version": "1.0.0",
+      "platform": "ruby",
+      "bytes": 23552,
+      "SHA256": "725d17ce90b52f862e73476623fd91441b4430b742d8a071000831efb440ca9a",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/cocoapods-plugins.json",
+      "publisherMetadataSHA256": "dd153d48955035170f800f42aff015be9ed6ff792eb29e35bd8b1d7ee98d8911",
+      "archiveURL": "https://rubygems.org/downloads/cocoapods-plugins-1.0.0.gem"
+    },
+    {
+      "name": "cocoapods-search",
+      "version": "1.0.1",
+      "platform": "ruby",
+      "bytes": 15872,
+      "SHA256": "1b133b0e6719ed439bd840e84a1828cca46425ab73a11eff5e096c3b2df05589",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/cocoapods-search.json",
+      "publisherMetadataSHA256": "375b4d06f579b44ca3afba389dedbc3612a7d51ed7daae6e2099275064cdf709",
+      "archiveURL": "https://rubygems.org/downloads/cocoapods-search-1.0.1.gem"
+    },
+    {
+      "name": "cocoapods-trunk",
+      "version": "1.6.0",
+      "platform": "ruby",
+      "bytes": 24576,
+      "SHA256": "5f5bda8c172afead48fa2d43a718cf534b1313c367ba1194cebdeb9bfee9ed31",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/cocoapods-trunk.json",
+      "publisherMetadataSHA256": "1bb5c4a2c11405541768f90fea72720106adfedce6b0db57b51422edea6cd60a",
+      "archiveURL": "https://rubygems.org/downloads/cocoapods-trunk-1.6.0.gem"
+    },
+    {
+      "name": "cocoapods-try",
+      "version": "1.2.0",
+      "platform": "ruby",
+      "bytes": 16896,
+      "SHA256": "145b946c6e7747ed0301d975165157951153d27469e6b2763c83e25c84b9defe",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/cocoapods-try.json",
+      "publisherMetadataSHA256": "bafc529306f1cc2df7b9e168a6d2dd8eb804f4939f41aa632be406af1e5ad69d",
+      "archiveURL": "https://rubygems.org/downloads/cocoapods-try-1.2.0.gem"
+    },
+    {
+      "name": "colored2",
+      "version": "3.1.2",
+      "platform": "ruby",
+      "bytes": 10240,
+      "SHA256": "b13c2bd7eeae2cf7356a62501d398e72fde78780bd26aec6a979578293c28b4a",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/colored2.json",
+      "publisherMetadataSHA256": "c5f7ae91ee44faec7eb92f26493bc57ff8dd11a2baedce8e9bedb07476579f1f",
+      "archiveURL": "https://rubygems.org/downloads/colored2-3.1.2.gem"
+    },
+    {
+      "name": "concurrent-ruby",
+      "version": "1.3.8",
+      "platform": "ruby",
+      "bytes": 350720,
+      "SHA256": "b2f1be836e968ccc78ccfce277ea79c72a88633f22306782c16ff23fb415d1e1",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/concurrent-ruby.json",
+      "publisherMetadataSHA256": "092ba74172c9e444ee56e3db737ab61774403bea7c009e8bc3eef15dc0b6e00b",
+      "archiveURL": "https://rubygems.org/downloads/concurrent-ruby-1.3.8.gem"
+    },
+    {
+      "name": "connection_pool",
+      "version": "2.5.5",
+      "platform": "ruby",
+      "bytes": 13312,
+      "SHA256": "e54ff92855753df1fd7c59fa04a398833355f27dd14c074f8c83a05f72a716ad",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/connection_pool.json",
+      "publisherMetadataSHA256": "6e788b960a4350ed08ca59b65e06ab62ebac85c4511cf84fd442005420085ce5",
+      "archiveURL": "https://rubygems.org/downloads/connection_pool-2.5.5.gem"
+    },
+    {
+      "name": "escape",
+      "version": "0.0.4",
+      "platform": "ruby",
+      "bytes": 9730,
+      "SHA256": "e49f44ae2b4f47c6a3abd544ae77fe4157802794e32f19b8e773cbc4dcec4169",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/escape.json",
+      "publisherMetadataSHA256": "aafbbbd313d94b42f3472267737bdfa6e1ced62292c77edd77103ffa237fd7e4",
+      "archiveURL": "https://rubygems.org/downloads/escape-0.0.4.gem"
+    },
+    {
+      "name": "ethon",
+      "version": "0.18.0",
+      "platform": "ruby",
+      "bytes": 40448,
+      "SHA256": "b598afc9f30448cb068b850714b7d6948e941476095d04f90a4ac65b8d6efcb2",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/ethon.json",
+      "publisherMetadataSHA256": "a74e5e2339d4eaf165de0da5114f6f6e0411f3e9be166bf03e0077b452942dde",
+      "archiveURL": "https://rubygems.org/downloads/ethon-0.18.0.gem"
+    },
+    {
+      "name": "ffi",
+      "version": "1.17.4",
+      "platform": "arm64-darwin",
+      "bytes": 485888,
+      "SHA256": "19071aaf1419251b0a46852abf960e77330a3b334d13a4ab51d58b31a937001b",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/ffi.json",
+      "publisherMetadataSHA256": "ed1e7ad36b37b78f47ff52ca3aaff4b020985acb71236f07c0362deb117db048",
+      "archiveURL": "https://rubygems.org/downloads/ffi-1.17.4-arm64-darwin.gem"
+    },
+    {
+      "name": "fourflusher",
+      "version": "2.3.1",
+      "platform": "ruby",
+      "bytes": 12288,
+      "SHA256": "1b3de61c7c791b6a4e64f31e3719eb25203d151746bb519a0292bff1065ccaa9",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/fourflusher.json",
+      "publisherMetadataSHA256": "92a2584ef07a10cfe11a9a4def161ca478b1307c64e571029145d2e4102fb888",
+      "archiveURL": "https://rubygems.org/downloads/fourflusher-2.3.1.gem"
+    },
+    {
+      "name": "fuzzy_match",
+      "version": "2.0.4",
+      "platform": "ruby",
+      "bytes": 112640,
+      "SHA256": "b5de4f95816589c5b5c3ad13770c0af539b75131c158135b3f3bbba75d0cfca5",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/fuzzy_match.json",
+      "publisherMetadataSHA256": "30712cd83f009b05b287156942743ceb9df923c9c0ae0ee6155cb23d3d6dccd8",
+      "archiveURL": "https://rubygems.org/downloads/fuzzy_match-2.0.4.gem"
+    },
+    {
+      "name": "gh_inspector",
+      "version": "1.1.3",
+      "platform": "ruby",
+      "bytes": 12800,
+      "SHA256": "04cca7171b87164e053aa43147971d3b7f500fcb58177698886b48a9fc4a1939",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/gh_inspector.json",
+      "publisherMetadataSHA256": "b6046485e0cd0d1370953b6e5c54119aa5263ef53062508f3b01b23118acffea",
+      "archiveURL": "https://rubygems.org/downloads/gh_inspector-1.1.3.gem"
+    },
+    {
+      "name": "httpclient",
+      "version": "2.9.0",
+      "platform": "ruby",
+      "bytes": 394240,
+      "SHA256": "4b645958e494b2f86c2f8a2f304c959baa273a310e77a2931ddb986d83e498c8",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/httpclient.json",
+      "publisherMetadataSHA256": "d3497f952719a2a11e826f35f27de9ecf2dab62d16fdb8197118830be83e05a6",
+      "archiveURL": "https://rubygems.org/downloads/httpclient-2.9.0.gem"
+    },
+    {
+      "name": "i18n",
+      "version": "1.15.2",
+      "platform": "ruby",
+      "bytes": 47616,
+      "SHA256": "00f9eb62412fe593b2a65a97daa75300d37abb8f7202ec748e94b6d46a9dd1b5",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/i18n.json",
+      "publisherMetadataSHA256": "c8a09495e1dd273d8ddadad92f9bc964f60b5dfb8a48ac53c488be078c308b96",
+      "archiveURL": "https://rubygems.org/downloads/i18n-1.15.2.gem"
+    },
+    {
+      "name": "minitest",
+      "version": "5.27.0",
+      "platform": "ruby",
+      "bytes": 101888,
+      "SHA256": "2d3b17f8a36fe7801c1adcffdbc38233b938eb0b4966e97a6739055a45fa77d5",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/minitest.json",
+      "publisherMetadataSHA256": "dc187337a21b4a2c91fb8815de1c2f534575f5af5cc7831a63e18c903db04325",
+      "archiveURL": "https://rubygems.org/downloads/minitest-5.27.0.gem"
+    },
+    {
+      "name": "molinillo",
+      "version": "0.8.0",
+      "platform": "ruby",
+      "bytes": 29696,
+      "SHA256": "efbff2716324e2a30bccd3eba1ff3a735f4d5d53ffddbc6a2f32c0ca9433045d",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/molinillo.json",
+      "publisherMetadataSHA256": "afc69fb0ea6d844c50ba67846986718be30ce5cfd0329321f97be14a76a8cc63",
+      "archiveURL": "https://rubygems.org/downloads/molinillo-0.8.0.gem"
+    },
+    {
+      "name": "nanaimo",
+      "version": "0.4.0",
+      "platform": "ruby",
+      "bytes": 20480,
+      "SHA256": "faf069551bab17f15169c1f74a1c73c220657e71b6e900919897a10d991d0723",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/nanaimo.json",
+      "publisherMetadataSHA256": "93f0028f0875b0957afef9ad618c09e11545d01d5f6bf83df0ee223ccd72c0f3",
+      "archiveURL": "https://rubygems.org/downloads/nanaimo-0.4.0.gem"
+    },
+    {
+      "name": "nap",
+      "version": "1.1.0",
+      "platform": "ruby",
+      "bytes": 156160,
+      "SHA256": "949691660f9d041d75be611bb2a8d2fd559c467537deac241f4097d9b5eea576",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/nap.json",
+      "publisherMetadataSHA256": "76c1323a44079cb0ba3ad6d61ce0c9834ad00843830b6666581707057420d862",
+      "archiveURL": "https://rubygems.org/downloads/nap-1.1.0.gem"
+    },
+    {
+      "name": "netrc",
+      "version": "0.11.0",
+      "platform": "ruby",
+      "bytes": 10752,
+      "SHA256": "de1ce33da8c99ab1d97871726cba75151113f117146becbe45aa85cb3dabee3f",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/netrc.json",
+      "publisherMetadataSHA256": "d17d4e9e41e31b71b79f1ea066c265750cead8d5b5834bfa1f80c15a466bcff1",
+      "archiveURL": "https://rubygems.org/downloads/netrc-0.11.0.gem"
+    },
+    {
+      "name": "public_suffix",
+      "version": "4.0.7",
+      "platform": "ruby",
+      "bytes": 113664,
+      "SHA256": "8be161e2421f8d45b0098c042c06486789731ea93dc3a896d30554ee38b573b8",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/public_suffix.json",
+      "publisherMetadataSHA256": "e951be42d451d880cb362cf81985c94c348b7d3777bfb33633edf4d7727e4182",
+      "archiveURL": "https://rubygems.org/downloads/public_suffix-4.0.7.gem"
+    },
+    {
+      "name": "rexml",
+      "version": "3.4.4",
+      "platform": "ruby",
+      "bytes": 105984,
+      "SHA256": "19e0a2c3425dfbf2d4fc1189747bdb2f849b6c5e74180401b15734bc97b5d142",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/rexml.json",
+      "publisherMetadataSHA256": "e9175718172c38c7e349728d8ee13397603188795731e0a5aaf07dc366194d88",
+      "archiveURL": "https://rubygems.org/downloads/rexml-3.4.4.gem"
+    },
+    {
+      "name": "ruby-macho",
+      "version": "2.5.1",
+      "platform": "ruby",
+      "bytes": 34304,
+      "SHA256": "9075e52e0f9270b552a90b24fcc6219ad149b0d15eae1bc364ecd0ac8984f5c9",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/ruby-macho.json",
+      "publisherMetadataSHA256": "af62b43f6b2c7499bf80114121e94173edb74b5c7603746a6846c864445c8429",
+      "archiveURL": "https://rubygems.org/downloads/ruby-macho-2.5.1.gem"
+    },
+    {
+      "name": "typhoeus",
+      "version": "1.6.0",
+      "platform": "ruby",
+      "bytes": 39424,
+      "SHA256": "bacc41c23e379547e29801dc235cd1699b70b955a1ba3d32b2b877aa844c331d",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/typhoeus.json",
+      "publisherMetadataSHA256": "18852b1b1570bb46f389050fbab08f2cfe5facc0017ab8a7031a382c58249f19",
+      "archiveURL": "https://rubygems.org/downloads/typhoeus-1.6.0.gem"
+    },
+    {
+      "name": "tzinfo",
+      "version": "2.0.6",
+      "platform": "ruby",
+      "bytes": 79360,
+      "SHA256": "8daf828cc77bcf7d63b0e3bdb6caa47e2272dcfaf4fbfe46f8c3a9df087a829b",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/tzinfo.json",
+      "publisherMetadataSHA256": "cb5b6647683d310d45e69679e422df288df4b41e2a9568a8bbd05ebb6815f30c",
+      "archiveURL": "https://rubygems.org/downloads/tzinfo-2.0.6.gem"
+    },
+    {
+      "name": "xcodeproj",
+      "version": "1.28.1",
+      "platform": "ruby",
+      "bytes": 83968,
+      "SHA256": "6f12670f00739d9817ca27ac89d6ef01cc86050e22a0bc08a3131487e5b5cddc",
+      "publisherMetadataURL": "https://rubygems.org/api/v1/versions/xcodeproj.json",
+      "publisherMetadataSHA256": "a47f5f3d8d211e669acd8d947d05c11582b590324f6437808ac7cf8b68f44742",
+      "archiveURL": "https://rubygems.org/downloads/xcodeproj-1.28.1.gem"
+    },
+    {
+      "name": "benchmark",
+      "version": "0.3.0",
+      "platform": "ruby",
+      "bytes": 12800,
+      "SHA256": "4ca7995224b9982efccee9b44a4464a73201c5779d78cb5a4d99ec2f39acf071",
+      "publisherMetadataURL": "https://rubygems.org/api/v2/rubygems/benchmark/versions/0.3.0.json",
+      "publisherMetadataSHA256": "500725f606e51ea448a9035c2ee877a8aa194f2e4464cf48093294152a6c9d73",
+      "archiveURL": "https://rubygems.org/downloads/benchmark-0.3.0.gem"
+    },
+    {
+      "name": "securerandom",
+      "version": "0.3.1",
+      "platform": "ruby",
+      "bytes": 12800,
+      "SHA256": "98f0450c0ea46d2f9a4b6db4f391dbd83dc08049592eada155739f40e0341bde",
+      "publisherMetadataURL": "https://rubygems.org/api/v2/rubygems/securerandom/versions/0.3.1.json",
+      "publisherMetadataSHA256": "a699f68e4b0856a90c2fce1e026c5cd6e75a16a63ab3f9abeff5278065aeb96e",
+      "archiveURL": "https://rubygems.org/downloads/securerandom-0.3.1.gem"
+    }
+  ],
+  "pods": {
+    "frozenSourceLock": {
+      "path": "<ios-native-root>/sources/native-localsend/app/ios/Podfile.lock",
+      "bytes": 8113,
+      "SHA256": "5595ddad3deb164f454565e62ef48b3fae1e4d0b951116781f0246abe810825f"
+    },
+    "sources": [
+      {
+        "name": "DKImagePickerController",
+        "version": "4.3.9",
+        "officialRepo": "https://github.com/zhangao0086/DKImagePickerController.git",
+        "tag": "4.3.9",
+        "commit": "0bdfeacefa308545adde07bef86e349186335915",
+        "sourceArchive": {
+          "path": "<ios-native-root>/downloads/DKImagePickerController-4.3.9-0bdfeacefa308545adde07bef86e349186335915.source.tar",
+          "bytes": 2867200,
+          "SHA256": "7f53f13538dac6a9bcd2f0b03500e7e709415bbecb27355a6a34dda0496e4382"
+        },
+        "retainedMismatchCount": 0
+      },
+      {
+        "name": "DKPhotoGallery",
+        "version": "0.0.19",
+        "officialRepo": "https://github.com/zhangao0086/DKPhotoGallery.git",
+        "tag": "0.0.19",
+        "commit": "ae75b13245761969d2714e69f2831b870534138c",
+        "sourceArchive": {
+          "path": "<ios-native-root>/downloads/DKPhotoGallery-0.0.19-ae75b13245761969d2714e69f2831b870534138c.source.tar",
+          "bytes": 9676800,
+          "SHA256": "4e494aef95fa6e504a2d63b127fe11d5218ebe0698b70f84acd53093ac4e105c"
+        },
+        "retainedMismatchCount": 0
+      },
+      {
+        "name": "SDWebImage",
+        "version": "5.21.7",
+        "officialRepo": "https://github.com/SDWebImage/SDWebImage.git",
+        "tag": "5.21.7",
+        "commit": "2de3a496eaf6df9a1312862adcfd54acd73c39c0",
+        "sourceArchive": {
+          "path": "<ios-native-root>/downloads/SDWebImage-5.21.7-2de3a496eaf6df9a1312862adcfd54acd73c39c0.source.tar",
+          "bytes": 27207680,
+          "SHA256": "69e7a271ae85c9c48eab6f7df99ebd24f3b015eca035f03d5a379dae6d296376"
+        },
+        "retainedMismatchCount": 0
+      },
+      {
+        "name": "SwiftyGif",
+        "version": "5.4.5",
+        "officialRepo": "https://github.com/kirualex/SwiftyGif.git",
+        "tag": "5.4.5",
+        "commit": "4430cbc148baa3907651d40562d96325426f409a",
+        "sourceArchive": {
+          "path": "<ios-native-root>/downloads/SwiftyGif-5.4.5-4430cbc148baa3907651d40562d96325426f409a.source.tar",
+          "bytes": 6993920,
+          "SHA256": "946fd0a5fd56e43df555c019363681c0faa31a5e98fe0b1d98ad2005867a1eaf"
+        },
+        "retainedMismatchCount": 0
+      }
+    ],
+    "oldRetainedSourceFilesSame": 299,
+    "newPreparedCacheSourceFilesMatchPinnedCommits": 304,
+    "sourceArchiveChecksumMeaning": "Canonical local git archive from exact official repository commit; not a vendor-published archive checksum.",
+    "projectPodInstallExecuted": false,
+    "frozenInstallAdapter": {
+      "path": "<ios-native-root>/tools/frozen-pod-bin/pod",
+      "bytes": 736,
+      "SHA256": "bc87ecf061916203032299bf930aa9a0bb85809f99d7c0cd9d66e6e25464d7cd"
+    }
+  },
+  "rust": {
+    "version": "1.97.1",
+    "rustup": "1.29.1",
+    "officialManifestSHA256": "03569b1886ceb5c05276b50c8431ab111de944cd6140fe1fa7d821dd8e0f29cf",
+    "artifacts": [
+      {
+        "package": "rustc",
+        "target": "aarch64-apple-darwin",
+        "URL": "https://static.rust-lang.org/dist/2026-07-16/rustc-1.97.1-aarch64-apple-darwin.tar.xz",
+        "actualBytes": 68127952,
+        "SHA256": "6076cad38ccabaa24325f26a74080a363a2633a9cd34c473a8977255d8a593cb",
+        "publisherSHA256": "6076cad38ccabaa24325f26a74080a363a2633a9cd34c473a8977255d8a593cb"
+      },
+      {
+        "package": "cargo",
+        "target": "aarch64-apple-darwin",
+        "URL": "https://static.rust-lang.org/dist/2026-07-16/cargo-1.97.1-aarch64-apple-darwin.tar.xz",
+        "actualBytes": 8876992,
+        "SHA256": "2d84a74e9558192a7de674aca6aa3ab7464bed2df97e0377156ddb7e09a0fd7a",
+        "publisherSHA256": "2d84a74e9558192a7de674aca6aa3ab7464bed2df97e0377156ddb7e09a0fd7a"
+      },
+      {
+        "package": "clippy-preview",
+        "target": "aarch64-apple-darwin",
+        "URL": "https://static.rust-lang.org/dist/2026-07-16/clippy-1.97.1-aarch64-apple-darwin.tar.xz",
+        "actualBytes": 3171216,
+        "SHA256": "5e44c0ac5ca9b6f14a3c9031a61f583348b902f908f46e95717aef1dbd2807db",
+        "publisherSHA256": "5e44c0ac5ca9b6f14a3c9031a61f583348b902f908f46e95717aef1dbd2807db"
+      },
+      {
+        "package": "rust-std",
+        "target": "aarch64-apple-darwin",
+        "URL": "https://static.rust-lang.org/dist/2026-07-16/rust-std-1.97.1-aarch64-apple-darwin.tar.xz",
+        "actualBytes": 29286636,
+        "SHA256": "a4895f5c6995e83cab8687e46b14324592398049def71ce75ca308c981cf200d",
+        "publisherSHA256": "a4895f5c6995e83cab8687e46b14324592398049def71ce75ca308c981cf200d"
+      },
+      {
+        "package": "rust-std",
+        "target": "aarch64-linux-android",
+        "URL": "https://static.rust-lang.org/dist/2026-07-16/rust-std-1.97.1-aarch64-linux-android.tar.xz",
+        "actualBytes": 28093048,
+        "SHA256": "d664a49fb80d125d68f779112aa97d2a3f5def5f807a35540aa77fce0b350c4f",
+        "publisherSHA256": "d664a49fb80d125d68f779112aa97d2a3f5def5f807a35540aa77fce0b350c4f"
+      },
+      {
+        "package": "rust-std",
+        "target": "i686-linux-android",
+        "URL": "https://static.rust-lang.org/dist/2026-07-16/rust-std-1.97.1-i686-linux-android.tar.xz",
+        "actualBytes": 27677688,
+        "SHA256": "603b22ec3681d5dab9c3f81265f22f4a19adf30e99720c733136440e85b221a7",
+        "publisherSHA256": "603b22ec3681d5dab9c3f81265f22f4a19adf30e99720c733136440e85b221a7"
+      },
+      {
+        "package": "rust-std",
+        "target": "x86_64-linux-android",
+        "URL": "https://static.rust-lang.org/dist/2026-07-16/rust-std-1.97.1-x86_64-linux-android.tar.xz",
+        "actualBytes": 28013364,
+        "SHA256": "465ab02385c392e5399804ba81b32606e0bf279153f3746082297afad632a34b",
+        "publisherSHA256": "465ab02385c392e5399804ba81b32606e0bf279153f3746082297afad632a34b"
+      },
+      {
+        "package": "rust-std",
+        "target": "armv7-linux-androideabi",
+        "URL": "https://static.rust-lang.org/dist/2026-07-16/rust-std-1.97.1-armv7-linux-androideabi.tar.xz",
+        "actualBytes": 25838756,
+        "SHA256": "5e62a011675e0ba97b11bb0b8e5c8266273dcd0c8e450f6c07541690449d14a2",
+        "publisherSHA256": "5e62a011675e0ba97b11bb0b8e5c8266273dcd0c8e450f6c07541690449d14a2"
+      },
+      {
+        "package": "rustup",
+        "target": "aarch64-apple-darwin",
+        "URL": "https://static.rust-lang.org/rustup/archive/1.29.1/aarch64-apple-darwin/rustup-init",
+        "actualBytes": 11319056,
+        "SHA256": "ec1b9233e7f72990ecd8e62063fa7f6c3dfc2bec8e97f88bff165f9100ac696a",
+        "publisherSHA256": "ec1b9233e7f72990ecd8e62063fa7f6c3dfc2bec8e97f88bff165f9100ac696a"
+      },
+      {
+        "package": "rust-std",
+        "target": "aarch64-apple-ios-sim",
+        "URL": "https://static.rust-lang.org/dist/2026-07-16/rust-std-1.97.1-aarch64-apple-ios-sim.tar.xz",
+        "bytes": 28710800,
+        "SHA256": "3deb094abb0f7382aad761b8e1e89cebd68bec0591d39e313330ef709b99f6e4",
+        "publisherSHA256": "3deb094abb0f7382aad761b8e1e89cebd68bec0591d39e313330ef709b99f6e4"
+      }
+    ],
+    "iOSSelectedComponents8": [
+      {
+        "package": "rustc",
+        "target": "aarch64-apple-darwin",
+        "archiveSHA256": "6076cad38ccabaa24325f26a74080a363a2633a9cd34c473a8977255d8a593cb"
+      },
+      {
+        "package": "cargo",
+        "target": "aarch64-apple-darwin",
+        "archiveSHA256": "2d84a74e9558192a7de674aca6aa3ab7464bed2df97e0377156ddb7e09a0fd7a"
+      },
+      {
+        "package": "clippy-preview",
+        "target": "aarch64-apple-darwin",
+        "archiveSHA256": "5e44c0ac5ca9b6f14a3c9031a61f583348b902f908f46e95717aef1dbd2807db"
+      },
+      {
+        "package": "rust-std",
+        "target": "aarch64-apple-darwin",
+        "archiveSHA256": "a4895f5c6995e83cab8687e46b14324592398049def71ce75ca308c981cf200d"
+      },
+      {
+        "package": "rust-std",
+        "target": "aarch64-linux-android",
+        "archiveSHA256": "d664a49fb80d125d68f779112aa97d2a3f5def5f807a35540aa77fce0b350c4f"
+      },
+      {
+        "package": "rust-std",
+        "target": "i686-linux-android",
+        "archiveSHA256": "603b22ec3681d5dab9c3f81265f22f4a19adf30e99720c733136440e85b221a7"
+      },
+      {
+        "package": "rust-std",
+        "target": "x86_64-linux-android",
+        "archiveSHA256": "465ab02385c392e5399804ba81b32606e0bf279153f3746082297afad632a34b"
+      },
+      {
+        "package": "rust-std",
+        "target": "aarch64-apple-ios-sim",
+        "archiveSHA256": "3deb094abb0f7382aad761b8e1e89cebd68bec0591d39e313330ef709b99f6e4"
+      }
+    ],
+    "armv7Archive": "Retained official artifact only; no selected Rustarmv7target claim.",
+    "selectedMemberProof": "<ios-native-root>/state/rust-selected-eight-official-members-v1.json",
+    "iOSFileMirror": "<ios-native-root>/actual-native-ios-v2/state/localsend-rust-file-mirror-prospective-supplement-v1.json",
+    "iOSExactRustcSelection": "<ios-native-root>/actual-native-ios-v2/state/localsend-exact-rustc-selection-proposal-v1.json"
+  },
+  "notApplicable": {
+    "Node": "Flutter baseline does not use Node.",
+    "Bundler": "Owned direct CocoaPods exact38 local gems; no Bundler execution.",
+    "iOSSigningAccount": "Simulator build CODE_SIGNING_ALLOWED=NO; no account/device signing.",
+    "productCandidate": "Runstir binary/CLI/GUI candidate was not invoked by these native baselines."
+  },
+  "commonIOSPrepin": "<ios-native-root>/state/ios-native-all-input-prepin-v1.json",
+  "perLocalSendSupplements": [
+    "<ios-native-root>/actual-native-ios-v2/state/localsend-native-prebuild-input-supplement-v1.json",
+    "<ios-native-root>/actual-native-ios-v2/state/localsend-cargo-materialization-supplement-v1.json",
+    "<ios-native-root>/actual-native-ios-v2/state/localsend-cargo-workspace-index-supplement-v1.json",
+    "<ios-native-root>/actual-native-ios-v2/state/localsend-selected-offline-cargo-closure-v2.json",
+    "<ios-native-root>/actual-native-ios-v2/state/localsend-pod-cache-prospective-supplement-v3.json",
+    "<ios-native-root>/actual-native-ios-v2/state/cargokit-ios-runner-prospective-supplement-v4.json",
+    "<ios-native-root>/actual-native-ios-v2/state/localsend-rust-file-mirror-precheck-outcome-v1.json",
+    "<ios-native-root>/actual-native-ios-v2/state/localsend-rustc-discovery-smoke-outcome-v1.json",
+    "<ios-native-root>/actual-native-ios-v2/state/localsend-direct-build-command-preconditions-v4.json"
+  ],
+  "timingMeaning": "Each prepin is preparation-state evidence at its own timestamp. Later native results are separate. LocalSend later projectdependency supplements are not retroactive Minimal inputs."
+}

@@ -1,0 +1,120 @@
+{
+  "appRoot": "<evidence-root>/sources/prepared-localsend/app",
+  "architectureSelection": {
+    "ARCHS": "arm64",
+    "ONLY_ACTIVE_ARCH": "YES",
+    "destination": "id=<owned-simulator>"
+  },
+  "attempt": "prepared-localsend-ios-arm64-final",
+  "bundleID": "org.localsend.localsendApp",
+  "configuration": "Debug",
+  "dependencyRoot": "<evidence-root>/sources/prepared-localsend",
+  "derivedData": "<owned-native-temp>/derived-prepared-localsend",
+  "device": {
+    "name": "Runstir-213-iPhone18Pro",
+    "type": "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro",
+    "udid": "<owned-simulator>"
+  },
+  "entrypoint": "lib/main.dart",
+  "ephemeralException": "current user canonical Darwin T only; existing HOME/cache/shared SDK write denied",
+  "flutter": {
+    "archiveSHA256": "d692b030a63466c44d6b2bc88583380371ecbe328f22cc4057835f59739821a1",
+    "dart": "3.11.5",
+    "engine": "42d3d75a56efe1a2e9902f52dc8006099c45d937",
+    "source": "00b0c91f06209d9e4a41f71b7a512d6eb3b9c694",
+    "version": "3.41.9"
+  },
+  "host": {
+    "architecture": "arm64",
+    "build": "26A434",
+    "hardwareModel": "Mac16,8",
+    "kind": "actual Mac",
+    "macOS": "27.0.1"
+  },
+  "moduleCache": "<owned-native-temp>/module-cache",
+  "nativeInput": "logs/prepared-localsend-native-input.json",
+  "nativePreparation": {
+    "CocoaPods": "1.16.2 (owned GEM_HOME and cache)",
+    "Ruby": "3.3.12 (preinstalled read-only)",
+    "podMode": "--deployment after explicit approved prepared-input resolution",
+    "specChecksums": "CocoaPods spec SHA-1; raw podspec SHA-256 recorded separately; not archive checksums"
+  },
+  "notApplicable": {
+    "JDK/Gradle/AGP/AndroidSDK/NDK": "iOS-only execution",
+    "Node": "no Node build step in this LocalSend execution"
+  },
+  "observedBuildResult": "BUILD SUCCEEDED, process exit 0",
+  "outerInvocation": [
+    "sh",
+    "<evidence-root>/run213",
+    "env",
+    "PUB_CACHE=<evidence-root>/state/pub-cache/prepared-localsend",
+    "sandbox-exec",
+    "-f",
+    "<evidence-root>/ios-final-writes.sb"
+  ],
+  "podfileLockSHA256": "5595ddad3deb164f454565e62ef48b3fae1e4d0b951116781f0246abe810825f",
+  "priorFailure": "strict guard denied Foundation atomic temp; root-approved Darwin T ephemeral exception made tiny probe atomic=1; source unchanged",
+  "pubspecLockSHA256": "d14333a18b86726a4d8cc792bd3d65482d8e55e53f5895a3bd21d0cdcf7f5b3a",
+  "recordCorrection": "Original draft inherited minimal-app scenario and notApplicable labels. Preserved in prepared-localsend-ios-final-tuple-draft.json. Tool execution and source bytes unchanged.",
+  "resultBundle": "<owned-native-temp>/results-prepared-localsend.xcresult",
+  "runtime": {
+    "build": "24A434",
+    "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "version": "27.0"
+  },
+  "rust": {
+    "home": "owned RUSTUP_HOME/CARGO_HOME",
+    "target": "aarch64-apple-ios-sim",
+    "version": "1.97.1"
+  },
+  "rustTarget": "aarch64-apple-ios-sim",
+  "sandboxProfile": "ios-final-writes.sb",
+  "sandboxProfileSHA256": "4bbc25c67dbe800de479c6b6c00de488f539716c1a66dfa17a376487f80e37ef",
+  "scenario": "user-approved-prepared-LocalSend-ios-baseline",
+  "scheme": "Runner",
+  "sdkSettingsSHA256": "b8c86f02919d336244af1509b95b3bdaf9fd1151ee97ba188f5f77b301ed4a1e",
+  "signing": "not-applicable: unsigned iOS Simulator build",
+  "simulatorSDK": {
+    "build": "24A430",
+    "version": "27.0"
+  },
+  "sourcePreparation": "user-approved separate clone; only Podfile/Podfile.lock/Runner.xcodeproj project changed; original source remains fixed",
+  "sourceSHA": "61145cf100522363e9658af97137097551c64832",
+  "sourceTree": "2346d8051c3f556fa545e9c48aa5c1bc7fc2446b",
+  "swift": "6.4 swiftlang-6.4.0.34.1 clang-2100.3.34.1",
+  "swiftModuleCache": "<owned-native-temp>/swift-module-cache",
+  "wrapperSHA256": "446b045555b5ac74b9450ce303c2438794a16b8af0513148b994a49935bc3842",
+  "xcode": {
+    "build": "27A266a",
+    "developerDirectory": "/Applications/Xcode.app/Contents/Developer",
+    "installerArchiveSHA256": "unknown: preinstalled Xcode archive not retained",
+    "version": "27.0"
+  },
+  "xcodebuildArgv": [
+    "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild",
+    "-workspace",
+    "ios/Runner.xcworkspace",
+    "-scheme",
+    "Runner",
+    "-configuration",
+    "Debug",
+    "-sdk",
+    "iphonesimulator",
+    "-destination",
+    "id=<owned-simulator>",
+    "-derivedDataPath",
+    "<owned-native-temp>/derived-prepared-localsend",
+    "-resultBundlePath",
+    "<owned-native-temp>/results-prepared-localsend.xcresult",
+    "-disableAutomaticPackageResolution",
+    "ARCHS=arm64",
+    "ONLY_ACTIVE_ARCH=YES",
+    "CODE_SIGNING_ALLOWED=NO",
+    "MODULE_CACHE_DIR=<owned-native-temp>/module-cache",
+    "CLANG_MODULE_CACHE_PATH=<owned-native-temp>/module-cache",
+    "SWIFT_MODULE_CACHE_PATH=<owned-native-temp>/swift-module-cache",
+    "build"
+  ],
+  "xcodebuildSHA256": "c493a97b720c6afabad03b00577d4387fe9b01d44e57be26caae81511e5820bb"
+}
