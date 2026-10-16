@@ -137,7 +137,7 @@ private struct AndroidGradleWrapperCheck: Check {
             return .error(
                 observed: failure.description,
                 required: "executable gradlew, wrapper JAR/properties, and an exact distributionUrl",
-                source: CheckSource(tier: 1, origin: "android/gradle/wrapper"),
+                source: CheckSource(tier: 1, origin: context.projectRelativePath("gradle/wrapper")),
                 remediation: Remediation(
                     summary: "Restore the project's Gradle wrapper from its source repository; mobile will not substitute system Gradle."
                 )
@@ -512,8 +512,8 @@ private struct AndroidSDKCheck: Check {
             return .error(
                 observed: message,
                 required: "one unambiguous Android SDK root",
-                source: CheckSource(tier: 1, origin: "android/local.properties + ANDROID_HOME"),
-                remediation: AndroidDoctorContext.sdkRootRemediation
+                source: CheckSource(tier: 1, origin: "\(context.projectRelativePath("local.properties")) + ANDROID_HOME"),
+                remediation: context.sdkRootRemediation
             )
         case .resolved(let url, let source): (sdk, rootSource) = (url, source)
         }
@@ -550,7 +550,7 @@ private struct AndroidSDKCheck: Check {
                         return .error(
                             observed: "cmake.dir reports CMake \(installed.version)",
                             required: "CMake \(cmakeVersion) declared by \(module.path)",
-                            source: CheckSource(tier: 1, origin: "evaluated Gradle model; android/local.properties cmake.dir + cmake --version"),
+                            source: CheckSource(tier: 1, origin: "evaluated Gradle model; \(context.projectRelativePath("local.properties")) cmake.dir + cmake --version"),
                             remediation: Remediation(summary: "Point cmake.dir to the declared CMake version, then inspect again.")
                         )
                     }
@@ -559,15 +559,15 @@ private struct AndroidSDKCheck: Check {
                 }
             } catch {
                 return .unknown(
-                    reason: "android/local.properties cmake.dir could not be read or did not report a CMake version",
-                    source: CheckSource(tier: 1, origin: "android/local.properties cmake.dir")
+                    reason: "\(context.projectRelativePath("local.properties")) cmake.dir could not be read or did not report a CMake version",
+                    source: CheckSource(tier: 1, origin: "\(context.projectRelativePath("local.properties")) cmake.dir")
                 )
             }
         }
         if cmakeDirectory != nil {
             source = CheckSource(
                 tier: 1,
-                origin: "evaluated Gradle model; android/local.properties cmake.dir + cmake --version; \(rootSource.origin)"
+                origin: "evaluated Gradle model; \(context.projectRelativePath("local.properties")) cmake.dir + cmake --version; \(rootSource.origin)"
             )
         } else if module.cmakeConfigured == true, cmakeVersion == nil {
             guard let agpText = module.agpVersion, let agp = SemanticVersion(agpText),
