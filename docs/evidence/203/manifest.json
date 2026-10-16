@@ -1,0 +1,27 @@
+{
+  "schema": "runstir.203.public-manifest.v1",
+  "source_head": "7fac827f7b086ef754d37c71da94946247aa2e0a",
+  "scope": "Public source/fixture documentation only; no actual installation evidence. Manifest excludes itself.",
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "4ccb191e10acc98cc82943a804f3d52df7012b3ce4e8bb6c3c3e46f71bf73fe1",
+      "bytes": 10960
+    },
+    {
+      "path": "fixture-receipts.json",
+      "sha256": "456821f41bafd951f9ff8a16165d2a6907c789b806ff55e75c19eab7d53a0b2f",
+      "bytes": 54262
+    },
+    {
+      "path": "official-metadata.json",
+      "sha256": "e7de763ba6f6fa765ee5a0bda2eb3790bc1624d5939301ac0a1b1c8a72216eca",
+      "bytes": 5002
+    },
+    {
+      "path": "../../adr/0039-approved-project-tools.md",
+      "sha256": "cfa579712a8ad2399191a3e3ce4bb11589cb6d652c16fbe5f5c752ea92b59255",
+      "bytes": 3849
+    }
+  ]
+}
