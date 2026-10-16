@@ -1,0 +1,857 @@
+{
+  "schemaVersion": 1,
+  "issue": 203,
+  "measurementDateUTC": "2026-10-16",
+  "verdict": {
+    "GUISetup": {
+      "state": "partial",
+      "displayedExitCode": 1,
+      "completed": [
+        "tools.java",
+        "tools.node",
+        "tools.ruby"
+      ],
+      "ios": "waiting-manual",
+      "android": "waiting-manual"
+    },
+    "GUIReadonlyReinspection": {
+      "state": "needs-approval",
+      "displayedExitCode": 0,
+      "additionalApproval": false
+    },
+    "CLIReadonlyPostInstallPlan": {
+      "exitCode": 0,
+      "state": "needs-approval",
+      "planID": "1e8ce8fe1d66e0ec677225e40b8a09b724a7befa77f1884003cce1e5ccebbbdf",
+      "stepCount": 12,
+      "installationMetadataCount": 0,
+      "toolInstallStepCount": 0
+    },
+    "applicationExecution": false,
+    "wholeIssueCompletedByThisEvidence": false
+  },
+  "source": {
+    "base": "ebccdd3beef05ba60f0069281ea0637af3cfb8e1",
+    "measuredHead": "7b58ed51a7bc8dff84979fd505e189e053024f33",
+    "tree": "185126effb9590e455e89025029d45240a288df6",
+    "cleanAtPackagingAndMeasurement": true,
+    "canonicalFiles": 34,
+    "canonicalDiffBytes": 343429,
+    "canonicalDiffSHA256": "f75100b1429c1af6f3e2f6b2146bce3ec9e0bda6704f9e045b4f530d24e6a6b1",
+    "laterDocumentation": "These public evidence files are later edits. No code test, build, VM, guest, download or API action was run to create them."
+  },
+  "candidate": {
+    "GUIBinarySHA256": "d046c5e5fc10e79975a5854bfc763ba166dadac33336d1173e6fa7ee03216468",
+    "GUIFiles": 15,
+    "bundleID": "dev.runstir.validation203.approval.7b58ed5",
+    "appName": "Runstir203Approval7b58ed5.app",
+    "CLIBinarySHA256": "4bf9740ee1c042cc3478547afca023554d0312cb395f73ef2ce387f6d6cfa79e",
+    "CLIFiles": 13,
+    "hostGuestBytesModesEqual": true,
+    "adHocDeepStrictChecksExit0": true,
+    "standardResources": true,
+    "distributionSigningOrNotarizationClaim": false,
+    "earlierMeasuredCLIBinarySHA256": "23bcc69031678029a62c7618bde9fca00d81ace1d77ddfc0072011f09447a1aa",
+    "sameBytesAsEarlierMeasuredCLI": false,
+    "b632To7bSourcesAndPackageInputDifference": [
+      "Sources/RunstirGUI/RunstirApp.swift"
+    ],
+    "reproducibleBuildClaim": false
+  },
+  "verificationBoundary": {
+    "earlierImplementationHead": "7b58ed51a7bc8dff84979fd505e189e053024f33",
+    "earlierImplementationTests": 677,
+    "earlierImplementationSuites": 81,
+    "earlierCommandBaseField": "Root found an obsolete21959 candidate base field in old command.json. Actual HEAD/tree/command/logs identify7b58ed5. The original remains preserved.",
+    "fixedBaseValidationInferredFromThatField": false,
+    "sourceBaseAndDiffPinSource": "Separate source-isolation receipt, not the stale check-command base field",
+    "finalMainIntegratedHeadWerrorGUIAndCLI3": "pending separate Root verification"
+  },
+  "execution": {
+    "project": "Owned eight tracked declaration/compatibility files plus .git; no hardlinks. Not an OSS application run.",
+    "projectAlias": "<GUI_PROJECT>",
+    "storeAlias": "<GUI_STORE>",
+    "homeAlias": "<GUI_ROOT>/home",
+    "tmpAlias": "<GUI_ROOT>/tmp/",
+    "initialStoreEmpty": true,
+    "repositoryTrust": false,
+    "manager": "Existing mise2026.10.7 readonly PATH reuse; no manager install in this GUI run",
+    "managerSHA256": "f5171e341518a57e8c4e9280e28443e35d66212c51164c83be76794e0a78b014",
+    "environment7": {
+      "HOME": "<GUI_ROOT>/home",
+      "TMPDIR": "<GUI_ROOT>/tmp/",
+      "PATH": "<READONLY_MISE>/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+      "MISE_DATA_DIR": "<GUI_STORE>",
+      "MISE_AUTO_INSTALL": "false",
+      "GIT_OPTIONAL_LOCKS": "0",
+      "LANG": "en_US.UTF-8"
+    },
+    "namedPATHAndSelectedManagerConfigurationEqual": true
+  },
+  "approval": {
+    "planID": "fb1a8f533dc6a363e32a5a354c848f2a709f6f7d6ef2a4b84ba8b5b8492c9fd6",
+    "installStepIDs": [
+      "tools.java",
+      "tools.node",
+      "tools.ruby"
+    ],
+    "manualStepIDs": [
+      "android.tools.reinspect",
+      "dependencies.node",
+      "ios.tools.reinspect"
+    ],
+    "resourceKeyAlias": "destination:<GUI_STORE>",
+    "resourceKeyRawSHA256": "180969485124b1b55d4310edb89596726dae612e2dfe641dce22a0ccc186ceb9",
+    "resourceBoundary": "One selected store-root resource key shared by all three installs; no per-version lock exception"
+  },
+  "officialPins": [
+    {
+      "stepID": "tools.java",
+      "revision": "temurin-17.0.18+8",
+      "artifact": {
+        "url": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.18%2B8/OpenJDK17U-jdk_aarch64_mac_hotspot_17.0.18_8.tar.gz",
+        "bytes": 185658966,
+        "sha256": "d81de06d938384fe76c4aa3c13395933aa11e2d19b0428743f810db06b05e312",
+        "algorithm": "sha256"
+      },
+      "metadata": {
+        "url": "https://api.github.com/repos/adoptium/temurin17-binaries/releases/tags/jdk-17.0.18%2B8",
+        "sha256": "7012aecf9ee3ca4451342387e65f91b81cb95b32c55d69bbe85cb090c1f7e8c5"
+      },
+      "destinationRelativeToStore": "installs/java/temurin-17.0.18+8",
+      "requiredFile": "bin/java",
+      "versionResult": {
+        "version": "Temurin17.0.18+8",
+        "exitCode": 0,
+        "binarySHA256": "bf8efe506d54531fbab37b4cc52e004dfa203583d1aa086f132348d484ce456f",
+        "binaryBytes": 70464,
+        "mode": "0o755",
+        "executableRelativeToStore": "installs/java/temurin-17.0.18+8/bin/java",
+        "contained": true,
+        "argument": "-version",
+        "childPATH": "Exact new Java/Node/Ruby bin directories followed by system paths; child scope only"
+      },
+      "treeEntries": 543,
+      "sameAsExistingPinnedToolTree": true
+    },
+    {
+      "stepID": "tools.node",
+      "revision": "22.23.2",
+      "artifact": {
+        "url": "https://nodejs.org/dist/v22.23.2/node-v22.23.2-darwin-arm64.tar.gz",
+        "bytes": 50068815,
+        "sha256": "61130f394c1630d211dd50aecc4353d379480f36d3ac913cd85dbba1aed585c6",
+        "algorithm": "sha256"
+      },
+      "metadata": {
+        "url": "https://nodejs.org/dist/v22.23.2/SHASUMS256.txt",
+        "sha256": "778ac5b2fcdbd68d9c0ae9f4310674faa3af0910bd0d18e7f6597787c40a3e39"
+      },
+      "destinationRelativeToStore": "installs/node/22.23.2",
+      "requiredFile": "bin/node",
+      "versionResult": {
+        "version": "22.23.2",
+        "exitCode": 0,
+        "binarySHA256": "18e387c90ab8a8400183e8bdd396376e1e875b91b4c874b894dcade7b35bf572",
+        "binaryBytes": 112937728,
+        "mode": "0o755",
+        "executableRelativeToStore": "installs/node/22.23.2/bin/node",
+        "contained": true,
+        "argument": "--version",
+        "childPATH": "Exact new Java/Node/Ruby bin directories followed by system paths; child scope only"
+      },
+      "treeEntries": 5865,
+      "sameAsExistingPinnedToolTree": true
+    },
+    {
+      "stepID": "tools.ruby",
+      "revision": "3.2.2",
+      "artifact": {
+        "url": "https://github.com/jdx/ruby/releases/download/3.2.2/ruby-3.2.2.macos.tar.gz",
+        "bytes": 39479292,
+        "sha256": "13521c64d1d5579d97707b54321b82e7c7a7c779a919868ac9b4eb8e36da9ba9",
+        "algorithm": "sha256"
+      },
+      "metadata": {
+        "url": "https://api.github.com/repos/jdx/ruby/releases/tags/3.2.2",
+        "sha256": "3a82e4c582003942ec09dcc48e81b2a6b73e7be1fb6380de5cdaa83b983a5283"
+      },
+      "destinationRelativeToStore": "installs/ruby/3.2.2",
+      "requiredFile": "bin/ruby",
+      "versionResult": {
+        "version": "3.2.2",
+        "exitCode": 0,
+        "binarySHA256": "5869cb2f27470ac17a79e2b582998c56a595c7ab867e1f83e0886e403c380808",
+        "binaryBytes": 6775752,
+        "mode": "0o755",
+        "executableRelativeToStore": "installs/ruby/3.2.2/bin/ruby",
+        "contained": true,
+        "argument": "--version",
+        "childPATH": "Exact new Java/Node/Ruby bin directories followed by system paths; child scope only"
+      },
+      "treeEntries": 16721,
+      "sameAsExistingPinnedToolTree": true
+    }
+  ],
+  "archiveAndProcessObservation": {
+    "watcherIntervalSeconds": 0.2,
+    "watcherSeconds": 295.733902,
+    "observationEvents": 231,
+    "capturedOfficialArchives": 3,
+    "allThreeGuestCopiesAndHostCopiesMatchOfficialBytesAndSHA256": true,
+    "newlyDownloadedForEvidence": false,
+    "stockCurl": {
+      "path": "/usr/bin/curl",
+      "sha256": "625cd93eb0043214d5f74974d34f0b4d748977473e236a2e7f4704ecc2b95950",
+      "sampledIdentities": 17,
+      "allSampledKernelPathsAndSHA256Exact": true,
+      "wrapperProxyAuthConfigOrPayloadSubstitution": false
+    },
+    "unobservedShortProcessEdgesProven": false
+  },
+  "preservation": {
+    "fullBefore34RecordedAtUTC": "2026-10-16T10:39:02.878856+00:00",
+    "fullAfter03RecordedAtUTC": "2026-10-16T11:05:22.101941+00:00",
+    "fullAfter03CommandExitAtUTC": "2026-10-16T11:05:38.102513+00:00",
+    "fullTreeScopeEndsAt": "after03; later CLI PLAN/final-idle checks have a narrower boundary",
+    "sameAsFresh34": {
+      "sourceProject": true,
+      "GUIproject": true,
+      "CLIproject": true,
+      "oldCandidates": true,
+      "readonlyMiseManager": true,
+      "readonlyMiseSHA256": true,
+      "oldFullToolTrees": true,
+      "CLIcompletedStore": true,
+      "vendorArtifactTrees": true,
+      "GUIcandidate": true,
+      "newGUIcandidate": true,
+      "newPackageCLI": true,
+      "CLIcandidate": true,
+      "GuestAgentPATH": true,
+      "launchctlPATH": true,
+      "curl": true,
+      "systemRuby": true
+    },
+    "preservationChecks": 17,
+    "environment7Exact": true,
+    "threeSourceProjectsTrackedFilesEach": 8,
+    "oldToolTreeEntryCounts": {
+      "java": 543,
+      "node": 5865,
+      "ruby": 16721
+    },
+    "oldCLICompletedStoreEntries": 23149,
+    "namedTreeScope": "Regular bytes/SHA/modes, directory entries/modes and symlink targets for the named project/git/candidate/tool/vendor trees only",
+    "host": {
+      "beforeRecordedAtUTC": "2026-10-16T11:01:09.583815+00:00",
+      "afterRecordedAtUTC": "2026-10-16T11:05:29.354212+00:00",
+      "oldCLIActualFiles": 188,
+      "fixedCandidateFiles": 98,
+      "totalIndexedFiles": 286,
+      "allSHABytesModesEqual": true
+    },
+    "protectedVMs": {
+      "count": 6,
+      "allStoppedBeforeAfter": true,
+      "smallMetadataFullSHAEqual": true,
+      "smallMetadataThresholdBytes": 16777216,
+      "diskStatEqual": true,
+      "wholeDiskBytesHashed": false,
+      "activeOwned203Excluded": true
+    },
+    "selectedHOME": {
+      "scope": "Selected root stat and named configuration file bytes only",
+      "delta": [
+        "Library/Preferences/dev.runstir.validation203.approval.7b58ed5.plist"
+      ],
+      "actor": "unknown",
+      "cause": "unknown",
+      "LibraryCachesRootStatSameAsFresh34": true,
+      "wholeHOMEOrCacheBytesPreservedClaim": false
+    },
+    "postInstallCLIPlan": {
+      "startedAtUTC": "2026-10-16T11:11:55.378254+00:00",
+      "endedAtUTC": "2026-10-16T11:11:56.905094+00:00",
+      "count": 1,
+      "exactArgvAlias": [
+        "<NEW_CLI>",
+        "setup",
+        "--project",
+        "<GUI_PROJECT>",
+        "--plan",
+        "--non-interactive",
+        "--json",
+        "--progress-json"
+      ],
+      "sameEnvironment7": true,
+      "source8IndexStageFlagsNewBin3AndCLIBytesEqual": true,
+      "approvalTrustOrInstallArguments": false,
+      "fullToolTreesRehashedAfterThisPLAN": false
+    },
+    "finalIdle": {
+      "recordedAtUTC": "2026-10-16T11:12:35.915413+00:00",
+      "GUIChildren": 0,
+      "previousObservedOwnedIdentitiesAlive": 0,
+      "ownStageRoots": 0,
+      "source8AndIndexForThreeProjectsSame": true,
+      "environment7Exact": true,
+      "oldGUI715Absent": true,
+      "leaseFiles": 2,
+      "leaseBytes": [
+        0,
+        0
+      ],
+      "lsofExitCodes": [
+        1,
+        1
+      ],
+      "lsofStdoutBytes": [
+        0,
+        0
+      ],
+      "advisoryLockAvailability": "unproven; no lock acquisition probe"
+    }
+  },
+  "planIDTranscription": {
+    "actualGUIAndCLIPlanID": "1e8ce8fe1d66e0ec677225e40b8a09b724a7befa77f1884003cce1e5ccebbbdf",
+    "actualLength": 64,
+    "RootDirectScreen51And54Confirmation": true,
+    "earlierParentTextLength": 63,
+    "earlierTextOmittedOneB": true,
+    "rawSameAsPreviousFalsePreserved": true,
+    "installationTargetChangeOrProductMismatch": false
+  },
+  "captureLimits": {
+    "originalGUIStdoutBytes": 0,
+    "originalGUIStderrBytes": 0,
+    "rawGUIResultJSONCaptured": false,
+    "rawGUISetupStageNDJSONCaptured": false,
+    "watcherNDJSONIsGUIStageLog": false,
+    "CLIPlanProgressIsGUIStageLog": false,
+    "resultEvidence": "Root UI captures plus separate watcher/filesystem/version observations",
+    "failedWhiteOrUnavailableCaptures": "Preserved privately; not app failure or visual PASS evidence",
+    "lifecycle": "Separate Root normal-quit-v1 evidence below. Detached GUI child exit status remains unknown; Tart stop/run exit0 are separate."
+  },
+  "screenshots": [
+    {
+      "path": "gui-7b58ed5/47-fullscreen-plan.png",
+      "sha256": "1ab4daca3916eb5d9b2f80f0271783bd502a01818749bed0cf746e3b9c7a18e0",
+      "bytes": 815236,
+      "mode": "0o644",
+      "scope": "Java and Node artifact metadata in GUI plan",
+      "originalBytesUnchanged": true
+    },
+    {
+      "path": "gui-7b58ed5/48-plan-artifact-node-ruby.png",
+      "sha256": "f7712a43de262d2a8e9dfe05d3f39c17e07d5ccba8022fc0e357ffa8d10daecf",
+      "bytes": 843146,
+      "mode": "0o644",
+      "scope": "Node tail and complete Ruby artifact metadata",
+      "originalBytesUnchanged": true
+    },
+    {
+      "path": "gui-7b58ed5/51-gui-install-result.png",
+      "sha256": "62f6c2cde2d8ba7d06687a36ca65e36b012acc09f9d02e7ebd9527044432ec10",
+      "bytes": 818419,
+      "mode": "0o644",
+      "scope": "GUI partial/exit1 and completed Java/Node/Ruby",
+      "originalBytesUnchanged": true
+    },
+    {
+      "path": "gui-7b58ed5/54-gui-reinspection-fullscreen.png",
+      "sha256": "b7d347ca72176883eb2daff5e046cc02a9803a7643c76903ced6a40232f43cba",
+      "bytes": 827338,
+      "mode": "0o644",
+      "scope": "GUI read-only reinspection needs-approval/exit0",
+      "originalBytesUnchanged": true
+    }
+  ],
+  "privateEvidence": {
+    "bundleID": "gui-setup-7b58-v1",
+    "pathPolicy": "References are relative to the private bundle. Public text/JSON normalizes private user paths. Original PNGs contain only the allowed synthetic guest admin paths. No raw credentials/payload/base64/whole log copy.",
+    "handoff": {
+      "path": "HANDOFF-v4.json",
+      "sha256": "541886effa35de43587ed6f54b869bdea8778ad0003e3ca2d0600a923aff63a5",
+      "bytes": 4525,
+      "mode": "0o644",
+      "bounds": [
+        "GUISetupResult",
+        "after03",
+        "postPlanBoundary",
+        "RootGUIPlanIDConfirmation",
+        "finalIdle"
+      ]
+    },
+    "index": {
+      "path": "FINAL-INDEX-v4.json",
+      "sha256": "6fad2341e90923f366a5f07e330e4f51d6bea4888804741410023f08cfdabe10",
+      "bytes": 15819,
+      "mode": "0o644",
+      "files": 93,
+      "indexedTotalBytes": 595235842,
+      "all93SHABytesModesIndependentlyVerified": true
+    },
+    "before34": {
+      "bundleID": "candidate-7b58ed5",
+      "path": "guest-originals/receipts/layout-7b58ed5-v1/before.json",
+      "sha256": "df728c1f983412b474e1f23beaf85e0918705fc578bc23f57c4d8fee85ac9aca",
+      "bytes": 10880978,
+      "mode": "0o644",
+      "bounds": [
+        "sourceProject",
+        "GUIproject",
+        "CLIproject",
+        "oldFullToolTrees",
+        "CLIcompletedStore",
+        "newGUIcandidate",
+        "selectedAdminHOME"
+      ]
+    },
+    "sourceIsolation": {
+      "bundleID": "candidate-7b58ed5",
+      "path": "state/source-isolation-v1.json",
+      "sha256": "c81db6a6a1f0a7ce703194768143472ccf554117a97286900c4b07995fe8186d",
+      "bytes": 4692,
+      "mode": "0o644",
+      "bounds": [
+        "base",
+        "HEAD",
+        "tree",
+        "fullIndexBinaryDiffSHA256",
+        "canonicalFileCount",
+        "sourceStatus"
+      ]
+    },
+    "receipts": {
+      "ready.json": {
+        "path": "guest-originals/receipts/gui-setup-7b58-v1/ready.json",
+        "sha256": "f49fe9f94ce6789a321f5874941e579d8c3b0ceb791502d5a73dba2ce2a984e7",
+        "bytes": 973,
+        "mode": "0o644",
+        "bounds": [
+          "GUIidentity",
+          "binarySHA256",
+          "selectedEnvironment",
+          "watchRoot",
+          "observerOnly"
+        ]
+      },
+      "approved-plan-reference.json": {
+        "path": "guest-originals/receipts/gui-setup-7b58-v1/approved-plan-reference.json",
+        "sha256": "8d04bc59d5b5c6ee23c0b0adf01f1bf50de674135ee7f30133f71e8d0f49bb4f",
+        "bytes": 25946,
+        "mode": "0o644",
+        "bounds": [
+          "plan.id",
+          "plan.steps[*].installation"
+        ]
+      },
+      "observations.ndjson": {
+        "path": "guest-originals/receipts/gui-setup-7b58-v1/observations.ndjson",
+        "sha256": "f33a49c99240b91d92f30aea357f29d9ebf1afe2bd8a0859801248b67be0f0c4",
+        "bytes": 123103,
+        "mode": "0o644",
+        "bounds": {
+          "ndjsonLines": [
+            1,
+            231
+          ],
+          "fields": [
+            "GUIkernelMatches",
+            "descendants",
+            "ownStageFiles"
+          ]
+        }
+      },
+      "copy-1.json": {
+        "path": "guest-originals/receipts/gui-setup-7b58-v1/copy-1.json",
+        "sha256": "822bc052b37f6a3f84a4bacfd2d3d5b4539ebf0cb964f8e0b12bffc81144d41b",
+        "bytes": 527,
+        "mode": "0o644",
+        "bounds": [
+          "expectedBytes",
+          "expectedSHA256",
+          "copiedBytes",
+          "SHA256",
+          "matchesOfficialPin"
+        ]
+      },
+      "copy-2.json": {
+        "path": "guest-originals/receipts/gui-setup-7b58-v1/copy-2.json",
+        "sha256": "9e74c665d30deb1bbd22f5a69e12e72ad5ba98db8ff0b80980e8d2724c3150c1",
+        "bytes": 526,
+        "mode": "0o644",
+        "bounds": [
+          "expectedBytes",
+          "expectedSHA256",
+          "copiedBytes",
+          "SHA256",
+          "matchesOfficialPin"
+        ]
+      },
+      "copy-3.json": {
+        "path": "guest-originals/receipts/gui-setup-7b58-v1/copy-3.json",
+        "sha256": "97184b99f291680b0b3ac2929bc9e1e87bc2a8c6656203bac2f9cf9e3ec383f6",
+        "bytes": 525,
+        "mode": "0o644",
+        "bounds": [
+          "expectedBytes",
+          "expectedSHA256",
+          "copiedBytes",
+          "SHA256",
+          "matchesOfficialPin"
+        ]
+      },
+      "after.json": {
+        "path": "guest-originals/receipts/gui-setup-7b58-v1/after.json",
+        "sha256": "28dc51d03a017a30afac7b8885886d375595a72ba83cf6951ba5ef7df9863c5a",
+        "bytes": 22034099,
+        "mode": "0o644",
+        "bounds": [
+          "sameAsFresh34",
+          "selectedEnvironment7Exact",
+          "newTools",
+          "versionCommands",
+          "selectedHOMEdeltaFrom34",
+          "originalGUILogs"
+        ]
+      },
+      "leases-final.json": {
+        "path": "guest-originals/receipts/gui-setup-7b58-v1/leases-final.json",
+        "sha256": "bc8e8481b6010264c5ad7f2767d5f86f56819f6ecbeb11dc5cfb334a3f40798f",
+        "bytes": 3250,
+        "mode": "0o644",
+        "bounds": [
+          "leases",
+          "sourceAfterVersionProbes",
+          "selectedHOMEdeltaAfterVersionProbes",
+          "versionOutputs"
+        ]
+      },
+      "cli-post-install-plan-v1/stdout": {
+        "path": "guest-originals/receipts/gui-setup-7b58-v1/cli-post-install-plan-v1/stdout",
+        "sha256": "39c65966cf95e0e9a5032abafdc1f7c1ebba1fb6c6c1427db3a6d7eb2d028538",
+        "bytes": 41354,
+        "mode": "0o644",
+        "bounds": [
+          "exitCode",
+          "operation.state",
+          "plan.id",
+          "plan.steps",
+          "plan.installed"
+        ]
+      },
+      "cli-post-install-plan-v1/stderr": {
+        "path": "guest-originals/receipts/gui-setup-7b58-v1/cli-post-install-plan-v1/stderr",
+        "sha256": "3b8e2448fa5259482dc4c837499fab65c757c2d57f742b39abd912fdfb896cc4",
+        "bytes": 382,
+        "mode": "0o644",
+        "bounds": {
+          "ndjsonLines": [
+            1,
+            2
+          ],
+          "scope": "CLI PLAN progress only; not GUI setup events"
+        }
+      },
+      "cli-post-install-plan-v1/before.json": {
+        "path": "guest-originals/receipts/gui-setup-7b58-v1/cli-post-install-plan-v1/before.json",
+        "sha256": "8db0c4765ce3f1113594990dc903b27c1c12f4f6df1668d4d4edaeede10d5ccf",
+        "bytes": 2951,
+        "mode": "0o644",
+        "bounds": [
+          "tracked",
+          "indexSHA256",
+          "stageSHA256",
+          "flagsSHA256",
+          "newToolBins",
+          "CLISHA256"
+        ]
+      },
+      "cli-post-install-plan-v1/after.json": {
+        "path": "guest-originals/receipts/gui-setup-7b58-v1/cli-post-install-plan-v1/after.json",
+        "sha256": "8db0c4765ce3f1113594990dc903b27c1c12f4f6df1668d4d4edaeede10d5ccf",
+        "bytes": 2951,
+        "mode": "0o644",
+        "bounds": [
+          "tracked",
+          "indexSHA256",
+          "stageSHA256",
+          "flagsSHA256",
+          "newToolBins",
+          "CLISHA256"
+        ]
+      },
+      "cli-post-install-plan-v1/exit.json": {
+        "path": "guest-originals/receipts/gui-setup-7b58-v1/cli-post-install-plan-v1/exit.json",
+        "sha256": "3849b6155a689a4ce2ea8cdd50eea726948e70924ab02abe8005a32388147d6b",
+        "bytes": 290,
+        "mode": "0o644",
+        "bounds": [
+          "exitCode",
+          "seconds",
+          "childReaped",
+          "stdoutSHA256",
+          "stderrSHA256"
+        ]
+      },
+      "final-idle.json": {
+        "path": "guest-originals/receipts/gui-setup-7b58-v1/final-idle.json",
+        "sha256": "863ba6402733d929a08f6ca6e1853618989f5d4b0464255112d317d2915b0300",
+        "bytes": 1574,
+        "mode": "0o644",
+        "bounds": [
+          "GUIdescendants",
+          "observedOwnedIdentitiesStillAlive",
+          "ownStageRoots",
+          "sources",
+          "leases",
+          "GUIselectedEnvironment7Exact",
+          "old715Absent"
+        ]
+      },
+      "host-before.json": {
+        "path": "host-before.json",
+        "sha256": "5e7b5b6529881517050d397ab179be3741884ea03d33abd5cd093bb2fd27017b",
+        "bytes": 59628,
+        "mode": "0o644",
+        "bounds": [
+          "indexes",
+          "protectedSix",
+          "runningVMs"
+        ]
+      },
+      "host-after.json": {
+        "path": "host-after.json",
+        "sha256": "e0770540561bbe396eb3af1d75a28d2941780b88552fb0906a487ffba6a898e4",
+        "bytes": 59703,
+        "mode": "0o644",
+        "bounds": [
+          "sameAsSetupBefore",
+          "sameProtectedAsPackageBefore",
+          "indexes",
+          "protectedSix"
+        ]
+      }
+    }
+  },
+  "limits": [
+    "This GUI tool preparation result does not prove application execution or completion of issue203.",
+    "Existing CLI23bcc actual/cancellation evidence and older failed/unknown candidates remain unchanged.",
+    "This GUI run installed only Java/Node/Ruby beside existing versions. No SDK installation, Gradle execution, dependency installation, migration or dependency alignment was performed.",
+    "Full HOME/cache/disk preservation and advisory lock availability remain unproven.",
+    "Current public documentation does not reproduce code tests/builds/guest actions/downloads/API calls."
+  ],
+  "normalQuitLifecycle": {
+    "bundleID": "normal-quit-v1",
+    "GUIQuit": {
+      "RootObservedAppMenuQuitAndReturn": true,
+      "RootObservedSettledFinderAndRunstirWindowAbsence": true,
+      "GUI1239PSAndKernelAbsent": true,
+      "detachedGUIChildExitCode": "unknown; not collected",
+      "manualSignalCount": 0,
+      "privateScreenNames": [
+        "61-quit-selected.png",
+        "62-after-normal-quit.png",
+        "63-after-normal-quit-settled.png"
+      ]
+    },
+    "separateGuestAudit": {
+      "recordedAtUTC": "2026-10-16T11:25:37.344113+00:00",
+      "comparisonBaseline": "GUI setup after03. This separate audit does not change the original after03 time boundary.",
+      "GUIChildren": 0,
+      "priorOwnedIdentitiesAlive": 0,
+      "ownedExecutableProcesses": 0,
+      "storeAndTmpStageRoots": 0,
+      "sourceThreeProjects": {
+        "sourceProject": {
+          "trackedCount": 8,
+          "tracked8BytesModesAndHashesSame": true,
+          "rawIndexSame": true,
+          "stageSame": true,
+          "flagsSame": true,
+          "HEADSame": true,
+          "configSame": true,
+          "gitTreeSame": true
+        },
+        "GUIproject": {
+          "trackedCount": 8,
+          "tracked8BytesModesAndHashesSame": true,
+          "rawIndexSame": true,
+          "stageSame": true,
+          "flagsSame": true,
+          "HEADSame": true,
+          "configSame": true,
+          "gitTreeSame": true
+        },
+        "CLIproject": {
+          "trackedCount": 8,
+          "tracked8BytesModesAndHashesSame": true,
+          "rawIndexSame": true,
+          "stageSame": true,
+          "flagsSame": true,
+          "HEADSame": true,
+          "configSame": true,
+          "gitTreeSame": true
+        }
+      },
+      "newToolBinsAndFullTreesSame": {
+        "java": {
+          "binarySame": true,
+          "treeSame": true,
+          "treeEntries": 543,
+          "contained": true,
+          "versionExecuted": false
+        },
+        "node": {
+          "binarySame": true,
+          "treeSame": true,
+          "treeEntries": 5865,
+          "contained": true,
+          "versionExecuted": false
+        },
+        "ruby": {
+          "binarySame": true,
+          "treeSame": true,
+          "treeEntries": 16721,
+          "contained": true,
+          "versionExecuted": false
+        }
+      },
+      "namedTreesSame": {
+        "oldCandidates": true,
+        "readonlyMiseManager": true,
+        "readonlyMiseSHA256": true,
+        "oldFullToolTrees": true,
+        "CLIcompletedStore": true,
+        "vendorArtifactTrees": true,
+        "GUIcandidate": true,
+        "newGUIcandidate": true,
+        "newPackageCLI": true,
+        "CLIcandidate": true,
+        "GUIstore": true
+      },
+      "selectedHOMEdeltaSinceAfter03": {},
+      "systemPathsSame": {
+        "GuestAgentPATH": true,
+        "launchctlPATH": true,
+        "curl": true,
+        "systemRuby": true
+      },
+      "exactLeaseFileBytes": [
+        0,
+        0
+      ],
+      "lsofOpenHolderOutputBytes": [
+        0,
+        0
+      ],
+      "advisoryLockAvailability": "unproven; no new flock test"
+    },
+    "VM": {
+      "normalStopCount": 1,
+      "normalStopExitCode": 0,
+      "normalStopAtUTC": "2026-10-16T11:26:36.836826+00:00",
+      "RootRunExitCode": 0,
+      "RootRunCollected": true,
+      "RootBootPIDAbsent": true,
+      "allVMsStopped": true,
+      "protectedVMs": 6,
+      "protectedSmallMetadataSHAAndLargeFileStatEqual": true,
+      "largeOverlayAndNVRAM": "stat only; no whole-disk byte hash",
+      "freeMemoryPercent": 52
+    },
+    "additionalActions": {
+      "GUIReopen": 0,
+      "setupOrPLAN": 0,
+      "install": 0,
+      "versionRerun": 0,
+      "manualSignal": 0,
+      "kill": 0,
+      "delete": 0
+    },
+    "earlierLifecycleAnomalyCause": "unknown; no cause inferred",
+    "privateEvidence": {
+      "handoff": {
+        "path": "HANDOFF-v1.json",
+        "sha256": "deec8dd3d3a8b3321c30c8b9e2640edeea270784021de47dabadb8d1878a1992",
+        "bytes": 11186,
+        "mode": "0o644",
+        "bounds": [
+          "GUIQuit",
+          "observedCleanup",
+          "normalTartStop",
+          "rootBoot.exit",
+          "hostAudit",
+          "actions",
+          "limits"
+        ]
+      },
+      "index": {
+        "path": "FINAL-INDEX-v1.json",
+        "sha256": "2faaffe799def0a3260fef8742c329890a90c5d42470f4c7a130c00ab8819ad8",
+        "bytes": 6993,
+        "mode": "0o644",
+        "files": 48,
+        "all48SHAAndBytesVerified": true,
+        "originalIndexModePins": false
+      },
+      "receipts": {
+        "guestAudit": {
+          "path": "01-guest-audit/stdout",
+          "sha256": "b709e5dbe4b63cbd7dad27efaeb8ec7ed97fa24ed087e803ea79dd09d1e3aff9",
+          "bytes": 17981239,
+          "mode": "0o644",
+          "bounds": [
+            "GUIidentity",
+            "GUIdescendants",
+            "observedOwnedIdentitiesStillAlive",
+            "ownedExecutableProcesses",
+            "stageRootsRemaining",
+            "sources",
+            "newTools",
+            "preservedNamedTrees",
+            "selectedHOMEdelta",
+            "leases"
+          ]
+        },
+        "summary": {
+          "path": "guest-audit-summary-v1.json",
+          "sha256": "0e53fd8c3fcc9467bc6e53d721d011ff3ea878d1aa6a8c800d119d463ddea669",
+          "bytes": 3989,
+          "mode": "0o644",
+          "bounds": [
+            "GUIidentity",
+            "sources",
+            "newTools",
+            "namedTreesSame"
+          ]
+        },
+        "hostBefore": {
+          "path": "host-before.json",
+          "sha256": "a076f9ed84c6d30e247dc3cd95922a23eeda6c3bcad823cf04f79cf7f7265dc3",
+          "bytes": 8698,
+          "mode": "0o644",
+          "bounds": [
+            "protectedSix",
+            "sameAsBefore",
+            "vmStates"
+          ]
+        },
+        "hostAfter": {
+          "path": "host-after.json",
+          "sha256": "2be53232a3de42770016cd1ab47d91b82a1861f1776d568a8bc5a1f0c0186144",
+          "bytes": 8274,
+          "mode": "0o644",
+          "bounds": [
+            "protectedSix",
+            "sameAsBefore",
+            "vmStates",
+            "rootBootPID33800"
+          ]
+        }
+      }
+    }
+  }
+}

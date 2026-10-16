@@ -1,0 +1,14 @@
+{
+  "sourceSHA": "61145cf100522363e9658af97137097551c64832",
+  "sourceTree": "2346d8051c3f556fa545e9c48aa5c1bc7fc2446b",
+  "parentSourceSHA": "c1ce322fb3acf08e44f329b8b7208b8b0d91e244",
+  "bundleBytes": 2138,
+  "bundleSHA256": "d17f7af56dd559be567514391779f1a8e1083574299236e7f08535d41cf5c11f",
+  "prerequisite": "c1ce322fb3acf08e44f329b8b7208b8b0d91e244",
+  "changedTrackedFiles": [
+    "app/ios/Podfile",
+    "app/ios/Podfile.lock",
+    "app/ios/Runner.xcodeproj/project.pbxproj"
+  ],
+  "nativeInputManifestSHA256": "eb742953e73a94d1be7c316966106d804e31b4f13f42b46a1f1c094ea7eba2a5"
+}

@@ -1,0 +1,11 @@
+(version 1)
+(allow default)
+(deny file-write*)
+(deny network-outbound (remote tcp "localhost:5037"))
+(allow file-write*
+  (subpath "<evidence-root>")
+  (literal "/dev/null")
+  (literal "/dev/tty"))
+
+; Root-approved ephemeral Darwin T exception. HOME/cache/shared SDK remain denied.
+(allow file-write* (subpath "<darwin-temp>"))

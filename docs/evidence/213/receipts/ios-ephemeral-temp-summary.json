@@ -1,0 +1,15 @@
+{
+  "allowedDirectory": "<darwin-temp>",
+  "approval": "parent explicitly narrowed its additional whole-temp denial to this user Darwin T ephemeral exception",
+  "attribution": "host activity is concurrent; counts do not attribute every temp change to this task",
+  "cleanup": "No unrelated temp files deleted. Durable app and screen copied to evidence root. Task-owned build/temp artifacts preserved for audit; no process remains.",
+  "finalProbe": "Foundation atomic=1; replacement under T/TemporaryItems/NSIRD_FoundationAtomicProbe_kA1zYf",
+  "finalProbeLogSHA256": "0852de91633bfc466661fe5dffb46f8b875886bcbcaac32a84b360a02eaf1c55",
+  "globalHOMEcacheSharedSDKWrites": "denied by final native build guard",
+  "metadataSnapshots": "private mode0600; existing non-task names/contents not published",
+  "observedTopLevelAddedCount": 619,
+  "observedTopLevelChangedMetadataCount": 8,
+  "observedTopLevelRemovedCount": 1,
+  "priorGuard": "own root only, Foundation atomic failed before compile",
+  "taskOwnedPrefix": "<owned-native-temp>"
+}

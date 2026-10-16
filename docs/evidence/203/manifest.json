@@ -1,27 +1,89 @@
 {
-  "schema": "runstir.203.public-manifest.v1",
+  "schema": "runstir.203.public-manifest.v2",
   "source_head": "7fac827f7b086ef754d37c71da94946247aa2e0a",
-  "scope": "Public source/fixture documentation only; no actual installation evidence. Manifest excludes itself.",
+  "scope": "source_head pins the initial source/fixture product implementation only. files pins the current public documents, original selected GUI PNGs and named ADR, not their snapshot at source_head. Each actual receipt has its own measured source/binary pins. Raw private logs/payload and this manifest are excluded.",
+  "actual_sources": {
+    "CLI": "b6329329a95b93e39283fa3cc11b9b73af73205f",
+    "GUI": "7b58ed51a7bc8dff84979fd505e189e053024f33"
+  },
   "files": [
     {
       "path": "README.md",
-      "sha256": "4ccb191e10acc98cc82943a804f3d52df7012b3ce4e8bb6c3c3e46f71bf73fe1",
-      "bytes": 10960
+      "sha256": "ffae65f6f45b4e646b86bfa468a92c3c79917b20155a59aa7b72b454b6a920d3",
+      "bytes": 13051,
+      "mode": "0o644"
+    },
+    {
+      "path": "actual-cli-b6329329.json",
+      "sha256": "8ac5bb077b352699dec64e16dc75de4b029e7118aa64c3922e26eb600eabb1d6",
+      "bytes": 19646,
+      "mode": "0o644"
+    },
+    {
+      "path": "actual-cli-b6329329.md",
+      "sha256": "040163946dbf5bcca986350d5eccb61860b59b703d247a39d430fd1e4074cfcf",
+      "bytes": 6064,
+      "mode": "0o644"
+    },
+    {
+      "path": "actual-cli-checkpoint.md",
+      "sha256": "7fddfaea9ba7bce5290e58902c6bd1f5788e9683df581c3ff8058e3afecb57fa",
+      "bytes": 4349,
+      "mode": "0o644"
+    },
+    {
+      "path": "actual-gui-7b58ed5.json",
+      "sha256": "3809488b08d21e5c4b8a5e77f6b71c467b37f483b6a60f66176ab851a997e8af",
+      "bytes": 29382,
+      "mode": "0o644"
+    },
+    {
+      "path": "actual-gui-7b58ed5.md",
+      "sha256": "56d6fb738ba1ec67236a40d33b93cca450eef08872330b23eea9daed2a7315da",
+      "bytes": 7774,
+      "mode": "0o644"
     },
     {
       "path": "fixture-receipts.json",
       "sha256": "456821f41bafd951f9ff8a16165d2a6907c789b806ff55e75c19eab7d53a0b2f",
-      "bytes": 54262
+      "bytes": 54262,
+      "mode": "0o644"
+    },
+    {
+      "path": "gui-7b58ed5/47-fullscreen-plan.png",
+      "sha256": "1ab4daca3916eb5d9b2f80f0271783bd502a01818749bed0cf746e3b9c7a18e0",
+      "bytes": 815236,
+      "mode": "0o644"
+    },
+    {
+      "path": "gui-7b58ed5/48-plan-artifact-node-ruby.png",
+      "sha256": "f7712a43de262d2a8e9dfe05d3f39c17e07d5ccba8022fc0e357ffa8d10daecf",
+      "bytes": 843146,
+      "mode": "0o644"
+    },
+    {
+      "path": "gui-7b58ed5/51-gui-install-result.png",
+      "sha256": "62f6c2cde2d8ba7d06687a36ca65e36b012acc09f9d02e7ebd9527044432ec10",
+      "bytes": 818419,
+      "mode": "0o644"
+    },
+    {
+      "path": "gui-7b58ed5/54-gui-reinspection-fullscreen.png",
+      "sha256": "b7d347ca72176883eb2daff5e046cc02a9803a7643c76903ced6a40232f43cba",
+      "bytes": 827338,
+      "mode": "0o644"
     },
     {
       "path": "official-metadata.json",
       "sha256": "e7de763ba6f6fa765ee5a0bda2eb3790bc1624d5939301ac0a1b1c8a72216eca",
-      "bytes": 5002
+      "bytes": 5002,
+      "mode": "0o644"
     },
     {
       "path": "../../adr/0039-approved-project-tools.md",
       "sha256": "cfa579712a8ad2399191a3e3ce4bb11589cb6d652c16fbe5f5c752ea92b59255",
-      "bytes": 3849
+      "bytes": 3849,
+      "mode": "0o644"
     }
   ]
 }

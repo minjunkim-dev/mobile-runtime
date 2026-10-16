@@ -1,0 +1,28 @@
+{
+  "sourceSHA": "c1ce322fb3acf08e44f329b8b7208b8b0d91e244",
+  "requestedFlutterTarget": "android-arm64",
+  "observedCargokitTargets": [
+    "aarch64-linux-android",
+    "i686-linux-android",
+    "x86_64-linux-android"
+  ],
+  "apkABIs": [
+    "arm64-v8a",
+    "armeabi-v7a",
+    "x86_64"
+  ],
+  "apkSHA256": "cda5f2b9fde845ca269c8c745f693b6554ba2970854f9cd3c5352e7863853796",
+  "apkBytes": 181229266,
+  "buildExit": 0,
+  "install": "exit0 Success",
+  "launch": "exit0 Status ok COLD",
+  "appID": "org.localsend.localsend_app.debug",
+  "activity": "org.localsend.localsend_app.MainActivity",
+  "pid": 3179,
+  "resumedActivity": "topResumedActivity=ActivityRecord{3dc13cc u0 org.localsend.localsend_app.debug/org.localsend.localsend_app.MainActivity t9}",
+  "firstCapture": "startup animation observed; not counted as settled screen",
+  "settledScreen": "visually confirmed LocalSend Receive screen, generated own alias Hot Orange, Receive via link, Receive/Send/Settings tabs; no crash/error/blank",
+  "screenshotSHA256": "9f0236b4536e641134398e8bc8b8da603e076b61b9cfebcc960d423bfc604cac",
+  "sourceAudit": "source-audits/localsend-after-android-attempt2.json",
+  "cleanup": "own app force-stop and own emulator emu kill exit0; ADB5042 remains for later prepared run"
+}

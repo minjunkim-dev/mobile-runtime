@@ -1,4 +1,36 @@
-# #203 도구 준비 source/fixture 인계
+# #203 도구 준비 증거
+
+## 최신 실제 GUI 검증
+
+[7b58ed5 실제 GUI 검증](actual-gui-7b58ed5.md)과
+[curated JSON](actual-gui-7b58ed5.json)에 Java·Node·Ruby 완료 3개를 기록했다.
+GUI setup은 `partial`, exit `1`이다.
+후속 GUI·CLI 재검사는 `needs-approval`, exit `0`이다.
+재검사 계획에는 installation metadata가 없다.
+iOS·Android 수동 작업과 앱 실행은 수행하지 않았다.
+이 기록으로 #203 전체 완료를 판정하지 않는다.
+실행한 GUI와 같은 환경의 새 mirror CLI를 구분했다.
+이전 CLI와 새 mirror CLI의 binary SHA256은 다르다.
+별도 메뉴 Quit 관측과 GUI PID 부재를 확인했다.
+분리된 GUI의 exit code는 미확인이다.
+Tart stop과 Tart run의 exit `0`은 별도 근거다.
+
+## 최신 실제 CLI 검증
+
+[b6329329 실제 CLI 검증](actual-cli-b6329329.md)과
+[curated JSON](actual-cli-b6329329.json)에 새 manager-absent store 실측을 기록했다.
+mise·Java·Node·Ruby 설치 4개와 실제 SIGINT 취소를 확인했다.
+4개 버전 조회도 통과했다.
+최종 setup은 수동 단계 12개를 남겨 `partial`, exit `1`을 반환했다.
+이 CLI 기록 작성 당시 `b6329329` GUI 실측은 미완이었다.
+후속 GUI 실측은 위의 `7b58ed5` 기록에서 구분한다.
+이 기록으로 GUI·앱 실행이나 #203 전체 완료를 판정하지 않는다.
+[이전 CLI checkpoint](actual-cli-checkpoint.md)의 실패·미확인은 해당 후보의 기록으로 보존한다.
+
+## 최초 source/fixture 인계 범위
+
+아래 구현·검증·한계는 최초 source/fixture 인계 당시의 기록이다.
+후속 실제 CLI 결과는 위 문서에서 구분한다.
 
 이 묶음은 Node, Ruby, JDK 준비 provider와 공유 실행 연결의 source/fixture 근거다.
 실제 배포 payload를 받거나 실행하지 않았다.
@@ -95,7 +127,7 @@ down은 새 도구를 요구하거나 관측하지 않는다.
 
 ## 검증 범위
 
-최종 source는 `7fac827f7b086ef754d37c71da94946247aa2e0a`다.
+최초 source/fixture 인계의 제품 source는 `7fac827f7b086ef754d37c71da94946247aa2e0a`다.
 전체 Werror 실행은 80개 suite의 655개 테스트를 통과했다.
 그 뒤 제품 변경 없이 추가한 Node `v` 접두 fixture 1개도 통과했다.
 이 fixture의 파일명에는 `red`가 있지만 실제 결과는 PASS다.
@@ -137,7 +169,12 @@ fake-mise shell fixture는 실제 mise 제품이 아니다.
 그 파일은 payload byte 검증이나 실제 설치 성공의 근거가 아니다.
 Node HTTP HEAD의 원본 header는 보존하지 못했다.
 그 관측을 이 묶음의 독립적인 archive 크기 증거로 사용하지 않는다.
-`manifest.json`은 공개 문서 4개의 SHA256과 크기를 고정한다.
+`manifest.json`의 `source_head`는 최초 source/fixture 제품 source를 가리킨다.
+`files`는 현재 공개 문서·PNG와 연관 ADR의 SHA256·크기·mode를 고정한다.
+이 파일 목록은 `source_head` 시점의 문서 snapshot이 아니다.
+현재 실제 CLI·GUI curated 문서도 이 목록에 포함한다.
+각 actual 문서의 source·binary pin은 최초 source/fixture pin과 다르다.
+이전 CLI 문서의 현재 code blob 표현은 그 문서 작성 당시의 관측이다.
 manifest 자체는 그 목록에서 제외한다.
 
 ## 남은 한계
