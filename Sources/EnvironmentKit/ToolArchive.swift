@@ -166,7 +166,7 @@ private struct ToolTAR {
             let combined = prefix.isEmpty ? short : prefix + "/" + short
             let name = try Self.path(pax["path"] ?? longName ?? combined)
             let mode = try octal(100, 8)
-            guard mode & 0o7000 == 0, names.insert(name).inserted,
+            guard mode & 0o7000 == 0 || (type == 53 && mode & 0o7000 == 0o2000), names.insert(name).inserted,
                   type == 0 || type == 48 || size == 0 else { throw Self.failure() }
             let link = try pax["linkpath"] ?? longLink ?? field(157, 100)
             result.append(Entry(name: name, type: type, mode: mode, bytes: start..<end, link: link))
@@ -237,8 +237,10 @@ private struct ToolTAR {
             try Task.checkCancellation()
             let target = root.appendingPathComponent(entry.name)
             try manager.createDirectory(at: target.deletingLastPathComponent(), withIntermediateDirectories: true)
-            if entry.type == 53 { try manager.createDirectory(at: target, withIntermediateDirectories: true) }
-            else {
+            if entry.type == 53 {
+                try manager.createDirectory(at: target, withIntermediateDirectories: true)
+                try manager.setAttributes([.posixPermissions: entry.mode & 0o777], ofItemAtPath: target.path)
+            } else {
                 try data[entry.bytes].write(to: target, options: .withoutOverwriting)
                 try manager.setAttributes([.posixPermissions: entry.mode & 0o777], ofItemAtPath: target.path)
             }

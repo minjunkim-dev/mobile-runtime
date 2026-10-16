@@ -18,6 +18,43 @@ struct ToolArchiveTests {
         #expect(try FileManager.default.contentsOfDirectory(atPath: fixture.repo.url("store").path).allSatisfy { !$0.hasPrefix(".runstir-tool-") })
     }
 
+    @Test("official JDK-style setgid directories install without special permissions")
+    func setgidDirectories() async throws {
+        let fixture = try await fixture("java", entries: [
+            (path: "tool", body: Data(), type: 53, link: ""),
+            (path: "tool/bin", body: Data(), type: 53, link: ""),
+            (path: "tool/bin/java", body: Data("fixture java".utf8), type: 48, link: ""),
+        ], modes: ["tool": 0o2755, "tool/bin": 0o2755])
+        let manager = FileManager.default
+        try await ToolArchive.installTarGzip(fixture.metadata, payloadRoot: "tool", runner: ToolPayloadRunner(data: fixture.data), validate: { stage, _ in
+            for relative in ["", "bin", "bin/java"] {
+                let mode = try #require(try FileManager.default.attributesOfItem(atPath: stage.appendingPathComponent(relative).path)[.posixPermissions] as? Int)
+                #expect(mode & 0o7000 == 0)
+            }
+        })
+        for relative in ["", "bin", "bin/java"] {
+            let mode = try #require(try manager.attributesOfItem(atPath: fixture.metadata.destination.appendingPathComponent(relative).path)[.posixPermissions] as? Int)
+            #expect(mode == 0o755)
+        }
+        #expect(try String(contentsOf: fixture.repo.url("store/existing/keep"), encoding: .utf8) == "original")
+    }
+
+    @Test("special permissions other than directory setgid never install", arguments: [
+        (UInt8(48), 0o4755), (UInt8(48), 0o2755), (UInt8(48), 0o1755),
+        (UInt8(53), 0o4755), (UInt8(53), 0o1755), (UInt8(53), 0o6755), (UInt8(53), 0o3755),
+    ])
+    func rejectedSpecialModes(_ type: UInt8, _ mode: Int) async throws {
+        let fixture = try await fixture("node", entries: [
+            (path: "tool/special", body: Data(), type: type, link: ""),
+            (path: "tool/bin/node", body: Data("fixture node".utf8), type: 48, link: ""),
+        ], modes: ["tool/special": mode])
+        await #expect(throws: DomainError.self) {
+            try await ToolArchive.installTarGzip(fixture.metadata, payloadRoot: "tool", runner: ToolPayloadRunner(data: fixture.data))
+        }
+        #expect(!FileManager.default.fileExists(atPath: fixture.metadata.destination.path))
+        #expect(try String(contentsOf: fixture.repo.url("store/existing/keep"), encoding: .utf8) == "original")
+    }
+
     @Test("download failure and cancellation preserve existing versions", arguments: ["node", "ruby", "java"])
     func failedDownload(_ tool: String) async throws {
         for failure in [ToolPayloadRunner.Fault.download, .cancel] {
@@ -105,10 +142,10 @@ struct ToolArchiveTests {
         #expect(try String(contentsOf: destination.appendingPathComponent("owner"), encoding: .utf8) == "other owner")
     }
 
-    private func fixture(_ tool: String, entries: [(path: String, body: Data, type: UInt8, link: String)]? = nil) async throws -> (repo: FixtureRepo, data: Data, metadata: InstallationMetadata) {
+    private func fixture(_ tool: String, entries: [(path: String, body: Data, type: UInt8, link: String)]? = nil, modes: [String: Int] = [:]) async throws -> (repo: FixtureRepo, data: Data, metadata: InstallationMetadata) {
         let repo = try FixtureRepo()
         try repo.write("store/existing/keep", "original")
-        let tar = toolFixtureTAR(entries ?? [(path: "tool/bin/\(tool)", body: Data("fixture \(tool)".utf8), type: 48, link: "")])
+        let tar = toolFixtureTAR(entries ?? [(path: "tool/bin/\(tool)", body: Data("fixture \(tool)".utf8), type: 48, link: "")], modes: modes)
         let source = repo.url("fixture.tar")
         try tar.write(to: source)
         let compressed = try await SystemProcessRunner().run(ProcessCommand("gzip", ["-k", source.path], workingDirectory: repo.root))
@@ -123,7 +160,7 @@ struct ToolArchiveTests {
     }
 }
 
-func toolFixtureTAR(_ entries: [(path: String, body: Data, type: UInt8, link: String)]) -> Data {
+func toolFixtureTAR(_ entries: [(path: String, body: Data, type: UInt8, link: String)], modes: [String: Int] = [:]) -> Data {
     var result = Data()
     for entry in entries {
         var header = [UInt8](repeating: 0, count: 512)
@@ -131,7 +168,7 @@ func toolFixtureTAR(_ entries: [(path: String, body: Data, type: UInt8, link: St
             for (i, byte) in text.utf8.prefix(count).enumerated() { header[start + i] = byte }
         }
         put(entry.path, at: 0, count: 100)
-        put("0000755", at: 100, count: 8)
+        put(String(format: "%07o", modes[entry.path] ?? 0o755), at: 100, count: 8)
         put(String(format: "%011o", entry.body.count), at: 124, count: 12)
         for i in 148..<156 { header[i] = 32 }
         header[156] = entry.type
