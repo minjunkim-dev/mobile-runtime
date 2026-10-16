@@ -148,7 +148,7 @@ struct InspectionView: View {
                                     if let advice = step.remediation { Text(advice.summary) }
                                 }
                             }.frame(maxWidth: .infinity, alignment: .leading)
-                        }.frame(maxHeight: 150)
+                        }.frame(height: 150)
                         Text(plan.platforms.map { "\($0.platform.rawValue): \($0.state)" }.joined(separator: " / "))
                     }
                     if let error = preparation.operation.error { Text(error).foregroundStyle(.red) }
