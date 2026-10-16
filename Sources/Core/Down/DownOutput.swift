@@ -10,6 +10,7 @@ public struct DownJSONDocument: Encodable, Sendable {
         public let status: TeardownStatus
         public let detail: String?
         public let remediation: Remediation?
+        public let ownedRuntimeStopped: Bool?
     }
 
     /// A failure of the run rather than of a job — spelled the way `up` spells one.
@@ -42,7 +43,8 @@ public struct DownJSONDocument: Encodable, Sendable {
         self.operation = operation
         self.status = report.status
         self.items = report.items.map {
-            Item(id: $0.id, status: $0.status, detail: $0.detail, remediation: $0.remediation)
+            Item(id: $0.id, status: $0.status, detail: $0.detail, remediation: $0.remediation,
+                 ownedRuntimeStopped: $0.ownedRuntimeStopped)
         }
         // Tool failures set exit 2 even when a domain failure also blocked cleanup.
         self.error = report.toolFailures.isEmpty

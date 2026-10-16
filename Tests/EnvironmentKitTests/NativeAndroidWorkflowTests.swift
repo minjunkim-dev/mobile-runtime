@@ -134,6 +134,101 @@ struct NativeAndroidWorkflowTests {
         try fixture.assertPreserved()
     }
 
+    @Test("already stopped owned runtime releases its claim only after unambiguous absence", arguments: AlreadyStoppedRuntimeCase.allCases)
+    fileprivate func alreadyStoppedOwnedRuntime(_ scenario: AlreadyStoppedRuntimeCase) async throws {
+        let fixture = try NativeAndroidFixture()
+        let up = await WorkflowExecution.run(.up, input: fixture.workflowInput,
+            runner: try fixture.runner(), leases: fixture.leases)
+        #expect(up.exitCode == 0)
+        let store = AndroidActiveRunStore(project: fixture.project, logs: RunLogs(project: fixture.project))
+        var record = try #require(try store.read())
+        var device = try #require(record.device)
+        device.state = scenario == .reused ? .reused : .started
+        device.launcherPID = scenario == .missingPID ? nil : 4242
+        if scenario == .missingSerial { device.serial = nil }
+        record.device = device
+        try store.write(record)
+
+        var cleanup = try fixture.runner()
+        cleanup.responses["adb devices"] = .ok("List of devices attached\n")
+        let denied = scenario == .permissionDenied ? "Operation not permitted" : ""
+        cleanup.responses["kill -0 4242"] = .failed(1, denied)
+        cleanup.responses["ps -p 4242 -o pid="] = .failed(1, denied)
+        if scenario == .queryFailure {
+            cleanup.failures["ps -p 4242 -o pid="] = FixtureMiss(command: "owned launcher observation")
+        }
+        let down = await WorkflowExecution.run(.down, input: fixture.workflowInput,
+            runner: cleanup, leases: fixture.leases)
+        let emulator = try #require(down.down?.items.first { $0.id == "android.emulator" })
+        let key = ResourceKey.device(.android, "avd:Pixel")
+        if scenario == .ownedAbsent {
+            #expect(down.down?.status == .pass)
+            #expect(emulator.status == .skipped)
+            #expect(emulator.ownedRuntimeStopped == true)
+            #expect(try store.read() == nil)
+            try await fixture.leases.check(device: key, project: "/next-project") { _ in
+                Issue.record("confirmed owned runtime absence must clear the project claim")
+                return .unknown("the Emulator is already offline")
+            }
+        } else {
+            #expect(emulator.status == (scenario == .reused ? .skipped : .unknown))
+            #expect(emulator.ownedRuntimeStopped == nil)
+            if scenario != .reused { #expect(try store.read() != nil) }
+            await #expect(throws: ResourceConflict.self) {
+                try await fixture.leases.check(device: key, project: "/next-project") { _ in
+                    .unknown("the Emulator absence is not confirmed")
+                }
+            }
+        }
+        #expect(!cleanup.log.all.contains { $0.arguments.contains("kill") || $0.arguments.contains("-TERM") })
+        #expect(!cleanup.log.all.contains { $0.description == "kill -0 4242" })
+        try fixture.assertPreserved()
+    }
+
+    @Test("owned launcher termination requires an unambiguous final PID observation", arguments: [false, true])
+    func ownedLauncherTermination(deniedAfterStop: Bool) async throws {
+        let fixture = try NativeAndroidFixture()
+        let up = await WorkflowExecution.run(.up, input: fixture.workflowInput,
+            runner: try fixture.runner(), leases: fixture.leases)
+        #expect(up.exitCode == 0)
+        let store = AndroidActiveRunStore(project: fixture.project, logs: RunLogs(project: fixture.project))
+        var record = try #require(try store.read())
+        var device = try #require(record.device)
+        device.state = .started
+        device.launcherPID = 4242
+        record.device = device
+        try store.write(record)
+
+        var responses = try fixture.runner()
+        responses.responses["adb devices"] = .ok("List of devices attached\n")
+        responses.responses["ps -p 4242 -o command="] = .ok("/fixture-sdk/emulator/emulator -avd Pixel\n")
+        responses.responses["kill -TERM 4242"] = .ok("")
+        let cleanup = OwnedEmulatorCleanupRunner(base: responses, launcherPresence: [
+            .ok("4242\n"), .failed(1, deniedAfterStop ? "Operation not permitted" : ""),
+        ])
+        let down = await WorkflowExecution.run(.down, input: fixture.workflowInput,
+            runner: cleanup, leases: fixture.leases)
+        #expect(down.down?.status == (deniedAfterStop ? .unknown : .pass))
+        #expect(down.down?.items.last?.status == (deniedAfterStop ? .unknown : .stopped))
+        #expect(responses.log.all.filter { $0.description == "ps -p 4242 -o pid=" }.count == 2)
+        #expect(responses.log.all.contains { $0.description == "kill -TERM 4242" })
+        #expect(!responses.log.all.contains { $0.description == "kill -0 4242" })
+        let key = ResourceKey.device(.android, "avd:Pixel")
+        if deniedAfterStop {
+            #expect(try store.read() != nil)
+            await #expect(throws: ResourceConflict.self) {
+                try await fixture.leases.check(device: key, project: "/next-project") { _ in .unknown("PID observation denied") }
+            }
+        } else {
+            #expect(try store.read() == nil)
+            try await fixture.leases.check(device: key, project: "/next-project") { _ in
+                Issue.record("a confirmed owned launcher stop must clear the claim")
+                return .unknown("the Emulator is offline")
+            }
+        }
+        try fixture.assertPreserved()
+    }
+
     @Test("native cancellation preserves completed installation and existing runtime resources", arguments: [false, true])
     func cancellation(afterInstall: Bool) async throws {
         let fixture = try NativeAndroidFixture()
@@ -188,16 +283,27 @@ struct NativeAndroidWorkflowTests {
     }
 }
 
+private enum AlreadyStoppedRuntimeCase: CaseIterable, Sendable {
+    case ownedAbsent, reused, missingPID, missingSerial, permissionDenied, queryFailure
+}
+
 private actor OwnedEmulatorCleanupRunner: ProcessRunner {
     let base: FakeProcessRunner
     private var stopped = false
+    private var launcherPresence: [FakeProcessRunner.Response]
 
-    init(base: FakeProcessRunner) { self.base = base }
+    init(base: FakeProcessRunner, launcherPresence: [FakeProcessRunner.Response] = []) {
+        self.base = base
+        self.launcherPresence = launcherPresence
+    }
 
     func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
         var runner = base
         if stopped, command.description == "adb devices" {
             runner.responses[command.description] = .ok("List of devices attached\n")
+        }
+        if command.description == "ps -p 4242 -o pid=", !launcherPresence.isEmpty {
+            runner.responses[command.description] = launcherPresence.removeFirst()
         }
         let result = try await runner.run(command, onLine: onLine)
         if command.description == "adb -s emulator-5554 emu kill", result.terminationStatus.isSuccess {

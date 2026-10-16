@@ -100,6 +100,7 @@ struct TeardownTests {
         #expect(document.contains("\"status\" : \"skipped\""))
         #expect(document.contains("\"schemaVersion\" : \(JSONOutput.schemaVersion)"))
         #expect(document.contains("\"platform\"") == false)
+        #expect(!document.contains("\"ownedRuntimeStopped\""))
     }
 
     @Test("Android down adds only the platform discriminator")
@@ -114,6 +115,17 @@ struct TeardownTests {
 
         #expect(document.contains("\"platform\" : \"android\""))
         #expect(document.contains("\"android.emulator\""))
+        #expect(!document.contains("\"ownedRuntimeStopped\""))
+    }
+
+    @Test("confirmed owned runtime absence carries optional evidence in down JSON")
+    func ownedRuntimeJSON() throws {
+        let item = TeardownItem(id: "android.emulator", status: .skipped,
+            detail: "owned Emulator already stopped", ownedRuntimeStopped: true)
+        let document = try DownJSONDocument(report: TeardownReport(items: [item]),
+            toolVersion: "0.1.0", platform: "android").encoded()
+        #expect(document.contains("\"ownedRuntimeStopped\" : true"))
+        #expect(document.contains("\"status\" : \"skipped\""))
     }
 
     @Test("the human report says nothing to stop once, at the end")

@@ -321,6 +321,9 @@ struct AndroidCleanup: Sendable {
         guard device.state == .started else {
             return .skipped("android.emulator", "pre-existing Emulator preserved")
         }
+        guard let pid = device.launcherPID, pid > 0, device.serial?.isEmpty == false else {
+            return .unknown("android.emulator", "owned Emulator absence requires its recorded serial and launcher PID")
+        }
         let sdk = try doctorContext.requiredSDKRoot()
         if let serial = device.serial {
             if try await emulatorSerials(sdk: sdk).contains(serial) {
@@ -361,8 +364,12 @@ struct AndroidCleanup: Sendable {
             }
         }
 
-        guard let pid = device.launcherPID, try await processIsRunning(pid) else {
-            return .skipped("android.emulator", "owned Emulator already stopped")
+        guard let running = try await ownedLauncherPresence(pid) else {
+            return .unknown("android.emulator", "owned Emulator launcher presence could not be confirmed")
+        }
+        if !running {
+            return TeardownItem(id: "android.emulator", status: .skipped,
+                detail: "owned Emulator already stopped", ownedRuntimeStopped: true)
         }
         let commandLine = try await processCommand(pid)
         guard commandLine.contains("emulator"), commandLine.contains("-avd \(device.avd)") else {
@@ -374,11 +381,18 @@ struct AndroidCleanup: Sendable {
                 )
             )
         }
-        _ = try await runner.run(
+        let stopped = try await runner.run(
             ProcessCommand("kill", ["-TERM", "\(pid)"], timeout: .seconds(10))
         )
+        guard stopped.terminationStatus.isSuccess else {
+            return .failed("android.emulator", cleanupFailure(
+                "the owned Emulator launcher could not be stopped", observed: stopped.combinedOutput.lastLines(8)))
+        }
         try await pause()
-        guard try await processIsRunning(pid) == false else {
+        guard let runningAfter = try await ownedLauncherPresence(pid) else {
+            return .unknown("android.emulator", "owned Emulator launcher presence after SIGTERM could not be confirmed")
+        }
+        guard !runningAfter else {
             return .failed(
                 "android.emulator",
                 cleanupFailure(
@@ -388,6 +402,16 @@ struct AndroidCleanup: Sendable {
             )
         }
         return .stopped("android.emulator", "\(device.avd) — launcher pid \(pid)")
+    }
+
+    private func ownedLauncherPresence(_ pid: Int32) async throws -> Bool? {
+        let result = try await runner.run(
+            ProcessCommand("ps", ["-p", "\(pid)", "-o", "pid="], timeout: .seconds(10))
+        )
+        guard result.standardError.isEmpty else { return nil }
+        let pids = result.standardOutput.split(whereSeparator: \.isWhitespace).map(String.init)
+        if case .exited(1) = result.terminationStatus, pids.isEmpty { return false }
+        return result.terminationStatus.isSuccess && pids == [String(pid)] ? true : nil
     }
 
     private func adb(

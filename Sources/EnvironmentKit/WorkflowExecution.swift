@@ -218,7 +218,8 @@ public enum WorkflowExecution {
                 down = await androidTeardown(anchor: anchor, config: config, runner: runner, projectRunner: runner,
                                              environment: AndroidEnvironment(values: input.project.environment))
                 if let device, let report = down, report.status == .pass,
-                    report.items.contains(where: { $0.id == "android.emulator" && $0.status == .stopped }) {
+                    report.items.contains(where: { $0.id == "android.emulator"
+                        && ($0.status == .stopped || $0.ownedRuntimeStopped == true) }) {
                     do {
                         try leases.releaseAfterTeardown(device: device, project: folder.path)
                     } catch {
