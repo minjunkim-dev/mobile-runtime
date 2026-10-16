@@ -8,6 +8,8 @@ struct SimctlRuntimeList: Decodable {
         let identifier: String
         let name: String
         let version: String
+        let buildversion: String?
+        let supportedArchitectures: [String]?
         /// A runtime is a system-wide cryptex image, so this flips to false on its
         /// own after a macOS update. Filtering on it is not optional.
         let isAvailable: Bool
