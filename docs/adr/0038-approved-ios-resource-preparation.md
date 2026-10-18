@@ -69,7 +69,8 @@ Xcode 설치·로그인·라이선스·관리자 권한은 수동 행동과 다�
 
 provider·parser 검사는 `FakeProcessRunner`와 소유 임시 fixture를 사용한다.
 공통 setup 연결 검사는 별도로 유지한다. provider 성공을 공통 연결 성공으로 표시하지 않는다.
-실제 payload 다운로드·runtime 설치·Simulator 생성·VM 기동·GUI 실행은 아직 검증하지 않았다.
+이 ADR의 초기 구현 검증에서는 실제 payload 다운로드·runtime 설치·Simulator 생성·VM 기동·GUI 실행을 검증하지 않았다.
+이후 실제 측정 결과와 미확인 범위는 [#206 검증 근거](../evidence/206/README.md)에 기록한다.
 AC02·AC03·AC06의 실제 준비와 기존 자원 보존은 별도 실측을 요구한다.
 정확한 runtime availability 관측은 다른 device의 전체 보존이나 앱 실행 성공을 입증하지 않는다.
 
