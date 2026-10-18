@@ -264,6 +264,33 @@ struct FlutterPreparationTests {
         #expect(try String(contentsOf: f.repo.url("pubspec.lock"), encoding: .utf8) == "packages: {}\n")
     }
 
+    @Test("source changed during the final SDK metadata inspection prevents the installation commit")
+    func sourceChangesDuringFinalSDKInspection() async throws {
+        let (f, bytes) = try await FlutterInstallationTests().payload()
+        let feature = try f.repo.write("lib/feature.dart", "void feature() {}\n")
+        let managed = f.repo.url("home/Library/Application Support/dev.runstir/flutter")
+        let payload = FlutterPayloadRunner(data: bytes, directory: f.repo.root, installationRoot: managed)
+        let runner = FlutterFinalInspectionMutationRunner(base: payload, feature: feature)
+        let input = ProjectInspectionInput(directory: f.repo.root, environment: f.environment)
+        let leases = ResourceLeases(directory: f.repo.url(".mobile/leases"))
+        let proposed = await PreparationExecution.run(input: input, planOnly: true, runner: runner, leases: leases)
+        let plan = try #require(proposed.plan)
+        let destination = try #require(plan.steps.first { $0.id == "flutter.sdk" }?.installation?.destination)
+        #expect(!plan.files.keys.contains { $0.hasSuffix("/lib/feature.dart") })
+        let result = await PreparationExecution.run(input: input, approvedPlanID: plan.id, runner: runner, leases: leases)
+        #expect(runner.mutations == 1)
+        #expect(payload.downloads == 1)
+        #expect(result.operation.state == "failed")
+        #expect(result.operation.changedFiles.map { URL(fileURLWithPath: $0).resolvingSymlinksInPath() }
+            == [feature.resolvingSymlinksInPath()])
+        #expect(!result.operation.completed.contains("flutter.sdk"))
+        #expect(!FileManager.default.fileExists(atPath: destination.path))
+        #expect(try String(contentsOf: feature, encoding: .utf8) == "externally changed feature")
+        let entries = FileManager.default.enumerator(at: managed, includingPropertiesForKeys: nil)
+        let ownedStages = (entries?.allObjects as? [URL] ?? []).filter { $0.lastPathComponent.hasPrefix(".runstir-") }
+        #expect(ownedStages.isEmpty)
+    }
+
     @Test("Flutter declarations and entrypoint changes require fresh exact approval")
     func approvalInputs() async throws {
         for path in [".fvmrc", "pubspec_overrides.yaml", "lib/main.dart"] {
@@ -623,6 +650,36 @@ struct FlutterPreparationTests {
 }
 
 
+
+private final class FlutterFinalInspectionMutationRunner: ProcessRunner, @unchecked Sendable {
+    let base: FlutterPayloadRunner
+    let feature: URL
+    private let lock = NSLock()
+    private var mutationCount = 0
+    var mutations: Int { lock.withLock { mutationCount } }
+
+    init(base: FlutterPayloadRunner, feature: URL) {
+        self.base = base; self.feature = feature
+    }
+
+    func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+        if command.executable == "curl", command.arguments.last == FlutterRelease.url.absoluteString,
+           let entries = FileManager.default.enumerator(at: base.installationRoot, includingPropertiesForKeys: [.isDirectoryKey]),
+           entries.allObjects.contains(where: { ($0 as? URL)?.lastPathComponent.hasPrefix(".runstir-stage-") == true }) {
+            let mutate = lock.withLock {
+                guard mutationCount == 0 else { return false }
+                mutationCount += 1
+                return true
+            }
+            if mutate { try Data("externally changed feature".utf8).write(to: feature) }
+        }
+        return try await base.run(command, onLine: onLine)
+    }
+
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+        throw FixtureMiss(command: command.description)
+    }
+}
 
 private struct FlutterAlignmentRunner: ProcessRunner {
     let base: FakeProcessRunner

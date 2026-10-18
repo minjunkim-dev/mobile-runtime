@@ -344,6 +344,9 @@ public enum PreparationExecution {
             throw DomainError(summary: "Installation conditions changed before the next package commit",
                 remediation: Remediation(summary: "Preserve completed packages. Inspect the remaining plan and approve it again."))
         }
+        let inspected = try sourceFiles(root, excluding: excluding)
+        let changedDuringInspection = Set(inspected.keys).union(files.keys).filter { inspected[$0] != files[$0] }.sorted()
+        guard changedDuringInspection.isEmpty else { throw PreparationSourceChanged(files: changedDuringInspection) }
     }
 
     private struct Inspection {
