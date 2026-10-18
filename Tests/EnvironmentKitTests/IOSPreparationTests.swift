@@ -68,6 +68,71 @@ struct IOSPreparationTests {
         try fixture.assertPreserved()
     }
 
+    @Test("runtime installation reuses an existing Simulator that becomes available")
+    func recoveredExistingSimulator() async throws {
+        let fixture = try IOSPreparationFixture()
+        let runner = IOSPreparationRunner(fixture, runtime: false,
+            existingDeviceID: "E00349BB-E8F0-4E8A-B5DD-BF3DDE20FBC0", existingDeviceChange: .available)
+        let planned = await PreparationExecution.run(input: fixture.input, planOnly: true, runner: runner)
+        let plan = try #require(planned.plan)
+        #expect(plan.steps.contains { $0.id == "ios.runtime.install" })
+        #expect(plan.steps.contains { $0.id == "ios.simulator.create" })
+        let result = await PreparationExecution.run(input: fixture.input, approvedPlanID: plan.id,
+            trustRepository: true, runner: runner, leases: fixture.leases)
+        #expect(result.exitCode == 1 && result.operation.error == nil, Comment(rawValue: result.operation.error ?? ""))
+        #expect(result.operation.state == "partial") // This RN fixture retains unrelated manual preparation.
+        #expect(result.operation.completed.contains("ios.runtime.install"))
+        #expect(!result.operation.completed.contains("ios.simulator.create"))
+        #expect(!result.operation.remaining.contains("ios.runtime.install"))
+        #expect(!result.operation.remaining.contains("ios.simulator.create"))
+        #expect(result.operation.resources.contains { $0.identifier == "E00349BB-E8F0-4E8A-B5DD-BF3DDE20FBC0"
+            && $0.name == "iPhone 17" && $0.origin == .reused && $0.state == "Shutdown" && $0.isAvailable == true })
+        #expect(runner.installations == 1 && runner.creations == 0)
+        let document = try #require(try JSONSerialization.jsonObject(with: Data(result.encoded(toolVersion: "fixture").utf8)) as? [String: Any])
+        let operation = try #require(document["operation"] as? [String: Any])
+        let resources = try #require(operation["resources"] as? [[String: Any]])
+        #expect(resources.contains { $0["identifier"] as? String == "E00349BB-E8F0-4E8A-B5DD-BF3DDE20FBC0"
+            && $0["origin"] as? String == "reused" })
+        #expect(!resources.contains { $0["origin"] as? String == "created" })
+        #expect(try fixture.journalSnapshot().isEmpty)
+        let retry = await PreparationExecution.run(input: fixture.input, planOnly: true, runner: runner)
+        #expect(retry.plan?.steps.contains { $0.kind == "install" } == false)
+        #expect(retry.plan?.resources?.contains { $0.identifier == "E00349BB-E8F0-4E8A-B5DD-BF3DDE20FBC0"
+            && $0.origin == .reused } == true)
+        try fixture.assertPreserved()
+    }
+
+    @Test("runtime recovery does not approve changed source conditions")
+    func recoveredSimulatorChangedApproval() async throws {
+        let fixture = try IOSPreparationFixture()
+        let runner = IOSPreparationRunner(fixture, runtime: false,
+            existingDeviceID: "E00349BB-E8F0-4E8A-B5DD-BF3DDE20FBC0", existingDeviceChange: .approval)
+        let planned = await PreparationExecution.run(input: fixture.input, planOnly: true, runner: runner)
+        let result = await PreparationExecution.run(input: fixture.input, approvedPlanID: try #require(planned.plan?.id),
+            trustRepository: true, runner: runner, leases: fixture.leases)
+        #expect(result.exitCode == 1 && result.operation.state == "failed")
+        #expect(!result.operation.changedFiles.isEmpty)
+        #expect(runner.installations == 1 && runner.creations == 0)
+        #expect(try String(contentsOf: fixture.repo.url("mobile.yml"), encoding: .utf8) == "ios:\n  device: Different device\n")
+    }
+
+    @Test("recovery rechecks existing devices before skipping or starting creation", arguments: [
+        IOSPreparationRunner.ExistingDeviceChange.name, .type, .state
+    ])
+    fileprivate func recoveredSimulatorChangedAfterInstall(change: IOSPreparationRunner.ExistingDeviceChange) async throws {
+        let fixture = try IOSPreparationFixture()
+        let runner = IOSPreparationRunner(fixture, runtime: false,
+            existingDeviceID: "E00349BB-E8F0-4E8A-B5DD-BF3DDE20FBC0", existingDeviceChange: change,
+            lateExistingDeviceChange: true)
+        let planned = await PreparationExecution.run(input: fixture.input, planOnly: true, runner: runner)
+        let result = await PreparationExecution.run(input: fixture.input, approvedPlanID: try #require(planned.plan?.id),
+            trustRepository: true, runner: runner, leases: fixture.leases)
+        #expect(result.exitCode == 1 && result.operation.state == "failed")
+        #expect(result.operation.completed.contains("ios.runtime.install"))
+        #expect(runner.installations == 1 && runner.creations == 0)
+        try fixture.assertPreserved()
+    }
+
     @Test("a newly observed Simulator action requires a new approval after runtime completion")
     func remainingCreationApproval() async throws {
         let fixture = try IOSPreparationFixture()
@@ -255,6 +320,39 @@ struct IOSPreparationProviderTests {
         try fixture.assertPreserved()
     }
 
+    @Test("the runtime provider accepts only availability recovery of preserved devices")
+    func existingDeviceAvailability() async throws {
+        let fixture = try IOSPreparationFixture()
+        let runner = IOSPreparationRunner(fixture, runtime: false,
+            existingDeviceID: "E00349BB-E8F0-4E8A-B5DD-BF3DDE20FBC0", existingDeviceChange: .available)
+        let planned = try await inspect(fixture, runner)
+        let action = try #require(planned.actions["ios.runtime.install"])
+        let installed = try await action.run(runner: runner) { _ in }
+        #expect(installed.resources.contains { $0.kind == .runtime && $0.origin == .installed })
+        let remaining = try await inspect(fixture, runner)
+        #expect(remaining.actions.isEmpty)
+        #expect(remaining.resources.contains { $0.identifier == "E00349BB-E8F0-4E8A-B5DD-BF3DDE20FBC0"
+            && $0.name == "iPhone 17" && $0.origin == .reused && $0.state == "Shutdown" && $0.isAvailable == true })
+        #expect(runner.installations == 1 && runner.creations == 0)
+        #expect(try fixture.journalSnapshot().isEmpty)
+        try fixture.assertPreserved()
+    }
+
+    @Test("runtime installation rejects changes beyond target-runtime availability recovery", arguments: [
+        IOSPreparationRunner.ExistingDeviceChange.identifier, .name, .type, .runtime, .state, .removed, .unavailable, .unrelatedAvailable
+    ])
+    fileprivate func changedExistingDevice(change: IOSPreparationRunner.ExistingDeviceChange) async throws {
+        let fixture = try IOSPreparationFixture()
+        let runner = IOSPreparationRunner(fixture, runtime: false,
+            existingDeviceID: "E00349BB-E8F0-4E8A-B5DD-BF3DDE20FBC0", existingDeviceChange: change)
+        let planned = try await inspect(fixture, runner)
+        let action = try #require(planned.actions["ios.runtime.install"])
+        await #expect(throws: InstallationActionFailure.self) { try await action.run(runner: runner) { _ in } }
+        #expect(runner.installations == 1 && runner.creations == 0)
+        #expect(try fixture.journalSnapshot().count == 1)
+        try fixture.assertPreserved()
+    }
+
     @Test("a headless Simulator outside the selected device set blocks global runtime installation")
     func headlessSimulatorBusy() async throws {
         let fixture = try IOSPreparationFixture()
@@ -392,6 +490,7 @@ private final class IOSPreparationFixture {
 }
 
 private final class IOSPreparationRunner: ProcessRunner, @unchecked Sendable {
+    enum ExistingDeviceChange: Sendable { case available, identifier, name, type, runtime, state, removed, unavailable, unrelatedAvailable, approval }
     enum Fault: Sendable { case failBefore, failAfter, cancelBefore, cancelAfter
         var after: Bool { self == .failAfter || self == .cancelAfter }
         var cancelled: Bool { self == .cancelBefore || self == .cancelAfter }
@@ -404,17 +503,23 @@ private final class IOSPreparationRunner: ProcessRunner, @unchecked Sendable {
     private var catalogBuild = "24A434"
     private var installed = 0
     private var created = 0
+    private var deviceReadsAfterInstall = 0
     let fault: Fault?
     let existingDeviceID: String?
+    let existingDeviceChange: ExistingDeviceChange?
+    let lateExistingDeviceChange: Bool
     let deviceTypeAfterRuntime: Bool
     var installations: Int { lock.withLock { installed } }
     var creations: Int { lock.withLock { created } }
     var log: [ProcessCommand] { base.log.all }
 
     init(_ fixture: IOSPreparationFixture, runtime: Bool = true, fault: Fault? = nil,
-         existingDeviceID: String? = nil, deviceTypeAfterRuntime: Bool = false) {
+         existingDeviceID: String? = nil, deviceTypeAfterRuntime: Bool = false, existingDeviceChange: ExistingDeviceChange? = nil,
+         lateExistingDeviceChange: Bool = false) {
         self.fixture = fixture; self.base = fixture.runner(); self.runtime = runtime; self.fault = fault
         self.existingDeviceID = existingDeviceID
+        self.existingDeviceChange = existingDeviceChange
+        self.lateExistingDeviceChange = lateExistingDeviceChange
         self.deviceTypeAfterRuntime = deviceTypeAfterRuntime
     }
 
@@ -429,6 +534,11 @@ private final class IOSPreparationRunner: ProcessRunner, @unchecked Sendable {
                 : #"{"runtimes":[]}"#)
         } else if command.arguments == ["simctl", "--set", fixture.deviceSet.path, "list", "devices", "-j"] {
             let present = lock.withLock { device }
+            let installed = lock.withLock { runtime }
+            let changed = lock.withLock {
+                if installed { deviceReadsAfterInstall += 1 }
+                return installed && (!lateExistingDeviceChange || deviceReadsAfterInstall > 1)
+            }
             var devices: [String: [[String: Any]]] = [:]
             if present {
                 devices["com.apple.CoreSimulator.SimRuntime.iOS-27-0"] = [["udid": "B38C3447-963B-42CB-959F-F5234F5A1092",
@@ -436,8 +546,24 @@ private final class IOSPreparationRunner: ProcessRunner, @unchecked Sendable {
                     "isAvailable": true, "state": "Shutdown"]]
             }
             if let existingDeviceID {
-                devices["com.apple.CoreSimulator.SimRuntime.iOS-26-0"] = [["udid": existingDeviceID, "name": "Existing unavailable Simulator",
-                    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17", "isAvailable": false, "state": "Shutdown"]]
+                var runtimeID = existingDeviceChange == nil || existingDeviceChange == .unavailable || existingDeviceChange == .unrelatedAvailable
+                    ? "com.apple.CoreSimulator.SimRuntime.iOS-26-0" : "com.apple.CoreSimulator.SimRuntime.iOS-27-0"
+                var existing: [String: Any] = ["udid": existingDeviceID,
+                    "name": existingDeviceChange == nil ? "Existing unavailable Simulator" : "iPhone 17",
+                    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17",
+                    "isAvailable": existingDeviceChange == .unavailable ? !changed : existingDeviceChange != nil && installed,
+                    "state": "Shutdown"]
+                if changed {
+                    switch existingDeviceChange {
+                    case .identifier: existing["udid"] = "3B638FA1-5C11-416A-88B8-756633B5B7D5"
+                    case .name: existing["name"] = "Renamed iPhone 17"
+                    case .type: existing["deviceTypeIdentifier"] = "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro"
+                    case .runtime: runtimeID = "com.apple.CoreSimulator.SimRuntime.iOS-26-0"
+                    case .state: existing["state"] = "Booted"
+                    default: break
+                    }
+                }
+                if existingDeviceChange != .removed || !changed { devices[runtimeID, default: []].append(existing) }
             }
             answer.responses[command.description] = .ok(String(decoding: try JSONSerialization.data(withJSONObject: ["devices": devices]), as: UTF8.self))
         } else if command.arguments == ["simctl", "list", "devicetypes", "-j"], deviceTypeAfterRuntime, !lock.withLock({ runtime }) {
@@ -457,6 +583,9 @@ private final class IOSPreparationRunner: ProcessRunner, @unchecked Sendable {
                 if fault == nil || fault?.after == true {
                     if installation { runtime = true } else { device = true }
                 }
+            }
+            if installation && existingDeviceChange == .approval {
+                try fixture.repo.write("mobile.yml", "ios:\n  device: Different device\n")
             }
             if fault?.cancelled == true { answer.failures[command.description] = CancellationError() }
             else if fault != nil { answer.responses[command.description] = .failed(1, "controlled fixture failure") }

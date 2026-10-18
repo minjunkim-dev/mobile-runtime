@@ -168,11 +168,44 @@ public enum PreparationExecution {
             let installedDestinations = installations.compactMap { $0.installation?.destination }
             let originalFiles = try sourceFiles(prepared.root, excluding: installedDestinations)
             let sourceRoot = prepared.root
+            var existingIOSDevices: [IOSResourceInventory.Device]?
             for step in installations {
                 try Task.checkCancellation()
                 guard let metadata = step.installation,
                       let action = prepared.installationActions[step.id], action.metadata == metadata else {
                     throw DomainError(summary: "Approved installation metadata is missing", remediation: Remediation(summary: "Inspect the package plan again."))
+                }
+                if case .iosRuntime(let pin) = metadata.managed {
+                    existingIOSDevices = try await IOSResourceInventory.load(runner: host,
+                        environment: ["DEVELOPER_DIR": pin.developerDirectory], deviceSet: pin.deviceSet).devices
+                }
+                if case .iosSimulator(let request) = metadata.managed,
+                   result.operation.completed.contains("ios.runtime.install"),
+                   let existingIOSDevices,
+                   case .iosRuntime(let pin)? = installations.first(where: { $0.id == "ios.runtime.install" })?.installation?.managed {
+                    let observed = try await IOSResourceInventory.load(runner: host,
+                        environment: ["DEVELOPER_DIR": pin.developerDirectory], deviceSet: pin.deviceSet)
+                    guard IOSPreparation.preservesDevices(existingIOSDevices, after: observed.devices, installedRuntimeID: pin.identifier) else {
+                        throw DomainError(summary: "Existing Simulator conditions changed after runtime installation",
+                            remediation: Remediation(summary: "Preserve completed resources. Inspect the changed devices and approve the remaining plan again."))
+                    }
+                    let fresh = try await inspect(input, runner: host)
+                    if let current = fresh.plan, current.project == plan.project, current.app == plan.app,
+                       current.files == plan.files, current.androidRequirements == plan.androidRequirements,
+                       !current.steps.contains(where: { $0.id == step.id }),
+                       current.steps.filter({ $0.kind == "install" || $0.kind == "align" }).allSatisfy({ candidate in
+                           plan.steps.contains { $0.id == candidate.id && $0.kind == candidate.kind && $0.installation == candidate.installation }
+                       }),
+                       let reused = fresh.resources.first(where: {
+                           $0.kind == .simulator && $0.origin == .reused && $0.isAvailable == true
+                               && $0.identifier.map(pin.existingDeviceIDs.contains) == true
+                               && $0.runtimeIdentifier == request.runtimeIdentifier && $0.runtimeBuild == request.runtimeBuild
+                               && $0.version == request.runtimeVersion && $0.architecture == request.architecture
+                       }) {
+                        // Installing the approved runtime can make a preserved existing device reusable.
+                        result.operation.resources.append(reused)
+                        continue
+                    }
                 }
                 result.operation.state = "running"
                 events.emit("stage", stage: step.id, state: "running", detail: "\(metadata.package) revision \(metadata.revision)")

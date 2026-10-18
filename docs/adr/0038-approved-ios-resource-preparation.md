@@ -37,6 +37,9 @@ archive 필드를 가짜 값으로 채우지 않는다. `ManagedInstallation.ios
 정확한 runtime leaf identity는 typed pin과 관측 결과가 담는다.
 runtime import는 관측한 모든 기존 device ID의 lease와 global runtime lease를 함께 요구한다.
 기존 device는 모두 `Shutdown`이어야 한다. 다른 Xcode·Simulator 작업도 없어야 한다.
+설치한 exact runtime을 참조하는 기존 기기는 같은 UDID·이름·type·runtime·state를 유지한 `unavailable → available` 전환만 허용한다.
+이 기기를 재사용하면 불필요해진 승인 create를 실행하지 않는다. 결과는 재사용을 기록하며 새 생성을 완료했다고 표시하지 않는다.
+다른 자원·소스·승인 조건의 변경에는 기존 재확인과 재승인 검사를 그대로 적용한다.
 Simulator 생성은 같은 global runtime lease와 실제 `Devices` parent lease를 함께 사용한다.
 서로 다른 기존 device의 일반 `up`을 global exclusive lease로 직렬화하지 않는다.
 외부 Xcode·simctl은 Runstir lease를 따르지 않는다. 실제 검증은 중앙 자원 lease도 필요하다.
@@ -72,6 +75,7 @@ provider·parser 검사는 `FakeProcessRunner`와 소유 임시 fixture를 사�
 이 ADR의 초기 구현 검증에서는 실제 payload 다운로드·runtime 설치·Simulator 생성·VM 기동·GUI 실행을 검증하지 않았다.
 이후 실제 측정 결과와 미확인 범위는 [#206 검증 근거](../evidence/206/README.md)에 기록한다.
 AC02·AC03·AC06의 실제 준비와 기존 자원 보존은 별도 실측을 요구한다.
+availability 복구 수정의 행동 검사는 fake를 사용한다. 수정 후보의 실제 CLI·GUI 측정은 아직 별도 게이트다.
 정확한 runtime availability 관측은 다른 device의 전체 보존이나 앱 실행 성공을 입증하지 않는다.
 
 공식 근거:
