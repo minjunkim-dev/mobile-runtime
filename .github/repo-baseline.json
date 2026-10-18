@@ -23,6 +23,11 @@
     "scripts/source-only/test_repo_baseline.py": {
       "source": "scripts/test_repo_baseline.py",
       "sha256": "fe307d6f94ef24bd4435e94f38f9121f0876bb5b592a96d273e9746a2470447a"
+    },
+    ".github/dependabot.yml": {
+      "source": "templates/dependabot.yml",
+      "ecosystems": [],
+      "sha256": "e1b6c7b540b054d03ccb37472c7d0799c54fae3b6b4276b4a371b002e393b7e7"
     }
   },
   "bugbot_rules": [
@@ -33,5 +38,5 @@
     "scripts/.cursor/BUGBOT.md"
   ],
   "source": "minjunkim-dev/repo-baseline",
-  "source_commit": "9c3934bf4c5e51791f1f5c70cd2b1f7e267c8f38"
+  "source_commit": "9e695b8f5b3cc94588b6174da37a66dab8bdc9bc"
 }
