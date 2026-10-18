@@ -14,6 +14,14 @@ struct AndroidEmulatorPreparation {
         var plan = Self()
         do {
             let state = try await AndroidEmulatorEnvironment.inspect(context: context)
+            if state.compatible.count > 1, state.declaredAVD == nil {
+                let runtime = try await AndroidSDKPreparation.inspect(state.sdkRequirements(includeImage: false, includeManager: false), runner: runner)
+                if !runtime.checks.allSatisfy({ $0.kind == "reuse" }) {
+                    plan.checks = runtime.checks + [blocker("Prepare the runtime tools before inspecting running AVD identities. Re-plan afterward; no AVD was selected or created.")]
+                    plan.installed = runtime.installed; plan.actions = runtime.actions
+                    return plan
+                }
+            }
             let selected: AndroidPreparationResource?
             if let declared = state.declaredAVD {
                 selected = state.compatible.first { $0.name == declared }

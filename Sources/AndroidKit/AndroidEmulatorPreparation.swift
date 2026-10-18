@@ -95,7 +95,8 @@ public struct AndroidEmulatorEnvironment: Sendable {
                 metadataSHA256: digest(data + Data(imageDigest.utf8)))
         }
         var running = Set<String>()
-        if resources.count > 1, context.config.configuration?.androidAVD == nil {
+        let platformTools = AndroidSDKPackageRequirement(packagePath: "platform-tools", requiredFile: "adb", executable: true, source: source)
+        if resources.count > 1, context.config.configuration?.androidAVD == nil, platformTools.observation(in: sdk).ready {
             let devices = try await context.hostRunner.run(context.toolCommand("adb", ["devices"], sdk: sdk))
             guard devices.terminationStatus.isSuccess else { throw failure("Running Emulator identities could not be observed.") }
             for line in devices.standardOutput.split(whereSeparator: \.isNewline) {

@@ -6,11 +6,11 @@
     "exitCode": 0,
     "suiteCounts": {
       "AndroidKitTests": 86,
-      "EnvironmentKitTests": 222,
+      "EnvironmentKitTests": 225,
       "CoreTests": 374,
       "SimulatorKitTests": 123
     },
-    "totalTests": 805,
+    "totalTests": 808,
     "warningsAsErrors": true
   },
   "relatedSuites": {
@@ -26,7 +26,8 @@
     "image dependency major missing accepted before fix",
     "AVD missing system.img reported reusable before fix",
     "official fresh-create fixture without AvdId fails under the old required-key check",
-    "identical profile labels with hardware/boot-props payload changes reused old approval before the fix"
+    "identical profile labels with hardware/boot-props payload changes reused old approval before the fix",
+    "multiple compatible AVDs with missing adb failed before Platform-Tools planning; public preparation plan was nil and the unavailable adb was probed"
   ],
   "command": "env HOME=<owned-home> CFFIXED_USER_HOME=<owned-home> CLANG_MODULE_CACHE_PATH=<owned-module-cache> SWIFTPM_MODULECACHE_OVERRIDE=<owned-module-cache> TMPDIR=<owned-tmp> swift test --force-resolved-versions --scratch-path <owned-build> --cache-path <owned-cache> --config-path <owned-config> --security-path <owned-security> -Xswiftc -warnings-as-errors",
   "isolationProbe": {
@@ -105,6 +106,22 @@
     {
       "basename": "spec-fixes-full-swift.log",
       "sha256": "2c51e9a1f57c1656fbdca099fbb8c00e1f8a3d47d4365be400e40bb068ebde40"
+    },
+    {
+      "basename": "standards-adb-red.log",
+      "sha256": "395ba09a68650eaff1a954f043b018c878eb429393807f217a88bf623c7bbdbc"
+    },
+    {
+      "basename": "standards-adb-green.log",
+      "sha256": "7d4a1291f7d4778b8b2ab67d3840cbcffd9cc9d1d2c00d2fd1fa746407b8535c"
+    },
+    {
+      "basename": "standards-adb-full.log",
+      "sha256": "a890f9e94c74a176a1d871ee7d0ec606577a04f15208fb71533b5801660e71fe"
+    },
+    {
+      "basename": "standards-adb-source-only.log",
+      "sha256": "2fe63ad6fef11334bebfb5beee3028a09f28c165ed4e83f2f8f3d335e4a00b54"
     }
   ],
   "suiteLabelCorrection": "The initial 795 total was correct. AndroidKitTests and SimulatorKitTests labels were reversed in the first record; corrected using actual suite names in the logs.",
@@ -151,5 +168,27 @@
     "fullSwiftTestExitCode": 0,
     "actualSDKWriterOrAVDCreation": "unverified; not executed",
     "actualPayloadProbeLatency": "unverified"
+  },
+  "missingADBReviewFix": {
+    "reviewedHead": "0a8ec26669b44e18959e79937984a7b9f1b2d0b2",
+    "redLogSHA256": "395ba09a68650eaff1a954f043b018c878eb429393807f217a88bf623c7bbdbc",
+    "publicRegression": "PreparationExecution.run; three tests, four parameter cases",
+    "behavior": "Observe Platform-Tools readiness before running adb; return runtime tool preparation before resolving multiple existing AVDs when those tools are not ready",
+    "preserved": [
+      "incomplete existing Platform-Tools package",
+      "existing AVD bytes",
+      "ambiguity with no running compatible candidate",
+      "compatible running AVD priority",
+      "shared exact-plan approval and leases"
+    ],
+    "focusedExitCode": 0,
+    "fullSwiftTestExitCode": 0,
+    "sourceOnly": {
+      "exitCode": 0,
+      "tests": 61,
+      "command": "python3 -B -m unittest discover -s scripts/source-only -p 'test_*.py' -v"
+    },
+    "actualSDKOrAVDWriterExecuted": false,
+    "toolInstallationOrMiseExecPerformed": false
   }
 }

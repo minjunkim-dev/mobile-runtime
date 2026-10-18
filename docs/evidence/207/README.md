@@ -50,6 +50,20 @@ Manifest closure에는 존재하는 JAR75개와 누락된 전이 참조6개가 �
 존재하는 JAR의 합계는35,810,425 bytes였다.
 이 조사는 SDK 파일 읽기다. SDK 도구나 생성 명령의 실행 증거가 아니다.
 
+## missing adb 수정
+
+호환 AVD가 둘 이상이고 `android.avd` 선언이 없는 회귀를 확인했다.
+Platform-Tools가 없으면 `adb devices` 실행 오류 때문에 설치 계획을 반환하지 못했다.
+공개 `PreparationExecution.run` red 검사는 plan 부재·설치 단계 부재·조기 adb 호출을 재현했다.
+red 로그 SHA-256은 `395ba09a68650eaff1a954f043b018c878eb429393807f217a88bf623c7bbdbc`다.
+
+Platform-Tools의 기존 package 관측이 준비 상태일 때만 실행 중 AVD를 조회한다.
+복수 후보의 실행 상태를 조회하기 전에 runtime tools 준비 계획을 먼저 반환한다.
+설치나 수동 조치 뒤 다시 계획을 생성한다.
+없는 package의 설치 계획과 불완전한 기존 package 보존을 검사했다.
+도구가 준비되면 복수 후보의 선택 요구와 호환 실행 중 AVD 우선순위를 유지한다.
+합성 SDK·AVD fixture 검사다. 실제 SDK 설치나 AVD 실행 증거가 아니다.
+
 ## 제한적 공식 archive 관측
 
 [archive-range.json](archive-range.json)은 공식 r9 image의 suffix 최대128KiB 관측이다.
