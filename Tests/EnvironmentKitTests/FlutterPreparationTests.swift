@@ -563,7 +563,7 @@ struct FlutterPreparationTests {
         let plan = try #require(proposed.plan)
         #expect(plan.platforms.flatMap(\.checks).contains { $0.id == "ios.flutter.generated" && $0.kind == "reuse" })
         #expect(plan.steps.contains { $0.id == "ios.runtime.install" && $0.kind == "install" })
-        #expect(plan.steps.contains { $0.id == "ios.simulator.create" && $0.kind == "install" })
+        #expect(!plan.steps.contains { $0.id == "ios.simulator.create" && $0.kind == "install" })
         let result = await PreparationExecution.run(input: input, approvedPlanID: plan.id, trustRepository: true, runner: runner, leases: leases)
         #expect(runner.installations == 1 && runner.creations == 0)
         #expect(result.operation.completed.contains("ios.runtime.install"))
@@ -579,7 +579,7 @@ struct FlutterPreparationTests {
             #expect(try String(contentsOf: changed, encoding: .utf8) == "externally changed Dart source")
         } else {
             #expect(result.operation.error == nil, Comment(rawValue: result.operation.error ?? ""))
-            #expect(result.operation.resources.contains { $0.identifier == FlutterRuntimeRecoveryRunner.deviceID && $0.origin == .reused })
+            #expect(result.plan?.resources?.contains { $0.identifier == FlutterRuntimeRecoveryRunner.deviceID && $0.origin == .reused } == true)
             #expect(result.operation.completed.contains("dependencies.flutter"))
             #expect(result.operation.changedFiles.isEmpty)
             let get = try #require(base.log.all.first { $0.arguments.contains("get") })
@@ -666,7 +666,7 @@ private final class FlutterRuntimeRecoveryRunner: ProcessRunner, @unchecked Send
         var answer = base
         if command.arguments == ["simctl", "list", "runtimes", "-j"] {
             answer.responses[command.description] = .ok(lock.withLock { runtime }
-                ? #"{"runtimes":[{"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-27-0","name":"iOS 27.0","version":"27.0","buildversion":"24A434","supportedArchitectures":["arm64"],"isAvailable":true}]}"# : #"{"runtimes":[]}"#)
+                ? #"{"runtimes":[{"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-27-0","name":"iOS 27.0","version":"27.0","buildversion":"24A434","supportedArchitectures":["arm64"],"supportedDeviceTypes":[{"identifier":"com.apple.CoreSimulator.SimDeviceType.iPhone-17"}],"isAvailable":true}]}"# : #"{"runtimes":[]}"#)
         } else if command.arguments == ["simctl", "--set", home.appendingPathComponent("Library/Developer/CoreSimulator/Devices").path, "list", "devices", "-j"] {
             let available = lock.withLock { runtime }
             let reads = lock.withLock { if runtime { deviceReads += 1 }; return deviceReads }

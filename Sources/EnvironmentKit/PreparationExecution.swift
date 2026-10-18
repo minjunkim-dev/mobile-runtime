@@ -795,6 +795,7 @@ private final class PreparationRunner: ProcessRunner, @unchecked Sendable {
         }
         try checkFiles()
         try await verifyConditions(completed)
+        try checkFiles()
         if case .streamed(let path) = command.output { lock.withLock { logPath = path.path } }
         if let action { events.emit("stage", stage: action.id, state: "running", detail: command.description) }
         do {
