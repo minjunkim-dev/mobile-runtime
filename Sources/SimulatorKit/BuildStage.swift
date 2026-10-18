@@ -66,6 +66,7 @@ public struct BuildStage: Stage {
         else if let device = context.device { destination = "platform=iOS Simulator,id=\(device.udid)" }
         else { throw ToolUnavailable(description: "build ran before a simulator was chosen — `device` comes first") }
 
+        let derivedData = try logs.derivedDataDirectory
         let environment = await locator.pinnedEnvironment()
         let scheme = try await scheme(anchor, target, environment)
         let arguments =
@@ -73,6 +74,7 @@ public struct BuildStage: Stage {
                 "-scheme", scheme,
                 "-configuration", configuration,
                 "-destination", destination,
+                "-derivedDataPath", derivedData.path,
             ] + (anchor.framework != .reactNative ? ["CODE_SIGNING_ALLOWED=NO"] : [])
                 + (anchor.framework == .flutter && !genericDestination ? ["ONLY_ACTIVE_ARCH=YES"] : [])
 
@@ -124,9 +126,7 @@ public struct BuildStage: Stage {
     /// - Returns: the log file the whole build was streamed to, kept on a success too.
     private func build(_ arguments: [String], _ environment: [String: String]) async throws -> URL {
         let file = logs.url("build.log")
-        // No `-derivedDataPath`: Xcode's own location is the point, so opening the
-        // project in Xcode shares this build's cache rather than doing it all again.
-        //
+        // Build and product lookup receive the same input-owned output path.
         // Streamed rather than collected: a real app's first clean build runs to tens
         // of megabytes, and the 4 MiB collected limit killed a healthy one (#55).
         let command = ProcessCommand(

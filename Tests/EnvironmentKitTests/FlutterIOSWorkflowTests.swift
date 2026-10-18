@@ -35,6 +35,12 @@ struct FlutterIOSWorkflowTests {
         #expect(build.arguments.contains("platform=iOS Simulator,id=A"))
         #expect(build.arguments.contains("ONLY_ACTIVE_ARCH=YES"))
         #expect(!build.arguments.contains { $0.hasPrefix("ARCHS=") })
+        #expect(build.executable == "/usr/bin/sandbox-exec")
+        let output = RunLogs(project: f.app).url("DerivedData").resolvingSymlinksInPath().path
+        for command in runner.commands where command.arguments.last == "build" || command.arguments.contains("-showBuildSettings") {
+            let index = try #require(command.arguments.firstIndex(of: "-derivedDataPath"))
+            #expect(command.arguments[index + 1] == output)
+        }
         #expect(!runner.commands.contains { $0.arguments.contains("bootstatus") || $0.arguments.contains("boot") || $0.arguments.contains("install") || $0.arguments.contains("launch") })
         #expect(InstallRecord.read(from: RunLogs(project: f.repo.root)) == nil)
     }

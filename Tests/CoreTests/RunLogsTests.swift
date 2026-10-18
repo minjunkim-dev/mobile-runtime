@@ -12,6 +12,62 @@ private func temporaryDirectory() throws -> URL {
 
 @Suite("run logs")
 struct RunLogsTests {
+    @Test("DerivedData stays outside inputs, separates checkouts, and merges a project alias without writes")
+    func derivedDataIdentity() throws {
+        let temporary = try temporaryDirectory()
+        let first = temporary.appendingPathComponent("sources/a/MyApp")
+        let second = temporary.appendingPathComponent("sources/b/MyApp")
+        try FileManager.default.createDirectory(at: first, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: second, withIntermediateDirectories: true)
+        let alias = temporary.appendingPathComponent("alias")
+        try FileManager.default.createSymbolicLink(at: alias, withDestinationURL: first)
+        let one = RunLogs(project: first, temporaryDirectory: temporary)
+        let two = RunLogs(project: second, temporaryDirectory: temporary)
+
+        let output = try one.derivedDataDirectory
+
+        #expect(output != (try two.derivedDataDirectory))
+        #expect(output == (try RunLogs(project: alias, temporaryDirectory: temporary).derivedDataDirectory))
+        #expect(output.path.hasPrefix(temporary.resolvingSymlinksInPath().path + "/mobile/"))
+        #expect(!output.path.hasPrefix(first.path + "/"))
+        #expect(!FileManager.default.fileExists(atPath: one.directory.path))
+    }
+
+    @Test("a DerivedData parent or output link cannot redirect Xcode, including dangling links",
+        arguments: ["mobile", "input", "output"], [false, true])
+    func derivedDataSymlink(component: String, dangling: Bool) throws {
+        let temporary = try temporaryDirectory()
+        let logs = RunLogs(project: URL(fileURLWithPath: "/a/MyApp"), temporaryDirectory: temporary)
+        let target = temporary.appendingPathComponent("preserved")
+        try FileManager.default.createDirectory(at: target, withIntermediateDirectories: true)
+        let marker = target.appendingPathComponent("keep")
+        try Data("untouched".utf8).write(to: marker)
+        let link = component == "mobile" ? logs.directory.deletingLastPathComponent()
+            : component == "input" ? logs.directory : logs.url("DerivedData")
+        try FileManager.default.createDirectory(at: link.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let destination = dangling ? target.appendingPathComponent("missing") : target
+        try FileManager.default.createSymbolicLink(at: link, withDestinationURL: destination)
+
+        #expect(throws: (any Error).self) { try logs.derivedDataDirectory }
+
+        #expect(try String(contentsOf: marker, encoding: .utf8) == "untouched")
+        #expect(try FileManager.default.destinationOfSymbolicLink(atPath: link.path) == destination.path)
+    }
+
+    @Test("a regular file in the Xcode output path is preserved", arguments: ["mobile", "input", "output"])
+    func derivedDataFile(component: String) throws {
+        let temporary = try temporaryDirectory()
+        let logs = RunLogs(project: URL(fileURLWithPath: "/a/MyApp"), temporaryDirectory: temporary)
+        let file = component == "mobile" ? logs.directory.deletingLastPathComponent()
+            : component == "input" ? logs.directory : logs.url("DerivedData")
+        try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data("preserve".utf8).write(to: file)
+
+        #expect(throws: (any Error).self) { try logs.derivedDataDirectory }
+
+        #expect(try String(contentsOf: file, encoding: .utf8) == "preserve")
+    }
+
     /// The repo is somebody else's house. A tool that writes its logs there is a tool
     /// that asks for a `.gitignore` entry in return for being run once.
     @Test("logs live under the system temporary directory, not in the project")

@@ -108,7 +108,7 @@ struct WorkflowExecutionTests {
     func workspaceInvalidConfiguration() async throws {
         let repo = try iosProject(workspaceOnly: true)
         var runner = iosRunner(repo, workspaceOnly: true)
-        let command = "xcodebuild -showBuildSettings -json -workspace \(repo.url("ios/MyApp.xcworkspace").path) -scheme MyApp -configuration Missing -destination generic/platform=iOS Simulator"
+        let command = "xcodebuild -showBuildSettings -json -workspace \(repo.url("ios/MyApp.xcworkspace").path) -scheme MyApp -configuration Missing -destination generic/platform=iOS Simulator -derivedDataPath \(RunLogs(project: repo.root).url("DerivedData").resolvingSymlinksInPath().path)"
         runner.responses[command] = .ok(#"[{"target":"MyApp","buildSettings":{"CONFIGURATION":"Release"}}]"#)
         let result = await WorkflowExecution.run(.build, input: WorkflowInput(project: ProjectInspectionInput(
             directory: repo.root, environment: [:]), configuration: "Missing"), runner: runner)
@@ -224,7 +224,7 @@ struct WorkflowExecutionTests {
     func upLeavesClaim() async throws {
         let repo = try iosProject()
         var runner = iosRunner(repo)
-        let destination = "-project \(repo.url("ios/MyApp.xcodeproj").path) -scheme MyApp -configuration Debug -destination platform=iOS Simulator,id=A"
+        let destination = "-project \(repo.url("ios/MyApp.xcodeproj").path) -scheme MyApp -configuration Debug -destination platform=iOS Simulator,id=A -derivedDataPath \(RunLogs(project: repo.root).url("DerivedData").resolvingSymlinksInPath().path)"
         runner.responses["xcrun simctl list devices -j"] = .ok(#"{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-27-0":[{"name":"iPhone A","udid":"A","state":"Booted","isAvailable":true}]}}"#)
         runner.responses[MetroStatus.command] = .ok(MetroStatus.running(projectRoot: repo.root))
         runner.responses["xcodebuild \(destination) build"] = .ok("** BUILD SUCCEEDED **")
@@ -360,7 +360,7 @@ struct WorkflowExecutionTests {
 
     private func iosRunner(_ repo: FixtureRepo, workspaceOnly: Bool = false) -> FakeProcessRunner {
         let target = workspaceOnly ? "-workspace \(repo.url("ios/MyApp.xcworkspace").path)" : "-project \(repo.url("ios/MyApp.xcodeproj").path)"
-        let destination = "\(target) -scheme MyApp -configuration Debug -destination generic/platform=iOS Simulator"
+        let destination = "\(target) -scheme MyApp -configuration Debug -destination generic/platform=iOS Simulator -derivedDataPath \(RunLogs(project: repo.root).url("DerivedData").resolvingSymlinksInPath().path)"
         return FakeProcessRunner(responses: [
             "xcode-select -p": .ok("/test/Xcode"),
             "xcodebuild -version": .ok("Xcode 27.0\nBuild version 18A100"),
@@ -379,7 +379,7 @@ struct WorkflowExecutionTests {
 
     private func iosUpRunner(_ repo: FixtureRepo) -> FakeProcessRunner {
         var runner = iosRunner(repo)
-        let destination = "-project \(repo.url("ios/MyApp.xcodeproj").path) -scheme MyApp -configuration Debug -destination platform=iOS Simulator,id=A"
+        let destination = "-project \(repo.url("ios/MyApp.xcodeproj").path) -scheme MyApp -configuration Debug -destination platform=iOS Simulator,id=A -derivedDataPath \(RunLogs(project: repo.root).url("DerivedData").resolvingSymlinksInPath().path)"
         runner.responses["xcrun simctl list devices -j"] = .ok(#"{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-27-0":[{"name":"iPhone A","udid":"A","state":"Booted","isAvailable":true}]}}"#)
         runner.responses[MetroStatus.command] = .ok(MetroStatus.running(projectRoot: repo.root))
         runner.responses["xcodebuild \(destination) build"] = .ok("** BUILD SUCCEEDED **")

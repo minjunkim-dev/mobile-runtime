@@ -56,8 +56,10 @@ public struct IOSWorkflowCandidates: Sendable {
            let scheme = config.configuration?.scheme ?? (schemes.count == 1 ? schemes.first : nil),
            schemes.contains(scheme) {
             let requested = configuration ?? "Debug"
+            let derivedData = try RunLogs(project: anchor.directory).derivedDataDirectory
             let arguments = ["-showBuildSettings", "-json"] + targetToList.arguments
                 + ["-scheme", scheme, "-configuration", requested, "-destination", "generic/platform=iOS Simulator"]
+                + ["-derivedDataPath", derivedData.path]
             let settings = try await runner.run(ProcessCommand("xcodebuild", arguments, environment: environment, timeout: .seconds(120)))
             if anchor.framework != .reactNative {
                 guard settings.terminationStatus.isSuccess,

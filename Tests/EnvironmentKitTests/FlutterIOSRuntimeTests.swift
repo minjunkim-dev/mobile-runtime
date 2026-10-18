@@ -194,13 +194,15 @@ struct FlutterIOSRuntimeTests {
     @Test("the actual native child profile preserves source and SDK payload while allowing derived output")
     func childWriteBoundary() async throws {
         let f = try FlutterIOSFixture()
+        let childTemporary = try f.repo.directory("build/private-child-tmp")
         let preparation = try await FlutterPreparation.inspect(directory: f.repo.root,
             environment: f.flutter.environment, runner: f.flutter.runner())
         let candidate = try #require(f.input().project.selection().selected)
         let anchor = try #require(ProjectAnchor.detect(candidate: candidate))
         let workflow = try FlutterIOSWorkflow(anchor: anchor, input: f.input().project,
             preparation: preparation, runner: f.flutter.runner())
-        let runner = SystemProcessRunner(environment: ["PATH": "/usr/bin:/bin", "HOME": f.repo.url("home").path], workingDirectory: f.repo.root)
+        let runner = SystemProcessRunner(environment: ["PATH": "/usr/bin:/bin", "HOME": f.repo.url("home").path,
+            "TMPDIR": childTemporary.path], workingDirectory: f.repo.root)
         for relative in ["pubspec.lock", "lib/main.dart", "sdk/bin/cache/flutter_tools.snapshot"] {
             let file = f.repo.url(relative)
             let before = try Data(contentsOf: file)
@@ -209,11 +211,14 @@ struct FlutterIOSRuntimeTests {
             #expect(!result.terminationStatus.isSuccess, Comment(rawValue: relative + " " + result.combinedOutput))
             #expect(try Data(contentsOf: file) == before, Comment(rawValue: relative))
         }
-        for relative in [".dart_tool/child-generated", "build/child-generated"] {
-            let output = f.repo.url(relative)
-            try FileManager.default.createDirectory(at: output.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let derivedData = try RunLogs(project: f.app).derivedDataDirectory
+        #expect(!derivedData.path.hasPrefix(childTemporary.path + "/"))
+        #expect(!derivedData.path.hasPrefix(f.app.path + "/"))
+        try #require(!FileManager.default.fileExists(atPath: derivedData.path))
+        for directory in [f.repo.url(".dart_tool"), f.repo.url("build"), derivedData] {
+            let output = directory.appendingPathComponent("child-generated")
             let generated = try await runner.run(ProcessCommand("/usr/bin/sandbox-exec",
-                ["-f", workflow.childProfile.path, "/bin/sh", "-c", "printf generated > \"$1\"", "_", output.path], timeout: .seconds(10)))
+                ["-f", workflow.childProfile.path, "/bin/sh", "-c", "/bin/mkdir -p \"$1\" && printf generated > \"$1/child-generated\"", "_", directory.path], timeout: .seconds(10)))
             #expect(generated.terminationStatus.isSuccess)
             #expect(try String(contentsOf: output, encoding: .utf8) == "generated")
         }

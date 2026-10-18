@@ -27,6 +27,33 @@ public struct RunLogs: Sendable {
         directory.appendingPathComponent(name)
     }
 
+    /// One Xcode output tree per canonical input, shared by build and its queries.
+    /// Inspect existing components without creating them or following a redirect.
+    public var derivedDataDirectory: URL {
+        get throws {
+            let root = directory.deletingLastPathComponent().deletingLastPathComponent()
+                .resolvingSymlinksInPath().standardizedFileURL
+            let parent = root.appendingPathComponent("mobile")
+            let input = parent.appendingPathComponent(directory.lastPathComponent)
+            let output = input.appendingPathComponent("DerivedData")
+            let manager = FileManager.default
+            for component in [root, parent, input, output] {
+                do {
+                    let attributes = try manager.attributesOfItem(atPath: component.path)
+                    guard attributes[.type] as? FileAttributeType == .typeDirectory else {
+                        throw DomainError(summary: "The input's Xcode output path is redirected or is not a directory.",
+                            remediation: Remediation(summary: "Inspect \(component.path). Existing content was preserved."))
+                    }
+                } catch let error as CocoaError where error.code == .fileReadNoSuchFile && component != root {
+                    // Xcode creates absent children. A dangling symlink has its own
+                    // attributes and is rejected by the directory check above.
+                    continue
+                }
+            }
+            return output
+        }
+    }
+
     /// - Returns: the file written, or nil when it could not be. A log that failed to
     ///   save must not become the failure the caller reports — it had one already.
     public func write(_ contents: String, to name: String) -> URL? {
