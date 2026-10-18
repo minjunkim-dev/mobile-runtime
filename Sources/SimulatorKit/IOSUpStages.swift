@@ -42,7 +42,8 @@ public func iOSStages(
             lookup: lookup,
             runner: hostRunner,
             locator: locator,
-            deviceID: deviceID
+            deviceID: deviceID,
+            bootIfNeeded: workflow == .up
         ))
     }
     if case .up = workflow, anchor.framework == .reactNative {

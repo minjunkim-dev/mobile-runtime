@@ -14,10 +14,41 @@ struct FlutterIOSWorkflowTests {
         #expect(result.exitCode == 0, Comment(rawValue: result.up?.failure?.message ?? ""))
         #expect(result.operation.selection?.selected?.framework == .flutter)
         #expect(result.operation.selection?.candidates.count == 1)
-        #expect(result.up?.stages.map(\.id) == ["validate", "build"])
+        #expect(result.up?.stages.map(\.id) == ["validate", "device", "build"])
         #expect(result.up?.context.product?.bundleIdentifier == "dev.test.flutter")
         #expect(!runner.commands.contains { $0.arguments.contains("install") || $0.arguments.contains("launch") || $0.arguments.contains("get") })
         #expect(!runner.commands.contains { $0.executable == "node" || $0.executable.hasSuffix("/bin/flutter") })
+    }
+
+    @Test("selected Flutter build uses the concrete Simulator without booting or taking its runtime lease")
+    func selectedBuild() async throws {
+        let f = try FlutterIOSFixture()
+        let runner = FlutterIOSRunner(fixture: f, fault: "shutdown-device")
+        let device = try f.leases.acquire([.device(.ios, "A")], owner: LeaseOwner(
+            operationId: "other-app", command: "up", project: "/other-app"))
+        defer { device.release() }
+        let result = await WorkflowExecution.run(.build, input: f.input(device: "A"), runner: runner, leases: f.leases)
+        #expect(result.exitCode == 0, Comment(rawValue: result.up?.failure?.message ?? ""))
+        #expect(result.operation.device == "A")
+        #expect(result.up?.context.device?.udid == "A")
+        let build = try #require(runner.commands.first { $0.arguments.last == "build" })
+        #expect(build.arguments.contains("platform=iOS Simulator,id=A"))
+        #expect(build.arguments.contains("ONLY_ACTIVE_ARCH=YES"))
+        #expect(!build.arguments.contains { $0.hasPrefix("ARCHS=") })
+        #expect(!runner.commands.contains { $0.arguments.contains("bootstatus") || $0.arguments.contains("boot") || $0.arguments.contains("install") || $0.arguments.contains("launch") })
+        #expect(InstallRecord.read(from: RunLogs(project: f.repo.root)) == nil)
+    }
+
+    @Test("Flutter build requires an unambiguous compatible Simulator", arguments: ["two-devices", "no-devices", "old-device", "unavailable-device", "invalid-device"])
+    func buildDeviceSelection(_ fault: String) async throws {
+        let f = try FlutterIOSFixture()
+        let runner = FlutterIOSRunner(fixture: f, fault: fault)
+        let selected = fault == "invalid-device" ? "missing" : ["old-device", "unavailable-device"].contains(fault) ? "A" : nil
+        let result = await WorkflowExecution.run(.build, input: f.input(device: selected),
+            runner: runner, leases: f.leases)
+        #expect(result.exitCode == 1)
+        #expect(result.operation.requiredInput.contains("--device") || result.up?.failure?.message.contains("device") == true)
+        #expect(!runner.commands.contains { $0.arguments.last == "build" || $0.arguments.contains("bootstatus") || $0.arguments.contains("install") || $0.arguments.contains("launch") })
     }
 
     @Test("doctor shares prepared Flutter facts and keeps Android preparation independent")
@@ -353,9 +384,9 @@ struct FlutterIOSFixture {
             }]).write(to: repo.url(".dart_tool/package_graph.json"))
         }
     }
-    func input(entrypoint: String? = nil, port: Int? = nil, configuration: String? = nil) -> WorkflowInput {
+    func input(entrypoint: String? = nil, port: Int? = nil, configuration: String? = nil, device: String? = nil) -> WorkflowInput {
         WorkflowInput(project: ProjectInspectionInput(directory: app, environment: flutter.environment,
-            platform: .ios, entrypoint: entrypoint), configuration: configuration, port: port)
+            platform: .ios, entrypoint: entrypoint), device: device, configuration: configuration, port: port)
     }
 
     func configureIOSPlugin(directory: URL, name: String = "owned_plugin") throws {
@@ -532,7 +563,14 @@ final class FlutterIOSRunner: ProcessRunner, @unchecked Sendable {
             let version = fault == "runtime:older" ? "14.9" : "27.0"
             return ok("{\"runtimes\":[{\"identifier\":\"com.apple.CoreSimulator.SimRuntime.iOS-\(version.replacingOccurrences(of: ".", with: "-"))\",\"name\":\"iOS \(version)\",\"version\":\"\(version)\",\"isAvailable\":true}]}")
         }
-        if command.arguments == ["simctl", "list", "devices", "-j"] { return ok("{\"devices\":{\"com.apple.CoreSimulator.SimRuntime.iOS-27-0\":[{\"name\":\"iPhone A\",\"udid\":\"A\",\"state\":\"Booted\",\"isAvailable\":true}]}}") }
+        if command.arguments == ["simctl", "list", "devices", "-j"] {
+            let runtime = fault == "old-device" ? "14-0" : "27-0"
+            let state = fault == "shutdown-device" ? "Shutdown" : "Booted"
+            var devices: [[String: Any]] = [["name": "iPhone A", "udid": "A", "state": state, "isAvailable": fault != "unavailable-device"]]
+            if fault == "two-devices" { devices.append(["name": "iPhone B", "udid": "B", "state": "Shutdown", "isAvailable": true]) }
+            if fault == "no-devices" { devices = [] }
+            return ok(String(decoding: try JSONSerialization.data(withJSONObject: ["devices": ["com.apple.CoreSimulator.SimRuntime.iOS-" + runtime: devices]]), as: UTF8.self))
+        }
         let workspace = fixture.inWorkspace ? "{\"packages\":[{\"path\":\"\(fixture.repo.root.path)\"},{\"path\":\"\(fixture.app.path)\"}]}" : nil
         return try await fixture.flutter.runner(workspace: workspace).run(command, onLine: onLine)
     }

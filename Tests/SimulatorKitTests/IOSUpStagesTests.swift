@@ -140,7 +140,7 @@ struct IOSUpStagesTests {
         #expect(report.context.appPid == 3538)
     }
 
-    @Test("build is the shared pipeline without Metro, install, or launch")
+    @Test("build is the shared pipeline without boot, Metro, install, or launch")
     func buildStopsAfterCompilation() async throws {
         let repo = try settledProject()
         let runner = try runner(repo)
@@ -158,6 +158,7 @@ struct IOSUpStagesTests {
         #expect(sent.contains(installCommand) == false)
         #expect(sent.contains(terminateCommand) == false)
         #expect(sent.contains(launchCommand) == false)
+        #expect(!runner.log.all.contains { $0.arguments.contains("bootstatus") || $0.arguments.contains("boot") })
         #expect(runner.log.spawned.isEmpty)
         #expect(InstallRecord.read(from: RunLogs(project: repo.root)) == nil)
     }

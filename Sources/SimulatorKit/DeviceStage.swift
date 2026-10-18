@@ -1,7 +1,7 @@
 import Core
 import Foundation
 
-/// `device` — pick a simulator and make sure it is running. What mobile.yml declared,
+/// `device` — pick a simulator and boot it only for `up`. What mobile.yml declared,
 /// else whatever is already booted, else the newest iPhone this machine has.
 ///
 /// It never creates one. A machine with no simulators gets the `simctl create` line
@@ -17,19 +17,22 @@ public struct DeviceStage: Stage {
     private let runner: any ProcessRunner
     private let locator: XcodeLocator
     private let deviceID: String?
+    private let bootIfNeeded: Bool
 
     public init(
         declared: String?,
         lookup: MatrixLookup?,
         runner: any ProcessRunner,
         locator: XcodeLocator,
-        deviceID: String? = nil
+        deviceID: String? = nil,
+        bootIfNeeded: Bool = true
     ) {
         self.declared = declared
         self.lookup = lookup
         self.runner = runner
         self.locator = locator
         self.deviceID = deviceID
+        self.bootIfNeeded = bootIfNeeded
     }
 
     public func run(_ context: inout UpContext) async throws -> StageOutcome {
@@ -74,6 +77,7 @@ public struct DeviceStage: Stage {
         let name = simulator.name.contains(simulator.runtimeText)
             ? simulator.name
             : "\(simulator.name) on iOS \(simulator.runtimeText)"
+        guard bootIfNeeded else { return .pass("\(name) selected for build; boot was not requested") }
         // Not `bootstatus`-is-idempotent-so-run-it-anyway: a second `up` should show
         // that it had nothing to do, and `skipped` is the word for that.
         guard !simulator.isBooted else { return .skipped("\(name) is already booted") }

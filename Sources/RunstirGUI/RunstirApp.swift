@@ -277,10 +277,11 @@ struct InspectionView: View {
         currentStage = "선택과 환경 확인"
         let generation = UUID()
         executionID = generation
+        let selectedPlatform = ProjectPlatform(rawValue: platform) ?? result?.selection.platform
         let input = WorkflowInput(project: ProjectInspectionInput(directory: directory,
             environment: ProcessInfo.processInfo.environment, app: app.isEmpty ? nil : app,
             platform: ProjectPlatform(rawValue: platform), entrypoint: entrypoint.isEmpty ? nil : entrypoint),
-            device: kind == .up && !device.isEmpty ? device : nil,
+            device: (kind == .up || (kind == .build && selectedPlatform == .ios)) && !device.isEmpty ? device : nil,
             scheme: kind != .down && !scheme.isEmpty ? scheme : nil,
             configuration: kind != .down && !configuration.isEmpty ? configuration : nil,
             module: kind != .down && !module.isEmpty ? module : nil,

@@ -9,7 +9,7 @@ Flutter iOS는 CLI와 GUI의 공통 `EnvironmentInspection`과 `WorkflowExecutio
 ```sh
 mobile doctor --project /path/to/app --platform ios --scheme Runner --configuration Debug --entrypoint lib/main.dart --json
 mobile setup --project /path/to/app --entrypoint lib/main.dart --json
-mobile build --project /path/to/app --platform ios --scheme Runner --configuration Debug --entrypoint lib/main.dart --json
+mobile build --project /path/to/app --platform ios --device <udid> --scheme Runner --configuration Debug --entrypoint lib/main.dart --json
 mobile up --project /path/to/app --platform ios --device <udid> --scheme Runner --configuration Debug --entrypoint lib/main.dart --port 52123 --json
 mobile down --project /path/to/app --platform ios --json
 ```
@@ -33,6 +33,12 @@ Release·Profile이나 Xcode의 configuration 대체는 실행하지 않는다.
 GUI의 Flutter entrypoint와 VM service port 입력도 같은 계약을 사용한다.
 GUI의 환경 확인과 준비 계획에는 같은 entrypoint를 전달한다.
 GUI의 환경 확인에는 선택한 scheme과 configuration도 전달한다.
+GUI의 iOS build에는 선택한 Simulator identity도 전달한다.
+
+Flutter build와 up은 사용 가능한 Simulator identity를 확인한다.
+선택 가능한 Simulator가 하나면 이를 선택한다.
+여러 개면 명시적 선택을 요구한다.
+명시한 identity가 없거나 runtime 하한에 맞지 않으면 generic destination으로 대체하지 않는다.
 
 준비된 Flutter의 `ios.flutter.project` 검사는 선택한 scheme의 실제 deployment target을 사용한다.
 같은 검사에서 기존 Simulator runtime의 availability와 버전 하한을 확인한다.
@@ -60,7 +66,13 @@ build/up은 Dart 정렬과 `pod install`을 실행하지 않는다.
 Flutter module의 `.ios` host를 app host로 자동 변환하지 않는다.
 
 기존 iOS device·build·install·launch stage와 `ProcessRunner`를 사용한다.
-build는 설치·실행하지 않는다.
+build는 선택한 concrete Simulator destination과 `ONLY_ACTIVE_ARCH=YES`를 사용한다.
+아키텍처 이름을 고정하지 않는다.
+build는 Simulator 부팅·앱 설치·실행 명령을 보내지 않는다.
+React Native와 native iOS의 명시적 device build에도 이 비부팅 계약을 적용한다.
+이 read-only destination 선택에는 앱 실행용 device lease를 사용하지 않는다.
+React Native와 native iOS의 device 미지정 build는 기존 generic destination을 유지한다.
+Xcode 자체가 Simulator 상태를 바꾸는지는 실제 검증에서 별도로 측정한다.
 up은 선택한 Simulator에만 설치하고 실행한다.
 Simulator build는 `CODE_SIGNING_ALLOWED=NO`를 사용한다.
 자동 Swift package resolution을 차단한다.

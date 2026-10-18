@@ -74,6 +74,7 @@ public struct BuildStage: Stage {
                 "-configuration", configuration,
                 "-destination", destination,
             ] + (anchor.framework != .reactNative ? ["CODE_SIGNING_ALLOWED=NO"] : [])
+                + (anchor.framework == .flutter && !genericDestination ? ["ONLY_ACTIVE_ARCH=YES"] : [])
 
         context.buildLog = try await build(arguments, environment).path
         context.product = try await product(arguments, scheme: scheme, environment: environment,

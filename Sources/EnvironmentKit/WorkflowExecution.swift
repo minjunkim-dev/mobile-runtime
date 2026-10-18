@@ -98,7 +98,7 @@ public enum WorkflowExecution {
                                                                workingDirectory: anchor.directory)
             var config = ConfigContext.detect(anchor: anchor, workingDirectory: input.project.directory)
                 .selecting(scheme: input.scheme, module: input.module, variant: input.variant,
-                           clearDevice: platform == .ios && (input.device != nil || kind == .build))
+                           clearDevice: platform == .ios && (input.device != nil || (kind == .build && anchor.framework != .flutter)))
             var wiring = await WorkflowContext.make(input: input.project, platform: platform, anchor: anchor,
                 runner: runner, includeProjectEnvironment: kind != .down,
                 includeRuntimeSDKTools: kind != .build || platform == .ios, selectedConfig: config,
@@ -128,8 +128,9 @@ public enum WorkflowExecution {
                 }
 
                 if platform == .ios {
+                    let needsDevice = kind == .up || anchor.framework == .flutter || input.device != nil
                     let choices = try await IOSWorkflowCandidates.load(anchor: anchor, config: config, lookup: wiring.lookup,
-                        runner: wiring.projectRunner, locator: wiring.locator, includeDevices: kind == .up || input.device != nil,
+                        runner: wiring.projectRunner, locator: wiring.locator, includeDevices: needsDevice,
                         configuration: input.configuration, entrypoint: input.project.entrypoint,
                         flutterSDKRoot: wiring.flutter?.sdk?.root)
                     operation.schemes = choices.schemes
@@ -146,10 +147,10 @@ public enum WorkflowExecution {
                     }
                     if operation.configuration == nil { operation.requiredInput.append("--configuration") }
                     operation.device = input.device ?? choices.declaredDeviceID
-                    if kind == .up && operation.device == nil && config.configuration?.device == nil && choices.devices.count == 1 {
+                    if needsDevice && operation.device == nil && config.configuration?.device == nil && choices.devices.count == 1 {
                         operation.device = choices.devices.first?.id
                     }
-                    if kind == .up || input.device != nil {
+                    if needsDevice {
                         if config.configuration?.device != nil && operation.device == nil && input.device == nil {
                             throw selectionFailure("ios.device does not resolve to a compatible Simulator. Refresh and select a device identity.")
                         }

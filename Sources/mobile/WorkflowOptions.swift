@@ -11,7 +11,7 @@ struct WorkflowOptions: ParsableArguments {
     @Option(name: .long, help: "Project folder. Defaults to the current working directory.") var project: String?
     @Option(name: .long, help: "Project app candidate id reported by doctor.") var app: String?
     @Option(name: .long, help: "ios or android. Required for dual-platform apps; no implicit iOS default.") var platform: MobilePlatform?
-    @Option(name: .long, help: "Simulator UDID or avd:<name>. Omit for build or down.") var device: String?
+    @Option(name: .long, help: "Simulator UDID for iOS build/up, or avd:<name> for Android up. Omit for Android build and down.") var device: String?
     @Option(name: .long, help: "iOS scheme. Defaults to mobile.yml or the only app scheme.") var scheme: String?
     @Option(name: .long, help: "iOS build configuration. Defaults to Debug only when it exists.") var configuration: String?
     @Option(name: .long, help: "Android application module. Defaults to mobile.yml or the only module.") var module: String?
