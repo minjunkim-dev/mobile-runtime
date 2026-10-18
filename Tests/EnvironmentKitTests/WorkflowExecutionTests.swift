@@ -58,6 +58,26 @@ struct WorkflowExecutionTests {
         #expect(document["operation"] != nil)
     }
 
+    @Test("an explicit RN build destination does not boot or take an app runtime lease")
+    func selectedBuild() async throws {
+        let repo = try iosProject()
+        var runner = try iosUpRunner(repo)
+        runner.responses["xcrun simctl list devices -j"] = .ok(#"{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-27-0":[{"name":"iPhone A","udid":"A","state":"Shutdown","isAvailable":true}]}}"#)
+        runner.responses["xcrun simctl bootstatus A -b"] = .ok("")
+        let leases = temporaryLeases()
+        let device = try leases.acquire([.device(.ios, "A")], owner: LeaseOwner(
+            operationId: "other-app", command: "up", project: "/other-app"))
+        defer { device.release() }
+        let result = await WorkflowExecution.run(.build, input: WorkflowInput(project: ProjectInspectionInput(
+            directory: repo.root, environment: [:], platform: .ios), device: "A"), runner: runner, leases: leases)
+        #expect(result.exitCode == 0, Comment(rawValue: result.up?.failure?.message ?? ""))
+        #expect(result.operation.device == "A")
+        let build = try #require(runner.log.all.first { $0.arguments.last == "build" })
+        #expect(build.arguments.contains("platform=iOS Simulator,id=A"))
+        #expect(!runner.log.all.contains { $0.executable == "xcrun" && ($0.arguments.contains("bootstatus") || $0.arguments.contains("boot") || $0.arguments.contains("install") || $0.arguments.contains("launch")) })
+        #expect(runner.log.spawned.isEmpty)
+    }
+
     @Test("several Simulator identities need an explicit device before dependencies")
     func missingDevice() async throws {
         let repo = try iosProject()

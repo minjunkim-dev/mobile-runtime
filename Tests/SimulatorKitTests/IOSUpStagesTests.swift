@@ -140,10 +140,14 @@ struct IOSUpStagesTests {
         #expect(report.context.appPid == 3538)
     }
 
-    @Test("build is the shared pipeline without Metro, install, or launch")
+    @Test("build selects a shutdown destination without boot, Metro, install, or launch")
     func buildStopsAfterCompilation() async throws {
         let repo = try settledProject()
-        let runner = try runner(repo)
+        var runner = try runner(repo)
+        runner.responses["xcrun simctl list devices -j"] = .ok(
+            try Fixture.text("simctl-list-devices.stdout.json").replacingOccurrences(of: "Booted", with: "Shutdown")
+        )
+        runner.responses["xcrun simctl bootstatus \(bootedUDID) -b"] = .ok("")
 
         let report = await pipeline(repo, runner, workflow: .build).run()
 
@@ -158,8 +162,32 @@ struct IOSUpStagesTests {
         #expect(sent.contains(installCommand) == false)
         #expect(sent.contains(terminateCommand) == false)
         #expect(sent.contains(launchCommand) == false)
+        #expect(!runner.log.all.contains { $0.arguments.contains("bootstatus") || $0.arguments.contains("boot") })
+        #expect(report.context.device?.udid == bootedUDID)
         #expect(runner.log.spawned.isEmpty)
         #expect(try InstallRecord.read(from: RunLogs(project: repo.root)) == nil)
+    }
+
+    @Test("up still boots its selected shutdown destination before installation and launch")
+    func upBootsShutdownDevice() async throws {
+        let repo = try settledProject()
+        var runner = try runner(repo)
+        runner.responses["xcrun simctl list devices -j"] = .ok(
+            try Fixture.text("simctl-list-devices.stdout.json").replacingOccurrences(of: "Booted", with: "Shutdown")
+        )
+        let boot = "xcrun simctl bootstatus \(bootedUDID) -b"
+        runner.responses[boot] = .ok("")
+
+        let report = await pipeline(repo, runner).run()
+
+        #expect(report.exitCode == 0)
+        #expect(report.context.device?.udid == bootedUDID)
+        #expect(report.context.appPid == 3538)
+        let commands = runner.log.all.map(\.description)
+        #expect(commands.filter { $0 == boot }.count == 1)
+        let bootIndex = try #require(commands.firstIndex(of: boot))
+        #expect(bootIndex < (try #require(commands.firstIndex(of: installCommand))))
+        #expect(bootIndex < (try #require(commands.firstIndex(of: launchCommand))))
     }
 
     @Test("Bundler repair runs after validation before Pods on a fresh checkout")
