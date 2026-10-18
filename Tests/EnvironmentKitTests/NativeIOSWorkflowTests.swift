@@ -13,7 +13,10 @@ struct NativeIOSWorkflowTests {
         try repo.write("Gemfile", "source 'https://rubygems.org'\ngem 'cocoapods'\n")
         try repo.write("Gemfile.lock", "fixture")
         try repo.write("Podfile", "platform :ios, '17.0'")
-        let runner = runner(repo)
+        var runner = runner(repo)
+        runner.responses["xcrun simctl list runtimes -j"] = .ok(#"{"runtimes":[{"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-27-0","name":"iOS 27.0","version":"27.0","buildversion":"24A434","supportedArchitectures":["arm64"],"isAvailable":true}]}"#)
+        runner.responses["xcrun simctl --set \(FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Developer/CoreSimulator/Devices").path) list devices -j"] = .ok(#"{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-27-0":[{"udid":"B38C3447-963B-42CB-959F-F5234F5A1092","name":"iPhone 17","deviceTypeIdentifier":"com.apple.CoreSimulator.SimDeviceType.iPhone-17","isAvailable":true,"state":"Shutdown"}]}}"#)
+        runner.responses["xcrun simctl list devicetypes -j"] = .ok(#"{"devicetypes":[{"identifier":"com.apple.CoreSimulator.SimDeviceType.iPhone-17","name":"iPhone 17","productFamily":"iPhone","minRuntimeVersionString":"26.0.0","maxRuntimeVersionString":"65535.255.255"}]}"#)
         let result = await PreparationExecution.run(input: ProjectInspectionInput(
             directory: repo.root, environment: [:], app: "App.xcodeproj"), planOnly: true, runner: runner)
         #expect(result.exitCode == 0)

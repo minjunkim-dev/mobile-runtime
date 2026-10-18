@@ -2,6 +2,7 @@ import Core
 import AndroidKit
 import CryptoKit
 import Foundation
+import SimulatorKit
 
 public struct PreparationStep: Codable, Sendable {
     public let id: String
@@ -35,6 +36,8 @@ public struct PreparationPlan: Codable, Sendable {
     public let files: [String: String]
     public let installed: [String: Bool]
     public var androidRequirements: AndroidSDKRequirements? = nil
+    /// Observed iOS identities are approval inputs, separate from payload checksums.
+    public var resources: [IOSPreparationResource]? = nil
 
     /// The same approval inspection is visible in both clients.
     public var inspectionLines: [String] {
@@ -60,6 +63,8 @@ public struct PreparationOperation: Encodable, Sendable {
     public var error: String?
     public var log: String?
     public var conflict: ResourceConflict?
+    /// Completed or uncertain OS resources survive failures and cancellation.
+    public var resources: [IOSPreparationResource] = []
 }
 
 public struct PreparationResult: Sendable {
@@ -102,6 +107,7 @@ public enum PreparationExecution {
             let prepared = try await inspect(input, runner: host)
             result.plan = prepared.plan
             result.selection = prepared.selection
+            result.operation.resources = prepared.resources
             result.operation.requiredInput = prepared.selection?.requiredInput ?? []
             if !result.operation.requiredInput.isEmpty || prepared.plan == nil {
                 result.operation.error = prepared.selection?.error ?? "Choose a detected project app."
@@ -148,7 +154,7 @@ public enum PreparationExecution {
             let folder = try FolderIdentity(directory: anchor.workspaceRoot?.directory ?? anchor.directory)
             // Separate projects can reuse one global Bundle destination.
             let destinations = actions.filter { $0.id == "dependencies.gems" }.map { ResourceKey.destination(URL(fileURLWithPath: $0.target)) }
-            let installationTargets = installations.compactMap { $0.installation?.resourceKey }
+            let installationTargets = installations.flatMap { $0.installation?.resourceKeys ?? [] }
             let lease = try leases.acquire([.folder(folder)] + destinations + installationTargets,
                 owner: LeaseOwner(operationId: result.operation.id, command: "setup", project: folder.path))
             defer { lease.release() }
@@ -162,19 +168,60 @@ public enum PreparationExecution {
             let installedDestinations = installations.compactMap { $0.installation?.destination }
             let originalFiles = try sourceFiles(prepared.root, excluding: installedDestinations)
             let sourceRoot = prepared.root
+            var existingIOSDevices: [IOSResourceInventory.Device]?
             for step in installations {
                 try Task.checkCancellation()
                 guard let metadata = step.installation,
                       let action = prepared.installationActions[step.id], action.metadata == metadata else {
                     throw DomainError(summary: "Approved installation metadata is missing", remediation: Remediation(summary: "Inspect the package plan again."))
                 }
+                if case .iosRuntime(let pin) = metadata.managed {
+                    existingIOSDevices = try await IOSResourceInventory.load(runner: host,
+                        environment: ["DEVELOPER_DIR": pin.developerDirectory], deviceSet: pin.deviceSet).devices
+                }
+                if case .iosSimulator(let request) = metadata.managed,
+                   result.operation.completed.contains("ios.runtime.install"),
+                   let existingIOSDevices,
+                   case .iosRuntime(let pin)? = installations.first(where: { $0.id == "ios.runtime.install" })?.installation?.managed {
+                    let observed = try await IOSResourceInventory.load(runner: host,
+                        environment: ["DEVELOPER_DIR": pin.developerDirectory], deviceSet: pin.deviceSet)
+                    guard IOSPreparation.preservesDevices(existingIOSDevices, after: observed.devices, installedRuntimeID: pin.identifier) else {
+                        throw DomainError(summary: "Existing Simulator conditions changed after runtime installation",
+                            remediation: Remediation(summary: "Preserve completed resources. Inspect the changed devices and approve the remaining plan again."))
+                    }
+                    let fresh = try await inspect(input, runner: host)
+                    if let current = fresh.plan, current.project == plan.project, current.app == plan.app,
+                       current.files == plan.files, current.androidRequirements == plan.androidRequirements,
+                       !current.steps.contains(where: { $0.id == step.id }),
+                       current.steps.filter({ $0.kind == "install" || $0.kind == "align" }).allSatisfy({ candidate in
+                           plan.steps.contains { $0.id == candidate.id && $0.kind == candidate.kind && $0.installation == candidate.installation }
+                       }),
+                       let reused = fresh.resources.first(where: {
+                           $0.kind == .simulator && $0.origin == .reused && $0.isAvailable == true
+                               && $0.identifier.map(pin.existingDeviceIDs.contains) == true
+                               && $0.runtimeIdentifier == request.runtimeIdentifier && $0.runtimeBuild == request.runtimeBuild
+                               && $0.version == request.runtimeVersion && $0.architecture == request.architecture
+                       }) {
+                        let now = try sourceFiles(sourceRoot, excluding: installedDestinations)
+                        let changed = Set(now.keys).union(originalFiles.keys).filter { now[$0] != originalFiles[$0] }.sorted()
+                        guard changed.isEmpty else { throw PreparationSourceChanged(files: changed) }
+                        // Installing the approved runtime can make a preserved existing device reusable.
+                        result.operation.resources.append(reused)
+                        continue
+                    }
+                }
                 result.operation.state = "running"
                 events.emit("stage", stage: step.id, state: "running", detail: "\(metadata.package) revision \(metadata.revision)")
                 do {
-                    try await action.run(runner: host) { ownedTemporaryPaths in
+                    let installed = try await action.run(runner: host) { ownedTemporaryPaths in
                         try await verifyInstallation(input: input, host: host, plan: plan, step: step, root: sourceRoot,
                             files: originalFiles, excluding: installedDestinations + ownedTemporaryPaths)
                     }
+                    result.operation.resources += installed.resources
+                } catch let failure as InstallationActionFailure {
+                    result.operation.resources += failure.result.resources
+                    events.emit("stage", stage: step.id, state: failure.underlying is CancellationError ? "cancelled" : "failed")
+                    throw failure.underlying
                 } catch {
                     events.emit("stage", stage: step.id, state: error is CancellationError ? "cancelled" : "failed")
                     throw error
@@ -185,7 +232,7 @@ public enum PreparationExecution {
                 let changedAfter = Set(after.keys).union(originalFiles.keys).filter { after[$0] != originalFiles[$0] }.sorted()
                 guard changedAfter.isEmpty else {
                     result.operation.changedFiles = changedAfter
-                    throw DomainError(summary: "Source changed during SDK installation", remediation: Remediation(summary: "Preserve the completed package. Inspect changed files manually, then re-plan."))
+                    throw DomainError(summary: "Source changed during resource installation", remediation: Remediation(summary: "Preserve the completed resource. Inspect changed files manually, then re-plan."))
                 }
             }
             if !actions.isEmpty {
@@ -295,6 +342,7 @@ public enum PreparationExecution {
         var context: WorkflowContext?
         var root: URL
         var installationActions: [String: InstallationAction] = [:]
+        var resources: [IOSPreparationResource] = []
     }
 
     private static func inspect(_ input: ProjectInspectionInput, runner: any ProcessRunner, excluding: [URL] = []) async throws -> Inspection {
@@ -391,6 +439,25 @@ public enum PreparationExecution {
                 sdkInstalled.merge(sdkPreparation.installed) { _, new in new }
                 value.installationActions.merge(sdkPreparation.actions) { _, new in new }
             }
+            if platform == .ios, !pendingTools {
+                let iosPreparation = try await IOSPreparation.inspect(context: context, input: input)
+                // Native deployment is measured by the provider. Replace only the
+                // Matrix-only unknown when that provider confirms an exact runtime.
+                if anchor.framework == .nativeIOS, let lookup = context.lookup,
+                   case .unavailable(let reason, let source) = lookup.runtime,
+                   report.checks.contains(where: { $0.id == "simulator.runtime" && $0.status == .unknown
+                       && $0.outcome.reason == reason && $0.outcome.source == source }),
+                   let runtime = iosPreparation.checks.first(where: { $0.id == "ios.runtime" && $0.kind == "reuse" }),
+                   iosPreparation.resources.contains(where: { $0.kind == .runtime && $0.origin == .reused
+                       && $0.runtimeIdentifier == runtime.target && $0.isAvailable == true
+                       && $0.architecture == "arm64" && $0.runtimeBuild != nil && $0.version != nil }) {
+                    checks.removeAll { $0.id == "ios.simulator.runtime" }
+                }
+                checks += iosPreparation.checks
+                sdkInstalled.merge(iosPreparation.installed) { _, new in new }
+                value.installationActions.merge(iosPreparation.actions) { _, new in new }
+                value.resources += iosPreparation.resources
+            }
             if anchor.framework == .reactNative, !pendingTools, !checks.contains(where: { $0.id.hasSuffix(".package-manager.version") }) {
                 let output = try await optionalTool(ProcessCommand(anchor.packageManagerName, ["--version"],
                     workingDirectory: anchor.workspaceRoot?.directory ?? anchor.directory, timeout: .seconds(15)), runner: context.projectRunner)
@@ -428,7 +495,7 @@ public enum PreparationExecution {
         if anchor.framework != .reactNative {
             value.plan = try makePlan(project: selected.app, app: selected.id, kind: anchor.framework.rawValue,
                                      platforms: platforms, steps: steps, files: approvalFiles(root, excluding: excluding), installed: sdkInstalled,
-                                     androidRequirements: androidRequirements)
+                                     androidRequirements: androidRequirements, resources: value.resources)
             return value
         }
         let nodeReady = platforms.flatMap(\.checks).contains { $0.id.hasSuffix(".node.version") && $0.kind == "reuse" }
@@ -507,7 +574,8 @@ public enum PreparationExecution {
                 remediation: Remediation(summary: "Use the declared locked Pod installation. Source or lockfile migration requires manual handling.")))
         }
         value.plan = try makePlan(project: selected.app, app: selected.id, kind: "react-native", platforms: platforms,
-                                 steps: steps, files: approvalFiles(root, excluding: excluding), installed: installed, androidRequirements: androidRequirements)
+                                 steps: steps, files: approvalFiles(root, excluding: excluding), installed: installed,
+                                 androidRequirements: androidRequirements, resources: value.resources)
         return value
     }
 
@@ -537,10 +605,12 @@ public enum PreparationExecution {
 
     private static func makePlan(project: FolderIdentity, app: String, kind: String,
                                  platforms: [PreparationPlatform], steps: [PreparationStep], files: [String: String], installed: [String: Bool],
-                                 androidRequirements: AndroidSDKRequirements? = nil) throws -> PreparationPlan {
+                                 androidRequirements: AndroidSDKRequirements? = nil,
+                                 resources: [IOSPreparationResource] = []) throws -> PreparationPlan {
         var plan = PreparationPlan(id: "", project: project, app: app, projectKind: kind,
                                    platforms: platforms, steps: steps.sorted { $0.id < $1.id }, files: files, installed: installed)
         plan.androidRequirements = androidRequirements
+        plan.resources = resources.isEmpty ? nil : resources
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
         plan.id = digest(try encoder.encode(plan))
