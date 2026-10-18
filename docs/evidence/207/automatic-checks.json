@@ -1,0 +1,81 @@
+{
+  "kind": "automated-behavior-checks",
+  "base": "c73155c856162d31c15d6c300f0ec1dc8b54d5ff",
+  "source": "commit containing this record",
+  "fullSwiftTest": {
+    "exitCode": 0,
+    "suiteCounts": {
+      "AndroidKitTests": 123,
+      "EnvironmentKitTests": 217,
+      "CoreTests": 374,
+      "SimulatorKitTests": 81
+    },
+    "totalTests": 795,
+    "warningsAsErrors": true
+  },
+  "relatedSuites": {
+    "intermediatePass": {
+      "tests": 51,
+      "scope": "Android Emulator/SDK, AVD action, shared setup, InstallationAction, ZIP installation and preparation"
+    },
+    "finalCoverage": "all related suites are included in the final full Swift run"
+  },
+  "redEvidence": [
+    "missing repository-source API compile failure",
+    "missing AVD creation API compile failure",
+    "image dependency major missing accepted before fix",
+    "AVD missing system.img reported reusable before fix"
+  ],
+  "command": "env HOME=<owned-home> CFFIXED_USER_HOME=<owned-home> CLANG_MODULE_CACHE_PATH=<owned-module-cache> SWIFTPM_MODULECACHE_OVERRIDE=<owned-module-cache> TMPDIR=<owned-tmp> swift test --force-resolved-versions --scratch-path <owned-build> --cache-path <owned-cache> --config-path <owned-config> --security-path <owned-security> -Xswiftc -warnings-as-errors",
+  "isolationProbe": {
+    "exitCode": 0,
+    "foundationHome": "<validation207>/home",
+    "resourceLeasesUserRoot": "<validation207>/home/Library/Caches/dev.runstir/leases",
+    "probeTestRemovedAfterObservation": true
+  },
+  "initialRunLimitation": {
+    "homeIsolation": "not set during initial focused runs",
+    "defaultLeaseUse": "some pre-existing tests use ResourceLeases.user",
+    "actualHostCacheFileAccessOrMutation": "not audited",
+    "wholeHomeOrCachePreservation": "unverified",
+    "hostCacheCleanupPerformed": false
+  },
+  "actualSystemImageDownload": "unverified",
+  "actualAVDCreation": "unverified",
+  "actualEmulatorBoot": "unverified",
+  "actualCLIAndGUIFlow": "unverified",
+  "privateLogs": [
+    {
+      "basename": "red.log",
+      "sha256": "1aff55bdca7d6ff96d0342e49f8db94ee4fff441a66f0a1be8b3737253c1801d"
+    },
+    {
+      "basename": "parser-green.log",
+      "sha256": "401899d4ed1cfbc9fc6df0dcc42bd61d5d5e2db06c658588cffff30f0a0394f6"
+    },
+    {
+      "basename": "avd-red.log",
+      "sha256": "087eea5ee1f3287c89bd88f1fdac7c448185ae57aa0c54cf673edcc0a7a2b0bc"
+    },
+    {
+      "basename": "dependency-red.log",
+      "sha256": "4cf886dc304f4740f77d4598b5366264c0381267478fce792ae467e94b804c87"
+    },
+    {
+      "basename": "image-content-red.log",
+      "sha256": "be8bd007910bc331c3aa9c26aaa7a2d459ae14c1331921ffe462a12ce6cb1a78"
+    },
+    {
+      "basename": "related.log",
+      "sha256": "75cf841862559a8cba822f8620e3ca41f8454167d5a634ef042c8cdf8e44e002"
+    },
+    {
+      "basename": "isolation-probe.log",
+      "sha256": "9838e4c67cfec0b9980e4f9b706e7cfb762a27312bed9beea5d8a379c9cdf5ff"
+    },
+    {
+      "basename": "full-swift.log",
+      "sha256": "6be1cdbe9524f89694fdc08e28a1c7f5c651480eb1df7ca21b20b028cc384879"
+    }
+  ]
+}

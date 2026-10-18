@@ -1,0 +1,21 @@
+{
+  "kind": "read-only-http-suffix-range",
+  "observedOn": "2026-10-19",
+  "metadataURL": "https://dl.google.com/android/repository/sys-img/google_apis/sys-img2-4.xml",
+  "package": "system-images;android-35;google_apis;arm64-v8a",
+  "revision": "9",
+  "archiveURL": "https://dl.google.com/android/repository/sys-img/google_apis/arm64-v8a-35_r09.zip",
+  "officialArchiveSize": 1778933980,
+  "officialChecksumAlgorithm": "sha1",
+  "officialChecksum": "16f5bceca236b2737008977c4aaf826e46a8de7d",
+  "requestRange": "bytes=-131072",
+  "responseStatus": 206,
+  "contentRange": "bytes 1778802908-1778933979/1778933980",
+  "bytesRead": 131072,
+  "zip64LocatorObserved": false,
+  "eocd": {"disk": 0, "centralDirectoryDisk": 0, "entries": 29, "centralDirectorySize": 2632, "centralDirectoryOffset": 1778931326, "commentLength": 0},
+  "largestEntry": {"name": "arm64-v8a/system.img", "compressedSize": 1720570827, "uncompressedSize": 3891265536},
+  "fullArchiveChecksum": "unverified",
+  "extraction": "unverified",
+  "installation": "unverified"
+}

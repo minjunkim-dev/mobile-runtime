@@ -5,16 +5,15 @@ import Foundation
 import FoundationXML
 #endif
 
-/// A single official schema-3 observation. Selection never falls back to an older schema.
+/// One selected official SDK or system-image schema. Selection never falls back.
 public struct AndroidSDKRepository: Sendable {
-    public static let url = URL(string: "https://dl.google.com/android/repository/repository2-3.xml")!
-    public static var command: ProcessCommand {
-        ProcessCommand("curl", ["--fail", "--silent", "--show-error", "--proto", "=https", "--max-time", "30", url.absoluteString], timeout: .seconds(40))
-    }
+    public static let url = AndroidSDKRepositorySource.sdk.url
+    public static var command: ProcessCommand { AndroidSDKRepositorySource.sdk.command }
+    public let source: AndroidSDKRepositorySource
     public let sha256: String
     private let packages: [AndroidSDKRepositoryPackage]
 
-    public init(data: Data) throws {
+    public init(data: Data, source: AndroidSDKRepositorySource = .sdk) throws {
         guard data.count <= 4 * 1024 * 1024,
               let text = String(data: data, encoding: .utf8),
               !text.localizedCaseInsensitiveContains("<!DOCTYPE"),
@@ -24,9 +23,10 @@ public struct AndroidSDKRepository: Sendable {
         parser.shouldResolveExternalEntities = false
         parser.delegate = delegate
         guard parser.parse(), let root = delegate.root,
-              root.attributes["xmlns:sdk"] == "http://schemas.android.com/sdk/android/repo/repository2/03" else {
-            throw Self.invalid("The official schema-3 repository could not be parsed")
+              root.attributes[source == .sdk ? "xmlns:sdk" : "xmlns:sys-img"] == source.namespace else {
+            throw Self.invalid("The selected official repository schema could not be parsed")
         }
+        self.source = source
         sha256 = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
         let licenses = root.children.filter { $0.localName == "license" }
         var values: [AndroidSDKRepositoryPackage] = []
@@ -63,14 +63,35 @@ public struct AndroidSDKRepository: Sendable {
                     : "platforms;android-\(api)-ext\(details.child("extension-level")!.value)"
                 guard path == expected else { continue }
             }
+            var image: AndroidSystemImageIdentity?
+            var minimumEmulator: String?
+            if source == .googleAPIs {
+                guard let details = node.child("type-details"),
+                      let api = details.child("api-level").flatMap({ Int($0.value) }), api > 0,
+                      details.child("codename") == nil,
+                      details.child("base-extension")?.value != "false",
+                      details.child("extension-level") == nil || details.child("base-extension")?.value == "true",
+                      let abi = details.child("abi")?.value, abi == "arm64-v8a",
+                      details.child("abis").map({ $0.value == abi }) ?? true,
+                      let tag = details.child("tag")?.child("id")?.value, tag == "google_apis",
+                      path == "system-images;android-\(api);\(tag);\(abi)",
+                      let dependencies = node.child("dependencies")?.children, dependencies.count == 1,
+                      dependencies[0].localName == "dependency", dependencies[0].attributes["path"] == "emulator",
+                      let revision = dependencies[0].child("min-revision"), revision.child("preview") == nil,
+                      let major = revision.child("major").flatMap({ Int($0.value) }), major > 0 else { continue }
+                let parts = ["major", "minor", "micro"].map { revision.child($0)?.value ?? "0" }
+                guard parts.allSatisfy({ Int($0).map { $0 >= 0 } == true }) else { continue }
+                minimumEmulator = parts.joined(separator: ".")
+                image = AndroidSystemImageIdentity(apiLevel: api, abi: abi, tag: tag)
+            }
             let local = SDKRepositoryNode(name: "localPackage", attributes: ["path": path], children:
                 node.children.filter { ["type-details", "revision", "display-name", "uses-license"].contains($0.localName) })
             let document = SDKRepositoryNode(name: "common:repository", attributes: root.attributes, children: [license, local]).xml
             values.append(AndroidSDKRepositoryPackage(packagePath: path, revision: revision,
-                archiveURL: Self.url.deletingLastPathComponent().appendingPathComponent(filename),
+                archiveURL: source.url.deletingLastPathComponent().appendingPathComponent(filename),
                 size: size, sha1: checksum.value, licenseID: licenseID,
                 licenseSHA1: Insecure.SHA1.hash(data: Data(AndroidSDKLicenses.normalizedText(license.text).utf8)).map { String(format: "%02x", $0) }.joined(),
-                localMetadata: Data(document.utf8)))
+                localMetadata: Data(document.utf8), systemImage: image, minimumEmulatorRevision: minimumEmulator))
         }
         packages = values
     }
@@ -101,12 +122,35 @@ public struct AndroidSDKRepositoryPackage: Sendable {
     public let licenseID: String
     public let licenseSHA1: String
     public let localMetadata: Data
+    public let systemImage: AndroidSystemImageIdentity?
+    public let minimumEmulatorRevision: String?
 
     public func licenseAccepted(in sdk: URL) -> Bool {
         let record = sdk.appendingPathComponent("licenses").appendingPathComponent(licenseID)
         guard let text = try? String(contentsOf: record, encoding: .utf8) else { return false }
         return text.split(whereSeparator: \.isNewline).contains(Substring(licenseSHA1))
     }
+}
+
+public enum AndroidSDKRepositorySource: String, Sendable {
+    case sdk, googleAPIs
+    public var url: URL {
+        URL(string: self == .sdk ? "https://dl.google.com/android/repository/repository2-3.xml"
+            : "https://dl.google.com/android/repository/sys-img/google_apis/sys-img2-4.xml")!
+    }
+    fileprivate var namespace: String {
+        self == .sdk ? "http://schemas.android.com/sdk/android/repo/repository2/03"
+            : "http://schemas.android.com/sdk/android/repo/sys-img2/04"
+    }
+    public var command: ProcessCommand {
+        ProcessCommand("curl", ["--fail", "--silent", "--show-error", "--proto", "=https", "--max-time", "30", url.absoluteString], timeout: .seconds(40))
+    }
+}
+
+public struct AndroidSystemImageIdentity: Sendable, Equatable {
+    public let apiLevel: Int
+    public let abi: String
+    public let tag: String
 }
 
 private final class SDKRepositoryNode {
