@@ -48,12 +48,12 @@ private func target(_ repo: FixtureRepo, workspace: Bool) -> String {
 
 private func buildCommand(_ repo: FixtureRepo, workspace: Bool, scheme: String) -> String {
     "xcodebuild \(target(repo, workspace: workspace)) -scheme \(scheme) -configuration Debug "
-        + "-destination platform=iOS Simulator,id=\(udid) build"
+        + "-destination platform=iOS Simulator,id=\(udid) -derivedDataPath \(RunLogs(project: repo.root).url("DerivedData").resolvingSymlinksInPath().path) build"
 }
 
 private func settingsCommand(_ repo: FixtureRepo, workspace: Bool, scheme: String) -> String {
     "xcodebuild -showBuildSettings -json \(target(repo, workspace: workspace)) -scheme \(scheme) "
-        + "-configuration Debug -destination platform=iOS Simulator,id=\(udid)"
+        + "-configuration Debug -destination platform=iOS Simulator,id=\(udid) -derivedDataPath \(RunLogs(project: repo.root).url("DerivedData").resolvingSymlinksInPath().path)"
 }
 
 private func runner(
@@ -110,13 +110,6 @@ private func afterDevice() -> UpContext {
     return context
 }
 
-private func temporaryLogs() throws -> RunLogs {
-    let temporary = FileManager.default.temporaryDirectory
-        .appendingPathComponent("mobile-buildstage-\(UUID().uuidString)")
-    try FileManager.default.createDirectory(at: temporary, withIntermediateDirectories: true)
-    return RunLogs(project: URL(fileURLWithPath: "/a/MyApp"), temporaryDirectory: temporary)
-}
-
 @discardableResult
 private func run(
     _ repo: FixtureRepo,
@@ -131,7 +124,7 @@ private func run(
         config: configuration,
         runner: runner,
         locator: XcodeLocator(runner: runner, developerDirOverride: nil),
-        logs: try logs ?? temporaryLogs(),
+        logs: logs ?? RunLogs(project: repo.root),
         note: { _ in }
     )
     return try await stage.run(&context)
@@ -312,9 +305,9 @@ struct BuildStageTests {
     }
 
     /// The contract of the whole stage, read off the command line it produced: Debug,
-    /// the udid `device` chose, no derived data override, and no timeout to kill a
+    /// the udid `device` chose, input-owned derived data, and no timeout to kill a
     /// slow machine's first clean build.
-    @Test("the build is Debug, on the chosen udid, with Xcode's own derived data and no timeout")
+    @Test("the build and product query use the same input-owned derived data without a build timeout")
     func buildCommandShape() async throws {
         let repo = try project(workspace: true)
         let runner = try runner(repo, workspace: true, schemes: ["MyApp"], scheme: "MyApp")
@@ -323,9 +316,61 @@ struct BuildStageTests {
         try await run(repo, runner, context: &context)
         let build = try #require(runner.log.first(matching: buildCommand(repo, workspace: true, scheme: "MyApp")))
 
-        #expect(build.arguments.contains("-derivedDataPath") == false)
+        #expect(build.arguments.contains("-derivedDataPath"))
+        let settings = try #require(runner.log.first(matching: settingsCommand(repo, workspace: true, scheme: "MyApp")))
+        let index = try #require(build.arguments.firstIndex(of: "-derivedDataPath"))
+        #expect(settings.arguments.contains(build.arguments[index + 1]))
         #expect(build.timeout == nil)
         #expect(build.environment["DEVELOPER_DIR"] == developerDirectory)
+    }
+
+    @Test("a redirected DerivedData directory stops before xcodebuild and preserves its target")
+    func redirectedDerivedData() async throws {
+        let repo = try project(workspace: true)
+        let runner = try runner(repo, workspace: true, schemes: ["MyApp"], scheme: "MyApp")
+        let temporary = try repo.directory("outputs")
+        let logs = RunLogs(project: repo.root, temporaryDirectory: temporary)
+        try FileManager.default.createDirectory(at: logs.directory, withIntermediateDirectories: true)
+        let outside = try FixtureRepo()
+        try outside.write("keep", "preserve")
+        try FileManager.default.createSymbolicLink(at: logs.url("DerivedData"), withDestinationURL: outside.root)
+        var context = afterDevice()
+
+        await #expect(throws: (any Error).self) {
+            try await run(repo, runner, context: &context, logs: logs)
+        }
+
+        #expect(runner.log.all.contains { $0.executable == "xcodebuild" } == false)
+        #expect(try String(contentsOf: outside.url("keep"), encoding: .utf8) == "preserve")
+        #expect(context.product == nil)
+    }
+
+    @Test("independent inputs build and select products from their own Xcode output trees")
+    func independentDerivedData() async throws {
+        let first = try project(workspace: true)
+        let second = try project(workspace: true)
+        var products: [String] = []
+        for repo in [first, second] {
+            let output = try RunLogs(project: repo.root).derivedDataDirectory
+            let productsDirectory = output.appendingPathComponent("Build/Products/Debug-iphonesimulator").path
+            var runner = try runner(repo, workspace: true, schemes: ["MyApp"], scheme: "MyApp")
+            runner.responses[settingsCommand(repo, workspace: true, scheme: "MyApp")] = .ok(
+                #"[{"target":"MyApp","buildSettings":{"BUILT_PRODUCTS_DIR":"\#(productsDirectory)","FULL_PRODUCT_NAME":"MyApp.app","PRODUCT_BUNDLE_IDENTIFIER":"com.example.MyApp"}}]"#)
+            var context = afterDevice()
+
+            try await run(repo, runner, context: &context)
+
+            let build = try #require(runner.log.all.first { $0.arguments.last == "build" })
+            let settings = try #require(runner.log.all.first { $0.arguments.contains("-showBuildSettings") })
+            for command in [build, settings] {
+                let index = try #require(command.arguments.firstIndex(of: "-derivedDataPath"))
+                #expect(command.arguments[index + 1] == output.path)
+            }
+            let product = try #require(context.product)
+            #expect(product.path == productsDirectory + "/MyApp.app")
+            products.append(product.path)
+        }
+        #expect(Set(products).count == 2)
     }
 
     /// Read from `-showBuildSettings`, not from the build log: log formats move
@@ -362,7 +407,7 @@ struct BuildStageTests {
                 standardError: "[MT] IDERunDestination: nothing useful here\n"
             )
         )
-        let logs = try temporaryLogs()
+        let logs = RunLogs(project: repo.root)
         var context = afterDevice()
 
         let error = await #expect(throws: DomainError.self) {
@@ -376,7 +421,7 @@ struct BuildStageTests {
         // Pasteable as printed: the destination carries a space, and a line that has
         // to be repaired before it runs is not a remediation.
         #expect(
-            error?.remediation.command?.hasSuffix("-destination 'platform=iOS Simulator,id=\(udid)' build")
+            error?.remediation.command?.hasSuffix("-destination 'platform=iOS Simulator,id=\(udid)' -derivedDataPath \(shellArgument(try logs.derivedDataDirectory.path)) build")
                 == true
         )
         #expect(error?.observed?.contains("cannot find 'Foo' in scope") == true)
@@ -446,7 +491,7 @@ struct BuildStageTests {
                 status: .exited(65), standardOutput: errors + "\n** BUILD FAILED **\n"
             )
         )
-        let logs = try temporaryLogs()
+        let logs = RunLogs(project: repo.root)
         let notes = Mutable<[String]>([])
         let configuration = ConfigContext.detect(
             anchor: ProjectAnchor.detect(from: repo.root), workingDirectory: repo.root
@@ -476,7 +521,7 @@ struct BuildStageTests {
     func successReportsLog() async throws {
         let repo = try project(workspace: false)
         let runner = try runner(repo, workspace: false, schemes: ["MyApp"], scheme: "MyApp")
-        let logs = try temporaryLogs()
+        let logs = RunLogs(project: repo.root)
         var context = afterDevice()
 
         try await run(repo, runner, context: &context, logs: logs)
@@ -534,7 +579,7 @@ struct BuildStageTests {
                 progressLine: "CompileC /tmp/format.o /tmp/format.cc normal arm64 (in target 'fmt' from project 'Pods')"
             ),
             locator: XcodeLocator(runner: runner, developerDirOverride: nil),
-            logs: try temporaryLogs(),
+            logs: RunLogs(project: repo.root),
             heartbeat: .milliseconds(10),
             note: { line in notes.mutate { $0.append(line) } }
         )

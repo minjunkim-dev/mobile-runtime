@@ -16,6 +16,14 @@ Issue #201은 CLI와 GUI를 `EnvironmentKit.WorkflowExecution`에 연결한다. 
 
 workspace-only 앱은 `xcodebuild -list`에 configuration 목록이 없다. 이 경우 선택한 scheme의 `-showBuildSettings`에서 요청 configuration과 실제 `CONFIGURATION`이 일치하는지 확인한다. Xcode가 없는 configuration을 Release로 조용히 대체하면 거부한다.
 
+iOS build는 input별 `RunLogs`의 `DerivedData` 경로를 `-derivedDataPath`로 지정한다.
+선택용 settings 조회와 build 뒤 product 조회도 같은 경로를 사용한다.
+독립 clone·worktree는 서로 다른 경로를 쓴다. 같은 실제 폴더의 symlink는 같은 경로를 쓴다.
+기존 output 부모와 output 자체의 symlink·일반 파일은 변경 없이 거부한다.
+build의 generic/concrete destination과 scheme·configuration 선택은 유지한다.
+`xcodebuild -list`에는 이 flag를 추가하지 않는다. 이 조회의 flag 호환과 전체 cache 쓰기 범위는 미검증이다.
+이 변경은 Xcode의 전체 cache·HOME·임시 경로 격리나 실행 중 경로 교체 방지를 보장하지 않는다.
+
 ## 실행
 
 ```sh

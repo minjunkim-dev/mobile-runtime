@@ -85,7 +85,7 @@ struct NativeIOSPreparationReadinessTests {
                 "xcodebuild -version": .ok("Xcode 27.0\nBuild version 18A100"),
                 "xcodebuild -checkFirstLaunchStatus": .ok(""),
                 "xcodebuild -list -json \(container)": .ok(#"{"project":{"schemes":["App"],"configurations":["Debug","Release"]}}"#),
-                "xcodebuild -showBuildSettings -json \(container) -scheme App -configuration Debug -destination generic/platform=iOS Simulator": .ok(#"[{"target":"App","buildSettings":{"CONFIGURATION":"Debug","PLATFORM_NAME":"iphonesimulator","FULL_PRODUCT_NAME":"App.app"\#(deployment)}}]"#),
+                "xcodebuild -showBuildSettings -json \(container) -scheme App -configuration Debug -destination generic/platform=iOS Simulator -derivedDataPath \(RunLogs(project: repo.root).url("DerivedData").resolvingSymlinksInPath().path)": .ok(#"[{"target":"App","buildSettings":{"CONFIGURATION":"Debug","PLATFORM_NAME":"iphonesimulator","FULL_PRODUCT_NAME":"App.app"\#(deployment)}}]"#),
                 "xcrun simctl list runtimes -j": .ok(runtime),
                 "xcrun simctl list devices -j": .ok(devices),
                 "xcrun simctl --set \(deviceSet.path) list devices -j": .ok(devices),

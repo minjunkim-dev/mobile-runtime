@@ -24,7 +24,7 @@ private func settledProject() throws -> FixtureRepo {
 
 private func destination(_ repo: FixtureRepo) -> String {
     "-project \(repo.url("ios/MyApp.xcodeproj").path) -scheme MyApp -configuration Debug "
-        + "-destination platform=iOS Simulator,id=\(bootedUDID)"
+        + "-destination platform=iOS Simulator,id=\(bootedUDID) -derivedDataPath \(RunLogs(project: repo.root).url("DerivedData").resolvingSymlinksInPath().path)"
 }
 
 private func buildCommand(_ repo: FixtureRepo) -> String { "xcodebuild \(destination(repo)) build" }

@@ -98,7 +98,7 @@ struct NativeIOSWorkflowTests {
             (key.replacingOccurrences(of: originalPath, with: containerPath), value)
         }
         var runner = FakeProcessRunner(responses: Dictionary(uniqueKeysWithValues: responses))
-        let build = "xcodebuild -project \(containerPath) -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile -scheme App -configuration Debug -destination generic/platform=iOS Simulator CODE_SIGNING_ALLOWED=NO build"
+        let build = "xcodebuild -project \(containerPath) -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile -scheme App -configuration Debug -destination generic/platform=iOS Simulator -derivedDataPath \(RunLogs(project: repo.root).url("DerivedData").resolvingSymlinksInPath().path) CODE_SIGNING_ALLOWED=NO build"
         runner.responses[build] = .failed(65, "error: fixture build failed")
         let result = await WorkflowExecution.run(.build, input: input(repo), runner: runner)
         #expect(result.exitCode == 1)
@@ -159,7 +159,7 @@ struct NativeIOSWorkflowTests {
         let releaseTarget = requiresNewerRuntime ? "27.0" : "17.0"
         runner.responses[settings(repo)] = .ok(#"[{"target":"App","buildSettings":{"CONFIGURATION":"Debug","PLATFORM_NAME":"iphonesimulator","IPHONEOS_DEPLOYMENT_TARGET":"\#(debugTarget)","FULL_PRODUCT_NAME":"App.app"}}]"#)
         runner.responses["xcrun simctl list runtimes -j"] = .ok(#"{"runtimes":[{"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-18-0","name":"iOS 18.0","version":"18.0","isAvailable":true}]}"#)
-        let destination = "\(target(repo)) -scheme App -configuration Release -destination generic/platform=iOS Simulator"
+        let destination = "\(target(repo)) -scheme App -configuration Release -destination generic/platform=iOS Simulator -derivedDataPath \(RunLogs(project: repo.root).url("DerivedData").resolvingSymlinksInPath().path)"
         let measured = #"[{"target":"App","buildSettings":{"CONFIGURATION":"Release","PLATFORM_NAME":"iphonesimulator","IPHONEOS_DEPLOYMENT_TARGET":"\#(releaseTarget)","FULL_PRODUCT_NAME":"App.app","BUILT_PRODUCTS_DIR":"/test/build","PRODUCT_BUNDLE_IDENTIFIER":"com.test.App"}}]"#
         runner.responses["xcodebuild -showBuildSettings -json \(destination)"] = .ok(measured)
         runner.responses["xcodebuild \(destination) CODE_SIGNING_ALLOWED=NO build"] = .ok("** BUILD SUCCEEDED **")
@@ -216,7 +216,7 @@ struct NativeIOSWorkflowTests {
         addUpResponses(&runner, repo)
         let measured = #"[{"target":"App","buildSettings":{"CONFIGURATION":"Debug","PLATFORM_NAME":"iphonesimulator","IPHONEOS_DEPLOYMENT_TARGET":"17.0","BUILT_PRODUCTS_DIR":"/test/build","FULL_PRODUCT_NAME":"App.app","PRODUCT_BUNDLE_IDENTIFIER":"com.test.App"}},{"target":"Chosen","buildSettings":{"CONFIGURATION":"Debug","PLATFORM_NAME":"iphonesimulator","IPHONEOS_DEPLOYMENT_TARGET":"17.0","BUILT_PRODUCTS_DIR":"/test/build","FULL_PRODUCT_NAME":"Chosen.app","PRODUCT_BUNDLE_IDENTIFIER":"com.test.Chosen"}}]"#
         runner.responses[settings(repo)] = .ok(measured)
-        let destination = "\(target(repo)) -scheme App -configuration Debug -destination platform=iOS Simulator,id=A CODE_SIGNING_ALLOWED=NO"
+        let destination = "\(target(repo)) -scheme App -configuration Debug -destination platform=iOS Simulator,id=A -derivedDataPath \(RunLogs(project: repo.root).url("DerivedData").resolvingSymlinksInPath().path) CODE_SIGNING_ALLOWED=NO"
         runner.responses["xcodebuild -showBuildSettings -json \(destination)"] = .ok(measured)
         runner.responses["xcrun simctl install A /test/build/Chosen.app"] = .ok("")
         runner.responses["xcrun simctl terminate A com.test.Chosen"] = .ok("")
@@ -324,7 +324,7 @@ struct NativeIOSWorkflowTests {
         try repo.write("Apps/Nested.xcodeproj/project.pbxproj", "nested app")
         try repo.write("Apps/Nested.xcodeproj/xcshareddata/xcschemes/App.xcscheme", appScheme)
         let target = "-workspace \(repo.url("Chosen.xcworkspace").path) -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile"
-        let destination = "\(target) -scheme App -configuration Debug -destination generic/platform=iOS Simulator"
+        let destination = "\(target) -scheme App -configuration Debug -destination generic/platform=iOS Simulator -derivedDataPath \(RunLogs(project: repo.root).url("DerivedData").resolvingSymlinksInPath().path)"
         let measured = #"[{"target":"App","buildSettings":{"CONFIGURATION":"Debug","PLATFORM_NAME":"iphonesimulator","IPHONEOS_DEPLOYMENT_TARGET":"17.0","FULL_PRODUCT_NAME":"App.app","BUILT_PRODUCTS_DIR":"/test/build","PRODUCT_BUNDLE_IDENTIFIER":"com.test.App"}}]"#
         let runner = FakeProcessRunner(responses: [
             "xcode-select -p": .ok("/test/Xcode"),
@@ -375,7 +375,7 @@ struct NativeIOSWorkflowTests {
     func buildCancellation() async throws {
         let repo = try project()
         var runner = runner(repo)
-        let build = "xcodebuild \(target(repo)) -scheme App -configuration Debug -destination generic/platform=iOS Simulator CODE_SIGNING_ALLOWED=NO build"
+        let build = "xcodebuild \(target(repo)) -scheme App -configuration Debug -destination generic/platform=iOS Simulator -derivedDataPath \(RunLogs(project: repo.root).url("DerivedData").resolvingSymlinksInPath().path) CODE_SIGNING_ALLOWED=NO build"
         runner.failures[build] = CancellationError()
         let result = await WorkflowExecution.run(.build, input: input(repo), runner: runner)
         #expect(result.exitCode == 130)
@@ -412,7 +412,7 @@ struct NativeIOSWorkflowTests {
     }
 
     private func settings(_ repo: FixtureRepo) -> String {
-        "xcodebuild -showBuildSettings -json \(target(repo)) -scheme App -configuration Debug -destination generic/platform=iOS Simulator"
+        "xcodebuild -showBuildSettings -json \(target(repo)) -scheme App -configuration Debug -destination generic/platform=iOS Simulator -derivedDataPath \(RunLogs(project: repo.root).url("DerivedData").resolvingSymlinksInPath().path)"
     }
 
     private func temporaryLeases() -> ResourceLeases {
@@ -420,7 +420,7 @@ struct NativeIOSWorkflowTests {
     }
 
     private func addUpResponses(_ runner: inout FakeProcessRunner, _ repo: FixtureRepo) {
-        let destination = "\(target(repo)) -scheme App -configuration Debug -destination platform=iOS Simulator,id=A CODE_SIGNING_ALLOWED=NO"
+        let destination = "\(target(repo)) -scheme App -configuration Debug -destination platform=iOS Simulator,id=A -derivedDataPath \(RunLogs(project: repo.root).url("DerivedData").resolvingSymlinksInPath().path) CODE_SIGNING_ALLOWED=NO"
         runner.responses["xcrun simctl list devices -j"] = .ok(#"{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-27-0":[{"name":"iPhone A","udid":"A","state":"Booted","isAvailable":true}]}}"#)
         runner.responses["xcodebuild \(destination) build"] = .ok("** BUILD SUCCEEDED **")
         runner.responses["xcodebuild -showBuildSettings -json \(destination)"] = .ok(#"[{"target":"App","buildSettings":{"CONFIGURATION":"Debug","BUILT_PRODUCTS_DIR":"/test/build","FULL_PRODUCT_NAME":"App.app","PRODUCT_BUNDLE_IDENTIFIER":"com.test.App"}}]"#)
@@ -430,7 +430,7 @@ struct NativeIOSWorkflowTests {
     }
 
     private func runner(_ repo: FixtureRepo) -> FakeProcessRunner {
-        let destination = "\(target(repo)) -scheme App -configuration Debug -destination generic/platform=iOS Simulator CODE_SIGNING_ALLOWED=NO"
+        let destination = "\(target(repo)) -scheme App -configuration Debug -destination generic/platform=iOS Simulator -derivedDataPath \(RunLogs(project: repo.root).url("DerivedData").resolvingSymlinksInPath().path) CODE_SIGNING_ALLOWED=NO"
         return FakeProcessRunner(responses: [
             "xcode-select -p": .ok("/test/Xcode"),
             "xcodebuild -version": .ok("Xcode 27.0\nBuild version 18A100"),
