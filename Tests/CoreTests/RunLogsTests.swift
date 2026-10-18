@@ -12,6 +12,55 @@ private func temporaryDirectory() throws -> URL {
 
 @Suite("run logs")
 struct RunLogsTests {
+    @Test("distinct real inputs with a colliding legacy log namespace get separate DerivedData without writes")
+    func derivedDataLegacyCollision() throws {
+        let temporary = try temporaryDirectory()
+        let parent = temporary.appendingPathComponent("sources").resolvingSymlinksInPath()
+        var prefix: UInt32 = 2_166_136_261
+        for byte in (parent.path + "/").utf8 { prefix = (prefix ^ UInt32(byte)) &* 16_777_619 }
+        var seen: [UInt32: String] = [:]
+        var collision: (String, String)?
+        // Find names within this test's owned temporary root; never create the
+        // review-only paths or the thousands of candidate directories.
+        for index in 0..<1_000_000 {
+            let name = String(UInt64(index) &* 0x9e3779b97f4a7c15, radix: 16)
+            var digest = prefix
+            for byte in (name + "/MyApp").utf8 { digest = (digest ^ UInt32(byte)) &* 16_777_619 }
+            if let other = seen.updateValue(name, forKey: digest) { collision = (other, name); break }
+        }
+        let names = try #require(collision)
+        let first = parent.appendingPathComponent(names.0).appendingPathComponent("MyApp")
+        let second = parent.appendingPathComponent(names.1).appendingPathComponent("MyApp")
+        for input in [first, second] { try FileManager.default.createDirectory(at: input, withIntermediateDirectories: true) }
+        let one = RunLogs(project: first, temporaryDirectory: temporary)
+        let two = RunLogs(project: second, temporaryDirectory: temporary)
+        try #require(one.directory == two.directory)
+        #expect(try FolderIdentity(directory: first) != FolderIdentity(directory: second))
+
+        #expect(try one.derivedDataDirectory != two.derivedDataDirectory)
+
+        #expect(!FileManager.default.fileExists(atPath: one.directory.path))
+    }
+
+    @Test("DerivedData needs a current real input directory while legacy logs remain available", arguments: ["missing", "file", "removed"])
+    func derivedDataRequiresInput(_ mode: String) throws {
+        let temporary = try temporaryDirectory()
+        let project = temporary.appendingPathComponent("source/MyApp")
+        if mode == "file" {
+            try FileManager.default.createDirectory(at: project.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try Data("preserve".utf8).write(to: project)
+        } else if mode == "removed" {
+            try FileManager.default.createDirectory(at: project, withIntermediateDirectories: true)
+        }
+        let logs = RunLogs(project: project, temporaryDirectory: temporary)
+        if mode == "removed" { try FileManager.default.removeItem(at: project) }
+
+        #expect(throws: (any Error).self) { try logs.derivedDataDirectory }
+
+        #expect(logs.write("legacy log", to: "build.log") != nil)
+        if mode == "file" { #expect(try String(contentsOf: project, encoding: .utf8) == "preserve") }
+    }
+
     @Test("DerivedData stays outside inputs, separates checkouts, and merges a project alias without writes")
     func derivedDataIdentity() throws {
         let temporary = try temporaryDirectory()
@@ -34,16 +83,19 @@ struct RunLogsTests {
     }
 
     @Test("a DerivedData parent or output link cannot redirect Xcode, including dangling links",
-        arguments: ["mobile", "input", "output"], [false, true])
+        arguments: ["mobile", "input", "folder", "output"], [false, true])
     func derivedDataSymlink(component: String, dangling: Bool) throws {
         let temporary = try temporaryDirectory()
-        let logs = RunLogs(project: URL(fileURLWithPath: "/a/MyApp"), temporaryDirectory: temporary)
+        let project = temporary.appendingPathComponent("source/MyApp")
+        try FileManager.default.createDirectory(at: project, withIntermediateDirectories: true)
+        let logs = RunLogs(project: project, temporaryDirectory: temporary)
+        let output = try logs.derivedDataDirectory
         let target = temporary.appendingPathComponent("preserved")
         try FileManager.default.createDirectory(at: target, withIntermediateDirectories: true)
         let marker = target.appendingPathComponent("keep")
         try Data("untouched".utf8).write(to: marker)
         let link = component == "mobile" ? logs.directory.deletingLastPathComponent()
-            : component == "input" ? logs.directory : logs.url("DerivedData")
+            : component == "input" ? logs.directory : component == "folder" ? output.deletingLastPathComponent() : output
         try FileManager.default.createDirectory(at: link.deletingLastPathComponent(), withIntermediateDirectories: true)
         let destination = dangling ? target.appendingPathComponent("missing") : target
         try FileManager.default.createSymbolicLink(at: link, withDestinationURL: destination)
@@ -54,12 +106,15 @@ struct RunLogsTests {
         #expect(try FileManager.default.destinationOfSymbolicLink(atPath: link.path) == destination.path)
     }
 
-    @Test("a regular file in the Xcode output path is preserved", arguments: ["mobile", "input", "output"])
+    @Test("a regular file in the Xcode output path is preserved", arguments: ["mobile", "input", "folder", "output"])
     func derivedDataFile(component: String) throws {
         let temporary = try temporaryDirectory()
-        let logs = RunLogs(project: URL(fileURLWithPath: "/a/MyApp"), temporaryDirectory: temporary)
+        let project = temporary.appendingPathComponent("source/MyApp")
+        try FileManager.default.createDirectory(at: project, withIntermediateDirectories: true)
+        let logs = RunLogs(project: project, temporaryDirectory: temporary)
+        let output = try logs.derivedDataDirectory
         let file = component == "mobile" ? logs.directory.deletingLastPathComponent()
-            : component == "input" ? logs.directory : logs.url("DerivedData")
+            : component == "input" ? logs.directory : component == "folder" ? output.deletingLastPathComponent() : output
         try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
         try Data("preserve".utf8).write(to: file)
 

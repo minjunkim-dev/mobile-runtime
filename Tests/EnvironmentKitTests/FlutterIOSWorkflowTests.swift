@@ -36,7 +36,7 @@ struct FlutterIOSWorkflowTests {
         #expect(build.arguments.contains("ONLY_ACTIVE_ARCH=YES"))
         #expect(!build.arguments.contains { $0.hasPrefix("ARCHS=") })
         #expect(build.executable == "/usr/bin/sandbox-exec")
-        let output = RunLogs(project: f.app).url("DerivedData").resolvingSymlinksInPath().path
+        let output = try RunLogs(project: f.app).derivedDataDirectory.path
         for command in runner.commands where command.arguments.last == "build" || command.arguments.contains("-showBuildSettings") {
             let index = try #require(command.arguments.firstIndex(of: "-derivedDataPath"))
             #expect(command.arguments[index + 1] == output)

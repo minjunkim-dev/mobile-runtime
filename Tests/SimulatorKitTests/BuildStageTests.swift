@@ -46,14 +46,14 @@ private func target(_ repo: FixtureRepo, workspace: Bool) -> String {
         : "-project \(repo.url("ios/MyApp.xcodeproj").path)"
 }
 
-private func buildCommand(_ repo: FixtureRepo, workspace: Bool, scheme: String) -> String {
+private func buildCommand(_ repo: FixtureRepo, workspace: Bool, scheme: String) throws -> String {
     "xcodebuild \(target(repo, workspace: workspace)) -scheme \(scheme) -configuration Debug "
-        + "-destination platform=iOS Simulator,id=\(udid) -derivedDataPath \(RunLogs(project: repo.root).url("DerivedData").resolvingSymlinksInPath().path) build"
+        + "-destination platform=iOS Simulator,id=\(udid) -derivedDataPath \(try RunLogs(project: repo.root).derivedDataDirectory.path) build"
 }
 
-private func settingsCommand(_ repo: FixtureRepo, workspace: Bool, scheme: String) -> String {
+private func settingsCommand(_ repo: FixtureRepo, workspace: Bool, scheme: String) throws -> String {
     "xcodebuild -showBuildSettings -json \(target(repo, workspace: workspace)) -scheme \(scheme) "
-        + "-configuration Debug -destination platform=iOS Simulator,id=\(udid) -derivedDataPath \(RunLogs(project: repo.root).url("DerivedData").resolvingSymlinksInPath().path)"
+        + "-configuration Debug -destination platform=iOS Simulator,id=\(udid) -derivedDataPath \(try RunLogs(project: repo.root).derivedDataDirectory.path)"
 }
 
 private func runner(
@@ -67,8 +67,8 @@ private func runner(
         "xcode-select -p": .ok(developerDirectory + "\n"),
         "xcodebuild -version": .ok("Xcode 26.6\nBuild version 17F113\n"),
         "xcodebuild -list -json -project \(repo.url("ios/MyApp.xcodeproj").path)": .ok(schemeList(schemes)),
-        buildCommand(repo, workspace: workspace, scheme: scheme): build,
-        settingsCommand(repo, workspace: workspace, scheme: scheme): .ok(
+        try buildCommand(repo, workspace: workspace, scheme: scheme): build,
+        try settingsCommand(repo, workspace: workspace, scheme: scheme): .ok(
             try Fixture.text("xcodebuild-showbuildsettings.stdout.json")
         ),
     ])
@@ -143,7 +143,7 @@ struct BuildStageTests {
         let outcome = try await run(repo, runner, context: &context)
 
         #expect(outcome.status == .pass)
-        #expect(runner.log.first(matching: buildCommand(repo, workspace: true, scheme: "MyApp")) != nil)
+        #expect(runner.log.first(matching: try buildCommand(repo, workspace: true, scheme: "MyApp")) != nil)
         // The scheme list is still read off the project: a workspace answers with
         // every Pod scheme it contains.
         #expect(
@@ -166,8 +166,8 @@ struct BuildStageTests {
             "xcodebuild -version": .ok("Xcode 26.6\nBuild version 17F113\n"),
             "xcodebuild -list -json -workspace \(repo.url("ios/MyApp.xcworkspace").path)":
                 .ok(schemeList(["MyApp"], container: "workspace")),
-            buildCommand(repo, workspace: true, scheme: "MyApp"): .ok("** BUILD SUCCEEDED **\n"),
-            settingsCommand(repo, workspace: true, scheme: "MyApp"): .ok(
+            try buildCommand(repo, workspace: true, scheme: "MyApp"): .ok("** BUILD SUCCEEDED **\n"),
+            try settingsCommand(repo, workspace: true, scheme: "MyApp"): .ok(
                 try Fixture.text("xcodebuild-showbuildsettings.stdout.json")
             ),
         ])
@@ -177,7 +177,7 @@ struct BuildStageTests {
 
         #expect(outcome.status == .pass)
         #expect(
-            runner.log.first(matching: buildCommand(repo, workspace: true, scheme: "MyApp")) != nil
+            runner.log.first(matching: try buildCommand(repo, workspace: true, scheme: "MyApp")) != nil
         )
     }
 
@@ -190,7 +190,7 @@ struct BuildStageTests {
         let outcome = try await run(repo, runner, context: &context)
 
         #expect(outcome.status == .pass)
-        #expect(runner.log.first(matching: buildCommand(repo, workspace: false, scheme: "MyApp")) != nil)
+        #expect(runner.log.first(matching: try buildCommand(repo, workspace: false, scheme: "MyApp")) != nil)
     }
 
     /// Zero-config: one scheme is not a choice, so nothing has to be declared.
@@ -214,7 +214,7 @@ struct BuildStageTests {
         let outcome = try await run(repo, runner, context: &context)
 
         #expect(outcome.detail == "MyApp-tvOS")
-        #expect(runner.log.first(matching: buildCommand(repo, workspace: false, scheme: "MyApp-tvOS")) != nil)
+        #expect(runner.log.first(matching: try buildCommand(repo, workspace: false, scheme: "MyApp-tvOS")) != nil)
     }
 
     /// The other half of the cross: the two decisions — what to point xcodebuild at,
@@ -231,7 +231,7 @@ struct BuildStageTests {
         let outcome = try await run(repo, runner, context: &context)
 
         #expect(outcome.detail == "MyApp-tvOS")
-        #expect(runner.log.first(matching: buildCommand(repo, workspace: true, scheme: "MyApp-tvOS")) != nil)
+        #expect(runner.log.first(matching: try buildCommand(repo, workspace: true, scheme: "MyApp-tvOS")) != nil)
     }
 
     /// Two workspaces is not "no workspace". Falling through to the project would
@@ -314,10 +314,10 @@ struct BuildStageTests {
         var context = afterDevice()
 
         try await run(repo, runner, context: &context)
-        let build = try #require(runner.log.first(matching: buildCommand(repo, workspace: true, scheme: "MyApp")))
+        let build = try #require(runner.log.first(matching: try buildCommand(repo, workspace: true, scheme: "MyApp")))
 
         #expect(build.arguments.contains("-derivedDataPath"))
-        let settings = try #require(runner.log.first(matching: settingsCommand(repo, workspace: true, scheme: "MyApp")))
+        let settings = try #require(runner.log.first(matching: try settingsCommand(repo, workspace: true, scheme: "MyApp")))
         let index = try #require(build.arguments.firstIndex(of: "-derivedDataPath"))
         #expect(settings.arguments.contains(build.arguments[index + 1]))
         #expect(build.timeout == nil)
@@ -330,10 +330,11 @@ struct BuildStageTests {
         let runner = try runner(repo, workspace: true, schemes: ["MyApp"], scheme: "MyApp")
         let temporary = try repo.directory("outputs")
         let logs = RunLogs(project: repo.root, temporaryDirectory: temporary)
-        try FileManager.default.createDirectory(at: logs.directory, withIntermediateDirectories: true)
+        let output = try logs.derivedDataDirectory
+        try FileManager.default.createDirectory(at: output.deletingLastPathComponent(), withIntermediateDirectories: true)
         let outside = try FixtureRepo()
         try outside.write("keep", "preserve")
-        try FileManager.default.createSymbolicLink(at: logs.url("DerivedData"), withDestinationURL: outside.root)
+        try FileManager.default.createSymbolicLink(at: output, withDestinationURL: outside.root)
         var context = afterDevice()
 
         await #expect(throws: (any Error).self) {
@@ -345,6 +346,22 @@ struct BuildStageTests {
         #expect(context.product == nil)
     }
 
+    @Test("an unavailable input folder identity stops before any Xcode command")
+    func unavailableDerivedDataIdentity() async throws {
+        let repo = try project(workspace: true)
+        let runner = try runner(repo, workspace: true, schemes: ["MyApp"], scheme: "MyApp")
+        let logs = RunLogs(project: repo.url("missing-input"), temporaryDirectory: try repo.directory("outputs"))
+        var context = afterDevice()
+
+        await #expect(throws: (any Error).self) {
+            try await run(repo, runner, context: &context, logs: logs)
+        }
+
+        #expect(runner.log.all.isEmpty)
+        #expect(context.product == nil)
+        #expect(!FileManager.default.fileExists(atPath: logs.directory.path))
+    }
+
     @Test("independent inputs build and select products from their own Xcode output trees")
     func independentDerivedData() async throws {
         let first = try project(workspace: true)
@@ -354,7 +371,7 @@ struct BuildStageTests {
             let output = try RunLogs(project: repo.root).derivedDataDirectory
             let productsDirectory = output.appendingPathComponent("Build/Products/Debug-iphonesimulator").path
             var runner = try runner(repo, workspace: true, schemes: ["MyApp"], scheme: "MyApp")
-            runner.responses[settingsCommand(repo, workspace: true, scheme: "MyApp")] = .ok(
+            runner.responses[try settingsCommand(repo, workspace: true, scheme: "MyApp")] = .ok(
                 #"[{"target":"MyApp","buildSettings":{"BUILT_PRODUCTS_DIR":"\#(productsDirectory)","FULL_PRODUCT_NAME":"MyApp.app","PRODUCT_BUNDLE_IDENTIFIER":"com.example.MyApp"}}]"#)
             var context = afterDevice()
 
@@ -416,7 +433,7 @@ struct BuildStageTests {
 
         let file = logs.url("build.log")
         #expect(error?.remediation.summary.contains(file.path) == true)
-        let build = try #require(runner.log.first(matching: buildCommand(repo, workspace: false, scheme: "MyApp")))
+        let build = try #require(runner.log.first(matching: try buildCommand(repo, workspace: false, scheme: "MyApp")))
         #expect(build.output == .streamed(to: file))
         // Pasteable as printed: the destination carries a space, and a line that has
         // to be repaired before it runs is not a remediation.
@@ -601,7 +618,7 @@ struct BuildStageTests {
     func ambiguousProduct() async throws {
         let repo = try project(workspace: false)
         var runner = try runner(repo, workspace: false, schemes: ["MyApp"], scheme: "MyApp")
-        runner.responses[settingsCommand(repo, workspace: false, scheme: "MyApp")] = .ok(
+        runner.responses[try settingsCommand(repo, workspace: false, scheme: "MyApp")] = .ok(
             buildSettings(("App", "App.app"), ("TestHost", "TestHost.app"))
         )
         var context = afterDevice()
@@ -618,7 +635,7 @@ struct BuildStageTests {
     func productByTargetName() async throws {
         let repo = try project(workspace: false)
         var runner = try runner(repo, workspace: false, schemes: ["MyApp"], scheme: "MyApp")
-        runner.responses[settingsCommand(repo, workspace: false, scheme: "MyApp")] = .ok(
+        runner.responses[try settingsCommand(repo, workspace: false, scheme: "MyApp")] = .ok(
             buildSettings(("TestHost", "TestHost.app"), ("MyApp", "MyApp.app"))
         )
         var context = afterDevice()

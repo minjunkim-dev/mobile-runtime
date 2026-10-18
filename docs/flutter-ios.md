@@ -68,6 +68,9 @@ Flutter module의 `.ios` host를 app host로 자동 변환하지 않는다.
 기존 iOS device·build·install·launch stage와 `ProcessRunner`를 사용한다.
 build는 선택한 concrete Simulator destination과 `ONLY_ACTIVE_ARCH=YES`를 사용한다.
 build와 관련 settings 조회는 같은 canonical input의 `RunLogs/DerivedData`를 사용한다.
+산출물은 기존 로그 폴더 아래 `folder-<volume>-<file>/DerivedData`로 분리한다.
+현재 input의 폴더 lease identity를 읽지 못하면 도구 실행 전에 중단한다.
+기존 로그 digest가 충돌해도 서로 다른 실제 input은 같은 산출물을 쓰지 않는다.
 독립 입력은 output 경로를 분리한다. 기존 output 부모나 output이 symlink·일반 파일이면 중단한다.
 선택용 settings 조회가 folder lease보다 먼저 실행되는 기존 순서는 유지한다.
 외부 경로 교체의 TOCTOU·프로젝트 output override·전체 Xcode cache 격리는 이 검사로 입증하지 않는다.

@@ -9,7 +9,7 @@ struct NativeIOSPreparationReadinessTests {
     @Test("an exact reused native runtime completes setup while doctor keeps its matrix unknown")
     func exactRuntimeReadiness() async throws {
         let fixture = try Fixture()
-        let runner = fixture.runner()
+        let runner = try fixture.runner()
         let doctor = try await EnvironmentInspection.run(input: fixture.input, runner: runner)
         #expect(doctor.report.checks.first { $0.id == "simulator.runtime" }?.status == .unknown)
         let planned = await PreparationExecution.run(input: fixture.input, planOnly: true, runner: runner)
@@ -37,7 +37,7 @@ struct NativeIOSPreparationReadinessTests {
     ])
     func incompleteRuntimeReadiness(missing: String) async throws {
         let fixture = try Fixture()
-        let runner = fixture.runner(missing: missing)
+        let runner = try fixture.runner(missing: missing)
         let planned = await PreparationExecution.run(input: fixture.input, planOnly: true, runner: runner)
         let plan = try #require(planned.plan)
         #expect(plan.resources?.contains { $0.kind == .runtime && $0.origin == .reused } != true)
@@ -73,7 +73,7 @@ struct NativeIOSPreparationReadinessTests {
             try repo.write("mobile.yml", "ios:\n  scheme: App\n")
         }
 
-        func runner(missing: String? = nil) -> FakeProcessRunner {
+        func runner(missing: String? = nil) throws -> FakeProcessRunner {
             let container = "-project \(repo.url("App.xcodeproj").path) -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile"
             let build = missing == "missingBuild" ? "" : ",\"buildversion\":\"24A434\""
             let architecture = missing == "missingArchitecture" ? "" : ",\"supportedArchitectures\":[\"arm64\"]"
@@ -85,7 +85,7 @@ struct NativeIOSPreparationReadinessTests {
                 "xcodebuild -version": .ok("Xcode 27.0\nBuild version 18A100"),
                 "xcodebuild -checkFirstLaunchStatus": .ok(""),
                 "xcodebuild -list -json \(container)": .ok(#"{"project":{"schemes":["App"],"configurations":["Debug","Release"]}}"#),
-                "xcodebuild -showBuildSettings -json \(container) -scheme App -configuration Debug -destination generic/platform=iOS Simulator -derivedDataPath \(RunLogs(project: repo.root).url("DerivedData").resolvingSymlinksInPath().path)": .ok(#"[{"target":"App","buildSettings":{"CONFIGURATION":"Debug","PLATFORM_NAME":"iphonesimulator","FULL_PRODUCT_NAME":"App.app"\#(deployment)}}]"#),
+                "xcodebuild -showBuildSettings -json \(container) -scheme App -configuration Debug -destination generic/platform=iOS Simulator -derivedDataPath \(try RunLogs(project: repo.root).derivedDataDirectory.path)": .ok(#"[{"target":"App","buildSettings":{"CONFIGURATION":"Debug","PLATFORM_NAME":"iphonesimulator","FULL_PRODUCT_NAME":"App.app"\#(deployment)}}]"#),
                 "xcrun simctl list runtimes -j": .ok(runtime),
                 "xcrun simctl list devices -j": .ok(devices),
                 "xcrun simctl --set \(deviceSet.path) list devices -j": .ok(devices),

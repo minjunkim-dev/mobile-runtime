@@ -175,6 +175,9 @@ build Stage가 확정해 install·launch에 넘기는 `.app` 경로와 bundle id
 
 iOS build와 관련 `-showBuildSettings`는 같은 input별 `RunLogs/DerivedData`를
 `-derivedDataPath`로 명시한다. 선택용 build settings 조회도 같은 경로를 쓴다.
+기존 로그 폴더 아래 `folder-<volume>-<file>/DerivedData`로 실제 폴더 identity를 분리한다.
+폴더 lease와 같은 volume/inode를 사용한다. 현재 input identity를 읽지 못하면 도구 실행 전에 중단한다.
+기존 로그·실행 기록 경로는 유지한다. 기존 32-bit 로그 digest의 충돌을 산출물 identity로 사용하지 않는다.
 독립 clone·worktree의 산출물을 분리한다. 같은 실제 폴더의 symlink는 같은 경로를 쓴다.
 기존 output 부모나 output 자체가 symlink·일반 파일이면 중단한다.
 이 경로 검사는 외부 도구 실행 중 경로 교체를 원자적으로 막지 않는다.
