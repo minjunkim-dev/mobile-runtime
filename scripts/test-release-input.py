@@ -260,12 +260,13 @@ class ReleaseInputTests(unittest.TestCase):
             archive.with_suffix(".gz.sha256").write_text(f"{checksum}  {archive.name}\n")
             app = root / "Runstir.app"
             for path in [app / "Contents/MacOS", app / "Contents/Resources",
-                         app / "mobile_Core.bundle", app / "mobile_AndroidKit.bundle"]:
+                         app / "Contents/Resources/mobile_Core.bundle",
+                         app / "Contents/Resources/mobile_AndroidKit.bundle"]:
                 path.mkdir(parents=True, exist_ok=True)
             (app / "Contents/MacOS/Runstir").write_text("fixture, never executed")
             for resource in ["mobile_Core.bundle/matrix.json",
                              "mobile_AndroidKit.bundle/mobile-doctor.gradle"]:
-                (app / resource).write_text("fixture")
+                (app / "Contents/Resources" / resource).write_text("fixture")
             (app / "Contents/Resources/BUILD.json").write_text(json.dumps(build))
             (app / "Contents/Info.plist").write_bytes(plistlib.dumps(
                 {"RunstirProductVersion": version, "CFBundleShortVersionString": "1.0.0"}))
@@ -295,14 +296,36 @@ class ReleaseInputTests(unittest.TestCase):
                 ["bash", str(scripts / "verify-candidate.sh"), str(output)], env=env,
                 capture_output=True, text=True, timeout=15,
             )
-            self.assertEqual(candidate_result.returncode, 0, candidate_result.stderr)
+            with self.subTest(layout="Contents/Resources"):
+                self.assertEqual(candidate_result.returncode, 0, candidate_result.stderr)
+            bundles = ["mobile_Core.bundle", "mobile_AndroidKit.bundle"]
+            for layout in ["legacy-app-root", "extra-top-level"]:
+                with self.subTest(layout=layout):
+                    if layout == "legacy-app-root":
+                        for bundle in bundles:
+                            (app / "Contents/Resources" / bundle).rename(app / bundle)
+                    else:
+                        (app / "unexpected.txt").write_text("unexpected app-root content")
+                    try:
+                        result = subprocess.run(
+                            ["bash", str(scripts / "verify-candidate.sh"), str(output)], env=env,
+                            capture_output=True, text=True, timeout=15,
+                        )
+                        self.assertNotEqual(result.returncode, 0)
+                        self.assertIn("Unexpected GUI app top-level content", result.stderr)
+                    finally:
+                        if layout == "legacy-app-root":
+                            for bundle in bundles:
+                                (app / bundle).rename(app / "Contents/Resources" / bundle)
+                        else:
+                            (app / "unexpected.txt").unlink()
             original_archive = archive.read_bytes()
             for product, missing in [("CLI", "mobile"),
                                      ("CLI", "mobile_Core.bundle/matrix.json"),
                                      ("CLI", "mobile_AndroidKit.bundle/mobile-doctor.gradle"),
                                      ("GUI", "Contents/MacOS/Runstir"),
-                                     ("GUI", "mobile_Core.bundle/matrix.json"),
-                                     ("GUI", "mobile_AndroidKit.bundle/mobile-doctor.gradle")]:
+                                     ("GUI", "Contents/Resources/mobile_Core.bundle/matrix.json"),
+                                     ("GUI", "Contents/Resources/mobile_AndroidKit.bundle/mobile-doctor.gradle")]:
                 with self.subTest(product=product, missing=missing):
                     path = app / missing
                     if product == "CLI":

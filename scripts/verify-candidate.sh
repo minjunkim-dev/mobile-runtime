@@ -56,6 +56,8 @@ root, output, scratch = map(Path, sys.argv[1:4])
 manifest = json.loads((output / 'CANDIDATE.json').read_text())
 cli = scratch / f'runstir-{sys.argv[4]}-macos-arm64'
 app = scratch / 'mount/Runstir.app'
+if {path.name for path in app.iterdir()} != {'Contents'}:
+    raise SystemExit('Unexpected GUI app top-level content; expected only Contents')
 gui_build = json.loads((app / 'Contents/Resources/BUILD.json').read_text())
 cli_build = json.loads((cli / 'BUILD.json').read_text())
 runpy.run_path(str(root / 'scripts/validate-release-input.py'))['validate_candidate'](
@@ -68,7 +70,7 @@ if (app / 'Contents/MacOS/mobile').exists():
     raise SystemExit('GUI must work independently of the CLI')
 if not (cli / 'mobile').is_file() or not os.access(cli / 'mobile', os.X_OK):
     raise SystemExit('Missing CLI executable')
-for label, product in [('CLI', cli), ('GUI', app)]:
+for label, product in [('CLI', cli), ('GUI', app / 'Contents/Resources')]:
     for bundle, name in [('mobile_Core.bundle', 'matrix.json'),
                          ('mobile_AndroidKit.bundle', 'mobile-doctor.gradle')]:
         resource = product / bundle
