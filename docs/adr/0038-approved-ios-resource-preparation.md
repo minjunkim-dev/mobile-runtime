@@ -2,7 +2,7 @@
 
 날짜: 2026-10-16
 상태: provider 구현. 공통 setup 연결, 실제 CLI·GUI 검증과 최종 승인은 별도다.
-관련: #199, #206, #202, #204, ADR-0009, ADR-0035, ADR-0036
+관련: #199, #206, #202, #204, #205, ADR-0009, ADR-0035, ADR-0036
 
 ## 준비 경계
 
@@ -28,6 +28,9 @@ archive 필드를 가짜 값으로 채우지 않는다. `ManagedInstallation.ios
 공식 `xcodebuild -downloadPlatform iOS -buildVersion <OS> -architectureVariant arm64` 경로를 사용한다.
 명령 직전에 선택한 Xcode identity·초기 설정·catalog·기존 Simulator 상태를 다시 확인한다.
 명령 뒤에는 실제 runtime OS build·architecture·availability를 대조한다.
+runtime이 없어서 native 지원 기기를 관측할 수 없으면 runtime 설치만 제안한다.
+설치 뒤에는 native 지원 기기를 관측해 새 Simulator 생성 계획을 만든다.
+새 생성 계획은 새 승인을 요구한다. 이전 runtime 설치 승인을 생성 승인으로 확대하지 않는다.
 이 API에는 asset UUID를 직접 전달하는 인자가 확인되지 않았다.
 따라서 이 경로를 payload bytes의 원자적 고정이나 checksum 검증으로 표시하지 않는다.
 실제 검증에서 정확한 artifact 보장을 확인하지 못하면 그 조건은 manual/inconclusive다.
@@ -38,7 +41,8 @@ archive 필드를 가짜 값으로 채우지 않는다. `ManagedInstallation.ios
 runtime import는 관측한 모든 기존 device ID의 lease와 global runtime lease를 함께 요구한다.
 기존 device는 모두 `Shutdown`이어야 한다. 다른 Xcode·Simulator 작업도 없어야 한다.
 설치한 exact runtime을 참조하는 기존 기기는 같은 UDID·이름·type·runtime·state를 유지한 `unavailable → available` 전환만 허용한다.
-이 기기를 재사용하면 불필요해진 승인 create를 실행하지 않는다. 결과는 재사용을 기록하며 새 생성을 완료했다고 표시하지 않는다.
+설치 뒤 이 기기를 재사용하면 새 생성 단계가 필요하지 않다.
+결과는 재사용을 기록하며 새 생성을 완료했다고 표시하지 않는다.
 다른 자원·소스·승인 조건의 변경에는 기존 재확인과 재승인 검사를 그대로 적용한다.
 Simulator 생성은 같은 global runtime lease와 실제 `Devices` parent lease를 함께 사용한다.
 서로 다른 기존 device의 일반 `up`을 global exclusive lease로 직렬화하지 않는다.
@@ -47,6 +51,11 @@ Simulator 생성은 같은 global runtime lease와 실제 `Devices` parent lease
 ## Simulator 생성과 복구
 
 선택한 Xcode의 device type OS 범위와 실제 runtime identity를 사용한다.
+선택한 runtime의 native `supportedDeviceTypes`에 있는 type만 생성 후보로 사용한다.
+목록이 없거나 비었거나 잘못된 identity를 포함하면 생성은 수동 단계로 남긴다.
+이 목록의 오류만으로 기존 runtime·기기의 재사용 관측을 실패시키지 않는다.
+기본 선택은 기존 iPhone selector를 사용한다.
+명시적으로 선택한 iPad도 native 지원 목록과 OS 범위에 맞으면 생성할 수 있다.
 생성 이름은 기존 iPhone selector가 읽을 수 있는 `iPhone … - Runstir - iOS …` 형식이다.
 동일 이름의 기존 기기를 덮어쓰거나 삭제하지 않는다.
 `simctl create`가 반환한 UDID와 실제 기기의 이름·type·runtime·`Shutdown` 상태를 대조한다.
@@ -77,6 +86,9 @@ provider·parser 검사는 `FakeProcessRunner`와 소유 임시 fixture를 사�
 AC02·AC03·AC06의 실제 준비와 기존 자원 보존은 별도 실측을 요구한다.
 availability 복구 수정의 행동 검사는 fake를 사용한다. 수정 후보의 실제 CLI·GUI 측정은 아직 별도 게이트다.
 정확한 runtime availability 관측은 다른 device의 전체 보존이나 앱 실행 성공을 입증하지 않는다.
+2026-10-18의 [#205 통합 실측 실패](../evidence/205/native-compatibility-121f0db/README.md)는
+OS 범위만 맞는 type도 특정 runtime에서는 생성할 수 없음을 확인했다.
+수정 후보의 실제 생성과 새 승인 흐름은 별도 결과로 기록한다.
 
 공식 근거:
 

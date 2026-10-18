@@ -30,6 +30,7 @@ public struct WorkflowContext: Sendable {
         runner: any ProcessRunner,
         includeProjectEnvironment: Bool = true,
         includeRuntimeSDKTools: Bool = true,
+        projectEnvironmentOverride: ProjectExecutionEnvironment? = nil,
         selectedConfig: ConfigContext? = nil,
         selectedConfiguration: String? = nil
     ) async -> WorkflowContext {
@@ -42,9 +43,8 @@ public struct WorkflowContext: Sendable {
         var projectEnvironment: ProjectExecutionEnvironment?
         var toolObservationChecks: [any Check] = []
         if includeProjectEnvironment, let anchor {
-            projectEnvironment = await ProjectExecutionEnvironment.resolve(
-                anchor: anchor, hostRunner: runner
-            )
+            if let projectEnvironmentOverride { projectEnvironment = projectEnvironmentOverride }
+            else { projectEnvironment = await ProjectExecutionEnvironment.resolve(anchor: anchor, hostRunner: runner) }
             if let current = projectEnvironment, anchor.framework != .flutter {
                 do {
                     let requirements = try await ToolRequirements.resolve(anchor: anchor, platforms: [platform], runner: current.runner)
@@ -102,7 +102,9 @@ public struct WorkflowContext: Sendable {
         switch platform {
         case .ios:
             let projectChecks = if let anchor, let projectEnvironment {
-                projectEnvironment.checks(anchor: anchor, context: config)
+                projectEnvironment.checks(anchor: anchor, context: config).filter {
+                    anchor.framework != .flutter || $0.id != "project.detected"
+                }
             } else {
                 [any Check]()
             }

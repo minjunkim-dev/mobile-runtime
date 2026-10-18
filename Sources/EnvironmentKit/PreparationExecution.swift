@@ -146,14 +146,14 @@ public enum PreparationExecution {
                 result.operation.nextAction = "Review and approve the new plan-id."
                 return finish(result, events)
             }
-            guard let anchor = prepared.anchor, let context = prepared.context else {
+            guard let anchor = prepared.anchor, let dependencyRunner = prepared.dependencyRunner else {
                 result.operation.state = "waiting-manual"
                 result.operation.nextAction = "Finish the listed provider steps, then inspect again."
                 return finish(result, events)
             }
-            let folder = try FolderIdentity(directory: anchor.workspaceRoot?.directory ?? anchor.directory)
+            let folder = try FolderIdentity(directory: prepared.root)
             // Separate projects can reuse one global Bundle destination.
-            let destinations = actions.filter { $0.id == "dependencies.gems" }.map { ResourceKey.destination(URL(fileURLWithPath: $0.target)) }
+            let destinations = actions.filter { ["dependencies.gems", "dependencies.flutter"].contains($0.id) }.map { ResourceKey.destination(URL(fileURLWithPath: $0.target)) }
             let installationTargets = installations.flatMap { $0.installation?.resourceKeys ?? [] }
             let lease = try leases.acquire([.folder(folder)] + destinations + installationTargets,
                 owner: LeaseOwner(operationId: result.operation.id, command: "setup", project: folder.path))
@@ -237,15 +237,26 @@ public enum PreparationExecution {
             }
             if !actions.isEmpty {
                 result.operation.state = "running"
-                let guarded = PreparationRunner(base: context.projectRunner, plan: plan,
-                    root: prepared.root, files: try sourceFiles(prepared.root), actions: actions, events: events) {
+                let guarded = PreparationRunner(base: dependencyRunner, plan: plan,
+                    root: prepared.root, files: try sourceFiles(prepared.root, excluding: actions.filter { $0.id == "dependencies.flutter" }.map { URL(fileURLWithPath: $0.target) }),
+                    excluded: actions.filter { $0.id == "dependencies.flutter" }.map { URL(fileURLWithPath: $0.target) }, actions: actions, events: events) {
                         try await inspect(input, runner: host).plan
                     }
                 let includePods = actions.contains { $0.id == "dependencies.pods" }
                 var stageContext = UpContext()
                 do {
-                    _ = try await DependenciesStage(anchor: anchor, runner: guarded,
-                        includePods: includePods, forceLockedAlignment: true).run(&stageContext)
+                    if anchor.framework == .flutter {
+                        for command in prepared.dependencyCommands {
+                            let output = try await guarded.run(command)
+                            guard output.terminationStatus.isSuccess else {
+                                throw DomainError(summary: "Locked Flutter preparation command failed",
+                                    remediation: Remediation(summary: "Preserve completed resources and inspect the locked dependency command before re-planning."))
+                            }
+                        }
+                    } else {
+                        _ = try await DependenciesStage(anchor: anchor, runner: guarded,
+                            includePods: includePods, forceLockedAlignment: true).run(&stageContext)
+                    }
                     result.operation.completed += guarded.completed
                 } catch {
                     result.operation.completed += guarded.completed
@@ -333,6 +344,9 @@ public enum PreparationExecution {
             throw DomainError(summary: "Installation conditions changed before the next package commit",
                 remediation: Remediation(summary: "Preserve completed packages. Inspect the remaining plan and approve it again."))
         }
+        let inspected = try sourceFiles(root, excluding: excluding)
+        let changedDuringInspection = Set(inspected.keys).union(files.keys).filter { inspected[$0] != files[$0] }.sorted()
+        guard changedDuringInspection.isEmpty else { throw PreparationSourceChanged(files: changedDuringInspection) }
     }
 
     private struct Inspection {
@@ -340,6 +354,8 @@ public enum PreparationExecution {
         var selection: ProjectSelection?
         var anchor: ProjectAnchor?
         var context: WorkflowContext?
+        var dependencyRunner: (any ProcessRunner)?
+        var dependencyCommands: [ProcessCommand] = []
         var root: URL
         var installationActions: [String: InstallationAction] = [:]
         var resources: [IOSPreparationResource] = []
@@ -347,7 +363,7 @@ public enum PreparationExecution {
 
     private static func inspect(_ input: ProjectInspectionInput, runner: any ProcessRunner, excluding: [URL] = []) async throws -> Inspection {
         try Task.checkCancellation()
-        let detected = try ProjectInspectionInput(directory: input.directory, environment: input.environment, app: input.app).selection()
+        let detected = try ProjectInspectionInput(directory: input.directory, environment: input.environment, app: input.app, entrypoint: input.entrypoint).selection()
         // Setup selects an app; both platforms remain in its preparation scope.
         let selection = ProjectSelection(directory: detected.directory, candidates: detected.candidates,
             selected: detected.selected, platform: nil,
@@ -356,16 +372,22 @@ public enum PreparationExecution {
         var value = Inspection(selection: selection, root: root)
         guard selection.error == nil, let selected = selection.selected,
               let anchor = ProjectAnchor.detect(candidate: selected) else {
-            // The plan contract can represent Flutter while its execution provider is pending.
+            // Invalid Flutter declarations remain an explicit migration; no tool is executed.
             if selection.candidates.isEmpty, FileManager.default.fileExists(atPath: root.appendingPathComponent("pubspec.yaml").path) {
                 let step = PreparationStep(id: "provider.flutter", platform: nil, kind: "provider", target: root.path,
-                    observed: "Flutter preparation provider is not implemented in this ticket", required: "Pinned Flutter SDK and locked dependencies",
+                    observed: "Flutter declarations do not identify a supported app", required: "Pinned Flutter SDK and locked dependencies",
                     source: CheckSource(tier: 1, origin: "pubspec.yaml"), command: nil,
-                    remediation: Remediation(summary: "Complete the Flutter provider and re-plan. No tool installation occurred."))
+                    remediation: Remediation(summary: "Supply valid Flutter declarations and an existing entrypoint, then re-plan. No tool installation occurred."))
                 value.plan = try makePlan(project: selection.directory, app: ".", kind: "flutter", platforms: [.ios, .android].map {
                     PreparationPlatform(platform: $0, state: "waiting-manual", checks: [])
                 }, steps: [step], files: approvalFiles(root, excluding: excluding), installed: [:])
             }
+            return value
+        }
+        if input.entrypoint != nil, anchor.framework != .flutter {
+            value.selection = ProjectSelection(directory: selection.directory, candidates: selection.candidates,
+                selected: selection.selected, platform: selection.platform, requiredInput: selection.requiredInput,
+                error: "An explicit entrypoint requires a Flutter app.")
             return value
         }
         value.anchor = anchor
@@ -377,17 +399,24 @@ public enum PreparationExecution {
         // RN preparation always covers both platforms, even with --platform ios.
         let preparationPlatforms: [ProjectPlatform] = anchor.framework == .reactNative || anchor.framework == .flutter
             ? [.ios, .android] : selected.platforms
-        if anchor.framework == .flutter {
-            let step = PreparationStep(id: "provider.flutter", platform: nil, kind: "provider", target: root.path,
-                observed: "Flutter preparation provider is not implemented yet", required: "Framework-specific preparation provider",
-                source: CheckSource(tier: 1, origin: "pubspec.yaml"), command: nil,
-                remediation: Remediation(summary: "Use the project's existing preparation workflow, then inspect again. No tool installation occurred."))
-            value.plan = try makePlan(project: selected.app, app: selected.id, kind: anchor.framework.rawValue,
-                platforms: preparationPlatforms.map { PreparationPlatform(platform: $0, state: "waiting-manual", checks: [step]) },
-                steps: [step], files: approvalFiles(root, excluding: excluding), installed: [:])
-            return value
+        let flutter = anchor.framework == .flutter
+            ? try await FlutterPreparation.inspect(directory: anchor.directory, entrypoint: input.entrypoint, environment: input.environment, runner: runner) : nil
+        if let flutter {
+            value.root = flutter.workspace?.directory ?? anchor.directory
+            steps += flutter.steps
+            sdkInstalled.merge(flutter.installed) { _, new in new }
+            value.installationActions.merge(flutter.actions) { _, new in new }
+            if let command = flutter.dependencyCommand { value.dependencyCommands.append(command) }
+            if flutter.checks.contains(where: { $0.id == "flutter.declarations" && $0.kind != "reuse" }) {
+                value.plan = try makePlan(project: selected.app, app: selected.id, kind: anchor.framework.rawValue,
+                    platforms: preparationPlatforms.map { platform in PreparationPlatform(platform: platform, state: "waiting-manual",
+                        checks: flutter.checks.filter { $0.platform == nil || $0.platform == platform }) },
+                    steps: steps, files: approvalFiles(value.root, excluding: excluding), installed: sdkInstalled)
+                return value
+            }
         }
-        let currentEnvironment = await ProjectExecutionEnvironment.resolve(anchor: anchor, hostRunner: runner)
+        let activatedRunner: any ProcessRunner = flutter.map { FlutterChildRunner(base: runner, environment: $0.activeEnvironment) } ?? runner
+        let currentEnvironment = await ProjectExecutionEnvironment.resolve(anchor: anchor, hostRunner: activatedRunner)
         let toolRequirements = try await ToolRequirements.resolve(anchor: anchor, platforms: preparationPlatforms, runner: currentEnvironment.runner)
         let toolPreparation = try await ToolPreparation.inspect(requirements: toolRequirements, directory: anchor.directory,
             environment: input.environment, runner: runner, currentToolRunner: currentEnvironment.runner)
@@ -405,11 +434,14 @@ public enum PreparationExecution {
                     source: CheckSource(tier: 1, origin: selected.app.path), command: nil,
                     remediation: Remediation(summary: "Prepare the host source manually, then inspect again."))
                 steps.append(item)
-                platforms.append(PreparationPlatform(platform: platform, state: "waiting-manual", checks: [item]))
+                let checks = [item] + (flutter?.checks.filter { $0.platform == nil || $0.platform == platform } ?? []) + toolPreparation.checks
+                platforms.append(PreparationPlatform(platform: platform, state: "waiting-manual", checks: checks))
                 continue
             }
+            let nativeReady = flutter == nil || flutter?.checks.contains { $0.id == "\(platform.rawValue).flutter.generated" && $0.kind == "reuse" } == true
             let context = await WorkflowContext.make(input: input, platform: platform, anchor: anchor, runner: runner,
-                includeProjectEnvironment: !pendingTools)
+                includeProjectEnvironment: !pendingTools && (platform != .android || nativeReady),
+                projectEnvironmentOverride: flutter == nil ? nil : currentEnvironment.activatingTools(toolPreparation.activeTools, environment: input.environment))
             contexts[platform] = context
             let report = await context.engine.run()
             var sdkPreparation: AndroidSDKPreparation?
@@ -428,18 +460,33 @@ public enum PreparationExecution {
                     remediation: check.outcome.remediation ?? (check.outcome.reason.map { Remediation(summary: $0) }))
             }
             checks += toolPreparation.checks
+            if let flutter { checks += flutter.checks.filter { $0.platform == nil || $0.platform == platform } }
             if pendingTools {
                 checks.append(PreparationStep(id: "\(platform.rawValue).tools.reinspect", platform: platform, kind: "provider", target: selected.app.path,
                     observed: "Project-dependent inspection is deferred until its tools are available", required: "Exact project tool paths",
                     source: CheckSource(origin: "approved tool preparation"), command: nil,
                     remediation: Remediation(summary: "Preserve completed tools. Inspect again and approve any newly observed dependency or SDK steps.")))
             }
+            if flutter != nil, platform == .ios, !pendingTools, let requirement = anchor.cocoapods {
+                if anchor.gemInstallProcess != nil {
+                    checks.append(PreparationStep(id: "ios.cocoapods.version", platform: .ios, kind: "provider", target: anchor.iosDirectory.path,
+                        observed: "Bundled CocoaPods was not executed during inspection", required: "Manually verified locked Bundle and CocoaPods",
+                        source: CheckSource(tier: 1, origin: requirement.file), command: nil,
+                        remediation: Remediation(summary: "Verify the declared locked Bundle manually. Setup inspection does not evaluate the project's Gemfile.")))
+                } else {
+                    let outcome = try await CocoaPodsVersionCheck(requirement: requirement, anchor: anchor, context: context.config,
+                        runner: context.projectRunner).run()
+                    checks.append(PreparationStep(id: "ios.cocoapods.version", platform: .ios,
+                        kind: outcome.status == .pass ? "reuse" : "provider", target: anchor.iosDirectory.path,
+                        observed: outcome.observed, required: outcome.required, source: outcome.source, command: nil, remediation: outcome.remediation))
+                }
+            }
             if let sdkPreparation {
                 checks += sdkPreparation.checks
                 sdkInstalled.merge(sdkPreparation.installed) { _, new in new }
                 value.installationActions.merge(sdkPreparation.actions) { _, new in new }
             }
-            if platform == .ios, !pendingTools {
+            if platform == .ios, !pendingTools, nativeReady {
                 let iosPreparation = try await IOSPreparation.inspect(context: context, input: input)
                 // Native deployment is measured by the provider. Replace only the
                 // Matrix-only unknown when that provider confirms an exact runtime.
@@ -470,16 +517,16 @@ public enum PreparationExecution {
                     command: nil, remediation: usable ? nil : Remediation(summary: "Prepare the existing package manager separately, then inspect again.")))
             }
             var selectedTools: [String] = []
-            if anchor.framework == .reactNative, !pendingTools {
-                selectedTools = ["node", anchor.packageManagerName]
+            if (anchor.framework == .reactNative || anchor.framework == .flutter), !pendingTools {
+                selectedTools = anchor.framework == .reactNative ? ["node", anchor.packageManagerName] : []
                 if anchor.gemInstallProcess != nil { selectedTools += ["ruby", "bundle"] }
                 else if FileManager.default.fileExists(atPath: anchor.directory.appendingPathComponent("ios/Podfile").path) { selectedTools += ["pod"] }
             }
             for tool in Set(selectedTools).sorted() {
-                let probe = try? await context.projectRunner.run(ProcessCommand("/usr/bin/which", [tool],
-                    workingDirectory: anchor.directory, timeout: .seconds(15)))
-                let path = probe?.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-                let known = probe?.terminationStatus.isSuccess == true && path.hasPrefix("/") && !path.contains("\n")
+                let probe = try await optionalTool(ProcessCommand("/usr/bin/which", [tool],
+                    workingDirectory: anchor.directory, timeout: .seconds(15)), runner: context.projectRunner)
+                let path = probe.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines)
+                let known = probe.terminationStatus.isSuccess == true && path.hasPrefix("/") && !path.contains("\n")
                 checks.append(PreparationStep(id: "\(platform.rawValue).tool.\(tool).path", platform: platform,
                     kind: known ? "reuse" : "provider", target: known ? path : "unknown \(tool) executable",
                     observed: known ? path : nil, required: "Known executable in the selected project toolchain",
@@ -487,62 +534,79 @@ public enum PreparationExecution {
                     remediation: known ? nil : Remediation(summary: "Prepare the declared tool and inspect its executable path before approval.")))
             }
             // Scheme selection is a build input; setup does not silently pick one.
-            steps += checks.filter { $0.kind != "reuse" && !$0.id.hasPrefix("tools.") && !$0.id.hasSuffix(".config.values") }
+            steps += checks.filter { check in check.kind != "reuse" && !check.id.hasPrefix("tools.") && !check.id.hasSuffix(".config.values")
+                && !steps.contains(where: { $0.id == check.id }) }
             platforms.append(PreparationPlatform(platform: platform, state: "waiting-manual", checks: checks))
         }
         let context = contexts[.ios] ?? contexts[.android]
         value.context = context
-        if anchor.framework != .reactNative {
+        value.dependencyRunner = context?.projectRunner ?? currentEnvironment.runner
+        if anchor.framework != .reactNative && anchor.framework != .flutter {
             value.plan = try makePlan(project: selected.app, app: selected.id, kind: anchor.framework.rawValue,
                                      platforms: platforms, steps: steps, files: approvalFiles(root, excluding: excluding), installed: sdkInstalled,
                                      androidRequirements: androidRequirements, resources: value.resources)
             return value
         }
-        let nodeReady = platforms.flatMap(\.checks).contains { $0.id.hasSuffix(".node.version") && $0.kind == "reuse" }
-            && platforms.flatMap(\.checks).contains { $0.id.hasSuffix(".package-manager.version") && $0.kind == "reuse" }
-            && platforms.flatMap(\.checks).contains { $0.id.hasSuffix(".tool.node.path") && $0.kind == "reuse" }
-            && platforms.flatMap(\.checks).contains { $0.id.hasSuffix(".tool.\(anchor.packageManagerName).path") && $0.kind == "reuse" }
-        let dependencyRoot = anchor.workspaceRoot?.directory ?? anchor.directory
-        let hasNodeLock = ["package-lock.json", "yarn.lock", "pnpm-lock.yaml", "npm-shrinkwrap.json"].contains {
-            FileManager.default.fileExists(atPath: dependencyRoot.appendingPathComponent($0).path)
-        }
         var installed: [String: Bool] = sdkInstalled
-        for relative in ["node_modules", "node_modules/.mobile-install.incomplete", "ios/Pods", "ios/Pods/Manifest.lock"] {
-            let base = relative.hasPrefix("node_modules") ? dependencyRoot : anchor.directory
-            installed[base.appendingPathComponent(relative).path] = FileManager.default.fileExists(atPath: base.appendingPathComponent(relative).path)
+        let node: PreparationStep
+        if let flutter {
+            node = flutter.checks.first { $0.id == "dependencies.flutter" } ?? PreparationStep(id: "dependencies.flutter",
+                platform: nil, kind: "migration", target: value.root.path, observed: "Locked alignment is unavailable",
+                required: "Resolved Dart workspace and lock", source: CheckSource(origin: "pubspec.lock"), command: nil, remediation: nil)
+        } else {
+            let nodeReady = platforms.flatMap(\.checks).contains { $0.id.hasSuffix(".node.version") && $0.kind == "reuse" }
+                && platforms.flatMap(\.checks).contains { $0.id.hasSuffix(".package-manager.version") && $0.kind == "reuse" }
+                && platforms.flatMap(\.checks).contains { $0.id.hasSuffix(".tool.node.path") && $0.kind == "reuse" }
+                && platforms.flatMap(\.checks).contains { $0.id.hasSuffix(".tool.\(anchor.packageManagerName).path") && $0.kind == "reuse" }
+            let dependencyRoot = anchor.workspaceRoot?.directory ?? anchor.directory
+            let hasNodeLock = ["package-lock.json", "yarn.lock", "pnpm-lock.yaml", "npm-shrinkwrap.json"].contains {
+                FileManager.default.fileExists(atPath: dependencyRoot.appendingPathComponent($0).path)
+            }
+            for relative in ["node_modules", "node_modules/.mobile-install.incomplete", "ios/Pods", "ios/Pods/Manifest.lock"] {
+                let base = relative.hasPrefix("node_modules") ? dependencyRoot : anchor.directory
+                installed[base.appendingPathComponent(relative).path] = FileManager.default.fileExists(atPath: base.appendingPathComponent(relative).path)
+            }
+            node = PreparationStep(id: "dependencies.node", platform: nil,
+                kind: nodeReady && hasNodeLock ? "align" : "migration", target: dependencyRoot.appendingPathComponent("node_modules").path,
+                observed: installed[dependencyRoot.appendingPathComponent("node_modules").path] == true ? "existing installation; native lockfile alignment required" : "missing",
+                required: "existing lockfile and usable Node/package manager", source: CheckSource(tier: 1, origin: dependencyRoot.path),
+                command: anchor.installProcess.description, remediation: Remediation(summary: "Use the declared locked package manager. Prepare missing tools separately; do not generate a lockfile in setup."))
+            steps.append(node)
         }
-        let node = PreparationStep(id: "dependencies.node", platform: nil,
-            kind: nodeReady && hasNodeLock ? "align" : "migration", target: dependencyRoot.appendingPathComponent("node_modules").path,
-            observed: installed[dependencyRoot.appendingPathComponent("node_modules").path] == true ? "existing installation; native lockfile alignment required" : "missing",
-            required: "existing lockfile and usable Node/package manager", source: CheckSource(tier: 1, origin: dependencyRoot.path),
-            command: anchor.installProcess.description, remediation: Remediation(summary: "Use the declared locked package manager. Prepare missing tools separately; do not generate a lockfile in setup."))
-        steps.append(node)
         let ios = anchor.directory.appendingPathComponent("ios")
         if FileManager.default.fileExists(atPath: ios.appendingPathComponent("Podfile").path) {
+            let generatedReady = flutter == nil || flutter?.checks.contains { $0.id == "ios.flutter.generated" && $0.kind == "reuse" } == true
             var podReady = platforms.first { $0.platform == .ios }?.checks.contains { $0.id.hasSuffix(".cocoapods.version") && $0.kind == "reuse" } == true
-            if anchor.gemInstallProcess == nil, let context {
-                let podVersion = try? await context.projectRunner.run(anchor.podVersionProcess)
-                podReady = podVersion?.terminationStatus.isSuccess == true
+            if anchor.gemInstallProcess == nil, (flutter == nil || anchor.cocoapods == nil), let context {
+                let podVersion = try await optionalTool(anchor.podVersionProcess, runner: context.projectRunner)
+                podReady = podVersion.terminationStatus.isSuccess == true
                     && platforms.flatMap(\.checks).contains { $0.id.hasSuffix(".tool.pod.path") && $0.kind == "reuse" }
             }
+            if flutter != nil, !toolPreparation.checks.contains(where: { $0.id == "tools.ruby" && $0.kind == "reuse" }) { podReady = false }
             let podLock = FileManager.default.fileExists(atPath: ios.appendingPathComponent("Podfile.lock").path)
             let manifest = try? Data(contentsOf: ios.appendingPathComponent("Pods/Manifest.lock"))
             let lockedPods = try? Data(contentsOf: ios.appendingPathComponent("Podfile.lock"))
             let podsAligned = manifest != nil && manifest == lockedPods
             let gemLock = anchor.gemInstallProcess == nil || FileManager.default.fileExists(atPath: (anchor.gemInstallProcess?.workingDirectory ?? anchor.directory).appendingPathComponent("Gemfile.lock").path)
-            if let gems = anchor.gemInstallProcess {
+            if let gems = anchor.gemInstallProcess, flutter != nil {
+                steps.append(PreparationStep(id: "dependencies.gems", platform: .ios, kind: "migration",
+                    target: (gems.workingDirectory ?? anchor.directory).path, observed: "Bundler destination was not inspected",
+                    required: "Existing Gemfile.lock and manually verified Bundle destination", source: CheckSource(tier: 1, origin: "Gemfile.lock"),
+                    command: nil, remediation: Remediation(summary: "Preserve the existing Bundle destination. Prepare the declared locked Bundle manually, then re-plan.")))
+            } else if let gems = anchor.gemInstallProcess, let context {
                 let gemRoot = gems.workingDirectory ?? anchor.directory
-                let bundleVersion = try? await context?.projectRunner.run(ProcessCommand("bundle", ["--version"], workingDirectory: gemRoot))
-                let pathProbe = try? await context?.projectRunner.run(ProcessCommand("bundle", ["config", "get", "path", "--parseable"],
-                    workingDirectory: gemRoot, timeout: .seconds(15)))
+                let bundleVersion = try await optionalTool(ProcessCommand("bundle", ["--version"], workingDirectory: gemRoot), runner: context.projectRunner)
+                let pathProbe = try await optionalTool(ProcessCommand("bundle", ["config", "get", "path", "--parseable"],
+                    workingDirectory: gemRoot, timeout: .seconds(15)), runner: context.projectRunner)
                 let ruby = platforms.first { $0.platform == .ios }?.checks.first { $0.id.hasSuffix(".ruby.version") }
-                let destinationProbe = try? await context?.projectRunner.run(ProcessCommand("ruby", ["-rbundler", "-e", "print Bundler.bundle_path"], workingDirectory: gemRoot))
-                let destination = destinationProbe?.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-                var bundleReady = bundleVersion?.terminationStatus.isSuccess == true && pathProbe?.terminationStatus.isSuccess == true
-                    && destinationProbe?.terminationStatus.isSuccess == true && destination.hasPrefix("/") && !destination.contains("\n")
+                let destinationProbe = try await optionalTool(ProcessCommand("ruby", ["-rbundler", "-e", "print Bundler.bundle_path"], workingDirectory: gemRoot), runner: context.projectRunner)
+                let destination = destinationProbe.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines)
+                var bundleReady = bundleVersion.terminationStatus.isSuccess == true && pathProbe.terminationStatus.isSuccess == true
+                    && destinationProbe.terminationStatus.isSuccess == true && destination.hasPrefix("/") && !destination.contains("\n")
                     && (ruby == nil || ruby?.kind == "reuse")
+                    && (flutter == nil || toolPreparation.checks.contains { $0.id == "tools.ruby" && $0.kind == "reuse" })
                     && ["ruby", "bundle"].allSatisfy { tool in platforms.flatMap(\.checks).contains { $0.id.hasSuffix(".tool.\(tool).path") && $0.kind == "reuse" } }
-                let output = pathProbe?.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                let output = pathProbe.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines)
                 let declaredPath = output.hasPrefix("path=") ? String(output.dropFirst(5)).trimmingCharacters(in: CharacterSet(charactersIn: "\"'")) : ""
                 var policy = ["BUNDLE_FROZEN": "true"]
                 if !declaredPath.isEmpty {
@@ -553,28 +617,43 @@ public enum PreparationExecution {
                     policy["BUNDLE_PATH__SYSTEM"] = "true"
                 }
                 // Pinning the base path must preserve Bundler's effective Ruby-specific destination.
-                let effectiveProbe = try? await context?.projectRunner.run(ProcessCommand("ruby", ["-rbundler", "-e", "print Bundler.bundle_path"], environment: policy, workingDirectory: gemRoot))
-                bundleReady = bundleReady && effectiveProbe?.terminationStatus.isSuccess == true
-                    && effectiveProbe?.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines) == destination
-                podReady = bundleReady
+                let effectiveProbe = try await optionalTool(ProcessCommand("ruby", ["-rbundler", "-e", "print Bundler.bundle_path"], environment: policy, workingDirectory: gemRoot), runner: context.projectRunner)
+                bundleReady = bundleReady && effectiveProbe.terminationStatus.isSuccess == true
+                    && effectiveProbe.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines) == destination
+                podReady = bundleReady && (flutter == nil || platforms.first { $0.platform == .ios }?.checks.contains {
+                    $0.id == "ios.cocoapods.version" && $0.kind == "reuse"
+                } == true)
                 var gemStep = PreparationStep(id: "dependencies.gems", platform: .ios,
-                    kind: bundleReady && gemLock && node.kind == "align" ? "align" : "migration", target: destination.isEmpty ? "unknown Bundler destination" : destination,
-                    observed: bundleVersion?.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines), required: "existing Gemfile.lock; BUNDLE_FROZEN=true; preserve the existing Bundler destination",
+                    kind: bundleReady && gemLock && node.kind == "align" && generatedReady ? "align" : "migration", target: destination.isEmpty ? "unknown Bundler destination" : destination,
+                    observed: bundleVersion.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines), required: "existing Gemfile.lock; BUNDLE_FROZEN=true; preserve the existing Bundler destination",
                     source: CheckSource(tier: 1, origin: "Gemfile.lock"), command: gems.description,
                     remediation: Remediation(summary: "Prepare the declared locked Bundle manually if its tools, destination, or lockfile are unknown."))
                 gemStep.environment = policy
                 steps.append(gemStep)
+                if anchor.framework == .flutter, gemStep.kind == "align" { value.dependencyCommands.append(gems) }
                 if bundleReady { installed[destination] = FileManager.default.fileExists(atPath: destination) }
             }
             steps.append(PreparationStep(id: "dependencies.pods", platform: .ios,
-                kind: podReady && podLock && gemLock && node.kind == "align" ? "align" : "migration", target: ios.appendingPathComponent("Pods").path,
+                kind: podReady && podLock && gemLock && node.kind == "align" && generatedReady && (flutter == nil || isFrozenPodCommand(anchor.podInstallProcess)) ? "align" : "migration", target: ios.appendingPathComponent("Pods").path,
                 observed: podsAligned ? "Pods Manifest.lock matches Podfile.lock; approved frozen alignment still runs"
                     : "Pods missing or Manifest.lock differs from Podfile.lock", required: "existing Podfile.lock; declared installation",
                 source: CheckSource(tier: 1, origin: anchor.podInstallEvidence), command: frozenPodCommand(anchor.podInstallProcess).description,
                 remediation: Remediation(summary: "Use the declared locked Pod installation. Source or lockfile migration requires manual handling.")))
+            if anchor.framework == .flutter, steps.last?.kind == "align" {
+                value.dependencyCommands.append(frozenPodCommand(anchor.podInstallProcess))
+            }
         }
-        value.plan = try makePlan(project: selected.app, app: selected.id, kind: "react-native", platforms: platforms,
-                                 steps: steps, files: approvalFiles(root, excluding: excluding), installed: installed,
+        var files = try approvalFiles(value.root, excluding: excluding)
+        if let flutter {
+            if let entrypoint = flutter.entrypoint { files[entrypoint.path] = digest(try Data(contentsOf: entrypoint)) }
+            if let project = try? FlutterProject(directory: anchor.directory, entrypoint: input.entrypoint) {
+                for pin in project.pinSources where !["mise.toml", ".mise.toml"].contains(pin.lastPathComponent) {
+                    files[pin.path] = digest(try Data(contentsOf: pin))
+                }
+            }
+        }
+        value.plan = try makePlan(project: selected.app, app: selected.id, kind: anchor.framework.rawValue, platforms: platforms,
+                                 steps: steps, files: files, installed: installed,
                                  androidRequirements: androidRequirements, resources: value.resources)
         return value
     }
@@ -592,6 +671,11 @@ public enum PreparationExecution {
         if check == "project.execution-environment" { return "trust" }
         if check == "host.workspace-access" { return "permission" }
         return "provider"
+    }
+
+    private static func isFrozenPodCommand(_ command: ProcessCommand) -> Bool {
+        command.executable == "pod" && command.arguments == ["install"]
+            || command.executable == "bundle" && command.arguments == ["exec", "pod", "install"]
     }
 
     fileprivate static func frozenPodCommand(_ input: ProcessCommand) -> ProcessCommand {
@@ -622,7 +706,7 @@ public enum PreparationExecution {
     }
 
     private static func approvalFiles(_ root: URL, excluding: [URL] = []) throws -> [String: String] {
-        let names: Set<String> = ["package.json", "package-lock.json", "npm-shrinkwrap.json", "yarn.lock", "pnpm-lock.yaml", "pnpm-workspace.yaml", "Podfile", "Podfile.lock", "Manifest.lock", "Gemfile", "Gemfile.lock", "pubspec.yaml", "pubspec.lock", "mobile.yml", ".nvmrc", ".node-version", ".ruby-version", ".java-version", ".tool-versions", ".xcode-version", "build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts", "gradle-wrapper.properties", "project.pbxproj"]
+        let names: Set<String> = ["package.json", "package-lock.json", "npm-shrinkwrap.json", "yarn.lock", "pnpm-lock.yaml", "pnpm-workspace.yaml", "Podfile", "Podfile.lock", "Manifest.lock", "Gemfile", "Gemfile.lock", "pubspec.yaml", "pubspec.lock", "pubspec_overrides.yaml", ".fvmrc", ".flutter-version", "mobile.yml", ".nvmrc", ".node-version", ".ruby-version", ".java-version", ".tool-versions", ".xcode-version", "build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts", "gradle-wrapper.properties", "project.pbxproj"]
         var result = try sourceFiles(root, excluding: excluding).filter { names.contains(URL(fileURLWithPath: $0.key).lastPathComponent) }
         for name in [".mise.toml", "mise.toml"] {
             let url = root.appendingPathComponent(name)
@@ -689,6 +773,7 @@ private final class PreparationRunner: ProcessRunner, @unchecked Sendable {
     let plan: PreparationPlan
     let root: URL
     let files: [String: String]
+    let excluded: [URL]
     let actions: [PreparationStep]
     let events: PreparationEvents
     let freshPlan: @Sendable () async throws -> PreparationPlan?
@@ -699,9 +784,9 @@ private final class PreparationRunner: ProcessRunner, @unchecked Sendable {
     var completed: [String] { lock.withLock { finished } }
     var changedFiles: [String] { lock.withLock { changed } }
     var log: String? { lock.withLock { logPath } }
-    init(base: any ProcessRunner, plan: PreparationPlan, root: URL, files: [String: String], actions: [PreparationStep], events: PreparationEvents,
+    init(base: any ProcessRunner, plan: PreparationPlan, root: URL, files: [String: String], excluded: [URL], actions: [PreparationStep], events: PreparationEvents,
          freshPlan: @escaping @Sendable () async throws -> PreparationPlan?) {
-        self.base = base; self.plan = plan; self.root = root; self.files = files; self.actions = actions; self.events = events
+        self.base = base; self.plan = plan; self.root = root; self.files = files; self.excluded = excluded; self.actions = actions; self.events = events
         self.freshPlan = freshPlan
     }
     func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
@@ -713,6 +798,7 @@ private final class PreparationRunner: ProcessRunner, @unchecked Sendable {
         }
         try checkFiles()
         try await verifyConditions(completed)
+        try checkFiles()
         if case .streamed(let path) = command.output { lock.withLock { logPath = path.path } }
         if let action { events.emit("stage", stage: action.id, state: "running", detail: command.description) }
         do {
@@ -738,7 +824,7 @@ private final class PreparationRunner: ProcessRunner, @unchecked Sendable {
     }
     private func verifyConditions(_ completed: [String]) async throws {
         guard let current = try await freshPlan(),
-              current.project == plan.project, current.app == plan.app,
+              current.project == plan.project, current.app == plan.app, current.files == plan.files,
               try Self.executionConditions(current, completed: completed) == Self.executionConditions(plan, completed: completed)
         else {
             throw DomainError(summary: "Preparation conditions changed before a dependency command",
@@ -754,7 +840,8 @@ private final class PreparationRunner: ProcessRunner, @unchecked Sendable {
         }
         let checks = plan.platforms.flatMap(\.checks).filter {
             ($0.id.hasSuffix(".version") || $0.id.hasSuffix(".path") || $0.id.hasSuffix(".xcode.installed")
-                || $0.id.hasSuffix(".xcode.ready") || $0.id.hasSuffix(".project.execution-environment"))
+                || $0.id.hasSuffix(".xcode.ready") || $0.id.hasSuffix(".project.execution-environment")
+                || $0.id.hasPrefix("flutter.") || $0.id.hasSuffix(".flutter.generated"))
                 && !($0.id.hasSuffix(".cocoapods.version") && completed.contains("dependencies.gems"))
         }
         let destinations = Dictionary(uniqueKeysWithValues: plan.steps.filter { $0.id.hasPrefix("dependencies.") }.map {
@@ -765,7 +852,7 @@ private final class PreparationRunner: ProcessRunner, @unchecked Sendable {
         return try encoder.encode(Conditions(checks: checks, destinations: destinations, androidRequirements: plan.androidRequirements))
     }
     private func checkFiles() throws {
-        let now = try PreparationExecution.sourceFiles(root)
+        let now = try PreparationExecution.sourceFiles(root, excluding: excluded)
         let differences = Set(now.keys).union(files.keys).filter { now[$0] != files[$0] }.sorted()
         guard differences.isEmpty else {
             lock.withLock { changed = differences }

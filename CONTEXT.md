@@ -29,7 +29,9 @@ native iOS 후보는 앱 루트와 선택한 `.xcodeproj` 또는 `.xcworkspace`�
 복수 컨테이너는 보고된 `--app` 후보 id로 선택한다.
 RN 후보 id는 기존 값을 유지한다.
 RN·Flutter의 `ios/`와 `android/`는 독립 네이티브 후보로 중복 등록하지 않는다.
-Flutter는 이 계약에서 탐지만 제공한다. 준비 연결은 #205에서 구현한다.
+Flutter 준비는 ADR-0040의 공통 승인 계획에 공식 정식 arm64 SDK·bundled Dart exact와 locked Dart 정렬을 연결한다.
+기존 적합 SDK를 재사용한다. 새 SDK는 승인한 exact 버전·경로에 나란히 설치한다.
+native 생성·migration은 수동 단계로 남긴다. 앱 build/run은 별도로 검증한다.
 native Android는 평가한 Gradle application module·runnable variant를 공통 Android doctor/build/up/down에 연결한다.
 native Android의 공유 CLI·GUI 실행 경계는 ADR-0037을 따른다. 실제 실행 검증 범위는 #211의 근거에 기록한다.
 native iOS의 공유 CLI·GUI 실행 경계는 ADR-0036과 `docs/native-ios.md`를 따른다.

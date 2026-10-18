@@ -1,0 +1,894 @@
+{
+  "schemaVersion": 1,
+  "issue": 205,
+  "status": "cli-observed-gui-followup-linked-final-gates-pending",
+  "measurementDateUTC": "2026-10-16",
+  "verdict": {
+    "officialSDKPreparation": "observed-completed",
+    "operationScopedLockedAlignment": "observed-completed",
+    "setupState": "partial",
+    "setupExitCode": 1,
+    "finalInspectionState": "needs-approval",
+    "finalInspectionExitCode": 0,
+    "wholeEnvironmentReady": false,
+    "buildRunValidated": false,
+    "wholeIssueComplete": false,
+    "GUIFinalReceipts": "actual-gui-e567b00.json"
+  },
+  "source": {
+    "base": "3211df5ac08168bcd3b7848f13c37ff40c7cd185",
+    "measuredHEAD": "e567b001a07cba6560a182ae47497de6009e1e80",
+    "tree": "1c0880339b8a910c712167a7ab58f9a7abae49ba",
+    "sourceCleanAtBuild": true,
+    "canonicalFiles": 30,
+    "canonicalFullIndexBinaryDiffBytes": 336302,
+    "canonicalFullIndexBinaryDiffSHA256": "3e79c8473f0c0157354bb9879efe54190f40bd8f4fbc823d6d9796d38aa10a42",
+    "canonicalRecipe": "git -c color.ui=false diff --binary --full-index --no-ext-diff --no-textconv <base>...<measuredHEAD>",
+    "productTestsPackageEqualToDe7696e": true,
+    "laterPublicDocs": "This draft is a later documentation edit. No product rebuild or new actual execution was performed for it."
+  },
+  "candidate": {
+    "CLI13FilesNormalizedBytesModeEqualToDe7696e": true,
+    "candidateFiles": 28,
+    "GUI15FilesSignedSHA256": "87cabaacde34c42476540281c515f610a07e598d5edecdf1d6826159481e7544",
+    "GUIBundleID": "dev.runstir.validation205.flutter.e567b00",
+    "GUICompiledUUIDAndAll27TEXTSectionsSame": true,
+    "GUIAdHocStrict": "PASS-packaging-only",
+    "signedPackageIsDeveloperIDOrNotarized": false,
+    "GUIActualVerifiedByThisDraft": false,
+    "candidateArchiveBytes": 34140160,
+    "candidateArchiveSHA256": "a61f9284865ee62f7b362cd747df276ae92ec2d79dcc2d190a6ece7179baea2b",
+    "CLIExecutableSHA256": "d2edef3e33e34c509be1d80894181e71f25c411975162812f3eec4696eba720c"
+  },
+  "aliases": {
+    "<CLI_ROOT>": "New task-owned CLI case root in the disposable VM",
+    "<SOURCE>": "Independent no-hardlink clone of the pinned minimal source",
+    "<NEW_SDK>": "<CLI_ROOT>/home/Library/Application Support/dev.runstir/flutter/versions/3.41.9-arm64-00b0c91f0620",
+    "<EXISTING_SDK>": "Previously prepared SDK retained for read-only reuse comparison",
+    "<PUB_CACHE>": "<CLI_ROOT>/home/Library/Application Support/dev.runstir/flutter/pub-cache",
+    "<TOOL_STORE>": "<CLI_ROOT>/managed-tools",
+    "<CLI>": "Transferred candidate CLI executable"
+  },
+  "normalization": "Aliases replace private paths for display only. Original command/environment bytes remain private. Plan IDs refer to original inputs and cannot be recomputed from these normalized examples.",
+  "inputs": {
+    "minimalSourceSHA": "66732bc18ed28d9eed71336b4a2b018e09ad20b9",
+    "trackedFiles": 67,
+    "noHardlinks": true,
+    "declarations": {
+      "Dart": "^3.11.5",
+      "FlutterConstraint": null,
+      "exactFlutterManagerPin": null,
+      "entrypoint": "lib/main.dart"
+    },
+    "officialFlutter": {
+      "version": "3.41.9",
+      "Dart": "3.11.5",
+      "channel": "stable",
+      "architecture": "arm64",
+      "revision": "00b0c91f06209d9e4a41f71b7a512d6eb3b9c694",
+      "metadataURL": "https://storage.googleapis.com/flutter_infra_release/releases/releases_macos.json",
+      "metadataSHA256": "be26ba7041e985325ac4dad55f795bbf51fb636da23e1ae41876223ebd51fc84"
+    },
+    "officialInstallPins": [
+      {
+        "stepID": "flutter.sdk",
+        "package": "flutter;3.41.9;stable;arm64",
+        "revision": "00b0c91f06209d9e4a41f71b7a512d6eb3b9c694",
+        "artifact": {
+          "checksum": "d692b030a63466c44d6b2bc88583380371ecbe328f22cc4057835f59739821a1",
+          "checksumAlgorithm": "sha256",
+          "size": 2147160009,
+          "url": "https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/flutter_macos_arm64_3.41.9-stable.zip"
+        },
+        "repositorySHA256": "be26ba7041e985325ac4dad55f795bbf51fb636da23e1ae41876223ebd51fc84",
+        "destinationAlias": "<NEW_SDK>",
+        "requiredFile": "bin/cache/dart-sdk/bin/dart"
+      },
+      {
+        "stepID": "tools.00.mise",
+        "package": "tools.mise",
+        "revision": "2026.10.7",
+        "artifact": {
+          "checksum": "f5171e341518a57e8c4e9280e28443e35d66212c51164c83be76794e0a78b014",
+          "checksumAlgorithm": "sha256",
+          "size": 127277984,
+          "url": "https://github.com/jdx/mise/releases/download/v2026.10.7/mise-v2026.10.7-macos-arm64"
+        },
+        "repositorySHA256": "6f9172f22d2e171de36d5fdbb0439d86156f30f5f85dd34c6d1c328e981be47d",
+        "destinationAlias": "<TOOL_STORE>/manager/2026.10.7",
+        "requiredFile": "bin/mise"
+      },
+      {
+        "stepID": "tools.java",
+        "package": "tools.java",
+        "revision": "temurin-17.0.18+8",
+        "artifact": {
+          "checksum": "d81de06d938384fe76c4aa3c13395933aa11e2d19b0428743f810db06b05e312",
+          "checksumAlgorithm": "sha256",
+          "size": 185658966,
+          "url": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.18%2B8/OpenJDK17U-jdk_aarch64_mac_hotspot_17.0.18_8.tar.gz"
+        },
+        "repositorySHA256": "7012aecf9ee3ca4451342387e65f91b81cb95b32c55d69bbe85cb090c1f7e8c5",
+        "destinationAlias": "<TOOL_STORE>/installs/java/temurin-17.0.18+8",
+        "requiredFile": "bin/java"
+      }
+    ],
+    "independentPostDownloadRawArchiveHashInSelectedReceipts": false
+  },
+  "normalizedCommands": {
+    "plan": "<CLI> setup --project <SOURCE> --platform ios --non-interactive --json --progress-json --plan",
+    "SDKInstallRetry": "<CLI> setup --project <SOURCE> --platform ios --non-interactive --json --progress-json --approve 551fbb40027cab140084bd64bcc4f580a07729c7c365e39b62149a446d3fe653",
+    "alignmentRetry": "<CLI> setup --project <SOURCE> --platform ios --non-interactive --json --progress-json --approve c00372d5050adf477fd53875c7aad4a316eeceb3dac8055a78c5f910e4e71137 --trust-repository",
+    "lockedChild": "<NEW_SDK>/bin/cache/dart-sdk/bin/dart pub --suppress-analytics get --enforce-lockfile",
+    "lockedChildCWD": "<SOURCE>",
+    "repositoryTrustForSDKInstall": false,
+    "repositoryTrustForAlignment": true,
+    "bothPlatformsReturnedDespiteIOSSelection": true
+  },
+  "sequence": [
+    {
+      "label": "04-reuse-plan",
+      "exitCode": 0,
+      "elapsedSeconds": 4.837384,
+      "operationState": "needs-approval",
+      "completed": [],
+      "remaining": [
+        "android.flutter.generated",
+        "android.tools.reinspect",
+        "dependencies.flutter",
+        "ios.flutter.generated",
+        "ios.simulator.runtime",
+        "ios.tools.reinspect",
+        "tools.00.mise",
+        "tools.java"
+      ],
+      "manualIDs": [
+        "android.flutter.generated",
+        "android.tools.reinspect",
+        "ios.flutter.generated",
+        "ios.simulator.runtime",
+        "ios.tools.reinspect"
+      ],
+      "planID": "9ebae956dc860be7550f102dabb05891bd7d7662d6e30d6aa6adc26c8e73395e",
+      "automaticSteps": [
+        {
+          "id": "dependencies.flutter",
+          "kind": "align"
+        },
+        {
+          "id": "tools.00.mise",
+          "kind": "install"
+        },
+        {
+          "id": "tools.java",
+          "kind": "install"
+        }
+      ],
+      "originalSIGINTSent": false,
+      "originalCancelObserved": false,
+      "remainingObservedProcesses": {}
+    },
+    {
+      "label": "06-managed-plan",
+      "exitCode": 0,
+      "elapsedSeconds": 3.051592,
+      "operationState": "needs-approval",
+      "completed": [],
+      "remaining": [
+        "android.flutter.generated",
+        "android.tools.reinspect",
+        "flutter.sdk",
+        "flutter.workspace",
+        "ios.flutter.generated",
+        "ios.simulator.runtime",
+        "ios.tools.reinspect",
+        "tools.00.mise",
+        "tools.java"
+      ],
+      "manualIDs": [
+        "android.flutter.generated",
+        "android.tools.reinspect",
+        "flutter.workspace",
+        "ios.flutter.generated",
+        "ios.simulator.runtime",
+        "ios.tools.reinspect"
+      ],
+      "planID": "551fbb40027cab140084bd64bcc4f580a07729c7c365e39b62149a446d3fe653",
+      "automaticSteps": [
+        {
+          "id": "flutter.sdk",
+          "kind": "install"
+        },
+        {
+          "id": "tools.00.mise",
+          "kind": "install"
+        },
+        {
+          "id": "tools.java",
+          "kind": "install"
+        }
+      ],
+      "originalSIGINTSent": false,
+      "originalCancelObserved": false,
+      "remainingObservedProcesses": {}
+    },
+    {
+      "label": "07-download-cancel",
+      "exitCode": 130,
+      "elapsedSeconds": 243.780845,
+      "operationState": "cancelled",
+      "completed": [],
+      "remaining": [
+        "android.flutter.generated",
+        "android.tools.reinspect",
+        "flutter.sdk",
+        "flutter.workspace",
+        "ios.flutter.generated",
+        "ios.simulator.runtime",
+        "ios.tools.reinspect",
+        "tools.00.mise",
+        "tools.java"
+      ],
+      "manualIDs": [
+        "android.flutter.generated",
+        "android.tools.reinspect",
+        "flutter.workspace",
+        "ios.flutter.generated",
+        "ios.simulator.runtime",
+        "ios.tools.reinspect"
+      ],
+      "planID": "551fbb40027cab140084bd64bcc4f580a07729c7c365e39b62149a446d3fe653",
+      "automaticSteps": [],
+      "originalSIGINTSent": false,
+      "originalCancelObserved": false,
+      "remainingObservedProcesses": {}
+    },
+    {
+      "label": "09-post-cancel-plan",
+      "exitCode": 0,
+      "elapsedSeconds": 3.218617,
+      "operationState": "needs-approval",
+      "completed": [],
+      "remaining": [
+        "android.flutter.generated",
+        "android.tools.reinspect",
+        "flutter.sdk",
+        "flutter.workspace",
+        "ios.flutter.generated",
+        "ios.simulator.runtime",
+        "ios.tools.reinspect",
+        "tools.00.mise",
+        "tools.java"
+      ],
+      "manualIDs": [
+        "android.flutter.generated",
+        "android.tools.reinspect",
+        "flutter.workspace",
+        "ios.flutter.generated",
+        "ios.simulator.runtime",
+        "ios.tools.reinspect"
+      ],
+      "planID": "551fbb40027cab140084bd64bcc4f580a07729c7c365e39b62149a446d3fe653",
+      "automaticSteps": [
+        {
+          "id": "flutter.sdk",
+          "kind": "install"
+        },
+        {
+          "id": "tools.00.mise",
+          "kind": "install"
+        },
+        {
+          "id": "tools.java",
+          "kind": "install"
+        }
+      ],
+      "originalSIGINTSent": false,
+      "originalCancelObserved": false,
+      "remainingObservedProcesses": {}
+    },
+    {
+      "label": "10-install-retry",
+      "exitCode": 1,
+      "elapsedSeconds": 393.743482,
+      "operationState": "partial",
+      "completed": [
+        "flutter.sdk",
+        "tools.00.mise",
+        "tools.java"
+      ],
+      "remaining": [
+        "android.flutter.generated",
+        "dependencies.flutter",
+        "ios.flutter.generated",
+        "ios.simulator.runtime"
+      ],
+      "manualIDs": [
+        "android.flutter.generated",
+        "ios.flutter.generated",
+        "ios.simulator.runtime"
+      ],
+      "planID": "7e31d15f3b6a5dc1a340ca54574b4ee261bd3df467e80a8a763510b33fa173e1",
+      "automaticSteps": [],
+      "originalSIGINTSent": false,
+      "originalCancelObserved": false,
+      "remainingObservedProcesses": {}
+    },
+    {
+      "label": "14-align-cancel",
+      "exitCode": 130,
+      "elapsedSeconds": 6.56139,
+      "operationState": "cancelled",
+      "completed": [],
+      "remaining": [
+        "android.flutter.generated",
+        "dependencies.flutter",
+        "ios.flutter.generated",
+        "ios.simulator.runtime"
+      ],
+      "manualIDs": [
+        "android.flutter.generated",
+        "ios.flutter.generated",
+        "ios.simulator.runtime"
+      ],
+      "planID": "7e31d15f3b6a5dc1a340ca54574b4ee261bd3df467e80a8a763510b33fa173e1",
+      "automaticSteps": [],
+      "originalSIGINTSent": true,
+      "originalCancelObserved": true,
+      "remainingObservedProcesses": {}
+    },
+    {
+      "label": "16-post-align-cancel-plan",
+      "exitCode": 0,
+      "elapsedSeconds": 2.368544,
+      "operationState": "needs-approval",
+      "completed": [],
+      "remaining": [
+        "android.flutter.generated",
+        "dependencies.flutter",
+        "ios.flutter.generated",
+        "ios.simulator.runtime"
+      ],
+      "manualIDs": [
+        "android.flutter.generated",
+        "ios.flutter.generated",
+        "ios.simulator.runtime"
+      ],
+      "planID": "c00372d5050adf477fd53875c7aad4a316eeceb3dac8055a78c5f910e4e71137",
+      "automaticSteps": [
+        {
+          "id": "dependencies.flutter",
+          "kind": "align"
+        }
+      ],
+      "originalSIGINTSent": false,
+      "originalCancelObserved": false,
+      "remainingObservedProcesses": {}
+    },
+    {
+      "label": "17-align-retry",
+      "exitCode": 1,
+      "elapsedSeconds": 9.079873,
+      "operationState": "partial",
+      "completed": [
+        "dependencies.flutter"
+      ],
+      "remaining": [
+        "android.flutter.generated",
+        "ios.flutter.generated",
+        "ios.simulator.runtime"
+      ],
+      "manualIDs": [
+        "android.flutter.generated",
+        "ios.flutter.generated",
+        "ios.simulator.runtime"
+      ],
+      "planID": "9b586624c7d631d182a15eae29653e392a21ee639b997b9252bb5afea53c4e98",
+      "automaticSteps": [],
+      "originalSIGINTSent": false,
+      "originalCancelObserved": false,
+      "remainingObservedProcesses": {}
+    },
+    {
+      "label": "20-final-reinspection",
+      "exitCode": 0,
+      "elapsedSeconds": 2.718603,
+      "operationState": "needs-approval",
+      "completed": [],
+      "remaining": [
+        "android.flutter.generated",
+        "dependencies.flutter",
+        "ios.flutter.generated",
+        "ios.simulator.runtime"
+      ],
+      "manualIDs": [
+        "android.flutter.generated",
+        "ios.flutter.generated",
+        "ios.simulator.runtime"
+      ],
+      "planID": "9b586624c7d631d182a15eae29653e392a21ee639b997b9252bb5afea53c4e98",
+      "automaticSteps": [
+        {
+          "id": "dependencies.flutter",
+          "kind": "align"
+        }
+      ],
+      "originalSIGINTSent": false,
+      "originalCancelObserved": false,
+      "remainingObservedProcesses": {}
+    }
+  ],
+  "downloadCancellation": {
+    "originalObserver": {
+      "SIGINTSent": false,
+      "cancelObserved": false,
+      "preservedUnmodified": true,
+      "reason": "Absolute argv0 predicate missed the bare curl name reported by ps."
+    },
+    "RootSupplement": {
+      "payloadBeforeBytes": 1846177792,
+      "payloadAfterBytes": 1851322368,
+      "kernelPath": "/usr/bin/curl",
+      "ownedCLIExactIdentityChecked": true,
+      "signal": "SIGINT",
+      "signalsSent": 1,
+      "groupSignal": false,
+      "receiptID": "download-root-signal"
+    },
+    "productExitCode": 130,
+    "remainingObservedProcesses": {},
+    "networkFailureClaim": false
+  },
+  "alignmentCancellation": {
+    "observerVersion": "v2",
+    "argv0Change": "Accept bare or expected absolute curl/dart while preserving exact kernel, URL, ownership, growth and locked-command checks.",
+    "cancelObserved": true,
+    "SIGINTSent": true,
+    "productExitCode": 130,
+    "remainingObservedProcesses": {},
+    "sourceProductChange": false
+  },
+  "reinspectionContract": {
+    "SDKInstallAddedNewAlignmentApproval": true,
+    "completed17IsOnlyThatOperation": true,
+    "freshInspectionAgainProposesLockedGet": true,
+    "freshPlanID": "9b586624c7d631d182a15eae29653e392a21ee639b997b9252bb5afea53c4e98",
+    "persistentGlobalAlignmentReceiptSpecified": false,
+    "reviewReceiptID": "alignment-contract",
+    "interpretation": "New operations explicitly plan a safe locked get. Earlier completed alignment is not permanent environment readiness."
+  },
+  "finalManual": {
+    "count": 3,
+    "IDs": [
+      "android.flutter.generated",
+      "ios.flutter.generated",
+      "ios.simulator.runtime"
+    ],
+    "ios": "Generated.xcconfig does not identify this SDK, app and entrypoint; selected Flutter scheme deployment must still be measured.",
+    "android": "local.properties does not identify this Flutter SDK.",
+    "iosState": "waiting-manual",
+    "androidState": "waiting-manual",
+    "nativeGenerationOrMigrationRun": false,
+    "nativeAndroidSDKRuntimeOrDeviceActionsExecuted": false
+  },
+  "preservation": {
+    "namedChecks": {
+      "oldSDK": true,
+      "oldSources": true,
+      "oldRoots": true,
+      "globalPATH": true,
+      "xcodeSelect": true,
+      "existingLeaseRecords": true,
+      "tracked.HEAD": true,
+      "tracked.files": true,
+      "tracked.indexSHA256": true,
+      "tracked.stageSHA256": true,
+      "tracked.flagsSHA256": true,
+      "tracked.status": true
+    },
+    "count": 12,
+    "oldSDKEntries": 21990,
+    "oldSDKRegularFiles": 17918,
+    "oldSDKRegularBytes": 4118754054,
+    "oldSDKBeforeAfterBytesModeSHA256Equal": true,
+    "newSDK11to18BytesModeSHA256Equal": true,
+    "source67TrackedIndexStageFlagsPreserved": true,
+    "generatedDartToolIsOwnedOutput": true,
+    "remainingStages": [],
+    "exactProposedLeaseFiles": 4,
+    "allUnheld": true,
+    "selectedCacheRootMtimeChanged": true,
+    "cacheActor": "unknown",
+    "wholeHOMEOrCacheImmutableProven": false,
+    "nativeTempWholeWriteSetProven": false,
+    "lifecycleNormalStopAndBootExit": "GUI child, normal VM stop and original boot exit 0; see actual-gui-e567b00.json",
+    "limits": "No whole VM disk/HOME/cache equality. Only observed child identities are checked."
+  },
+  "sourceChecks": {
+    "SwiftWerrorTests": 763,
+    "suites": 90,
+    "GUIBuildExitCode": 0,
+    "doctorFixtureExitCode": 0,
+    "workflowFixtureExitCode": 0,
+    "setupFixtureExitCode": 0,
+    "receipts": "integration-handoff",
+    "newTestsRunForThisDraft": 0,
+    "localChecksAreRemoteCI": false
+  },
+  "verification": {
+    "cliActualIndexEntriesRehashed": 108,
+    "exportedGuestOriginalsRehashed": 95,
+    "integrationIndexEntriesRehashed": 38,
+    "bytesModeSHA256Mismatches": 0,
+    "overlap": "Counts describe separate indexes and overlap. Do not sum them as unique files.",
+    "privateOriginalsModified": false
+  },
+  "GUICheckpoint": {
+    "source": "e567b001a07cba6560a182ae47497de6009e1e80",
+    "authority": "Separately rehashed guest export, original screenshots and lifecycle receipts",
+    "reportedState": "SDK completed; partial/exit1; both platforms need new alignment approval; repository trust false",
+    "finalResultVerified": true,
+    "screensAndFinalAudit": "actual-gui-e567b00.json",
+    "successClaim": "SDK preparation only; no GUI alignment, full readiness or app build/run"
+  },
+  "acceptanceEvidenceGaps": [
+    {
+      "AC": "AC1",
+      "observed": "Official arm64 SDK3.41.9/Dart3.11.5 pins, existing SDK reuse, actual approved SDK install and preserved existing SDK.",
+      "gap": "Other-version and conflicting declaration behavior is source/fixture evidence; not an actual SDK replacement measurement."
+    },
+    {
+      "AC": "AC2",
+      "observed": "Actual workspace1/entrypoint/locked Dart command and native generated/deployment manual boundaries.",
+      "gap": "No native migration completion, plugin generation, module host generation or app build/run is claimed; these are manual/scope boundaries."
+    },
+    {
+      "AC": "AC3",
+      "observed": "CLI returns both iOS and Android, completed IDs, partial and exact manual3; new alignment requires approval.",
+      "gap": "GUI final evidence is linked separately. Actual Android-provider-driven added approval is not present in this CLI bundle; conditional automatic coverage is not promoted to actual Android requirement change."
+    },
+    {
+      "AC": "AC4",
+      "observed": "Actual download growth plus exact owned SIGINT/130, SDK retry completion, Dart alignment cancellation130 and retry completion.",
+      "gap": "Failure branches use common fixture evidence under issue199 Testing Decisions. These receipts establish actual installation/cancellation/retry, not injected network failures. No per-tool by per-surface repeat matrix is inferred."
+    },
+    {
+      "AC": "AC5 / #199 AC02 / AC03",
+      "observed": "Shared exact approval, explicit alignment trust, source and selected SDK/cache preservation scopes are recorded.",
+      "gap": "GUI receipts are linked separately. Independent final evidence review, exact-head required CI, risk approval, merge and main CI remain pending gates."
+    }
+  ],
+  "receiptRefs": {
+    "cli-handoff": {
+      "bundleID": "205-cli-e567b00-v1",
+      "relativePath": "CLI-ACTUAL-HANDOFF-v1.md",
+      "bytes": 3643,
+      "mode": "0o644",
+      "sha256": "0c02dc4c3d0b65e8721aa5738c28774ce23babe5c9824d55f2d5eb7770b1bb77"
+    },
+    "cli-audit": {
+      "bundleID": "205-cli-e567b00-v1",
+      "relativePath": "CLI-ACTUAL-AUDIT-v1.json",
+      "bytes": 14642,
+      "mode": "0o644",
+      "sha256": "5abdbeeb22b2e2c22dd2dce967fb3d42e6708cce65e3c127156543f0636a266f",
+      "selectedFields": [
+        "sequence",
+        "downloadCancelSupplement",
+        "finalPreservation",
+        "finalReinspection",
+        "lifecycle",
+        "missingEvidence"
+      ]
+    },
+    "cli-index": {
+      "bundleID": "205-cli-e567b00-v1",
+      "relativePath": "CLI-ACTUAL-INDEX-v1.json",
+      "bytes": 24172,
+      "mode": "0o644",
+      "sha256": "b91b75ced97aee04592d5bcf39d7dba87160fa7802fde382b504a8e57f2455b5",
+      "selectedFields": [
+        "files",
+        "exportOriginalCount"
+      ]
+    },
+    "cli-export95": {
+      "bundleID": "205-cli-e567b00-v1",
+      "relativePath": "host/21-final-reinspection-export/export-index.json",
+      "bytes": 16819,
+      "mode": "0o644",
+      "sha256": "dd317e29b4d711852584b4320492f7ac03c5fe82ecac004c277adc2d7a1a2f98",
+      "selectedFields": [
+        "files"
+      ]
+    },
+    "integration-handoff": {
+      "bundleID": "205-main3211-integration-v1",
+      "relativePath": "HANDOFF-v1.json",
+      "bytes": 13842,
+      "mode": "0o644",
+      "sha256": "c15d8948c15e85d47a06bcfb3b4d4735566111e1b5d8a4ae94cefb06bfe5cb2f",
+      "selectedFields": [
+        "HEAD",
+        "tree",
+        "base",
+        "canonicalFullIndexDiff",
+        "testCounts",
+        "checks",
+        "equivalence",
+        "candidateManifest"
+      ]
+    },
+    "integration-index": {
+      "bundleID": "205-main3211-integration-v1",
+      "relativePath": "FINAL-INDEX-v1.json",
+      "bytes": 9964,
+      "mode": "0o644",
+      "sha256": "9475c2ab3cd23c27b591b9c431ea29abed4597fad96df8d7b2e745c1c3b1e6e6"
+    },
+    "candidate-manifest": {
+      "bundleID": "205-candidate-e567b00-v1",
+      "relativePath": "state/candidate-manifest-v1.json",
+      "bytes": 30631,
+      "mode": "0o644",
+      "sha256": "e526e0648e2ecc9526da50a23f2ca1974f1d8cbe40b88240b33c6eb2b9010db1",
+      "selectedFields": [
+        "sourceSHA",
+        "files"
+      ]
+    },
+    "observer-v2-correction": {
+      "bundleID": "205-cli-e567b00-v1",
+      "relativePath": "HARNESS-CORRECTION-v2.md",
+      "bytes": 1403,
+      "mode": "0o644",
+      "sha256": "05395dabf1833035b89d6668fb777169b8685d68f920aef71966bfaf04498b65"
+    },
+    "observer-v2-selfcheck": {
+      "bundleID": "205-cli-e567b00-v1",
+      "relativePath": "SELF-CHECK-v2.json",
+      "bytes": 2863,
+      "mode": "0o644",
+      "sha256": "0d3c07eb4a98720888a5ba9542a1bac5ced8a941afa7f9ae968bf665fdd175a1"
+    },
+    "04-reuse-plan-result": {
+      "bundleID": "205-cli-e567b00-v1",
+      "relativePath": "host/21-final-reinspection-export/guest-originals/states/04-reuse-plan/stdout",
+      "bytes": 37015,
+      "mode": "0o644",
+      "sha256": "3e8c3f7736fb5456ba0876788f7e32424f7ce2585ebf9342ab4a765972d996c8",
+      "selectedFields": [
+        "plan.steps",
+        "operation.state"
+      ]
+    },
+    "04-reuse-plan-exit": {
+      "bundleID": "205-cli-e567b00-v1",
+      "relativePath": "host/21-final-reinspection-export/guest-originals/states/04-reuse-plan/exit.json",
+      "bytes": 375,
+      "mode": "0o644",
+      "sha256": "ccef998d3bfc47abf3320a4c45f4d7e1a3b06a9398c1042dd2d32ad72922b443",
+      "selectedFields": [
+        "exitCode",
+        "stillRunning",
+        "SIGINTSent",
+        "cancelObserved",
+        "remainingObservedProcesses"
+      ]
+    },
+    "06-managed-plan-result": {
+      "bundleID": "205-cli-e567b00-v1",
+      "relativePath": "host/21-final-reinspection-export/guest-originals/states/06-managed-plan/stdout",
+      "bytes": 39150,
+      "mode": "0o644",
+      "sha256": "a7b875ef669a9e5e99f11fcb0098c7f430730f1c8ae1ebccb0fc767abf919f1d",
+      "selectedFields": [
+        "plan.id",
+        "plan.steps.installation"
+      ]
+    },
+    "06-managed-plan-exit": {
+      "bundleID": "205-cli-e567b00-v1",
+      "relativePath": "host/21-final-reinspection-export/guest-originals/states/06-managed-plan/exit.json",
+      "bytes": 376,
+      "mode": "0o644",
+      "sha256": "0aef67891a5cd1b9c432e85c20cc71b4046583539ee0a1a9585131ee12a0a96c",
+      "selectedFields": [
+        "exitCode",
+        "stillRunning",
+        "SIGINTSent",
+        "cancelObserved",
+        "remainingObservedProcesses"
+      ]
+    },
+    "07-download-cancel-result": {
+      "bundleID": "205-cli-e567b00-v1",
+      "relativePath": "host/21-final-reinspection-export/guest-originals/states/07-download-cancel/stdout",
+      "bytes": 39156,
+      "mode": "0o644",
+      "sha256": "6bb807f1c4f89bb2a3063a1eb9adf4e632ccdc0b3caba8cfcfc144a2f05d7071",
+      "selectedFields": [
+        "exitCode",
+        "operation.state"
+      ]
+    },
+    "07-download-cancel-exit": {
+      "bundleID": "205-cli-e567b00-v1",
+      "relativePath": "host/21-final-reinspection-export/guest-originals/states/07-download-cancel/exit.json",
+      "bytes": 379,
+      "mode": "0o644",
+      "sha256": "d9050effff9da183dab75be16cf1add2ab65fa9c87865cd3e8cc5c772ae7a41f",
+      "selectedFields": [
+        "exitCode",
+        "stillRunning",
+        "SIGINTSent",
+        "cancelObserved",
+        "remainingObservedProcesses"
+      ]
+    },
+    "10-install-retry-result": {
+      "bundleID": "205-cli-e567b00-v1",
+      "relativePath": "host/21-final-reinspection-export/guest-originals/states/10-install-retry/stdout",
+      "bytes": 25313,
+      "mode": "0o644",
+      "sha256": "cbfb44e90eb2b0d376e4e95e04400d00942441bd00a4118d13b19598f7e5a20c",
+      "selectedFields": [
+        "exitCode",
+        "operation.state",
+        "operation.completed",
+        "operation.manual"
+      ]
+    },
+    "10-install-retry-exit": {
+      "bundleID": "205-cli-e567b00-v1",
+      "relativePath": "host/21-final-reinspection-export/guest-originals/states/10-install-retry/exit.json",
+      "bytes": 377,
+      "mode": "0o644",
+      "sha256": "d91324dc41a860c2c044c9ccb0b23cae8c380d5640f4113fcf64b59ce7a8f1df",
+      "selectedFields": [
+        "exitCode",
+        "stillRunning",
+        "SIGINTSent",
+        "cancelObserved",
+        "remainingObservedProcesses"
+      ]
+    },
+    "14-align-cancel-result": {
+      "bundleID": "205-cli-e567b00-v1",
+      "relativePath": "host/21-final-reinspection-export/guest-originals/states/14-align-cancel/stdout",
+      "bytes": 25245,
+      "mode": "0o644",
+      "sha256": "9d392b777538e0fefb396086e22f5eceb4a8da8a9b36ab7782e7849bc5115c81",
+      "selectedFields": [
+        "exitCode",
+        "operation.state"
+      ]
+    },
+    "14-align-cancel-exit": {
+      "bundleID": "205-cli-e567b00-v1",
+      "relativePath": "host/21-final-reinspection-export/guest-originals/states/14-align-cancel/exit.json",
+      "bytes": 377,
+      "mode": "0o644",
+      "sha256": "46b35cfffca7a56deeecf60b18a4b83732a224937f1640855a74d0c10fa1bd66",
+      "selectedFields": [
+        "exitCode",
+        "stillRunning",
+        "SIGINTSent",
+        "cancelObserved",
+        "remainingObservedProcesses"
+      ]
+    },
+    "17-align-retry-result": {
+      "bundleID": "205-cli-e567b00-v1",
+      "relativePath": "host/21-final-reinspection-export/guest-originals/states/17-align-retry/stdout",
+      "bytes": 24653,
+      "mode": "0o644",
+      "sha256": "0dce2829ac6615a739faa8ec621faea5ff4201df882a36dd3e4370a4c5f6b951",
+      "selectedFields": [
+        "exitCode",
+        "operation.state",
+        "operation.completed",
+        "operation.remaining"
+      ]
+    },
+    "17-align-retry-exit": {
+      "bundleID": "205-cli-e567b00-v1",
+      "relativePath": "host/21-final-reinspection-export/guest-originals/states/17-align-retry/exit.json",
+      "bytes": 377,
+      "mode": "0o644",
+      "sha256": "039086f5a69367a6eff87047df37083354be9bcb3bd32599386c28b28a2684fd",
+      "selectedFields": [
+        "exitCode",
+        "stillRunning",
+        "SIGINTSent",
+        "cancelObserved",
+        "remainingObservedProcesses"
+      ]
+    },
+    "20-final-reinspection-result": {
+      "bundleID": "205-cli-e567b00-v1",
+      "relativePath": "host/21-final-reinspection-export/guest-originals/states/20-final-reinspection/stdout",
+      "bytes": 24643,
+      "mode": "0o644",
+      "sha256": "12092a6940a778da55841a57d96a6a7c8cdeee58136ceddc618cbe7b7202bcf3",
+      "selectedFields": [
+        "plan.id",
+        "plan.platforms",
+        "plan.steps",
+        "operation.manual"
+      ]
+    },
+    "20-final-reinspection-exit": {
+      "bundleID": "205-cli-e567b00-v1",
+      "relativePath": "host/21-final-reinspection-export/guest-originals/states/20-final-reinspection/exit.json",
+      "bytes": 378,
+      "mode": "0o644",
+      "sha256": "37b35922be180dd6ded6e74369001e95d9dc7c41797c37fbe060b4662b5bebc6",
+      "selectedFields": [
+        "exitCode",
+        "stillRunning",
+        "SIGINTSent",
+        "cancelObserved",
+        "remainingObservedProcesses"
+      ]
+    },
+    "download-root-signal": {
+      "bundleID": "205-cli-e567b00-v1",
+      "relativePath": "host/21-final-reinspection-export/guest-originals/states/07-root-download-cancel-observation/signal.json",
+      "bytes": 1692,
+      "mode": "0o644",
+      "sha256": "c1e7ed327f8fbdfe866e584e8beb102d62b2f76a1c77885f2410123daf16ec0c",
+      "selectedFields": [
+        "beforeBytes",
+        "afterBytes",
+        "identity",
+        "targetPID",
+        "signalsSent",
+        "signal",
+        "groupSignal"
+      ]
+    },
+    "final-after": {
+      "bundleID": "205-cli-e567b00-v1",
+      "relativePath": "host/21-final-reinspection-export/guest-originals/states/18-final-after/report.json",
+      "bytes": 2943,
+      "mode": "0o644",
+      "sha256": "065adb8c2cf365703b1e32938c5b2008371f7c2710e6843a54e6205d31206452",
+      "selectedFields": [
+        "preservation",
+        "newTrackedPreserved",
+        "selectedCacheBefore",
+        "selectedCacheAfter",
+        "proposedLeaseState",
+        "remainingOwnedStages"
+      ]
+    },
+    "new-sdk-after": {
+      "bundleID": "205-cli-e567b00-v1",
+      "relativePath": "host/21-final-reinspection-export/guest-originals/states/18-final-after/owned-sdk-after.json",
+      "bytes": 4170595,
+      "mode": "0o644",
+      "sha256": "bf0b4eb95172fb383f3d7dfaee503bc0d8846a6f18b140e363bdf0d1ac72f8fe",
+      "selectedFields": [
+        "entries",
+        "entryCount",
+        "regularFiles"
+      ]
+    },
+    "alignment-contract": {
+      "bundleID": "205-alignment-contract-v1",
+      "relativePath": "205-alignment-reinspection-contract.md",
+      "bytes": 4199,
+      "mode": "0o644",
+      "sha256": "a8b34c7990a5db947427a0a160a39f26903dc83550684ed91cfbb4b04ff9d8ec",
+      "scope": "Read-only source/spec/test review; no new runtime or test execution."
+    }
+  },
+  "limits": [
+    "Curated public summary only; raw logs, payloads, original private argv/env and host paths are excluded.",
+    "SDK preparation and completed alignment are not full readiness or app build/run.",
+    "GUI SDK installation is recorded separately in actual-gui-e567b00.json; GUI alignment did not run.",
+    "Library/Caches mtime actor remains unknown; whole HOME/cache preservation is not claimed.",
+    "This documentation update rechecks preserved originals and reads current issue criteria; it performs no new VM/guest/UI/product/source/build/test or remote mutation."
+  ]
+}

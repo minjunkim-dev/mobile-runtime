@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "issue": 205,
+  "status": "gui-sdk-observed-final-review-ci-merge-pending",
+  "measurementDateUTC": "2026-10-16",
+  "documentationAuditDate": "2026-10-18",
+  "bundleID": "205-gui-e567b00-v1",
+  "source": {
+    "SHA": "e567b001a07cba6560a182ae47497de6009e1e80",
+    "tree": "1c0880339b8a910c712167a7ab58f9a7abae49ba",
+    "base": "3211df5ac08168bcd3b7848f13c37ff40c7cd185",
+    "sampleSHA": "66732bc18ed28d9eed71336b4a2b018e09ad20b9",
+    "sampleTrackedFiles": 67,
+    "noSharedHardlinks": true
+  },
+  "candidate": {
+    "GUIBundleID": "dev.runstir.validation205.flutter.e567b00",
+    "GUIBinarySHA256": "87cabaacde34c42476540281c515f610a07e598d5edecdf1d6826159481e7544",
+    "GUIBinaryBytes": 16033584,
+    "GUIBinaryMode": "0o755",
+    "localAdHocStrictVerificationExit": 0,
+    "DeveloperIDNotarizationOrGatekeeperValidated": false,
+    "actualGUIProcess": 6874,
+    "kernelPathAndSHA256Observed": true,
+    "selectedEnvironmentValuesMatched": 20,
+    "rawEnvironmentPublished": false
+  },
+  "normalization": "Public aliases replace private host and guest absolute paths. Normalized strings do not reproduce original bytes or recompute original plan IDs. Raw screenshots remain private because they include paths and background Terminal history.",
+  "inputs": {
+    "selectedPlatform": "ios",
+    "FlutterPreparationPlatforms": ["ios", "android"],
+    "workspace": "Fresh GUI-owned minimal source clone",
+    "DartConstraint": "^3.11.5",
+    "entrypoint": "lib/main.dart",
+    "repositoryTrust": false,
+    "reusedCLITools": ["mise 2026.10.7", "Temurin 17.0.18+8"],
+    "ownedGUIHOMEAndSDKDestination": true
+  },
+  "artifact": {
+    "version": "3.41.9",
+    "DartExact": "3.11.5",
+    "channel": "stable",
+    "architecture": "arm64",
+    "revision": "00b0c91f06209d9e4a41f71b7a512d6eb3b9c694",
+    "URL": "https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/flutter_macos_arm64_3.41.9-stable.zip",
+    "bytes": 2147160009,
+    "SHA256": "d692b030a63466c44d6b2bc88583380371ecbe328f22cc4057835f59739821a1",
+    "metadataSHA256": "be26ba7041e985325ac4dad55f795bbf51fb636da23e1ae41876223ebd51fc84",
+    "destinationAlias": "<GUI_HOME>/Library/Application Support/dev.runstir/flutter/versions/3.41.9-arm64-00b0c91f0620",
+    "sizeChecksumAndCompletedInstall": "Product validation and completed SDK result; no separate retained completed ZIP snapshot rehash."
+  },
+  "sequence": {
+    "approvedPlanID": "9160b68734e04d1776446bed1046d63dc2dff670c34f2d17c2d1cee8db1b7dac",
+    "approvedAutomaticSteps": ["flutter.sdk"],
+    "download": {
+      "observedOwnedCurlPID": 7348,
+      "kernelPath": "/usr/bin/curl",
+      "exactOfficialURLAndOwnedPayloadObserved": true,
+      "rootCleanupReceiptPayloadSamples": [1894526976, 2118479872],
+      "payloadSamplesAuthority": "Root cleanup summary; indexed observations separately establish exact curl identity and URL."
+    },
+    "cancel": {
+      "method": "One GUI cancel activation",
+      "screenState": "cancelled",
+      "screenExitCode": 130,
+      "SDKAbsentAfterCancel": true,
+      "observedCurrentOrPriorChildren": 0,
+      "evidence": ["screen17", "cancel-observation", "cleanup-receipt"]
+    },
+    "retry": {
+      "freshInspectionPlanIDUnchanged": true,
+      "sameExactPlanApprovedAgain": true,
+      "repositoryTrust": false,
+      "evidence": ["screen18", "retry-approval", "screen19"]
+    },
+    "result": {
+      "screenState": "partial",
+      "screenExitCode": 1,
+      "completed": ["flutter.sdk"],
+      "newPlanID": "7f809ad8b953081754f8b649715380175988e0f8463ab667e51c5324b8ef17cc",
+      "platformStates": {"ios": "needs-approval", "android": "needs-approval"},
+      "remaining": ["android.flutter.generated", "dependencies.flutter", "ios.flutter.generated", "ios.simulator.runtime"],
+      "GUIAlignmentApproved": false,
+      "GUIAlignmentExecuted": false,
+      "actualAndroidAdditionalRequirementChangeMeasured": false,
+      "evidence": ["screen21", "SDK-after", "final-after"]
+    }
+  },
+  "SDKCensus": {
+    "entries": 21990,
+    "regularFiles": 17918,
+    "regularBytes": 4118754054,
+    "relativeEntryCensusSHA256": "e8fef0699a9944f66487f8e49e2862c8512081f2692f90e96460afc01db6c1ce",
+    "scope": "New GUI SDK installed; census alone is not archive authenticity or app build/run proof."
+  },
+  "preservation": {
+    "independentlyComparedNamedChecks": {"oldSDK": true, "CLI_SDK": true, "sources": true, "roots": true, "globalPATH": true, "launchctlPATH": true, "xcodeSelect": true, "existingLeaseRecords": true},
+    "independentlyComparedTrackedChecks": {"HEAD": true, "files": true, "indexSHA256": true, "stageSHA256": true, "flagsSHA256": true, "status": true},
+    "existingAndCLISDKEntriesEach": 21990,
+    "existingAndCLISDKRegularFilesEach": 17918,
+    "existingAndCLISDKRegularBytesEach": 4118754054,
+    "ownedLeaseFilesPresentAndUnheld": 2,
+    "thirdProposedAlignmentLeaseFile": "absent",
+    "remainingOwnedStages": [],
+    "selectedCacheStatSame": false,
+    "cacheActor": "unknown",
+    "wholeHOMEOrCachePreservationProven": false,
+    "nativeTempWholeWriteSetProven": false
+  },
+  "lifecycle": {
+    "actualGUIChildExitCode": 0,
+    "actualGUIChildEndUTC": "2026-10-16T14:01:35Z",
+    "observedCurrentOrPriorChildrenAfterQuit": 0,
+    "normalVMStopTransportExit": 0,
+    "originalVMBootProcessExit": 0,
+    "protectedVMCount": 7,
+    "protectedComparisonExcludingTimestampEqual": true,
+    "protectedScope": "Small metadata full SHA; VM disk stat only, not whole disk bytes.",
+    "evidence": ["GUI-exit", "after-quit", "VM-stop", "VM-boot-exit", "protected-before", "protected-after"]
+  },
+  "verification": {
+    "GUIExportFilesRehashed": 41,
+    "GUIExportBytesRehashed": 29854894,
+    "GUIInputIndexFilesRehashed": 9,
+    "CLIActualIndexFilesRehashed": 108,
+    "CLIExportFilesRehashed": 95,
+    "bytesModeSHA256Mismatches": 0,
+    "originalScreensViewed": 7,
+    "countsOverlap": true,
+    "productHOMEJournalsExported": false,
+    "immutableOriginalsChanged": false,
+    "newVMUIInstallSignalBuildOrTestActionsForDocumentation": 0
+  },
+  "acceptance": {
+    "AC1": "Actual official SDK install in CLI and GUI, compatible existing SDK reuse in CLI, existing SDK preserved. Other-version/conflicting declaration branches remain source and fixture evidence.",
+    "AC2": "Actual CLI workspace/entrypoint/locked alignment, with native migration and generated-input manual boundaries. No app build/run or native migration completion claim.",
+    "AC3": "Both surfaces show both platforms, completed SDK, partial and remaining work. Newly discovered alignment uses a new plan. Conditional Android-provider approval coverage is separate automatic evidence, not actual Android requirement change here.",
+    "AC4": "Actual SDK download cancellation and retry in both surfaces, actual CLI Dart alignment cancellation and retry. Failure branches use common fixtures under issue199 Testing Decisions; no injected real network failure claim.",
+    "AC5": "Maps actual install/approval/preservation/manual/recovery results to issue199 AC02 and AC03 without replacing runtime evidence with fixtures. Final review/CI/merge gates remain pending."
+  },
+  "receiptRefs": {
+    "cleanup-receipt": {"bundleID": "205-gui-e567b00-v1", "relativePath": "ROOT-paused-cleanup-receipt-v1.json", "bytes": 3354, "mode": "0o644", "sha256": "73c32c2af4f48928fd278c06f56f81bc3db7fe943793bc3603021dbfc7d497e6"},
+    "plan-approval": {"bundleID": "205-gui-e567b00-v1", "relativePath": "ROOT-gui-plan-approval-v1.json", "bytes": 1381, "mode": "0o644", "sha256": "7330f7d306bacdbb0671428a259103e559be728cc4cace2c63b600115940e5ad"},
+    "retry-approval": {"bundleID": "205-gui-e567b00-v1", "relativePath": "ROOT-gui-retry-approval-v1.json", "bytes": 784, "mode": "0o644", "sha256": "5d2143d63cff8a09f4bffc68ad1a0737a86b1509484974483bc0391439ea86f6"},
+    "export-index": {"bundleID": "205-gui-e567b00-v1", "relativePath": "host/14-final-export/export-index.json", "bytes": 7251, "mode": "0o644", "sha256": "c5f34bfc7e66f972894582c60c878f7f61e8e7e98fa068544ca74e8d69cc2b82"},
+    "input-index": {"bundleID": "205-gui-e567b00-v1", "relativePath": "FINAL-INDEX-v1.json", "bytes": 1578, "mode": "0o644", "sha256": "c96fa659f0b6ea2980a2c5cf32390c98df0e996f36d2fc1141527627a31a41c5"},
+    "download-observation": {"bundleID": "205-gui-e567b00-v1", "relativePath": "host/14-final-export/guest-originals/states/observations/05-install-running/observation.json", "bytes": 2193, "mode": "0o644", "sha256": "4e54b9d2960411402e12985049b2c1f8754d6301092a245717bee78de1948086"},
+    "cancel-observation": {"bundleID": "205-gui-e567b00-v1", "relativePath": "host/14-final-export/guest-originals/states/observations/07-download-cancel/observation.json", "bytes": 1582, "mode": "0o644", "sha256": "f335bd231618e7a07f510760b40b00c770e346b7f65b319810590901af3525d9"},
+    "SDK-after": {"bundleID": "205-gui-e567b00-v1", "relativePath": "host/14-final-export/guest-originals/states/13-final-after/GUI-sdk-after.json", "bytes": 4170729, "mode": "0o644", "sha256": "8e600367082326f4bf160697c1e49e24473352dd20e39b3c9922ae9d9d4c3f98"},
+    "final-after": {"bundleID": "205-gui-e567b00-v1", "relativePath": "host/14-final-export/guest-originals/states/13-final-after/report.json", "bytes": 3048, "mode": "0o644", "sha256": "1d81749ac40345dd57095633825c7f42b847d5f7d1c31fd0bf88ffd21e3e4780"},
+    "GUI-exit": {"bundleID": "205-gui-e567b00-v1", "relativePath": "host/14-final-export/guest-originals/states/gui-launch-exit.json", "bytes": 58, "mode": "0o644", "sha256": "2e47820db082ac500cc5a555ea608a74284ade0c9268c70ab147947dcedafa3e"},
+    "after-quit": {"bundleID": "205-gui-e567b00-v1", "relativePath": "host/14-final-export/guest-originals/states/observations/12-after-quit/observation.json", "bytes": 1322, "mode": "0o644", "sha256": "3c2815212b7e5501548f1bf2f2fb0ebd29f97888d33163d1e22d5f237ddf6ca6"},
+    "VM-stop": {"bundleID": "205-cli-e567b00-v1", "relativePath": "actual-host/205-e567-normal-stop-01/exit.json", "bytes": 63, "mode": "0o644", "sha256": "7b0b027f25160ef16efad34a4cf61063c30d1f177319b3aba0c5dca1cc059c65"},
+    "VM-boot-exit": {"bundleID": "205-cli-e567b00-v1", "relativePath": "actual-host/205-e567-boot-01/exit.json", "bytes": 61, "mode": "0o644", "sha256": "913aa55fdf3d9802be4b446c49f22395ae280343e09440ca368525f996afcee2"},
+    "protected-before": {"bundleID": "205-cli-e567b00-v1", "relativePath": "actual-host/205-before-protected-vms.json", "bytes": 6149, "mode": "0o644", "sha256": "7ed4ea31596d750e6e253d82d5545a325f4f4071fcc08981a6408e451bf62ece"},
+    "protected-after": {"bundleID": "205-cli-e567b00-v1", "relativePath": "actual-host/205-after-protected-vms.json", "bytes": 6150, "mode": "0o644", "sha256": "01c905274b620a3d7ba832f33b845315889f83631c13ae6fb94f0d8513ad174f"}
+  },
+  "screens": {
+    "screen12": {"relativePath": "screenshots/12-gui-plan-provider.png", "bytes": 1005078, "mode": "0o644", "sha256": "678a29e99cc3757ce7cd761867b40b4eb12d22f2a1760b5df3f6128f4bbd94dd", "observed": "Official Flutter/Dart/architecture/revision/archive/checksum and owned destination; both platform preparation targets."},
+    "screen14": {"relativePath": "screenshots/14-gui-plan-bottom.png", "bytes": 1012123, "mode": "0o644", "sha256": "3cb377958d23236534cc77d1f88f862b849c98e1e46c65a8fed0b7d85c33977b", "observed": "2147160009 byte official install, exact checksum and owned destination."},
+    "screen15": {"relativePath": "screenshots/15-gui-plan-install-manual.png", "bytes": 943263, "mode": "0o644", "sha256": "bc7d27c6a3d5e8522c8abf19e7a9fbe687f71a8fe3c588991d6c7b829ee2cf38", "observed": "Owned install resource and Android generated-input manual boundary."},
+    "screen17": {"relativePath": "screenshots/17-gui-download-cancelled.png", "bytes": 951191, "mode": "0o644", "sha256": "48cc40c118af233a79618dce8cbbb35994201a36000c712fd438683a65c34360", "observed": "cancelled/exit130, both platforms and remaining work."},
+    "screen18": {"relativePath": "screenshots/18-gui-cancel-reinspection.png", "bytes": 943322, "mode": "0o644", "sha256": "ab8c08fc704be0076103836ec16d6ede28012fd2514d75ce6386cc3f395c953e", "observed": "Fresh needs-approval/exit0 with unchanged exact SDK plan."},
+    "screen19": {"relativePath": "screenshots/19-gui-sdk-retry-running.png", "bytes": 907414, "mode": "0o644", "sha256": "527933eeefd6bf7722a25e6c79686f5fc03dddc395e369d0da9d5b8899412925", "observed": "Retry running with cancel control."},
+    "screen21": {"relativePath": "screenshots/21-gui-install-result.png", "bytes": 977797, "mode": "0o644", "sha256": "5fc1508ca61d9fca5a8e6a0e52c6bb0f5547a203c90e56bc1741262d6cb0b3c0", "observed": "partial/exit1, flutter.sdk completed, new exact plan, both platforms needs-approval and four remaining steps."}
+  },
+  "limits": [
+    "Full issue completion, final independent reviews, required final-head PR CI, human risk approval, merge and main CI are not claimed.",
+    "GUI dependency alignment, native generation/migration, runtime install, app build/run and actual Android added-requirement approval were not executed in this GUI case.",
+    "Failure fixtures are not actual injected network failures; existing common evidence and actual cancellation/install flows have separate scopes.",
+    "Cache actor and whole HOME/cache/native temporary write set are unknown; unseen/reparented children and whole VM disk equality are not proved.",
+    "Product HOME journals were not exported. GUI operation state is supported by original screenshots and installed-SDK census.",
+    "Private originals and screenshots are referenced by identity only; raw paths, environment values and background Terminal history are not published."
+  ]
+}
