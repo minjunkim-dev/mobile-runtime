@@ -5,8 +5,10 @@ updates:
     schedule:
       interval: weekly
       day: wednesday
-      time: '10:00'
+      time: "10:00"
       timezone: Asia/Seoul
     open-pull-requests-limit: 3
+    labels: [dependencies]
     commit-message:
       prefix: chore
+      include: scope
