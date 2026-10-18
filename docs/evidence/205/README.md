@@ -1,17 +1,41 @@
 # #205 Flutter 준비 구현의 검증 범위
 
-최신 통합 실측: `121f0db`는 native runtime과 기기의 호환성 확인에서 실패했다.
-[실제 실패 원본과 보존 범위](native-compatibility-121f0db/README.md)에 결과를 기록했다.
-수정 후보의 실제 CLI·GUI 검증과 SDK 신규 설치 검증은 아직 남았다.
+2026-10-18에 실제 CLI·GUI 준비, 공식 SDK 설치·취소·재시도, stale 승인 거부를 확인했다.
+각 실측은 아래 제품 source에 고정한다. 문서의 후속 commit을 실제 실행한 source로 표시하지 않는다.
 
-과거 실측: `e567b00`의 실제 CLI·GUI에서 공식 Flutter SDK 설치를 확인했다.
-CLI는 operation별 locked Dart 정렬도 완료했다. GUI는 새 정렬을 승인하거나 실행하지 않았다.
-두 surface는 `partial / exit 1`을 표시했다. 전체 ready나 앱 build/run 성공은 입증하지 않았다.
-[실제 CLI](actual-cli-e567b00.md)와 [실제 GUI·AC 연결](actual-gui-e567b00.md)에 결과를 기록했다.
-별도 컨텍스트 최종 리뷰·필수 CI·위험별 승인·병합·main CI는 남은 gate다. #205 전체 완료를 선언하지 않는다.
+| 제품 source | 실제 관측 | 근거 |
+| --- | --- | --- |
+| `fb9167b1f0589645b3ccbdd8b26b0f67d5e00a70` | CLI·GUI에서 iOS 27.1의 호환 기기 Duo를 생성했다. locked Dart 정렬도 완료했다. 재검사는 생성한 기기를 재사용했다 | [통합 실측](actual-supported-fb9167b.md) |
+| `24ee6e9752e1f39ac6a999113743e054082fed48` | SDK가 없는 새 CLI 입력에서 공식 SDK 다운로드를 취소했다. 새 계획을 승인한 뒤 설치했다. 재검사는 SDK를 재사용했다 | [SDK CLI](sdk-cli-24ee6e9.md) |
+| 같은 `24ee6e9` | SDK가 없는 별도 GUI 입력에서 다운로드를 취소했다. 새 계획을 승인한 뒤 설치했다. 재검사는 SDK를 재사용했다 | [SDK GUI와 화면](sdk-gui-24ee6e9.md) |
+| 같은 `24ee6e9` | 기본 Android debug 선택을 명시한 `mobile.yml`을 추가했다. 이전 plan-id의 실행은 거부했다. 새 계획은 승인하지 않았다 | [stale 승인](selector-stale-24ee6e9.md) |
 
-아래 source·fixture 절과 초기 중단 이력은 당시 결과를 보존한다.
+통합 준비와 SDK 설치의 완료 상태는 `partial / exit 1`이다.
+완료한 action만 완료로 표시한다. 다음 Dart 정렬과 수동 native 준비는 자동 승인하지 않는다.
+GUI의 operation 상태와 GUI 프로세스 종료 코드는 구분한다. 두 GUI 프로세스는 정상 종료 코드 `0`을 반환했다.
+전체 ready, 앱 build/run, 서명·공증 성공은 이 실측의 범위가 아니다.
+
+원본의 엄격한 보존 검사는 일부 항목에서 실패했다. 해당 실패를 성공으로 바꾸지 않았다.
+일부 실측에서 기존 전역 기기의 `lastUsedAt`이 바뀌었다.
+SDK 실측에서 source의 빈 `swiftpm/configuration` 디렉터리 두 개도 생겼다.
+원본 source 67개와 Git index는 같았다. SDK GUI의 선택 cache 관측도 달랐다.
+각 보고서는 변경 주체가 미확인인 범위와 전체 HOME·cache·추적 밖 자식 프로세스의 미입증 범위를 기록한다.
+원본 VM 5개는 종료 뒤 config·manifest·NVRAM hash와 disk stat이 같았다.
+이 비교는 전체 VM disk bytes의 hash 비교가 아니다.
+
+`fb9167b`에서 `24ee6e9`로 바뀐 제품 코드는 SDK의 최종 검사 뒤 source를 다시 확인하는 세 줄이다.
+회귀 테스트 57줄을 추가했다. SDK commit 직전 일반 source 변경을 재현한 RED를 GREEN으로 바꿨다.
+이 변경은 Dart 명령·취소 경로·GUI 승인 제출 경로를 바꾸지 않는다.
+`24ee6e9`의 Git blob과 같은 제품 입력 199개로 전체 Swift 테스트 779개를 Werror로 통과했다.
+같은 입력으로 CLI·GUI 빌드와 doctor·workflow·setup 검사를 통과했다.
+SDK CLI·GUI 실측은 이 수정 제품을 직접 사용했다.
+통합 Duo·Dart 실측의 제품 source는 계속 `fb9167b`로 표시한다.
+
+과거 `121f0db`는 native runtime과 기기의 호환성 확인에서 실패했다.
+[실제 실패 원본과 보존 범위](native-compatibility-121f0db/README.md)를 유지한다.
+더 이른 `e567b00`의 [실제 CLI](actual-cli-e567b00.md)와 [실제 GUI](actual-gui-e567b00.md)도 당시 결과로 유지한다.
 합성 fixture와 공식 SDK의 실제 실행은 구분한다.
+최종 head의 독립 리뷰·필수 CI·사람 승인·병합·main CI 결과는 [PR #294](https://github.com/minjunkim-dev/mobile-runtime/pull/294)에 기록한다.
 
 ## 입력과 계약
 
@@ -29,7 +53,8 @@ archive는 [공식 ZIP](https://storage.googleapis.com/flutter_infra_release/rel
 provider SHA256은 `d692b030a63466c44d6b2bc88583380371ecbe328f22cc4057835f59739821a1`이다.
 같은 날 archive HEAD는 HTTP `200`, Content-Length `2147160009`를 반환했다.
 HEAD의 body는 읽지 않았다. [official-release.json](./official-release.json)에 연결했다.
-이 metadata 관측에서 payload를 다운로드하거나 설치하지 않았다. 이후 실제 다운로드·설치는 별도 e567b00 기록이다.
+이 metadata 관측에서 payload를 다운로드하거나 설치하지 않았다.
+실제 다운로드·설치는 별도 `e567b00` 기록과 위 `24ee6e9` CLI·GUI 기록에 연결한다.
 다른 exact pin은 공식 metadata에서 그 version·arm64·Dart를 다시 확인해야 한다.
 
 ## 행동 검증
@@ -140,7 +165,7 @@ plugin 없는 정상 앱에서 공식 SDK가 삭제한 metadata 파일을 필수
 이미 잠긴 Yams를 EnvironmentKit target에서 직접 재사용한다.
 새 외부 dependency나 version·lock 변경은 없다.
 
-old actual 후보는 계획 실행 전에 중지했다.
+초기 actual 후보는 계획 실행 전에 중지했다.
 새 소유 VM의 clone·부팅·환경 관측·후보 전송까지만 수행했다.
 이 초기 중단 구간의 제품 CLI·setup plan·SDK payload 설치·Dart 정렬·GUI·기기 실행은 0회다.
 소유 VM은 정상 종료했다. 중단 전 감사에서 원본 VM 세 개의 config·manifest·NVRAM hash와 disk stat은 같았다.
@@ -148,7 +173,7 @@ old actual 후보는 계획 실행 전에 중지했다.
 이후의 전체 VM disk bytes와 전송 뒤 guest 파일 hash는 수집하지 않았다.
 이 기록은 수정 후보의 실제 준비 성공 근거가 아니다.
 
-## 수동 경계와 남은 gate
+## 수동 경계와 AC 근거
 
 #199 §5는 migration이나 source·lock 변경이 필요한 준비를 중단하고 수동 방법을 안내하도록 정한다.
 #205 AC2도 native migration의 중단과 수동 안내를 요구한다.
@@ -163,11 +188,15 @@ SDK ZIP의 snapshot·engine cache와 tools package_config 부재도 읽기로 �
 보류한 실험 source와 source-only 제안은 private 조사 기록으로 보존했다.
 제품 tree에는 해당 기능을 넣지 않았다.
 
-e567b00의 실제 CLI는 기존 SDK 재사용, 새 공식 SDK 설치, 다운로드·정렬 취소와 재시도를 확인했다.
-정렬 성공은 해당 operation의 완료다. 새 operation의 locked get 재승인은 현재 계약이다.
-GUI는 SDK 다운로드 취소·재검사·재승인·설치 재시도와 양플랫폼 부분 완료를 표시했다.
-실패 분기는 #199 Testing Decisions의 공통 fixture 경계에서 검증한다. 실제 설치·취소 흐름과 구분한다.
-Android provider가 추가 요구를 발견한 조건부 재승인은 자동 검사 근거다. 이 VM의 실제 Android 요구 변경으로 표시하지 않는다.
-[현재 AC 근거와 미확인 범위](actual-gui-e567b00.md#ac별-근거)를 읽는다.
-전체 AC 완료는 fixture나 CLI 성공 일부만으로 선언하지 않는다.
-별도 컨텍스트 리뷰·필수 CI·위험별 승인·병합·main CI도 별도 gate다.
+| #205 AC | 검증 근거 | 실제 관측의 경계 |
+| --- | --- | --- |
+| AC1: 호환 SDK·Dart 준비 | `FlutterProjectTests`, `FlutterProviderTests`, `FlutterInstallationTests`, 위 SDK CLI·GUI 실측 | 공식 stable arm64 SDK의 신규 설치·재사용·checksum을 확인했다. 기존 임의 SDK의 교체 성공은 주장하지 않는다 |
+| AC2: workspace·entrypoint·native migration | `FlutterProjectTests`, `FlutterPluginMetadataTests`, `FlutterPreparationTests`, 통합 CLI·GUI 실측 | 실제 locked Dart 정렬과 플랫폼별 수동 안내를 확인했다. native migration과 앱 build/run은 실행하지 않았다 |
+| AC3: 양플랫폼 상태·재승인 | `FlutterPreparationTests`, `PreparationExecutionTests`, 통합 실측과 stale 승인 실측 | `mobile.yml`의 선택 선언 변경은 실제 승인 identity에 반영됐다. Gradle이 새 variant 요구를 발견하는 조건부 경로는 자동 검사 근거다 |
+| AC4: 설치와 앱 실행 분리·실패·취소·재시도 | `FlutterInstallationTests`, `FlutterPreparationTests`, SDK CLI·GUI 실측과 과거 `e567b00` 정렬 취소·재시도 | 실제 다운로드 취소와 설치 재시도를 확인했다. 네트워크 장애 분기는 #199 Testing Decisions의 fixture 경계에서 검증했다 |
+| AC5: #199 AC02·AC03 연결 | 위 SDK CLI·GUI 설치·취소·재승인·재사용, 통합 Duo·Dart CLI·GUI 실측, stale 승인 실측 | 실제 실행이 필요한 성공·취소·재실행은 실제 근거로 연결한다. fixture 통과를 실제 도구 설치나 앱 실행 성공으로 바꾸지 않는다 |
+
+정렬 성공은 해당 operation의 완료다. 새 operation의 locked get은 다시 승인해야 한다.
+실제 설치·취소 흐름과 fixture의 실패 분기를 구분한다.
+실측 보고서의 보존 실패·변경 주체 미확인·미입증 범위도 AC 근거와 함께 읽는다.
+독립 리뷰·필수 CI·위험별 승인·병합·main CI는 실제 관측과 별도 gate다.

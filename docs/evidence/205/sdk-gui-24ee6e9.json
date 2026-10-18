@@ -1,0 +1,1483 @@
+{
+  "schemaVersion": 1,
+  "issue": 205,
+  "status": "GUI-SDK-only-observed-partial-strict-preservation-failed-independent-review-pending",
+  "measurementDateUTC": "2026-10-18",
+  "source": {
+    "measuredSHA": "24ee6e9752e1f39ac6a999113743e054082fed48",
+    "measuredTree": "4bd46b907b9d43dfee68207358515a88e9028c82",
+    "sampleSHA": "66732bc18ed28d9eed71336b4a2b018e09ad20b9",
+    "sampleTrackedFiles": 67
+  },
+  "scope": {
+    "SDKInstallationObservedInGUI": true,
+    "operationOutcomesFromVisibleGUI": true,
+    "GUIProcessNativeExitSeparate": true,
+    "wholeEnvironmentReady": false,
+    "appBuildOrRun": false,
+    "wholeIssue205Complete": false,
+    "release222Complete": false
+  },
+  "normalization": "JSON uses aliases for private roots and retains only metadata/pins. The five approved product images preserve original bytes and visible validation paths. Private files named .png actually encode JPEG; public copies use .jpg with image/jpeg. No image transformation, raw base64, SDK/source/cache contents, credentials or authentication-view assets are published.",
+  "aliases": {
+    "<VM_USER>": "Disposable VM test-user HOME; no whole-HOME preservation claim.",
+    "<N205>": "Restricted actual-host evidence root.",
+    "<R205>": "Restricted recovery evidence root.",
+    "<NR3>": "Fresh background-UI runtime metadata root, excluding all authentication/session files.",
+    "<GUI_ROOT>": "Separate owned SDK GUI root in the disposable validation VM."
+  },
+  "candidate": {
+    "GUIBinarySHA256": "1a658c2edfa7c8fa975052ae6d310360a86424094eb7b8c141793759600c5acd",
+    "CLIReadOnlyHelperSHA256": "e29f2db3fc2a8a7edc44ced5d6a9cb65852a8dd15096a908229b9e8ec4abcc81",
+    "bridgeSHA256": "7152bb70481a1393d53b8e9181570dd4713ffd87b4fb85fc704bc909093caae0",
+    "GUIBundleID": "dev.runstir.validation.goal205background",
+    "privateAdHocValidationArtifact": true,
+    "DeveloperIDNotarizationOrReleaseProof": false
+  },
+  "artifact": {
+    "Flutter": "3.41.9",
+    "DartExact": "3.11.5",
+    "channel": "stable",
+    "architecture": "arm64",
+    "revision": "00b0c91f06209d9e4a41f71b7a512d6eb3b9c694",
+    "URL": "https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/flutter_macos_arm64_3.41.9-stable.zip",
+    "bytes": 2147160009,
+    "sha256": "d692b030a63466c44d6b2bc88583380371ecbe328f22cc4057835f59739821a1",
+    "metadataSHA256": "be26ba7041e985325ac4dad55f795bbf51fb636da23e1ae41876223ebd51fc84",
+    "independentRetainedCompletedZIPRehashClaimed": false
+  },
+  "before": {
+    "SDKInitiallyAbsent": true,
+    "SDKManuallyCopiedToGUIRoot": false,
+    "genuinePristineSource67": true,
+    "sameExactOwnedJDKAndCandidate": true,
+    "protectedRootCount": 6,
+    "completedSDKCLIProtectedRows": 23017,
+    "wholeHOMEOrCacheProof": false
+  },
+  "approval": {
+    "initialPlanID": "dc8320cdac2a6ebb7cb04705c754b613c947d338c7781b52beb8961342a5b714",
+    "serializedPlanSHA256": "91940b98bed8664f4078f5867f03623c5eab4892d9416314e8d011221f549a6b",
+    "SDKActionSHA256": "c03893e63a44f23c5b69708c89431c7f98178002d918ca56a05983d515c4ed52",
+    "SDKOnly": true,
+    "automaticStageCount": 1,
+    "resourceKeyCount": 2,
+    "repositoryTrust": false,
+    "records": [
+      {
+        "atUTC": "2026-10-18T11:36:51.873Z",
+        "sourceSHA": "24ee6e9752e1f39ac6a999113743e054082fed48",
+        "sourceTree": "4bd46b907b9d43dfee68207358515a88e9028c82",
+        "UIVisiblePlanID": "dc8320cdac2a6ebb7cb04705c754b613c947d338c7781b52beb8961342a5b714",
+        "serializedPlanSHA256": "91940b98bed8664f4078f5867f03623c5eab4892d9416314e8d011221f549a6b",
+        "actionSHA256": "c03893e63a44f23c5b69708c89431c7f98178002d918ca56a05983d515c4ed52",
+        "repositoryTrust": false,
+        "SDKOnly": true,
+        "forActualDownloadCancellation": true,
+        "automaticStageCount": 1,
+        "UIPlanMatchesReviewedNativePlan": true,
+        "laterDartOrNativeApproved": false
+      },
+      {
+        "atUTC": "2026-10-18T11:41:25.158Z",
+        "sourceSHA": "24ee6e9752e1f39ac6a999113743e054082fed48",
+        "freshNativePlanPID": 6583,
+        "UIVisiblePlanID": "dc8320cdac2a6ebb7cb04705c754b613c947d338c7781b52beb8961342a5b714",
+        "wholeNativePlanEqualsPreviouslyReviewedSDKOnlyPlan": true,
+        "freshGUIReadOnlyPlanReportedExitCode": 0,
+        "priorGUICancelReportedExitCode": 130,
+        "SDKTargetStillAbsent": true,
+        "ownedStagesAfterCancel": [],
+        "twoResourceLeasesUnheldAfterCancel": true,
+        "repositoryTrust": false,
+        "approvedAutomaticStages": [
+          "flutter.sdk"
+        ],
+        "laterDartOrNativeApproved": false,
+        "strictAfterCancelFailuresPreserved": [
+          "sourceFull",
+          "defaultInventory"
+        ],
+        "cacheMetadataSame": false,
+        "unknownActorsRetained": true
+      }
+    ],
+    "recordPins": [
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-sdk-gui-v1/ROOT-FIRST-APPROVAL-v1.json",
+        "bytes": 627,
+        "sha256": "b95856c14a6fdb540d3d55ee145983421ac9eb34fb977986f710409d0eead444",
+        "storedMode": "0o600"
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-sdk-gui-v1/ROOT-RETRY-APPROVAL-v1.json",
+        "bytes": 749,
+        "sha256": "600d3c5cc3fd994df5d12ad25f6b91a16ee0f85803d704e23bff05d05f7eb39d",
+        "storedMode": "0o600"
+      }
+    ]
+  },
+  "sequence": {
+    "GUIProcess": {
+      "nativePID": 6209,
+      "startUTC": "2026-10-18T11:32:13Z",
+      "nativeExitCode": 0,
+      "nativeEndUTC": "2026-10-18T11:47:58Z",
+      "kernelAndSelected21KeyEnvironmentObserved": true
+    },
+    "firstDownload": {
+      "curlPID": 6479,
+      "kernelPath": "/usr/bin/curl",
+      "officialArtifactURLMatched": true,
+      "payloadStageID": "0AC4C5EA-DE9A-496C-9140-FFC214E397B3",
+      "observedPayloadBytes": [
+        2600960,
+        91615232
+      ],
+      "downloadObserved": true
+    },
+    "cancel": {
+      "UIReportedState": "cancelled",
+      "UIReportedExitCode": 130,
+      "operationNativeExitCode": null,
+      "sameGUIProcessContinued": true,
+      "SDKExistsAfterCancel": false,
+      "remainingOwnedStages": [],
+      "resourceLeasesUnheld": true,
+      "observedCurrentOrPriorChildrenAfterCancel": 0,
+      "rawAfterHostPID": 12397,
+      "rawAfterHostExitCode": 1
+    },
+    "retry": {
+      "freshNativePlanPID": 6583,
+      "freshNativePlanExitCode": 0,
+      "freshGUIReadOnlyReportedExitCode": 0,
+      "wholeReviewedNativePlanEqual": true,
+      "freshVisiblePlanID": "dc8320cdac2a6ebb7cb04705c754b613c947d338c7781b52beb8961342a5b714",
+      "repositoryTrust": false,
+      "approvedAutomaticStages": [
+        "flutter.sdk"
+      ],
+      "curlPID": 6853,
+      "kernelPath": "/usr/bin/curl",
+      "newPayloadStageID": "D9176987-02FD-482B-9FD4-A6D90045F3FC",
+      "lastObservedNewPayloadBytes": 2089316352,
+      "historicalPayloadMapIsNotLiveOldStage": true,
+      "UIReportedState": "partial",
+      "UIReportedExitCode": 1,
+      "operationNativeExitCode": null,
+      "UIReportedCompleted": [
+        "flutter.sdk"
+      ],
+      "laterDartOrNativeApproved": false
+    },
+    "reinspection": {
+      "GUIReportedReadOnlyExitCode": 0,
+      "CLIReadOnlyNativePID": 7170,
+      "CLIReadOnlyNativeExitCode": 0,
+      "SDKReused": true,
+      "matchingSDKChecks": 2,
+      "nextPlanID": "61178e7df6842b59784481c01d6bfb8a7a425b4eced80440c0f182210ab872be",
+      "autoApproved": false,
+      "autoExecuted": false,
+      "nextDartApprovedOrExecuted": false
+    },
+    "afterQuit": {
+      "GUIProcessAbsent": true,
+      "currentDescendants": [],
+      "priorObservedDescendantsStillAlive": [],
+      "scope": "Observed process identities only; unobserved or reparented children are not proven absent."
+    }
+  },
+  "installedSDK": {
+    "censusEntries": 21990,
+    "censusSHA256": "e8fef0699a9944f66487f8e49e2862c8512081f2692f90e96460afc01db6c1ce",
+    "FlutterVersion": "3.41.9",
+    "DartVersionFromInstalledMetadata": "3.11.5",
+    "versionFile": {
+      "SHA256": "caa276218e52c4fe62d754f0c5ce56086cbd2b7d50eda7574cf8ca33ab0f3f5a",
+      "bytes": 559,
+      "mode": 420
+    },
+    "dartExecutable": {
+      "SHA256": "60d8986f2a6975401f906467a8fea32400ce7eb4e2e0405f9ba3f81f2131428c",
+      "bytes": 3887760,
+      "mode": 493
+    },
+    "sameCensusAsSDKCLI": true,
+    "scope": "Installed metadata and executable bytes/census. Not Flutter bootstrap, an app build or app first-screen proof."
+  },
+  "strictAfter": {
+    "cancel": {
+      "hostNativePID": 12397,
+      "hostNativeExitCode": 1,
+      "preservation": {
+        "candidate": true,
+        "defaultInventory": false,
+        "existingLeaseRecords": true,
+        "globalPATH": true,
+        "launchctlPATH": true,
+        "ownedJDK": true,
+        "ownedSet": true,
+        "protectedRoots": true,
+        "selectedXcode": true,
+        "sourceFull": false
+      },
+      "selectedCacheStatSame": false
+    },
+    "final": {
+      "hostNativePID": 47263,
+      "hostNativeExitCode": 1,
+      "preservation": {
+        "candidate": true,
+        "defaultInventory": false,
+        "existingLeaseRecords": true,
+        "globalPATH": true,
+        "launchctlPATH": true,
+        "ownedJDK": true,
+        "ownedSet": true,
+        "protectedRoots": true,
+        "selectedXcode": true,
+        "sourceFull": false
+      },
+      "selectedCacheStatSame": false
+    },
+    "rawFailedKeys": [
+      "sourceFull",
+      "defaultInventory"
+    ],
+    "otherPreservationCheckCount": 8,
+    "sourceRowsBefore": 140,
+    "sourceRowsAfter": 142,
+    "sourceRegularFileContentAndModeDeltas": 0,
+    "trackedSource67BytesAndModesPreserved": true,
+    "sourceParentDirectorySizeChange": [
+      128,
+      160
+    ],
+    "addedDirectories": [
+      "ios/Runner.xcodeproj/project.xcworkspace/xcshareddata/swiftpm",
+      "ios/Runner.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/configuration"
+    ],
+    "swiftpmContainsOnlyConfiguration": true,
+    "configurationEmpty": true,
+    "sourceDirectoryActor": "UNKNOWN",
+    "sourceDirectoriesDeletedOrRestored": false,
+    "globalDefaultLastUsedAt": {
+      "before": "2026-10-18T11:25:55Z",
+      "afterCancel": "2026-10-18T11:36:59Z",
+      "afterFinal": "2026-10-18T11:48:52Z",
+      "onlyOneLeafChanged": true,
+      "actor": "UNKNOWN"
+    },
+    "selectedCacheDelta": {
+      "pathAlias": "<VM_USER>/Library/Caches",
+      "field": "mtimeNs",
+      "before": 1792319226700884551,
+      "after": 1792323144807762555,
+      "actor": "UNKNOWN"
+    },
+    "protected6MapsUnchanged": true,
+    "completedSDKCLI23017RowsUnchanged": true,
+    "finalOwnedStageCount": 0,
+    "finalResourceLeaseCount": 2,
+    "finalResourceLeasesUnheld": true,
+    "wholeHOMEOrCachePreservationProven": false
+  },
+  "privateOriginalExport": {
+    "index": {
+      "pathAlias": "<N205>/sdk-gui-export-v1/export-index.json",
+      "bytes": 10894,
+      "sha256": "009d194bfc14f092f2d4e2d005a8b978d8cf38c295e0ff77e62df25310f68525",
+      "storedMode": "0o600"
+    },
+    "rawCapture": {
+      "pathAlias": "<N205>/sdk-gui-export-v1/stdout",
+      "bytes": 147507122,
+      "sha256": "7950171f21616a93a1ac0d8f725a12da72d959e1b34fd8e98e1129a969f408d1",
+      "storedMode": "0o644"
+    },
+    "memberCount": 54,
+    "memberBytes": 110623677,
+    "allDecodedBytesAndHashesComparedWithIndex": true,
+    "rootDecoderNativePID": 53078,
+    "rootDecoderNativeExitCode": 0,
+    "writerDecodedRawBase64Again": false,
+    "exportNativePID": 51385,
+    "exportNativeExitCode": 0,
+    "memberPins": [
+      {
+        "id": "001",
+        "member": "launch-gui.sh",
+        "bytes": 2339,
+        "sha256": "26f55653cdf75eace2a8c13e11c8ee5b54bd3096e2b07648701618145d0f2516",
+        "originalMode": "0o700",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "002",
+        "member": "owned-gui.sb",
+        "bytes": 9187,
+        "sha256": "d62b793b05346e38c6972f41f500e7327a7f0c056cb0da275c95c7b1875e6222",
+        "originalMode": "0o644",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "003",
+        "member": "owned-java-probe.sb",
+        "bytes": 9043,
+        "sha256": "088c6e624a4cb7a2cf5c94a513beed4937fe199ebd542da2706b39d0e6700618",
+        "originalMode": "0o644",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "004",
+        "member": "owned-plan-prelaunch-v1.sb",
+        "bytes": 9026,
+        "sha256": "583ac863c2de2a6f552f408574ac6396b07f735ecaf7ece6a3718f756c2894dc",
+        "originalMode": "0o644",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "005",
+        "member": "owned-plan-retry-v1.sb",
+        "bytes": 9026,
+        "sha256": "583ac863c2de2a6f552f408574ac6396b07f735ecaf7ece6a3718f756c2894dc",
+        "originalMode": "0o644",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "006",
+        "member": "owned-post-plan-v1.sb",
+        "bytes": 9026,
+        "sha256": "583ac863c2de2a6f552f408574ac6396b07f735ecaf7ece6a3718f756c2894dc",
+        "originalMode": "0o644",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "007",
+        "member": "states/after-cancel-v1/managed-SDK-census.json",
+        "bytes": 193,
+        "sha256": "708c262cf4659e5b5136d3ab535002966d3e1b537382d087278134549a361e57",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "008",
+        "member": "states/after-cancel-v1/preserved-after.json",
+        "bytes": 35409652,
+        "sha256": "9eb9e0bde52245bd99bd9388518e8a25e2e702e1ada2c7f9223aa8283d54c439",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "009",
+        "member": "states/after-cancel-v1/report.json",
+        "bytes": 2413,
+        "sha256": "dbabef9007cdbd93d3fafac24f02bf4c7705d81e439f271845091e0da081075d",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "010",
+        "member": "states/after-final-v1/managed-SDK-census.json",
+        "bytes": 4171790,
+        "sha256": "bda25e66c246d63512194e49986fbbcc59984e75f820e60a5b75dbd9d17c0ae5",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "011",
+        "member": "states/after-final-v1/preserved-after.json",
+        "bytes": 35409652,
+        "sha256": "e487f3d0b710f83293ff75df3e7a2f83aeae28f65cc2b787af56df196bccbd8a",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "012",
+        "member": "states/after-final-v1/report.json",
+        "bytes": 2412,
+        "sha256": "cd0339e4cd864222c06af46b1946b9ab9b135f0eeed8450fff54822827c41806",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "013",
+        "member": "states/baseline.json",
+        "bytes": 683,
+        "sha256": "209edd38c89c141053bccb1e12c4c6cff5bd68eabb19aeb267aed3edf4b0f0d9",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "014",
+        "member": "states/candidate-verified.json",
+        "bytes": 6706,
+        "sha256": "113d0985fe8226ec6870b995c9557ee076eb1b6db0b3af31a09491fbec0ae20d",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "015",
+        "member": "states/environment.json",
+        "bytes": 1428,
+        "sha256": "596372200d54a107a8c6e76fec39c3be7cc65b17b13c2972b55630c036163299",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "016",
+        "member": "states/gui-launch-exit.json",
+        "bytes": 58,
+        "sha256": "3ba2f98b08f970adc5a034dd6a9e5d1f384527a127937d8a3ac6e41ef099821e",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "017",
+        "member": "states/gui-launch-start.json",
+        "bytes": 66,
+        "sha256": "0d49dbf4bf37092fba450f9ddc2bc1d074ca9247c98fb85509f026e25b0853f2",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "018",
+        "member": "states/gui-launcher-prepared.json",
+        "bytes": 4160,
+        "sha256": "9e01743624bb46e64b8f9295e1f22093dd91faf7646ac93644e894820010df64",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "019",
+        "member": "states/gui.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "020",
+        "member": "states/gui.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "021",
+        "member": "states/java-identity.json",
+        "bytes": 4474,
+        "sha256": "585155de03a240889dd414151e9d81ce2898efd44aca7fc43a4f3c56d639e018",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "022",
+        "member": "states/java-started.json",
+        "bytes": 1860,
+        "sha256": "e2fe0ea7c780c7e99bb0c7a7c11b43cbbec693bddc30816e70580e33c2bfb57d",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "023",
+        "member": "states/observations/after-cancel-v1/observation.json",
+        "bytes": 1631,
+        "sha256": "d6cd00308401a083f56c5b92ceb71fad1828e55ec867fc6633e26be79aa1d972",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "024",
+        "member": "states/observations/after-quit-v1/observation.json",
+        "bytes": 872,
+        "sha256": "7c16e4a5aaff9dd4b2d2734832e107d91084a2a28e2b3f10980bf228b2436b80",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "025",
+        "member": "states/observations/download-1/observation.json",
+        "bytes": 3603,
+        "sha256": "d385a74fb2b24fe63c79eb09bd2f7b3ac9ed8c4cc561f3e5b4e6bdcbdf906252",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "026",
+        "member": "states/observations/download-2/observation.json",
+        "bytes": 4497,
+        "sha256": "4e4d400a123e467b0f11e7c335d2b7d18e417162abfd552240c42a2955992e6e",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "027",
+        "member": "states/observations/launch-v1/observation.json",
+        "bytes": 1437,
+        "sha256": "a2f8c5a096aad10076dec445d558abbc9b51e6df2da632ce6d4223e06dced24a",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "028",
+        "member": "states/observations/reinspect-v1/observation.json",
+        "bytes": 1822,
+        "sha256": "9fb55d3b21e03bfee7a26b31aa2c65cf9948509ec3899b86cdd9eec5fd1c37ec",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "029",
+        "member": "states/observations/retry-1/observation.json",
+        "bytes": 3792,
+        "sha256": "b1f2bb847a2290fb1bfbf5f3a5b5b02cdf645909b18a42d5d8f89bcb8141612d",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "030",
+        "member": "states/observations/retry-2/observation.json",
+        "bytes": 4688,
+        "sha256": "16e4f1a7dea8ba06ab34cfbbd3d682260de1750cc5d3c45b46d7bba1f550d0c2",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "031",
+        "member": "states/observations/retry-3/observation.json",
+        "bytes": 5315,
+        "sha256": "7f3a56db743fc8f4e1643ecaac824e21544023b9b822f78d11a066ae01ef6a61",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "032",
+        "member": "states/observations/retry-4/observation.json",
+        "bytes": 5939,
+        "sha256": "55a2f4ddbdff97ee48109a92a2b45ee4380359c148f6aba0b36b25d8b300698a",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "033",
+        "member": "states/plan-prelaunch-v1/command.json",
+        "bytes": 2246,
+        "sha256": "19c1bb56150bae25e398786c6810bc162f211ab7ab7ad9faeda8424470fcb758",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "034",
+        "member": "states/plan-prelaunch-v1/exit.json",
+        "bytes": 3126,
+        "sha256": "22d98e495347355be34979b5f8dac8170c6336d8dd5929718d34f166bbdbd03a",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "035",
+        "member": "states/plan-prelaunch-v1/pid.json",
+        "bytes": 46,
+        "sha256": "843d4bfc1ae5b3775daf58d5566fe7c6398954551a010535a50c448e8fbbc1c9",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "036",
+        "member": "states/plan-prelaunch-v1/plan-review.json",
+        "bytes": 2302,
+        "sha256": "705c49c0674a9411bad9ed76a277051e8f3f06cb9e6c5437fb3edcbd1018479d",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "037",
+        "member": "states/plan-prelaunch-v1/stderr",
+        "bytes": 382,
+        "sha256": "90b8997269f0ac249c29d8c06693adb5cd15995fbb7bc8789d19d8a80f256bef",
+        "originalMode": "0o644",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "038",
+        "member": "states/plan-prelaunch-v1/stdout",
+        "bytes": 26539,
+        "sha256": "4a645b2029aa62eb55bfe7f06cd6f239959fbf3f070065055d5930e5116112e7",
+        "originalMode": "0o644",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "039",
+        "member": "states/plan-retry-v1/command.json",
+        "bytes": 2242,
+        "sha256": "b75c4556d146fc3a34c9c4e76cc08aa64627e4c1e1727d5a331bb78cadd69da0",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "040",
+        "member": "states/plan-retry-v1/exit.json",
+        "bytes": 3073,
+        "sha256": "197cd129fdc14027387021bf2a8f85c1842db3bd561b30e68eea0670db8e0a8d",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "041",
+        "member": "states/plan-retry-v1/pid.json",
+        "bytes": 45,
+        "sha256": "358d86c2641f486a265b2b36736402660d10828c8e1ce1912e4ffccf5f64758f",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "042",
+        "member": "states/plan-retry-v1/plan-review.json",
+        "bytes": 2302,
+        "sha256": "705c49c0674a9411bad9ed76a277051e8f3f06cb9e6c5437fb3edcbd1018479d",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "043",
+        "member": "states/plan-retry-v1/stderr",
+        "bytes": 382,
+        "sha256": "40ec75a959141a5a07a10ea0fb6d16079e2d6f90a3e10b4170b18621d61de905",
+        "originalMode": "0o644",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "044",
+        "member": "states/plan-retry-v1/stdout",
+        "bytes": 26539,
+        "sha256": "f8a7b3b4fe35a7e23f5bfd60394939aef41edbccf7d8bc9a6c076982a17faf47",
+        "originalMode": "0o644",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "045",
+        "member": "states/post-plan-v1/command.json",
+        "bytes": 2247,
+        "sha256": "80ce841bfa54c9f4430785dd68c467b150df9278e984626484606691b196ac2b",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "046",
+        "member": "states/post-plan-v1/exit.json",
+        "bytes": 1967,
+        "sha256": "69d550be778b69a982963272cb8196e583051f1208a61fdf6f07ea77181fe77a",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "047",
+        "member": "states/post-plan-v1/pid.json",
+        "bytes": 46,
+        "sha256": "a29ec26d72bfd3a88b020ee903afd752cd3752128d28b84354faa77b65077812",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "048",
+        "member": "states/post-plan-v1/reuse-review.json",
+        "bytes": 3549,
+        "sha256": "725f0a5dcfdc564b55a09fa86c99595ee093933f23690669236207d3a417945a",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "049",
+        "member": "states/post-plan-v1/stderr",
+        "bytes": 382,
+        "sha256": "68ac41f918ad7469f4fdc87b8b536a01bfb0f0506556a82f31411549271d2019",
+        "originalMode": "0o644",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "050",
+        "member": "states/post-plan-v1/stdout",
+        "bytes": 24581,
+        "sha256": "0f9db6c2d2add3264ff49413b23dfdba0f12b400ab3b9adecebec7c24df9dfe0",
+        "originalMode": "0o644",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "051",
+        "member": "states/preserved-before.json",
+        "bytes": 35409085,
+        "sha256": "5df3fb4255b020c9f21c620c244eb7c5d92ea2714ecba0e28eb664b51dc8bc97",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "052",
+        "member": "states/protected-census-review.json",
+        "bytes": 2219,
+        "sha256": "e5de86f0fad857f0e3855cb996c9df27f76b4b9f83bdc3cf24d0a82610806c3b",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "053",
+        "member": "states/sdk-input.json",
+        "bytes": 757,
+        "sha256": "caec8b262f092ed9f0893ac37ee75eaf76c18f122f6d264b9a50955ed954639a",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      },
+      {
+        "id": "054",
+        "member": "states/source-before.json",
+        "bytes": 12830,
+        "sha256": "4ba3833dd64582933244d7cc6e4c8839a41fe9fa2f3713b5e0e5a223b3560484",
+        "originalMode": "0o600",
+        "storedMode": "0o600"
+      }
+    ],
+    "hostReceiptPins": [
+      {
+        "pathAlias": "<N205>/sdk-gui-baseline-v1/command.json",
+        "bytes": 436,
+        "sha256": "62ae34296ff5330f763a5d0634fe6b71d162c65a0fd841c837ae64da85aea6d7",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-baseline-v1/pid.json",
+        "bytes": 46,
+        "sha256": "3102c50bfb040f9a5b96b97064e03165af6ebed9f217fd12868b6b6334315be4",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-baseline-v1/exit.json",
+        "bytes": 64,
+        "sha256": "8d650d080a1d87c437bf9b088952dd6dc25d56738b19e14c43da4fabbf993ed0",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-baseline-v1/stdout",
+        "bytes": 114,
+        "sha256": "349d7f472a1fd77b9949ad98dfeb7b691779aac0165a7db690a599d66d7a1704",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-baseline-v1/stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-wrapper-v1/command.json",
+        "bytes": 568,
+        "sha256": "e58a564569847d29a6afbe9e24fb9fdcb103dad0dacf8a2c58c1a6ca15c766d3",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-wrapper-v1/pid.json",
+        "bytes": 47,
+        "sha256": "4a4d51d758120bef92ebce6130142b3a972fd03d9c9c2a8b76d9022176d0550e",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-wrapper-v1/exit.json",
+        "bytes": 64,
+        "sha256": "96b2dc8a5069ca78da548ff5667b33c99329e41841281c03cf1205ff3ab1e0ff",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-wrapper-v1/stdout",
+        "bytes": 136,
+        "sha256": "89e5e066a1c3888b2d9b996f24af6d92150e0d571029aded05bb9f3d16f85feb",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-wrapper-v1/stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-download-1/command.json",
+        "bytes": 501,
+        "sha256": "bcb8f444f45856b7e3b1219bf54ade5e0d569c194bce83a10f3e6d44331b21c0",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-download-1/pid.json",
+        "bytes": 45,
+        "sha256": "fca79a81b65966f1e371f917e9d4809c3d091ec1f936379e94f2df3f2a2c579a",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-download-1/exit.json",
+        "bytes": 63,
+        "sha256": "a83fae7ee20c98688e499035ef2dd82fd2db26e21b2cbef86805db4617fff001",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-download-1/stdout",
+        "bytes": 3235,
+        "sha256": "db38f9dda4ff8b84cf190831dbe9cd2ee7c87cd8bc719f1b5084a80924dcc4e7",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-download-1/stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-download-2/command.json",
+        "bytes": 501,
+        "sha256": "fefd1cad220047256ce58045da3db87210853530df74c05e96f7f48a6d384134",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-download-2/pid.json",
+        "bytes": 45,
+        "sha256": "051250c87a833e195199ebf753a8c59c18b02e9bc2b06d5205221e39635258ad",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-download-2/exit.json",
+        "bytes": 62,
+        "sha256": "4855c4eb8fae66ca4b76d364f51ef1ffeb62f3a0394308cb5968f76ea93e471b",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-download-2/stdout",
+        "bytes": 4035,
+        "sha256": "c13f00cdcdeecf0692667074ab81594d2f0dcbb02e9ceb69c96213cb36e112d3",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-download-2/stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-after-cancel-v1/command.json",
+        "bytes": 506,
+        "sha256": "aa55f1b5ee702f7c174fefbb562f9c3c2fde169536116c2dde41eecb192d1427",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-after-cancel-v1/pid.json",
+        "bytes": 47,
+        "sha256": "00570ba0629750cc84920f4391d252185737e59390d6453234e0bf58269fabd4",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-after-cancel-v1/exit.json",
+        "bytes": 64,
+        "sha256": "46f204e2a6328ca19e2acc5f73aab7c2c4d3092ac049e3902fa5b64eda4ae326",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-after-cancel-v1/stdout",
+        "bytes": 1449,
+        "sha256": "11f1befef6a10762a152a1dea5eb9488013e8673d8dc4b7d788469a7ea0cc362",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-after-cancel-v1/stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-after-cancel-v1/command.json",
+        "bytes": 470,
+        "sha256": "743a91994dbe1fc48de441c52c4466dce7e109427605c1fd470a968d5d6d7e26",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-after-cancel-v1/pid.json",
+        "bytes": 46,
+        "sha256": "44e3534e0a4bd159e7f1f90d96549737ef7e0b45a4a00e7ad7659344be714d43",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-after-cancel-v1/exit.json",
+        "bytes": 63,
+        "sha256": "55f30a20edda790b5115f820b1a4a0a331d681ab0b3371720dc5b9d61dd9a5b4",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-after-cancel-v1/stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-after-cancel-v1/stderr",
+        "bytes": 777,
+        "sha256": "89779c7ef64783876808020e4e8ff5f370efc4115d42409e8ed47c8862d66a22",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-plan-retry-v1/command.json",
+        "bytes": 468,
+        "sha256": "5917a2515fc7c582a5f409c67d0cc30a0aa16a47b32d9b0a9f1543ec5837fcf0",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-plan-retry-v1/pid.json",
+        "bytes": 47,
+        "sha256": "aef125a7491497733a21f52e1652fe4166133c0459e5d5eb9cf8ad7a18563aa8",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-plan-retry-v1/exit.json",
+        "bytes": 63,
+        "sha256": "c1a8d2db192b87c92a4384b98efb2315dd8ecde30d5bf373d8e4b0ea0f15d423",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-plan-retry-v1/stdout",
+        "bytes": 106,
+        "sha256": "402257441bd9044868f0b19ddea7ac3f41b25d8a0078b59a09ab6fe766b66325",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-plan-retry-v1/stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-retry-4/command.json",
+        "bytes": 498,
+        "sha256": "6a65cf39b415a53ceb1567d7786ceb86041ef2be627251f7be3eae721ce817bb",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-retry-4/pid.json",
+        "bytes": 46,
+        "sha256": "619e76884c05a13f30828559f2d787497305fde293ddb676635222452ae79a9a",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-retry-4/exit.json",
+        "bytes": 63,
+        "sha256": "0663d15902b9b29d11976829a0a18dd53383bc3ed7f5a11207c69196b3dd52f1",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-retry-4/stdout",
+        "bytes": 5381,
+        "sha256": "3cfa5153864bd09097ba10a76355c65a0b02cd11834f14ba6ce2d83989338f9d",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-retry-4/stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-reinspect-v1/command.json",
+        "bytes": 503,
+        "sha256": "e21e9be1a61fd6e46053743b9d9d959eb9ae9eb78f7425a69089db6669ab3299",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-reinspect-v1/pid.json",
+        "bytes": 46,
+        "sha256": "5ba5df9a50e16dadb46c6ceafa65da505c315681f0fc1303bf1d3091c75c4b0d",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-reinspect-v1/exit.json",
+        "bytes": 63,
+        "sha256": "4158a7f91f2cabb14aa760699751f318bb12dbcb06667aaf8eb84326471937b4",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-reinspect-v1/stdout",
+        "bytes": 1636,
+        "sha256": "e9851dc85c11e73f84ba82a0f42e51d916fa606be2b02e2dc3a99a58e7e44ffc",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-reinspect-v1/stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-after-quit-v1/command.json",
+        "bytes": 505,
+        "sha256": "2a0ec117e2d2cec43bbfa06dd163be7f09132a51c3e0d068fcd2b9ca39090e61",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-after-quit-v1/pid.json",
+        "bytes": 46,
+        "sha256": "0ec514f261d67135562fd0a9bb09ae0f5986411316a22adae5d3ea93f527930c",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-after-quit-v1/exit.json",
+        "bytes": 63,
+        "sha256": "12bc6b543ead8ca110338c75282bac12f62681e7376bfe2756166a1a35127a11",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-after-quit-v1/stdout",
+        "bytes": 796,
+        "sha256": "d6fa3a30808f93060fef628fb9613489dfabe762e2235262ca7b72bb010c2d83",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-observe-after-quit-v1/stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-post-plan-v1/command.json",
+        "bytes": 472,
+        "sha256": "425493d0627474695a605e70eb1be3222dae74ac1b7d3f7984251afc29bbbf4e",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-post-plan-v1/pid.json",
+        "bytes": 46,
+        "sha256": "f7c5a853ffa10d9b2d4fbaedb767ac47586640311fdc3754635c3d4a4a218788",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-post-plan-v1/exit.json",
+        "bytes": 63,
+        "sha256": "036726160dc46af90da0283ab14d0d0de1da50e87564943e82b97a09537d29d5",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-post-plan-v1/stdout",
+        "bytes": 105,
+        "sha256": "4eed3a6fc43d91e2ed0b70d9545527d21d4c014f6f566725bfd618ce0b7f9ac4",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-post-plan-v1/stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-after-final-v1/command.json",
+        "bytes": 471,
+        "sha256": "d46cbad400e50bd819b535f58f8f52aaf6cf2038e8a946665e4cb086e33c746e",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-after-final-v1/pid.json",
+        "bytes": 46,
+        "sha256": "30fc1ee818f5af64bd63737d7193c1adfe2f446a014ed2c8c7f346382384b106",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-after-final-v1/exit.json",
+        "bytes": 62,
+        "sha256": "4f5bb8e08944110e44e01ce9e8f3ece13604cfe7d97ea9da522b2bd359a3dc8b",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-after-final-v1/stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-after-final-v1/stderr",
+        "bytes": 777,
+        "sha256": "89779c7ef64783876808020e4e8ff5f370efc4115d42409e8ed47c8862d66a22",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-export-v1/command.json",
+        "bytes": 435,
+        "sha256": "2faa0a0afb247a320573c800822cd6bd6e459178264bdb9a73f7f1ccd93d2cb4",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-export-v1/pid.json",
+        "bytes": 47,
+        "sha256": "eaf94a6d9bdadd48ce3163b1b417f3067d3334cc6350b86ffe702df538bdfd6f",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-export-v1/exit.json",
+        "bytes": 63,
+        "sha256": "e327747f60c897018e98d2e650e8f3fde7eafabb6726a75a295cfd62373ca8a6",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-export-v1/stdout",
+        "bytes": 147507122,
+        "sha256": "7950171f21616a93a1ac0d8f725a12da72d959e1b34fd8e98e1129a969f408d1",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-export-v1/stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-local-decode-v1/command.json",
+        "bytes": 311,
+        "sha256": "4fdfb5d83ec379b8f893be58ab3a6ddc5455906d8cd37d1f23d7b3fba9ea5206",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-local-decode-v1/pid.json",
+        "bytes": 46,
+        "sha256": "af44952a41c191e6605b009f09b8cde15a3624f4b4a6027fd4f5a96d767e2bb7",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-local-decode-v1/exit.json",
+        "bytes": 63,
+        "sha256": "3bda726c894f643365d22e2c5f050ea168c9606b0cd084a02302edfdf2f9d9a3",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-local-decode-v1/stdout",
+        "bytes": 207,
+        "sha256": "5716ed30ee0f13183cfb9856cb494c22ad6ab2d24728b1c8cde83d8402f572a9",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/sdk-gui-local-decode-v1/stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/stop-supported-after-sdk-v1/command.json",
+        "bytes": 204,
+        "sha256": "0382b9ebde6d6e5705f64040ecf74814807bad7c7987da753d6403aa50afe57f",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/stop-supported-after-sdk-v1/pid.json",
+        "bytes": 45,
+        "sha256": "318bbd6fb2f07e3baaf439dc352f9ab77d35acaab4852f4ee948f1aa0608fcd6",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/stop-supported-after-sdk-v1/exit.json",
+        "bytes": 63,
+        "sha256": "f22fdb2ebb6c2eb7504df6b2b87ac30500357e5d75c2b0c97142aa06906c1130",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/stop-supported-after-sdk-v1/stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/stop-supported-after-sdk-v1/stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/boot-supported-v1/command.json",
+        "bytes": 292,
+        "sha256": "af996d45badae437e52dc5b7e43a179fb12bcfc74abd088ef71102ef5d09c480",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/boot-supported-v1/pid.json",
+        "bytes": 46,
+        "sha256": "bfe4d48e316dce196ce5aca3fd4699371df4ee417d90a6bdc3a73837e0310f96",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/boot-supported-v1/exit.json",
+        "bytes": 63,
+        "sha256": "42686da700ac9d3c457ffb9014a07ab247f9e24e89da675f37513824829fb578",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/boot-supported-v1/stdout",
+        "bytes": 15,
+        "sha256": "608364f77893b5e00c5454006d467f655bc5827746b8430897a14e6b82b192f0",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/boot-supported-v1/stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "storedMode": "0o644"
+      }
+    ]
+  },
+  "images": {
+    "privateOriginalCount": 12,
+    "publicCopyCount": 5,
+    "publicMediaType": "image/jpeg",
+    "originalPNGExtensionMatchesBytes": false,
+    "allPublicCopiesByteIdentical": true,
+    "transcoded": false,
+    "pins": [
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-sdk-gui-v1/00-nr3-view-only-smoke.png",
+        "bytes": 86493,
+        "sha256": "73f3079118b84d8af95a0584add36829e54907099c6c124de8d36a63e67c426e",
+        "storedMode": "0o600",
+        "id": "00",
+        "mediaType": "image/jpeg",
+        "privateOriginalName": "00-nr3-view-only-smoke.png"
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-sdk-gui-v1/01-terminal-reviewed-command.png",
+        "bytes": 80052,
+        "sha256": "5f3def87df49c79e0b446840b98f81f70a69dd13b80ba6db581219816dd77ca0",
+        "storedMode": "0o600",
+        "id": "01",
+        "mediaType": "image/jpeg",
+        "privateOriginalName": "01-terminal-reviewed-command.png"
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-sdk-gui-v1/02-current-plan-id-trust-off.png",
+        "bytes": 126476,
+        "sha256": "340f65acf259349ed5c8dca98f17d6acb73c69a48cfd3b5897776191034968d2",
+        "storedMode": "0o600",
+        "id": "02",
+        "mediaType": "image/jpeg",
+        "privateOriginalName": "02-current-plan-id-trust-off.png"
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-sdk-gui-v1/03-official-sdk-checksum-trust-off.png",
+        "bytes": 141518,
+        "sha256": "f4ee0683dfe13447a712f14e19852aca4bf0fb1f4710a244a351413b8ea1eaad",
+        "storedMode": "0o600",
+        "id": "03",
+        "mediaType": "image/jpeg",
+        "privateOriginalName": "03-official-sdk-checksum-trust-off.png",
+        "publicPath": "images/sdk-gui-03-plan.jpg",
+        "publicMode": "0o644",
+        "byteIdenticalCopy": true,
+        "transcoded": false
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-sdk-gui-v1/04-observed-sdk-download-running.png",
+        "bytes": 139680,
+        "sha256": "fd1e26094f4978b5144208da79076e9ea47f89743ac5c229e527535e6526d2f2",
+        "storedMode": "0o600",
+        "id": "04",
+        "mediaType": "image/jpeg",
+        "privateOriginalName": "04-observed-sdk-download-running.png"
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-sdk-gui-v1/05-gui-cancelled-exit130.png",
+        "bytes": 142283,
+        "sha256": "a31caf791c91290318966b40d99ffa0b8a0ff19b4c68811396c72f35458979ad",
+        "storedMode": "0o600",
+        "id": "05",
+        "mediaType": "image/jpeg",
+        "privateOriginalName": "05-gui-cancelled-exit130.png",
+        "publicPath": "images/sdk-gui-05-cancel.jpg",
+        "publicMode": "0o644",
+        "byteIdenticalCopy": true,
+        "transcoded": false
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-sdk-gui-v1/06-fresh-retry-plan-trust-off.png",
+        "bytes": 141530,
+        "sha256": "132ef1e767cb327dfc2e21d21d4a656e242d40bf69d044c5b56c5885e28316b9",
+        "storedMode": "0o600",
+        "id": "06",
+        "mediaType": "image/jpeg",
+        "privateOriginalName": "06-fresh-retry-plan-trust-off.png"
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-sdk-gui-v1/07-retry-sdk-download-running.png",
+        "bytes": 139728,
+        "sha256": "2536d0feb650372eed13139bb369d8a960908addc3facfcf7f2f930c611f2b1f",
+        "storedMode": "0o600",
+        "id": "07",
+        "mediaType": "image/jpeg",
+        "privateOriginalName": "07-retry-sdk-download-running.png"
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-sdk-gui-v1/08-sdk-install-partial-only-flutter-sdk.png",
+        "bytes": 135915,
+        "sha256": "70f4642a669291bef9ef16b7e199b5c722ceb63d2500056a4d19b863d3468eb5",
+        "storedMode": "0o600",
+        "id": "08",
+        "mediaType": "image/jpeg",
+        "privateOriginalName": "08-sdk-install-partial-only-flutter-sdk.png",
+        "publicPath": "images/sdk-gui-08-complete.jpg",
+        "publicMode": "0o644",
+        "byteIdenticalCopy": true,
+        "transcoded": false
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-sdk-gui-v1/09-reinspect-installed-sdk-reuse.png",
+        "bytes": 139898,
+        "sha256": "be3a0874665398dbd41a0e3d956241c99a94f8980cffd479dca293a00400e563",
+        "storedMode": "0o600",
+        "id": "09",
+        "mediaType": "image/jpeg",
+        "privateOriginalName": "09-reinspect-installed-sdk-reuse.png",
+        "publicPath": "images/sdk-gui-09-reuse.jpg",
+        "publicMode": "0o644",
+        "byteIdenticalCopy": true,
+        "transcoded": false
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-sdk-gui-v1/10-next-dart-plan-unapproved.png",
+        "bytes": 141008,
+        "sha256": "63e49e5f895b6bec33701da2375e933cca6f8b0f42c3a9365b5d748dbab63e54",
+        "storedMode": "0o600",
+        "id": "10",
+        "mediaType": "image/jpeg",
+        "privateOriginalName": "10-next-dart-plan-unapproved.png",
+        "publicPath": "images/sdk-gui-10-unapproved.jpg",
+        "publicMode": "0o644",
+        "byteIdenticalCopy": true,
+        "transcoded": false
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-sdk-gui-v1/11-terminal-after-normal-gui-quit.png",
+        "bytes": 81798,
+        "sha256": "077830608850ec68ba65aeb0b3dcb699f958f361bdaa3f9da1efe6b3253737e0",
+        "storedMode": "0o600",
+        "id": "11",
+        "mediaType": "image/jpeg",
+        "privateOriginalName": "11-terminal-after-normal-gui-quit.png"
+      }
+    ]
+  },
+  "backgroundUIAndCleanup": {
+    "legacyRelaySelfcheck": "FAIL",
+    "legacyCause": "UNKNOWN",
+    "staticFileCount": 94,
+    "staticReviewScope": "Static94 and fresh view-only smoke boundary; not a claim that the failed legacy selfcheck passed.",
+    "viewOnlySmokeImageID": "00",
+    "actualGUIInputStayedInBackgroundVM": true,
+    "RootReportedNativeMacFocusChanges": 0,
+    "RootReportedAccountOrAccessSettingsChanges": 0,
+    "proxyHostTartPID": 92385,
+    "proxyNativeExitCode": 0,
+    "proxyReason": "client-eof",
+    "forcedProxyTermination": false,
+    "nodePID": 91549,
+    "RootReportedCollectedNodeNativeExitCode": 0,
+    "relayPID": 91138,
+    "RootReportedCollectedRelayNativeExitCode": 0,
+    "relayWorkerStillRunning": false,
+    "uncertainOwnedProxyCleanup": false,
+    "metadataPins": [
+      {
+        "pathAlias": "<NR3>/ROOT-node-stop-signal-v1.json",
+        "bytes": 387,
+        "sha256": "d4145089579d732fb9105080fc3db5622ad3be8bef4b5e7a8acfdd3a06424f23",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<NR3>/ROOT-relay-stop-signal-v1.json",
+        "bytes": 534,
+        "sha256": "9fe53d8aea5c93c4b69c1e3d56bb0e3a256fd60d861e6ac8f459bb1cfb3735cf",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<NR3>/ROOT-relay-stop.json",
+        "bytes": 176,
+        "sha256": "bd48e4d85cbfca5500b7b72c25be15315a2885761ff777a40f47ec6a1c065bb2",
+        "storedMode": "0o600"
+      },
+      {
+        "pathAlias": "<NR3>/ROOT-relay-connection-001.exit.json",
+        "bytes": 533,
+        "sha256": "6fc2674bc87fab5632cb8ddbe0de492c5125d55ea671141b7282a920be8b3197",
+        "storedMode": "0o600"
+      }
+    ],
+    "scope": "Root native-handle collection and metadata. Relay-generated inputEvents/configuration counters do not mean Root performed no GUI input. No authentication/session files were read, hashed or copied by this writer."
+  },
+  "VMStop": {
+    "stopHostPID": 56938,
+    "stopNativeExitCode": 0,
+    "originalBootPID": 12857,
+    "originalBootNativeExitCode": 0,
+    "RootReportedTartRunningVMs": [],
+    "protectedVMCount": 5,
+    "beforeAfterVMsDictionaryExact": true,
+    "beforePin": {
+      "pathAlias": "<N205>/before-supported-v1-protected-vms.json",
+      "bytes": 4410,
+      "sha256": "85f8fc469ea540adb72bbdba32dd6dda0c492dc4857328bf36fcef59c174c400",
+      "storedMode": "0o644"
+    },
+    "afterPin": {
+      "pathAlias": "<N205>/after-supported-sdk-stopped-v1-protected-vms.json",
+      "bytes": 4411,
+      "sha256": "3d5f04f10904b6a2d2298dea4ad1c44701e312fb2611dc5904853d925e4ec148",
+      "storedMode": "0o644"
+    },
+    "scope": "Small metadata full SHA plus VM disk stat only. Not whole VM disk bytes/hash or full host preservation."
+  },
+  "relatedEvidence": {
+    "FBComponent": "actual-supported-fb9167b.json",
+    "SDKCLI": "sdk-cli-24ee6e9.json",
+    "staleSelector": "selector-stale-24ee6e9.json",
+    "FBComponentRelabeledAs24ee": false,
+    "sourceGuardDelta": "Product3 added lines/test57 added lines strengthen SDK final inspection source validation. Existing FB Duo/Dart remains FB actual."
+  },
+  "ACMapping": {
+    "AC1": "Actual exact official SDK download/install followed by SDK identity/reuse; installed metadata and product checksum validation are explicit.",
+    "AC2": "Current plan includes declarations/workspace/entrypoint and native manual boundaries. GUI SDK-only did not execute Dart alignment or native migration.",
+    "AC3": "Visible both-platform preparation/manual status, SDK-only approval and separate unapproved next Dart plan.",
+    "AC4": "Visible GUI cancellation130 and retry partial1 are distinct from native GUI process exit0; SDK installation is not app build/run.",
+    "AC5_parentAC02_AC03": "Actual plan/cancel/reapproval/install/reinspection plus explicit named preservation and raw FAIL/UNKNOWN. Not whole issue completion."
+  },
+  "independentActualSecurityReview": {
+    "report": {
+      "pathAlias": "<R205>/reviews205/INSTALL-GUARD-SDK-GUI-ACTUAL-SECURITY-v1.md",
+      "bytes": 19338,
+      "sha256": "6b23e9a90f3dc565994953bf6fbec176c124c18cf2d5e6b64d08a6ccfcfdc758",
+      "storedMode": "0o644"
+    },
+    "additionalMaterialFindings": 0,
+    "strictPreservationFailuresRetained": 2,
+    "sourceDirectoryGlobalTimestampAndCacheActors": "UNKNOWN",
+    "sameModelSeparateContext": true,
+    "reviewerSeparatedFromProductHelperAndActualOperation": true,
+    "reviewerAuthoredEarlierSDKDecoder": true,
+    "independentDecoderCertificationClaimed": false,
+    "scope": "Full 54 original members, decoded bytes/index, 12 JPEG screenshots, two Root approvals, SDK21990 and protected6 maps, raw strict FAIL2, native GUI6209 exit0 and direct proxy/VM receipts. Node/relay final native0 and runningVMs[] are separately marked as Root-collected tool results. Not final public-doc-head approval or whole environment preservation."
+  },
+  "remainingGates": {
+    "independentSDKGUIActualReview": "COMPLETE_WITH_RECORDED_LIMITS",
+    "finalPublicREADMEAndManifest": null,
+    "finalWholeHeadIndependentReviews": null,
+    "requiredFinalHeadCI": null,
+    "exactFinalHeadHumanApproval": null,
+    "merge": null,
+    "mainCI": null,
+    "issue205Closure": null
+  },
+  "limits": [
+    "GUI operation cancelled130/partial1 are UI-reported results, not native product process exits. Native GUI child6209 exited0 only after normal quit.",
+    "The native post-plan is a separate CLI read-only inspection, not native confirmation of GUI operation exit130/1.",
+    "SDK-only completion leaves Dart/native actions unapproved and whole readiness partial/manual.",
+    "Source directory/global lastUsedAt/selected cache metadata actors remain UNKNOWN; original strict after FAIL2 persists.",
+    "Legacy relay selfcheck failure remains separate from static/pre-use review and actual background UI.",
+    "Selected image sources had .png names but JPEG bytes. Public .jpg copies preserve exact bytes without masking/resizing/reencoding.",
+    "SDK GUI actual independent Security report has zero additional material findings within its fixed actual scope. It retains raw FAIL/UNKNOWN and is not final public-doc-head approval.",
+    "Native VM/Node/relay handle collection does not establish whole host/VM-disk or unseen-child preservation.",
+    "No release222, final public-doc head approval, CI, merge, main CI or whole205 completion is claimed."
+  ]
+}
