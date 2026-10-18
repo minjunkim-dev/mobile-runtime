@@ -104,6 +104,8 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
     private let application: URL
     private let excludedSDK: URL
     private let directoryAliases: [String: String]
+    private let generatedDirectories: Set<String>
+    private let pluginMetadata: FlutterPreparation.IOSPluginMetadata
     private let original: [String: String]
     private let sdk: FlutterSDK
     private let lock = NSLock()
@@ -112,7 +114,7 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
 
     init(anchor: ProjectAnchor, input: ProjectInspectionInput, preparation: FlutterPreparation?, runner: any ProcessRunner) throws {
         guard let preparation, let sdk = preparation.sdk, preparation.entrypoint != nil,
-            let workspace = preparation.workspace else {
+            let workspace = preparation.workspace, let pluginMetadata = preparation.iosPluginMetadata else {
             throw Self.failure("Flutter iOS preparation is incomplete. Inspect mobile setup with the same entrypoint.")
         }
         let alternate = ["FLUTTER_TOOL_ARGS", "FLUTTER_ENGINE", "LOCAL_ENGINE", "LOCAL_ENGINE_HOST", "FLUTTER_ENGINE_SRC_PATH"]
@@ -123,8 +125,15 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
         application = anchor.directory
         excludedSDK = sdk.root
         self.sdk = sdk
+        self.pluginMetadata = pluginMetadata
+        try Self.checkPluginMetadata(pluginMetadata, application: anchor.directory)
         let sdkPath = try Self.physical(sdk.root.path)
         let workspacePath = try Self.physical(root.path)
+        let packagePaths = try workspace.packages.map { try Self.physical($0.path) }
+        let generated = [".dart_tool", "build", ".mobile", "node_modules", ".build", ".gradle", "graft",
+            "vendor/bundle", "ios/Pods", "ios/vendor/bundle", "ios/Flutter/ephemeral", "android/.gradle", "android/build"]
+        generatedDirectories = Set(packagePaths.flatMap { package in generated.map { package + "/" + $0 } }
+            .filter { path in !packagePaths.contains { $0 == path || $0.hasPrefix(path + "/") } })
         var aliases: [String: String] = [:]
         for package in workspace.packages {
             if let source = try? Self.aliasPath(package.appendingPathComponent(".fvm/flutter_sdk")) { aliases[source] = sdkPath }
@@ -148,7 +157,8 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
             }
         }
         directoryAliases = aliases
-        original = try Self.files(root, application: anchor.directory, excluding: sdk.root, aliases: aliases)
+        original = try Self.files(root, excluding: sdk.root, aliases: aliases, generated: generatedDirectories)
+        try Self.checkPluginMetadata(pluginMetadata, application: anchor.directory)
         let logs = RunLogs(project: anchor.directory)
         let protected = original.filter { !$0.value.hasPrefix("link:") }.map(\.key) + [
             sdk.root.appendingPathComponent("bin/cache/dart-sdk").path,
@@ -187,7 +197,8 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
     }
 
     func check() throws {
-        let now = try Self.files(root, application: application, excluding: excludedSDK, aliases: directoryAliases)
+        try Self.checkPluginMetadata(pluginMetadata, application: application)
+        let now = try Self.files(root, excluding: excludedSDK, aliases: directoryAliases, generated: generatedDirectories)
         let differences = Set(original.keys).union(now.keys).filter { original[$0] != now[$0] }.sorted()
         if !differences.isEmpty {
             lock.withLock { changed = differences }
@@ -198,17 +209,16 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
         }
     }
 
-    private static func files(_ root: URL, application: URL, excluding sdk: URL, aliases: [String: String]) throws -> [String: String] {
-        let ignored: Set<String> = [".git", "node_modules", "Pods", "vendor", "build", ".build", ".gradle", ".dart_tool", ".mobile", "graft"]
+    private static func files(_ root: URL, excluding sdk: URL, aliases: [String: String], generated: Set<String>) throws -> [String: String] {
         var failure: (any Error)?
         let physicalRoot = try physical(root.path)
-        let ephemeral = URL(fileURLWithPath: try physical(application.path)).appendingPathComponent("ios/Flutter/ephemeral").path
         guard let entries = FileManager.default.enumerator(at: URL(fileURLWithPath: physicalRoot),
             includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey],
             errorHandler: { _, error in failure = error; return false }) else { throw CocoaError(.fileReadNoPermission) }
         var result: [String: String] = [:]
         for case let file as URL in entries {
-            if ignored.contains(file.lastPathComponent) || file.path == ephemeral {
+            // Git metadata keeps its existing privacy boundary, including nested repositories.
+            if file.lastPathComponent == ".git" {
                 entries.skipDescendants(); continue
             }
             let attributes = try file.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
@@ -224,7 +234,8 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
                         remediation: Remediation(summary: "Prepare source and lockfiles without aliases manually. Only the selected SDK and validated generated plugin directory aliases are supported. Preserve the existing link and target; Runstir did not change either."))
                 }
                 result[file.path] = "link:" + (try FileManager.default.destinationOfSymbolicLink(atPath: file.path))
-            } else if file.standardizedFileURL.resolvingSymlinksInPath() == sdk {
+            } else if (attributes.isDirectory == true && generated.contains(file.path))
+                || file.standardizedFileURL.resolvingSymlinksInPath() == sdk {
                 entries.skipDescendants()
             } else if attributes.isDirectory != true {
                 let mode = try FileManager.default.attributesOfItem(atPath: file.path)[.posixPermissions] as? NSNumber
@@ -233,6 +244,24 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
         }
         if let failure { throw failure }
         return result
+    }
+
+    private static func checkPluginMetadata(_ expected: FlutterPreparation.IOSPluginMetadata, application: URL) throws {
+        var file = application.appendingPathComponent(".flutter-plugins-dependencies")
+        file.removeAllCachedResourceValues()
+        let matches: Bool
+        switch expected {
+        case .absent:
+            matches = !FileManager.default.fileExists(atPath: file.path)
+                && (try? FileManager.default.destinationOfSymbolicLink(atPath: file.path)) == nil
+        case .bytes(let bytes):
+            let values = try? file.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey])
+            matches = values?.isRegularFile == true && values?.isSymbolicLink != true && (try? Data(contentsOf: file)) == bytes
+        }
+        guard matches else {
+            throw DomainError(summary: "Flutter plugin metadata changed after validation: .flutter-plugins-dependencies.",
+                remediation: Remediation(summary: "Inspect and prepare plugin metadata manually, then retry. Preserve source and lockfiles; no file was restored."))
+        }
     }
 
     private static func physical(_ path: String) throws -> String {

@@ -8,7 +8,7 @@ import Testing
 
 @Suite("Flutter native child boundaries")
 struct FlutterIOSRuntimeTests {
-    @Test("ordinary source directory aliases stop before native build", arguments: ["lib/shared", "ios", "assets"])
+    @Test("ordinary source directory aliases stop before native build", arguments: ["lib/shared", "ios", "assets", "lib/build", "assets/build", "build"])
     func sourceDirectoryAlias(_ relative: String) async throws {
         let f = try FlutterIOSFixture()
         let outside = try FixtureRepo()
@@ -23,6 +23,7 @@ struct FlutterIOSRuntimeTests {
             observed = try outside.write("directory/shared.dart", "void shared() {}\n")
         }
         let before = try Data(contentsOf: observed)
+        try FileManager.default.createDirectory(at: link.deletingLastPathComponent(), withIntermediateDirectories: true)
         try FileManager.default.createSymbolicLink(at: link, withDestinationURL: target)
         let runner = FlutterIOSRunner(fixture: f)
         let result = await WorkflowExecution.run(.build, input: f.input(), runner: runner, leases: f.leases)
@@ -32,6 +33,49 @@ struct FlutterIOSRuntimeTests {
         #expect(!enteredBuild)
         #expect(try Data(contentsOf: observed) == before)
         #expect(try FileManager.default.destinationOfSymbolicLink(atPath: link.path) == target.path)
+    }
+
+    @Test("source directories with generated-looking names retain write protection and change detection", arguments: ["lib/build/feature.dart", "assets/build/feature.dart", "lib/vendor/feature.dart", "build"])
+    func regularGeneratedNames(_ relative: String) async throws {
+        let f = try FlutterIOSFixture()
+        let file = try f.repo.write(relative, "void feature() {}\n")
+        let preparation = try await FlutterPreparation.inspect(directory: f.app, environment: f.flutter.environment, runner: f.flutter.runner())
+        let candidate = try #require(f.input().project.selection().selected)
+        let anchor = try #require(ProjectAnchor.detect(candidate: candidate))
+        let workflow = try FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation, runner: f.flutter.runner())
+        let runner = SystemProcessRunner(environment: ["PATH": "/usr/bin:/bin", "HOME": f.repo.url("home").path], workingDirectory: f.repo.root)
+        let child = try await runner.run(ProcessCommand("/usr/bin/sandbox-exec",
+            ["-f", workflow.childProfile.path, "/bin/sh", "-c", "printf changed > \"$1\"", "_", file.path], timeout: .seconds(10)))
+        #expect(!child.terminationStatus.isSuccess)
+        #expect(try String(contentsOf: file, encoding: .utf8) == "void feature() {}\n")
+        try f.repo.write(relative, "manual change\n")
+        #expect(throws: DomainError.self) { try workflow.check() }
+        #expect(try String(contentsOf: file, encoding: .utf8) == "manual change\n")
+    }
+
+    @Test("validated plugin metadata absence remains bound until native execution", arguments: ["unchanged", "created", "dangling"])
+    func absentPluginMetadata(_ mode: String) async throws {
+        let f = try FlutterIOSFixture()
+        let file = f.repo.url(".flutter-plugins-dependencies")
+        try FileManager.default.removeItem(at: file)
+        let preparation = try await FlutterPreparation.inspect(directory: f.app, environment: f.flutter.environment, runner: f.flutter.runner())
+        let candidate = try #require(f.input().project.selection().selected)
+        let anchor = try #require(ProjectAnchor.detect(candidate: candidate))
+        if mode == "unchanged" {
+            let workflow = try FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation, runner: f.flutter.runner())
+            try workflow.check()
+            try f.repo.write(".flutter-plugins-dependencies", "new metadata")
+            #expect(throws: DomainError.self) { try workflow.check() }
+        } else {
+            let outside = try FixtureRepo()
+            if mode == "created" { try f.repo.write(".flutter-plugins-dependencies", "new metadata") }
+            else { try FileManager.default.createSymbolicLink(at: file, withDestinationURL: outside.url("missing")) }
+            #expect(throws: DomainError.self) {
+                try FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation, runner: f.flutter.runner())
+            }
+            if mode == "created" { #expect(try String(contentsOf: file, encoding: .utf8) == "new metadata") }
+            else { #expect(try FileManager.default.destinationOfSymbolicLink(atPath: file.path) == outside.url("missing").path) }
+        }
     }
 
     @Test("an explicitly selected SDK directory alias retains its exact identity", arguments: ["FLUTTER_ROOT", "PATH"])
@@ -70,7 +114,7 @@ struct FlutterIOSRuntimeTests {
         #expect(try String(contentsOf: unrelated.url("preserve"), encoding: .utf8) == "owned temporary source\n")
     }
 
-    @Test("current inspection and the stage guard reject changed plugin metadata and source", arguments: ["before-metadata", "between-metadata", "between-missing", "after-metadata", "after-source"])
+    @Test("current inspection and the stage guard reject changed plugin metadata and source", arguments: ["before-metadata", "between-metadata-only", "between-metadata", "between-missing", "after-metadata", "after-source"])
     func aliasEvidenceChanges(_ mode: String) async throws {
         let f = try FlutterIOSFixture()
         let plugin = try FixtureRepo()
@@ -87,6 +131,12 @@ struct FlutterIOSRuntimeTests {
             let result = await WorkflowExecution.run(.build, input: f.input(), runner: runner, leases: f.leases)
             #expect(result.exitCode == 1)
             #expect(!runner.commands.contains { $0.arguments.last == "build" })
+        } else if mode == "between-metadata-only" {
+            try f.repo.write(changed, "changed metadata only")
+            #expect(throws: DomainError.self) {
+                try FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation, runner: f.flutter.runner())
+            }
+            #expect(try String(contentsOf: f.repo.url(changed), encoding: .utf8) == "changed metadata only")
         } else if mode == "between-missing" {
             try FileManager.default.removeItem(at: plugin.root)
             #expect(throws: DomainError.self) {
@@ -159,11 +209,14 @@ struct FlutterIOSRuntimeTests {
             #expect(!result.terminationStatus.isSuccess, Comment(rawValue: relative + " " + result.combinedOutput))
             #expect(try Data(contentsOf: file) == before, Comment(rawValue: relative))
         }
-        let output = f.repo.url(".dart_tool/child-generated")
-        let generated = try await runner.run(ProcessCommand("/usr/bin/sandbox-exec",
-            ["-f", workflow.childProfile.path, "/bin/sh", "-c", "printf generated > \"$1\"", "_", output.path], timeout: .seconds(10)))
-        #expect(generated.terminationStatus.isSuccess)
-        #expect(try String(contentsOf: output, encoding: .utf8) == "generated")
+        for relative in [".dart_tool/child-generated", "build/child-generated"] {
+            let output = f.repo.url(relative)
+            try FileManager.default.createDirectory(at: output.deletingLastPathComponent(), withIntermediateDirectories: true)
+            let generated = try await runner.run(ProcessCommand("/usr/bin/sandbox-exec",
+                ["-f", workflow.childProfile.path, "/bin/sh", "-c", "printf generated > \"$1\"", "_", output.path], timeout: .seconds(10)))
+            #expect(generated.terminationStatus.isSuccess)
+            #expect(try String(contentsOf: output, encoding: .utf8) == "generated")
+        }
         try workflow.check()
     }
 

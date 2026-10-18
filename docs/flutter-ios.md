@@ -69,6 +69,14 @@ React Native 의존성 명령과 Metro는 실행하지 않는다.
 
 workspace source·lockfile·symlink·mode와 선택 SDK fingerprint를 각 stage 전후에 확인한다.
 기존 generated build 디렉터리는 source 검사에서 구분한다.
+generated/cache 제외는 검증한 Dart package root의 정해진 상대 경로에만 적용한다.
+그 경로도 symlink를 먼저 검사한다.
+실제 directory일 때만 generated/cache 제외를 적용한다.
+`.dart_tool`·`build`·`.mobile`·`node_modules`·`.build`·`.gradle`·`graft`와 `vendor/bundle`을 구분한다.
+native host에서는 `ios/Pods`·`ios/vendor/bundle`·`ios/Flutter/ephemeral`·`android/.gradle`·`android/build`을 구분한다.
+검증한 다른 package를 포함하는 경로는 이 제외를 적용하지 않는다.
+`lib/build`·`assets/build`·`lib/vendor` 같은 source는 이름이 같아도 보호한다.
+중첩 저장소를 포함한 `.git` metadata는 기존 개인정보 경계를 유지한다.
 일반 source·lockfile symlink는 파일과 directory 모두 native build child 전에 중단한다.
 대상 상태를 확인할 수 없거나 link가 깨졌어도 중단한다.
 오류에는 source 상대 경로와 수동 준비 안내만 표시한다.
@@ -80,6 +88,8 @@ SDK alias 대상은 선택 SDK의 canonical root와 같아야 한다.
 generated plugin alias는 선택 앱의 `ios/.symlinks/plugins/<name>` 경로만 허용한다.
 plugin name과 canonical root는 같은 #205 검사가 확인한 iOS native plugin 결과를 사용한다.
 새 metadata를 다시 읽어 alias 예외를 늘리지 않는다.
+검증한 metadata bytes 또는 정상 부재를 guard 생성 전후와 stage에서 비교한다.
+metadata만 바뀌어도 새 상태를 기준으로 받아들이지 않고 중단한다.
 경로나 대상이 달라지면 중단한다.
 `lib`·`assets`·`ios` 같은 일반 source directory alias는 수동 준비로 안내한다.
 directory alias는 link 자체를 관측한다.
