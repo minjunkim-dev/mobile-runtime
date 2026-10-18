@@ -127,18 +127,18 @@ public struct LaunchStage: Stage {
     private func flutterServiceURI(log: URL, port: Int, pid: Int32, device: SelectedDevice,
                                    product: BuiltProduct, launchedAt: Date, environment: [String: String]) async throws -> String {
         let deadline = ContinuousClock.now.advanced(by: readinessWait)
-        var executable: String?
+        var images: (process: Set<UUID>, sender: Set<UUID>)?
         repeat {
             try Task.checkCancellation()
             let contents = try flutterLogContents(log)
             var messages = contents.split(whereSeparator: \.isNewline).map(String.init)
             if !messages.contains(where: { $0.contains(Self.flutterMarker) }) {
-                if executable == nil {
-                    executable = try await flutterExecutable(device: device, product: product,
+                if images == nil {
+                    images = try await flutterImageUUIDs(device: device, product: product,
                         environment: environment, deadline: deadline)
                 }
-                guard let executable else { throw ToolUnavailable(description: "The installed Flutter app executable is unknown.") }
-                messages = try await flutterHistory(device: device, executable: executable, pid: pid,
+                guard let images else { throw ToolUnavailable(description: "The installed Flutter app image identities are unknown.") }
+                messages = try await flutterHistory(device: device, images: images, pid: pid,
                     launchedAt: launchedAt, environment: environment, deadline: deadline)
             }
             for message in messages {
@@ -155,7 +155,7 @@ public struct LaunchStage: Stage {
                     environment: environment, deadline: deadline)
                 let probe = try await flutterQuery(ProcessCommand("curl", ["--fail", "--silent", "--show-error", "--noproxy", "*",
                     "--connect-timeout", "2", "--max-time", "5", value + (value.hasSuffix("/") ? "" : "/") + "getVM"],
-                    timeout: flutterQueryTimeout(deadline)), failure: "Could not query the observed Flutter development service.")
+                    timeout: flutterQueryTimeout(deadline)), failure: "Could not query the observed Flutter development service.", deadline: deadline)
                 if probe.terminationStatus.isSuccess {
                     guard let document = try? JSONSerialization.jsonObject(with: Data(probe.standardOutput.utf8)) as? [String: Any],
                         (document["result"] as? [String: Any])?["type"] as? String == "VM" else {
@@ -191,12 +191,17 @@ public struct LaunchStage: Stage {
 
     /// Finite collected commands use the existing runner's cancellation and output bound.
     /// Never include their output or command in errors: a service URI contains credentials.
-    private func flutterQuery(_ command: ProcessCommand, failure: String) async throws -> ProcessResult {
+    private func flutterQuery(_ command: ProcessCommand, failure: String,
+                              deadline: ContinuousClock.Instant) async throws -> ProcessResult {
         do {
             let result = try await runner.run(command)
             try Task.checkCancellation()
             return result
         } catch is CancellationError { throw CancellationError() }
+        catch ProcessError.timedOut where ContinuousClock.now >= deadline {
+            throw DomainError(summary: "The Flutter development service readiness deadline expired.",
+                remediation: Remediation(summary: "Inspect the selected app and launch log. Run mobile down --platform ios before retrying."))
+        }
         catch { throw ToolUnavailable(description: failure) }
     }
 
@@ -204,12 +209,12 @@ public struct LaunchStage: Stage {
         min(.seconds(5), max(.milliseconds(1), ContinuousClock.now.duration(to: deadline)))
     }
 
-    private func flutterExecutable(device: SelectedDevice, product: BuiltProduct,
-                                   environment: [String: String], deadline: ContinuousClock.Instant) async throws -> String {
-        let failure = "Could not identify the installed Flutter app executable for bounded log observation."
+    private func flutterImageUUIDs(device: SelectedDevice, product: BuiltProduct,
+                                   environment: [String: String], deadline: ContinuousClock.Instant) async throws -> (process: Set<UUID>, sender: Set<UUID>) {
+        let failure = "Could not identify the installed Flutter app images for bounded log observation."
         let result = try await flutterQuery(ProcessCommand("xcrun",
             ["simctl", "get_app_container", device.udid, product.bundleIdentifier, "app"],
-            environment: environment, timeout: flutterQueryTimeout(deadline)), failure: failure)
+            environment: environment, timeout: flutterQueryTimeout(deadline)), failure: failure, deadline: deadline)
         let path = result.standardOutput.trimmingCharacters(in: .newlines)
         guard result.terminationStatus.isSuccess, path.utf8.count <= 4096, path.hasPrefix("/"), path.hasSuffix(".app"),
               !path.unicodeScalars.contains(where: { CharacterSet.controlCharacters.contains($0) }) else {
@@ -226,34 +231,51 @@ public struct LaunchStage: Stage {
               !name.unicodeScalars.contains(where: { CharacterSet.controlCharacters.contains($0) }) else {
             throw ToolUnavailable(description: failure)
         }
-        let executable = bundle.appendingPathComponent(name)
-        let file = try executable.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey])
-        guard file.isRegularFile == true, file.isSymbolicLink != true else { throw ToolUnavailable(description: failure) }
-        return executable.path
+        var images: [Set<UUID>] = []
+        for executable in [bundle.appendingPathComponent(name), bundle.appendingPathComponent("Frameworks/Flutter.framework/Flutter")] {
+            let file = try executable.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey])
+            guard file.isRegularFile == true, file.isSymbolicLink != true,
+                executable.resolvingSymlinksInPath().path.hasPrefix(bundle.resolvingSymlinksInPath().path + "/")
+            else { throw ToolUnavailable(description: failure) }
+            let observed = try await flutterQuery(ProcessCommand("/usr/bin/xcrun", ["dwarfdump", "--uuid", executable.path],
+                environment: environment, timeout: flutterQueryTimeout(deadline)), failure: failure, deadline: deadline)
+            guard observed.terminationStatus.isSuccess, observed.standardOutput.utf8.count <= Self.flutterOutputLimit
+            else { throw ToolUnavailable(description: failure) }
+            let lines = observed.standardOutput.split(whereSeparator: \.isNewline)
+            guard !lines.isEmpty, lines.count <= 16 else { throw ToolUnavailable(description: failure) }
+            var uuids: Set<UUID> = []
+            var architectures: Set<String> = []
+            for line in lines {
+                let fields = line.split(separator: " ", maxSplits: 3)
+                guard fields.count == 4, fields[0] == "UUID:", let uuid = UUID(uuidString: String(fields[1])),
+                    uuid.uuidString == fields[1].uppercased(), String(fields[2]).range(of: #"^\([A-Za-z0-9_]+\)$"#, options: .regularExpression) != nil,
+                    fields[3] == executable.path, uuids.insert(uuid).inserted, architectures.insert(String(fields[2])).inserted
+                else { throw ToolUnavailable(description: failure) }
+            }
+            images.append(uuids)
+        }
+        return (images[0], images[1])
     }
 
-    private func flutterHistory(device: SelectedDevice, executable: String, pid: Int32, launchedAt: Date,
+    private func flutterHistory(device: SelectedDevice, images: (process: Set<UUID>, sender: Set<UUID>), pid: Int32, launchedAt: Date,
                                 environment: [String: String], deadline: ContinuousClock.Instant) async throws -> [String] {
         // Predicate keys and returned JSON keys differ: processIdentifier versus processID.
-        func literal(_ value: String) -> String {
-            "\"" + value.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"") + "\""
-        }
-        let sender = URL(fileURLWithPath: executable).deletingLastPathComponent()
-            .appendingPathComponent("Frameworks/Flutter.framework/Flutter").path
-        let predicate = "processIdentifier == \(pid) AND processImagePath == \(literal(executable))"
-            + " AND senderImagePath == \(literal(sender)) AND eventMessage CONTAINS \(literal(Self.flutterMarker))"
+        // Reinstalled images can retain an earlier container path in unified logs; bind their current Mach-O UUIDs below.
+        let predicate = "processIdentifier == \(pid) AND eventMessage CONTAINS \"\(Self.flutterMarker)\""
         let failure = "Could not read bounded Flutter app log history."
         let result = try await flutterQuery(ProcessCommand("xcrun", ["simctl", "spawn", device.udid, "log", "show",
             "--last", "5m", "--style", "json", "--info", "--debug", "--predicate", predicate],
-            environment: environment, timeout: flutterQueryTimeout(deadline)), failure: failure)
+            environment: environment, timeout: flutterQueryTimeout(deadline)), failure: failure, deadline: deadline)
         let observedAt = Date()
         guard result.terminationStatus.isSuccess, result.standardOutput.utf8.count <= Self.flutterOutputLimit,
               let rows = try? JSONSerialization.jsonObject(with: Data(result.standardOutput.utf8)) as? [[String: Any]],
               rows.count <= 1024 else { throw ToolUnavailable(description: failure) }
         return rows.compactMap { row in
             guard let number = row["processID"] as? NSNumber, CFGetTypeID(number) != CFBooleanGetTypeID(),
-                  number.doubleValue == Double(pid), row["processImagePath"] as? String == executable,
-                  row["senderImagePath"] as? String == sender, let rawDate = row["timestamp"] as? String,
+                  number.doubleValue == Double(pid), let process = row["processImageUUID"] as? String,
+                  let processUUID = UUID(uuidString: process), processUUID.uuidString == process.uppercased(), images.process.contains(processUUID),
+                  let sender = row["senderImageUUID"] as? String, let senderUUID = UUID(uuidString: sender),
+                  senderUUID.uuidString == sender.uppercased(), images.sender.contains(senderUUID), let rawDate = row["timestamp"] as? String,
                   let date = Self.flutterTimestamp(rawDate), date >= launchedAt, date <= observedAt,
                   let message = row["eventMessage"] as? String, message.utf8.count <= 16_384 else { return nil }
             return message
@@ -278,7 +300,7 @@ public struct LaunchStage: Stage {
                             environment: [String: String], deadline: ContinuousClock.Instant) async throws {
         let failure = "The launched Flutter app PID is no longer observable for this bundle. Run down before retrying."
         let result = try await flutterQuery(ProcessCommand("xcrun", ["simctl", "spawn", device.udid, "launchctl", "list"],
-            environment: environment, timeout: flutterQueryTimeout(deadline)), failure: failure)
+            environment: environment, timeout: flutterQueryTimeout(deadline)), failure: failure, deadline: deadline)
         guard result.terminationStatus.isSuccess, result.standardOutput.utf8.count <= Self.flutterOutputLimit,
               result.standardOutput.split(whereSeparator: \.isNewline).contains(where: { line in
                   let columns = line.split(separator: "\t")

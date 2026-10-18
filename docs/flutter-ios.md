@@ -127,11 +127,25 @@ Simulator 앱 인자로 정확한 `--vm-service-port`를 전달한다.
 이번 launch의 새 출력 파일에서 loopback 서비스 URI를 읽는다.
 출력 파일에 서비스 marker가 없으면 같은 Simulator의 bounded unified log history를 조회한다.
 조회는 `log show --last 5m --style json --info --debug`를 사용한다.
-`processIdentifier` predicate를 정확한 앱 PID·설치된 실행 파일·Flutter sender에 묶는다.
-반환 JSON의 `processID`·실행 파일·Flutter sender를 다시 확인한다.
+`processIdentifier` predicate를 정확한 앱 PID와 서비스 marker에 묶는다.
+현재 설치된 앱의 Info.plist·bundle ID·실행 파일 이름과 regular file 상태를 확인한다.
+현재 설치된 Flutter framework의 regular file 상태도 확인한다.
+두 실행 파일의 canonical 경로는 현재 앱 bundle 안에 있어야 한다.
+`/usr/bin/xcrun dwarfdump --uuid`로 두 실행 파일의 Mach-O UUID를 읽는다.
+명령에는 현재 설치된 파일 경로를 각각 하나의 인자로 전달한다.
+출력의 UUID·architecture·파일 경로를 엄격하게 확인한다.
+각 실행 파일은 최대 16개 architecture UUID를 허용한다.
+손상·중복·실패·상한 초과는 중단한다.
+반환 JSON의 `processID`·`processImageUUID`·`senderImageUUID`를 현재 UUID와 다시 확인한다.
+UUID 일치는 전체 파일 hash나 코드 서명 검증을 뜻하지 않는다.
+앱 재설치 뒤 unified log의 image path가 이전 설치 경로와 일치한 실제 관측이 있었다.
+같은 기록의 UUID는 현재 설치 파일의 UUID와 일치했다.
+OS의 image UUID와 경로 캐시가 원인이라는 설명은 추론이다.
+과거 설치 경로를 허용 목록에 추가하지 않는다.
+unified log의 image path를 현재 설치 경로의 증거로 사용하지 않는다.
 반환 timestamp는 이번 launch 시작 이후와 조회 완료 이전이어야 한다.
 설치 경로와 실행 파일 이름의 control 문자는 거부한다.
-predicate 문자열의 quote와 backslash를 escape한다.
+predicate에 파일 경로를 넣지 않는다.
 명령 인자는 shell을 거치지 않는다.
 각 조회는 기존 ProcessRunner로 실행한다.
 조회 timeout은 남은 readiness 시간과 5초 중 작은 값이다.
@@ -141,6 +155,8 @@ readiness 관측은 기본 120초를 사용한다.
 출력은 1 MiB·1024개 기록으로 제한한다.
 개별 메시지는 16 KiB로 제한한다.
 손상된 JSON·조회 실패·timeout은 개발 연결 성공으로 처리하지 않는다.
+남은 readiness 시간의 마지막 조회가 timeout이면 readiness 만료로 보고한다.
+deadline 이전의 조회 timeout은 도구 실패로 유지한다.
 이 오류에 원본 출력이나 URI를 포함하지 않는다.
 취소는 유한한 조회 child가 종료한 뒤 반환한다.
 선택한 포트와 다른 URI는 거부한다.

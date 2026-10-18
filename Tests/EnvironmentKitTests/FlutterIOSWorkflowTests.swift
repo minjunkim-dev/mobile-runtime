@@ -416,6 +416,8 @@ struct FlutterIOSFixture {
 }
 
 final class FlutterIOSRunner: ProcessRunner, @unchecked Sendable {
+    static let processImageUUID = "FE1A2C8F-0D59-3D15-949C-1EF343B91FD6"
+    static let senderImageUUID = "4C4C4413-5555-3144-A191-DFEC12239C3C"
     let fixture: FlutterIOSFixture
     let fault: String?
     private let lock = NSLock()
@@ -472,6 +474,20 @@ final class FlutterIOSRunner: ProcessRunner, @unchecked Sendable {
                 return ok("")
             }
         }
+        if command.executable == "/usr/bin/xcrun", command.arguments.starts(with: ["dwarfdump", "--uuid"]) {
+            let path = try #require(command.arguments.last)
+            let uuid = path == installedExecutable ? Self.processImageUUID : Self.senderImageUUID
+            if fault == "history:uuid-cancel" { return try await finiteQuery(command) }
+            if fault == "history:uuid-failed" { return ProcessResult(terminationStatus: .exited(1), standardOutput: "private identity output", standardError: "private identity error") }
+            if fault == "history:uuid-empty" { return ok("") }
+            if fault == "history:uuid-malformed" { return ok("UUID: not-a-UUID (arm64) \(path)") }
+            if fault == "history:uuid-oversized" { return ok(String(repeating: "a", count: 1_048_577)) }
+            let line = "UUID: \(uuid) (\(fault == "history:uuid-arch" ? "arm64;invalid" : "arm64")) \(path)\(fault == "history:uuid-path" ? ".other" : "")\n"
+            if fault == "history:uuid-duplicate" { return ok(line + line) }
+            if fault == "history:uuid-too-many" { return ok(String(repeating: line, count: 17)) }
+            if fault == "history:uuid-fat" { return ok(line + "UUID: AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE (x86_64) \(path)\n") }
+            return ok(line)
+        }
         if command.executable == "lsof" {
             return ProcessResult(terminationStatus: .exited(1), standardOutput: "", standardError: "")
         }
@@ -500,16 +516,32 @@ final class FlutterIOSRunner: ProcessRunner, @unchecked Sendable {
             ], format: .binary, options: 0)
             try info.write(to: installedBundle.appendingPathComponent("Info.plist"))
             try Data().write(to: installedBundle.appendingPathComponent("Runner"))
+            let engine = installedBundle.appendingPathComponent("Frameworks/Flutter.framework/Flutter")
+            try FileManager.default.createDirectory(at: engine.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try Data().write(to: engine)
+            if fault == "history:engine-symlink" || fault == "history:runner-symlink" {
+                let file = fault == "history:engine-symlink" ? engine : installedBundle.appendingPathComponent("Runner")
+                try FileManager.default.removeItem(at: file)
+                let target = try fixture.repo.write("build/outside-image", "preserve")
+                try FileManager.default.createSymbolicLink(at: file, withDestinationURL: target)
+            }
+            if fault == "history:engine-parent-link" {
+                let framework = engine.deletingLastPathComponent()
+                try FileManager.default.removeItem(at: framework)
+                let outside = try fixture.repo.directory("build/outside-framework")
+                try Data().write(to: outside.appendingPathComponent("Flutter"))
+                try FileManager.default.createSymbolicLink(at: framework, withDestinationURL: outside)
+            }
             return ok(fault == "history:control" ? installedBundle.path + "\nother" : installedBundle.path + "\n")
         }
         if command.arguments.starts(with: ["simctl", "spawn", "A", "log", "show"]) {
             let query = lock.withLock { historyQueries += 1; return historyQueries }
             if fault == "history:timeout" { throw ProcessError.timedOut(command: "bounded simulator history", timeout: command.timeout ?? .seconds(5)) }
-            if fault == "history:cancel" {
-                try FileManager.default.createDirectory(at: fixture.repo.url("build"), withIntermediateDirectories: true)
-                return try await SystemProcessRunner(environment: ["PATH": "/usr/bin:/bin", "HOME": fixture.repo.url("home").path])
-                    .run(ProcessCommand("/bin/sh", ["-c", "echo $$ > \"$1\"; exec /bin/sleep 30", "_", fixture.repo.url("build/query.pid").path], timeout: command.timeout))
+            if fault == "history:deadline" {
+                try await Task.sleep(for: command.timeout ?? .milliseconds(25))
+                throw ProcessError.timedOut(command: "private history output", timeout: command.timeout ?? .milliseconds(25))
             }
+            if fault == "history:cancel" { return try await finiteQuery(command) }
             if fault == "history:malformed" { return ok("not JSON") }
             if fault == "history:failed" { return ProcessResult(terminationStatus: .exited(1), standardOutput: "private query output", standardError: "private query diagnostic") }
             if fault == "history:oversized" { return ok(String(repeating: " ", count: 1_048_577)) }
@@ -527,14 +559,19 @@ final class FlutterIOSRunner: ProcessRunner, @unchecked Sendable {
             let timestamp = formatter.string(from: date) + String(format: ".%06d+0000", fraction)
             let row: [String: Any] = [
                 "processID": fault == "history:pid" ? 9999 : 3538,
-                "processImagePath": fault == "history:exe" ? installedExecutable + ".other" : installedExecutable,
-                "senderImagePath": fault == "history:sender" ? "/other/image" : installedBundle.appendingPathComponent("Frameworks/Flutter.framework/Flutter").path,
+                "processImagePath": fault == "history:stale-path" ? "/earlier-install/Runner.app/Runner" : fault == "history:exe" ? installedExecutable + ".other" : installedExecutable,
+                "senderImagePath": fault == "history:stale-path" ? "/earlier-install/Runner.app/Frameworks/Flutter.framework/Flutter" : fault == "history:sender" ? "/other/image" : installedBundle.appendingPathComponent("Frameworks/Flutter.framework/Flutter").path,
+                "processImageUUID": fault == "history:process-uuid" ? "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE" : fault == "history:lowercase-uuid" ? Self.processImageUUID.lowercased() : Self.processImageUUID,
+                "senderImageUUID": fault == "history:sender-uuid" ? "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE" : fault == "history:lowercase-uuid" ? Self.senderImageUUID.lowercased() : Self.senderImageUUID,
                 "timestamp": fault == "history:time" ? "unknown" : timestamp,
                 "eventMessage": fault == "history:message-limit" ? String(repeating: "a", count: 16_385) : "flutter: The Dart VM service is listening on http://127.0.0.1:\(selectedPort)/synthetic-auth/",
             ]
             var returnedRow = row
             if fault == "history:wrong-key" { returnedRow["processIdentifier"] = returnedRow.removeValue(forKey: "processID") }
             if fault == "history:boolean-pid" { returnedRow["processID"] = true }
+            if fault == "history:missing-uuid" { returnedRow.removeValue(forKey: "senderImageUUID") }
+            if fault == "history:invalid-uuid" { returnedRow["processImageUUID"] = "invalid" }
+            if fault == "history:uuid-type" { returnedRow["processImageUUID"] = 1234 }
             return ok(String(decoding: try JSONSerialization.data(withJSONObject: [returnedRow], options: .prettyPrinted), as: UTF8.self))
         }
         if command.arguments.starts(with: ["simctl", "launch"]) {
@@ -575,5 +612,10 @@ final class FlutterIOSRunner: ProcessRunner, @unchecked Sendable {
         return try await fixture.flutter.runner(workspace: workspace).run(command, onLine: onLine)
     }
     func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 { throw FixtureMiss(command: command.description) }
+    private func finiteQuery(_ command: ProcessCommand) async throws -> ProcessResult {
+        try FileManager.default.createDirectory(at: fixture.repo.url("build"), withIntermediateDirectories: true)
+        return try await SystemProcessRunner(environment: ["PATH": "/usr/bin:/bin", "HOME": fixture.repo.url("home").path])
+            .run(ProcessCommand("/bin/sh", ["-c", "echo $$ > \"$1\"; exec /bin/sleep 30", "_", fixture.repo.url("build/query.pid").path], timeout: command.timeout))
+    }
     private func ok(_ text: String) -> ProcessResult { ProcessResult(terminationStatus: .exited(0), standardOutput: text, standardError: "") }
 }

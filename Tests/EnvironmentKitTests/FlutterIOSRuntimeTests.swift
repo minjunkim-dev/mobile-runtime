@@ -2,7 +2,7 @@ import Core
 import Darwin
 @testable import EnvironmentKit
 import Foundation
-import SimulatorKit
+@testable import SimulatorKit
 import TestSupport
 import Testing
 
@@ -288,8 +288,48 @@ struct FlutterIOSRuntimeTests {
         #expect(runner.commands.contains { $0.arguments.starts(with: ["simctl", "spawn", "A", "log", "show"]) })
     }
 
+    @Test("unified history binds current Mach-O UUIDs when its image path names an earlier installation")
+    func historyStaleImagePath() async throws {
+        let f = try FlutterIOSFixture()
+        let runner = FlutterIOSRunner(fixture: f, fault: "history:stale-path")
+        var context = UpContext()
+        context.device = SelectedDevice(name: "iPhone A", udid: "A", runtime: "27.0")
+        context.product = BuiltProduct(path: f.repo.url("build/Runner.app").path, bundleIdentifier: "dev.test.flutter")
+        let outcome = try await LaunchStage(project: f.repo.root, runner: runner, locator: XcodeLocator(runner: runner),
+            readinessWait: .seconds(1), flutterPort: 12345).run(&context)
+        #expect(outcome.status == .pass)
+        #expect(context.developmentServiceURI == "http://127.0.0.1:12345/synthetic-auth/")
+        let queries = runner.commands.filter { $0.arguments.contains("dwarfdump") }
+        #expect(queries.count == 2)
+        #expect(queries.allSatisfy { $0.executable == "/usr/bin/xcrun" && $0.arguments.starts(with: ["dwarfdump", "--uuid"]) })
+        #expect(queries.map { $0.arguments.last } == [runner.installedExecutable, runner.installedBundle.appendingPathComponent("Frameworks/Flutter.framework/Flutter").path])
+        let history = try #require(runner.commands.first { $0.arguments.contains("show") })
+        let predicate = try #require(history.arguments.last)
+        #expect(predicate == "processIdentifier == 3538 AND eventMessage CONTAINS \"The Dart VM service is listening on \"")
+        #expect(!predicate.contains("processImagePath") && !predicate.contains("senderImagePath"))
+    }
+
+    @Test("bounded history timeouts distinguish readiness expiry from tool failure", arguments: [false, true])
+    func historyDeadline(_ expired: Bool) async throws {
+        let f = try FlutterIOSFixture()
+        let runner = FlutterIOSRunner(fixture: f, fault: expired ? "history:deadline" : "history:timeout")
+        var context = UpContext()
+        context.device = SelectedDevice(name: "iPhone A", udid: "A", runtime: "27.0")
+        context.product = BuiltProduct(path: f.repo.url("build/Runner.app").path, bundleIdentifier: "dev.test.flutter")
+        do {
+            _ = try await LaunchStage(project: f.repo.root, runner: runner, locator: XcodeLocator(runner: runner),
+                readinessWait: expired ? .milliseconds(25) : .seconds(1), flutterPort: 12345).run(&context)
+            Issue.record("expired readiness must fail")
+        } catch {
+            #expect(expired ? error is DomainError : error is ToolUnavailable)
+            #expect(!String(describing: error).contains("private history"))
+            #expect(context.appPid == 3538)
+            #expect(context.developmentServiceURI == nil)
+        }
+    }
+
     @Test("untrusted or unavailable history cannot establish readiness", arguments: [
-        "pid", "exe", "sender", "old", "future", "time", "wrong-key", "boolean-pid", "port", "malformed",
+        "pid", "process-uuid", "sender-uuid", "missing-uuid", "invalid-uuid", "uuid-type", "old", "future", "time", "wrong-key", "boolean-pid", "port", "malformed",
         "oversized", "many", "message-limit", "control", "timeout", "failed", "empty", "dead", "reused",
     ])
     func historyRejected(_ fault: String) async throws {
@@ -337,7 +377,7 @@ struct FlutterIOSRuntimeTests {
         #expect(runner.commands.contains { $0.executable == "curl" })
     }
 
-    @Test("history retries finite queries and escapes installed executable predicate literals", arguments: ["delayed", "quoted"])
+    @Test("history retries finite queries and passes installed image paths as literal tool arguments", arguments: ["delayed", "quoted", "uuid-fat", "lowercase-uuid"])
     func historyRetryAndEscaping(_ fault: String) async throws {
         let f = try FlutterIOSFixture()
         let runner = FlutterIOSRunner(fixture: f, fault: "history:" + fault)
@@ -353,18 +393,40 @@ struct FlutterIOSRuntimeTests {
         let query = try #require(queries.first)
         #expect(query.arguments.contains("--last") && query.arguments.contains("5m"))
         let predicate = try #require(query.arguments.last)
-        let escaped = runner.installedExecutable.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")
-        #expect(predicate.contains("processIdentifier == 3538"))
-        #expect(predicate.contains("processImagePath == \"\(escaped)\""))
-        #expect(predicate.contains("senderImagePath == "))
+        #expect(predicate == "processIdentifier == 3538 AND eventMessage CONTAINS \"The Dart VM service is listening on \"")
+        let identities = runner.commands.filter { $0.arguments.contains("dwarfdump") }
+        #expect(identities.count == 2)
+        #expect(identities.first?.arguments == ["dwarfdump", "--uuid", runner.installedExecutable])
         #expect(!predicate.unicodeScalars.contains { CharacterSet.controlCharacters.contains($0) })
         #expect(query.arguments.filter { $0 == "--predicate" }.count == 1)
     }
 
-    @Test("cancelling a historical query terminates its finite child and preserves SDK-less down")
-    func historyCancellation() async throws {
+    @Test("untrusted installed images and malformed Mach-O identities stop before reading history", arguments: [
+        "uuid-empty", "uuid-malformed", "uuid-failed", "uuid-path", "uuid-arch", "uuid-duplicate", "uuid-too-many", "uuid-oversized", "engine-symlink", "engine-parent-link", "runner-symlink",
+    ])
+    func imageIdentityRejected(_ fault: String) async throws {
         let f = try FlutterIOSFixture()
-        let runner = FlutterIOSRunner(fixture: f, fault: "history:cancel")
+        let runner = FlutterIOSRunner(fixture: f, fault: "history:" + fault)
+        var context = UpContext()
+        context.device = SelectedDevice(name: "iPhone A", udid: "A", runtime: "27.0")
+        context.product = BuiltProduct(path: f.repo.url("build/Runner.app").path, bundleIdentifier: "dev.test.flutter")
+        do {
+            _ = try await LaunchStage(project: f.repo.root, runner: runner, locator: XcodeLocator(runner: runner),
+                readinessWait: .seconds(1), flutterPort: 12345).run(&context)
+            Issue.record("untrusted installed image must fail")
+        } catch {
+            #expect(!(error is CancellationError))
+            #expect(!String(describing: error).contains("private identity"))
+        }
+        #expect(context.appPid == 3538)
+        #expect(context.developmentServiceURI == nil)
+        #expect(!runner.commands.contains { $0.arguments.contains("show") || $0.executable == "curl" })
+    }
+
+    @Test("cancelling an image identity or historical query terminates its finite child and preserves SDK-less down", arguments: ["cancel", "uuid-cancel"])
+    func historyCancellation(_ fault: String) async throws {
+        let f = try FlutterIOSFixture()
+        let runner = FlutterIOSRunner(fixture: f, fault: "history:" + fault)
         let input = f.input()
         let leases = f.leases
         let task = Task { await WorkflowExecution.run(.up, input: input, runner: runner, leases: leases) }
