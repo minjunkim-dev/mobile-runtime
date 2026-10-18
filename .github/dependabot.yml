@@ -12,3 +12,8 @@ updates:
     commit-message:
       prefix: chore
       include: scope
+    groups:
+      # CodeQL fails unless init and analyze run the same version.
+      codeql-action:
+        patterns:
+          - "github/codeql-action/*"
