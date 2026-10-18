@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "tuples": [
+    {
+      "id": "local-unsigned-package",
+      "candidateID": "28751011c20403465cf9e46e8f727f63da0c40a6b42f6d3fc66652109da952af",
+      "inputs": {
+        "hostOS": "macOS",
+        "architecture": "arm64",
+        "hostOSVersion": "unknown",
+        "toolchainVersion": "unknown",
+        "runtimeVersion": "unknown",
+        "environment": "owned Tart clone runstir-goal222-final-20261018",
+        "signing": "unsigned",
+        "scope": "Recorded local package and GUI observations only; exact host/toolchain/runtime versions are not independently repinned by issue 223."
+      }
+    },
+    {
+      "id": "uncollected-release-matrix",
+      "candidateID": "28751011c20403465cf9e46e8f727f63da0c40a6b42f6d3fc66652109da952af",
+      "inputs": {
+        "hostOSVersion": "unknown",
+        "toolchainVersion": "unknown",
+        "runtimeVersion": "unknown",
+        "deviceIdentity": "unknown",
+        "scope": "Required release-matrix evidence remains uncollected in this bundle."
+      }
+    }
+  ]
+}
