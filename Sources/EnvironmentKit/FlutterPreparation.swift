@@ -15,6 +15,7 @@ struct FlutterPreparation {
     var dependencyCommand: ProcessCommand?
     var activeEnvironment: [String: String] = [:]
     var sdk: FlutterSDK?
+    var iosPluginDirectories: [String: URL] = [:]
 
     static func inspect(directory: URL, entrypoint: String? = nil, environment: [String: String],
                         runner: any ProcessRunner, installationRoot: URL? = nil) async throws -> Self {
@@ -113,7 +114,8 @@ struct FlutterPreparation {
                 observed: "existing Dart file", required: "selected app entrypoint", source: CheckSource(tier: 1, origin: project.entrypoint!.path), command: nil, remediation: nil))
         }
         for platform in [ProjectPlatform.ios, .android] {
-            plan.checks += plan.nativeChecks(project: project, platform: platform)
+            let native = plan.nativeChecks(project: project, platform: platform)
+            plan.checks += native
         }
         return plan
     }
@@ -208,7 +210,7 @@ struct FlutterPreparation {
         }
     }
 
-    private func nativeChecks(project: FlutterProject, platform: ProjectPlatform) -> [PreparationStep] {
+    private mutating func nativeChecks(project: FlutterProject, platform: ProjectPlatform) -> [PreparationStep] {
         let directory = project.directory.appendingPathComponent(platform.rawValue)
         guard FileManager.default.fileExists(atPath: directory.path) else {
             let generatedModule = project.directory.appendingPathComponent("." + platform.rawValue)
@@ -248,7 +250,8 @@ struct FlutterPreparation {
         return [generated]
     }
 
-    private func pluginMetadataIssue(project: FlutterProject, sdk: FlutterSDK, platform: ProjectPlatform) -> String? {
+    private mutating func pluginMetadataIssue(project: FlutterProject, sdk: FlutterSDK, platform: ProjectPlatform) -> String? {
+        if platform == .ios { iosPluginDirectories = [:] }
         let unknown = "plugin metadata cannot be confirmed from the current resolved package graph and package manifests"
         func json(_ file: URL) -> [String: Any]? {
             (try? JSONSerialization.jsonObject(with: Data(contentsOf: file))) as? [String: Any]
@@ -362,6 +365,7 @@ struct FlutterPreparation {
                   jsonBoolean(plugin["native_build"]) == required.native,
                   jsonBoolean(plugin["shared_darwin_source"], missing: false) == required.shared else { return unknown }
         }
+        if platform == .ios { iosPluginDirectories = expected.filter { $0.value.native }.mapValues(\.root) }
         return nil
     }
 

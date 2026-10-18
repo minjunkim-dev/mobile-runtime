@@ -263,6 +263,31 @@ struct FlutterIOSFixture {
         WorkflowInput(project: ProjectInspectionInput(directory: app, environment: flutter.environment,
             platform: .ios, entrypoint: entrypoint), configuration: configuration, port: port)
     }
+
+    func configureIOSPlugin(directory: URL, name: String = "owned_plugin") throws {
+        try "name: \(name)\nflutter:\n  plugin:\n    platforms:\n      ios:\n        pluginClass: OwnedPlugin\n".write(
+            to: directory.appendingPathComponent("pubspec.yaml"), atomically: false, encoding: .utf8)
+        let manifest = try String(contentsOf: app.appendingPathComponent("pubspec.yaml"), encoding: .utf8)
+        try (manifest + "  \(name): any\n").write(to: app.appendingPathComponent("pubspec.yaml"), atomically: false, encoding: .utf8)
+        var config = try #require(JSONSerialization.jsonObject(with: Data(contentsOf: repo.url(".dart_tool/package_config.json"))) as? [String: Any])
+        var packages = try #require(config["packages"] as? [[String: Any]])
+        packages.append(["name": name, "rootUri": directory.absoluteString])
+        config["packages"] = packages
+        try JSONSerialization.data(withJSONObject: config).write(to: repo.url(".dart_tool/package_config.json"))
+        var graph = try #require(JSONSerialization.jsonObject(with: Data(contentsOf: repo.url(".dart_tool/package_graph.json"))) as? [String: Any])
+        var nodes = try #require(graph["packages"] as? [[String: Any]])
+        for index in nodes.indices where nodes[index]["name"] as? String == (inWorkspace ? "client" : "example") {
+            var dependencies = try #require(nodes[index]["dependencies"] as? [String])
+            dependencies.append(name)
+            nodes[index]["dependencies"] = dependencies
+        }
+        nodes.append(["name": name, "dependencies": [], "devDependencies": []])
+        graph["packages"] = nodes
+        try JSONSerialization.data(withJSONObject: graph).write(to: repo.url(".dart_tool/package_graph.json"))
+        let row: [String: Any] = ["name": name, "path": directory.path, "native_build": true]
+        try JSONSerialization.data(withJSONObject: ["version": "3.41.9", "plugins": ["ios": [row], "android": []]])
+            .write(to: app.appendingPathComponent(".flutter-plugins-dependencies"))
+    }
 }
 
 final class FlutterIOSRunner: ProcessRunner, @unchecked Sendable {

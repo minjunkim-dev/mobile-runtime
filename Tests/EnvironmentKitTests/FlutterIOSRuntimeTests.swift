@@ -8,6 +8,113 @@ import Testing
 
 @Suite("Flutter native child boundaries")
 struct FlutterIOSRuntimeTests {
+    @Test("ordinary source directory aliases stop before native build", arguments: ["lib/shared", "ios", "assets"])
+    func sourceDirectoryAlias(_ relative: String) async throws {
+        let f = try FlutterIOSFixture()
+        let outside = try FixtureRepo()
+        let link = f.repo.url(relative)
+        let target = outside.url("directory")
+        let observed: URL
+        if relative == "ios" {
+            try FileManager.default.moveItem(at: link, to: target)
+            observed = target.appendingPathComponent("Podfile.lock")
+        } else {
+            try outside.directory("directory")
+            observed = try outside.write("directory/shared.dart", "void shared() {}\n")
+        }
+        let before = try Data(contentsOf: observed)
+        try FileManager.default.createSymbolicLink(at: link, withDestinationURL: target)
+        let runner = FlutterIOSRunner(fixture: f)
+        let result = await WorkflowExecution.run(.build, input: f.input(), runner: runner, leases: f.leases)
+        let enteredBuild = runner.commands.contains { $0.arguments.last == "build" }
+        print("#208 directory alias receipt: source=\(relative); workflowExit=\(result.exitCode); nativeBuild=\(enteredBuild)")
+        #expect(result.exitCode == 1)
+        #expect(!enteredBuild)
+        #expect(try Data(contentsOf: observed) == before)
+        #expect(try FileManager.default.destinationOfSymbolicLink(atPath: link.path) == target.path)
+    }
+
+    @Test("an explicitly selected SDK directory alias retains its exact identity", arguments: ["FLUTTER_ROOT", "PATH"])
+    func declaredSDKAlias(_ declaration: String) async throws {
+        let f = try FlutterIOSFixture()
+        try f.repo.directory("tools")
+        let alias = f.repo.url("tools/flutter")
+        try FileManager.default.createSymbolicLink(at: alias, withDestinationURL: f.repo.url("sdk"))
+        var environment = f.flutter.environment
+        environment.removeValue(forKey: "FLUTTER_ROOT")
+        environment[declaration] = declaration == "PATH" ? alias.appendingPathComponent("bin").path + ":/usr/bin:/bin" : alias.path + "/"
+        let input = WorkflowInput(project: ProjectInspectionInput(directory: f.app, environment: environment, platform: .ios))
+        let result = await WorkflowExecution.run(.build, input: input, runner: FlutterIOSRunner(fixture: f), leases: f.leases)
+        #expect(result.exitCode == 0, Comment(rawValue: result.up?.failure?.message ?? ""))
+        #expect(try FileManager.default.destinationOfSymbolicLink(atPath: alias.path) == f.repo.url("sdk").path)
+    }
+
+    @Test("SDK and plugin alias exceptions require both the verified source path and target", arguments: ["sdk-target", "sdk-path", "plugin-target", "plugin-name"])
+    func directoryAliasIdentity(_ mode: String) async throws {
+        let f = try FlutterIOSFixture()
+        let plugin = try FixtureRepo()
+        let unrelated = try FixtureRepo()
+        try unrelated.write("preserve", "owned temporary source\n")
+        try f.configureIOSPlugin(directory: plugin.root)
+        let relative = mode == "sdk-path" ? "tools/flutter" : mode == "sdk-target" ? ".fvm/flutter_sdk"
+            : "ios/.symlinks/plugins/" + (mode == "plugin-name" ? "unverified" : "owned_plugin")
+        let alias = f.repo.url(relative)
+        try FileManager.default.createDirectory(at: alias.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let target = mode == "sdk-path" ? f.repo.url("sdk") : mode == "plugin-name" ? plugin.root : unrelated.root
+        try FileManager.default.createSymbolicLink(at: alias, withDestinationURL: target)
+        let runner = FlutterIOSRunner(fixture: f)
+        let result = await WorkflowExecution.run(.build, input: f.input(), runner: runner, leases: f.leases)
+        #expect(result.exitCode == 1)
+        #expect(!runner.commands.contains { $0.arguments.last == "build" })
+        #expect(try FileManager.default.destinationOfSymbolicLink(atPath: alias.path) == target.path)
+        #expect(try String(contentsOf: unrelated.url("preserve"), encoding: .utf8) == "owned temporary source\n")
+    }
+
+    @Test("current inspection and the stage guard reject changed plugin metadata and source", arguments: ["before-metadata", "between-metadata", "between-missing", "after-metadata", "after-source"])
+    func aliasEvidenceChanges(_ mode: String) async throws {
+        let f = try FlutterIOSFixture()
+        let plugin = try FixtureRepo()
+        try f.configureIOSPlugin(directory: plugin.root)
+        try f.repo.directory("ios/.symlinks/plugins")
+        try FileManager.default.createSymbolicLink(at: f.repo.url("ios/.symlinks/plugins/owned_plugin"), withDestinationURL: plugin.root)
+        let preparation = try await FlutterPreparation.inspect(directory: f.app, environment: f.flutter.environment, runner: f.flutter.runner())
+        let candidate = try #require(f.input().project.selection().selected)
+        let anchor = try #require(ProjectAnchor.detect(candidate: candidate))
+        let changed = mode == "after-source" ? "lib/main.dart" : ".flutter-plugins-dependencies"
+        if mode == "before-metadata" {
+            try f.repo.write(changed, "changed metadata")
+            let runner = FlutterIOSRunner(fixture: f)
+            let result = await WorkflowExecution.run(.build, input: f.input(), runner: runner, leases: f.leases)
+            #expect(result.exitCode == 1)
+            #expect(!runner.commands.contains { $0.arguments.last == "build" })
+        } else if mode == "between-missing" {
+            try FileManager.default.removeItem(at: plugin.root)
+            #expect(throws: DomainError.self) {
+                try FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation, runner: f.flutter.runner())
+            }
+            #expect(!FileManager.default.fileExists(atPath: plugin.root.path))
+        } else if mode == "between-metadata" {
+            let unrelated = try FixtureRepo()
+            let row: [String: Any] = ["name": "owned_plugin", "path": unrelated.root.path, "native_build": true]
+            try JSONSerialization.data(withJSONObject: ["version": "3.41.9", "plugins": ["ios": [row], "android": []]])
+                .write(to: f.repo.url(changed))
+            let alias = f.repo.url("ios/.symlinks/plugins/owned_plugin")
+            try FileManager.default.removeItem(at: alias)
+            try FileManager.default.createSymbolicLink(at: alias, withDestinationURL: unrelated.root)
+            #expect(throws: DomainError.self) {
+                try FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation, runner: f.flutter.runner())
+            }
+            #expect(try FileManager.default.destinationOfSymbolicLink(atPath: alias.path) == unrelated.root.path)
+            return
+        } else {
+            let workflow = try FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation, runner: f.flutter.runner())
+            try f.repo.write(changed, "changed source")
+            #expect(throws: DomainError.self) { try workflow.check() }
+            #expect(try String(contentsOf: f.repo.url(changed), encoding: .utf8) == "changed source")
+        }
+        #expect(try FileManager.default.destinationOfSymbolicLink(atPath: f.repo.url("ios/.symlinks/plugins/owned_plugin").path) == plugin.root.path)
+    }
+
     @Test("regular-file and unresolved source symlinks stop before a native child", arguments: ["ios/Podfile.lock", "lib/shared.dart", "lib/broken.dart", "lib/cycle.dart"])
     func externalSourceSymlink(_ relative: String) async throws {
         let f = try FlutterIOSFixture()
@@ -76,7 +183,7 @@ struct FlutterIOSRuntimeTests {
         let leases = f.leases
         let task = Task { await WorkflowExecution.run(.up, input: input, runner: runner, leases: leases) }
         let marker = f.repo.url("build/child.pid")
-        let deadline = ContinuousClock.now.advanced(by: .seconds(10))
+        let deadline = ContinuousClock.now.advanced(by: .seconds(30))
         while !FileManager.default.fileExists(atPath: marker.path), ContinuousClock.now < deadline {
             try await Task.sleep(for: .milliseconds(10))
         }
@@ -123,7 +230,8 @@ struct FlutterIOSRuntimeTests {
     func sdkAlias() async throws {
         let f = try FlutterIOSFixture()
         let plugin = try FixtureRepo()
-        try plugin.write("pubspec.yaml", "name: owned_plugin\n")
+        try f.configureIOSPlugin(directory: plugin.root)
+        let pluginManifest = try Data(contentsOf: plugin.url("pubspec.yaml"))
         try f.repo.directory("ios/.symlinks/plugins")
         let pluginAlias = f.repo.url("ios/.symlinks/plugins/owned_plugin")
         try FileManager.default.createSymbolicLink(at: pluginAlias, withDestinationURL: plugin.root)
@@ -142,7 +250,7 @@ struct FlutterIOSRuntimeTests {
         #expect(!remove.terminationStatus.isSuccess)
         try workflow.check()
         #expect(try FileManager.default.destinationOfSymbolicLink(atPath: pluginAlias.path) == plugin.root.path)
-        #expect(try String(contentsOf: plugin.url("pubspec.yaml"), encoding: .utf8) == "name: owned_plugin\n")
+        #expect(try Data(contentsOf: plugin.url("pubspec.yaml")) == pluginManifest)
         try FileManager.default.removeItem(at: alias)
         #expect(throws: DomainError.self) { try workflow.check() }
         #expect(!FileManager.default.fileExists(atPath: alias.path))

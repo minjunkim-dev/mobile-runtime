@@ -103,6 +103,7 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
     private let root: URL
     private let application: URL
     private let excludedSDK: URL
+    private let directoryAliases: [String: String]
     private let original: [String: String]
     private let sdk: FlutterSDK
     private let lock = NSLock()
@@ -122,7 +123,32 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
         application = anchor.directory
         excludedSDK = sdk.root
         self.sdk = sdk
-        original = try Self.files(root, application: anchor.directory, excluding: sdk.root)
+        let sdkPath = try Self.physical(sdk.root.path)
+        let workspacePath = try Self.physical(root.path)
+        var aliases: [String: String] = [:]
+        for package in workspace.packages {
+            if let source = try? Self.aliasPath(package.appendingPathComponent(".fvm/flutter_sdk")) { aliases[source] = sdkPath }
+        }
+        let declaredSDKs = [input.environment["FLUTTER_ROOT"]].compactMap { $0 }
+            + (input.environment["PATH"] ?? "").split(separator: ":").filter { $0.hasPrefix("/") && $0.hasSuffix("/bin") }
+                .map { URL(fileURLWithPath: String($0)).deletingLastPathComponent().path }
+        for path in declaredSDKs where path.hasPrefix("/") {
+            let declared = URL(fileURLWithPath: path).standardizedFileURL
+            if let source = try? Self.aliasPath(declared), source.hasPrefix(workspacePath + "/"),
+               (try? Self.physical(declared.path)) == sdkPath {
+                aliases[source] = sdkPath
+            }
+        }
+        if preparation.checks.contains(where: { $0.id == "ios.flutter.generated" && $0.kind == "reuse" }) {
+            for (name, target) in preparation.iosPluginDirectories where name.range(of: #"^[a-z_][a-z0-9_]*$"#, options: .regularExpression) != nil {
+                if let source = try? Self.aliasPath(anchor.iosDirectory.appendingPathComponent(".symlinks/plugins/" + name)),
+                   let destination = try? Self.physical(target.path) {
+                    aliases[source] = destination
+                }
+            }
+        }
+        directoryAliases = aliases
+        original = try Self.files(root, application: anchor.directory, excluding: sdk.root, aliases: aliases)
         let logs = RunLogs(project: anchor.directory)
         let protected = original.filter { !$0.value.hasPrefix("link:") }.map(\.key) + [
             sdk.root.appendingPathComponent("bin/cache/dart-sdk").path,
@@ -132,11 +158,6 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
             sdk.root.appendingPathComponent("bin/cache/flutter.version.json").path,
         ]
         // Native scripts still call Flutter assemble. Restrict that child, not the user's host settings.
-        func physical(_ path: String) throws -> String {
-            guard let pointer = realpath(path, nil) else { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
-            defer { free(pointer) }
-            return String(cString: pointer)
-        }
         func rule(_ path: String, filter: String) throws -> String {
             guard !path.unicodeScalars.contains(where: { CharacterSet.controlCharacters.contains($0) }) else {
                 throw Self.failure("Flutter iOS cannot protect a path containing control characters.")
@@ -144,12 +165,12 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
             return "(" + filter + " \"" + path.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"") + "\")"
         }
         var physicalPaths = Set(protected)
-        for path in protected { physicalPaths.insert(try physical(path)) }
+        for path in protected { physicalPaths.insert(try Self.physical(path)) }
         var filters = try physicalPaths.sorted().map { try rule($0, filter: "subpath") }
         // Preserve the link itself; resolving its target could freeze an entire shared SDK/cache.
         for (path, value) in original where value.hasPrefix("link:") {
             let url = URL(fileURLWithPath: path)
-            let parent = try physical(url.deletingLastPathComponent().path)
+            let parent = try Self.physical(url.deletingLastPathComponent().path)
             filters.append(try rule(URL(fileURLWithPath: parent).appendingPathComponent(url.lastPathComponent).path, filter: "literal"))
         }
         let rules = filters.joined(separator: " ")
@@ -166,7 +187,7 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
     }
 
     func check() throws {
-        let now = try Self.files(root, application: application, excluding: excludedSDK)
+        let now = try Self.files(root, application: application, excluding: excludedSDK, aliases: directoryAliases)
         let differences = Set(original.keys).union(now.keys).filter { original[$0] != now[$0] }.sorted()
         if !differences.isEmpty {
             lock.withLock { changed = differences }
@@ -177,15 +198,17 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
         }
     }
 
-    private static func files(_ root: URL, application: URL, excluding sdk: URL) throws -> [String: String] {
+    private static func files(_ root: URL, application: URL, excluding sdk: URL, aliases: [String: String]) throws -> [String: String] {
         let ignored: Set<String> = [".git", "node_modules", "Pods", "vendor", "build", ".build", ".gradle", ".dart_tool", ".mobile", "graft"]
         var failure: (any Error)?
-        guard let entries = FileManager.default.enumerator(at: root,
+        let physicalRoot = try physical(root.path)
+        let ephemeral = URL(fileURLWithPath: try physical(application.path)).appendingPathComponent("ios/Flutter/ephemeral").path
+        guard let entries = FileManager.default.enumerator(at: URL(fileURLWithPath: physicalRoot),
             includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey],
             errorHandler: { _, error in failure = error; return false }) else { throw CocoaError(.fileReadNoPermission) }
         var result: [String: String] = [:]
         for case let file as URL in entries {
-            if ignored.contains(file.lastPathComponent) || file.path == application.appendingPathComponent("ios/Flutter/ephemeral").path {
+            if ignored.contains(file.lastPathComponent) || file.path == ephemeral {
                 entries.skipDescendants(); continue
             }
             let attributes = try file.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
@@ -193,10 +216,12 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
                 entries.skipDescendants()
                 var target = file.resolvingSymlinksInPath()
                 target.removeAllCachedResourceValues()
-                guard (try? target.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true else {
-                    let relative = file.path.dropFirst(root.path.count + 1)
+                let source = try? aliasPath(file)
+                guard let source, let expected = aliases[source], (try? physical(target.path)) == expected,
+                      (try? target.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true else {
+                    let relative = source.map { String($0.dropFirst(physicalRoot.count + 1)) } ?? file.lastPathComponent
                     throw DomainError(summary: "Unsupported source symlink: \(relative).",
-                        remediation: Remediation(summary: "Prepare source and lockfiles as regular files manually. Preserve the existing link and target; Runstir did not change either."))
+                        remediation: Remediation(summary: "Prepare source and lockfiles without aliases manually. Only the selected SDK and validated generated plugin directory aliases are supported. Preserve the existing link and target; Runstir did not change either."))
                 }
                 result[file.path] = "link:" + (try FileManager.default.destinationOfSymbolicLink(atPath: file.path))
             } else if file.standardizedFileURL.resolvingSymlinksInPath() == sdk {
@@ -208,6 +233,16 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
         }
         if let failure { throw failure }
         return result
+    }
+
+    private static func physical(_ path: String) throws -> String {
+        guard let pointer = realpath(path, nil) else { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
+        defer { free(pointer) }
+        return String(cString: pointer)
+    }
+
+    private static func aliasPath(_ file: URL) throws -> String {
+        URL(fileURLWithPath: try physical(file.deletingLastPathComponent().path)).appendingPathComponent(file.lastPathComponent).path
     }
 
     static func selection(_ value: ProjectSelection, workspace: FlutterWorkspace?) throws -> ProjectSelection {

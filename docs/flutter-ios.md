@@ -69,11 +69,19 @@ React Native 의존성 명령과 Metro는 실행하지 않는다.
 
 workspace source·lockfile·symlink·mode와 선택 SDK fingerprint를 각 stage 전후에 확인한다.
 기존 generated build 디렉터리는 source 검사에서 구분한다.
-source·lockfile symlink가 regular file을 가리키면 native child 전에 중단한다.
+일반 source·lockfile symlink는 파일과 directory 모두 native build child 전에 중단한다.
 대상 상태를 확인할 수 없거나 link가 깨졌어도 중단한다.
 오류에는 source 상대 경로와 수동 준비 안내만 표시한다.
 이 검사로 외부 대상의 내용·권한·hash를 새로 수집하지 않는다.
-기존 SDK·generated plugin의 directory alias는 유지한다.
+SDK directory alias는 Dart가 확인한 workspace package의 `.fvm/flutter_sdk` 경로만 기본으로 허용한다.
+명시한 `FLUTTER_ROOT`·`PATH`가 workspace 안의 SDK alias를 선택하면 그 정확한 경로도 허용한다.
+SDK alias 대상은 선택 SDK의 canonical root와 같아야 한다.
+명시한 alias도 기존 #205의 generated input·effective Xcode 경로 검사를 통과해야 한다.
+generated plugin alias는 선택 앱의 `ios/.symlinks/plugins/<name>` 경로만 허용한다.
+plugin name과 canonical root는 같은 #205 검사가 확인한 iOS native plugin 결과를 사용한다.
+새 metadata를 다시 읽어 alias 예외를 늘리지 않는다.
+경로나 대상이 달라지면 중단한다.
+`lib`·`assets`·`ios` 같은 일반 source directory alias는 수동 준비로 안내한다.
 directory alias는 link 자체를 관측한다.
 이 관측으로 외부 directory 전체의 내용 보존을 주장하지 않는다.
 예상 밖 source 변경을 발견하면 다음 stage를 시작하지 않는다.
