@@ -65,16 +65,7 @@ public struct IOSResourceInventory: Sendable {
     /// Keep the existing name/booted/newest-iPhone selection order after strict compatibility filtering.
     public func existing(minimum: MinimumVersion, architecture: String, declared: String?) -> Device? {
         let runtimeIDs = Set(compatibleRuntimes(minimum: minimum, architecture: architecture).map(\.identifier))
-        let candidates = list.simulators.filter { runtimeIDs.contains($0.runtimeIdentifier) && $0.isAvailable }.map { simulator in
-            // A renamed iPhone remains reusable. The actual device type supplies the phone rank.
-            guard declared == nil,
-                  let device = devices.first(where: { $0.identifier == simulator.udid }),
-                  let type = types.devicetypes.first(where: { $0.identifier == device.deviceTypeIdentifier }),
-                  type.productFamily == "iPhone" else { return simulator }
-            return SimctlDeviceList.Simulator(name: type.name, udid: simulator.udid, runtime: simulator.runtime,
-                runtimeText: simulator.runtimeText, runtimeIdentifier: simulator.runtimeIdentifier,
-                isAvailable: simulator.isAvailable, isBooted: simulator.isBooted)
-        }
+        let candidates = list.simulators.filter { runtimeIDs.contains($0.runtimeIdentifier) && $0.isAvailable }
         guard case .success(let selected) = SimulatorSelector(simulators: candidates, lookup: nil).resolve(declared: declared) else { return nil }
         return devices.first { $0.identifier == selected.udid && $0.deviceTypeIdentifier != nil
             && ["Shutdown", "Booted"].contains($0.state) }

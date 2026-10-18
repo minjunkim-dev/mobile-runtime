@@ -1,6 +1,7 @@
 import Core
 @testable import EnvironmentKit
 import Foundation
+import SimulatorKit
 import TestSupport
 import Testing
 
@@ -515,6 +516,81 @@ struct FlutterPreparationTests {
         #expect(runner.log.all.isEmpty)
     }
 
+    @Test("Flutter recovered-device continuation checks the whole resolver workspace", arguments: ["normal", "dart", "workspace"])
+    func recoveredDeviceWorkspaceSource(_ mode: String) async throws {
+        let f = try FlutterFixture()
+        let home = try FixtureRepo()
+        try f.repo.directory(".git")
+        let original = try String(contentsOf: f.repo.url("pubspec.yaml"), encoding: .utf8)
+        try f.repo.write("pubspec.yaml", original + "workspace:\n  - apps/*\n  - packages/*\n")
+        let app = f.repo.url("apps/client")
+        let shared = f.repo.url("packages/shared")
+        try f.repo.write("apps/client/pubspec.yaml", "name: client\nenvironment:\n  sdk: ^3.6.0\nresolution: workspace\ndependencies:\n  flutter:\n    sdk: flutter\n")
+        try f.repo.write("packages/shared/pubspec.yaml", "name: shared\nenvironment:\n  sdk: ^3.6.0\nresolution: workspace\n")
+        for file in ["apps/client/lib/main.dart", "apps/client/lib/feature.dart", "packages/shared/lib/feature.dart"] {
+            try f.repo.write(file, "void fixture() {}\n")
+        }
+        try f.repo.write("apps/client/mobile.yml", "ios:\n  runtime: '27.0'\n")
+        try f.repo.write("apps/client/ios/Podfile", "platform :ios, '15.0'\n")
+        try f.repo.write("apps/client/ios/Flutter/Generated.xcconfig", "FLUTTER_ROOT=\(f.repo.url("sdk").path)\nFLUTTER_APPLICATION_PATH=\(app.path)\nFLUTTER_TARGET=lib/main.dart\n")
+        try f.repo.write("apps/client/android/settings.gradle", "include ':app'\n")
+        try f.repo.write("apps/client/android/local.properties", "flutter.sdk=\(f.repo.url("sdk").path)\n")
+        try f.repo.write("apps/client/.flutter-plugins-dependencies", "{\"version\":\"3.41.9\",\"plugins\":{\"ios\":[],\"android\":[]}}")
+        let packages = [("example", f.repo.root), ("client", app), ("shared", shared), ("flutter", f.repo.url("sdk/packages/flutter"))]
+        let config = try JSONSerialization.data(withJSONObject: ["configVersion": 2, "packages": packages.map { ["name": $0.0, "rootUri": $0.1.absoluteString] }])
+        try config.write(to: f.repo.url(".dart_tool/package_config.json"))
+        let graph = try JSONSerialization.data(withJSONObject: ["configVersion": 1, "roots": ["example", "client", "shared"], "packages": packages.map {
+            ["name": $0.0, "dependencies": ["example", "client"].contains($0.0) ? ["flutter"] : [], "devDependencies": []] as [String: Any]
+        }])
+        try graph.write(to: f.repo.url(".dart_tool/package_graph.json"))
+        let workspace = try JSONSerialization.data(withJSONObject: ["packages": [f.repo.root, app, shared].map { ["path": $0.path] }])
+        var base = f.runner(workspace: String(decoding: workspace, as: UTF8.self))
+        for (command, output) in [
+            "xcode-select -p": "/test/Xcode", "xcodebuild -version": "Xcode 27.0\nBuild version 18A100",
+            "xcodebuild -checkFirstLaunchStatus": "", "xcrun simctl list devices -j": #"{"devices":{}}"#,
+            "xcrun simctl list devicetypes -j": #"{"devicetypes":[{"identifier":"com.apple.CoreSimulator.SimDeviceType.iPhone-17","name":"iPhone 17","productFamily":"iPhone","minRuntimeVersionString":"26.0.0","maxRuntimeVersionString":"65535.255.255"}]}"#
+        ] { base.responses[command] = .ok(output) }
+        for process in ["xcodebuild", "Simulator", "launchd_sim"] { base.responses["pgrep -x " + process] = .failed(1, "") }
+        base.responses[f.repo.url("sdk/bin/cache/dart-sdk/bin/dart").path + " pub --suppress-analytics get --enforce-lockfile"] = .ok("")
+        var environment = f.environment
+        environment["HOME"] = home.root.path
+        let changed = mode == "normal" ? nil : f.repo.url(mode == "dart" ? "apps/client/lib/feature.dart" : "packages/shared/lib/feature.dart")
+        let cache = home.url("Library/Application Support/dev.runstir/flutter/pub-cache")
+        let runner = FlutterRuntimeRecoveryRunner(base: base, home: home.root, mutate: changed, cache: cache)
+        let input = ProjectInspectionInput(directory: app, environment: environment)
+        let leases = ResourceLeases(directory: home.url("leases"))
+        let proposed = await PreparationExecution.run(input: input, planOnly: true, runner: runner, leases: leases)
+        let plan = try #require(proposed.plan)
+        #expect(plan.platforms.flatMap(\.checks).contains { $0.id == "ios.flutter.generated" && $0.kind == "reuse" })
+        #expect(plan.steps.contains { $0.id == "ios.runtime.install" && $0.kind == "install" })
+        #expect(plan.steps.contains { $0.id == "ios.simulator.create" && $0.kind == "install" })
+        let result = await PreparationExecution.run(input: input, approvedPlanID: plan.id, trustRepository: true, runner: runner, leases: leases)
+        #expect(runner.installations == 1 && runner.creations == 0)
+        #expect(result.operation.completed.contains("ios.runtime.install"))
+        #expect(!result.operation.completed.contains("ios.simulator.create"))
+        if let changed {
+            #expect(result.operation.state == "failed")
+            #expect(result.operation.changedFiles.count == 1)
+            let observed = URL(fileURLWithPath: try #require(result.operation.changedFiles.first))
+            #expect(observed.lastPathComponent == changed.lastPathComponent)
+            #expect(try FolderIdentity(directory: observed.deletingLastPathComponent()) == FolderIdentity(directory: changed.deletingLastPathComponent()))
+            #expect(result.operation.completed == ["ios.runtime.install"])
+            #expect(!base.log.all.contains { $0.arguments.contains("get") })
+            #expect(try String(contentsOf: changed, encoding: .utf8) == "externally changed Dart source")
+        } else {
+            #expect(result.operation.error == nil, Comment(rawValue: result.operation.error ?? ""))
+            #expect(result.operation.resources.contains { $0.identifier == FlutterRuntimeRecoveryRunner.deviceID && $0.origin == .reused })
+            #expect(result.operation.completed.contains("dependencies.flutter"))
+            #expect(result.operation.changedFiles.isEmpty)
+            let get = try #require(base.log.all.first { $0.arguments.contains("get") })
+            #expect(get.workingDirectory?.resolvingSymlinksInPath().path == f.repo.root.resolvingSymlinksInPath().path)
+            #expect(get.environment["PUB_CACHE"] == cache.path)
+            #expect(FileManager.default.fileExists(atPath: cache.appendingPathComponent("owned-cache").path))
+        }
+        #expect(try String(contentsOf: f.repo.url("pubspec.lock"), encoding: .utf8) == "packages: {}\n")
+        withExtendedLifetime(home) {}
+    }
+
     private func podTools(_ f: FlutterFixture, bundled: Bool) throws -> FakeProcessRunner {
         var runner = f.runner()
         runner.responses["xcode-select -p"] = .failed(1, "No Xcode in fixture")
@@ -563,6 +639,60 @@ private struct FlutterAlignmentRunner: ProcessRunner {
         }
         return result
     }
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+        throw FixtureMiss(command: command.description)
+    }
+}
+
+private final class FlutterRuntimeRecoveryRunner: ProcessRunner, @unchecked Sendable {
+    static let deviceID = "E00349BB-E8F0-4E8A-B5DD-BF3DDE20FBC0"
+    let base: FakeProcessRunner
+    let home: URL
+    let mutate: URL?
+    let cache: URL
+    private let lock = NSLock()
+    private var runtime = false
+    private var deviceReads = 0
+    private var installed = 0
+    private var created = 0
+    var installations: Int { lock.withLock { installed } }
+    var creations: Int { lock.withLock { created } }
+
+    init(base: FakeProcessRunner, home: URL, mutate: URL?, cache: URL) {
+        self.base = base; self.home = home; self.mutate = mutate; self.cache = cache
+    }
+
+    func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+        var answer = base
+        if command.arguments == ["simctl", "list", "runtimes", "-j"] {
+            answer.responses[command.description] = .ok(lock.withLock { runtime }
+                ? #"{"runtimes":[{"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-27-0","name":"iOS 27.0","version":"27.0","buildversion":"24A434","supportedArchitectures":["arm64"],"isAvailable":true}]}"# : #"{"runtimes":[]}"#)
+        } else if command.arguments == ["simctl", "--set", home.appendingPathComponent("Library/Developer/CoreSimulator/Devices").path, "list", "devices", "-j"] {
+            let available = lock.withLock { runtime }
+            let reads = lock.withLock { if runtime { deviceReads += 1 }; return deviceReads }
+            if reads == 2, let mutate { try Data("externally changed Dart source".utf8).write(to: mutate) }
+            let row: [String: Any] = ["udid": Self.deviceID, "name": "iPhone 17", "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17", "isAvailable": available, "state": "Shutdown"]
+            let value = ["devices": ["com.apple.CoreSimulator.SimRuntime.iOS-27-0": [row]]]
+            answer.responses[command.description] = .ok(String(decoding: try JSONSerialization.data(withJSONObject: value), as: UTF8.self))
+        } else if command.description == IOSRuntimeCatalog.command.description {
+            let catalog: [String: Any] = ["downloadables": [["platform": "com.apple.platform.iphoneos", "downloadMethod": "mobileAsset", "contentType": "cryptexDiskImage", "dictionaryVersion": 2, "name": "iOS 27.0 Simulator Runtime", "identifier": "fixture-asset", "simulatorVersion": ["version": "27.0", "buildUpdate": "24A434"], "architectures": ["arm64"], "fileSize": Int64(12)]]]
+            let data = try PropertyListSerialization.data(fromPropertyList: catalog, format: .xml, options: 0)
+            answer.responses[command.description] = .ok(String(decoding: data, as: UTF8.self))
+        } else if command.arguments.contains("-downloadPlatform") {
+            lock.withLock { installed += 1; runtime = true }
+            answer.responses[command.description] = .ok("")
+        } else if command.arguments.contains("create") {
+            lock.withLock { created += 1 }
+            answer.responses[command.description] = .failed(1, "Redundant creation must not run")
+        }
+        let result = try await answer.run(command, onLine: onLine)
+        if command.arguments.contains("get"), result.terminationStatus.isSuccess {
+            try FileManager.default.createDirectory(at: cache, withIntermediateDirectories: true)
+            try Data("owned dependency cache".utf8).write(to: cache.appendingPathComponent("owned-cache"))
+        }
+        return result
+    }
+
     func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
         throw FixtureMiss(command: command.description)
     }

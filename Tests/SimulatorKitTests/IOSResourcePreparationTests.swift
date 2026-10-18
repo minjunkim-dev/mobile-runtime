@@ -48,13 +48,23 @@ struct IOSResourcePreparationTests {
         #expect(resource.deviceTypeIdentifier == "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro")
     }
 
-    @Test("a renamed Shutdown iPhone is reused by its measured device type")
-    func renamedDevice() async throws {
-        let devices = #"{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-26-5":[{"udid":"B38C3447-963B-42CB-959F-F5234F5A1092","name":"Personal Simulator","deviceTypeIdentifier":"com.apple.CoreSimulator.SimDeviceType.iPhone-17","state":"Shutdown","isAvailable":true}]}}"#
+    @Test("preparation and up select the same renamed Simulator", arguments: [
+        ("Shutdown", nil as String?), ("Shutdown", "Personal Simulator"), ("Booted", nil),
+    ])
+    func renamedDevice(state: String, declared: String?) async throws {
+        let devices = #"{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-26-5":[{"udid":"B38C3447-963B-42CB-959F-F5234F5A1092","name":"Personal Simulator","deviceTypeIdentifier":"com.apple.CoreSimulator.SimDeviceType.iPhone-17","state":"\#(state)","isAvailable":true}]}}"#
         let inventory = try await load(devices: devices)
-        let selected = try #require(inventory.existing(minimum: MinimumVersion("26.0")!, architecture: "arm64", declared: nil))
-        #expect(selected.name == "Personal Simulator")
-        #expect(selected.identifier == "B38C3447-963B-42CB-959F-F5234F5A1092")
+        let list = try #require(SimctlDeviceList.decode(devices))
+        let selected = inventory.existing(minimum: MinimumVersion("26.0")!, architecture: "arm64", declared: declared)
+        switch SimulatorSelector(simulators: list.simulators, lookup: nil).resolve(declared: declared) {
+        case .success(let expected):
+            #expect(selected?.identifier == expected.udid)
+            #expect(selected?.name == expected.name)
+        case .failure(.noPhoneInstalled):
+            #expect(selected == nil)
+        case .failure(let miss):
+            Issue.record("Unexpected selection failure: \(miss)")
+        }
     }
 
     @Test("creation uses measured device type bounds and does not boot a device")

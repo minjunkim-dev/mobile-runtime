@@ -187,7 +187,7 @@ struct IOSPreparation {
             guard result.terminationStatus.isSuccess, exactRuntime(pin, in: after) != nil else {
                 throw failure("The selected Xcode did not confirm installation of the approved OS build and architecture. Check Components, account access, license and permissions manually.")
             }
-            guard before.devices.allSatisfy({ device in after.devices.first(where: { $0.identifier == device.identifier }) == device }) else {
+            guard preservesDevices(before.devices, after: after.devices, installedRuntimeID: pin.identifier) else {
                 throw failure("An existing Simulator observation changed during runtime installation. Its cause is unknown. Inspect it manually; no resource was restored or removed.")
             }
             try Task.checkCancellation()
@@ -263,6 +263,16 @@ struct IOSPreparation {
     private static func exactRuntime(_ pin: IOSRuntimePin, in inventory: IOSResourceInventory) -> IOSResourceInventory.Runtime? {
         inventory.runtimes.first { $0.identifier == pin.identifier && $0.version == pin.version && $0.build == pin.build
             && $0.architectures?.contains(pin.architecture) == true && $0.available }
+    }
+
+    static func preservesDevices(_ before: [IOSResourceInventory.Device], after: [IOSResourceInventory.Device], installedRuntimeID: String) -> Bool {
+        before.map(\.identifier).sorted() == after.map(\.identifier).sorted() && before.allSatisfy { device in
+            guard let observed = after.first(where: { $0.identifier == device.identifier }) else { return false }
+            return observed.name == device.name && observed.deviceTypeIdentifier == device.deviceTypeIdentifier
+                && observed.runtimeIdentifier == device.runtimeIdentifier && observed.state == device.state
+                && (observed.available == device.available
+                    || (!device.available && observed.available && device.runtimeIdentifier == installedRuntimeID))
+        }
     }
 
     private static func matchingDevice(_ request: IOSSimulatorRequest, in inventory: IOSResourceInventory) -> IOSResourceInventory.Device? {
