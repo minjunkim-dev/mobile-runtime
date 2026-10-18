@@ -30,6 +30,62 @@ struct FlutterIOSWorkflowTests {
         #expect(!runner.commands.contains { $0.arguments.contains("build") || $0.arguments.contains("get") })
     }
 
+    @Test("doctor grades the selected Flutter app deployment target against observed runtimes", arguments: [
+        "available", "missing", "older", "malformed",
+    ])
+    func doctorRuntime(_ runtime: String) async throws {
+        let f = try FlutterIOSFixture()
+        try f.repo.write("ios/Podfile", "# platform :ios, '15.0'\n")
+        let runner = FlutterIOSRunner(fixture: f, fault: "runtime:" + runtime)
+        let result = try await EnvironmentInspection.run(input: f.input().project, runner: runner,
+            scheme: "Runner", configuration: "Debug")
+        let expected: CheckStatus = runtime == "available" ? .pass : runtime == "malformed" ? .unknown : .error
+        let project = try #require(result.report.checks.first { $0.id == "ios.flutter.project" })
+        #expect(project.status == expected)
+        #expect(project.outcome.required == "an iOS 15.0 or newer simulator runtime, available")
+        #expect(project.outcome.source.tier == 1)
+        #expect(result.report.status == expected)
+        #expect(result.exitCode == (expected == .error ? 1 : 0))
+        #expect(!result.report.checks.contains { $0.id == "simulator.runtime" })
+        #expect(result.selection.requiredInput.isEmpty)
+        #expect(runner.commands.filter { $0.arguments.contains("-showBuildSettings") }.count == 1)
+        #expect(runner.commands.filter { $0.arguments == ["simctl", "list", "runtimes", "-j"] }.count == 2)
+        #expect(!runner.commands.contains { $0.arguments.last == "build" || $0.arguments.contains("install") || $0.arguments.contains("launch") })
+        if runtime == "malformed" {
+            #expect(project.outcome.reason?.contains("simctl stopped listing runtimes") == true)
+            #expect(!result.report.hasToolFailure)
+        }
+    }
+
+    @Test("doctor does not inspect an unresolved Flutter scheme's build settings or runtime")
+    func doctorSchemeSelection() async throws {
+        let f = try FlutterIOSFixture()
+        try f.repo.write("ios/Podfile", "# platform :ios, '15.0'\n")
+        try f.repo.write("ios/Runner.xcodeproj/xcshareddata/xcschemes/Other.xcscheme",
+            "<Scheme><LaunchAction><BuildableProductRunnable><BuildableReference BlueprintName=\"Runner\" BuildableName=\"Runner.app\"/></BuildableProductRunnable></LaunchAction></Scheme>")
+        let runner = FlutterIOSRunner(fixture: f, fault: "multiple-schemes")
+        let result = try await EnvironmentInspection.run(input: f.input().project, runner: runner)
+        #expect(result.report.checks.contains { $0.id == "ios.flutter.project" && $0.status == .warning })
+        #expect(result.report.status == .warning)
+        #expect(!result.report.checks.contains { $0.id == "simulator.runtime" })
+        #expect(!runner.commands.contains { $0.arguments.contains("-showBuildSettings") || $0.arguments.last == "build" })
+        #expect(runner.commands.filter { $0.arguments == ["simctl", "list", "runtimes", "-j"] }.count == 1)
+    }
+
+    @Test("doctor retains the generic runtime unknown while the Flutter SDK is unresolved")
+    func doctorUnresolvedSDKRuntime() async throws {
+        let f = try FlutterIOSFixture()
+        try f.repo.write("ios/Podfile", "# platform :ios, '15.0'\n")
+        try FileManager.default.removeItem(at: f.repo.url("sdk"))
+        let runner = FlutterIOSRunner(fixture: f)
+        let result = try await EnvironmentInspection.run(input: f.input().project, runner: runner,
+            scheme: "Runner", configuration: "Debug")
+        #expect(result.report.checks.contains { $0.id == "simulator.runtime" && $0.status == .unknown })
+        #expect(!result.report.checks.contains { $0.id == "ios.flutter.project" })
+        #expect(!runner.commands.contains { $0.arguments.contains("-showBuildSettings") || $0.arguments.last == "build" })
+        #expect(runner.commands.filter { $0.arguments == ["simctl", "list", "runtimes", "-j"] }.count == 1)
+    }
+
     @Test("up observes its own authenticated VM URI and down needs no SDK", arguments: [false, true])
     func upAndDown(_ workspace: Bool) async throws {
         let f = try FlutterIOSFixture(workspace: workspace)
@@ -309,8 +365,9 @@ final class FlutterIOSRunner: ProcessRunner, @unchecked Sendable {
             if command.arguments == ["-checkFirstLaunchStatus"] { return ok("") }
             if command.arguments.contains("-list") {
                 let configurations = fault == "no-debug" ? ["Development", "Release"] : ["Debug", "Release"]
+                let schemes = fault == "multiple-schemes" ? ["Runner", "Other"] : ["Runner"]
                 return ok(String(decoding: try JSONSerialization.data(withJSONObject:
-                    ["project": ["schemes": ["Runner"], "configurations": configurations]]), as: UTF8.self))
+                    ["project": ["schemes": schemes, "configurations": configurations]]), as: UTF8.self))
             }
             if command.arguments.contains("-showBuildSettings") {
                 var settings = fixture.settings
@@ -364,7 +421,17 @@ final class FlutterIOSRunner: ProcessRunner, @unchecked Sendable {
         if command.executable == "xcode-select" { return ok("/test/Xcode") }
         if command.executable == "pod" { return ok("1.16.2") }
         if command.executable == "ruby" { return ok("ruby 3.2.2") }
-        if command.arguments == ["simctl", "list", "runtimes", "-j"] { return ok("{\"runtimes\":[{\"identifier\":\"com.apple.CoreSimulator.SimRuntime.iOS-27-0\",\"name\":\"iOS 27.0\",\"version\":\"27.0\",\"isAvailable\":true}]}") }
+        if command.arguments == ["simctl", "list", "runtimes", "-j"] {
+            // CoreSimulator answers first; only the later requirement measurement changes.
+            if fault?.hasPrefix("runtime:") == true,
+               commands.filter({ $0.arguments == command.arguments }).count == 1 {
+                return ok("{\"runtimes\":[{\"identifier\":\"com.apple.CoreSimulator.SimRuntime.iOS-27-0\",\"name\":\"iOS 27.0\",\"version\":\"27.0\",\"isAvailable\":true}]}")
+            }
+            if fault == "runtime:missing" { return ok("{\"runtimes\":[]}") }
+            if fault == "runtime:malformed" { return ok("not a runtime list") }
+            let version = fault == "runtime:older" ? "14.9" : "27.0"
+            return ok("{\"runtimes\":[{\"identifier\":\"com.apple.CoreSimulator.SimRuntime.iOS-\(version.replacingOccurrences(of: ".", with: "-"))\",\"name\":\"iOS \(version)\",\"version\":\"\(version)\",\"isAvailable\":true}]}")
+        }
         if command.arguments == ["simctl", "list", "devices", "-j"] { return ok("{\"devices\":{\"com.apple.CoreSimulator.SimRuntime.iOS-27-0\":[{\"name\":\"iPhone A\",\"udid\":\"A\",\"state\":\"Booted\",\"isAvailable\":true}]}}") }
         let workspace = fixture.inWorkspace ? "{\"packages\":[{\"path\":\"\(fixture.repo.root.path)\"},{\"path\":\"\(fixture.app.path)\"}]}" : nil
         return try await fixture.flutter.runner(workspace: workspace).run(command, onLine: onLine)

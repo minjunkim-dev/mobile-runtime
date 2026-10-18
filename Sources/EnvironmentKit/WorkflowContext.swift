@@ -134,7 +134,11 @@ public struct WorkflowContext: Sendable {
                     runner: projectEnvironment?.runner ?? runner, locator: locator,
                     entrypoint: input.entrypoint, sdk: sdk.root, configuration: selectedConfiguration)]
             } else { [] }
-            checks = flutterChecks + workspaceChecks + iOSChecks(lookup: lookup, runner: runner, locator: locator)
+            let platformChecks = iOSChecks(lookup: lookup, runner: runner, locator: locator).filter {
+                // The prepared Flutter check grades its measured app deployment target.
+                $0.id != "simulator.runtime" || anchor?.framework != .flutter || flutter?.sdk == nil
+            }
+            checks = flutterChecks + workspaceChecks + platformChecks
                 + configChecks(context: config, lookup: lookup, runner: runner, locator: locator)
                 + projectChecks + nativeChecks
         case .android:

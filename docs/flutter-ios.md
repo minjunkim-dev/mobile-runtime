@@ -34,6 +34,14 @@ GUI의 Flutter entrypoint와 VM service port 입력도 같은 계약을 사용�
 GUI의 환경 확인과 준비 계획에는 같은 entrypoint를 전달한다.
 GUI의 환경 확인에는 선택한 scheme과 configuration도 전달한다.
 
+준비된 Flutter의 `ios.flutter.project` 검사는 선택한 scheme의 실제 deployment target을 사용한다.
+같은 검사에서 기존 Simulator runtime의 availability와 버전 하한을 확인한다.
+이 분기에서는 정적 요구값의 중복 `simulator.runtime` 행을 표시하지 않는다.
+scheme 또는 configuration 선택이 부족하면 경고를 유지하고 build settings와 runtime 하한 판정을 보류한다.
+CoreSimulator 응답을 확인한 뒤 runtime 관측이 잘못되면 `unknown`을 유지한다.
+SDK가 미확정이면 기존 정적 runtime 검사를 유지한다.
+native iOS와 React Native의 기존 runtime 검사 계약은 바꾸지 않는다.
+
 ## 준비와 빌드
 
 공식 정식 arm64 Flutter SDK와 bundled Dart exact를 함께 확인한다.

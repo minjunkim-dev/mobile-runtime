@@ -71,7 +71,8 @@ struct FlutterIOSHostCheck: Check {
     let configuration: String?
     let id = "ios.flutter.project"
     let category = "Flutter iOS"
-    let title = "Prepared Flutter iOS app target"
+    let title = "Prepared Flutter iOS app target and compatible runtime"
+    let dependsOn = ["simulator.daemon"]
     func run() async throws -> CheckOutcome {
         do {
             let choices = try await IOSWorkflowCandidates.load(anchor: anchor, config: config, lookup: lookup,
@@ -89,7 +90,13 @@ struct FlutterIOSHostCheck: Check {
                 return .warning(observed: "This Flutter app has no declared Debug configuration.",
                     remediation: Remediation(summary: "Select a reported configuration with --configuration and verify that its effective Flutter build mode is debug."))
             }
-            return .pass(observed: "The selected shared app scheme resolves matching Flutter debug inputs.")
+            let source = CheckSource(tier: 1, origin: "Selected Flutter app scheme IPHONEOS_DEPLOYMENT_TARGET")
+            guard let target = choices.deploymentTarget, let minimum = MinimumVersion(target) else {
+                return .unknown(reason: "Choose a shared app scheme before its Simulator deployment target can be measured.", source: source)
+            }
+            let runtime = MatrixLookup(xcode: lookup?.xcode ?? .unavailable(reason: "not measured", source: source),
+                runtime: .requirement(minimum, source: source))
+            return try await SimulatorRuntimeCheck(lookup: runtime, runner: runner, locator: locator).run()
         } catch let error as DomainError {
             return .error(observed: error.summary, remediation: error.remediation)
         }
