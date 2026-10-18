@@ -47,6 +47,7 @@ struct AndroidCleanup: Sendable {
         let ids = ["android.app", "android.adb.reverse", "metro", "android.emulator"]
         let original: AndroidActiveRun?
         do {
+            if anchor.framework == .reactNative { _ = try store.logs.metroPort(platform: .android) }
             original = try store.read()
         } catch {
             let message = "android.active-run: \(error)"
@@ -188,7 +189,7 @@ struct AndroidCleanup: Sendable {
         case .blocked(let item): return item
         case .verified: break
         }
-        let source = "tcp:\(MetroVerdict.port)"
+        let source = "tcp:\(try store.logs.metroPort(platform: .android) ?? MetroVerdict.port)"
         let mappings = try await doctorContext.reverseMappings(serial: reverse.serial, sdk: sdk, runner: runner)
         guard let current = mappings[source] else {
             return .skipped("android.adb.reverse", "mapping already absent")
@@ -238,7 +239,8 @@ struct AndroidCleanup: Sendable {
         } else {
             false
         }
-        let listener = try await MetroLaunch.listeners(runner: projectRunner).first
+        let port = try store.logs.metroPort(platform: .android) ?? MetroVerdict.port
+        let listener = try await MetroLaunch.listeners(runner: projectRunner, port: port).first
         if !startRunning && listener == nil {
             return .skipped("metro", "owned Metro already stopped")
         }
@@ -254,7 +256,7 @@ struct AndroidCleanup: Sendable {
                 )
             }
             guard try await MetroVerdict.ask(
-                anchor: anchor.directory, runner: projectRunner
+                anchor: anchor.directory, runner: projectRunner, port: port
             ) == .mine else {
                 return .blocked(
                     "metro",
@@ -267,7 +269,7 @@ struct AndroidCleanup: Sendable {
         } else if let listener {
             guard startRunning,
                 try await MetroVerdict.ask(
-                    anchor: anchor.directory, runner: projectRunner
+                    anchor: anchor.directory, runner: projectRunner, port: port
                 ) == .mine
             else {
                 return .blocked(
@@ -298,7 +300,7 @@ struct AndroidCleanup: Sendable {
             )
         }
         try await pause()
-        let listenerAfter = try await MetroLaunch.listeners(runner: projectRunner).first
+        let listenerAfter = try await MetroLaunch.listeners(runner: projectRunner, port: port).first
         let startAfter = if let pid = metro.startPID {
             try await processIsRunning(pid)
         } else {

@@ -74,7 +74,8 @@ private func buildScenario(
     assembleResponse: FakeProcessRunner.Response = .ok("BUILD SUCCESSFUL\n"),
     modelArtifacts: Bool = true,
     emitArtifacts: Bool = false,
-    native: Bool = false
+    native: Bool = false,
+    metroPort: Int = MetroVerdict.port
 ) throws -> BuildScenario {
     let repo = try FixtureRepo()
     if native {
@@ -143,7 +144,9 @@ private func buildScenario(
         path("app/build/intermediates/merged_manifests/debug/processDebugManifest/AndroidManifest.xml")
     ).path
     let modelScript = try #require(AndroidGradleModelProbe.scriptURL)
-    let assemble = "./gradlew :app:assembleDebug --no-daemon --no-configuration-cache -Dorg.gradle.unsafe.isolated-projects=false --console=plain "
+    let assemble = "./gradlew :app:assembleDebug --no-daemon "
+        + (metroPort == MetroVerdict.port || native ? "" : "-PreactNativeDevServerPort=\(metroPort) ")
+        + "--no-configuration-cache -Dorg.gradle.unsafe.isolated-projects=false --console=plain "
         + "-Dorg.gradle.java.installations.auto-download=false -Pandroid.builder.sdkDownload=false -I \(modelScript.path)"
     let emittedArtifacts = AndroidGradleModelProbe.artifactMarker
         + "{\"variant\":\"debug\",\"apkDirectory\":\"\(apkDirectory)\","
@@ -170,7 +173,8 @@ private func buildScenario(
         hostRunner: answering,
         projectRunner: answering,
         environment: environment,
-        logs: try .temporary(project: repo.root)
+        logs: try .temporary(project: repo.root),
+        metroPort: metroPort
     )
     return BuildScenario(
         repo: repo,
@@ -184,6 +188,17 @@ private func buildScenario(
 
 @Suite("Android build stage")
 struct AndroidBuildStageTests {
+    @Test("the selected Metro endpoint reaches the native app resource build")
+    func selectedDevelopmentPort() async throws {
+        let scenario = try buildScenario(metroPort: 8097)
+        var context = UpContext()
+        let outcome = try await scenario.stage.run(&context)
+        #expect(outcome.status == .pass)
+        #expect(scenario.runner.log.all.contains {
+            $0.arguments.contains(":app:assembleDebug") && $0.arguments.contains("-PreactNativeDevServerPort=8097")
+        })
+        #expect(context.androidProduct?.applicationId == "dev.mobile.fixture")
+    }
     @Test("native Android builds from its Gradle root without Node dependencies")
     func nativeBuildPipeline() async throws {
         let scenario = try buildScenario(native: true)

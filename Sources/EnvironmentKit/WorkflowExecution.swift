@@ -10,15 +10,17 @@ public struct WorkflowInput: Sendable {
     public let configuration: String?
     public let module: String?
     public let variant: String?
+    public let port: Int?
 
     public init(project: ProjectInspectionInput, device: String? = nil, scheme: String? = nil,
-                configuration: String? = nil, module: String? = nil, variant: String? = nil) {
+                configuration: String? = nil, module: String? = nil, variant: String? = nil, port: Int? = nil) {
         self.project = project
         self.device = device
         self.scheme = scheme
         self.configuration = configuration
         self.module = module
         self.variant = variant
+        self.port = port
     }
 }
 
@@ -69,6 +71,12 @@ public enum WorkflowExecution {
             guard anchor.framework == .reactNative || (anchor.framework == .nativeIOS && platform == .ios)
                 || (anchor.framework == .nativeAndroid && platform == .android) else {
                 throw selectionFailure("\(anchor.framework.displayName) execution is not implemented yet.")
+            }
+            if let port = input.port {
+                guard anchor.framework == .reactNative, kind != .down, (1...65535).contains(port) else {
+                    throw selectionFailure("--port requires React Native build/up and a port from 1 through 65535. This workflow cannot forward it; no project file was changed.")
+                }
+                if port != MetroVerdict.port { try validatePortForwarding(anchor: anchor, platform: platform) }
             }
             if kind == .down && [input.device, input.scheme, input.configuration, input.module, input.variant].contains(where: { $0 != nil }) {
                 throw selectionFailure("down uses the selected project's recorded resources. Omit build and device selectors.")
@@ -177,6 +185,11 @@ public enum WorkflowExecution {
             let owner = LeaseOwner(operationId: operation.id, command: kind.rawValue, project: folder.path)
             let folderLease = try leases.acquire([.folder(folder)], owner: owner)
             defer { folderLease.release() }
+            let logs = RunLogs(project: anchor.directory)
+            let recordedPort = try anchor.framework == .reactNative ? logs.metroPort(platform: platform) : nil
+            let metroPort = anchor.framework == .reactNative
+                ? (kind == .down ? recordedPort ?? MetroVerdict.port : input.port ?? MetroVerdict.port) : nil
+            operation.port = metroPort
             let device: ResourceKey?
             switch kind {
             case .up: device = operation.device.map { .device(platform, $0) }
@@ -190,9 +203,14 @@ public enum WorkflowExecution {
             case .build: device = nil
             }
             let resources = (device.map { [$0] } ?? [])
-                + (kind == .build || anchor.framework != .reactNative ? [] : [.port(MetroVerdict.port)])
+                + (kind == .build ? [] : [metroPort, recordedPort].compactMap { $0 }.map(ResourceKey.port))
             let resourceLease = try leases.acquire(resources, owner: owner)
             defer { resourceLease.release() }
+            if kind == .up, let recordedPort, let metroPort, recordedPort != metroPort {
+                guard try await MetroVerdict.ask(anchor: anchor.directory, runner: wiring.projectRunner, port: recordedPort) == .empty else {
+                    throw selectionFailure("The previously selected Metro port \(recordedPort) remains occupied or unconfirmed. Run mobile down for this project before selecting a different port.")
+                }
+            }
             if let device {
                 let environment = AndroidEnvironment(values: input.project.environment)
                 try await leases.check(device: device, project: folder.path) { [wiring] claim in
@@ -233,19 +251,19 @@ public enum WorkflowExecution {
             case (.up, .android):
                 up = await runAndroidUp(anchor: anchor, doctor: wiring.engine, config: config,
                     hostRunner: runner, projectRunner: wiring.projectRunner,
-                    environment: AndroidEnvironment(values: input.project.environment), note: note,
+                    environment: AndroidEnvironment(values: input.project.environment), metroPort: metroPort ?? MetroVerdict.port, note: note,
                     onStageFinished: finished, onStageStarted: started)
             case (.build, .android):
                 up = await UpPipeline(stages: androidBuildStages(anchor: anchor, doctor: wiring.engine, config: config,
                     hostRunner: runner, projectRunner: wiring.projectRunner,
-                    environment: AndroidEnvironment(values: input.project.environment), note: note))
+                    environment: AndroidEnvironment(values: input.project.environment), metroPort: metroPort ?? MetroVerdict.port, note: note))
                     .run(onStageFinished: finished, onStageStarted: started)
             case (.build, .ios), (.up, .ios):
                 up = await UpPipeline(stages: iOSStages(workflow: kind == .build ? .build : .up,
                     anchor: anchor, doctor: wiring.engine, config: config, lookup: wiring.lookup,
                     hostRunner: runner, projectRunner: wiring.projectRunner, locator: wiring.locator,
                     deviceID: operation.device, configuration: operation.configuration ?? "Debug",
-                    buildWithoutDevice: kind == .build && operation.device == nil, note: note))
+                    buildWithoutDevice: kind == .build && operation.device == nil, metroPort: metroPort ?? MetroVerdict.port, note: note))
                     .run(onStageFinished: finished, onStageStarted: started)
             }
             // The app outlives this lease, even after a later stage failed. The next run observes it again.
@@ -324,6 +342,28 @@ public enum WorkflowExecution {
 
     private static func selectionFailure(_ summary: String) -> DomainError {
         DomainError(summary: summary, remediation: Remediation(summary: summary))
+    }
+
+    private static func validatePortForwarding(anchor: ProjectAnchor, platform: ProjectPlatform) throws {
+        let root = anchor.directory
+        let manifest = try? JSONSerialization.jsonObject(with: Data(contentsOf: root.appendingPathComponent("package.json"))) as? [String: Any]
+        guard (manifest?["scripts"] as? [String: String])?["start"]?.trimmingCharacters(in: .whitespacesAndNewlines) == "react-native start" else {
+            throw selectionFailure("This start script has no confirmed --port forwarding path. Use the standard react-native start script or the default port; no project file was changed.")
+        }
+        let dependency = (anchor.workspaceRoot?.directory ?? root).appendingPathComponent("node_modules")
+        let relative = platform == .ios ? "react-native/React-Core.podspec"
+            : "@react-native/gradle-plugin/react-native-gradle-plugin/src/main/kotlin/com/facebook/react/utils/AgpConfiguratorUtils.kt"
+        let required = platform == .ios ? "RCT_METRO_PORT=${RCT_METRO_PORT}" : "reactNativeDevServerPort"
+        guard let text = try? String(contentsOf: dependency.appendingPathComponent(relative), encoding: .utf8), text.contains(required) else {
+            throw selectionFailure("The installed React Native native build has no confirmed selected-port input. Prepare a supported local dependency tree; no tool was installed and no source was changed.")
+        }
+        if platform == .ios {
+            let provider = dependency.appendingPathComponent("react-native/React/Base/RCTBundleURLProvider.mm")
+            guard let text = try? String(contentsOf: provider, encoding: .utf8),
+                text.contains("RCT_jsLocation"), text.contains("stringForKey:kRCTJsLocationKey") else {
+                throw selectionFailure("The installed iOS React Native bundle provider has no confirmed launch port argument. Existing source and app preferences were preserved.")
+            }
+        }
     }
 }
 

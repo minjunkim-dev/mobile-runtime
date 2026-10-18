@@ -182,14 +182,17 @@ public struct MetroProcess: Sendable, Equatable, Encodable {
     public let state: State
     /// Where the detached child's two streams went — the only place its output is.
     public let logPath: String?
+    public let port: Int
 
     public init(
-        state: State, pid: Int32? = nil, listenerPid: Int32? = nil, logPath: String? = nil
+        state: State, pid: Int32? = nil, listenerPid: Int32? = nil, logPath: String? = nil,
+        port: Int = MetroVerdict.port
     ) {
         self.state = state
         self.pid = pid
         self.listenerPid = listenerPid
         self.logPath = logPath
+        self.port = port
     }
 }
 

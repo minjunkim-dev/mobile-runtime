@@ -12,6 +12,45 @@ private func temporaryDirectory() throws -> URL {
 
 @Suite("run logs")
 struct RunLogsTests {
+    @Test("only an absent Metro port record uses the legacy endpoint")
+    func metroPortRecord() throws {
+        let logs = RunLogs(project: URL(fileURLWithPath: "/a/MyApp"), temporaryDirectory: try temporaryDirectory())
+        #expect(try logs.metroPort() == nil)
+        try logs.recordMetroPort(8097)
+        #expect(try logs.metroPort() == 8097)
+        for invalid in ["", "unreadable", "0", "65536"] {
+            try Data(invalid.utf8).write(to: logs.url("metro-port-ios"))
+            #expect(throws: (any Error).self) { try logs.metroPort() }
+            #expect(throws: (any Error).self) { try logs.recordMetroPort(8098) }
+            #expect(try String(contentsOf: logs.url("metro-port-ios"), encoding: .utf8) == invalid)
+        }
+    }
+
+    @Test("a symlink port record is preserved and cannot redirect a write or teardown")
+    func metroPortSymlink() throws {
+        let temporary = try temporaryDirectory()
+        let logs = RunLogs(project: URL(fileURLWithPath: "/a/MyApp"), temporaryDirectory: temporary)
+        try FileManager.default.createDirectory(at: logs.directory, withIntermediateDirectories: true)
+        let other = temporary.appendingPathComponent("other")
+        try Data("8097\n".utf8).write(to: other)
+        try FileManager.default.createSymbolicLink(at: logs.url("metro-port-ios"), withDestinationURL: other)
+        #expect(throws: (any Error).self) { try logs.metroPort() }
+        #expect(throws: (any Error).self) { try logs.recordMetroPort(8098) }
+        #expect(try String(contentsOf: other, encoding: .utf8) == "8097\n")
+    }
+
+    @Test("one project preserves each platform's endpoint without retargeting the other's down")
+    func separatePlatformPorts() throws {
+        let logs = RunLogs(project: URL(fileURLWithPath: "/a/MyApp"), temporaryDirectory: try temporaryDirectory())
+        try logs.recordMetroPort(8097, platform: .ios)
+        #expect(try logs.metroPort(platform: .android) == nil)
+        try logs.recordMetroPort(8098, platform: .android)
+        #expect(try logs.metroPort(platform: .ios) == 8097)
+        #expect(try logs.metroPort(platform: .android) == 8098)
+        try Data("unconfirmed".utf8).write(to: logs.url("metro-port-android"))
+        #expect(throws: (any Error).self) { try logs.metroPort(platform: .android) }
+        #expect(try logs.metroPort(platform: .ios) == 8097)
+    }
     /// The repo is somebody else's house. A tool that writes its logs there is a tool
     /// that asks for a `.gitignore` entry in return for being run once.
     @Test("logs live under the system temporary directory, not in the project")

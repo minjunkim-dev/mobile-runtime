@@ -28,8 +28,7 @@ public enum MetroVerdict: Sendable, Equatable {
     /// Nothing is listening. The only branch that starts one.
     case empty
 
-    /// Fixed. Configuring it was ruled out with the rest of mobile.yml v0 (#11), and
-    /// a React Native app's default bundler URL is compiled into the Debug build.
+    /// Legacy default. Explicit workflow ports also reach the native Debug build.
     public static let port = 8081
 
     /// Asked with curl through the same runner rather than by opening a socket: a new
@@ -45,7 +44,7 @@ public enum MetroVerdict: Sendable, Equatable {
     /// is how `up` starts a second Metro that cannot bind and reports it as started,
     /// which is exactly the blank screen this verdict exists to replace with a
     /// sentence.
-    public static func ask(anchor: URL, runner: any ProcessRunner) async throws -> MetroVerdict {
+    public static func ask(anchor: URL, runner: any ProcessRunner, port: Int = Self.port) async throws -> MetroVerdict {
         let result = try await runner.run(
             ProcessCommand(
                 "curl", ["-s", "-i", "-m", "2", "http://localhost:\(port)/status"],
@@ -68,47 +67,49 @@ public enum MetroVerdict: Sendable, Equatable {
     /// one. `up` and `down` differ in what they do with `mine`, not in what they say
     /// about the rest.
     public var blocker: DomainError? {
+        blocker(port: Self.port)
+    }
+
+    public func blocker(port: Int) -> DomainError? {
         switch self {
         case .mine, .empty:
             return nil
 
         case .another(let projectRoot):
             return DomainError(
-                summary: "port \(Self.port) is held by another project's Metro",
+                summary: "port \(port) is held by another project's Metro",
                 observed: "it is serving \(projectRoot)",
                 // The header is that process's working directory, not a React Native
                 // anchor, so `cd <it> && mobile down` is not promised to work. The
                 // line that always works points at the process (ADR-0006).
                 remediation: Remediation(
-                    summary: "React Native's bundler only listens on \(Self.port), so that one has "
-                        + "to stop before this project's can start. This says which process it is.",
-                    command: Self.listenerCommand
+                    summary: "Select a different development server port or inspect the existing server.",
+                    command: Self.listenerCommand(port: port)
                 )
             )
 
         case .unidentifiable(let observed):
             return DomainError(
-                summary: "port \(Self.port) answered, but which project's Metro is there "
+                summary: "port \(port) answered, but which project's Metro is there "
                     + "could not be confirmed",
                 observed: observed,
                 remediation: Remediation(
                     summary: "A React Native project without `@react-native-community/cli-server-api` "
                         + "serves no `/status`, and neither does anything that is not Metro — from "
                         + "here the two look alike. This says which process is listening on "
-                        + "\(Self.port).",
-                    command: Self.listenerCommand
+                        + "\(port).",
+                    command: Self.listenerCommand(port: port)
                 )
             )
 
         case .notMetro(let observed):
             // The alternative is a blank screen in the simulator and nothing to read.
             return DomainError(
-                summary: "port \(Self.port) is held by something that is not Metro",
+                summary: "port \(port) is held by something that is not Metro",
                 observed: observed,
                 remediation: Remediation(
-                    summary: "React Native's bundler only listens on \(Self.port), so whatever holds "
-                        + "it has to go first. This says which process that is.",
-                    command: Self.listenerCommand
+                    summary: "Select a different development server port or inspect the existing listener.",
+                    command: Self.listenerCommand(port: port)
                 )
             )
         }
@@ -122,6 +123,9 @@ public enum MetroVerdict: Sendable, Equatable {
     /// told to paste must be the line the tool itself runs (ADR-0006).
     public static let listenerArguments = ["-nP", "-iTCP:\(port)", "-sTCP:LISTEN"]
     public static let listenerCommand = (["lsof"] + listenerArguments).joined(separator: " ")
+
+    public static func listenerArguments(port: Int) -> [String] { ["-nP", "-iTCP:\(port)", "-sTCP:LISTEN"] }
+    public static func listenerCommand(port: Int) -> String { (["lsof"] + listenerArguments(port: port)).joined(separator: " ") }
 
     /// curl's `CURLE_COULDNT_CONNECT`.
     private static let couldNotConnect: Int32 = 7

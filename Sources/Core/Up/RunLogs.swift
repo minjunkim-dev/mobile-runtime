@@ -40,6 +40,35 @@ public struct RunLogs: Sendable {
         }
     }
 
+    /// Remember the selected endpoint, never a PID. Missing is the legacy 8081 path;
+    /// an unreadable record cannot authorize probing or stopping another endpoint.
+    public func metroPort(platform: ProjectPlatform = .ios) throws -> Int? {
+        let file = url("metro-port-\(platform.rawValue)")
+        let attributes: [FileAttributeKey: Any]
+        do {
+            attributes = try FileManager.default.attributesOfItem(atPath: file.path)
+        } catch let error as CocoaError where error.code == .fileReadNoSuchFile { return nil }
+        guard attributes[.type] as? FileAttributeType == .typeRegular else {
+            throw CocoaError(.fileReadInvalidFileName)
+        }
+        let data = try Data(contentsOf: file)
+        guard let text = String(data: data, encoding: .utf8),
+              let port = Int(text.trimmingCharacters(in: .whitespacesAndNewlines)), (1...65535).contains(port)
+        else { throw DomainError(summary: "The recorded Metro port is unreadable or invalid.",
+            remediation: Remediation(summary: "Inspect \(file.path). Existing servers were preserved.")) }
+        return port
+    }
+
+    public func recordMetroPort(_ port: Int, platform: ProjectPlatform = .ios) throws {
+        guard (1...65535).contains(port) else {
+            throw DomainError(summary: "The Metro port must be from 1 through 65535.",
+                remediation: Remediation(summary: "Select a valid development server port."))
+        }
+        _ = try metroPort(platform: platform)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try Data("\(port)\n".utf8).write(to: url("metro-port-\(platform.rawValue)"), options: .atomic)
+    }
+
     /// FNV-1a. Swift's `Hasher` is seeded per process, and a path that hashes
     /// differently on every run would put each `up` in a directory of its own.
     private static func digest(_ path: String) -> String {

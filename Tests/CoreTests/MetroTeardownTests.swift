@@ -22,9 +22,13 @@ private final class PortSequence: ProcessRunner, @unchecked Sendable {
     private let lock = NSLock()
     private var asked = 0
     private(set) var killed: [String] = []
+    private let statusCommand: String
+    private let selectedListCommand: String
 
-    init(before: String, after: String?) {
+    init(before: String, after: String?, port: Int = 8081) {
         answers = [before, after]
+        statusCommand = "curl -s -i -m 2 http://localhost:\(port)/status"
+        selectedListCommand = "lsof -nP -iTCP:\(port) -sTCP:LISTEN -t"
     }
 
     func run(
@@ -32,14 +36,14 @@ private final class PortSequence: ProcessRunner, @unchecked Sendable {
     ) async throws -> ProcessResult {
         lock.withLock {
             switch command.description {
-            case MetroStatus.command:
+            case statusCommand:
                 let answer = answers[min(asked, answers.count - 1)]
                 asked += 1
                 guard let answer else {
                     return ProcessResult(terminationStatus: .exited(7), standardOutput: "", standardError: "")
                 }
                 return ProcessResult(terminationStatus: .exited(0), standardOutput: answer, standardError: "")
-            case listCommand:
+            case selectedListCommand:
                 return ProcessResult(terminationStatus: .exited(0), standardOutput: "65260\n", standardError: "")
             default:
                 killed.append(command.description)
@@ -55,14 +59,15 @@ private final class PortSequence: ProcessRunner, @unchecked Sendable {
 struct MetroTeardownTests {
     /// The kill is SIGTERM and the pid comes from the port at that moment — no state
     /// file, because a pid in a file goes stale without saying so (ADR-0007).
-    @Test("this project's Metro is stopped with SIGTERM and named by pid")
-    func stopsMine() async throws {
+    @Test("this project's selected Metro endpoint is stopped with SIGTERM and named by pid", arguments: [8081, 8097])
+    func stopsMine(port: Int) async throws {
         let runner = PortSequence(
             before: MetroStatus.running(projectRoot: anchor),
-            after: nil
+            after: nil,
+            port: port
         )
 
-        let item = try await MetroTeardown(anchor: anchor, runner: runner, grace: .zero).run()
+        let item = try await MetroTeardown(anchor: anchor, runner: runner, grace: .zero, port: port).run()
 
         #expect(item.status == .stopped)
         #expect(item.detail?.contains("65260") == true)

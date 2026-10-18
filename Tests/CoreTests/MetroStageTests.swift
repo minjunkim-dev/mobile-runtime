@@ -68,6 +68,58 @@ private actor DelayedListenerRunner: ProcessRunner {
 
 @Suite("metro stage")
 struct MetroStageTests {
+    @Test("an explicit endpoint reaches start, listener probing, failure hints and the retry record")
+    func selectedPortSurvivesFailure() async throws {
+        let repo = try app()
+        let anchor = try #require(ProjectAnchor.detect(from: repo.root))
+        let logs = try temporaryLogs()
+        let runner = FakeProcessRunner(responses: [
+            "curl -s -i -m 2 http://localhost:8097/status": .failed(7, ""),
+            "lsof -nP -iTCP:8097 -sTCP:LISTEN -t": .ok(""),
+            "kill -0 4242": .failed(1, ""),
+        ])
+        var context = UpContext()
+        await #expect(throws: DomainError.self) {
+            try await MetroStage(anchor: anchor, runner: runner, logs: logs, bindWait: .zero, port: 8097).run(&context)
+        }
+        #expect(try logs.metroPort() == 8097)
+        #expect(runner.log.spawned.first?.command.arguments == ["start", "--port", "8097"])
+        #expect(runner.log.spawned.first?.command.environment["RCT_METRO_PORT"] == "8097")
+        #expect(!runner.log.all.contains { $0.description.contains("8081") })
+    }
+
+    @Test("a previous occupied endpoint blocks a port change without overwriting its record")
+    func changedPortPreservesServer() async throws {
+        let repo = try app()
+        let anchor = try #require(ProjectAnchor.detect(from: repo.root))
+        let logs = try temporaryLogs()
+        try logs.recordMetroPort(8097)
+        let runner = FakeProcessRunner(responses: [
+            "curl -s -i -m 2 http://localhost:8097/status": .ok(MetroStatus.running(projectRoot: repo.root)),
+        ])
+        var context = UpContext()
+        await #expect(throws: DomainError.self) {
+            try await MetroStage(anchor: anchor, runner: runner, logs: logs, port: 8098).run(&context)
+        }
+        #expect(try logs.metroPort() == 8097)
+        #expect(runner.log.spawned.isEmpty)
+        #expect(runner.log.all.count == 1)
+    }
+
+    @Test("an unwritable endpoint record blocks Metro before spawn")
+    func portRecordWriteFailure() async throws {
+        let repo = try app()
+        let anchor = try #require(ProjectAnchor.detect(from: repo.root))
+        let blocked = try repo.write("not-a-directory", "preserve")
+        let logs = RunLogs(project: repo.root, temporaryDirectory: blocked)
+        let runner = FakeProcessRunner(responses: [MetroStatus.command: .failed(7, "")])
+        var context = UpContext()
+        await #expect(throws: (any Error).self) {
+            try await MetroStage(anchor: anchor, runner: runner, logs: logs).run(&context)
+        }
+        #expect(runner.log.spawned.isEmpty)
+        #expect(try String(contentsOf: blocked, encoding: .utf8) == "preserve")
+    }
     @Test("after a reinstall the project's watchman watch is dropped so Metro crawls fresh")
     func dropsWatchmanWatch() async throws {
         let repo = try app()

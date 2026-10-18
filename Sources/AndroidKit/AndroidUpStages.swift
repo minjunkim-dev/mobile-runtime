@@ -24,6 +24,7 @@ actor AndroidRuntime {
     private let logs: RunLogs
     private let store: AndroidActiveRunStore
     private let timeouts: AndroidRuntimeTimeouts
+    private let port: Int
     private let doctorContext: AndroidDoctorContext
     private var activeRun: AndroidActiveRun?
 
@@ -34,7 +35,8 @@ actor AndroidRuntime {
         projectRunner: any ProcessRunner,
         environment: AndroidEnvironment,
         logs: RunLogs,
-        timeouts: AndroidRuntimeTimeouts
+        timeouts: AndroidRuntimeTimeouts,
+        port: Int = MetroVerdict.port
     ) {
         self.anchor = anchor
         self.config = config
@@ -43,6 +45,7 @@ actor AndroidRuntime {
         self.logs = logs
         self.store = AndroidActiveRunStore(project: anchor.directory, logs: logs)
         self.timeouts = timeouts
+        self.port = port
         self.doctorContext = AndroidDoctorContext(
             anchor: anchor,
             config: config,
@@ -204,24 +207,33 @@ actor AndroidRuntime {
     }
 
     func metro(afterReinstall: Bool = false) async throws -> MetroProcess {
+        if let previous = try logs.metroPort(platform: .android), previous != port {
+            let old = try run()
+            guard old.metro == nil, old.reverse == nil,
+                try await MetroVerdict.ask(anchor: anchor.directory, runner: projectRunner, port: previous) == .empty else {
+                throw DomainError(summary: "The previous Android development connection remains recorded or occupied.",
+                    remediation: retryDown)
+            }
+        }
+        try logs.recordMetroPort(port, platform: .android)
         var value = try run()
         if let existing = value.metro {
             switch existing.state {
             case .reused:
-                let verdict = try await MetroVerdict.ask(anchor: anchor.directory, runner: projectRunner)
+                let verdict = try await MetroVerdict.ask(anchor: anchor.directory, runner: projectRunner, port: port)
                 if case .mine = verdict {
-                    return MetroProcess(state: .reused)
+                    return MetroProcess(state: .reused, port: port)
                 }
                 if case .empty = verdict {
                     value.metro = nil
                     try save(value)
-                } else if let blocker = verdict.blocker {
+                } else if let blocker = verdict.blocker(port: port) {
                     throw blocker
                 }
             case .spawned:
                 guard let listener = existing.listenerPID,
-                    try await MetroLaunch.listeners(runner: projectRunner).first == listener,
-                    try await MetroVerdict.ask(anchor: anchor.directory, runner: projectRunner) == .mine
+                    try await MetroLaunch.listeners(runner: projectRunner, port: port).first == listener,
+                    try await MetroVerdict.ask(anchor: anchor.directory, runner: projectRunner, port: port) == .mine
                 else {
                     throw DomainError(
                         summary: "the active-run Metro identity can no longer be confirmed",
@@ -232,25 +244,26 @@ actor AndroidRuntime {
                     state: .spawned,
                     pid: existing.startPID,
                     listenerPid: listener,
-                    logPath: existing.logPath
+                    logPath: existing.logPath,
+                    port: port
                 )
             }
         }
 
-        let verdict = try await MetroVerdict.ask(anchor: anchor.directory, runner: projectRunner)
-        if let blocker = verdict.blocker { throw blocker }
+        let verdict = try await MetroVerdict.ask(anchor: anchor.directory, runner: projectRunner, port: port)
+        if let blocker = verdict.blocker(port: port) { throw blocker }
         if case .mine = verdict {
             value = try run()
             value.metro = AndroidActiveRun.Metro(
                 state: .reused, startPID: nil, listenerPID: nil, logPath: nil
             )
             try save(value)
-            return MetroProcess(state: .reused)
+            return MetroProcess(state: .reused, port: port)
         }
 
         let log = logs.url("metro.log")
         let (command, startPID) = try await MetroLaunch.start(
-            anchor: anchor, runner: projectRunner, logFile: log, afterReinstall: afterReinstall
+            anchor: anchor, runner: projectRunner, logFile: log, afterReinstall: afterReinstall, port: port
         )
         value = try run()
         value.metro = AndroidActiveRun.Metro(
@@ -270,12 +283,13 @@ actor AndroidRuntime {
 
         let anchorDirectory = anchor.directory
         let projectRunner = projectRunner
+        let port = port
         let readiness = try await MetroLaunch.readiness(
-            startPID: startPID, runner: projectRunner, bindWait: timeouts.metroBind, poll: timeouts.poll
+            startPID: startPID, runner: projectRunner, bindWait: timeouts.metroBind, poll: timeouts.poll, port: port
         ) { _ in
-            let observed = try await MetroVerdict.ask(anchor: anchorDirectory, runner: projectRunner)
+            let observed = try await MetroVerdict.ask(anchor: anchorDirectory, runner: projectRunner, port: port)
             if case .mine = observed { return true }
-            if let blocker = observed.blocker { throw blocker }
+            if let blocker = observed.blocker(port: port) { throw blocker }
             return false
         }
         switch readiness {
@@ -287,11 +301,12 @@ actor AndroidRuntime {
                 state: .spawned,
                 pid: startPID,
                 listenerPid: listener,
-                logPath: log.path
+                logPath: log.path,
+                port: port
             )
         case .exited:
             throw DomainError(
-                summary: "Metro exited before listening on \(MetroVerdict.port)",
+                summary: "Metro exited before listening on \(port)",
                 remediation: Remediation(
                     summary: "Inspect the Metro log at \(log.path).",
                     command: command.description
@@ -299,7 +314,7 @@ actor AndroidRuntime {
             )
         case .timedOut:
             throw DomainError(
-                summary: "Metro did not listen on \(MetroVerdict.port) within \(timeouts.metroBind)",
+                summary: "Metro did not listen on \(port) within \(timeouts.metroBind)",
                 remediation: Remediation(
                     summary: "Inspect the Metro log at \(log.path).",
                     command: command.description
@@ -319,7 +334,7 @@ actor AndroidRuntime {
         }
 
         let mappings = try await doctorContext.reverseMappings(serial: device.serial, sdk: sdk, runner: hostRunner)
-        let source = "tcp:\(MetroVerdict.port)"
+        let source = "tcp:\(port)"
         if let target = mappings[source], target != source {
             throw DomainError(
                 summary: "adb reverse \(source) already points to \(target)",
@@ -459,9 +474,9 @@ actor AndroidRuntime {
             activities.standardOutput.contains(product.launcherActivity)
         else { return nil }
         if anchor.framework == .reactNative {
-            let source = "tcp:\(MetroVerdict.port)"
+            let source = "tcp:\(port)"
             guard try await doctorContext.reverseMappings(serial: serial, sdk: sdk, runner: hostRunner)[source] == source,
-                try await MetroVerdict.ask(anchor: anchor.directory, runner: projectRunner) == .mine
+                try await MetroVerdict.ask(anchor: anchor.directory, runner: projectRunner, port: port) == .mine
             else { return nil }
         }
         return pid
@@ -740,6 +755,7 @@ public func androidUpStages(
     environment: AndroidEnvironment = AndroidEnvironment(),
     logs: RunLogs? = nil,
     timeouts: AndroidRuntimeTimeouts = AndroidRuntimeTimeouts(),
+    metroPort: Int = MetroVerdict.port,
     note: @escaping @Sendable (String) -> Void
 ) -> [any Stage] {
     let logs = logs ?? RunLogs(project: anchor.directory)
@@ -750,7 +766,8 @@ public func androidUpStages(
         projectRunner: projectRunner,
         environment: environment,
         logs: logs,
-        timeouts: timeouts
+        timeouts: timeouts,
+        port: metroPort
     )
     return androidBuildStages(
         anchor: anchor,
@@ -760,6 +777,7 @@ public func androidUpStages(
         projectRunner: projectRunner,
         environment: environment,
         validationCheckIDs: AndroidUpValidation.checkIDs,
+        metroPort: metroPort,
         note: note
     ) + [
         AndroidRuntimeStage(id: "android.device") { context in
@@ -785,8 +803,8 @@ public func androidUpStages(
             let metro = try await runtime.metro(afterReinstall: context.nodeModulesReinstalled)
             context.metro = metro
             return metro.state == .spawned
-                ? .pass("started on \(MetroVerdict.port) — pid \(metro.listenerPid ?? 0)")
-                : .skipped("already running on \(MetroVerdict.port)")
+                ? .pass("started on \(metroPort) — pid \(metro.listenerPid ?? 0)")
+                : .skipped("already running on \(metroPort)")
         },
         AndroidRuntimeStage(id: "android.reverse") { context in
             guard var product = context.androidProduct, let device = product.device else {
@@ -796,8 +814,8 @@ public func androidUpStages(
             product.reverse = reverse
             context.androidProduct = product
             return reverse.state == .created
-                ? .pass("tcp:\(MetroVerdict.port)")
-                : .skipped("tcp:\(MetroVerdict.port) already mapped")
+                ? .pass("tcp:\(metroPort)")
+                : .skipped("tcp:\(metroPort) already mapped")
         },
     ] : []) + [
         AndroidRuntimeStage(id: "android.launch") { context in
@@ -821,6 +839,7 @@ public func runAndroidUp(
     environment: AndroidEnvironment = AndroidEnvironment(),
     logs: RunLogs? = nil,
     timeouts: AndroidRuntimeTimeouts = AndroidRuntimeTimeouts(),
+    metroPort: Int = MetroVerdict.port,
     note: @escaping @Sendable (String) -> Void,
     onStageFinished: (@Sendable (StageResult) -> Void)? = nil,
     onStageStarted: (@Sendable (String) -> Void)? = nil
@@ -830,6 +849,11 @@ public func runAndroidUp(
     do {
         let lease = try store.acquire(operation: "up")
         defer { withExtendedLifetime(lease) {} }
+        if anchor.framework == .reactNative, let previous = try logs.metroPort(platform: .android), previous != metroPort,
+            try store.read() != nil {
+            throw DomainError(summary: "The selected Metro port differs from the Android active run.",
+                remediation: Remediation(summary: "Run mobile down --platform android before selecting another port."))
+        }
         if let requested = config.configuration?.androidAVD,
             let active = try store.read(), let device = active.device, device.avd != requested {
             throw DomainError(summary: "selected AVD differs from the Android active run",
@@ -844,6 +868,7 @@ public func runAndroidUp(
             environment: environment,
             logs: logs,
             timeouts: timeouts,
+            metroPort: metroPort,
             note: note
         )
         let report = await UpPipeline(stages: stages).run(

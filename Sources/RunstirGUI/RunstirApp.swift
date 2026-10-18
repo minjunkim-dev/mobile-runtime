@@ -82,6 +82,7 @@ struct InspectionView: View {
     @State private var configuration = ""
     @State private var module = ""
     @State private var variant = ""
+    @State private var port = ""
     @State private var workflow: WorkflowResult?
     @State private var running: Task<Void, Never>?
     @State private var currentStage = ""
@@ -124,6 +125,9 @@ struct InspectionView: View {
                     TextField("Configuration (Debug)", text: $configuration)
                 }
             }.disabled(checking || running != nil)
+            if result?.selection.selected?.framework == .reactNative {
+                TextField("Metro port (8081)", text: $port).disabled(checking || running != nil)
+            }
             HStack {
                 Button("준비 계획 확인") { prepare() }.disabled(checking || running != nil)
                 Toggle("저장소 스크립트 신뢰", isOn: $repositoryTrusted)
@@ -229,11 +233,13 @@ struct InspectionView: View {
             .onChange(of: platform) { _, _ in
                 device = ""; devices = []; workflow = nil
                 scheme = ""; configuration = ""; module = ""; variant = ""
+                port = ""
             }
             .onChange(of: app) { _, _ in
                 device = ""; devices = []; workflow = nil
                 preparation = nil; repositoryTrusted = false
                 scheme = ""; configuration = ""; module = ""; variant = ""
+                port = ""
             }
             .onDisappear { running?.cancel() }
     }
@@ -254,6 +260,10 @@ struct InspectionView: View {
 
     @MainActor private func execute(_ kind: WorkflowKind) {
         guard !checking, running == nil else { return }
+        if kind != .down, !port.isEmpty, Int(port).map({ (1...65535).contains($0) }) != true {
+            error = "포트는 1부터 65535까지의 정수로 입력하세요."
+            return
+        }
         error = nil
         workflow = nil
         events = []
@@ -268,7 +278,8 @@ struct InspectionView: View {
             scheme: kind != .down && !scheme.isEmpty ? scheme : nil,
             configuration: kind != .down && !configuration.isEmpty ? configuration : nil,
             module: kind != .down && !module.isEmpty ? module : nil,
-            variant: kind != .down && !variant.isEmpty ? variant : nil)
+            variant: kind != .down && !variant.isEmpty ? variant : nil,
+            port: kind != .down && !port.isEmpty ? Int(port) : nil)
         running = Task {
             let output = await WorkflowExecution.run(kind, input: input) { event in
                 Task { @MainActor in

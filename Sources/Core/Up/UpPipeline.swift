@@ -53,7 +53,7 @@ public struct UpReport: Sendable {
                 + "`mobile down --platform android` retries them."
         }
         guard failure != nil, context.metro?.state == .spawned else { return nil }
-        return "The Metro this run started is still on \(MetroVerdict.port) — "
+        return "The Metro this run started is still on \(context.metro?.port ?? MetroVerdict.port) — "
             + "`mobile down` stops it."
     }
 

@@ -195,9 +195,10 @@ struct AndroidRuntimeTests {
         #expect(AndroidUpValidation.checkIDs.contains("android.avd"))
     }
 
-    @Test("reuses one compatible Emulator and records install, Metro, reverse and launch ownership")
-    func runsAndroidRuntimeStages() async throws {
+    @Test("reuses one compatible Emulator and records the selected Metro endpoint, reverse and launch ownership", arguments: [8081, 8097])
+    func runsAndroidRuntimeStages(port: Int) async throws {
         let scenario = try runtimeScenario()
+        let reverseSource = "tcp:\(port)"
         let responses: [String: [FakeProcessRunner.Response]] = [
             command("emulator", ["-list-avds"]): [.ok("Pixel\n")],
             command("adb", ["devices"]): [.ok("List of devices attached\n\(serial) device\n")],
@@ -217,7 +218,7 @@ struct AndroidRuntimeTests {
                     scenario.product.applicationId,
                 ]
             ): [.ok("dev.mobile.fixture/.MainActivity\n")],
-            MetroStatus.command: [.ok(MetroStatus.running(projectRoot: scenario.repo.root))],
+            "curl -s -i -m 2 http://localhost:\(port)/status": [.ok(MetroStatus.running(projectRoot: scenario.repo.root))],
             command("adb", ["-s", serial, "reverse", "--list"]): [
                 .ok(""),
                 .ok("\(serial) \(reverseSource) \(reverseSource)\n"),
@@ -244,7 +245,8 @@ struct AndroidRuntimeTests {
             projectRunner: runner,
             environment: scenario.environment,
             logs: scenario.logs,
-            timeouts: AndroidRuntimeTimeouts(poll: .zero)
+            timeouts: AndroidRuntimeTimeouts(poll: .zero),
+            port: port
         )
 
         let device = try await runtime.device(for: scenario.product)
@@ -256,6 +258,8 @@ struct AndroidRuntimeTests {
         #expect(device.state == .reused)
         #expect(device.avd == "Pixel")
         #expect(metro.state == .reused)
+        #expect(metro.port == port)
+        #expect(try scenario.logs.metroPort(platform: .android) == port)
         #expect(reverse.state == .created)
         #expect(pid == 8123)
         let saved = try AndroidActiveRunStore(
@@ -268,6 +272,25 @@ struct AndroidRuntimeTests {
         #expect(record.app?.launched == true)
         #expect(record.app?.pid == 8123)
         #expect(state.all.contains { ["avdmanager", "sdkmanager"].contains($0.executable) } == false)
+    }
+
+    @Test("changing a recorded Android endpoint preserves its active run before any subprocess")
+    func changedPortPreservesActiveRun() async throws {
+        let scenario = try runtimeScenario()
+        let store = AndroidActiveRunStore(project: scenario.repo.root, logs: scenario.logs)
+        var active = AndroidActiveRun(project: scenario.repo.root, product: scenario.product)
+        active.metro = .init(state: .reused, startPID: nil, listenerPID: nil, logPath: nil)
+        try store.write(active)
+        try scenario.logs.recordMetroPort(8097, platform: .android)
+        let runner = FakeProcessRunner()
+        let report = await runAndroidUp(anchor: scenario.anchor, doctor: DoctorEngine(checks: []),
+            config: scenario.config, hostRunner: runner, projectRunner: runner,
+            environment: scenario.environment, logs: scenario.logs, metroPort: 8098, note: { _ in })
+        #expect(report.exitCode == 1)
+        #expect(report.stages.isEmpty)
+        #expect(runner.log.all.isEmpty)
+        #expect(try store.read() == active)
+        #expect(try scenario.logs.metroPort(platform: .android) == 8097)
     }
 
     @Test("native Android universal APK uses the owned lifecycle without Metro or reverse")

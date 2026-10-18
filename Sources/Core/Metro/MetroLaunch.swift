@@ -21,10 +21,15 @@ public enum MetroLaunch {
         anchor: ProjectAnchor,
         runner: any ProcessRunner,
         logFile: URL,
-        afterReinstall: Bool
+        afterReinstall: Bool,
+        port: Int = MetroVerdict.port
     ) async throws -> (command: ProcessCommand, pid: Int32) {
         if afterReinstall { await dropWatchmanWatch(of: anchor.directory, runner: runner) }
         var command = anchor.startProcess
+        if port != MetroVerdict.port {
+            command.arguments += (anchor.packageManagerName == "npm" ? ["--"] : []) + ["--port", String(port)]
+        }
+        command.environment["RCT_METRO_PORT"] = String(port)
         // Metro colors its completed BUNDLE label green and its failed label red.
         // Preserve that distinction when its output goes to our non-TTY log file.
         command.environment["FORCE_COLOR"] = "1"
@@ -44,11 +49,12 @@ public enum MetroLaunch {
         runner: any ProcessRunner,
         bindWait: Duration,
         poll: Duration = .milliseconds(250),
+        port: Int = MetroVerdict.port,
         accept: @Sendable (Int32) async throws -> Bool = { _ in true }
     ) async throws -> Readiness {
         let deadline = ContinuousClock.now + bindWait
         while true {
-            if let pid = try await listeners(runner: runner).first, try await accept(pid) {
+            if let pid = try await listeners(runner: runner, port: port).first, try await accept(pid) {
                 return .listening(pid)
             }
             guard try await isRunning(startPID, runner: runner) else { return .exited }
@@ -60,9 +66,9 @@ public enum MetroLaunch {
     /// Asked at the moment it is needed rather than remembered from a run: a pid in a
     /// file goes stale silently, and a reused one points at a stranger. Non-zero from
     /// lsof is "found nothing", so the exit code carries nothing to interpret.
-    public static func listeners(runner: any ProcessRunner) async throws -> [Int32] {
+    public static func listeners(runner: any ProcessRunner, port: Int = MetroVerdict.port) async throws -> [Int32] {
         let result = try await runner.run(
-            ProcessCommand("lsof", MetroVerdict.listenerArguments + ["-t"], timeout: .seconds(10))
+            ProcessCommand("lsof", MetroVerdict.listenerArguments(port: port) + ["-t"], timeout: .seconds(10))
         )
         return result.standardOutput.split(separator: "\n")
             .compactMap { Int32($0.trimmingCharacters(in: .whitespaces)) }

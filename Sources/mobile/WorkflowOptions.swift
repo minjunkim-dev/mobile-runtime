@@ -16,6 +16,7 @@ struct WorkflowOptions: ParsableArguments {
     @Option(name: .long, help: "iOS build configuration. Defaults to Debug only when it exists.") var configuration: String?
     @Option(name: .long, help: "Android application module. Defaults to mobile.yml or the only module.") var module: String?
     @Option(name: .long, help: "Android debuggable variant. Defaults to mobile.yml, debug, or the only variant.") var variant: String?
+    @Option(name: .long, help: "React Native build/up development server port. Defaults to 8081; unsupported forwarding paths stop before changes.") var port: Int?
     @Flag(name: .long, help: "Do not ask questions. Missing selections return candidates without starting changes.") var nonInteractive = false
 
     func run(_ kind: WorkflowKind) async throws {
@@ -24,7 +25,7 @@ struct WorkflowOptions: ParsableArguments {
             directory: URL(fileURLWithPath: project ?? FileManager.default.currentDirectoryPath),
             environment: ProcessInfo.processInfo.environment, app: app,
             platform: platform.flatMap { ProjectPlatform(rawValue: $0.rawValue) }),
-            device: device, scheme: scheme, configuration: configuration, module: module, variant: variant)
+            device: device, scheme: scheme, configuration: configuration, module: module, variant: variant, port: port)
         let structured = progressJson
         let task = Task {
             await WorkflowExecution.run(kind, input: input) { event in

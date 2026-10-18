@@ -18,10 +18,11 @@ public func iOSTeardown(
     guard anchor.framework == .reactNative else {
         return Teardown(jobs: [(id: AppTeardown.id, run: { @Sendable in await app.run() })])
     }
-    let metro = MetroTeardown(anchor: anchor.directory, runner: runner, grace: grace)
-
     return Teardown(jobs: [
-        (id: MetroTeardown.id, run: { @Sendable in try await metro.run() }),
+        (id: MetroTeardown.id, run: { @Sendable in
+            try await MetroTeardown(anchor: anchor.directory, runner: runner, grace: grace,
+                port: logs.metroPort() ?? MetroVerdict.port).run()
+        }),
         (id: AppTeardown.id, run: { @Sendable in await app.run() }),
     ])
 }
