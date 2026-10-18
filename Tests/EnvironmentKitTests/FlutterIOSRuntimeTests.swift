@@ -3,10 +3,37 @@ import Darwin
 @testable import EnvironmentKit
 import Foundation
 import SimulatorKit
+import TestSupport
 import Testing
 
 @Suite("Flutter native child boundaries")
 struct FlutterIOSRuntimeTests {
+    @Test("regular-file and unresolved source symlinks stop before a native child", arguments: ["ios/Podfile.lock", "lib/shared.dart", "lib/broken.dart", "lib/cycle.dart"])
+    func externalSourceSymlink(_ relative: String) async throws {
+        let f = try FlutterIOSFixture()
+        let outside = try FixtureRepo()
+        let before = relative.hasSuffix(".lock") ? "PODS:\n  - Flutter (1.0.0)\n" : "void shared() {}\n"
+        let file = try outside.write("external-source", before)
+        let link = f.repo.url(relative)
+        if FileManager.default.fileExists(atPath: link.path) { try FileManager.default.removeItem(at: link) }
+        let target = relative == "lib/broken.dart" ? outside.url("missing") : relative == "lib/cycle.dart" ? link : file
+        try FileManager.default.createSymbolicLink(at: link, withDestinationURL: target)
+        let inspection = try await EnvironmentInspection.run(input: f.input().project, runner: FlutterIOSRunner(fixture: f))
+        #expect(inspection.report.checks.contains { $0.id == "ios.flutter.generated" && $0.status == .pass })
+        let runner = FlutterIOSRunner(fixture: f)
+        let result = await WorkflowExecution.run(.build, input: f.input(), runner: runner, leases: f.leases)
+        #expect(result.exitCode == 1)
+        let message = try #require(result.up?.failure?.message)
+        #expect(message.contains(relative))
+        #expect(!message.contains(outside.root.path))
+        #expect(!message.contains(f.repo.root.path))
+        #expect(result.operation.nextAction?.contains("manually") == true)
+        #expect(!runner.commands.contains { $0.arguments.last == "build" })
+        #expect(try String(contentsOf: file, encoding: .utf8) == before)
+        #expect(try FileManager.default.destinationOfSymbolicLink(atPath: link.path) == target.path)
+        print("#208 symlink rejection receipt: source=\(relative); workflowExit=\(result.exitCode); nativeBuild=false")
+    }
+
     @Test("the actual native child profile preserves source and SDK payload while allowing derived output")
     func childWriteBoundary() async throws {
         let f = try FlutterIOSFixture()
@@ -92,9 +119,14 @@ struct FlutterIOSRuntimeTests {
         #expect(report.status == .unknown)
     }
 
-    @Test("an SDK alias link deletion is blocked and an unexpected deletion is reported")
+    @Test("SDK and generated plugin directory aliases remain usable while SDK link deletion is detected")
     func sdkAlias() async throws {
         let f = try FlutterIOSFixture()
+        let plugin = try FixtureRepo()
+        try plugin.write("pubspec.yaml", "name: owned_plugin\n")
+        try f.repo.directory("ios/.symlinks/plugins")
+        let pluginAlias = f.repo.url("ios/.symlinks/plugins/owned_plugin")
+        try FileManager.default.createSymbolicLink(at: pluginAlias, withDestinationURL: plugin.root)
         try f.repo.directory(".fvm")
         let alias = f.repo.url(".fvm/flutter_sdk")
         try FileManager.default.createSymbolicLink(at: alias, withDestinationURL: f.repo.url("sdk"))
@@ -109,6 +141,8 @@ struct FlutterIOSRuntimeTests {
             ["-f", workflow.childProfile.path, "/bin/rm", alias.path], timeout: .seconds(10)))
         #expect(!remove.terminationStatus.isSuccess)
         try workflow.check()
+        #expect(try FileManager.default.destinationOfSymbolicLink(atPath: pluginAlias.path) == plugin.root.path)
+        #expect(try String(contentsOf: plugin.url("pubspec.yaml"), encoding: .utf8) == "name: owned_plugin\n")
         try FileManager.default.removeItem(at: alias)
         #expect(throws: DomainError.self) { try workflow.check() }
         #expect(!FileManager.default.fileExists(atPath: alias.path))

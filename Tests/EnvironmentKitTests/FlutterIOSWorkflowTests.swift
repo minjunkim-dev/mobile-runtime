@@ -127,6 +127,28 @@ struct FlutterIOSWorkflowTests {
         #expect(try String(contentsOf: f.repo.url(file), encoding: .utf8) == "stale\n")
     }
 
+    @Test("a symlink pubspec lock is rejected by the existing regular-file preparation check")
+    func symlinkPubspecLock() async throws {
+        let f = try FlutterIOSFixture()
+        let outside = try FixtureRepo()
+        let file = try outside.write("external.lock", "packages: {}\n")
+        let link = f.repo.url("pubspec.lock")
+        try FileManager.default.removeItem(at: link)
+        try FileManager.default.createSymbolicLink(at: link, withDestinationURL: file)
+        var observed = link
+        observed.removeAllCachedResourceValues()
+        let attributes = try observed.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey])
+        #expect(attributes.isSymbolicLink == true)
+        #expect(attributes.isRegularFile == false)
+        let runner = FlutterIOSRunner(fixture: f)
+        let result = await WorkflowExecution.run(.build, input: f.input(), runner: runner, leases: f.leases)
+        #expect(result.exitCode == 1)
+        #expect(result.up?.context.validation?.checks.contains { $0.id == "dependencies.flutter" && $0.status == .error } == true)
+        #expect(!runner.commands.contains { $0.arguments.last == "build" || $0.arguments.contains("install") })
+        #expect(try String(contentsOf: file, encoding: .utf8) == "packages: {}\n")
+        print("#208 symlink lock receipt: isRegularFile=\(attributes.isRegularFile == true); isSymbolicLink=\(attributes.isSymbolicLink == true); workflowExit=\(result.exitCode)")
+    }
+
     @Test("build failure, cancellation and unexpected source changes preserve the failure boundary", arguments: ["build", "cancel", "source", "sdk-write"])
     func buildFailure(_ fault: String) async throws {
         let f = try FlutterIOSFixture()

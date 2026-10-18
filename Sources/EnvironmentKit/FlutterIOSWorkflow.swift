@@ -191,6 +191,13 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
             let attributes = try file.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
             if attributes.isSymbolicLink == true {
                 entries.skipDescendants()
+                var target = file.resolvingSymlinksInPath()
+                target.removeAllCachedResourceValues()
+                guard (try? target.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true else {
+                    let relative = file.path.dropFirst(root.path.count + 1)
+                    throw DomainError(summary: "Unsupported source symlink: \(relative).",
+                        remediation: Remediation(summary: "Prepare source and lockfiles as regular files manually. Preserve the existing link and target; Runstir did not change either."))
+                }
                 result[file.path] = "link:" + (try FileManager.default.destinationOfSymbolicLink(atPath: file.path))
             } else if file.standardizedFileURL.resolvingSymlinksInPath() == sdk {
                 entries.skipDescendants()

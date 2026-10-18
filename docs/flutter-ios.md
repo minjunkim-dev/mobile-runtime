@@ -69,6 +69,13 @@ React Native 의존성 명령과 Metro는 실행하지 않는다.
 
 workspace source·lockfile·symlink·mode와 선택 SDK fingerprint를 각 stage 전후에 확인한다.
 기존 generated build 디렉터리는 source 검사에서 구분한다.
+source·lockfile symlink가 regular file을 가리키면 native child 전에 중단한다.
+대상 상태를 확인할 수 없거나 link가 깨졌어도 중단한다.
+오류에는 source 상대 경로와 수동 준비 안내만 표시한다.
+이 검사로 외부 대상의 내용·권한·hash를 새로 수집하지 않는다.
+기존 SDK·generated plugin의 directory alias는 유지한다.
+directory alias는 link 자체를 관측한다.
+이 관측으로 외부 directory 전체의 내용 보존을 주장하지 않는다.
 예상 밖 source 변경을 발견하면 다음 stage를 시작하지 않는다.
 변경한 파일을 표시한다.
 파일을 자동 복원하거나 SDK를 일괄 삭제하지 않는다.
