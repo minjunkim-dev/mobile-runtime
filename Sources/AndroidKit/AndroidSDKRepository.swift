@@ -86,7 +86,9 @@ public struct AndroidSDKRepository: Sendable {
             }
             let local = SDKRepositoryNode(name: "localPackage", attributes: ["path": path], children:
                 node.children.filter { ["type-details", "revision", "display-name", "uses-license"].contains($0.localName) })
-            let document = SDKRepositoryNode(name: "common:repository", attributes: root.attributes, children: [license, local]).xml
+            var localNamespaces = root.attributes
+            localNamespaces["xmlns:common"] = "http://schemas.android.com/repository/android/common/02"
+            let document = SDKRepositoryNode(name: "common:repository", attributes: localNamespaces, children: [license, local]).xml
             values.append(AndroidSDKRepositoryPackage(packagePath: path, revision: revision,
                 archiveURL: source.url.deletingLastPathComponent().appendingPathComponent(filename),
                 size: size, sha1: checksum.value, licenseID: licenseID,

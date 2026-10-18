@@ -110,29 +110,31 @@ struct AndroidEmulatorPreparation {
             try await beforeCommit([])
             try absent(request)
             let manager = FileManager.default
-            try manager.createDirectory(at: request.avdHome, withIntermediateDirectories: true)
             let scratch = request.avdHome.appendingPathComponent(".runstir-avd-\(UUID().uuidString)")
-            try manager.createDirectory(at: scratch, withIntermediateDirectories: false)
-            defer { try? manager.removeItem(at: scratch) }
             let home = scratch.appendingPathComponent("avds")
             let user = scratch.appendingPathComponent("user")
-            try manager.createDirectory(at: home, withIntermediateDirectories: false)
-            try manager.createDirectory(at: user, withIntermediateDirectories: false)
             let staged = AndroidAVDRequest(name: request.name, sdkRoot: request.sdkRoot, avdHome: home,
                 imagePackage: request.imagePackage, imageRevision: request.imageRevision, imageMetadataSHA256: request.imageMetadataSHA256,
                 deviceProfile: request.deviceProfile, profileSHA256: request.profileSHA256,
                 avdManager: request.avdManager, avdManagerRevision: request.avdManagerRevision,
                 emulatorRevision: request.emulatorRevision, repositorySHA256: request.repositorySHA256)
+            let creation = try AndroidEmulatorEnvironment.sdkReadOnlyCommand(ProcessCommand(request.avdManager.path,
+                ["create", "avd", "--name", request.name, "--package", request.imagePackage, "--abi", "arm64-v8a",
+                 "--device", request.deviceProfile, "--path", staged.directory.path],
+                environment: ["ANDROID_HOME": request.sdkRoot.path, "ANDROID_SDK_ROOT": request.sdkRoot.path,
+                    "ANDROID_AVD_HOME": home.path, "ANDROID_USER_HOME": user.path, "ANDROID_EMULATOR_HOME": user.path], timeout: .seconds(180)),
+                sdk: request.sdkRoot, writableDirectories: [request.avdHome, scratch])
+            try manager.createDirectory(at: request.avdHome, withIntermediateDirectories: true)
+            try manager.createDirectory(at: scratch, withIntermediateDirectories: false)
+            defer { try? manager.removeItem(at: scratch) }
+            try manager.createDirectory(at: home, withIntermediateDirectories: false)
+            try manager.createDirectory(at: user, withIntermediateDirectories: false)
             try await beforeCommit([scratch])
             let beforeCreation = try await AndroidEmulatorEnvironment.profile(request.deviceProfile, runner: runner,
                 manager: request.avdManager, environment: ["ANDROID_HOME": request.sdkRoot.path, "ANDROID_SDK_ROOT": request.sdkRoot.path])
             guard AndroidEmulatorEnvironment.digest(Data(beforeCreation.utf8)) == request.profileSHA256 else { throw failure("The approved device profile payload changed before creation.") }
             try Task.checkCancellation()
-            let result = try await runner.run(ProcessCommand(request.avdManager.path,
-                ["create", "avd", "--name", request.name, "--package", request.imagePackage, "--abi", "arm64-v8a",
-                 "--device", request.deviceProfile, "--path", staged.directory.path],
-                environment: ["ANDROID_HOME": request.sdkRoot.path, "ANDROID_SDK_ROOT": request.sdkRoot.path,
-                    "ANDROID_AVD_HOME": home.path, "ANDROID_USER_HOME": user.path, "ANDROID_EMULATOR_HOME": user.path], timeout: .seconds(180)))
+            let result = try await runner.run(creation)
             guard result.terminationStatus.isSuccess,
                   AndroidEmulatorEnvironment.observe(staged, origin: .created)?.state == "available" else {
                 throw failure("AVD creation failed or returned a different identity. Existing resources were preserved.")

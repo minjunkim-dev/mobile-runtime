@@ -22,8 +22,13 @@ struct AndroidAVDInstallationTests {
         #expect(try String(contentsOf: fixture.request.pointer, encoding: .utf8).contains(fixture.request.directory.path))
         #expect(!fixture.runner.commands.contains { $0.arguments.contains("--force") })
         #expect(fixture.runner.commands.filter { $0.arguments.contains("create") }.count == 1)
-        #expect(fixture.runner.commands.filter { $0.arguments == ["list", "device"] }.allSatisfy {
+        let profileCommands = fixture.runner.commands.filter { $0.arguments.suffix(2) == ["list", "device"] }
+        #expect(!profileCommands.isEmpty)
+        #expect(profileCommands.allSatisfy {
             $0.environment["ANDROID_USER_HOME"]?.contains("runstir-android-profile-") == true
+        })
+        #expect(fixture.runner.commands.filter { $0.arguments.contains("create") || $0.arguments.suffix(2) == ["list", "device"] }.allSatisfy {
+            $0.executable == "/usr/bin/sandbox-exec" && $0.arguments[1].contains("deny file-write*")
         })
         await #expect(throws: InstallationActionFailure.self) {
             try await AndroidEmulatorPreparation.create(fixture.request, runner: fixture.runner) { _ in }
@@ -62,6 +67,16 @@ struct AndroidAVDInstallationTests {
         #expect(fixture.runner.commands.filter { $0.arguments.contains("create") }.isEmpty)
         #expect(!FileManager.default.fileExists(atPath: fixture.request.pointer.path))
         #expect(try String(contentsOf: catalog, encoding: .utf8) == "changed hardware")
+    }
+
+    @Test("overlapping SDK and AVD roots are rejected before host staging writes")
+    func overlappingRoots() async throws {
+        let fixture = try await AVDFixture(avdInsideSDK: true)
+        await #expect(throws: InstallationActionFailure.self) {
+            try await AndroidEmulatorPreparation.create(fixture.request, runner: fixture.runner) { _ in }
+        }
+        #expect(!FileManager.default.fileExists(atPath: fixture.request.avdHome.path))
+        #expect(!fixture.runner.commands.contains { $0.arguments.contains("create") })
     }
 
     @Test("existing pointer, directory and dangling links survive without invoking creation", arguments: ["pointer", "directory", "link"])
@@ -117,7 +132,7 @@ private final class AVDFixture {
         InstallationMetadata(package: "android.avd", revision: request.imageRevision,
             destination: request.directory, resourceRoot: request.avdHome, managed: .androidAVD(request), requiredFile: "config.ini")
     }
-    init() async throws {
+    init(avdInsideSDK: Bool = false) async throws {
         repo = try FixtureRepo()
         try repo.write("avds/keep", "existing AVD data")
         try repo.write("sdk/system-images/android-35/google_apis/arm64-v8a/system.img", "fixture image")
@@ -138,7 +153,7 @@ private final class AVDFixture {
         let profile = try await AndroidEmulatorEnvironment.profile("pixel_7", runner: runner, manager: repo.url("sdk/cmdline-tools/23.0/bin/avdmanager"),
             environment: ["ANDROID_HOME": repo.url("sdk").path, "ANDROID_SDK_ROOT": repo.url("sdk").path])
         runner.commands = []
-        request = AndroidAVDRequest(name: "Runstir_API_35", sdkRoot: repo.url("sdk"), avdHome: repo.url("avds"),
+        request = AndroidAVDRequest(name: "Runstir_API_35", sdkRoot: repo.url("sdk"), avdHome: repo.url(avdInsideSDK ? "sdk/avds" : "avds"),
             imagePackage: "system-images;android-35;google_apis;arm64-v8a", imageRevision: "9", imageMetadataSHA256: AndroidEmulatorEnvironment.imageDigest(in: repo.url("sdk/system-images/android-35/google_apis/arm64-v8a"))!,
             deviceProfile: "pixel_7", profileSHA256: AndroidEmulatorEnvironment.digest(Data(profile.utf8)),
             avdManager: repo.url("sdk/cmdline-tools/23.0/bin/avdmanager"), avdManagerRevision: "23.0",
@@ -170,9 +185,12 @@ final class AVDCreationRunner: ProcessRunner, @unchecked Sendable {
     func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
         commands.append(command)
         if command.executable == "/usr/bin/unzip" { return try await SystemProcessRunner().run(command, onLine: onLine) }
-        if command.arguments == ["list", "device"] { return .init(terminationStatus: .exited(0), standardOutput: Self.profile, standardError: "") }
-        let name = command.arguments[command.arguments.firstIndex(of: "--name")! + 1]
-        let directory = URL(fileURLWithPath: command.arguments[command.arguments.firstIndex(of: "--path")! + 1])
+        #expect(command.executable == "/usr/bin/sandbox-exec")
+        #expect(command.arguments.first == "-p")
+        let arguments = Array(command.arguments.dropFirst(3))
+        if arguments == ["list", "device"] { return .init(terminationStatus: .exited(0), standardOutput: Self.profile, standardError: "") }
+        let name = arguments[arguments.firstIndex(of: "--name")! + 1]
+        let directory = URL(fileURLWithPath: arguments[arguments.firstIndex(of: "--path")! + 1])
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         // Official createAvd writes no AvdId; duplication can add that optional key.
         let identity = generatedAvdID.map { "AvdId=\($0)\n" } ?? ""

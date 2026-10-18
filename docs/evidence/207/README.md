@@ -64,6 +64,38 @@ Platform-Tools의 기존 package 관측이 준비 상태일 때만 실행 중 AV
 도구가 준비되면 복수 후보의 선택 요구와 호환 실행 중 AVD 우선순위를 유지한다.
 합성 SDK·AVD fixture 검사다. 실제 SDK 설치나 AVD 실행 증거가 아니다.
 
+## 실제 catalog 결함과 쓰기 예방
+
+기존 source `82202ccc`의 실제 image 설치 stage는 성공했다.
+새 AVD 계획이 남아 operation은 `partial`, exit는1이었다.
+이를 다운로드 실패로 계산하지 않는다.
+이 stage는 승인한 archive의 size·SHA-1 검사를 통과한 설치 경로다.
+원본 ZIP staging은 installer가 정리했다. 별도 독립 rehash는 수행하지 않았다.
+로컬 `Pkg.Revision=9`와 `system.img`의3,891,265,536 bytes는 별도 내용 관측이다.
+이 로컬 파일의 독립 checksum은 측정하지 않았다.
+후속 profile 조회 전후에 catalog payload digest가 달라졌다.
+그 뒤 image `package.xml`은 `license-241123C`와 빈 license 본문을 가리켰다.
+실제 rewrite 전 bytes와 전체 SDK 변경 범위는 캡처하지 못했다.
+tainted image와 metadata를 원복하거나 삭제하지 않았다.
+새 license 동의나 alias 기록을 만들지 않았다. AVD는0개였다.
+private receipt는 `state/cli-image-license-defect-v1.json`이다.
+그 SHA-256은 `093d59bdc524577b16d7b98eda83398835790df5f0bcc1cc57c43e09b622e6e0`다.
+
+local metadata 생성 코드가 미정의 `common` prefix를 사용하는 경로를 확인했다.
+namespace-aware XML parser는 수정 전 오류201로 실패했다.
+common/02 namespace를 명시한 뒤 같은 검사가 통과했다.
+원래 license ID·본문 hash를 유지한다.
+
+두 `avdmanager` 호출에 selected SDK 쓰기 차단을 적용했다.
+실제 OS sandbox 검사는 전용 소유 fixture의 SDK·AVD·HOME·임시 경로만 사용했다.
+하위 process의 SDK 파일 쓰기를 거부했다. 기존 bytes는 유지됐다.
+소유한 AVD·임시 파일 쓰기는 성공했다.
+quote·backslash 경로, command 필드 보존, timeout·실행 중 취소도 검사했다.
+fake runner 검사로 profile 조회와 AVD 생성 양쪽의 보호 연결을 확인했다.
+SDK/AVD 겹침은 host staging 파일을 만들기 전에 거부했다.
+이 OS 검사는 실제 Android SDK 설치·AVD 생성의 대체 증거가 아니다.
+수정 뒤 새 SDK tuple의 실제 재검증은 아직 수행하지 않았다.
+
 ## 제한적 공식 archive 관측
 
 [archive-range.json](archive-range.json)은 공식 r9 image의 suffix 최대128KiB 관측이다.

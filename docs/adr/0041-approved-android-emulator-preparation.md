@@ -31,6 +31,9 @@ Google APIs image는 공식 `sys-img2-4.xml`만 사용한다.
 API·tag·ABI가 package path와 다르거나 Emulator 최소 revision이 없으면 설치 후보에서 제외한다.
 공식 metadata SHA-256과 archive URL·size·SHA-1·revision·license identity를 승인에 묶는다.
 공식 SHA-1을 공급자의 SHA-256 서명으로 표현하지 않는다.
+설치용 local metadata는 `common:repository`에 common/02 namespace를 명시한다.
+system-image 원격 root에 이 namespace가 없어도 유효한 XML을 생성한다.
+원격 license ID와 본문 hash는 유지한다. license alias나 새 동의 기록을 만들지 않는다.
 
 설치된 image·Emulator·생성 도구의 라이선스 기록을 따로 확인한다.
 계획 승인은 라이선스 동의나 관리자 권한을 대신하지 않는다.
@@ -72,6 +75,15 @@ AVD 생성은 SDK root·AVD home destination lease와 `device:android:avd:<name>
 `avdmanager create avd`에 정확한 package·ABI·device profile·새 이름·전용 staging 경로를 전달한다.
 `--force`를 사용하지 않는다. 생성 후 boot하지 않는다.
 staging의 Android user/AVD home은 이번 작업만 소유한다.
+profile 조회와 생성 child는 절대 경로 `/usr/bin/sandbox-exec`를 거친다.
+SBPL `deny file-write*`가 canonical SDK subtree의 쓰기를 하위 JVM까지 차단한다.
+SDK와 AVD/임시 경로가 겹치거나 경로의 symlink alias가 모호하면 실행하지 않는다.
+SDK 밖의 소유한 Android home과 AVD staging만 전달한다.
+staging을 만들기 전에 이 경계를 확인한다.
+command의 환경·작업 경로·timeout·출력 방식을 유지한다.
+SBPL 문자열의 quote와 backslash를 escape한다. 제어 문자가 있는 경로는 거부한다.
+보호 기능을 사용할 수 없으면 수동 단계로 남긴다. 보호 없는 child로 재시도하지 않는다.
+이 보호는 SDK 쓰기 차단이다. 모든 host 파일의 쓰기를 격리했다는 주장이 아니다.
 생성 결과의 이름·profile·ABI·image 경로와 파일 형식을 확인한다.
 공식 새 생성의 `config.ini`에는 `AvdId`가 없을 수 있다.
 이 키가 없으면 pointer·이름·나머지 identity로 확인한다.
@@ -96,6 +108,9 @@ parser·생성·공통 setup 검사는 `FakeProcessRunner`, `FixtureRepo`, 합�
 승인 전 무변경, 오래된 승인, profile 변경, lease 충돌, 실패·취소·재실행,
 source 변경, 이름 충돌과 부분 자원 보존을 검사한다.
 실제 Google payload·AVD·GUI·앱 실행 성공의 증거로 사용하지 않는다.
+OS sandbox 검사는 별도 소유 fixture의 SDK·AVD·HOME·임시 경로만 사용한다.
+하위 process의 SDK 쓰기 거부와 AVD/임시 파일 쓰기 허용을 직접 확인한다.
+실제 SDK catalog 소비와 AVD 생성은 새 검증 tuple에서 따로 확인한다.
 
 고정 API35 r9 archive의 128KiB suffix HTTP Range 관측에서는 ZIP64 locator가 없었다.
 이 관측으로 SafeZIP 제한을 완화하지 않는다.

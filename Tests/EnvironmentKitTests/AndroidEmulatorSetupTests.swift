@@ -224,9 +224,10 @@ private final class EmulatorSetupRunner: ProcessRunner, @unchecked Sendable {
         if command.description == "adb devices" {
             return .init(terminationStatus: .exited(0), standardOutput: "List of devices attached\n", standardError: "")
         }
-        if command.executable.hasSuffix("/avdmanager") {
-            if command.arguments == ["list", "device"] {
-                return .init(terminationStatus: .exited(0), standardOutput: AVDCreationRunner.profile + profileSuffix, standardError: "")
+        if command.executable == "/usr/bin/sandbox-exec", command.arguments.count >= 3, command.arguments[2].hasSuffix("/avdmanager") {
+            if command.arguments.suffix(2) == ["list", "device"] {
+                let result = try await creator.run(command, onLine: onLine)
+                return .init(terminationStatus: result.terminationStatus, standardOutput: result.standardOutput + profileSuffix, standardError: result.standardError)
             }
             let result = try await creator.run(command, onLine: onLine)
             if mutateSource { try sdk.repo.write("project/settings.gradle.kts", "unexpected mutation") }

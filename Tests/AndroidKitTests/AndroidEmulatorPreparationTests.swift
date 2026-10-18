@@ -1,6 +1,9 @@
 import Core
 import CryptoKit
 import Foundation
+#if canImport(FoundationXML)
+import FoundationXML
+#endif
 import TestSupport
 import Testing
 @testable import AndroidKit
@@ -19,6 +22,21 @@ struct AndroidEmulatorPreparationTests {
         #expect(package.systemImage?.tag == "google_apis")
     }
 
+    @Test("local image metadata declares its repository namespace and retains exact license text")
+    func localMetadataNamespace() throws {
+        let officialShape = imageXML.replacingOccurrences(of: "xmlns:sys-img=", with: "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sys-img=")
+            .replacingOccurrences(of: "<type-details>", with: "<type-details xsi:type=\"sys-img:sysImgDetailsType\">")
+        let package = try AndroidSDKRepository(data: Data(officialShape.utf8), source: .googleAPIs)
+            .package("system-images;android-35;google_apis;arm64-v8a")
+        let document = try XMLDocument(data: package.localMetadata)
+        let root = try #require(document.rootElement())
+        #expect(root.uri == "http://schemas.android.com/repository/android/common/02")
+        let license = try #require(root.elements(forName: "license").first)
+        #expect(license.attribute(forName: "id")?.stringValue == package.licenseID)
+        let text = try #require(license.stringValue)
+        #expect(Insecure.SHA1.hash(data: Data(AndroidSDKLicenses.normalizedText(text).utf8)).map { String(format: "%02x", $0) }.joined() == package.licenseSHA1)
+    }
+
     @Test("system image metadata rejects package/detail mismatch and missing dependency")
     func invalidImages() throws {
         for xml in [imageXML.replacingOccurrences(of: "<abi>arm64-v8a</abi>", with: "<abi>x86_64</abi>"),
@@ -34,7 +52,7 @@ struct AndroidEmulatorPreparationTests {
     func unsafeClasspath(path: String) async throws {
         let fixture = try ProfilePayloadFixture(manifest: "Class-Path: \(path)\n\n")
         await #expect(throws: DomainError.self) { try await fixture.profile() }
-        #expect(!fixture.runner.log.all.contains { $0.arguments == ["list", "device"] })
+        #expect(!fixture.runner.log.all.contains { $0.arguments.suffix(2) == ["list", "device"] })
     }
 
     @Test("missing transitive classpath entries pin absence and newly added entries change approval")
@@ -64,7 +82,7 @@ struct AndroidEmulatorPreparationTests {
             fixture.runner.responses[ProfilePayloadFixture.manifestCommand(fixture.jar)] = .ok("Class-Path: \(paths)\n\n")
         }
         await #expect(throws: DomainError.self) { try await fixture.profile() }
-        #expect(!fixture.runner.log.all.contains { $0.arguments == ["list", "device"] })
+        #expect(!fixture.runner.log.all.contains { $0.arguments.suffix(2) == ["list", "device"] })
     }
 
     @Test("tool and catalog links fail closed", arguments: [false, true])
@@ -117,11 +135,14 @@ private struct ProfilePayloadFixture {
     init(manifest: String = "Class-Path: dependency.jar\n\n") throws {
         repo = try FixtureRepo()
         manager = try repo.write("sdk/cmdline-tools/23.0/bin/avdmanager", "fixture launcher")
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: manager.path)
         jar = try repo.write("sdk/cmdline-tools/23.0/lib/avdmanager-classpath.jar", "fixture tool JAR")
         let dependency = try repo.write("sdk/cmdline-tools/23.0/lib/dependency.jar", "fixture dependency")
+        let command = try AndroidEmulatorEnvironment.sdkReadOnlyCommand(ProcessCommand(manager.path, ["list", "device"]),
+            sdk: repo.url("sdk"), writableDirectories: [repo.url("profile-temp")])
         runner = FakeProcessRunner(responses: [Self.manifestCommand(jar): .ok(manifest),
             Self.manifestCommand(dependency): .ok("Manifest-Version: 1.0\n\n"),
-            "\(manager.path) list device": .ok("id: 1 or \"pixel_7\"\n    Name: Pixel 7\n    OEM : Google\n")])
+            command.description: .ok("id: 1 or \"pixel_7\"\n    Name: Pixel 7\n    OEM : Google\n")])
     }
     static func manifestCommand(_ jar: URL) -> String { "/usr/bin/unzip -p \(jar.path) META-INF/MANIFEST.MF" }
     func profile() async throws -> String {

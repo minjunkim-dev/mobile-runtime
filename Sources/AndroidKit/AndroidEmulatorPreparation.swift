@@ -1,6 +1,9 @@
 import Core
 import CryptoKit
 import Foundation
+#if canImport(Darwin)
+import Darwin
+#endif
 
 public struct AndroidAVDRequest: Codable, Sendable, Equatable {
     public let name: String
@@ -127,16 +130,19 @@ public struct AndroidEmulatorEnvironment: Sendable {
         let root = URL(fileURLWithPath: sdk, isDirectory: true).standardizedFileURL.resolvingSymlinksInPath()
         let payload = try await profilePayload(manager: manager, sdk: root, runner: runner)
         let scratch = FileManager.default.temporaryDirectory.appendingPathComponent("runstir-android-profile-\(UUID().uuidString)")
-        try FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: false, attributes: [.posixPermissions: 0o700])
-        defer { try? FileManager.default.removeItem(at: scratch) }
         var isolated = environment
         // Inspect the same built-in profiles as creation, without user profile overrides.
         for (key, child) in [("ANDROID_USER_HOME", "user"), ("ANDROID_AVD_HOME", "avds"), ("ANDROID_EMULATOR_HOME", "emulator")] {
-            let directory = scratch.appendingPathComponent(child)
-            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: false)
-            isolated[key] = directory.path
+            isolated[key] = scratch.appendingPathComponent(child).path
         }
-        let result = try await runner.run(ProcessCommand(manager.path, ["list", "device"], environment: isolated, timeout: .seconds(30)))
+        let command = try sdkReadOnlyCommand(ProcessCommand(manager.path, ["list", "device"], environment: isolated, timeout: .seconds(30)),
+            sdk: root, writableDirectories: [scratch])
+        try FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: false, attributes: [.posixPermissions: 0o700])
+        defer { try? FileManager.default.removeItem(at: scratch) }
+        for child in ["user", "avds", "emulator"] {
+            try FileManager.default.createDirectory(at: scratch.appendingPathComponent(child), withIntermediateDirectories: false)
+        }
+        let result = try await runner.run(command)
         guard result.terminationStatus.isSuccess else { throw failure("Android device profiles could not be read.") }
         let pattern = #"(?m)^\s*id:\s*[0-9]+\s+or\s+""# + NSRegularExpression.escapedPattern(for: id) + #"""#
         let profiles = result.standardOutput.components(separatedBy: "---------").filter {
@@ -147,6 +153,75 @@ public struct AndroidEmulatorEnvironment: Sendable {
             throw failure("Device profile tool or catalog payload changed during inspection. Approve a new plan.")
         }
         return profiles[0].trimmingCharacters(in: .whitespacesAndNewlines) + "\nPayload SHA-256: \(payload)\n"
+    }
+
+    /// Both AVD-manager operations may write only outside the selected SDK, including descendant JVMs.
+    public static func sdkReadOnlyCommand(_ command: ProcessCommand, sdk: URL, writableDirectories: [URL]) throws -> ProcessCommand {
+        let files = FileManager.default
+        guard files.isExecutableFile(atPath: "/usr/bin/sandbox-exec"), command.executable.hasPrefix("/"), !writableDirectories.isEmpty else {
+            throw failure("SDK write protection is unavailable. Prepare the Android resource manually; no unprotected command will run.")
+        }
+        var directory: ObjCBool = false
+        guard files.fileExists(atPath: sdk.path, isDirectory: &directory), directory.boolValue else { throw failure("The selected SDK directory is unavailable.") }
+        let protected = try protectionPath(sdk)
+        let tool = try protectionPath(URL(fileURLWithPath: command.executable))
+        let prefix = protected + "/"
+        let parts = tool.hasPrefix(prefix) ? String(tool.dropFirst(prefix.count)).split(separator: "/") : []
+        guard parts.count == 4, parts[0] == "cmdline-tools", parts[2] == "bin", parts[3] == "avdmanager",
+              files.isExecutableFile(atPath: command.executable) else { throw failure("The AVD manager is outside the exact selected SDK tool boundary.") }
+        let writable = try writableDirectories.map(protectionPath)
+        func contains(_ parent: String, _ child: String) -> Bool { parent == child || child.hasPrefix(parent + "/") }
+        guard writable.allSatisfy({ !contains(protected, $0) && !contains($0, protected) }) else {
+            throw failure("SDK and owned AVD/temporary directories overlap. Select separate resources and re-plan.")
+        }
+        for key in ["ANDROID_HOME", "ANDROID_SDK_ROOT"] {
+            if let path = command.environment[key] {
+                guard path.hasPrefix("/"), try protectionPath(URL(fileURLWithPath: path)) == protected else {
+                    throw failure("The child SDK environment differs from its protected SDK.")
+                }
+            }
+        }
+        for key in ["ANDROID_USER_HOME", "ANDROID_AVD_HOME", "ANDROID_EMULATOR_HOME"] {
+            if let path = command.environment[key] {
+                guard path.hasPrefix("/") else { throw failure("An Android child home is not absolute.") }
+                let target = try protectionPath(URL(fileURLWithPath: path))
+                guard writable.contains(where: { contains($0, target) }) else { throw failure("An Android child home is outside its owned writable directories.") }
+            }
+        }
+        if case .streamed(let file) = command.output {
+            let log = try protectionPath(file)
+            guard !contains(protected, log), !contains(log, protected) else { throw failure("A child output file overlaps the protected SDK.") }
+        }
+        // SBPL is passed as one argv value, with Scheme string quoting rather than shell quoting.
+        let escaped = protected.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")
+        let profile = "(version 1)(allow default)(deny file-write* (subpath \"\(escaped)\"))"
+        var wrapped = command
+        wrapped.executable = "/usr/bin/sandbox-exec"
+        wrapped.arguments = ["-p", profile, command.executable] + command.arguments
+        return wrapped
+    }
+
+    private static func protectionPath(_ url: URL) throws -> String {
+        guard url.isFileURL, url.path.hasPrefix("/"), url.query == nil, url.fragment == nil,
+              !url.path.unicodeScalars.contains(where: { $0.value < 32 || $0.value == 127 }),
+              !url.path.split(separator: "/").contains(where: { $0 == "." || $0 == ".." }) else {
+            throw failure("An Android protection path is not an unambiguous absolute file path.")
+        }
+        var ancestor = url
+        var suffix: [String] = []
+        while !exists(ancestor), ancestor.path != "/" { suffix.insert(ancestor.lastPathComponent, at: 0); ancestor.deleteLastPathComponent() }
+        let standard = ancestor.standardizedFileURL
+        guard standard.path == ancestor.resolvingSymlinksInPath().standardizedFileURL.path,
+              (try? FileManager.default.attributesOfItem(atPath: ancestor.path)[.type] as? FileAttributeType) != .typeSymbolicLink else {
+            throw failure("An Android protection path uses a symbolic alias. Preserve it and select a canonical resource.")
+        }
+        #if canImport(Darwin)
+        guard let physical = realpath(ancestor.path, nil) else { throw failure("An Android protection path cannot be resolved safely.") }
+        defer { free(physical) }
+        return suffix.reduce(String(cString: physical)) { ($0 as NSString).appendingPathComponent($1) }
+        #else
+        throw failure("Android SDK write protection is unavailable on this host.")
+        #endif
     }
 
     /// Hash only this tool's reachable JARs and the SDK inputs that can supply/override a device definition.
