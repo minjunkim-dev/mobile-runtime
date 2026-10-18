@@ -10,7 +10,7 @@ struct WorkflowExecutionTests {
     func unmetToolDeclaration(_ kind: WorkflowKind) async throws {
         let repo = try iosProject()
         try repo.write(".tool-versions", "nodejs 24.14.0\n")
-        let runner = kind == .build ? iosRunner(repo) : iosUpRunner(repo)
+        let runner = kind == .build ? try iosRunner(repo) : try iosUpRunner(repo)
         let result = await WorkflowExecution.run(kind, input: WorkflowInput(project: ProjectInspectionInput(
             directory: repo.root, environment: [:])), runner: runner, leases: temporaryLeases())
         #expect(result.exitCode == 1)
@@ -36,7 +36,7 @@ struct WorkflowExecutionTests {
     @Test("one iOS app builds a generic Simulator artifact without boot, install or launch")
     func genericBuild() async throws {
         let repo = try iosProject()
-        let runner = iosRunner(repo)
+        let runner = try iosRunner(repo)
         let events = EventLog()
         let result = await WorkflowExecution.run(.build, input: WorkflowInput(project: ProjectInspectionInput(
             directory: repo.root, environment: [:])), runner: runner, onEvent: { events.append($0) })
@@ -61,7 +61,7 @@ struct WorkflowExecutionTests {
     @Test("several Simulator identities need an explicit device before dependencies")
     func missingDevice() async throws {
         let repo = try iosProject()
-        var runner = iosRunner(repo)
+        var runner = try iosRunner(repo)
         runner.responses["xcrun simctl list devices -j"] = .ok(#"{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-27-0":[{"name":"iPhone A","udid":"A","state":"Booted","isAvailable":true},{"name":"iPhone B","udid":"B","state":"Shutdown","isAvailable":true}]}}"#)
         let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: ProjectInspectionInput(
             directory: repo.root, environment: [:], platform: .ios)), runner: runner)
@@ -76,7 +76,7 @@ struct WorkflowExecutionTests {
     @Test("workspace-only apps confirm Debug from effective Xcode settings")
     func workspaceOnlyBuild() async throws {
         let repo = try iosProject(workspaceOnly: true)
-        let runner = iosRunner(repo, workspaceOnly: true)
+        let runner = try iosRunner(repo, workspaceOnly: true)
         let result = await WorkflowExecution.run(.build, input: WorkflowInput(project: ProjectInspectionInput(
             directory: repo.root, environment: [:])), runner: runner)
         #expect(result.exitCode == 0)
@@ -87,8 +87,8 @@ struct WorkflowExecutionTests {
     @Test("a workspace cannot accept an invalid configuration that Xcode silently resolves to Release")
     func workspaceInvalidConfiguration() async throws {
         let repo = try iosProject(workspaceOnly: true)
-        var runner = iosRunner(repo, workspaceOnly: true)
-        let command = "xcodebuild -showBuildSettings -json -workspace \(repo.url("ios/MyApp.xcworkspace").path) -scheme MyApp -configuration Missing -destination generic/platform=iOS Simulator -derivedDataPath \(RunLogs(project: repo.root).url("DerivedData").resolvingSymlinksInPath().path)"
+        var runner = try iosRunner(repo, workspaceOnly: true)
+        let command = "xcodebuild -showBuildSettings -json -workspace \(repo.url("ios/MyApp.xcworkspace").path) -scheme MyApp -configuration Missing -destination generic/platform=iOS Simulator -derivedDataPath \(try RunLogs(project: repo.root).derivedDataDirectory.path)"
         runner.responses[command] = .ok(#"[{"target":"MyApp","buildSettings":{"CONFIGURATION":"Release"}}]"#)
         let result = await WorkflowExecution.run(.build, input: WorkflowInput(project: ProjectInspectionInput(
             directory: repo.root, environment: [:]), configuration: "Missing"), runner: runner)
@@ -100,7 +100,7 @@ struct WorkflowExecutionTests {
     @Test("invalid scheme and cross-platform selectors stop before dependency changes")
     func invalidSelectors() async throws {
         let repo = try iosProject()
-        let runner = iosRunner(repo)
+        let runner = try iosRunner(repo)
         let result = await WorkflowExecution.run(.build, input: WorkflowInput(project: ProjectInspectionInput(
             directory: repo.root, environment: [:], platform: .ios), scheme: "Wrong"), runner: runner)
         #expect(result.exitCode == 1)
@@ -128,7 +128,7 @@ struct WorkflowExecutionTests {
     @Test("omitting the port preserves legacy native inputs without requiring explicit forwarding support")
     func omittedPort() async throws {
         let repo = try iosProject()
-        let runner = iosUpRunner(repo)
+        let runner = try iosUpRunner(repo)
         let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: ProjectInspectionInput(
             directory: repo.root, environment: ["RCT_METRO_PORT": "8097"])), runner: runner, leases: temporaryLeases())
         #expect(result.exitCode == 0)
@@ -144,8 +144,8 @@ struct WorkflowExecutionTests {
         try repo.write("package.json", #"{"dependencies":{"react-native":"0.81.0"},"scripts":{"start":"react-native start"}}"#)
         try repo.write("node_modules/react-native/React-Core.podspec", "RCT_METRO_PORT=${RCT_METRO_PORT}")
         try repo.write("node_modules/react-native/React/Base/RCTBundleURLProvider.mm", "RCT_jsLocation stringForKey:kRCTJsLocationKey")
-        let base = iosUpRunner(repo)
-        let settings = "-project \(repo.url("ios/MyApp.xcodeproj").path) -scheme MyApp -configuration Debug -destination platform=iOS Simulator,id=A -derivedDataPath \(RunLogs(project: repo.root).url("DerivedData").resolvingSymlinksInPath().path)"
+        let base = try iosUpRunner(repo)
+        let settings = "-project \(repo.url("ios/MyApp.xcodeproj").path) -scheme MyApp -configuration Debug -destination platform=iOS Simulator,id=A -derivedDataPath \(try RunLogs(project: repo.root).derivedDataDirectory.path)"
         var runner = base
         runner.responses["xcodebuild \(settings) RCT_METRO_PORT=\(port) build"] = buildFails
             ? .failed(1, "error: controlled build failure") : base.responses["xcodebuild \(settings) build"]
@@ -210,7 +210,7 @@ struct WorkflowExecutionTests {
     @Test("a project without Debug requires configuration before dependency changes")
     func missingDebugConfiguration() async throws {
         let repo = try iosProject()
-        var runner = iosRunner(repo)
+        var runner = try iosRunner(repo)
         runner.responses["xcodebuild -list -json -project \(repo.url("ios/MyApp.xcodeproj").path)"] = .ok(#"{"project":{"schemes":["MyApp"],"configurations":["Release","Development"]}}"#)
         let result = await WorkflowExecution.run(.build, input: WorkflowInput(project: ProjectInspectionInput(
             directory: repo.root, environment: [:])), runner: runner)
@@ -253,7 +253,7 @@ struct WorkflowExecutionTests {
     @Test("a folder held by another client stops build before changes and names the owner")
     func folderConflict() async throws {
         let repo = try iosProject()
-        let runner = iosRunner(repo)
+        let runner = try iosRunner(repo)
         let leases = temporaryLeases()
         let gui = LeaseOwner(operationId: "gui-1", command: "up", project: repo.root.path)
         let held = try leases.acquire([.folder(try FolderIdentity(directory: repo.root))], owner: gui)
@@ -266,7 +266,7 @@ struct WorkflowExecutionTests {
         #expect(!runner.log.all.contains { $0.description == "yarn install --frozen-lockfile" })
         held.release()
         let retry = await WorkflowExecution.run(.build, input: WorkflowInput(project: ProjectInspectionInput(
-            directory: repo.root, environment: [:])), runner: iosRunner(repo), leases: leases)
+            directory: repo.root, environment: [:])), runner: try iosRunner(repo), leases: leases)
         #expect(retry.exitCode == 0)
         _ = try leases.acquire([.folder(try FolderIdentity(directory: repo.root))], owner: gui)
     }
@@ -288,20 +288,20 @@ struct WorkflowExecutionTests {
         let firstEvents = EventLog()
         let secondEvents = EventLog()
         let gate = BuildGate()
-        let firstRunner = PausedBuildRunner(base: iosRunner(first), gate: gate)
+        let firstRunner = PausedBuildRunner(base: try iosRunner(first), gate: gate)
         let firstInput = WorkflowInput(project: ProjectInspectionInput(directory: first.root, environment: [:]))
         let running = Task {
             await WorkflowExecution.run(.build, input: firstInput, runner: firstRunner, leases: leases,
                 onEvent: { firstEvents.append($0) })
         }
         await gate.waitForEntry()
-        let aliasRunner = iosRunner(first)
+        let aliasRunner = try iosRunner(first)
         let duplicate = await WorkflowExecution.run(.build, input: WorkflowInput(project: ProjectInspectionInput(
             directory: alias, environment: [:])), runner: aliasRunner, leases: leases)
         #expect(duplicate.operation.conflict?.key == .folder(try FolderIdentity(directory: first.root)))
         #expect(!aliasRunner.log.all.contains { $0.arguments.contains("build") || $0.arguments.contains("install") })
         let independent = await WorkflowExecution.run(.build, input: WorkflowInput(project: ProjectInspectionInput(
-            directory: second.root, environment: [:])), runner: iosRunner(second), leases: leases,
+            directory: second.root, environment: [:])), runner: try iosRunner(second), leases: leases,
             onEvent: { secondEvents.append($0) })
         #expect(independent.exitCode == 0)
         #expect(await !gate.timedOut)
@@ -318,7 +318,7 @@ struct WorkflowExecutionTests {
     @Test("an app another project left running blocks up on that device; no automatic switch")
     func liveAppConflict() async throws {
         let repo = try iosProject()
-        var runner = iosRunner(repo)
+        var runner = try iosRunner(repo)
         runner.responses["xcrun simctl list devices -j"] = .ok(#"{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-27-0":[{"name":"iPhone A","udid":"A","state":"Booted","isAvailable":true},{"name":"iPhone B","udid":"B","state":"Shutdown","isAvailable":true}]}}"#)
         runner.responses["xcrun simctl spawn A launchctl list"] = .ok("PID\tStatus\tLabel\n4242\t0\tUIKitApplication:com.other.App[a1b2][rb-legacy]\n")
         let leases = temporaryLeases()
@@ -342,8 +342,8 @@ struct WorkflowExecutionTests {
     @Test("a finished up leaves a device claim that another project's up observes again")
     func upLeavesClaim() async throws {
         let repo = try iosProject()
-        var runner = iosRunner(repo)
-        let destination = "-project \(repo.url("ios/MyApp.xcodeproj").path) -scheme MyApp -configuration Debug -destination platform=iOS Simulator,id=A -derivedDataPath \(RunLogs(project: repo.root).url("DerivedData").resolvingSymlinksInPath().path)"
+        var runner = try iosRunner(repo)
+        let destination = "-project \(repo.url("ios/MyApp.xcodeproj").path) -scheme MyApp -configuration Debug -destination platform=iOS Simulator,id=A -derivedDataPath \(try RunLogs(project: repo.root).derivedDataDirectory.path)"
         runner.responses["xcrun simctl list devices -j"] = .ok(#"{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-27-0":[{"name":"iPhone A","udid":"A","state":"Booted","isAvailable":true}]}}"#)
         runner.responses[MetroStatus.command] = .ok(MetroStatus.running(projectRoot: repo.root))
         runner.responses["xcodebuild \(destination) build"] = .ok("** BUILD SUCCEEDED **")
@@ -379,7 +379,7 @@ struct WorkflowExecutionTests {
         let other = LeaseOwner(operationId: "other-up", command: "up", project: "/work/other")
         let held = try leases.acquire([key], owner: other)
         defer { held.release() }
-        let runner = iosRunner(repo)
+        let runner = try iosRunner(repo)
         let result = await WorkflowExecution.run(.down, input: WorkflowInput(project: ProjectInspectionInput(
             directory: repo.root, environment: [:], platform: .ios)), runner: runner, leases: leases)
         #expect(result.exitCode == 1)
@@ -398,7 +398,7 @@ struct WorkflowExecutionTests {
         let other = LeaseOwner(operationId: "finished-up", command: "up", project: "/work/other")
         try leases.record(ResourceClaim(device: .device(.ios, "A"), platform: .ios,
             handle: "A", appID: "com.test.MyApp", owner: other))
-        var runner = iosRunner(repo)
+        var runner = try iosRunner(repo)
         runner.responses["xcrun simctl spawn A launchctl list"] = running
             ? .ok("PID\tStatus\tLabel\n4242\t0\tUIKitApplication:com.test.MyApp[a1b2][rb-legacy]\n")
             : .failed(1, "Simulator observation failed")
@@ -413,7 +413,7 @@ struct WorkflowExecutionTests {
     @Test("an up failure before install leaves a durable unknown device reservation")
     func failedUpKeepsReservation() async throws {
         let repo = try iosProject()
-        var runner = iosUpRunner(repo)
+        var runner = try iosUpRunner(repo)
         let build = runner.responses.keys.first { $0.hasPrefix("xcodebuild ") && $0.hasSuffix(" build") && $0.contains("id=A") }!
         runner.responses[build] = .failed(65, "compile failed")
         let leases = temporaryLeases()
@@ -434,7 +434,7 @@ struct WorkflowExecutionTests {
     @Test("a final claim write failure preserves stages, app evidence and cancellation", arguments: [0, 1, 130])
     func claimWriteFailure(launchExit: Int) async throws {
         let repo = try iosProject()
-        var runner = iosUpRunner(repo)
+        var runner = try iosUpRunner(repo)
         let launch = "xcrun simctl launch A com.test.MyApp"
         if launchExit == 130 { runner.failures[launch] = CancellationError() }
         else if launchExit != 0 { runner.responses[launch] = .failed(1, "launch failed") }
@@ -477,9 +477,9 @@ struct WorkflowExecutionTests {
         return repo
     }
 
-    private func iosRunner(_ repo: FixtureRepo, workspaceOnly: Bool = false) -> FakeProcessRunner {
+    private func iosRunner(_ repo: FixtureRepo, workspaceOnly: Bool = false) throws -> FakeProcessRunner {
         let target = workspaceOnly ? "-workspace \(repo.url("ios/MyApp.xcworkspace").path)" : "-project \(repo.url("ios/MyApp.xcodeproj").path)"
-        let destination = "\(target) -scheme MyApp -configuration Debug -destination generic/platform=iOS Simulator -derivedDataPath \(RunLogs(project: repo.root).url("DerivedData").resolvingSymlinksInPath().path)"
+        let destination = "\(target) -scheme MyApp -configuration Debug -destination generic/platform=iOS Simulator -derivedDataPath \(try RunLogs(project: repo.root).derivedDataDirectory.path)"
         return FakeProcessRunner(responses: [
             "xcode-select -p": .ok("/test/Xcode"),
             "xcodebuild -version": .ok("Xcode 27.0\nBuild version 18A100"),
@@ -496,9 +496,9 @@ struct WorkflowExecutionTests {
         ])
     }
 
-    private func iosUpRunner(_ repo: FixtureRepo) -> FakeProcessRunner {
-        var runner = iosRunner(repo)
-        let destination = "-project \(repo.url("ios/MyApp.xcodeproj").path) -scheme MyApp -configuration Debug -destination platform=iOS Simulator,id=A -derivedDataPath \(RunLogs(project: repo.root).url("DerivedData").resolvingSymlinksInPath().path)"
+    private func iosUpRunner(_ repo: FixtureRepo) throws -> FakeProcessRunner {
+        var runner = try iosRunner(repo)
+        let destination = "-project \(repo.url("ios/MyApp.xcodeproj").path) -scheme MyApp -configuration Debug -destination platform=iOS Simulator,id=A -derivedDataPath \(try RunLogs(project: repo.root).derivedDataDirectory.path)"
         runner.responses["xcrun simctl list devices -j"] = .ok(#"{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-27-0":[{"name":"iPhone A","udid":"A","state":"Booted","isAvailable":true}]}}"#)
         runner.responses[MetroStatus.command] = .ok(MetroStatus.running(projectRoot: repo.root))
         runner.responses["xcodebuild \(destination) build"] = .ok("** BUILD SUCCEEDED **")

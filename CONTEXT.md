@@ -173,10 +173,12 @@ xcodebuild가 겨누는 것 — `ios/*.xcworkspace`가 정확히 하나면 그�
 **빌드 산출물 (Built product)**:
 build Stage가 확정해 install·launch에 넘기는 `.app` 경로와 bundle id. 빌드 로그 파싱이 아니라 `xcodebuild -showBuildSettings`가 근거다 — 로그 포맷은 Xcode 버전마다 움직인다.
 
-iOS build와 관련 `-showBuildSettings`는 같은 input별 `RunLogs/DerivedData`를
-`-derivedDataPath`로 명시한다. 선택용 build settings 조회도 같은 경로를 쓴다.
+iOS build와 관련 `-showBuildSettings`는 같은 실제 입력의 `FolderIdentity` volume·file로
+`RunLogs/folder-<volume>-<file>/DerivedData`를 정하고 `-derivedDataPath`로 명시한다. 선택용 build settings 조회도 같은 경로를 쓴다.
 독립 clone·worktree의 산출물을 분리한다. 같은 실제 폴더의 symlink는 같은 경로를 쓴다.
+현재 입력 identity를 읽지 못하면 도구 실행 전에 중단한다.
 기존 output 부모나 output 자체가 symlink·일반 파일이면 중단한다.
+기존 일반 로그의 32-bit digest 경로는 유지한다. 이 경로의 충돌 한계를 output identity로 사용하지 않는다.
 이 경로 검사는 외부 도구 실행 중 경로 교체를 원자적으로 막지 않는다.
 scheme의 `-list` 조회에는 검증하지 않은 flag를 추가하지 않는다.
 Xcode의 전체 cache·HOME·임시 경로 격리를 보장하는 계약은 아니다.
