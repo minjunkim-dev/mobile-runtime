@@ -3,44 +3,56 @@
   "integrationSource": "6e19a3329e0f983bcfda29c82f35f7ba489957b8",
   "actualNegativeSource": "d4628c9615d06ac7ae95813d0e0f2ca7795bdf54",
   "historicalCreationSource": "4dede50eeca35ad59307c779160bf988a6e4bee1",
-  "status": "CLI/GUI historical installation-attempt cancellation observed; new integration/Xcode27.1 CLI install/create success observed; new GUI and final lifecycle pending; final review, CI and merge gates pending.",
-  "scope": "Interim CLI draft. Pins these public summaries while new GUI evidence remains pending. Historical candidates, source fixtures, actual negative cases and new CLI positive evidence retain separate scopes. Restricted originals and screenshots are referenced by ID, relative path, bytes, mode and SHA256 in the actual JSON files. Final CLI/GUI evidence integration follows the GUI result. This manifest excludes itself.",
+  "status": "Historical CLI/GUI installation-attempt cancellation retained; new integration/Xcode27.1 CLI runtime install/create and GUI runtime reuse/create/reinspection/scoped preservation/normal closure observed; final independent review, required CI, exact-head approval, merge and main CI gates pending.",
+  "scope": "Integrated public CLI/GUI evidence. Historical candidates, common failure fixtures, actual negative cases, new CLI installation and new GUI reuse/create retain separate scopes. Restricted originals and screenshots are referenced by bundle ID, relative path, bytes, mode and SHA256 in the actual JSON files. No whole issue completion, GUI download success, full payload transfer, whole HOME/cache/disk preservation or release approval is claimed. This manifest excludes itself.",
   "files": [
     {
       "path": "README.md",
-      "bytes": 5808,
+      "bytes": 6681,
       "mode": "0o644",
-      "sha256": "dcbbc46c16858b1e61cacbe36c497bddb135a0a01cba4bc8ea73221b493aec82"
+      "sha256": "f5a6d24f3373659fcb636edb15092cfc3461fc125824b765bfe5400effa8bcc1"
     },
     {
       "path": "actual-vm-gui.md",
-      "bytes": 6023,
+      "bytes": 6297,
       "mode": "0o644",
-      "sha256": "c14ec3629f34b8ddeda18fe56ab5254745fd71717a9d93ef8df76d140743d027"
+      "sha256": "bae56497d0fd381b06da3dc7513a525733128dfb9ad9e48080b6efc1ce0f6824"
     },
     {
       "path": "actual-runtime-d4628c9.md",
-      "bytes": 13602,
+      "bytes": 14294,
       "mode": "0o644",
-      "sha256": "1ca25861a4f4189cac386d930b00073f0dd91d5207b20061e8e98b003e2680fb"
+      "sha256": "095ca95a4590a404598ac57fe9d8d358e741e3c88bd60465188b726a7a4a0e37"
     },
     {
       "path": "actual-runtime-d4628c9.json",
-      "bytes": 18263,
+      "bytes": 18656,
       "mode": "0o644",
-      "sha256": "fb31bea0324d512b55c57de98060ea9386d6bcfc00905dc6cfa22e56557a72b2"
+      "sha256": "7a0873c7f58371c9335d1f29163a68043f32ef78239ef40c9e4a81fc0656fa50"
     },
     {
       "path": "actual-cli-6e19a33-resume.md",
-      "bytes": 7274,
+      "bytes": 7445,
       "mode": "0o644",
-      "sha256": "f6b71c4ffc6e8b01c674827c48d86c527dfd0da7aa085a42b13efcf9c6b56e67"
+      "sha256": "77d842ce4482f559f5047f755c45f46ec1eb023a9e3990e7776fd2b8f0125bb7"
     },
     {
       "path": "actual-cli-6e19a33-resume.json",
-      "bytes": 11371,
+      "bytes": 11412,
       "mode": "0o644",
-      "sha256": "4d47133afa8b341555f897dcfdbc1cb570524a5dd6178da947dc7db8f82d8fb1"
+      "sha256": "8c8121a532b6a6f89509d9fb35d54616586ce7004af5ffb944eff572a068adb6"
+    },
+    {
+      "path": "actual-gui-6e19a33-resume.md",
+      "bytes": 11796,
+      "mode": "0o644",
+      "sha256": "af8170f253a04363a88df80bdd36cd44a55571d25446a77a39eeca67248d3013"
+    },
+    {
+      "path": "actual-gui-6e19a33-resume.json",
+      "bytes": 16275,
+      "mode": "0o644",
+      "sha256": "0c081021d771413a459f2badf63fe6b9f60976e17211601d8a79c103806211c4"
     }
   ]
 }

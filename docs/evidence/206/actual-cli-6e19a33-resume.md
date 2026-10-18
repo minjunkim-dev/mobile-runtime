@@ -3,7 +3,7 @@
 새 검증 입력의 CLI가 `succeeded / exit 0`을 반환했다.
 승인한 `ios.runtime.install`과 `ios.simulator.create`를 모두 완료했다.
 별도 native inventory에서 정확한 runtime과 새 소유 Simulator를 확인했다.
-GUI 결과와 VM 정상 종료는 아직 이 기록의 완료 범위가 아니다.
+후속 [GUI 기록](actual-gui-6e19a33-resume.md)은 별도 device set의 생성·재검사·보존과 GUI·VM 정상 종료를 연결한다.
 환경 준비 성공을 앱 build·install·launch·첫 화면 성공으로 표시하지 않는다.
 
 [공개 JSON](actual-cli-6e19a33-resume.json)은 제한 원본을 identity와 hash로 연결한다.
@@ -91,14 +91,14 @@ Apple daemon의 request·started·초기 progress 메시지도 전체 전송 완
 
 | 조건 | 이 CLI가 추가한 근거 | 남은 범위 |
 | --- | --- | --- |
-| #206 AC1 | exact plan 승인 뒤 실제 runtime 설치. native OS build·architecture·availability 대조 | GUI의 새 검증 결과는 미확인이다. catalog SHA와 payload checksum을 구분한다. |
+| #206 AC1 | exact plan 승인 뒤 실제 runtime 설치. native OS build·architecture·availability 대조. 후속 GUI의 같은 runtime reuse | catalog SHA와 payload checksum을 구분한다. GUI reuse는 새 runtime 설치가 아니다. |
 | #206 AC2 | 새 소유 기기의 actual UDID·type·runtime·Shutdown 상태와 기존 기본 기기 2개의 identity·state 보존 | 이름 충돌 분기는 공통 fixture다. 기존 기기를 덮어쓰는 실험은 추가하지 않았다. |
 | #206 AC3 | repository trust false, 고정 Xcode 선택·version snapshot 보존. 계정·라이선스·관리자 자동 행동 없음 | 전체 전역 preference 불변이나 실제 계정 상태를 주장하지 않는다. |
-| #206 AC4 | 별도 runtime 없는 입력의 설치·생성 성공. 과거 CLI·GUI 취소130·manual 재검사와 함께 연결 | 새 GUI와 정상 종료·VM 마감은 미확인이다. 과거 중간 payload 취소는 여전히 inconclusive다. |
-| #206 AC5 / #199 AC02·AC03·AC06 | 실제 설치·생성, 승인 범위, 보존 비교와 VM tuple을 연결한다. fixture를 실제 설치로 대체하지 않았다. | 최종 통합 문서·독립 리뷰·최종 head 필수 CI·사람 승인·병합·main CI를 남긴다. 실제 Mac 결과로 일반화하지 않는다. |
+| #206 AC4 | 별도 runtime 없는 입력의 설치·생성 성공. 과거 CLI·GUI 취소130·manual 재검사와 후속 GUI 생성·재검사·보존·정상 종료를 함께 연결 | 과거 중간 payload 취소는 여전히 inconclusive다. 과거 unresolved journal의 복구 성공을 주장하지 않는다. |
+| #206 AC5 / #199 AC02·AC03·AC06 | 실제 설치·생성, 승인 범위, 보존 비교와 VM tuple을 연결한다. fixture를 실제 설치로 대체하지 않았다. | 통합 문서의 독립 리뷰·최종 head 필수 CI·사람 승인·병합·main CI를 남긴다. 실제 Mac 결과로 일반화하지 않는다. |
 
-이 초안은 새 GUI 완료·VM 정상 종료·티켓 완료·출시 완료를 선언하지 않는다.
-새 GUI의 결과와 최종 lifecycle은 해당 원본을 받은 뒤 별도로 추가한다.
+새 GUI의 최종 export·native 비교·GUI exit `0`·VM stop과 boot 프로세스 exit `0`은 별도 GUI 기록의 원본을 따른다.
+이 기록은 티켓 완료·출시 완료를 선언하지 않는다.
 
 ## 원본 확인
 

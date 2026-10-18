@@ -5,6 +5,7 @@
 이 두 실행은 payload 성장을 관측하지 못했다. 중간 다운로드 취소와 네트워크 전송은 `inconclusive`다.
 runtime 설치·Simulator 생성·자동 재시도 성공으로 표시하지 않는다.
 새 baseline의 `6e19a33` CLI 설치·생성 성공은 [별도 기록](actual-cli-6e19a33-resume.md)에 연결했다.
+같은 후보의 GUI runtime 재사용·별도 생성·재검사·보존·정상 종료도 [별도 기록](actual-gui-6e19a33-resume.md)에 연결했다.
 그 성공으로 과거 취소 실행의 미확인 범위를 덮어쓰지 않는다.
 
 [공개 JSON](actual-runtime-d4628c9.json)은 제한 원본을 bundle ID·상대 경로·bytes·mode·SHA256으로 연결한다.
@@ -19,7 +20,7 @@ runtime 설치·Simulator 생성·자동 재시도 성공으로 표시하지 않
 | 과거 재사용·생성 | `4dede50eeca35ad59307c779160bf988a6e4bee1`. [기존 기록](actual-vm-gui.md)에 당시 성공·실패·한계를 보존한다. |
 | 이번 취소 실측 | source `d4628c9615d06ac7ae95813d0e0f2ca7795bdf54`, tree `afc62b0671ea3b3b2bb2b46fe8529dd7d3ca9fe3`. CLI와 GUI는 서로 다른 runtime 없는 VM clone을 사용했다. |
 | 현재 통합 후보 | head `6e19a3329e0f983bcfda29c82f35f7ba489957b8`, base `3211df5ac08168bcd3b7848f13c37ff40c7cd185`. `Sources/`, `Tests/`, `Package.swift`, `Package.resolved`는 d4628c9와 blob이 같다. |
-| 새 검증 입력 | 별도 보존 baseline clone·Xcode `27.1/27A9275`. 같은 `6e19a33` CLI의 설치·생성 성공은 별도 기록이다. 새 GUI와 최종 lifecycle은 미확인이다. |
+| 새 검증 입력 | 별도 보존 baseline clone·Xcode `27.1/27A9275`. 같은 `6e19a33` CLI의 설치·생성 성공과 GUI의 재사용·생성·재검사·보존·정상 종료는 각각 별도 기록이다. |
 
 d4628c9의 Food Truck source는 `3954a769e99f3cc53297d94f2b960ceb2665b3d6`이다.
 기존 source와 별도 검증 source는 각각 tracked 553개를 비교했다.
@@ -134,7 +135,7 @@ host export·화면·snapshot 원본은 남아 있으며 이번에 hash를 확�
 승인 대상은 `ios.runtime.install`과 `ios.simulator.create`다. repository trust는 false다.
 이 문서는 준비·승인 영수증과 preflight export 102개를 연결한다.
 [후속 CLI 기록](actual-cli-6e19a33-resume.md)은 실제 설치·생성 성공과 최종 CLI 보존 감사의 export 244개를 연결한다.
-새 GUI와 최종 GUI·VM 정상 종료는 아직 미확인이다.
+[후속 GUI 기록](actual-gui-6e19a33-resume.md)은 runtime 재사용·별도 생성·재검사와 최종 보존·GUI exit `0`·VM 정상 종료를 연결한다.
 Apple daemon의 요청·시작·초기 progress 메시지도 payload bytes·전체 네트워크 전송 완료의 증거로 바꾸지 않는다.
 
 ## AC별 근거
@@ -144,17 +145,17 @@ Apple daemon의 요청·시작·초기 progress 메시지도 payload bytes·전�
 
 | #206 조건 | 연결한 근거 | 남은 근거·한계 |
 | --- | --- | --- |
-| AC1 OS·architecture·artifact·재사용 | CLI plan·GUI 화면의 exact tuple·asset·catalog identity. 과거 4dede50의 기존 runtime·기기 reuse. `catalogPin`, `invalidCatalog`, `capturedReuse`, `renamedDevice` 자동 검사 | d4628c9의 실제 runtime 설치 성공은 없다. 새 6e19a33 CLI의 성공은 별도 기록이다. 새 GUI 결과는 미확인이다. |
-| AC2 이름 충돌·생성 identity·실제 상태 | `nameCollision`, `creationSelection`, `approvedCreation` 자동 검사. 과거 후보와 새 6e19a33 CLI의 실제 UDID·Shutdown 결과는 각 기록에 고정 | d4628c9 취소 실행은 새 기기 0개다. 새 GUI 생성 결과는 아직 미확인이다. |
+| AC1 OS·architecture·artifact·재사용 | CLI plan·GUI 화면의 exact tuple·asset·catalog identity. 과거 4dede50의 기존 runtime·기기 reuse. `catalogPin`, `invalidCatalog`, `capturedReuse`, `renamedDevice` 자동 검사. 새 6e19a33 CLI 설치와 GUI runtime reuse는 별도 기록 | d4628c9의 실제 runtime 설치 성공은 없다. 새 GUI의 reuse를 다운로드 성공으로 세지 않는다. |
+| AC2 이름 충돌·생성 identity·실제 상태 | `nameCollision`, `creationSelection`, `approvedCreation` 자동 검사. 과거 후보와 새 6e19a33 CLI·GUI의 실제 UDID·Shutdown·available 결과는 각 기록에 고정 | d4628c9 취소 실행은 새 기기 0개다. 이름 충돌은 공통 fixture 범위다. |
 | AC3 수동 Xcode·계정·라이선스·전역 선택 | 취소 후 exact runtime 수동 안내·기존 자원 보존. GUI의 전역 선택 관측. 과거 잘못된 child Xcode 경로와 수동 안내 | 계정이 원인이라는 증거는 없다. 로그인·라이선스·관리자 자동 승인은 수행하지 않았다. |
-| AC4 CLI·GUI 실패·취소·재실행·보존 | d4628c9 양쪽 설치 시도 취소130·manual-only 재검사·보존·정상 종료. `runtimeRecovery`, `creationRecovery`, stale·lease fixture. 과거 후보의 실제 journal 쓰기 실패·복구 이력 | payload가 증가하는 중간 다운로드 취소는 inconclusive다. 수동 복구·자동 재시도 성공은 없다. 실제 Mac doctor 실패와 VM 결과를 구분한다. |
-| AC5 / #199 AC02·AC03·AC06 | 아래 구분과 원본 manifest로 연결한다. fixture·문서 PASS를 실제 설치로 바꾸지 않는다. | 새 GUI와 최종 lifecycle, 최종 문서의 독립 리뷰·필수 CI·사람 승인·병합·main CI가 남았다. |
+| AC4 CLI·GUI 실패·취소·재실행·보존 | d4628c9 양쪽 설치 시도 취소130·manual-only 재검사·보존·정상 종료. `runtimeRecovery`, `creationRecovery`, stale·lease fixture. 과거 후보의 실제 journal 쓰기 실패·복구 이력. 새 CLI 설치·GUI 생성·재사용 재검사·보존·정상 종료는 별도 연결 | payload가 증가하는 중간 다운로드 취소는 inconclusive다. 과거 unresolved 상태의 수동 복구·자동 재시도 성공은 없다. 실제 Mac doctor 실패와 VM 결과를 구분한다. |
+| AC5 / #199 AC02·AC03·AC06 | 아래 구분과 원본 manifest로 연결한다. fixture·문서 PASS를 실제 설치로 바꾸지 않는다. | 최종 통합 문서의 독립 리뷰·필수 CI·사람 승인·병합·main CI가 남았다. |
 
 | #199 조건 | 현재 연결 | 미확인 범위 |
 | --- | --- | --- |
-| AC02 준비 | 실제 기존 자원 reuse 이력, exact 설치 계획·승인, d4628c9 취소 결과와 남은 수동 단계. 새 6e19a33 CLI의 설치·생성 성공은 별도 기록 | 새 GUI 결과와 최종 lifecycle |
-| AC03 복구·조건 변경·보존 | 실제 취소130·journal 보존·manual-only 재검사와 named 자원 비교. 공통 stale·충돌·실패 fixture | 중간 payload 취소·전체 전송, 실제 unresolved 상태의 수동 복구 완료·자동 재시도 성공 |
-| AC06 VM과 실제 Mac | 보존 기준 VM clone, 서로 다른 Xcode tuple과 별도 실행 identity. 실제 Mac sandbox doctor 실패 이력. 새 baseline의 CLI 성공·보존 범위는 별도 기록 | VM 성공을 실제 Mac 결과로 일반화하지 않는다. 새 GUI·VM 마감은 미확인이다. |
+| AC02 준비 | 실제 기존 자원 reuse 이력, exact 설치 계획·승인, d4628c9 취소 결과와 남은 수동 단계. 새 6e19a33 CLI 설치·생성과 GUI 재사용·생성·재검사·정상 종료는 별도 기록 | 앱 build·install·launch 성공으로 확대하지 않는다 |
+| AC03 복구·조건 변경·보존 | 실제 취소130·journal 보존·manual-only 재검사와 named 자원 비교. 공통 stale·충돌·실패 fixture. 새 CLI·GUI의 성공·재사용·선택 자원 보존 | 중간 payload 취소·전체 전송, 과거 unresolved 상태의 수동 복구 완료·자동 재시도 성공 |
+| AC06 VM과 실제 Mac | 보존 기준 VM clone, 서로 다른 Xcode tuple과 별도 실행 identity. 실제 Mac sandbox doctor 실패 이력. 새 baseline의 CLI·GUI 성공·보존·GUI 및 VM 정상 종료는 별도 기록 | VM 성공을 실제 Mac 결과로 일반화하지 않는다. 보호 VM 비교는 작은 metadata SHA와 disk stat 범위다 |
 
 표의 미확인 범위를 모두 새 필수 실측으로 추가하지 않는다.
 각 조건의 공통 fixture·실제 위험 경계·성공 설치 요구를 구분해서 최종 판정한다.
@@ -169,3 +170,4 @@ CLI stage1 원본 archive의 파일 55개·6203122B도 저장된 receipt와 byte
 불일치는 0개다. 이 수치는 서로 겹치므로 고유 파일 수로 합산하지 않는다.
 GUI 원본 화면 11·16·17을 직접 읽었다. 공개 JSON은 화면 identity만 담는다.
 원본 receipt와 실패 이력을 수정하지 않았다.
+새 CLI export 244개와 새 GUI export 58개의 별도 재검증은 각 새 기록에 고정했다.

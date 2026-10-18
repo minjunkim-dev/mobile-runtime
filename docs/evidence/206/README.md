@@ -1,10 +1,12 @@
-# #206 source·공식 metadata 관측
+# #206 iOS runtime·Simulator 준비 검증 근거
 
 상태: `d4628c9`의 CLI·GUI에서 runtime 설치 시도 취소 `130`과 exact runtime 수동 재검사를 확인했다.
 payload 성장·네트워크 전송·runtime 설치 성공은 그 실행에서 입증하지 못했다.
 최신 [CLI·GUI 취소와 새 검증 입력](actual-runtime-d4628c9.md)은 이 한계를 보존한다.
 `6e19a33`·Xcode `27.1`의 [새 CLI 검증](actual-cli-6e19a33-resume.md)은 실제 runtime 설치·Simulator 생성 `succeeded / exit 0`을 확인했다.
-새 GUI 결과와 VM 정상 종료는 아직 미확인이다.
+같은 후보의 [새 GUI 검증](actual-gui-6e19a33-resume.md)은 runtime 재사용·별도 Simulator 생성·재검사·선택 자원 보존을 확인했다.
+GUI 실제 exit `0`과 VM 정상 stop·boot 프로세스 exit `0`도 확인했다.
+GUI는 runtime 다운로드를 수행하지 않았다. CLI 성공도 payload 전송 bytes·checksum의 독립 증거는 아니다.
 이전 [VM GUI 기록](actual-vm-gui.md)은 `4dede50`의 기존 runtime 재사용·기기 생성 이력이다. 새 runtime 설치 성공 근거가 아니다.
 아래 초기 source 단계의 미검증 기록은 당시 상태다.
 고정 시작 source: `1b55a8899aea36c77443469dabf64647add27294`.
@@ -70,7 +72,11 @@ provider 행동 검사에서는 `Runstir iPhone …` 이름의 생성 기기를 
 `d4628c9`의 별도 CLI·GUI는 runtime 설치 시도를 취소했다. 재검사는 journal을 보존하고 수동 복구만 안내했다.
 실제 Mac의 sandbox doctor 실패·VM 결과·새 baseline의 Xcode `27.1` 검증을 구분한다.
 새 CLI는 exact runtime 설치·새 UDID의 Shutdown 상태·선택 자원 보존을 확인했다.
-새 GUI 결과와 최종 GUI·VM 정상 종료는 아직 미확인이다.
+새 GUI는 별도 device set에 정확한 기기 1개를 생성했다. 완료 화면과 최종 native `Shutdown`·available 상태를 확인했다.
+재검사는 같은 자원을 재사용했다. `needs-approval / exit 0`을 새 실행 성공으로 세지 않았다.
+GUI export 58개·6,773,037B를 bytes·mode·SHA-256으로 다시 확인했다. 불일치는 0개다.
+GUI 실제 exit `0`과 관측 자식 잔존 0개, VM 정상 종료와 보호 VM 2개의 작은 metadata·disk stat 동일을 확인했다.
+전체 HOME·cache·VM disk 보존은 입증하지 않았다. 선택 cache mtime의 변경 actor는 unknown이다.
 [#206 및 #199 AC02·AC03·AC06 근거표](actual-runtime-d4628c9.md#ac별-근거)를 읽는다.
 최종 문서에 대한 독립 리뷰·최종 head 필수 CI·위험별 승인·병합·main CI도 남겼다.
 필수 실제 조건을 fixture·문서 PASS로 대신하지 않는다. #206은 완료 상태가 아니다.

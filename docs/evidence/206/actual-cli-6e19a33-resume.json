@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "issue": 206,
   "caseID": "206-cli-6e19a33-resume-20261018",
-  "status": "actual-cli-install-and-create-observed-gui-and-final-lifecycle-pending",
+  "status": "actual-cli-install-and-create-observed-GUI-and-normal-closure-linked-delivery-gates-pending",
   "measurementDateUTC": "2026-10-18",
   "source": {
     "SHA": "6e19a3329e0f983bcfda29c82f35f7ba489957b8",
@@ -116,7 +116,7 @@
     "AC1": "Exact approval followed by actual selected-Xcode installation and exact native runtime verification.",
     "AC2": "One exact new owned UDID/type/runtime/Shutdown state, with preserved existing default device identities. Name-collision behavior retains fixture scope.",
     "AC3": "Pinned selected Xcode observation remains equal. No account/license/administrator automation or broader global preference claim.",
-    "AC4": "New CLI install/create success supplements separately retained historical CLI/GUI cancellation and manual-only reinspection. New GUI and lifecycle remain pending.",
+    "AC4": "New CLI install/create success supplements separately retained historical CLI/GUI cancellation and manual-only reinspection. Separate GUI creation/reinspection/scoped preservation and normal GUI/VM closure are linked in actual-gui-6e19a33-resume.json.",
     "AC5_issue199_AC02_AC03_AC06": "Actual install/create, exact plan, VM tuple and preservation are linked. No fixture or historical-candidate promotion; final integrated reviews/CI/approval/merge/mainCI remain open."
   },
   "verification": {
@@ -128,10 +128,7 @@
     "newVMUIBuildTestSignalOrSourceActionsForDocumentation": 0
   },
   "pending": {
-    "newGUIActualResult": "unverified",
-    "GUIProcessNormalExit": "unverified",
-    "normalVMStopAndOriginalBootExit": "unverified",
-    "finalIntegratedDocumentsAndReview": "pending",
+    "finalIntegratedIndependentReview": "pending",
     "finalRequiredCIHumanApprovalMergeMainCI": "pending",
     "wholeIssueComplete": false
   },
@@ -155,7 +152,7 @@
   "limits": [
     "Runtime install/create success is observed through actual operation and independent native inventories. Full payload network transfer/bytes/checksum remain unverified.",
     "Cache metadata actors and whole HOME/cache/temp/disk preservation are unknown. Process observations do not prove absence of unseen daemons or reparented children.",
-    "New GUI outcome and GUI/VM lifecycle closure are not yet evidenced here. Source/fixture results are not substituted for those actual results.",
+    "Separate GUI creation, reinspection, scoped preservation and normal GUI/VM lifecycle are recorded in actual-gui-6e19a33-resume.json. GUI reuse is not another runtime installation or proof of payload transfer.",
     "Final integrated evidence review, required CI, exact-head human approval, merge, main CI and whole issue completion are not claimed."
   ]
 }

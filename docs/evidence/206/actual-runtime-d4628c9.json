@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "issue": 206,
-  "status": "negative-actual-observed-new-cli-positive-linked-gui-and-final-lifecycle-pending",
+  "status": "negative-actual-retained-new-CLI-and-GUI-positive-and-normal-closure-linked-delivery-gates-pending",
   "measurementDateUTC": "2026-10-16",
   "documentationAuditDate": "2026-10-18",
   "verdict": {
@@ -12,7 +12,7 @@
     "midDownloadCancellation": "inconclusive",
     "runtimeInstallSuccessInTheseCases": "unverified",
     "simulatorCreationSuccessInTheseCases": "unverified",
-    "newResumePositiveOutcome": "CLI observed separately in actual-cli-6e19a33-resume.json; GUI unverified",
+    "newResumePositiveOutcome": "CLI install/create observed separately in actual-cli-6e19a33-resume.json; GUI runtime reuse/create/reinspection/scoped preservation and normal closure observed separately in actual-gui-6e19a33-resume.json",
     "wholeIssueComplete": false,
     "finalHeadCIOrMergeComplete": false
   },
@@ -164,16 +164,16 @@
     "preflightExportBytesRehashed": 8365106,
     "runtimeInstallOutcome": "CLI observed-completed; see actual-cli-6e19a33-resume.json",
     "simulatorCreateOutcome": "CLI observed-created; see actual-cli-6e19a33-resume.json",
-    "finalPreservationAndLifecycle": "CLI preservation observed separately; GUI and VM lifecycle unverified",
+    "finalPreservationAndLifecycle": "CLI preservation and subsequent GUI preservation/normal GUI and VM closure are observed in their separate actual 6e19a33 records",
     "isOldCancelledOperationRecoverySuccess": false,
     "daemonRequestStartedOrFirstProgressIsPayloadTransferCompletion": false
   },
   "acceptance": {
-    "AC1": "Exact runtime/artifact plan and historical reuse are linked. New 6e19a33 CLI installation success is linked separately; GUI remains unverified.",
-    "AC2": "Name-collision and creation identity/state fixtures plus historical actual creation retain their source scope. d4628c9 cancellation cases created no devices. New 6e19a33 CLI creation is linked separately; GUI remains unverified.",
+    "AC1": "Exact runtime/artifact plan and historical reuse are linked. New 6e19a33 CLI installation and GUI runtime reuse are linked separately. GUI reuse is not new runtime download success.",
+    "AC2": "Name-collision and creation identity/state fixtures plus historical actual creation retain their source scope. d4628c9 cancellation cases created no devices. New 6e19a33 CLI and GUI creations have separate exact native identity/state records.",
     "AC3": "Exact manual recovery and bounded global Xcode observations are linked. No account/license/administrator automation or account-cause inference.",
     "AC4": "Actual CLI/GUI installation-attempt cancellation, manual-only reinspection, preservation and normal closure are observed. Failure branches are fixtures; mid-payload cancellation/network transfer and automatic retry success remain inconclusive or unverified.",
-    "AC5": "Maps to issue199 AC02/03/06 without promoting fixtures or historical candidates to current runtime success. New CLI positive result is linked separately; new GUI/lifecycle and final review/CI/merge gates remain open."
+    "AC5": "Maps to issue199 AC02/03/06 without promoting fixtures or historical candidates to current runtime success. New CLI/GUI positive results and normal closure are linked separately. Final independent review, required CI, exact-head approval, merge and main CI remain open."
   },
   "verification": {
     "CLIFinalInternalIndex": {"files": 221, "bytes": 36959150},
@@ -222,7 +222,7 @@
     "Actual GUI and CLI states, harness transport verdicts, manual reinspection, and normal process/VM closure are different evidence scopes.",
     "Journals are preserved as hash metadata; raw journal payloads and complete old daemon log were not exported.",
     "Root reports that nine old validation VMs are deleted. Retained host exports remain verifiable; a new baseline cannot repair old runtime or log evidence gaps retroactively.",
-    "New 6e19a33/Xcode27.1 CLI success and preservation are recorded separately. GUI success and final GUI/VM lifecycle remain unverified.",
+    "New 6e19a33/Xcode27.1 CLI install success and GUI runtime reuse/create/reinspection/scoped preservation and normal GUI/VM closure are recorded separately. New baseline results do not fill historical evidence gaps.",
     "Fixtures and historical candidate results are not promoted to current actual install, device success or full issue completion. Final review, required CI, human approval, merge and main CI remain separate gates."
   ]
 }
