@@ -19,6 +19,7 @@ public struct LaunchStage: Stage {
     /// Injected so tests do not wait, while a first bundle gets enough time on a cold
     /// machine to finish honestly.
     private let readinessWait: Duration
+    private let flutterPort: Int?
 
     public static let defaultReadinessWait: Duration = .seconds(120)
 
@@ -27,18 +28,30 @@ public struct LaunchStage: Stage {
         runner: any ProcessRunner,
         metroRunner: (any ProcessRunner)? = nil,
         locator: XcodeLocator,
-        readinessWait: Duration = LaunchStage.defaultReadinessWait
+        readinessWait: Duration = LaunchStage.defaultReadinessWait,
+        flutterPort: Int? = nil
     ) {
         self.project = project
         self.runner = runner
         self.metroRunner = metroRunner ?? runner
         self.locator = locator
         self.readinessWait = readinessWait
+        self.flutterPort = flutterPort
     }
 
     public func run(_ context: inout UpContext) async throws -> StageOutcome {
         let (device, product) = try context.built(for: id)
         let environment = await locator.pinnedEnvironment()
+        if let port = flutterPort {
+            let listener = try await runner.run(ProcessCommand("lsof", ["-nP", "-iTCP:\(port)", "-sTCP:LISTEN"], timeout: .seconds(10)))
+            guard listener.terminationStatus == .exited(1), listener.combinedOutput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                if listener.terminationStatus.isSuccess {
+                    throw DomainError(summary: "The selected Flutter VM service port became occupied before launch.",
+                        remediation: Remediation(summary: "Preserve its current listener. Select another port or explicitly stop its owning app, then retry."))
+                }
+                throw ToolUnavailable(description: "Could not confirm that the Flutter VM service port is free before launch.")
+            }
+        }
 
         // Every failure ignored, the runner's own included: on a first run there is
         // nothing to terminate, and simctl says so with a paragraph and exit 3.
@@ -50,8 +63,21 @@ public struct LaunchStage: Stage {
             )
         )
 
+        try Task.checkCancellation()
+        let flutterLog: URL?
+        if flutterPort != nil {
+            let logs = RunLogs(project: project)
+            guard let file = logs.write("", to: "flutter-launch-\(UUID().uuidString).log") else {
+                throw ToolUnavailable(description: "Could not save this Flutter launch log.")
+            }
+            flutterLog = file
+        } else { flutterLog = nil }
+        let output = flutterLog.map { ["--stdout=\($0.path)", "--stderr=\($0.path)"] } ?? []
+        let launchArguments = flutterPort.map {
+            ["--enable-dart-profiling", "--enable-checked-mode", "--verify-entry-points", "--vm-service-port=\($0)"]
+        } ?? []
         let command = ProcessCommand(
-            "xcrun", ["simctl", "launch", device.udid, product.bundleIdentifier],
+            "xcrun", ["simctl", "launch"] + output + [device.udid, product.bundleIdentifier] + launchArguments,
             environment: environment,
             timeout: .seconds(60)
         )
@@ -79,6 +105,9 @@ public struct LaunchStage: Stage {
             )
         }
         context.appPid = pid
+        if let port = flutterPort, let file = flutterLog {
+            context.developmentServiceURI = try await flutterServiceURI(log: file, port: port)
+        }
 
         let detail = "\(product.bundleIdentifier) — pid \(pid)"
         guard let metro = context.metro else { return .pass(detail) }
@@ -90,6 +119,40 @@ public struct LaunchStage: Stage {
         let hint = metro.logPath.map { " — Metro still bundling; log at \($0)" }
             ?? " — Metro still bundling; check the Metro process on port 8081"
         return .pass(detail + hint)
+    }
+
+    private func flutterServiceURI(log: URL, port: Int) async throws -> String {
+        let deadline = ContinuousClock.now.advanced(by: readinessWait)
+        repeat {
+            try Task.checkCancellation()
+            let contents = try String(contentsOf: log, encoding: .utf8)
+            for line in contents.split(whereSeparator: \.isNewline) {
+                guard let range = line.range(of: "The Dart VM service is listening on ") else { continue }
+                let value = line[range.upperBound...].trimmingCharacters(in: .whitespacesAndNewlines)
+                guard let uri = URLComponents(string: value), uri.scheme == "http",
+                    ["127.0.0.1", "localhost", "::1"].contains(uri.host ?? ""), uri.port == port,
+                    uri.user == nil, uri.password == nil, uri.query == nil, uri.fragment == nil,
+                    !uri.path.isEmpty else {
+                    throw DomainError(summary: "Flutter reported a different or invalid development service URI.",
+                        remediation: Remediation(summary: "Inspect this app's Flutter launch log and selected port, then retry down for this project."))
+                }
+                let probe = try await runner.run(ProcessCommand("curl", ["--fail", "--silent", "--show-error", "--noproxy", "*",
+                    "--connect-timeout", "2", "--max-time", "5", value + (value.hasSuffix("/") ? "" : "/") + "getVM"], timeout: .seconds(10)))
+                try Task.checkCancellation()
+                if probe.terminationStatus.isSuccess {
+                    guard let document = try? JSONSerialization.jsonObject(with: Data(probe.standardOutput.utf8)) as? [String: Any],
+                        (document["result"] as? [String: Any])?["type"] as? String == "VM" else {
+                        throw DomainError(summary: "The observed Flutter URI did not answer as a Dart VM service.",
+                            remediation: Remediation(summary: "Inspect the selected app and service port. Run down before retrying this project."))
+                    }
+                    return value
+                }
+            }
+            if ContinuousClock.now >= deadline { break }
+            try await Task.sleep(for: .milliseconds(100))
+        } while true
+        throw DomainError(summary: "The Flutter app started, but its development service URI was not observed.",
+            remediation: Remediation(summary: "Inspect the Flutter app and launch log at \(log.path). Run mobile down --platform ios before retrying."))
     }
 
     /// The pid is what a line ends with. Read from the end rather than by splitting on

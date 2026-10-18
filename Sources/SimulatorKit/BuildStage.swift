@@ -73,11 +73,11 @@ public struct BuildStage: Stage {
                 "-scheme", scheme,
                 "-configuration", configuration,
                 "-destination", destination,
-            ] + (anchor.framework == .nativeIOS ? ["CODE_SIGNING_ALLOWED=NO"] : [])
+            ] + (anchor.framework != .reactNative ? ["CODE_SIGNING_ALLOWED=NO"] : [])
 
         context.buildLog = try await build(arguments, environment).path
         context.product = try await product(arguments, scheme: scheme, environment: environment,
-            nativeTarget: anchor.framework == .nativeIOS ? target : nil)
+            nativeTarget: anchor.framework != .reactNative ? target : nil)
         return .pass(scheme)
     }
 

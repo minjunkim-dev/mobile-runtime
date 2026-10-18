@@ -43,7 +43,7 @@ struct XcodeSchemeList: Decodable {
         buildTarget: XcodeBuildTarget,
         fileManager: FileManager = .default
     ) -> XcodeBuildTarget {
-        if anchor.framework == .nativeIOS { return buildTarget }
+        if anchor.framework == .nativeIOS || anchor.framework == .flutter { return buildTarget }
         return project(inIOSDirectoryOf: anchor, fileManager: fileManager).map {
             XcodeBuildTarget(kind: .project, url: $0)
         } ?? buildTarget
@@ -64,7 +64,7 @@ struct XcodeSchemeList: Decodable {
     /// Xcode's listing can include a user's unshared schemes. Native projects
     /// expose only shared schemes beside the selected container or its members.
     func schemes(in target: XcodeBuildTarget, anchor: ProjectAnchor) -> [String] {
-        guard anchor.framework == .nativeIOS else { return schemes }
+        guard anchor.framework == .nativeIOS || anchor.framework == .flutter else { return schemes }
         let shared = Set(Self.sharedSchemes(in: target).map { $0.deletingPathExtension().lastPathComponent })
         return schemes.filter { shared.contains($0) }
     }
