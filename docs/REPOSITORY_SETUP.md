@@ -15,6 +15,7 @@ python3 scripts/check_github_settings.py
 도구는 GET만 수행한다. repository ID·owner/name·자료형·필수 항목·체크 이름과 App ID·main CodeQL workflow blob을 확인한다.
 exit 0은 일치, 1은 drift, 2는 조회 실패·자료 오류·미확인이다. 불완전한 기준선은 API 조회 전에 중단한다.
 main에 workflow가 없으면 감사는 통과하지 않는다. PR 파일과 main 반영을 구분한다.
+PR의 source-only 검사는 codeql.yml blob과 `codeql_main_source.sha`를 비교한다. Dependabot이 codeql.yml만 바꾸면 이 검사가 실패한다. 기준선 SHA를 `git hash-object .github/workflows/codeql.yml` 값으로 갱신한다.
 기본 Actions token에 관리 권한을 추가하지 않는다. 오류·누락·drift 경로는 기존 source-only 검사에서 검증한다.
 
 ## 공통 정책
