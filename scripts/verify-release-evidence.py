@@ -2,6 +2,7 @@
 """Verify explicit release evidence references without executing or publishing candidates."""
 
 import argparse
+from datetime import datetime
 import hashlib
 import json
 import os
@@ -249,7 +250,8 @@ def verify(manifest_path, private_root):
     current = {}
     for identity, attempt in attempts.items():
         fields(attempt, ("id", "requirementID", "candidateID", "tupleID", "sampleID", "sampleSHA",
-                         "frontend", "evidenceClass", "expected", "observed", "result", "evidence", "unverified", "supersedes"))
+                         "frontend", "evidenceClass", "expected", "observed", "observedAt", "executor",
+                         "result", "evidence", "unverified", "supersedes"))
         requirement = requirements.get(attempt["requirementID"])
         require(requirement is not None and attempt["candidateID"] == candidate_id, "candidate-mismatch")
         require(all(attempt[key] == requirement[key] for key in ("tupleID", "sampleID", "sampleSHA", "frontend")), "attempt-identity-mismatch")
@@ -258,6 +260,12 @@ def verify(manifest_path, private_root):
         require(attempt["evidenceClass"] == manifest["evidenceClass"], "fixture-promotion")
         require(attempt["result"] in ("pass", "fail", "inconclusive", "unverified", "unknown"), "invalid-result")
         require(all(isinstance(attempt[key], str) and bool(attempt[key].strip()) for key in ("expected", "observed")), "missing-observation")
+        identifier(attempt["executor"])
+        observed_at = attempt["observedAt"]
+        require(isinstance(observed_at, str), "invalid-observation-time")
+        if observed_at != "unknown":
+            require(re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})", observed_at), "invalid-observation-time")
+            datetime.fromisoformat(observed_at.replace("Z", "+00:00"))
         references = attempt["evidence"]
         require(isinstance(references, list) and bool(references) and len(references) == len(set(references))
                 and all(ref in private for ref in references), "missing-reference")
@@ -282,7 +290,10 @@ def verify(manifest_path, private_root):
     if any(attempts[identity]["result"] != "pass" or attempts[identity]["unverified"]
            or attempts[identity]["sampleSHA"] == "unknown" for identity in current.values()):
         blockers.append("required-results")
-    if any(value.lower() in ("unknown", "unverified", "inconclusive")
+    if any(attempts[identity]["observedAt"] == "unknown" or attempts[identity]["executor"].lower() == "unknown"
+           for identity in current.values()):
+        blockers.append("attempt-provenance-unverified")
+    if any(value.strip().lower() in ("unknown", "unverified", "inconclusive")
            for entry in tuples.values() for value in entry["inputs"].values()):
         blockers.append("tuple-inputs-unverified")
     gate_evaluation = "blocked" if blockers else "pass"

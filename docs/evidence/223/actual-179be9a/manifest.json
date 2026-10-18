@@ -37,7 +37,7 @@
     },
     "results": {
       "path": "results.json",
-      "sha256": "66bfacfd417b62bfc0ca7894e15067782107787c7f6fad9e63fdbbcbc56268d3"
+      "sha256": "18c0a7b58f83a0a7bc9569f43d4aaea449f2e5c94dcb2295114e4fd535a950e7"
     },
     "restrictedIndex": {
       "path": "restricted-index.json",
@@ -45,7 +45,7 @@
     },
     "report": {
       "path": "report.md",
-      "sha256": "8ed699e99610bfe67df7e78a397f5f8d2932369904ff110899d6a4f2ceccb165"
+      "sha256": "49883e933d96a76cf4c4ab32bfa68982052a9260ec6b6f7eba687c33cd00a73c"
     }
   },
   "sourceCI": {

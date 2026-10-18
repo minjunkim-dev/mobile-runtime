@@ -28,6 +28,7 @@ JSON은 파일당 1 MiB, 깊이 32, 항목 20,000개, 문자열 16,384자로 제
 인증·세션·credential·private key·환경 파일 이름은 열기 전에 거부한다. 이 이름 검사는 임의 파일에 숨긴 비밀값의 부재를 증명하지 않는다. 수집 목록과 공개 내용을 검토한다.
 
 모든 AC01~AC19 gate와 선언한 requirement의 결과가 필요하다. terminal attempt가 pass이고 미검증 목록과 필수 unknown이 없어야 한다.
+각 attempt는 `observedAt`과 비식별 `executor`를 기록한다. `observedAt`은 timezone을 포함한 ISO 8601 초 단위 시각을 쓴다. 확인하지 못한 값은 `unknown`으로 기록하며 필수 시도의 출시 판정을 차단한다.
 재검증은 새 attempt identity를 쓴다. `supersedes`는 같은 requirement의 직전 attempt를 가리킨다.
 이전 결과를 인계받으면 checksum을 고정한 `priorResults`를 유지한다. 검사는 해당 snapshot의 요구사항·attempt를 그대로 보존하는지 검사한다.
 후보나 tuple 입력이 바뀌면 새 bundle을 만든다. 이전 bundle과 Git 기록을 보존한다.

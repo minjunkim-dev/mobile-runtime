@@ -206,6 +206,8 @@
       "evidenceClass": "actual",
       "expected": "전체 필수 시나리오의 현재 후보 증거를 연결한다.",
       "observed": "이 bundle은 전체 필수 시나리오의 실제 실행 증거를 수집하지 않았다.",
+      "observedAt": "unknown",
+      "executor": "unknown",
       "result": "unverified",
       "evidence": [
         "original-report",
@@ -227,6 +229,8 @@
       "evidenceClass": "actual",
       "expected": "전체 필수 시나리오의 현재 후보 증거를 연결한다.",
       "observed": "이 bundle은 전체 필수 시나리오의 실제 실행 증거를 수집하지 않았다.",
+      "observedAt": "unknown",
+      "executor": "unknown",
       "result": "unverified",
       "evidence": [
         "original-report",
@@ -248,6 +252,8 @@
       "evidenceClass": "actual",
       "expected": "전체 필수 시나리오의 현재 후보 증거를 연결한다.",
       "observed": "이 bundle은 전체 필수 시나리오의 실제 실행 증거를 수집하지 않았다.",
+      "observedAt": "unknown",
+      "executor": "unknown",
       "result": "unverified",
       "evidence": [
         "original-report",
@@ -269,6 +275,8 @@
       "evidenceClass": "actual",
       "expected": "전체 필수 시나리오의 현재 후보 증거를 연결한다.",
       "observed": "이 bundle은 전체 필수 시나리오의 실제 실행 증거를 수집하지 않았다.",
+      "observedAt": "unknown",
+      "executor": "unknown",
       "result": "unverified",
       "evidence": [
         "original-report",
@@ -290,6 +298,8 @@
       "evidenceClass": "actual",
       "expected": "전체 필수 시나리오의 현재 후보 증거를 연결한다.",
       "observed": "이 bundle은 전체 필수 시나리오의 실제 실행 증거를 수집하지 않았다.",
+      "observedAt": "unknown",
+      "executor": "unknown",
       "result": "unverified",
       "evidence": [
         "original-report",
@@ -311,6 +321,8 @@
       "evidenceClass": "actual",
       "expected": "전체 필수 시나리오의 현재 후보 증거를 연결한다.",
       "observed": "이 bundle은 전체 필수 시나리오의 실제 실행 증거를 수집하지 않았다.",
+      "observedAt": "unknown",
+      "executor": "unknown",
       "result": "unverified",
       "evidence": [
         "original-report",
@@ -332,6 +344,8 @@
       "evidenceClass": "actual",
       "expected": "전체 필수 시나리오의 현재 후보 증거를 연결한다.",
       "observed": "이 bundle은 전체 필수 시나리오의 실제 실행 증거를 수집하지 않았다.",
+      "observedAt": "unknown",
+      "executor": "unknown",
       "result": "unverified",
       "evidence": [
         "original-report",
@@ -353,6 +367,8 @@
       "evidenceClass": "actual",
       "expected": "전체 필수 시나리오의 현재 후보 증거를 연결한다.",
       "observed": "이 bundle은 전체 필수 시나리오의 실제 실행 증거를 수집하지 않았다.",
+      "observedAt": "unknown",
+      "executor": "unknown",
       "result": "unverified",
       "evidence": [
         "original-report",
@@ -374,6 +390,8 @@
       "evidenceClass": "actual",
       "expected": "전체 필수 시나리오의 현재 후보 증거를 연결한다.",
       "observed": "이 bundle은 전체 필수 시나리오의 실제 실행 증거를 수집하지 않았다.",
+      "observedAt": "unknown",
+      "executor": "unknown",
       "result": "unverified",
       "evidence": [
         "original-report",
@@ -395,6 +413,8 @@
       "evidenceClass": "actual",
       "expected": "전체 필수 시나리오의 현재 후보 증거를 연결한다.",
       "observed": "이 bundle은 전체 필수 시나리오의 실제 실행 증거를 수집하지 않았다.",
+      "observedAt": "unknown",
+      "executor": "unknown",
       "result": "unverified",
       "evidence": [
         "original-report",
@@ -416,6 +436,8 @@
       "evidenceClass": "actual",
       "expected": "전체 필수 시나리오의 현재 후보 증거를 연결한다.",
       "observed": "이 bundle은 전체 필수 시나리오의 실제 실행 증거를 수집하지 않았다.",
+      "observedAt": "unknown",
+      "executor": "unknown",
       "result": "unverified",
       "evidence": [
         "original-report",
@@ -437,6 +459,8 @@
       "evidenceClass": "actual",
       "expected": "전체 필수 시나리오의 현재 후보 증거를 연결한다.",
       "observed": "이 bundle은 전체 필수 시나리오의 실제 실행 증거를 수집하지 않았다.",
+      "observedAt": "unknown",
+      "executor": "unknown",
       "result": "unverified",
       "evidence": [
         "original-report",
@@ -458,6 +482,8 @@
       "evidenceClass": "actual",
       "expected": "전체 필수 시나리오의 현재 후보 증거를 연결한다.",
       "observed": "이 bundle은 전체 필수 시나리오의 실제 실행 증거를 수집하지 않았다.",
+      "observedAt": "unknown",
+      "executor": "unknown",
       "result": "unverified",
       "evidence": [
         "original-report",
@@ -479,6 +505,8 @@
       "evidenceClass": "actual",
       "expected": "전체 필수 시나리오의 현재 후보 증거를 연결한다.",
       "observed": "이 bundle은 전체 필수 시나리오의 실제 실행 증거를 수집하지 않았다.",
+      "observedAt": "unknown",
+      "executor": "unknown",
       "result": "unverified",
       "evidence": [
         "original-report",
@@ -500,6 +528,8 @@
       "evidenceClass": "actual",
       "expected": "전체 필수 시나리오의 현재 후보 증거를 연결한다.",
       "observed": "최종 같은 source·제품 버전 후보, 전체 JSON 회귀·최종 리뷰·필수 CI와 변경 입력 재검증의 완료 판정이 남았다.",
+      "observedAt": "unknown",
+      "executor": "unknown",
       "result": "unverified",
       "evidence": [
         "original-report",
@@ -521,6 +551,8 @@
       "evidenceClass": "actual",
       "expected": "전체 필수 시나리오의 현재 후보 증거를 연결한다.",
       "observed": "Developer ID 서명·공증·stapling·Gatekeeper와 제한 후보 다운로드·Homebrew 설치·배포 위치 검증을 최종 단계로 미뤘다.",
+      "observedAt": "unknown",
+      "executor": "unknown",
       "result": "unverified",
       "evidence": [
         "original-report",
@@ -542,6 +574,8 @@
       "evidenceClass": "actual",
       "expected": "전체 필수 시나리오의 현재 후보 증거를 연결한다.",
       "observed": "전체 필수 시나리오 보고서와 실패·판정 불가·재검증의 최종 검토가 남았다.",
+      "observedAt": "unknown",
+      "executor": "unknown",
       "result": "unverified",
       "evidence": [
         "original-report",
@@ -563,6 +597,8 @@
       "evidenceClass": "actual",
       "expected": "전체 필수 시나리오의 현재 후보 증거를 연결한다.",
       "observed": "이 bundle은 전체 필수 시나리오의 실제 실행 증거를 수집하지 않았다.",
+      "observedAt": "unknown",
+      "executor": "unknown",
       "result": "unverified",
       "evidence": [
         "original-report",
@@ -584,6 +620,8 @@
       "evidenceClass": "actual",
       "expected": "전체 필수 시나리오의 현재 후보 증거를 연결한다.",
       "observed": "이 bundle은 전체 필수 시나리오의 실제 실행 증거를 수집하지 않았다.",
+      "observedAt": "unknown",
+      "executor": "unknown",
       "result": "unverified",
       "evidence": [
         "original-report",
@@ -605,6 +643,8 @@
       "evidenceClass": "actual",
       "expected": "같은 후보 JSON과 실제 CLI archive·DMG·formula checksum을 연결한다.",
       "observed": "기존 원본 후보의 source·버전·Core identity와 명시한 artifact 3개의 bytes를 대조한다. unsigned 및 ciRun null을 보존한다.",
+      "observedAt": "unknown",
+      "executor": "unknown",
       "result": "pass",
       "evidence": [
         "candidate",
@@ -628,6 +668,8 @@
       "evidenceClass": "actual",
       "expected": "기존 로컬 명령 실행의 종료 상태를 해당 후보에 연결한다.",
       "observed": "원본 checks.json은 clone-source·swift-test·gui-build·verify-doctor·verify-workflow·verify-setup·package-unsigned·verify-candidate의 exitCode 0을 기록했다. issue 223에서 명령을 재실행하지 않았다.",
+      "observedAt": "unknown",
+      "executor": "unknown",
       "result": "pass",
       "evidence": [
         "candidate",
@@ -648,6 +690,8 @@
       "evidenceClass": "actual",
       "expected": "원본 ciRun을 수정하지 않고 같은 source의 CI receipt를 별도로 연결한다.",
       "observed": "보관된 CI run 39128989068은 source 179be9a와 5개 job success를 기록했다. 이는 저장된 receipt의 확인이다. 현재 GitHub 상태를 새로 조회하지 않았다.",
+      "observedAt": "unknown",
+      "executor": "unknown",
       "result": "pass",
       "evidence": [
         "source-ci",
@@ -667,6 +711,8 @@
       "evidenceClass": "actual",
       "expected": "명시한 제한 원본의 bytes·SHA256과 두 원본 index를 연결한다.",
       "observed": "원본 index 2개와 명시한 파일 17개를 allowlist로 고정했다. 인증·세션·credential 파일을 검색하거나 열거나 hash하지 않았다. 공개 자료는 이 JSON과 텍스트 보고서다.",
+      "observedAt": "unknown",
+      "executor": "unknown",
       "result": "pass",
       "evidence": [
         "candidate",
@@ -703,6 +749,8 @@
       "evidenceClass": "actual",
       "expected": "현재 후보의 interactive GUI와 정상 종료를 실제로 관측한다.",
       "observed": "초기 headless 화면 캡처와 제한 실행은 interactive GUI와 정상 종료를 입증하지 못했다. 원본 보고서에 남긴 관측 한계다. 제품 실패로 일반화하지 않는다.",
+      "observedAt": "unknown",
+      "executor": "unknown",
       "result": "inconclusive",
       "evidence": [
         "original-report"
@@ -723,6 +771,8 @@
       "evidenceClass": "actual",
       "expected": "현재 후보의 interactive GUI와 정상 종료를 실제로 관측한다.",
       "observed": "같은 source의 후속 원본은 이전/현재 GUI 시작·About·공식 링크·명시적 파일 복사 교체·정상 종료와 별도 CLI 보존을 기록했다. 초기 한계는 원본과 이전 attempt에 보존한다.",
+      "observedAt": "unknown",
+      "executor": "unknown",
       "result": "pass",
       "evidence": [
         "gui-report",

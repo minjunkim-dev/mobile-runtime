@@ -27,6 +27,7 @@ CLI archive·DMG·Homebrew formula는 원본 그대로 대조한다. 후보를 �
 
 검사는 증거 무결성을 `verified`로 기록할 수 있다. 출시 판정은 `blocked`다. 종료 코드는 1이다.
 정확한 OS·도구체인·런타임 버전을 이 작업에서 독립 재고정하지 않았다. tuple에 `unknown`을 남긴다.
+기존 관측의 정확한 시각과 실행자를 이 작업에서 독립 확인하지 않았다. 각 attempt의 `observedAt`과 `executor`에 `unknown`을 남긴다. 이 필수 값도 출시 판정을 차단한다.
 서명·공증·stapling·Gatekeeper·제한 배포 다운로드·Homebrew 실제 설치와 최종 후보 검증을 최종 단계로 유지한다.
 이 보고서는 AC15·AC17의 검사 구현을 입증하는 실제 입력이다. AC15·AC17 전체 수용 기준의 완료를 선언하지 않는다.
 

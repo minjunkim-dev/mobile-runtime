@@ -67,7 +67,8 @@ class ReleaseEvidenceTests(unittest.TestCase):
                 "id": gate + "-01", "requirementID": gate, "candidateID": self.candidate_id,
                 "tupleID": "host-tuple", "sampleID": "package", "sampleSHA": SOURCE,
                 "frontend": "CLI", "evidenceClass": "fixture", "expected": "declared outcome",
-                "observed": "fixture outcome", "result": "pass", "evidence": ["candidate", "cli"],
+                "observed": "fixture outcome", "observedAt": "2026-10-19T00:00:00Z", "executor": "fixture-executor",
+                "result": "pass", "evidence": ["candidate", "cli"],
                 "unverified": [], "supersedes": None,
             })
         self.manifest = {
@@ -231,14 +232,38 @@ class ReleaseEvidenceTests(unittest.TestCase):
         self.assertEqual(before, after)
 
     def test_unknown_tuple_and_sample_inputs_cannot_pass_required_gates(self):
-        self.tuples["tuples"][0]["inputs"]["runtime"] = "unknown"
-        self.write_bundle()
-        self.assertEqual(self.verify()["gateEvaluation"], "blocked")
+        for value in ["unknown", " UNKNOWN ", " UnVerified ", "inconclusive\t"]:
+            with self.subTest(value=value):
+                self.tuples["tuples"][0]["inputs"]["runtime"] = value
+                self.write_bundle()
+                self.assertEqual(self.verify()["gateEvaluation"], "blocked")
         self.tuples["tuples"][0]["inputs"]["runtime"] = "fixture-runtime"
         self.results["attempts"][0]["sampleSHA"] = "unknown"
         self.results["requirements"][0]["sampleSHA"] = "unknown"
         self.write_bundle()
         self.assertEqual(self.verify()["gateEvaluation"], "blocked")
+
+    def test_missing_invalid_or_unknown_attempt_provenance_cannot_pass(self):
+        original = copy.deepcopy(self.results)
+        for field, value in [("observedAt", None), ("executor", None), ("observedAt", ""),
+                             ("observedAt", "2026-02-30T12:00:00Z"), ("observedAt", "2026-10-19T00:00:00"),
+                             ("executor", " ")]:
+            with self.subTest(field=field, value=value):
+                self.results = copy.deepcopy(original)
+                if value is None:
+                    self.results["attempts"][0].pop(field)
+                else:
+                    self.results["attempts"][0][field] = value
+                self.write_bundle()
+                self.verify("invalid")
+        for field, value in [("observedAt", "unknown"), ("executor", "UNKNOWN")]:
+            with self.subTest(field=field):
+                self.results = copy.deepcopy(original)
+                self.results["attempts"][0][field] = value
+                self.write_bundle()
+                payload = self.verify()
+                self.assertEqual(payload["gateEvaluation"], "blocked")
+                self.assertIn("attempt-provenance-unverified", payload["blockers"])
 
     def test_actual_unsigned_is_valid_evidence_but_not_release_pass(self):
         self.candidate.update(signing="unsigned", notarization="not-requested", distributionReady=False)
