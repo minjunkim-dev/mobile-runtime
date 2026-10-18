@@ -3,6 +3,7 @@ import CryptoKit
 import Darwin
 import Foundation
 import SimulatorKit
+import AndroidKit
 
 /// Providers pin one immutable payload. Credentials and inherited environments are never plan data.
 public struct InstallationArtifact: Codable, Sendable, Equatable {
@@ -15,7 +16,7 @@ public struct InstallationArtifact: Codable, Sendable, Equatable {
     }
 }
 
-/// The shared approval and lease contract for preparation providers (#203–#206).
+/// The shared approval and lease contract for preparation providers (#203–#207).
 public struct InstallationMetadata: Codable, Sendable, Equatable {
     public let package: String
     public let revision: String
@@ -36,9 +37,17 @@ public struct InstallationMetadata: Codable, Sendable, Equatable {
             [resourceKey, .destination(pin.deviceSet)] + pin.existingDeviceIDs.map { .device(.ios, $0) }
         case .iosSimulator:
             [resourceKey, .destination(URL(fileURLWithPath: "/Library/Developer/CoreSimulator"))]
+        case .androidAVD(let request):
+            [resourceKey, .destination(request.sdkRoot), .device(.android, "avd:\(request.name)")]
         case nil:
             [resourceKey]
         }
+    }
+
+    /// AVD registration and its data directory are separate, exact mutation targets.
+    var mutationTargets: [URL] {
+        if case .androidAVD(let request) = managed { return [request.directory, request.pointer] }
+        return [destination]
     }
 
     public init(package: String, revision: String, destination: URL, resourceRoot: URL,
@@ -61,6 +70,8 @@ public struct InstallationMetadata: Codable, Sendable, Equatable {
             return "install: iOS \(pin.version) build \(pin.build) \(pin.architecture); asset: \(pin.assetIdentifier); \(pin.downloadSize) bytes; catalog SHA-256 \(pin.catalogSHA256); payload checksum: unavailable; \(location)"
         case .iosSimulator(let request):
             return "create: \(request.name); type: \(request.deviceTypeIdentifier); runtime: \(request.runtimeIdentifier) build \(request.runtimeBuild) \(request.architecture); \(location)"
+        case .androidAVD(let request):
+            return "create: \(request.name); image: \(request.imagePackage) revision \(request.imageRevision); image metadata SHA-256 \(request.imageMetadataSHA256); profile: \(request.deviceProfile) SHA-256 \(request.profileSHA256); avdmanager: \(request.avdManager.path) revision \(request.avdManagerRevision); pointer: \(request.pointer.path); \(location)"
         case nil:
             return "install: \(package) revision \(revision); artifact identity unavailable; \(location)"
         }
@@ -99,6 +110,23 @@ public struct InstallationMetadata: Codable, Sendable, Equatable {
                   request.deviceSet.path.hasPrefix("/") else {
                 throw InstallationExecution.failure("Invalid Simulator creation identity")
             }
+        case (nil, .androidAVD(let request)):
+            guard destination == request.directory, resourceRoot == request.avdHome,
+                  repositoryURL == nil, repositorySHA256 == nil,
+                  AndroidEmulatorEnvironment.safeName(request.name),
+                  request.sdkRoot.path.hasPrefix("/"), request.avdHome.path.hasPrefix("/"),
+                  request.imagePackage.range(of: #"^system-images;android-[0-9]+;google_apis;arm64-v8a$"#, options: .regularExpression) != nil,
+                  request.imageRevision.range(of: #"^[0-9]+(?:\.[0-9]+){0,2}$"#, options: .regularExpression) != nil,
+                  request.imageMetadataSHA256.range(of: digest, options: .regularExpression) != nil,
+                  AndroidEmulatorEnvironment.safeName(request.deviceProfile),
+                  request.profileSHA256.range(of: digest, options: .regularExpression) != nil,
+                  request.repositorySHA256.range(of: digest, options: .regularExpression) != nil,
+                  request.avdManager.path.hasPrefix(request.sdkRoot.path + "/cmdline-tools/"),
+                  request.avdManager.path.hasSuffix("/bin/avdmanager"),
+                  request.avdManagerRevision.range(of: #"^[0-9]+(?:\.[0-9]+){0,2}$"#, options: .regularExpression) != nil,
+                  request.emulatorRevision.range(of: #"^[0-9]+(?:\.[0-9]+){0,2}$"#, options: .regularExpression) != nil else {
+                throw InstallationExecution.failure("Invalid Android AVD creation identity")
+            }
         default:
             throw InstallationExecution.failure("Installation requires exactly one archive or platform-managed identity")
         }
@@ -108,11 +136,15 @@ public struct InstallationMetadata: Codable, Sendable, Equatable {
 public enum ManagedInstallation: Codable, Sendable, Equatable {
     case iosRuntime(IOSRuntimePin)
     case iosSimulator(IOSSimulatorRequest)
+    case androidAVD(AndroidAVDRequest)
 }
 
 public struct InstallationActionResult: Sendable, Equatable {
     public let resources: [IOSPreparationResource]
-    public init(resources: [IOSPreparationResource] = []) { self.resources = resources }
+    public let androidResources: [AndroidPreparationResource]
+    public init(resources: [IOSPreparationResource] = [], androidResources: [AndroidPreparationResource] = []) {
+        self.resources = resources; self.androidResources = androidResources
+    }
 }
 
 /// Failure or cancellation can leave completed system-managed resources.
@@ -194,6 +226,17 @@ public enum InstallationExecution {
             }
             guard revisions.count == 1, normalizedRevision(revisions[0]) == normalizedRevision(metadata.revision),
                   normalizedRevision(metadata.revision) != nil else { throw failure("Archive package revision differs from the approved plan") }
+            if metadata.package.hasPrefix("system-images;") {
+                let parts = metadata.package.components(separatedBy: ";")
+                let values = properties.split(whereSeparator: \.isNewline).reduce(into: [String: String]()) { values, line in
+                    let pair = line.split(separator: "=", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespaces) }
+                    if pair.count == 2 { values[pair[0]] = pair[1] }
+                }
+                guard parts.count == 4, values["AndroidVersion.ApiLevel"] == String(parts[1].dropFirst(8)),
+                      values["SystemImage.TagId"] == parts[2], values["SystemImage.Abi"] == parts[3] else {
+                    throw failure("Archive system image API, tag or ABI differs from the approved package")
+                }
+            }
             let packageXML = source.appendingPathComponent("package.xml")
             // Replacing staged metadata must never overwrite another archive member through a link.
             if FileManager.default.fileExists(atPath: packageXML.path)
