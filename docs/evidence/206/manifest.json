@@ -1,0 +1,46 @@
+{
+  "schema": "runstir.206.public-evidence.v1",
+  "integrationSource": "6e19a3329e0f983bcfda29c82f35f7ba489957b8",
+  "actualNegativeSource": "d4628c9615d06ac7ae95813d0e0f2ca7795bdf54",
+  "historicalCreationSource": "4dede50eeca35ad59307c779160bf988a6e4bee1",
+  "status": "CLI/GUI historical installation-attempt cancellation observed; new integration/Xcode27.1 CLI install/create success observed; new GUI and final lifecycle pending; final review, CI and merge gates pending.",
+  "scope": "Interim CLI draft. Pins these public summaries while new GUI evidence remains pending. Historical candidates, source fixtures, actual negative cases and new CLI positive evidence retain separate scopes. Restricted originals and screenshots are referenced by ID, relative path, bytes, mode and SHA256 in the actual JSON files. Final CLI/GUI evidence integration follows the GUI result. This manifest excludes itself.",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 5808,
+      "mode": "0o644",
+      "sha256": "dcbbc46c16858b1e61cacbe36c497bddb135a0a01cba4bc8ea73221b493aec82"
+    },
+    {
+      "path": "actual-vm-gui.md",
+      "bytes": 6023,
+      "mode": "0o644",
+      "sha256": "c14ec3629f34b8ddeda18fe56ab5254745fd71717a9d93ef8df76d140743d027"
+    },
+    {
+      "path": "actual-runtime-d4628c9.md",
+      "bytes": 13602,
+      "mode": "0o644",
+      "sha256": "1ca25861a4f4189cac386d930b00073f0dd91d5207b20061e8e98b003e2680fb"
+    },
+    {
+      "path": "actual-runtime-d4628c9.json",
+      "bytes": 18263,
+      "mode": "0o644",
+      "sha256": "fb31bea0324d512b55c57de98060ea9386d6bcfc00905dc6cfa22e56557a72b2"
+    },
+    {
+      "path": "actual-cli-6e19a33-resume.md",
+      "bytes": 7274,
+      "mode": "0o644",
+      "sha256": "f6b71c4ffc6e8b01c674827c48d86c527dfd0da7aa085a42b13efcf9c6b56e67"
+    },
+    {
+      "path": "actual-cli-6e19a33-resume.json",
+      "bytes": 11371,
+      "mode": "0o644",
+      "sha256": "4d47133afa8b341555f897dcfdbc1cb570524a5dd6178da947dc7db8f82d8fb1"
+    }
+  ]
+}

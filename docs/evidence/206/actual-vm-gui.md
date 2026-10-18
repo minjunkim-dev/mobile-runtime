@@ -1,5 +1,9 @@
 # #206 실제 CLI와 VM GUI 준비
 
+이 문서는 `4dede50` 후보의 과거 검증 기록이다.
+기존 runtime 재사용과 Simulator 생성 결과를 새 runtime 설치 성공으로 옮기지 않는다.
+후속 `d4628c9`의 설치 시도 취소와 새 `6e19a33` 검증 입력은 [별도 기록](actual-runtime-d4628c9.md)에 있다.
+
 ## 고정 입력
 
 제품 source는 `4dede50eeca35ad59307c779160bf988a6e4bee1`이다.

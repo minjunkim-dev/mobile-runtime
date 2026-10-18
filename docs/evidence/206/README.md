@@ -1,7 +1,12 @@
 # #206 source·공식 metadata 관측
 
-상태: 실제 CLI와 VM GUI 준비를 확인했다. 아래 초기 source 단계의 미검증 기록은 당시 상태다.
-최신 실제 결과와 한계는 [VM GUI 기록](actual-vm-gui.md)을 읽는다.
+상태: `d4628c9`의 CLI·GUI에서 runtime 설치 시도 취소 `130`과 exact runtime 수동 재검사를 확인했다.
+payload 성장·네트워크 전송·runtime 설치 성공은 그 실행에서 입증하지 못했다.
+최신 [CLI·GUI 취소와 새 검증 입력](actual-runtime-d4628c9.md)은 이 한계를 보존한다.
+`6e19a33`·Xcode `27.1`의 [새 CLI 검증](actual-cli-6e19a33-resume.md)은 실제 runtime 설치·Simulator 생성 `succeeded / exit 0`을 확인했다.
+새 GUI 결과와 VM 정상 종료는 아직 미확인이다.
+이전 [VM GUI 기록](actual-vm-gui.md)은 `4dede50`의 기존 runtime 재사용·기기 생성 이력이다. 새 runtime 설치 성공 근거가 아니다.
+아래 초기 source 단계의 미검증 기록은 당시 상태다.
 고정 시작 source: `1b55a8899aea36c77443469dabf64647add27294`.
 공유 설치 API: `0e54bb1c7db760427d369119afdef92df3701298`.
 
@@ -61,7 +66,11 @@ provider 행동 검사에서는 `Runstir iPhone …` 이름의 생성 기기를 
 
 ## 남은 실제 게이트
 
-CLI R1은 기존 runtime을 재사용하고 준비를 완료했다. VM GUI는 실제 생성·취소·파일 쓰기 실패·재시도·재사용을 확인했다.
-실제 Mac의 sandbox doctor 실패와 VM 성공을 구분한다. 새 runtime의 네트워크 설치 성공은 주장하지 않는다.
-현재 main 기준 source 결합과 최종 독립 리뷰를 남겼다. 최종 head 필수 CI·위험별 승인·병합·main CI도 남겼다.
+`4dede50`의 CLI R1은 기존 runtime을 재사용했다. 같은 후보의 VM GUI는 실제 생성·취소·파일 쓰기 실패·재시도·재사용을 확인했다.
+`d4628c9`의 별도 CLI·GUI는 runtime 설치 시도를 취소했다. 재검사는 journal을 보존하고 수동 복구만 안내했다.
+실제 Mac의 sandbox doctor 실패·VM 결과·새 baseline의 Xcode `27.1` 검증을 구분한다.
+새 CLI는 exact runtime 설치·새 UDID의 Shutdown 상태·선택 자원 보존을 확인했다.
+새 GUI 결과와 최종 GUI·VM 정상 종료는 아직 미확인이다.
+[#206 및 #199 AC02·AC03·AC06 근거표](actual-runtime-d4628c9.md#ac별-근거)를 읽는다.
+최종 문서에 대한 독립 리뷰·최종 head 필수 CI·위험별 승인·병합·main CI도 남겼다.
 필수 실제 조건을 fixture·문서 PASS로 대신하지 않는다. #206은 완료 상태가 아니다.

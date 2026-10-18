@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 1,
+  "issue": 206,
+  "caseID": "206-cli-6e19a33-resume-20261018",
+  "status": "actual-cli-install-and-create-observed-gui-and-final-lifecycle-pending",
+  "measurementDateUTC": "2026-10-18",
+  "source": {
+    "SHA": "6e19a3329e0f983bcfda29c82f35f7ba489957b8",
+    "base": "3211df5ac08168bcd3b7848f13c37ff40c7cd185",
+    "CLI_SHA256": "0323e9ab6bb6551887004afdf4a5995e8e4d7e0d173d69fd0e17bddb4e6eef36",
+    "sampleSHA": "3954a769e99f3cc53297d94f2b960ceb2665b3d6",
+    "sampleScheme": "Food Truck",
+    "sampleTrackedFiles": 553
+  },
+  "normalization": "Private absolute paths and environment values are replaced by SOURCE, OWN_HOME and DEVICE_SET aliases. Raw original logs, Terminal history and screenshots are not published. Original plan IDs are retained without recomputation from normalized text.",
+  "tuple": {
+    "platform": "ios",
+    "architecture": "arm64",
+    "selectedXcode": {"version": "27.1", "build": "27A9275"},
+    "distinctPreservedBaselineClone": true,
+    "preparedIOSRuntimeCount": 0,
+    "preparedOwnedDeviceCount": 0,
+    "inputPreparationReference": "actual-runtime-d4628c9.json:resumePreparation",
+    "newOperationIsOldCancelledJournalRecovery": false
+  },
+  "approval": {
+    "planID": "928507946c7ea83273d8c1c40051a300d3edf1d42dcd3a4839c9050559c7f226",
+    "repositoryTrust": false,
+    "automaticSteps": ["ios.runtime.install", "ios.simulator.create"],
+    "runtime": {
+      "version": "27.0",
+      "build": "24A434",
+      "architecture": "arm64",
+      "assetIdentifier": "93b56b3a-f17c-5f56-937e-b66a83688c43",
+      "catalogDownloadSize": 8053150208,
+      "catalogURL": "https://devimages-cdn.apple.com/downloads/xcode/simulators/index2.dvtdownloadableindex",
+      "catalogSHA256": "aa2e0518b95223f8de060d00c29cdefcca54389d9250f369521f60428b5ae322",
+      "payloadChecksum": "unavailable",
+      "destination": "/Library/Developer/CoreSimulator"
+    }
+  },
+  "actualCLI": {
+    "PID": 1549,
+    "exitCode": 0,
+    "elapsedSeconds": 924.6972148418427,
+    "signalsSent": 0,
+    "observationDeadlineReached": false,
+    "operationID": "E5974EF3-D9C4-4BD0-BB49-2E5D821206A8",
+    "operationState": "succeeded",
+    "completed": ["ios.runtime.install", "ios.simulator.create"],
+    "manual": [],
+    "remaining": [],
+    "changedFiles": [],
+    "postObservationPlanID": "e67e4d209bd7a0bc6e08b1a041dda29cdfdccbd1db93999dea05ddf610ae567c",
+    "iOSPlatformState": "succeeded",
+    "nextAction": "Preparation complete. Build and app launch need separate verification.",
+    "observedOwnedDescendantsRemaining": 0,
+    "simulatorBootOrAppBuildInstallLaunchExecuted": false
+  },
+  "nativeObservedResources": {
+    "runtime": {
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+      "version": "27.0",
+      "build": "24A434",
+      "supportedArchitectures": ["arm64"],
+      "available": true,
+      "operationOrigin": "installed"
+    },
+    "simulator": {
+      "identifier": "A1737367-A44D-4996-B5E7-F72561FACB1B",
+      "name": "iPhone 18 Pro - Runstir - iOS 27.0",
+      "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro",
+      "runtimeIdentifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+      "state": "Shutdown",
+      "available": true,
+      "operationOrigin": "created"
+    }
+  },
+  "independentRecomparison": {
+    "runtimeRecordCountBefore": 3,
+    "runtimeRecordCountAfter": 4,
+    "allOriginalRuntimeRecordsExactlyEqual": true,
+    "oneExactNewRuntime": true,
+    "defaultDeviceRecordsBefore": 2,
+    "defaultDeviceRecordsAfter": 2,
+    "defaultDeviceFieldsCompared": ["udid", "name", "deviceTypeIdentifier", "runtimeIdentifier", "state"],
+    "defaultDeviceComparedFieldsEqual": true,
+    "ownedDeviceCountBefore": 0,
+    "ownedDeviceCountAfter": 1,
+    "oneExactNewOwnedDevice": true,
+    "snapshotEqualityInstallAndFinalAfter": {"originalSource": true, "newSource": true, "SDK": true, "tools": true, "candidate": true, "GuestAgentPATH": true, "xcodeSelect": true, "xcodeVersion": true},
+    "trackedFilesEachSource": 553,
+    "harnessInstallChecksAllTrue": 16,
+    "harnessFinalAfterChecksAllTrue": 12,
+    "remainingJournalEntries": 0,
+    "remainingJournalStages": 0
+  },
+  "preservationLimits": {
+    "metadataChangedRoots": ["Library/Caches", "Library/Developer/Xcode", "Library/Developer/CoreSimulator/Devices"],
+    "changeActor": "unknown",
+    "wholeHOMECacheTempOrVMDiskEqualityProven": false,
+    "unseenDaemonOrReparentedChildAbsenceProven": false,
+    "defaultDeviceIdentityPreservationIsRootMtimeEquality": false
+  },
+  "installationAndNetworkEvidence": {
+    "actualSelectedXcodeRuntimeInstallation": "observed-completed",
+    "exactNativeRuntimeAvailability": "observed",
+    "exactNativeSimulatorCreation": "observed",
+    "ownedXcodeWritablePayloadGrowthObserved": false,
+    "payloadNetworkTransferIndependentlyVerified": false,
+    "fullPayloadBytesOrChecksumIndependentlyVerified": false,
+    "daemonRequestStartedOrFirstProgressProvesFullTransfer": false,
+    "installationSuccessProvesAppExecution": false
+  },
+  "acceptance": {
+    "AC1": "Exact approval followed by actual selected-Xcode installation and exact native runtime verification.",
+    "AC2": "One exact new owned UDID/type/runtime/Shutdown state, with preserved existing default device identities. Name-collision behavior retains fixture scope.",
+    "AC3": "Pinned selected Xcode observation remains equal. No account/license/administrator automation or broader global preference claim.",
+    "AC4": "New CLI install/create success supplements separately retained historical CLI/GUI cancellation and manual-only reinspection. New GUI and lifecycle remain pending.",
+    "AC5_issue199_AC02_AC03_AC06": "Actual install/create, exact plan, VM tuple and preservation are linked. No fixture or historical-candidate promotion; final integrated reviews/CI/approval/merge/mainCI remain open."
+  },
+  "verification": {
+    "exportFilesRehashed": 244,
+    "exportBytesRehashed": 90680502,
+    "exportIndexSHA256": "4db4f572c02410a7b1d593eccbe402fca1800640fd23a9546c90437c30f5e0b5",
+    "bytesModeSHA256Mismatches": 0,
+    "originalOperationAndNativeInventoriesRead": true,
+    "newVMUIBuildTestSignalOrSourceActionsForDocumentation": 0
+  },
+  "pending": {
+    "newGUIActualResult": "unverified",
+    "GUIProcessNormalExit": "unverified",
+    "normalVMStopAndOriginalBootExit": "unverified",
+    "finalIntegratedDocumentsAndReview": "pending",
+    "finalRequiredCIHumanApprovalMergeMainCI": "pending",
+    "wholeIssueComplete": false
+  },
+  "receiptRefs": {
+    "Root-audit": {"bundleID": "206-runtime-resume-20261018", "relativePath": "prepared-cli/ROOT-actual-result-audit-v1.json", "bytes": 2563, "mode": "0o644", "sha256": "ada1dee2ea6409851e76ecb56202af131127559774ec226b648c0f9dbdd8b1ca"},
+    "approval": {"bundleID": "206-runtime-resume-20261018", "relativePath": "prepared-cli/ROOT-plan-approval-v1.json", "bytes": 2089, "mode": "0o644", "sha256": "c29a15b3adb863843e92bd05a879e49d06400e9183249ff667399be61a15f60a"},
+    "export-index": {"bundleID": "206-runtime-resume-20261018", "relativePath": "prepared-cli/actual-host/07-export/guest-receipts/INDEX.json", "bytes": 44911, "mode": "0o644", "sha256": "4db4f572c02410a7b1d593eccbe402fca1800640fd23a9546c90437c30f5e0b5"},
+    "actual-output": {"bundleID": "206-runtime-resume-20261018", "relativePath": "prepared-cli/actual-host/07-export/guest-receipts/attempts/05-install/actual.stdout", "bytes": 9915, "mode": "0o644", "sha256": "da817ae1ee7dbd276510bc7b2abf80a52becc60e6ca91112d83a3923e4edc390"},
+    "actual-exit": {"bundleID": "206-runtime-resume-20261018", "relativePath": "prepared-cli/actual-host/07-export/guest-receipts/attempts/05-install/actual.exit.json", "bytes": 332, "mode": "0o644", "sha256": "10c2cff19ff1e7380e0a3824aaf6c4655595288f88cca5ca08459ae5807626b4"},
+    "install-result": {"bundleID": "206-runtime-resume-20261018", "relativePath": "prepared-cli/actual-host/07-export/guest-receipts/attempts/05-install/result.json", "bytes": 3136, "mode": "0o644", "sha256": "867180d7724694f41b12c93781796f1803f96861d9223fbd37e7eff9b9d387af"},
+    "before-snapshot": {"bundleID": "206-runtime-resume-20261018", "relativePath": "prepared-cli/actual-host/07-export/guest-receipts/attempts/05-install/before.json", "bytes": 2756044, "mode": "0o644", "sha256": "3009fceecd97b654d1c7bb7064996ea2acb2c51f529b48b3e628e53c15164920"},
+    "after-snapshot": {"bundleID": "206-runtime-resume-20261018", "relativePath": "prepared-cli/actual-host/07-export/guest-receipts/attempts/05-install/after.json", "bytes": 2777869, "mode": "0o644", "sha256": "788e51e83b788455b6d3b2569d1509eb91e58cb258b6f9b71a11e4433aae5829"},
+    "before-runtimes": {"bundleID": "206-runtime-resume-20261018", "relativePath": "prepared-cli/actual-host/07-export/guest-receipts/attempts/05-install/before-runtimes.stdout", "bytes": 8430, "mode": "0o644", "sha256": "cad8ba4b73a16cfb7d1825d560602d7401dd2491de78f0ddcec8efbd1502b954"},
+    "after-runtimes": {"bundleID": "206-runtime-resume-20261018", "relativePath": "prepared-cli/actual-host/07-export/guest-receipts/attempts/05-install/after-runtimes.stdout", "bytes": 28439, "mode": "0o644", "sha256": "7ab00b5d7438e33bff5b964c66201e275aa9c1d4495c19f44c6973047acef461"},
+    "before-default-devices": {"bundleID": "206-runtime-resume-20261018", "relativePath": "prepared-cli/actual-host/07-export/guest-receipts/attempts/05-install/before-admin-devices.stdout", "bytes": 1559, "mode": "0o644", "sha256": "5268c523f4b4d4b17f3fa5f272387bf5308489d83e90fcaf2928696f882cb041"},
+    "after-default-devices": {"bundleID": "206-runtime-resume-20261018", "relativePath": "prepared-cli/actual-host/07-export/guest-receipts/attempts/05-install/after-admin-devices.stdout", "bytes": 1467, "mode": "0o644", "sha256": "637d23e1af53fffa2bbaa657bbb1777ba70799e7485352cff7981e99812b4206"},
+    "after-owned-devices": {"bundleID": "206-runtime-resume-20261018", "relativePath": "prepared-cli/actual-host/07-export/guest-receipts/attempts/05-install/after-own-devices.stdout", "bytes": 865, "mode": "0o644", "sha256": "14c0412c0a06575c38097debb8084d70221c714dca2c608d6a608fbab53decc6"},
+    "final-after-result": {"bundleID": "206-runtime-resume-20261018", "relativePath": "prepared-cli/actual-host/07-export/guest-receipts/attempts/06-after/result.json", "bytes": 367, "mode": "0o644", "sha256": "cb3efa3f823f40bf19891e0c5fab14cc0a572d255ee71d60463ca97874e24409"},
+    "final-after-snapshot": {"bundleID": "206-runtime-resume-20261018", "relativePath": "prepared-cli/actual-host/07-export/guest-receipts/attempts/06-after/after.json", "bytes": 2777867, "mode": "0o644", "sha256": "fb191ff8a9d7e854edd451392e539923a7f0882bb8f9ea217bb7962308e48baf"}
+  },
+  "limits": [
+    "Runtime install/create success is observed through actual operation and independent native inventories. Full payload network transfer/bytes/checksum remain unverified.",
+    "Cache metadata actors and whole HOME/cache/temp/disk preservation are unknown. Process observations do not prove absence of unseen daemons or reparented children.",
+    "New GUI outcome and GUI/VM lifecycle closure are not yet evidenced here. Source/fixture results are not substituted for those actual results.",
+    "Final integrated evidence review, required CI, exact-head human approval, merge, main CI and whole issue completion are not claimed."
+  ]
+}
