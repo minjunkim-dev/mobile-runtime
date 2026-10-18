@@ -2,7 +2,7 @@
 
 GUI는 실제 SDK 다운로드를 취소한 뒤 새 검사·재승인으로 SDK 설치를 완료했다. 화면 결과는 취소 `130`, 재시도 `partial / 1`이다. 이 두 값은 **GUI operation의 표시 값**이다. GUI 프로세스6209의 native 종료는 정상 quit 뒤 `0`이다. 마지막 strict 보존 검사는 **FAIL**이다. 전체 환경 준비나 #205 완료를 뜻하지 않는다.
 
-[구조화 결과와 전체 원본54개 pin](sdk-gui-24ee6e9.json): `55416B / 7b42675da6e4d7cbf9ad8e53278b3cd7a3a5bf316277529a5c053198691500e4`. 이 문서의 자기 SHA는 기록하지 않는다. README와 manifest는 별도로 동결한다.
+[구조화 결과와 전체 원본54개 pin](sdk-gui-24ee6e9.json): `55432B / 905b6b7662554685784a5d6d3a97250febd7eff0d6c02f62a26d044c65107e3e`. 이 문서의 자기 SHA는 기록하지 않는다. README와 manifest는 별도로 동결한다.
 
 ## 입력과 승인
 

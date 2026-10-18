@@ -157,15 +157,15 @@
     },
     {
       "path": "sdk-gui-24ee6e9.json",
-      "bytes": 55416,
+      "bytes": 55432,
       "mode": "0o644",
-      "sha256": "7b42675da6e4d7cbf9ad8e53278b3cd7a3a5bf316277529a5c053198691500e4"
+      "sha256": "905b6b7662554685784a5d6d3a97250febd7eff0d6c02f62a26d044c65107e3e"
     },
     {
       "path": "sdk-gui-24ee6e9.md",
       "bytes": 8051,
       "mode": "0o644",
-      "sha256": "7e5648748b1c8057f0d305577df465296853541de8c897f01406da093c7347af"
+      "sha256": "4a5ab3061c9e0c88100106c880e843725ae566c66a83f924bf35fe3c681e12c6"
     },
     {
       "path": "selector-stale-24ee6e9.json",

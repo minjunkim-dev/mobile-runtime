@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "issue": 205,
-  "status": "GUI-SDK-only-observed-partial-strict-preservation-failed-independent-review-pending",
+  "status": "GUI-SDK-only-observed-partial-strict-preservation-failed-actual-review-complete-final-gates-pending",
   "measurementDateUTC": "2026-10-18",
   "source": {
     "measuredSHA": "24ee6e9752e1f39ac6a999113743e054082fed48",
