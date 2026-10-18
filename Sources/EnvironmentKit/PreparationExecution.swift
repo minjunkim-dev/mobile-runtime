@@ -202,6 +202,9 @@ public enum PreparationExecution {
                                && $0.runtimeIdentifier == request.runtimeIdentifier && $0.runtimeBuild == request.runtimeBuild
                                && $0.version == request.runtimeVersion && $0.architecture == request.architecture
                        }) {
+                        let now = try sourceFiles(sourceRoot, excluding: installedDestinations)
+                        let changed = Set(now.keys).union(originalFiles.keys).filter { now[$0] != originalFiles[$0] }.sorted()
+                        guard changed.isEmpty else { throw PreparationSourceChanged(files: changed) }
                         // Installing the approved runtime can make a preserved existing device reusable.
                         result.operation.resources.append(reused)
                         continue

@@ -133,6 +133,31 @@ struct IOSPreparationTests {
         try fixture.assertPreserved()
     }
 
+    @Test("recovered-device reuse rejects source changes before skipping creation", arguments: ["App.swift", "App.js"])
+    func recoveredSimulatorChangedSource(file: String) async throws {
+        let fixture = try IOSPreparationFixture()
+        try fixture.repo.write(file, "original source")
+        let runner = IOSPreparationRunner(fixture, runtime: false,
+            existingDeviceID: "E00349BB-E8F0-4E8A-B5DD-BF3DDE20FBC0", existingDeviceChange: .available,
+            lateSourceChange: file)
+        let planned = await PreparationExecution.run(input: fixture.input, planOnly: true, runner: runner)
+        let result = await PreparationExecution.run(input: fixture.input, approvedPlanID: try #require(planned.plan?.id),
+            trustRepository: true, runner: runner, leases: fixture.leases)
+        #expect(result.exitCode == 1 && result.operation.state == "failed")
+        #expect(result.operation.changedFiles.count == 1)
+        let changedSource = URL(fileURLWithPath: try #require(result.operation.changedFiles.first))
+        #expect(changedSource.lastPathComponent == file)
+        #expect(try FolderIdentity(directory: changedSource.deletingLastPathComponent()) == FolderIdentity(directory: fixture.repo.root))
+        #expect(result.operation.completed == ["ios.runtime.install"])
+        #expect(result.operation.resources.contains { $0.kind == .runtime && $0.runtimeBuild == "24A434"
+            && $0.origin == .installed && $0.isAvailable == true })
+        #expect(runner.installations == 1 && runner.creations == 0)
+        #expect(!runner.log.contains { $0.executable == "yarn" && $0.arguments == ["install", "--frozen-lockfile"] })
+        #expect(try String(contentsOf: fixture.repo.url(file), encoding: .utf8) == "externally changed source")
+        #expect(try fixture.journalSnapshot().isEmpty)
+        try fixture.assertPreserved()
+    }
+
     @Test("a newly observed Simulator action requires a new approval after runtime completion")
     func remainingCreationApproval() async throws {
         let fixture = try IOSPreparationFixture()
@@ -508,6 +533,7 @@ private final class IOSPreparationRunner: ProcessRunner, @unchecked Sendable {
     let existingDeviceID: String?
     let existingDeviceChange: ExistingDeviceChange?
     let lateExistingDeviceChange: Bool
+    let lateSourceChange: String?
     let deviceTypeAfterRuntime: Bool
     var installations: Int { lock.withLock { installed } }
     var creations: Int { lock.withLock { created } }
@@ -515,11 +541,12 @@ private final class IOSPreparationRunner: ProcessRunner, @unchecked Sendable {
 
     init(_ fixture: IOSPreparationFixture, runtime: Bool = true, fault: Fault? = nil,
          existingDeviceID: String? = nil, deviceTypeAfterRuntime: Bool = false, existingDeviceChange: ExistingDeviceChange? = nil,
-         lateExistingDeviceChange: Bool = false) {
+         lateExistingDeviceChange: Bool = false, lateSourceChange: String? = nil) {
         self.fixture = fixture; self.base = fixture.runner(); self.runtime = runtime; self.fault = fault
         self.existingDeviceID = existingDeviceID
         self.existingDeviceChange = existingDeviceChange
         self.lateExistingDeviceChange = lateExistingDeviceChange
+        self.lateSourceChange = lateSourceChange
         self.deviceTypeAfterRuntime = deviceTypeAfterRuntime
     }
 
@@ -538,6 +565,9 @@ private final class IOSPreparationRunner: ProcessRunner, @unchecked Sendable {
             let changed = lock.withLock {
                 if installed { deviceReadsAfterInstall += 1 }
                 return installed && (!lateExistingDeviceChange || deviceReadsAfterInstall > 1)
+            }
+            if let lateSourceChange, lock.withLock({ deviceReadsAfterInstall == 2 }) {
+                try fixture.repo.write(lateSourceChange, "externally changed source")
             }
             var devices: [String: [[String: Any]]] = [:]
             if present {
