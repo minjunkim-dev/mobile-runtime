@@ -1,16 +1,16 @@
 {
   "schema": "runstir.206.public-evidence.v1",
-  "integrationSource": "6e19a3329e0f983bcfda29c82f35f7ba489957b8",
+  "integrationSource": "75baf9d66592bc20e0c5644ff161ec77686a6c6d",
   "actualNegativeSource": "d4628c9615d06ac7ae95813d0e0f2ca7795bdf54",
   "historicalCreationSource": "4dede50eeca35ad59307c779160bf988a6e4bee1",
-  "status": "Historical CLI/GUI installation-attempt cancellation retained; new integration/Xcode27.1 CLI runtime install/create and GUI runtime reuse/create/reinspection/scoped preservation/normal closure observed; final independent review, required CI, exact-head approval, merge and main CI gates pending.",
-  "scope": "Integrated public CLI/GUI evidence. Historical candidates, common failure fixtures, actual negative cases, new CLI installation and new GUI reuse/create retain separate scopes. Restricted originals and screenshots are referenced by bundle ID, relative path, bytes, mode and SHA256 in the actual JSON files. No whole issue completion, GUI download success, full payload transfer, whole HOME/cache/disk preservation or release approval is claimed. This manifest excludes itself.",
+  "status": "Latest source75 CLI runtime installation/create and GUI runtime reuse/create/reinspection/normal Quit observed. Final review, CI, exact-head approval, merge and main CI are tracked in PR298 and the final issue comment.",
+  "scope": "Bounded actual source75 CLI/GUI evidence. Historical cancellation/failure candidates and current source regression checks retain separate scopes. No GUI download, whole payload transfer/checksum, full HOME/cache/VM disk preservation, original current-run boot exit, app build/launch or release completion is claimed. This manifest excludes itself.",
   "files": [
     {
       "path": "README.md",
-      "bytes": 6681,
+      "bytes": 10472,
       "mode": "0o644",
-      "sha256": "f5a6d24f3373659fcb636edb15092cfc3461fc125824b765bfe5400effa8bcc1"
+      "sha256": "11e3e05318d2b0b9e6b62b36aad4e785fc8bf5531fdff70a73881778a7369020"
     },
     {
       "path": "actual-vm-gui.md",
@@ -53,6 +53,38 @@
       "bytes": 16275,
       "mode": "0o644",
       "sha256": "0c081021d771413a459f2badf63fe6b9f60976e17211601d8a79c103806211c4"
+    },
+    {
+      "path": "actual-cli-75baf9d.md",
+      "bytes": 3158,
+      "mode": "0o644",
+      "sha256": "44171eb859bd4fc99329d891e3a410f05c463fd2c537600a6c13fa2861eceead"
+    },
+    {
+      "path": "actual-cli-75baf9d.json",
+      "bytes": 8212,
+      "mode": "0o644",
+      "sha256": "02ddab6e0c8ebcf330592dacfb060168c9cb3ce0a8c8c7f4041057ee18045f39"
+    },
+    {
+      "path": "actual-gui-75baf9d.md",
+      "bytes": 5010,
+      "mode": "0o644",
+      "sha256": "190641c1d482e60da46419d4b73e8586b1257bab1fde0d4c5c37286a37af9fd2"
+    },
+    {
+      "path": "actual-gui-75baf9d.json",
+      "bytes": 11156,
+      "mode": "0o644",
+      "sha256": "721eaedaecb3572de62b9e50066baee2dfb025f7bfad3ba32da3857daf1d0b73"
     }
-  ]
+  ],
+  "priorIntegrationSource": "6e19a3329e0f983bcfda29c82f35f7ba489957b8",
+  "sourceIdentity": {
+    "actualSource": "75baf9d66592bc20e0c5644ff161ec77686a6c6d",
+    "mergedMain": "045a2d2324f798b619587e59a40b43db79496085",
+    "localMainIntegration": "6fe7012ebb3de7ec509722f0df3f6cce9ab640d3",
+    "SourcesTestsPackageGitBlobsIdentical": true
+  },
+  "finalGatesReference": "https://github.com/minjunkim-dev/mobile-runtime/pull/298"
 }

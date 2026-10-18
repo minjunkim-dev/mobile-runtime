@@ -1,0 +1,237 @@
+{
+  "schemaVersion": 1,
+  "status": "bounded-CLI-actual-evidence",
+  "scope": "Source75 empty-private-device-set CLI setup case. This is a bounded CLI acceptance mapping, not a full issue206 acceptance verdict.",
+  "observedExitUTC": "2026-10-18T05:25:36.328Z",
+  "source": {
+    "SHA": "75baf9d66592bc20e0c5644ff161ec77686a6c6d",
+    "tree": "f1b2a185d3916689a3cc4fa3e75e869498e681e8",
+    "CLI_SHA256": "f3359a8b11dce06c348d449ab55f05b3f23748d4ccc1827757bbf960fe4dccd6"
+  },
+  "approval": {
+    "planID": "2da0d0c69891d2d3d8289d700ab00910ebf634d421e514481e374da332ec974b",
+    "rawPlanBytes": 20804,
+    "rawPlanSHA256": "8c8de5d82c83bdbfa7ec51f6c75d70b29837b4edc8bd42fc20695e52ed9d8937",
+    "exactPlanApproved": true,
+    "trustRepository": false,
+    "automaticSteps": [
+      "ios.runtime.install",
+      "ios.simulator.create"
+    ]
+  },
+  "actualCLI": {
+    "PID": 1740,
+    "exitCode": 0,
+    "elapsedSeconds": 929.335774898529,
+    "signalCount": 0,
+    "observationDeadlineReached": false,
+    "stdoutSHA256": "3b2628ded73d1e69c4bf4a0634101cd1bf8eebab9969bffe709319bd1480b5df",
+    "stderrSHA256": "f453fa0488b23b8a95c3e5d300c3681ad3f31fc29edd567a3c4139a166749a96",
+    "accepted": true,
+    "installChecksPassed": 18,
+    "installChecksTotal": 18,
+    "operationID": "D1D250A4-5751-46FE-AD6D-AAA3F3B8A3AD",
+    "operationState": "succeeded",
+    "completed": [
+      "ios.runtime.install",
+      "ios.simulator.create"
+    ],
+    "remaining": [],
+    "remainingOwnedProcesses": 0
+  },
+  "runtime": {
+    "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "version": "27.0",
+    "build": "24A434",
+    "architecture": "arm64",
+    "origin": "installed",
+    "nativeAvailable": true,
+    "nativeSupportedArchitectures": [
+      "arm64"
+    ]
+  },
+  "simulator": {
+    "UDID": "6FFD2226-0C32-4228-8757-95C8B5B5B35E",
+    "name": "iPhone 18 Pro - Runstir - iOS 27.0",
+    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro",
+    "runtimeIdentifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "state": "Shutdown",
+    "isAvailable": true,
+    "origin": "created",
+    "ownSetCountBefore": 0,
+    "ownSetCountAfter": 1
+  },
+  "boundedAcceptanceMapping": [
+    {
+      "criterion": "Exact approved plan and trust boundary",
+      "status": "observed-pass",
+      "evidence": [
+        "approved-plan",
+        "Root-approval",
+        "actual-command"
+      ]
+    },
+    {
+      "criterion": "Exact runtime installed and available",
+      "status": "observed-pass",
+      "evidence": [
+        "actual-result",
+        "after-native-runtimes"
+      ]
+    },
+    {
+      "criterion": "One new private Simulator created and observed Shutdown",
+      "status": "observed-pass",
+      "evidence": [
+        "before-own-native-devices",
+        "after-own-native-devices",
+        "actual-result"
+      ]
+    },
+    {
+      "criterion": "Named preservation comparisons",
+      "status": "observed-pass",
+      "checks": {
+        "originalSource": true,
+        "newSource": true,
+        "SDK": true,
+        "tools": true,
+        "candidate": true,
+        "GuestAgentPATH": true,
+        "globalInputs": true,
+        "protectedPrevious": true,
+        "xcodeSelect": true,
+        "xcodeVersion": true,
+        "adminDevices": true,
+        "ownDevices": true,
+        "originalRuntimes": true,
+        "originalManagedRuntimes": true
+      },
+      "evidence": [
+        "actual-result",
+        "after-result"
+      ]
+    },
+    {
+      "criterion": "Natural CLI exit and no remaining owned process",
+      "status": "observed-pass",
+      "evidence": [
+        "actual-exit",
+        "actual-result"
+      ]
+    },
+    {
+      "criterion": "GUI and normal VM lifecycle closure",
+      "status": "outside-this-CLI-evidence",
+      "evidence": []
+    }
+  ],
+  "network": {
+    "downloadGrowthObserved": false,
+    "networkTransferVerified": false,
+    "nativeServiceObservation": "Earlier Root native observations recorded approved Apple asset download start and first progress event only.",
+    "wholeTransferProof": false,
+    "payloadChecksumProof": false,
+    "limitation": "CLI descendant observation and a missing growth event do not prove absence of OS-service transfer."
+  },
+  "preservation": {
+    "afterAccepted": true,
+    "afterChecksPassed": 14,
+    "afterChecksTotal": 14,
+    "namedScopeOnly": true,
+    "cacheMetadataChangedNames": [
+      "Library/Developer/CoreSimulator/Devices"
+    ],
+    "cacheChangeActor": "unproven",
+    "wholeHOME": false,
+    "wholeCache": false,
+    "wholeVMDisk": false
+  },
+  "receiptIntegrity": {
+    "files": 290,
+    "bytes": 61554050,
+    "bytesSHA256Mismatches": 0,
+    "guestModeComparedAgainst": "raw export tar metadata; host-copy modes not used",
+    "guestModeMismatches": 0,
+    "rawTarMembers": 291,
+    "includesIndexMember": true,
+    "exportIndexSHA256": "016bb74f36278671b06363568c22cdd3306d5225bc776582a26cf0f8012e5d37"
+  },
+  "localSourceVerification": {
+    "status": "separate-pinned-local-report",
+    "sourceSHA": "75baf9d66592bc20e0c5644ff161ec77686a6c6d",
+    "lockedDependencies": true,
+    "warningsAsErrors": true,
+    "tests": 707,
+    "suites": 85,
+    "result": "PASS reported by the pinned local report; not rerun by this evidence worker",
+    "reportSHA256": "517ff559db75a7c3abf35c95704cb4f1deacfa7a5ffd1f559864e58eda36bbe0",
+    "remoteCIClaim": false
+  },
+  "limits": [
+    "This actual case started with an empty private device set; it does not directly measure the recovered-existing-private-device reuse branch.",
+    "Historical d4628c9 and 6e19a33 results retain their own source identity and limits. They are not relabeled as source75.",
+    "FoodTruck current HEAD/tree/index and 553 tracked blobs were verified during preparation; historical object 6692189291fe7eee8e8bab6a5a55b20038a5045f remains missing. No complete history claim.",
+    "Original Tart boot actual exit remains UNKNOWN after parent/session loss. This draft does not claim normal VM stop.",
+    "Source75 GUI, app build/launch, current-head remote CI, final full reviews, release and merge/main-CI are outside this CLI draft.",
+    "Raw environment/process dumps and diagnostic logs remain private; only bounded facts and receipt pins appear here."
+  ],
+  "receiptPins": {
+    "approved-plan": {
+      "bytes": 20804,
+      "SHA256": "8c8de5d82c83bdbfa7ec51f6c75d70b29837b4edc8bd42fc20695e52ed9d8937"
+    },
+    "Root-approval": {
+      "bytes": 1914,
+      "SHA256": "22b08f73f1a41cb39d60107c23e908107a2ddf9e89ae4d56194035cded3bfbd1"
+    },
+    "actual-result": {
+      "bytes": 2575,
+      "SHA256": "99e007825ac545491d9922803d377022cdceaba9ca5d453f3664a52a52262b96"
+    },
+    "actual-exit": {
+      "bytes": 331,
+      "SHA256": "eb46fc7a3d4a22904fce6d373f2e17eaf9a1e080d1cafa72a64066cc5b5d81fa"
+    },
+    "actual-stdout": {
+      "bytes": 9909,
+      "SHA256": "3b2628ded73d1e69c4bf4a0634101cd1bf8eebab9969bffe709319bd1480b5df"
+    },
+    "actual-stderr": {
+      "bytes": 1058,
+      "SHA256": "f453fa0488b23b8a95c3e5d300c3681ad3f31fc29edd567a3c4139a166749a96"
+    },
+    "before-own-native-devices": {
+      "bytes": 215,
+      "SHA256": "84c44c90282dea9e880207abe9a836d07b21163b25aceefbed6d7fd6521cd7e7"
+    },
+    "after-own-native-devices": {
+      "bytes": 864,
+      "SHA256": "5558c5ffe964f1550099513b3dff3862f97d941ab286606ba757e609c6289319"
+    },
+    "after-native-runtimes": {
+      "bytes": 28439,
+      "SHA256": "543915bbb88a3237cdcfe72202a46544216749f7d043beb5295c81ec22d0dd06"
+    },
+    "after-result": {
+      "bytes": 424,
+      "SHA256": "2bc14e3ad4677b66b2e5b11037b2606ac2af06c4a7c0648aa2f3b2d279308c41"
+    },
+    "export-index": {
+      "bytes": 54011,
+      "SHA256": "016bb74f36278671b06363568c22cdd3306d5225bc776582a26cf0f8012e5d37"
+    },
+    "local-source-verification-report": {
+      "bytes": 13267,
+      "SHA256": "517ff559db75a7c3abf35c95704cb4f1deacfa7a5ffd1f559864e58eda36bbe0"
+    },
+    "actual-command": {
+      "bytes": 1652,
+      "SHA256": "094f258642fea7ae8d1aa57a93a1bb9690d92e3feede108e33c16558dadc4e84"
+    },
+    "actual-owner": {
+      "bytes": 302,
+      "SHA256": "1d8a187ae834f48ebdb8856ed0905709c85bcd75da4f8093fc3d7eec45428973"
+    }
+  }
+}
