@@ -157,7 +157,10 @@ readiness 관측은 기본 120초를 사용한다.
 손상된 JSON·조회 실패·timeout은 개발 연결 성공으로 처리하지 않는다.
 남은 readiness 시간의 마지막 조회가 timeout이면 readiness 만료로 보고한다.
 deadline 이전의 조회 timeout은 도구 실패로 유지한다.
-이 오류에 원본 출력이나 URI를 포함하지 않는다.
+조회 도구 실패는 고정 분류 `query-timeout`·`query-spawn-failed`·`query-failed`를 표시한다.
+history 결과는 `history-nonzero-status`·`history-output-limit`·`history-invalid-json`·`history-row-limit`를 구분한다.
+이 분류에 원본 명령·출력·URI를 포함하지 않는다.
+새 분류로 과거 실행의 미수집 원인을 소급 확정하지 않는다.
 취소는 유한한 조회 child가 종료한 뒤 반환한다.
 선택한 포트와 다른 URI는 거부한다.
 그 URI의 `getVM` 응답이 Dart VM을 식별해야 개발 연결을 성공으로 보고한다.

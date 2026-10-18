@@ -202,7 +202,9 @@ public struct LaunchStage: Stage {
             throw DomainError(summary: "The Flutter development service readiness deadline expired.",
                 remediation: Remediation(summary: "Inspect the selected app and launch log. Run mobile down --platform ios before retrying."))
         }
-        catch { throw ToolUnavailable(description: failure) }
+        catch ProcessError.timedOut { throw ToolUnavailable(description: failure + " [query-timeout]") }
+        catch ProcessError.spawnFailed { throw ToolUnavailable(description: failure + " [query-spawn-failed]") }
+        catch { throw ToolUnavailable(description: failure + " [query-failed]") }
     }
 
     private func flutterQueryTimeout(_ deadline: ContinuousClock.Instant) -> Duration {
@@ -267,9 +269,18 @@ public struct LaunchStage: Stage {
             "--last", "5m", "--style", "json", "--info", "--debug", "--predicate", predicate],
             environment: environment, timeout: flutterQueryTimeout(deadline)), failure: failure, deadline: deadline)
         let observedAt = Date()
-        guard result.terminationStatus.isSuccess, result.standardOutput.utf8.count <= Self.flutterOutputLimit,
-              let rows = try? JSONSerialization.jsonObject(with: Data(result.standardOutput.utf8)) as? [[String: Any]],
-              rows.count <= 1024 else { throw ToolUnavailable(description: failure) }
+        guard result.terminationStatus.isSuccess else {
+            throw ToolUnavailable(description: failure + " [history-nonzero-status]")
+        }
+        guard result.standardOutput.utf8.count <= Self.flutterOutputLimit else {
+            throw ToolUnavailable(description: failure + " [history-output-limit]")
+        }
+        guard let rows = try? JSONSerialization.jsonObject(with: Data(result.standardOutput.utf8)) as? [[String: Any]] else {
+            throw ToolUnavailable(description: failure + " [history-invalid-json]")
+        }
+        guard rows.count <= 1024 else {
+            throw ToolUnavailable(description: failure + " [history-row-limit]")
+        }
         return rows.compactMap { row in
             guard let number = row["processID"] as? NSNumber, CFGetTypeID(number) != CFBooleanGetTypeID(),
                   number.doubleValue == Double(pid), let process = row["processImageUUID"] as? String,

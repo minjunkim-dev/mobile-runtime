@@ -536,16 +536,22 @@ final class FlutterIOSRunner: ProcessRunner, @unchecked Sendable {
         }
         if command.arguments.starts(with: ["simctl", "spawn", "A", "log", "show"]) {
             let query = lock.withLock { historyQueries += 1; return historyQueries }
-            if fault == "history:timeout" { throw ProcessError.timedOut(command: "bounded simulator history", timeout: command.timeout ?? .seconds(5)) }
+            if fault == "history:timeout" { throw ProcessError.timedOut(command: "private query http://127.0.0.1:12345/synthetic-auth/", timeout: command.timeout ?? .seconds(5)) }
+            if fault == "history:spawn" {
+                throw ProcessError.spawnFailed(command: "private query http://127.0.0.1:12345/synthetic-auth/",
+                    underlying: NSError(domain: "private query diagnostic", code: 1))
+            }
+            if fault == "history:runner-error" { throw NSError(domain: "private query http://127.0.0.1:12345/synthetic-auth/", code: 1) }
             if fault == "history:deadline" {
                 try await Task.sleep(for: command.timeout ?? .milliseconds(25))
                 throw ProcessError.timedOut(command: "private history output", timeout: command.timeout ?? .milliseconds(25))
             }
             if fault == "history:cancel" { return try await finiteQuery(command) }
-            if fault == "history:malformed" { return ok("not JSON") }
+            if fault == "history:malformed" { return ok("private query http://127.0.0.1:12345/synthetic-auth/ not JSON") }
             if fault == "history:failed" { return ProcessResult(terminationStatus: .exited(1), standardOutput: "private query output", standardError: "private query diagnostic") }
-            if fault == "history:oversized" { return ok(String(repeating: " ", count: 1_048_577)) }
-            if fault == "history:many" { return ok(String(decoding: try JSONSerialization.data(withJSONObject: Array(repeating: [:] as [String: String], count: 1025)), as: UTF8.self)) }
+            if fault == "history:signaled" { return ProcessResult(terminationStatus: .signaled(9), standardOutput: "private query output", standardError: "private query diagnostic") }
+            if fault == "history:oversized" { return ok("private query http://127.0.0.1:12345/synthetic-auth/" + String(repeating: " ", count: 1_048_577)) }
+            if fault == "history:many" { return ok(String(decoding: try JSONSerialization.data(withJSONObject: Array(repeating: ["eventMessage": "private query http://127.0.0.1:12345/synthetic-auth/"] as [String: String], count: 1025)), as: UTF8.self)) }
             if fault == "no-uri" || fault == "history:empty" || (fault == "history:delayed" && query == 1) { return ok("[]") }
             if fault == "history:source" { try fixture.repo.write("lib/main.dart", "changed by query fixture\n") }
             let port = lock.withLock { launchedPort } ?? "12345"

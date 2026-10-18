@@ -328,6 +328,38 @@ struct FlutterIOSRuntimeTests {
         }
     }
 
+    @Test("history failures expose only fixed classifications and retain the installed app owner", arguments: [
+        "timeout", "spawn", "runner-error", "failed", "signaled", "oversized", "malformed", "many",
+    ])
+    func historyFailureClassification(_ fault: String) async throws {
+        let expected = ["timeout": "query-timeout", "spawn": "query-spawn-failed", "runner-error": "query-failed",
+            "failed": "history-nonzero-status", "signaled": "history-nonzero-status", "oversized": "history-output-limit",
+            "malformed": "history-invalid-json", "many": "history-row-limit"]
+        let f = try FlutterIOSFixture()
+        let runner = FlutterIOSRunner(fixture: f, fault: "history:" + fault)
+        var context = UpContext()
+        context.device = SelectedDevice(name: "iPhone A", udid: "A", runtime: "27.0")
+        context.product = BuiltProduct(path: f.repo.url("build/Runner.app").path, bundleIdentifier: "dev.test.flutter")
+        do {
+            _ = try await LaunchStage(project: f.repo.root, runner: runner, locator: XcodeLocator(runner: runner),
+                readinessWait: .seconds(5), flutterPort: 12345).run(&context)
+            Issue.record("a failed history query must not establish readiness")
+        } catch {
+            #expect(error is ToolUnavailable)
+            let message = String(describing: error)
+            #expect(message.contains("[\(try #require(expected[fault]))]"))
+            for secret in ["private query", "synthetic-auth", "http://", "processIdentifier"] {
+                #expect(!message.contains(secret))
+            }
+        }
+        #expect(context.appPid == 3538)
+        #expect(context.developmentServiceURI == nil)
+        #expect(!runner.commands.contains { $0.executable == "curl" })
+        let queries = runner.commands.filter { $0.arguments.starts(with: ["simctl", "spawn", "A", "log", "show"]) }
+        #expect(queries.count == 1)
+        #expect(queries.allSatisfy { $0.timeout != nil && $0.timeout! <= .seconds(5) && $0.output == .collected })
+    }
+
     @Test("untrusted or unavailable history cannot establish readiness", arguments: [
         "pid", "process-uuid", "sender-uuid", "missing-uuid", "invalid-uuid", "uuid-type", "old", "future", "time", "wrong-key", "boolean-pid", "port", "malformed",
         "oversized", "many", "message-limit", "control", "timeout", "failed", "empty", "dead", "reused",
