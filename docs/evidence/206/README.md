@@ -1,7 +1,27 @@
-# #206 source·공식 metadata 관측
+# #206 iOS runtime·Simulator 준비 검증 근거
 
-상태: 실제 CLI와 VM GUI 준비를 확인했다. 아래 초기 source 단계의 미검증 기록은 당시 상태다.
-최신 실제 결과와 한계는 [VM GUI 기록](actual-vm-gui.md)을 읽는다.
+최신 실제 source는 `75baf9d66592bc20e0c5644ff161ec77686a6c6d`다.
+[CLI 실제 설치·생성](actual-cli-75baf9d.md)은 runtime 설치와 새 Simulator 생성의 실제 exit `0`을 확인했다.
+[GUI 실제 준비](actual-gui-75baf9d.md)는 같은 runtime 재사용과 별도 private Simulator 생성을 확인했다.
+GUI의 재검사는 runtime·Simulator를 재사용했다. 표시 상태는 `needs-approval / exit 0`이다.
+앱 메뉴 정상 종료의 실제 child exit는 `0`이다. 테스트 VM 정상 stop 명령도 exit `0`이다.
+보호 VM 4개의 지정 metadata·disk stat 비교는 이전 5개 checkpoint와 같았다.
+원래 VM boot child의 actual exit는 session handle 유실로 `UNKNOWN`이다.
+이는 아래 과거 source의 boot exit 기록을 최신 실행으로 승격하지 않는다.
+payload 전체 전송·checksum·전체 HOME/cache/VM disk 보존은 입증하지 않았다.
+최종 독립 리뷰·필수 CI·최종 head 사람 승인·병합·main CI는 별도 게이트다.
+
+## 과거 source의 실제 실행
+
+상태: `d4628c9`의 CLI·GUI에서 runtime 설치 시도 취소 `130`과 exact runtime 수동 재검사를 확인했다.
+payload 성장·네트워크 전송·runtime 설치 성공은 그 실행에서 입증하지 못했다.
+최신 [CLI·GUI 취소와 새 검증 입력](actual-runtime-d4628c9.md)은 이 한계를 보존한다.
+`6e19a33`·Xcode `27.1`의 [새 CLI 검증](actual-cli-6e19a33-resume.md)은 실제 runtime 설치·Simulator 생성 `succeeded / exit 0`을 확인했다.
+같은 후보의 [새 GUI 검증](actual-gui-6e19a33-resume.md)은 runtime 재사용·별도 Simulator 생성·재검사·선택 자원 보존을 확인했다.
+GUI 실제 exit `0`과 VM 정상 stop·boot 프로세스 exit `0`도 확인했다.
+GUI는 runtime 다운로드를 수행하지 않았다. CLI 성공도 payload 전송 bytes·checksum의 독립 증거는 아니다.
+이전 [VM GUI 기록](actual-vm-gui.md)은 `4dede50`의 기존 runtime 재사용·기기 생성 이력이다. 새 runtime 설치 성공 근거가 아니다.
+아래 초기 source 단계의 미검증 기록은 당시 상태다.
 고정 시작 source: `1b55a8899aea36c77443469dabf64647add27294`.
 공유 설치 API: `0e54bb1c7db760427d369119afdef92df3701298`.
 
@@ -59,9 +79,38 @@ provider 행동 검사에서는 `Runstir iPhone …` 이름의 생성 기기를 
 수정 뒤 전체 Swift suite도 Werror로 677 tests/83 suites가 통과했다.
 이 검사는 fake process와 소유 임시 fixture를 사용했다. 실제 runtime 다운로드나 Simulator 생성이 아니다.
 
-## 남은 실제 게이트
+## 실제 실행 이력과 최종 게이트
 
-CLI R1은 기존 runtime을 재사용하고 준비를 완료했다. VM GUI는 실제 생성·취소·파일 쓰기 실패·재시도·재사용을 확인했다.
-실제 Mac의 sandbox doctor 실패와 VM 성공을 구분한다. 새 runtime의 네트워크 설치 성공은 주장하지 않는다.
-현재 main 기준 source 결합과 최종 독립 리뷰를 남겼다. 최종 head 필수 CI·위험별 승인·병합·main CI도 남겼다.
-필수 실제 조건을 fixture·문서 PASS로 대신하지 않는다. #206은 완료 상태가 아니다.
+`4dede50`의 CLI R1은 기존 runtime을 재사용했다. 같은 후보의 VM GUI는 실제 생성·취소·파일 쓰기 실패·재시도·재사용을 확인했다.
+`d4628c9`의 별도 CLI·GUI는 runtime 설치 시도를 취소했다. 재검사는 journal을 보존하고 수동 복구만 안내했다.
+실제 Mac의 sandbox doctor 실패·VM 결과·새 baseline의 Xcode `27.1` 검증을 구분한다.
+새 CLI는 exact runtime 설치·새 UDID의 Shutdown 상태·선택 자원 보존을 확인했다.
+새 GUI는 별도 device set에 정확한 기기 1개를 생성했다. 완료 화면과 최종 native `Shutdown`·available 상태를 확인했다.
+재검사는 같은 자원을 재사용했다. `needs-approval / exit 0`을 새 실행 성공으로 세지 않았다.
+GUI export 58개·6,773,037B를 bytes·mode·SHA-256으로 다시 확인했다. 불일치는 0개다.
+GUI 실제 exit `0`과 관측 자식 잔존 0개, VM 정상 종료와 보호 VM 2개의 작은 metadata·disk stat 동일을 확인했다.
+전체 HOME·cache·VM disk 보존은 입증하지 않았다. 선택 cache mtime의 변경 actor는 unknown이다.
+[#206 및 #199 AC02·AC03·AC06 근거표](actual-runtime-d4628c9.md#ac별-근거)를 읽는다.
+최종 문서에 대한 독립 리뷰·최종 head 필수 CI·위험별 승인·병합·main CI도 남겼다.
+필수 실제 조건을 fixture·문서 PASS로 대신하지 않는다.
+이 기록은 #206의 전체 완료를 선언하지 않는다.
+최종 리뷰·CI·위험별 승인·병합·main CI는 [PR #298](https://github.com/minjunkim-dev/mobile-runtime/pull/298)과 이슈의 최종 댓글에서 확인한다.
+
+## 최신 source75의 AC 대응
+
+| 기준 | 근거와 범위 |
+| --- | --- |
+| OS·architecture·기기·artifact 계획과 재사용 | CLI의 고정 raw plan은 iOS 27.0/24A434/arm64와 정확한 Apple asset을 기록한다. GUI 화면은 runtime 재사용과 create 계획을 표시한다. 완료 뒤 재검사는 생성한 기기를 재사용한다. |
+| 기존 기기 보존과 새 identity | CLI의 private set은 0개에서 1개가 됐다. GUI의 별도 private set에도 정확한 새 UDID 1개만 생겼다. native 상태는 모두 Shutdown이다. 기존 default 기기와 지정 자원 비교는 통과했다. 이름 충돌은 회귀 검사와 기존 실제 실행 이력으로 구분한다. |
+| Xcode 수동 행동과 전역 선택 | 수동 설치·로그인·라이선스·재검사 분기는 고정 source 검사로 확인한다. 새 VM 실행은 이미 준비된 Xcode 27.1을 사용했다. 전역 Xcode 선택 비교는 같았다. 새 계정 로그인이나 라이선스 승인을 수행하지 않았다. |
+| 실패·취소·재실행·완료 자원 보존 | d4628c9의 실제 CLI·GUI 설치 시도 취소130과 수동 재검사, 4dede50의 실제 GUI 생성 실패·재시도 이력을 각 source에 보존한다. 최신 source75의 실패·취소·기존 기기 복구 분기는 회귀 검사다. 최신 CLI 설치와 GUI 생성 성공·재검사·지정 보존 비교는 별도 실제 실행이다. |
+| #199 AC02·AC03·AC06 | 위 CLI·GUI 기록은 계획 승인, 준비 완료, 재검사와 지정 자원 보존을 연결한다. 실제 Mac의 과거 sandbox 실패와 VM 실행은 구분한다. 앱 build/launch와 공개 release 완료를 주장하지 않는다. |
+
+source75 locked-dependencies/Werror 검사는 전체 707 tests/85 suites와 관련 54 tests/6 suites를 통과했다.
+이 수치는 실제 설치나 최종 remote CI의 대체물이 아니다.
+기존 unavailable 기기가 설치 뒤 available로 복구되면 같은 identity를 재사용한다.
+재사용 전에 승인한 runtime/build/architecture와 전체 source 관측을 다시 비교한다.
+새 source 파일이나 늦은 source 변경이 있으면 다음 단계를 거부하고 완료한 runtime은 보존한다.
+이 복구 경로는 최신 source의 회귀 검사로 확인했다. 최신 빈 private set 실측의 직접 범위는 아니다.
+최신 main을 로컬 통합한 뒤에도 Sources·Tests·Package 입력의 Git blob 전체가 실제 source75와 같았다.
+실측 source와 최종 통합 head의 CI·리뷰 근거는 구분한다.
