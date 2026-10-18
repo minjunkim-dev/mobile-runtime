@@ -192,7 +192,8 @@ def verify(manifest_path, private_root):
             (("unsigned", "not-requested"), ("developer-id", "accepted")), "invalid-candidate")
     require(candidate["signing"] != "unsigned" or candidate["distributionReady"] is False, "invalid-candidate")
     candidate_ref = identifier(manifest["candidateRef"])
-    require(candidate_ref in raw and candidate == raw[candidate_ref], "candidate-mismatch")
+    require(candidate_ref in raw and json.dumps(candidate, sort_keys=True)
+            == json.dumps(raw[candidate_ref], sort_keys=True), "candidate-mismatch")
     candidate_id = private[candidate_ref]["sha256"]
     fields(candidate["artifacts"], ("cli", "gui", "homebrew"))
     for artifact in candidate["artifacts"].values():

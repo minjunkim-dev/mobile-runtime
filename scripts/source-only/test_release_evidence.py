@@ -262,6 +262,29 @@ class ReleaseEvidenceTests(unittest.TestCase):
                 self.write_bundle()
                 self.verify("invalid")
 
+    def test_original_candidate_scalar_types_must_match_public_candidate(self):
+        for field, value in [("schemaVersion", True), ("schemaVersion", 1.0), ("distributionReady", 1)]:
+            with self.subTest(field=field, value=value):
+                candidate = copy.deepcopy(self.candidate)
+                candidate[field] = value
+                data = self.encode(candidate)
+                (self.private / "CANDIDATE.json").write_bytes(data)
+                candidate_id = digest(data)
+                next(entry for entry in self.files if entry["id"] == "candidate").update(
+                    sha256=candidate_id, bytes=len(data))
+                origin = self.encode({"schemaVersion": 1, "sourceSHA": SOURCE, "files": [
+                    {"file": "evidence/" + entry["path"], "bytes": entry["bytes"], "SHA256": entry["sha256"]}
+                    for entry in self.files if entry["id"] != "origin"
+                ]})
+                (self.private / "EVIDENCE-INDEX.json").write_bytes(origin)
+                next(entry for entry in self.files if entry["id"] == "origin").update(
+                    sha256=digest(origin), bytes=len(origin))
+                self.tuples["tuples"][0]["candidateID"] = candidate_id
+                for attempt in self.results["attempts"]:
+                    attempt["candidateID"] = candidate_id
+                self.write_bundle()
+                self.verify("invalid")
+
     def test_read_only_verification_and_optimized_checks(self):
         before = {str(p): digest(p.read_bytes()) for p in self.root.rglob("*") if p.is_file()}
         self.verify(optimized=True)
