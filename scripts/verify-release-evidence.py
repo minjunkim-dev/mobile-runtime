@@ -131,7 +131,8 @@ def verify(manifest_path, private_root):
     manifest = parse_json(read_file(public_root, manifest_path.name, JSON_LIMIT, True)[2], True)
     fields(manifest, ("schemaVersion", "evidenceClass", "candidate", "candidateRef", "originIndexes",
                       "documents", "sourceCI", "priorResults", "publicReview"))
-    require(manifest["schemaVersion"] == 1 and manifest["evidenceClass"] in ("actual", "fixture"), "invalid-schema")
+    require(type(manifest["schemaVersion"]) is int and manifest["schemaVersion"] == 1
+            and manifest["evidenceClass"] in ("actual", "fixture"), "invalid-schema")
     documents = manifest["documents"]
     fields(documents, ("tuples", "results", "restrictedIndex", "report"))
     seen_paths, loaded = {manifest_path.name}, {}
@@ -185,7 +186,8 @@ def verify(manifest_path, private_root):
     sha(candidate["sourceSHA"], 40)
     sha(candidate["coreBuildIdentity"])
     identifier(candidate["productVersion"])
-    require(candidate["schemaVersion"] == 1 and type(candidate["distributionReady"]) is bool, "invalid-candidate")
+    require(type(candidate["schemaVersion"]) is int and candidate["schemaVersion"] == 1
+            and type(candidate["distributionReady"]) is bool, "invalid-candidate")
     require((candidate["signing"], candidate["notarization"]) in
             (("unsigned", "not-requested"), ("developer-id", "accepted")), "invalid-candidate")
     require(candidate["signing"] != "unsigned" or candidate["distributionReady"] is False, "invalid-candidate")
@@ -206,11 +208,13 @@ def verify(manifest_path, private_root):
     for identity in origins:
         require(identity in raw, "missing-reference")
         origin = raw[identity]
-        require(origin.get("schemaVersion") == 1 and origin.get("sourceSHA") == candidate["sourceSHA"], "candidate-mismatch")
+        require(type(origin.get("schemaVersion")) is int and origin["schemaVersion"] == 1
+                and origin.get("sourceSHA") == candidate["sourceSHA"], "candidate-mismatch")
         require(isinstance(origin.get("files"), list), "invalid-origin-index")
         names = set()
         for entry in origin["files"]:
             name = entry["file"]
+            require(type(entry["bytes"]) is int and entry["bytes"] >= 0, "invalid-file-size-or-type")
             require(name not in names, "duplicate-reference")
             names.add(name)
             value = (entry["SHA256"], entry["bytes"])
@@ -223,9 +227,11 @@ def verify(manifest_path, private_root):
             require(origin_files.get("evidence/" + entry["path"]) == (entry["sha256"], entry["bytes"]), "unindexed-private-reference")
     ci = manifest["sourceCI"]
     fields(ci, ("evidence", "runID"))
+    require(type(ci["runID"]) is int and ci["runID"] > 0, "invalid-ci-run")
     require(ci["evidence"] in raw, "missing-reference")
     ci_receipt = raw[ci["evidence"]]
-    require(ci_receipt.get("headSha") == candidate["sourceSHA"] and ci_receipt.get("databaseId") == ci["runID"], "candidate-mismatch")
+    require(ci_receipt.get("headSha") == candidate["sourceSHA"] and type(ci_receipt.get("databaseId")) is int
+            and ci_receipt["databaseId"] == ci["runID"], "candidate-mismatch")
     jobs = ci_receipt.get("jobs", [])
     ci_pass = (ci_receipt.get("name") == "CI" and ci_receipt.get("status") == "completed"
                and ci_receipt.get("conclusion") == "success" and isinstance(jobs, list) and bool(jobs)
@@ -234,7 +240,8 @@ def verify(manifest_path, private_root):
     tuples_document, results = loaded["tuples"], loaded["results"]
     fields(tuples_document, ("schemaVersion", "tuples"))
     fields(results, ("schemaVersion", "requirements", "attempts"))
-    require(all(document["schemaVersion"] == 1 for document in (restricted, tuples_document, results)), "invalid-schema")
+    require(all(type(document["schemaVersion"]) is int and document["schemaVersion"] == 1
+                for document in (restricted, tuples_document, results)), "invalid-schema")
     tuples = indexed(tuples_document["tuples"])
     for entry in tuples.values():
         fields(entry, ("id", "candidateID", "inputs"))
@@ -281,7 +288,7 @@ def verify(manifest_path, private_root):
     for reference in manifest["priorResults"]:
         previous = public_document(reference)
         fields(previous, ("schemaVersion", "requirements", "attempts"))
-        require(previous["schemaVersion"] == 1, "invalid-schema")
+        require(type(previous["schemaVersion"]) is int and previous["schemaVersion"] == 1, "invalid-schema")
         for identity, attempt in indexed(previous["attempts"]).items():
             require(attempts.get(identity) == attempt, "history-rewritten")
         for identity, entry in indexed(previous["requirements"]).items():

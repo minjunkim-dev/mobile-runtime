@@ -225,6 +225,43 @@ class ReleaseEvidenceTests(unittest.TestCase):
                 result = self.verify("invalid")
                 self.assertNotIn(text, json.dumps(result))
 
+    def test_schema_versions_and_ci_run_ids_require_integers(self):
+        for document in [self.manifest, self.restricted, self.tuples, self.results]:
+            for value in [True, 1.0]:
+                with self.subTest(document=list(document), value=value):
+                    document["schemaVersion"] = value
+                    self.write_bundle()
+                    self.verify("invalid")
+            document["schemaVersion"] = 1
+        for value in [True, 123.0]:
+            with self.subTest(runID=value):
+                self.manifest["sourceCI"]["runID"] = value
+                self.write_bundle()
+                self.verify("invalid")
+        self.manifest["sourceCI"]["runID"] = 123
+        for value in [True, 1.0]:
+            previous = copy.deepcopy(self.results)
+            previous["schemaVersion"] = value
+            self.manifest["priorResults"] = [self.public_file("previous.json", self.encode(previous))]
+            self.write_bundle()
+            self.verify("invalid")
+
+    def test_origin_schema_version_and_byte_counts_require_integers(self):
+        origin = json.loads((self.private / "EVIDENCE-INDEX.json").read_text())
+        origin_entry = next(entry for entry in self.files if entry["id"] == "origin")
+        for field, value in [("schemaVersion", True), ("schemaVersion", 1.0), ("bytes", 11.0)]:
+            with self.subTest(field=field, value=value):
+                changed = copy.deepcopy(origin)
+                if field == "bytes":
+                    changed["files"][0]["bytes"] = value
+                else:
+                    changed[field] = value
+                data = self.encode(changed)
+                (self.private / "EVIDENCE-INDEX.json").write_bytes(data)
+                origin_entry.update(sha256=digest(data), bytes=len(data))
+                self.write_bundle()
+                self.verify("invalid")
+
     def test_read_only_verification_and_optimized_checks(self):
         before = {str(p): digest(p.read_bytes()) for p in self.root.rglob("*") if p.is_file()}
         self.verify(optimized=True)
