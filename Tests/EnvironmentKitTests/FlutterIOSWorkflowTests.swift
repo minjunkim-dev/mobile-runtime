@@ -30,9 +30,9 @@ struct FlutterIOSWorkflowTests {
         #expect(!runner.commands.contains { $0.arguments.contains("build") || $0.arguments.contains("get") })
     }
 
-    @Test("up observes its own authenticated VM URI and down needs no SDK")
-    func upAndDown() async throws {
-        let f = try FlutterIOSFixture()
+    @Test("up observes its own authenticated VM URI and down needs no SDK", arguments: [false, true])
+    func upAndDown(_ workspace: Bool) async throws {
+        let f = try FlutterIOSFixture(workspace: workspace)
         let runner = FlutterIOSRunner(fixture: f)
         let result = await WorkflowExecution.run(.up, input: f.input(), runner: runner, leases: f.leases)
         #expect(result.exitCode == 0, Comment(rawValue: result.up?.failure?.message ?? ""))
@@ -55,6 +55,17 @@ struct FlutterIOSWorkflowTests {
     func effectiveInputs(_ fault: String) async throws {
         let f = try FlutterIOSFixture()
         let runner = FlutterIOSRunner(fixture: f, fault: fault)
+        let result = await WorkflowExecution.run(.build, input: f.input(), runner: runner, leases: f.leases)
+        #expect(result.exitCode == 1)
+        #expect(!runner.commands.contains { $0.arguments.last == "build" })
+    }
+
+    @Test("effective Xcode settings cannot select an alternate Flutter engine", arguments: [
+        "FLUTTER_TOOL_ARGS", "FLUTTER_ENGINE", "LOCAL_ENGINE", "LOCAL_ENGINE_HOST", "FLUTTER_ENGINE_SRC_PATH",
+    ])
+    func alternateEngine(_ setting: String) async throws {
+        let f = try FlutterIOSFixture()
+        let runner = FlutterIOSRunner(fixture: f, fault: "engine:" + setting)
         let result = await WorkflowExecution.run(.build, input: f.input(), runner: runner, leases: f.leases)
         #expect(result.exitCode == 1)
         #expect(!runner.commands.contains { $0.arguments.last == "build" })
@@ -260,6 +271,7 @@ final class FlutterIOSRunner: ProcessRunner, @unchecked Sendable {
                 if fault == "target" { settings["FLUTTER_TARGET"] = "lib/other.dart" }
                 if fault == "entrypoint" { settings["FLUTTER_TARGET"] = "lib/start.dart" }
                 if fault == "configuration" { settings["CONFIGURATION"] = "Release" }
+                if let fault, fault.hasPrefix("engine:") { settings[String(fault.dropFirst("engine:".count))] = "/unapproved/engine" }
                 if fault == "no-debug", let option = command.arguments.firstIndex(of: "-configuration") {
                     settings["CONFIGURATION"] = command.arguments[option + 1]
                 }

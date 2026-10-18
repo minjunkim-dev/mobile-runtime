@@ -191,7 +191,9 @@ public enum WorkflowExecution {
 
             // Stabilize this project's recorded targets before acquiring the resources down changes.
             let folder = try FolderIdentity(directory: wiring.flutter?.workspace?.directory ?? anchor.workspaceRoot?.directory ?? anchor.directory)
-            let owner = LeaseOwner(operationId: operation.id, command: kind.rawValue, project: folder.path)
+            // Flutter shares a workspace lease, but the selected app owns its installed runtime.
+            let ownerProject = anchor.framework == .flutter ? candidate.app.path : folder.path
+            let owner = LeaseOwner(operationId: operation.id, command: kind.rawValue, project: ownerProject)
             let folderLease = try leases.acquire([.folder(folder)], owner: owner)
             defer { folderLease.release() }
             let device: ResourceKey?
@@ -215,7 +217,7 @@ public enum WorkflowExecution {
             defer { resourceLease.release() }
             if let device {
                 let environment = AndroidEnvironment(values: input.project.environment)
-                try await leases.check(device: device, project: folder.path) { [wiring] claim in
+                try await leases.check(device: device, project: owner.project) { [wiring] claim in
                     switch claim.platform {
                     case .ios:
                         try await simulatorAppObservation(udid: claim.handle, bundleID: claim.appID, runner: runner, locator: wiring.locator)

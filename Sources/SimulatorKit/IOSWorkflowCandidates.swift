@@ -73,6 +73,7 @@ public struct IOSWorkflowCandidates: Sendable {
                 if anchor.framework == .flutter {
                     let mode = (resolved["FLUTTER_BUILD_MODE"] ?? effective).lowercased()
                     let debug = resolved["FLUTTER_BUILD_MODE"] == nil ? mode.contains("debug") : mode == "debug"
+                    let alternate = ["FLUTTER_TOOL_ARGS", "FLUTTER_ENGINE", "LOCAL_ENGINE", "LOCAL_ENGINE_HOST", "FLUTTER_ENGINE_SRC_PATH"]
                     let project = try FlutterProject(directory: anchor.directory, entrypoint: entrypoint)
                     func matches(_ value: String?, _ expected: URL?, relativeTo directory: URL) -> Bool {
                         guard let value, let expected else { return false }
@@ -80,6 +81,7 @@ public struct IOSWorkflowCandidates: Sendable {
                         return path.standardizedFileURL.resolvingSymlinksInPath() == expected.standardizedFileURL.resolvingSymlinksInPath()
                     }
                     guard effective == requested, debug, !mode.contains("release"), !mode.contains("profile"),
+                        !alternate.contains(where: { resolved[$0].map { !$0.isEmpty } == true }),
                         matches(resolved["FLUTTER_ROOT"], flutterSDKRoot, relativeTo: anchor.iosDirectory),
                         matches(resolved["FLUTTER_APPLICATION_PATH"], anchor.directory, relativeTo: anchor.iosDirectory),
                         matches(resolved["FLUTTER_TARGET"], project.entrypoint, relativeTo: anchor.directory)
