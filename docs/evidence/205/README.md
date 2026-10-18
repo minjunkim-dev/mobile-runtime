@@ -1,6 +1,10 @@
 # #205 Flutter 준비 구현의 검증 범위
 
-상태: `e567b00`의 실제 CLI·GUI에서 공식 Flutter SDK 설치를 확인했다.
+최신 통합 실측: `121f0db`는 native runtime과 기기의 호환성 확인에서 실패했다.
+[실제 실패 원본과 보존 범위](native-compatibility-121f0db/README.md)에 결과를 기록했다.
+수정 후보의 실제 CLI·GUI 검증과 SDK 신규 설치 검증은 아직 남았다.
+
+과거 실측: `e567b00`의 실제 CLI·GUI에서 공식 Flutter SDK 설치를 확인했다.
 CLI는 operation별 locked Dart 정렬도 완료했다. GUI는 새 정렬을 승인하거나 실행하지 않았다.
 두 surface는 `partial / exit 1`을 표시했다. 전체 ready나 앱 build/run 성공은 입증하지 않았다.
 [실제 CLI](actual-cli-e567b00.md)와 [실제 GUI·AC 연결](actual-gui-e567b00.md)에 결과를 기록했다.

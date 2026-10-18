@@ -8,6 +8,7 @@ public struct IOSResourceInventory: Sendable {
         public let version: String
         public let build: String?
         public let architectures: [String]?
+        public let supportedDeviceTypeIdentifiers: [String]?
         public let available: Bool
     }
 
@@ -39,7 +40,8 @@ public struct IOSResourceInventory: Sendable {
         }
         return Self(runtimes: runtimeList.runtimes.filter(\.isIOS).map {
             Runtime(identifier: $0.identifier, name: $0.name, version: $0.version, build: $0.buildversion,
-                architectures: $0.supportedArchitectures, available: $0.isAvailable)
+                architectures: $0.supportedArchitectures,
+                supportedDeviceTypeIdentifiers: $0.supportedDeviceTypes?.map(\.identifier), available: $0.isAvailable)
         }, devices: deviceList.devices.flatMap { runtime, devices in
             devices.map { Device(identifier: $0.udid, name: $0.name, runtimeIdentifier: runtime,
                 deviceTypeIdentifier: $0.deviceTypeIdentifier, state: $0.state, available: $0.isAvailable) }
@@ -74,15 +76,27 @@ public struct IOSResourceInventory: Sendable {
     public func creation(runtimeID: String, version: String, build: String, architecture: String,
                          declared: String?, xcode: XcodeInstallation, deviceSet: URL) throws -> IOSSimulatorRequest {
         guard let versionNumber = SemanticVersion(version) else { throw failure("The runtime version is not an exact OS version") }
+        let matchingRuntimes = runtimes.filter { $0.identifier == runtimeID }
+        guard matchingRuntimes.count == 1, let runtime = matchingRuntimes.first,
+              runtime.version == version, runtime.build == build, runtime.available,
+              runtime.architectures?.contains(architecture) == true,
+              let identifiers = runtime.supportedDeviceTypeIdentifiers, !identifiers.isEmpty,
+              Set(identifiers).count == identifiers.count,
+              identifiers.allSatisfy({ $0.range(of: #"^com\.apple\.CoreSimulator\.SimDeviceType\.[A-Za-z0-9._-]+$"#,
+                  options: .regularExpression) != nil }) else {
+            throw failure("The runtime's supported device types are unknown or do not match its observed identity")
+        }
+        let supported = Set(identifiers)
+        let supportedTypes = SimctlDeviceTypeList(devicetypes: types.devicetypes.filter { supported.contains($0.identifier) })
         let type: SimctlDeviceTypeList.DeviceType
         if let declared {
-            let matches = types.devicetypes.filter { $0.name == declared }
+            let matches = supportedTypes.devicetypes.filter { $0.name == declared }
             guard matches.count == 1, let only = matches.first else {
-                throw failure("The declared Simulator is absent. Its name does not identify one device type; select or create it manually, then re-plan.")
+                throw failure("The declared Simulator does not identify one device type supported by this runtime. Select a compatible device type, then re-plan.")
             }
             type = only
         } else {
-            guard let selected = types.newestPhone(runningOn: versionNumber) else {
+            guard let selected = supportedTypes.newestPhone(runningOn: versionNumber) else {
                 throw failure("The selected Xcode has no compatible iPhone device type for this exact runtime")
             }
             type = selected
