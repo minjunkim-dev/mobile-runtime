@@ -1,0 +1,18 @@
+[
+  {
+    "source": "baseline-localsend",
+    "generatedRunnerLockPath": "<evidence-root>/sources/baseline-localsend/app/build/rust_lib_localsend_app/build/build_tool/pubspec.lock",
+    "SHA256": "8c3560578ef653bb421ccfb23c7bbbed6add61080eb8167a293d1ab587038a0a",
+    "preservedCopy": "<evidence-root>/logs/baseline-localsend-cargokit-runner.pubspec.lock",
+    "scope": "untracked generated native build-tool runner, separate from tracked app/workspace and Cargokit locks",
+    "bootstrapBehavior": "original run_build_tool.sh runs dart pub get --no-precompile in runner cache; no source patch applied"
+  },
+  {
+    "source": "prepared-localsend",
+    "generatedRunnerLockPath": "<evidence-root>/sources/prepared-localsend/app/build/rust_lib_localsend_app/build/build_tool/pubspec.lock",
+    "SHA256": "a084a3090725b120fc3f4547048001e905cdb87a89de6cedab35ae0314a66826",
+    "preservedCopy": "<evidence-root>/logs/prepared-localsend-cargokit-runner.pubspec.lock",
+    "scope": "untracked generated native build-tool runner, separate from tracked app/workspace and Cargokit locks",
+    "bootstrapBehavior": "original run_build_tool.sh runs dart pub get --no-precompile in runner cache; no source patch applied"
+  }
+]

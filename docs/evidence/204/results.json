@@ -1,0 +1,255 @@
+{
+  "schemaVersion": 1,
+  "attempts": [
+    {
+      "attempt": "attempt1",
+      "harnessExit": -5,
+      "seconds": 0.764,
+      "rawOutputSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "attempt": "attempt2",
+      "harnessExit": 0,
+      "seconds": 15.713,
+      "rawOutputSHA256": "d249ba964b36b0dfc372a7154b997d950380dbada2e9d7b45d7912b7af661ca3",
+      "productExit": 0,
+      "state": "needs-approval",
+      "completed": [],
+      "installStepCount": 0
+    },
+    {
+      "attempt": "attempt3",
+      "harnessExit": 0,
+      "seconds": 7.119,
+      "rawOutputSHA256": "6e792c1cb636f74325313ca814ff0658126bc4edcc0a5abd5442758e59cbd5b8"
+    },
+    {
+      "attempt": "attempt4",
+      "harnessExit": 0,
+      "seconds": 10.283,
+      "rawOutputSHA256": "6e792c1cb636f74325313ca814ff0658126bc4edcc0a5abd5442758e59cbd5b8"
+    },
+    {
+      "attempt": "attempt5",
+      "harnessExit": 0,
+      "seconds": 8.61,
+      "rawOutputSHA256": "6c31b87a0d2945620d58e21294c58c0a8ffc8126dfd2d54932385b196a5b8e03",
+      "productExit": 0,
+      "state": "needs-approval",
+      "completed": [],
+      "installStepCount": 2
+    },
+    {
+      "attempt": "attempt6",
+      "harnessExit": 0,
+      "seconds": 31.27,
+      "rawOutputSHA256": "24f7c875470dd68a5ae74672f174ef2b6d58de6ee0e72f6aa78a0ad3e9ad0565",
+      "productExit": 2,
+      "state": "failed",
+      "completed": [],
+      "installStepCount": 2
+    },
+    {
+      "attempt": "attempt7-cancel",
+      "harnessExit": 0,
+      "seconds": 47.855,
+      "rawOutputSHA256": "dc578906f0ae82b8eff414c5158ba8e0af2c9d13af9ef474eb63eaf229b2be56",
+      "productExit": 130,
+      "state": "cancelled",
+      "completed": [],
+      "installStepCount": 2
+    },
+    {
+      "attempt": "attempt8-final-plan",
+      "harnessExit": 0,
+      "seconds": 13.927,
+      "rawOutputSHA256": "dc6d61cbd440202d7369f9f214fb3949d87a7b4f1999dfa136c16d3a95fbf7cf",
+      "productExit": 0,
+      "state": "needs-approval",
+      "completed": [],
+      "installStepCount": 2
+    },
+    {
+      "attempt": "attempt9-fail-second",
+      "harnessExit": 0,
+      "seconds": 45.157,
+      "rawOutputSHA256": "7f2cc1eede19ad7c3892afc9540cac3aa911b94105505a2b6304b9714750b432",
+      "productExit": 2,
+      "state": "failed",
+      "completed": [],
+      "installStepCount": 2
+    },
+    {
+      "attempt": "atomic-probe",
+      "harnessExit": -5,
+      "seconds": 0.566,
+      "rawOutputSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "attempt": "regular-probe",
+      "harnessExit": 0,
+      "seconds": 0.458,
+      "rawOutputSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "attempt": "attempt10-current-plan",
+      "harnessExit": 0,
+      "seconds": 8.589,
+      "rawOutputSHA256": "300c4c24394b6ed4f502f39a0ed07043f1587c97fd735879739b995959ac9a3d",
+      "productExit": 0,
+      "state": "needs-approval",
+      "completed": [],
+      "installStepCount": 2
+    },
+    {
+      "attempt": "attempt11-fail-second",
+      "harnessExit": 0,
+      "seconds": 98.175,
+      "rawOutputSHA256": "91be1e8e1412f6ed091d61d48f4b83d8d916e9c5a7db9561f3cfa64ba3942a20",
+      "productExit": 2,
+      "state": "failed",
+      "completed": [
+        "android.sdk.package.build-tools;34.0.0"
+      ],
+      "installStepCount": 2
+    },
+    {
+      "attempt": "attempt12-remaining-plan",
+      "harnessExit": 0,
+      "seconds": 9.367,
+      "rawOutputSHA256": "ce0d04d372e0240f4e146193bc464fc80d9eb618602f8716f116ecedd467a8b0",
+      "productExit": 0,
+      "state": "needs-approval",
+      "completed": [],
+      "installStepCount": 1
+    },
+    {
+      "attempt": "attempt13-old-approval",
+      "harnessExit": 0,
+      "seconds": 8.147,
+      "rawOutputSHA256": "c96792dc5d48144dd40be97dfa98d904c5563245a3c40e339b4e5bf56d1cc718",
+      "productExit": 1,
+      "state": "needs-approval",
+      "completed": [],
+      "installStepCount": 1
+    },
+    {
+      "attempt": "attempt14-sdk-conflict",
+      "harnessExit": 0,
+      "seconds": 19.752,
+      "rawOutputSHA256": "ee61be4eef4dd6ba3f3216e87af82aaf82e77a1605169e2525cda735e6f839b3",
+      "productExit": 1,
+      "state": "failed",
+      "completed": [],
+      "installStepCount": 1
+    },
+    {
+      "attempt": "attempt15-install-remaining",
+      "harnessExit": 0,
+      "seconds": 74.26,
+      "rawOutputSHA256": "234790948f7d2862906ef30373a0b4f391c852efe03946771a158db1c640ba4a",
+      "productExit": 2,
+      "state": "failed",
+      "completed": [],
+      "installStepCount": 1
+    },
+    {
+      "attempt": "attempt16-retry-remaining",
+      "harnessExit": 0,
+      "seconds": 78.388,
+      "rawOutputSHA256": "d08bef784591963d3fb4aeeee2207a4b5a607e3b614d382d5ab31aead2323953",
+      "productExit": 1,
+      "state": "partial",
+      "completed": [
+        "android.sdk.package.platforms;android-35"
+      ],
+      "installStepCount": 0
+    },
+    {
+      "attempt": "attempt17-final-api-plan",
+      "harnessExit": 0,
+      "seconds": 8.883,
+      "rawOutputSHA256": "d0ac35de470663e30512edf90b45943b26f63f39e21bff1976f1d509422a549e",
+      "productExit": 0,
+      "state": "needs-approval",
+      "completed": [],
+      "installStepCount": 0
+    }
+  ],
+  "final": {
+    "publicAPIPlan": {
+      "exitCode": 0,
+      "installStepCount": 0,
+      "requirementBlockers": []
+    },
+    "actualCLIPlan": {
+      "exitCode": 0,
+      "seconds": 6.403
+    },
+    "aapt2": {
+      "argv": [
+        "/PREVIOUS_OWNED_ROOT/sdk/build-tools/34.0.0/aapt2",
+        "version"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Android Asset Packaging Tool (aapt) 2.19-10229193\n"
+    },
+    "sourceTrackedBytesModesIndexFlags": {
+      "equal": true,
+      "fileCount": 119
+    },
+    "firstInstalledPackageBytesModes": {
+      "equal": true,
+      "fileCount": 171
+    },
+    "originalMetadata": {
+      "sdk": {
+        "equal": true,
+        "beforeCount": 124166,
+        "afterCount": 124166,
+        "changed": []
+      },
+      "gradleCache": {
+        "equal": true,
+        "beforeCount": 26230,
+        "afterCount": 26230,
+        "changed": []
+      },
+      "globalAndroid": {
+        "equal": true,
+        "beforeCount": 14,
+        "afterCount": 14,
+        "changed": []
+      },
+      "globalConsoleToken": {
+        "equal": true
+      },
+      "scope": "lstat mode/size/mtime_ns/uid/gid/inode/link only; no key/token bytes or hashes; no full SDK/cache byte comparison"
+    },
+    "ownedStagesRemaining": 0,
+    "swiftWarningsAsErrors": {
+      "tests": 597,
+      "sourceHead": "73f20f95ba6073c313c4570550e638af51285275"
+    },
+    "cliFixtureSmokes": {
+      "doctor": "PASS",
+      "workflow": "PASS",
+      "setup": "PASS"
+    },
+    "remoteCI": "parent controlled; not evidence here",
+    "mainMerge": "not evidence here",
+    "publicLicenseRecords": {
+      "equalToCloneSource": true,
+      "recordCount": 8,
+      "acceptanceHashAdded": false
+    }
+  },
+  "notes": [
+    "Harness process exit0 does not imply product success. Use productExit/state/completed.",
+    "Attempt11 injected a deliberate failure before the second payload. It is not a measured network failure.",
+    "Attempt15 Gradle model timeout cause is unknown. The failed attempt remains recorded.",
+    "Initial raw license SHA assessment was wrong; official SDKmanager/JAXB adapter comparison corrected it without accepting a license.",
+    "Earlier hardcoded harness receipt head labels were stale for attempts4/5. See private assessment-corrections.json; compiled source later committed09c8018."
+  ]
+}

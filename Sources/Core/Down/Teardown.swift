@@ -30,14 +30,19 @@ public struct TeardownItem: Sendable, Equatable, Encodable {
     /// `blocked` alike. A blocked port has a next step too, and it is the one the
     /// verdict already wrote: the process holding 8081, by name.
     public let remediation: Remediation?
+    /// True only when cleanup confirmed an owned runtime is stopped or absent.
+    /// nil preserves the legacy report shape and carries no ownership evidence.
+    public let ownedRuntimeStopped: Bool?
 
     public init(
-        id: String, status: TeardownStatus, detail: String? = nil, remediation: Remediation? = nil
+        id: String, status: TeardownStatus, detail: String? = nil, remediation: Remediation? = nil,
+        ownedRuntimeStopped: Bool? = nil
     ) {
         self.id = id
         self.status = status
         self.detail = detail
         self.remediation = remediation
+        self.ownedRuntimeStopped = ownedRuntimeStopped
     }
 
     public static func stopped(_ id: String, _ detail: String? = nil) -> TeardownItem {

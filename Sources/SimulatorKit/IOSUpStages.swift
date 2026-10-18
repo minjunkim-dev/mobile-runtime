@@ -31,8 +31,10 @@ public func iOSStages(
             checkIDs: IOSWorkflowValidation.checkIDs,
             promoteToError: IOSWorkflowValidation.promotesToError
         ),
-        DependenciesStage(anchor: anchor, runner: projectRunner),
     ]
+    if anchor.framework == .reactNative {
+        stages.append(DependenciesStage(anchor: anchor, runner: projectRunner))
+    }
     if !buildWithoutDevice {
         stages.append(DeviceStage(
             declared: config.configuration?.device,
@@ -42,7 +44,7 @@ public func iOSStages(
             deviceID: deviceID
         ))
     }
-    if case .up = workflow {
+    if case .up = workflow, anchor.framework == .reactNative {
         // Before build on purpose: Metro warms up while xcodebuild spends its minutes.
         stages.append(MetroStage(anchor: anchor, runner: projectRunner))
     }
@@ -88,6 +90,8 @@ public enum IOSWorkflowValidation {
         "config.values",
         // The project and the toolchain its own declarations pin.
         "project.detected",
+        "project.execution-environment",
+        "project.native-ios",
         "node.version",
         "package-manager.version",
         "cocoapods.version",

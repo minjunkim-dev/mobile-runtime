@@ -1,0 +1,16 @@
+{
+  "correctedFields": [
+    "scenario",
+    "notApplicable",
+    "nativePreparation",
+    "rust",
+    "wrapperSHA256",
+    "sandboxProfileSHA256",
+    "xcodebuildArgv",
+    "outerInvocation",
+    "observedBuildResult"
+  ],
+  "correctedSHA256": "73877c3c08888de7faf2662aa445b2ff3d665552d3729be529ff47b5a9ca68a9",
+  "draftSHA256": "1a455d3917a415cc8e56e4359a5d6cec91ce89cc8692928a10ca667830ac03ac",
+  "reason": "Original draft inherited minimal-app scenario and notApplicable labels. Preserved in prepared-localsend-ios-final-tuple-draft.json. Tool execution and source bytes unchanged."
+}

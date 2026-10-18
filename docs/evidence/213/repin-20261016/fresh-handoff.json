@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "kind": "Separate fresh source handoff only; no new Runstir actual proof",
+  "fixedSourceAndIndexReceipt": "<android-native-root>/state/source-four-clones-additional-preparation-v5.json",
+  "clones": [
+    {
+      "role": "fresh-runstir-minimal",
+      "sourceSHA": "66732bc18ed28d9eed71336b4a2b018e09ad20b9",
+      "treeSHA": "1b2c0f69a98890901706439215227d533bb69b7a",
+      "trackedCount": 67,
+      "sourceAndIndexSameAtNewNativeEndpoint": true,
+      "endpointReceipt": "<android-native-root>/state/source-fresh-runstir-minimal-native-android-endpoint-v7.json",
+      "productExecuted": false
+    },
+    {
+      "role": "fresh-runstir-localsend",
+      "sourceSHA": "61145cf100522363e9658af97137097551c64832",
+      "treeSHA": "2346d8051c3f556fa545e9c48aa5c1bc7fc2446b",
+      "trackedCount": 1030,
+      "sourceAndIndexSameAtNewNativeEndpoint": true,
+      "endpointReceipt": "<android-native-root>/state/source-fresh-runstir-localsend-native-android-endpoint-v7.json",
+      "productExecuted": false
+    }
+  ],
+  "sourceBundles": [
+    {
+      "file": "../minimal-source.bundle",
+      "bytes": 44102,
+      "SHA256": "814788e74f8567dea21cb8bd442affbc08002a92e5ac02323a5bb740d45710f2"
+    },
+    {
+      "file": "../localsend-prepared.bundle",
+      "bytes": 2138,
+      "SHA256": "d17f7af56dd559be567514391779f1a8e1083574299236e7f08535d41cf5c11f"
+    }
+  ],
+  "manualInputPolicy": [
+    "Minimal official scaffold generator/initial13failure/explicit15source66732 remain in historicalREADME.",
+    "LocalSend starts at c1ce322fb3acf08e44f329b8b7208b8b0d91e244. User approved only app/ios/Podfile, app/ios/Podfile.lock and app/ios/Runner.xcodeproj/project.pbxproj in separate preparedclone61145.",
+    "No appDartlock/Cargo/source/Android trackedbytes changed; originalsource and originalPodlock stay preserved.",
+    "Choose exact official tool/artifact inputs in native-tuples.json. Each freshproject gets its own cache and resource lease.",
+    "New source untrackedPub/Pods/runner materialization must be independent. NativeDD/Pods/app/AVD/Simulator data are not freshsource evidence.",
+    "LocalSend exact iOS projectdependencies include38gems/4Podcommits/lockedCargoregistry/25runnerlock/24hostedarchives/26mapping. Mirror/RUSTC are explicit child inputs, not product features.",
+    "Old independent freshclone frozenDart/Pods proof is historical; newfreshRunstir clones are unused and not promoted to native/product pass."
+  ],
+  "nextGate": "FollowupRunstirCLI/GUI uses these separatefresh sources, pins a productcandidate and revalidates exactmanualinputs. A sourceclone or thishandoff alone is not AC05/AC06 product validation."
+}

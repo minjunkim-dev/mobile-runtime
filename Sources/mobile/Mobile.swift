@@ -44,7 +44,7 @@ struct Doctor: AsyncParsableCommand {
     @Option(name: .long, help: "Project folder. Defaults to the current working directory.")
     var project: String?
 
-    @Option(name: .long, help: "React Native app candidate id reported by doctor.")
+    @Option(name: .long, help: "Project app candidate id reported by doctor.")
     var app: String?
 
     @Flag(name: .long, help: "Do not ask for input. Missing selections are returned as candidates.")

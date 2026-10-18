@@ -1,0 +1,241 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-15",
+  "result": "inconclusive",
+  "scope": "native Android baseline without Runstir; partial app success, existing SDK preservation condition failed",
+  "runstirSource": "2e9f6422366e0bbe751332ae3b16c6ae87659019",
+  "host": {
+    "os": "macOS",
+    "version": "27.0.1",
+    "build": "26A434",
+    "architecture": "arm64",
+    "kind": "physical Mac"
+  },
+  "samples": [
+    {
+      "id": "todo",
+      "repository": "https://github.com/android/architecture-samples",
+      "sourceSHA": "ee66e1526b84c026615df032c705842b7d2a521f",
+      "module": ":app",
+      "variant": "debug",
+      "trackedFiles": 119,
+      "trackedManifestBefore": "0bfd7c5d531a0bc7da899b3f576725ace0ab539f83b779d712e4b2fbbbeff442",
+      "gradle": "8.11.1",
+      "gradleDistributionSHA256": "f397b287023acdba1e9f6fc5ea72d22dd63669d59ed4a289a29b1a76eee151c6",
+      "gradleWrapperJarSHA256": "c5a643cf80162e665cc228f7b16f343fef868e47d3a4836f62e18b7e17ac018a",
+      "agpDeclared": "8.7.3",
+      "kotlinDeclared": "2.1.10",
+      "javaSourceTarget": "17",
+      "mergedApplicationId": "com.example.android.architecture.blueprints.main",
+      "mergedLauncher": "com.example.android.architecture.blueprints.todoapp.TodoActivity",
+      "build": {
+        "status": "passed",
+        "exit": 0,
+        "duration": "6m 4s",
+        "tasks": "43 executed"
+      },
+      "install": "passed_after_initial_guest_package_service_broken_pipe",
+      "launch": "am_start_Status_ok_COLD",
+      "firstScreen": "observed_directly_from_actual_guest_PNG",
+      "jdkObserved": "Zulu 17.0.19 Zulu17.66+19-CA aarch64",
+      "trackedManifestAfter": "0bfd7c5d531a0bc7da899b3f576725ace0ab539f83b779d712e4b2fbbbeff442",
+      "gitStatusAfter": "clean",
+      "appPID": 4805,
+      "appCrashBufferForPID": "empty_when_observed",
+      "apkSHA256": "26a970c286b4edad3c824209cec99a82c918b74c482cd1a91b8f610590b25fe0",
+      "installedBaseApkSHA256": "26a970c286b4edad3c824209cec99a82c918b74c482cd1a91b8f610590b25fe0",
+      "resolvedBuildTools": "unknown",
+      "baselineResult": "inconclusive",
+      "firstScreenFile": "todo-first-screen.png"
+    },
+    {
+      "id": "nia",
+      "repository": "https://github.com/android/nowinandroid",
+      "sourceSHA": "a49ed253d75e61a2b6ab80a8da677b57437b08eb",
+      "module": ":app",
+      "variant": "demoDebug",
+      "trackedFiles": 715,
+      "trackedManifestBefore": "0f2774e653ad51c31688ee6f01169636eb604dd467d986f8cd9d17cbe5de548a",
+      "gradle": "9.7.1",
+      "gradleDistributionSHA256": "acd53f1edaf02f1a8ff99879f8a34b302661a057d9b063ae9e35b552f804d20a",
+      "gradleWrapperJarSHA256": "7a9ce74cff467ca1bf60a4fcd9f05185acceda4d0f382434d393e17864262c5d",
+      "agpDeclared": "9.3.2",
+      "kotlinDeclared": "2.3.0",
+      "javaSourceTarget": "11",
+      "buildLogicJavaTarget": "17",
+      "mergedApplicationId": "com.google.samples.apps.nowinandroid.demo.debug",
+      "mergedLauncher": "com.google.samples.apps.nowinandroid.MainActivity",
+      "build": {
+        "status": "passed",
+        "exit": 0,
+        "duration": "22m 35s",
+        "tasks": "551 total; 468 executed; 83 from cache"
+      },
+      "install": "passed",
+      "launch": "first_am_start_Status_timeout_at_notification_prompt_then_denied_notifications_and_repeated_am_start_Status_ok",
+      "firstScreen": "observed_directly_from_actual_guest_PNG",
+      "jdkObserved": "Zulu 21.0.12.1 Zulu21.52+203-CA aarch64",
+      "trackedManifestAfter": "0f2774e653ad51c31688ee6f01169636eb604dd467d986f8cd9d17cbe5de548a",
+      "gitStatusAfter": "clean",
+      "appPID": 6151,
+      "appCrashBufferForPID": "empty_when_observed",
+      "apkSHA256": "2b1b3d7e70bdd9a2db09e2492af597b042676229cc5f61f46ad679b0d4e82c31",
+      "installedBaseApkSHA256": "2b1b3d7e70bdd9a2db09e2492af597b042676229cc5f61f46ad679b0d4e82c31",
+      "resolvedBuildTools": "unknown",
+      "baselineResult": "inconclusive",
+      "firstScreenFile": "nia-first-screen.png"
+    }
+  ],
+  "installedFileSHA256": {
+    "emulator/emulator": "b3b8fc0dcedcf6e15b54b41f3e5156319029aa00b88a59fd489f80abdd8fc133",
+    "platform-tools/adb": "1811e253b21b12cbfda7201ebaf86c10e7ddcb5c606a7a81f7c82b4c429c2d3b",
+    "platforms/android-35/android.jar": "4566663c3876e022b4fa4ced8c8697c4ab1688267f090114fd92d027b32e619b",
+    "platforms/android-36/android.jar": "d9eb9da824d9e247a352f570f01e1169e725b2954bca9e283a71786c59b59f9a",
+    "build-tools/35.0.0/aapt2": "729a6a8deba828992c50cb448d4ef3947003ec5a0d1deead7534897c8fc3486f",
+    "build-tools/36.0.0/aapt2": "a8844d4089b442b034aed8953deee1893253053c900e03141ae7173e3edd8157",
+    "system-images/android-35/google_apis/arm64-v8a/source.properties": "bd5cb4bc86ef478b0f37a034aa2b460165b391e8cb6504cb13b8ca1c462c4848",
+    "system-images/android-35/google_apis/arm64-v8a/system.img": "5d9c9213a36f9034e85719baffba88d0a4b6ab992bbf80fdc7c4dfd21d070597",
+    "system-images/android-35/google_apis/arm64-v8a/vendor.img": "af71ded6307254f8bfa4711c87cbc82f60fe1f31b424ccff20db540639ab460b",
+    "system-images/android-35/google_apis/arm64-v8a/kernel-ranchu": "a9dda2ae115395ea352bca2201294b4df0020a7f425cbfae879ee66a03a8f19f",
+    "system-images/android-35/google_apis/arm64-v8a/ramdisk.img": "46ff502d0e0a1d8f844d29c084a8b797107513d26199825f0d827836a87e84d7",
+    "cmdline-tools/21.0/bin/avdmanager": "a3ae9bdf8302aafed80115e2156039766ed309bcf7025f289c3a21e274b9279c",
+    "Zulu17.66.19.0/bin/java": "2e42a67be88e7815c0cd08c52f7145805b20ca666d46df11539b2587ac641c52",
+    "Zulu21.52.203.0/bin/java": "35a19b42eff6570a55f683f74e029be2295c545a1787b97d42e344556d0c3d49"
+  },
+  "resourcesBefore": {
+    "sdk": {
+      "entries": 124165,
+      "fileBytes": 21418313928,
+      "metadataSHA256": "1507bd0d623d9f7effaec459eaa9024bffed014c4886390579a736a4dabd9fd6"
+    },
+    "existingAVD": {
+      "entries": 41,
+      "fileBytes": 11436031608,
+      "metadataSHA256": "179d09b9d0cb3bef5e43baeba0b9dfd767a8b9e545a183e94c4c95cba3fb51f7"
+    }
+  },
+  "digestDefinitions": {
+    "trackedManifest": "SHA256 over sorted git ls-files entries: relative path bytes + NUL + octal permission text + NUL + SHA256(file bytes or symlink target bytes).digest()",
+    "resourceMetadata": "SHA256 over sorted recursive entries: compact JSON [relative path, S_IFMT(mode), S_IMODE(mode), size, mtime_ns, symlink target or empty string] + newline; does not hash all resource file bytes"
+  },
+  "gradleChecksumSources": [
+    "https://services.gradle.org/distributions/gradle-8.11.1-bin.zip.sha256",
+    "https://services.gradle.org/distributions/gradle-9.7.1-bin.zip.sha256"
+  ],
+  "deviceIdentity": {
+    "serial": "emulator-5560",
+    "avd": "runstir215-api35",
+    "architecture": "arm64-v8a",
+    "androidRelease": "15",
+    "api": 35,
+    "buildFingerprint": "google/sdk_gphone64_arm64/emu64a:15/AE3A.240806.043/12960925:userdebug/dev-keys",
+    "adbServerPort": 5041,
+    "consolePort": 5560,
+    "adbTransportPort": 5561
+  },
+  "hardwareAcceleration": {
+    "availabilityCheckExit": 0,
+    "availability": "Hypervisor.Framework OS X Version 27.0",
+    "runtimeAccelerationDiagnostic": "not_collected",
+    "physicalMacGuestRan": true
+  },
+  "androidPhysicalDevice": "unverified",
+  "freshRunstirClones": {
+    "todo": {
+      "prepared": true,
+      "sourceSHA": "ee66e1526b84c026615df032c705842b7d2a521f",
+      "trackedManifestSHA256": "0bfd7c5d531a0bc7da899b3f576725ace0ab539f83b779d712e4b2fbbbeff442",
+      "generatedArtifacts": [],
+      "eligibleForKnownGoodHandoff": false
+    },
+    "nia": {
+      "prepared": false
+    },
+    "reason": "resource-preservation gate failed; no accepted known-good handoff"
+  },
+  "resourcePreservation": "failed",
+  "resultReasons": [
+    "Existing SDK .knownPackages metadata changed unexpectedly; original marker bytes and individual mtime were not captured.",
+    "Full original SDK bytes were not hashed; only 11 selected SDK file checksums match.",
+    "Resolved Gradle Build Tools version and actual runtime acceleration diagnostic are unknown.",
+    "Valid known-good baseline and complete fresh clone handoff remain open."
+  ],
+  "resourcesAfter": {
+    "sdk": {
+      "entries": 124165,
+      "fileBytes": 21418313928,
+      "metadataSHA256": "346313ed8ab549adc290461692b1fa2cd00b612ed278a128d7ef1d01f32a5af6",
+      "preservation": "failed",
+      "recentModifiedPath": ".knownPackages",
+      "markerBytes": 16,
+      "markerMtimeLocal": "2026-10-15 20:23:04 Asia/Seoul",
+      "markerSHA256": "c9e4213c80f2816dca9959705fb17cdfd4f175a982bd2450966581a4a952dbde",
+      "markerOriginalBytes": "not_collected",
+      "markerOriginalIndividualMtime": "not_collected",
+      "wholeSdkBytesPreserved": "unproven",
+      "selectedSdkFilesByteSHA256Compared": 11,
+      "selectedSdkFilesByteSHA256Matches": 11
+    },
+    "existingAVD": {
+      "entries": 41,
+      "fileBytes": 11436031608,
+      "metadataSHA256": "179d09b9d0cb3bef5e43baeba0b9dfd767a8b9e545a183e94c4c95cba3fb51f7",
+      "metadataMatchesBefore": true,
+      "wholeAvdBytesHashed": false
+    }
+  },
+  "cleanup": {
+    "emulatorPID": 84720,
+    "emulatorExit": 0,
+    "emulatorStop": "exact_owned_adb_emu_kill",
+    "adbServerPID": 54724,
+    "adbServerStop": "explicit_port_5041_kill_server_after_device_list_empty",
+    "noListenersAtEnd": [
+      5037,
+      5041,
+      5560,
+      5561
+    ],
+    "existingSdkAutomaticallyRestored": false,
+    "ownedValidationDirectoryPreserved": true
+  },
+  "logArtifacts": [
+    {
+      "name": "emulator-attempt1-window.log",
+      "bytes": 9838,
+      "sha256": "9af66c113d1d0282498db55925d035bc505d67af52d456dac3c9e7efa4c86117"
+    },
+    {
+      "name": "emulator-attempt2-headless.log",
+      "bytes": 7943,
+      "sha256": "b56ce41a8c0c1b42ce94b6366c4badeb638c157015c4725bcda6f1f3b0a50f9d"
+    },
+    {
+      "name": "nia-build.log",
+      "bytes": 63406,
+      "sha256": "4eca971864afbe5395f7165aef97e73480a5cb64cbdaee82d7024efe00cbb7f6"
+    },
+    {
+      "name": "todo-build.log",
+      "bytes": 6605,
+      "sha256": "3155f435f6d70f4af966fdd48c4bc227a1df7f60d50ddf85d6e45a4037b1f5e6"
+    }
+  ],
+  "pngArtifacts": [
+    {
+      "name": "nia-first-screen.png",
+      "bytes": 296044,
+      "sha256": "8b5c02302d9f6c0ce4aa5211bc0ea3b1125a6284e1db6f3d085ef918916b9bc2"
+    },
+    {
+      "name": "nia-notification-prompt.png",
+      "bytes": 192097,
+      "sha256": "b9da207d3f55bdbf2f41ee901a211a7911f14a99084f26f181f679cb333e5630"
+    },
+    {
+      "name": "todo-first-screen.png",
+      "bytes": 56348,
+      "sha256": "1bc4ac868206a4277b690460de38db906018944d66bb1a443c93c9e5844d6908"
+    }
+  ]
+}

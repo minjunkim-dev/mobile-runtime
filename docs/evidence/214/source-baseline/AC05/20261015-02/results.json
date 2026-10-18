@@ -1,0 +1,90 @@
+{
+  "candidateIdentity": "source-baseline",
+  "scenarioID": "AC05",
+  "attemptID": "214-20261015-02",
+  "tupleManifest": "../20261015-01/tuple.json",
+  "sampleIdentity": "netnewswire-oss",
+  "sourceSHA": "aea7795bcc0698ced6f28eba53da886eb6217e64",
+  "executionSurface": "native-tools; neither Runstir CLI nor Runstir GUI",
+  "operator": "Codex #214 context; shared iOS lease assigned by coordinator",
+  "overallVerdict": "inconclusive",
+  "previousAttempt": "../20261015-01/results.json",
+  "commandChange": "Remove only the global -sdk override, following the original repository iOS CI command. Keep each target's declared SDK and all frozen dependency constraints. Use new isolated DerivedData.",
+  "expected": "The original NetNewsWire-iOS scheme builds, installs and launches on the owned simulator without modifying tracked source or existing resources. Observe the correct first screen and record required manual choices.",
+  "build": {
+    "status": "pass",
+    "exitCode": 0,
+    "elapsedSeconds": 223.896,
+    "completedUTC": "2026-10-15T11:30:03.066164+00:00",
+    "privateRawLogSHA256": "55467fd5bdd9b54d3230c6e31a05f83c5314af2f6749eb83d867f11edb45311f",
+    "publicExcerpt": "native-build-excerpt.log",
+    "warnings": "17 diagnostic lines include macOS sysroot versus iOS Simulator target warnings from the original multiplatform local packages. Warnings were preserved. No warning policy or source was changed."
+  },
+  "artifact": {
+    "appID": "org.runstir.baseline214.NetNewsWire.iOS-DEBUG",
+    "supportedPlatform": "iPhoneSimulator",
+    "sdk": "iphonesimulator27.0",
+    "xcodeBuild": "27A266a",
+    "executableSHA256": "377d8c1a8cdf228772558ee71041ba727297ce428650f6103679218b15fb73f2",
+    "fileCount": 170,
+    "sizeBytes": 35094448,
+    "bundlePlatformAudit": "All 20 Info.plist files that declare supported platforms specify iPhoneSimulator, including the app, extensions, frameworks and resource bundles."
+  },
+  "install": {
+    "status": "pass",
+    "exitCode": 0,
+    "completedLocalObservation": "2026-10-15T20:39:20+09:00 installd reports successful installation",
+    "limitation": "The host simctl command waited for more than six minutes before completing. The reason for that delay was not established."
+  },
+  "launch": {
+    "status": "pass",
+    "exitCode": 0,
+    "processObservedAlive": true,
+    "observationUTC": "2026-10-15T11:41:23.718254+00:00",
+    "priorInvocationIncident": "An earlier launch was mistakenly started before installation had completed and returned FBSOpenApplicationServiceErrorDomain/code4. The post-install launch succeeded. That earlier command-order error is not classified as an application or Runstir defect."
+  },
+  "firstScreen": {
+    "status": "inconclusive",
+    "renderedApplicationScreenObserved": true,
+    "evidence": "netnewswire-notification-first-screen.png",
+    "SHA256": "2dde8467bdc2b84713b4a8300668132954e3c44ec8a6940d96d346f3d98b4e52",
+    "observed": "The correct NetNewsWire Feeds screen renders Smart Feeds and the original stock public feed list. The system notification permission alert overlays part of the screen. No crash UI, red box or blank app screen is visible.",
+    "notificationChoice": "A semantic UI tap on Don't Allow was attempted. The tool reported success, but a new screenshot still shows the alert. Dismissal or permission completion is therefore unverified.",
+    "afterTapEvidence": "netnewswire-after-tap.png",
+    "afterTapSHA256": "715fec6f627e2595a00e10dc61ce64de98f0f8bbb878028b2c476d456eb178dc",
+    "remainingManualInput": "Confirm a notification permission choice on the owned simulator and capture the unobscured app screen in a new attempt.",
+    "publicImagePrivacyReview": "Only original stock public feed names/counts, app UI and system permission UI are visible. No credential, account identity, local path or device UDID is visible."
+  },
+  "trackedPreservation": {
+    "status": "pass",
+    "fileCount": 1352,
+    "beforeRawTrackedSHA256": "5a6d7f086849f46bc40b2ef7f95242f0e35b1354753061ffda2e34056023aef8",
+    "afterRawTrackedSHA256": "5a6d7f086849f46bc40b2ef7f95242f0e35b1354753061ffda2e34056023aef8",
+    "beforeAndAfterIndexTree": "57d45813a3066fddd9172a417fe45b03c76040a0",
+    "trackedGitStatus": "clean",
+    "lockfileSHA256Unchanged": "451402e67a2e01ab03d23ddbe7d73b2509956811e5265a689760b9d70d3e0097",
+    "resolvedPackageCheckouts": {
+      "plcrashreporter": "0254f941c646b1ed17b243654723d0f071e990d0",
+      "Sparkle": "79bc9e872948e47877e76f194cb0c8e0412b0b90",
+      "Tidemark": "2a5cd8a715ad1145d36009f5d3f146704d3f7ec0",
+      "Zip": "bca30f6d6c7d37cbc4aa8f6b0002e281dcc36195"
+    }
+  },
+  "resourcePreservation": {
+    "status": "pass-with-bounded-scope",
+    "existingDeviceInitialAndFinalState": "Booted",
+    "existingInstalledAppCountBeforeAndAfter": 43,
+    "existingNormalizedAppInventoryBeforeAndAfterSHA256": "b3f9e49628cf7b8dfec13cab084b3557ac1c34874a466a31919fdf0c27fbbcfd",
+    "inventoryComparedFields": ["bundle identifier", "CFBundleVersion", "CFBundleShortVersionString", "ApplicationType"],
+    "existingUserDataAudit": "unverified; no full user-data comparison was performed",
+    "ownSimulatorShutdownExitCode": 0,
+    "ownSimulatorFinalState": "Shutdown",
+    "leaseReleasedUTC": "2026-10-15T11:45:12.611324+00:00",
+    "globalXcodeSelectionBeforeAndAfter": "/Applications/Xcode.app/Contents/Developer",
+    "globalSDKRuntimeCachePolicy": "No runtime installation, SDK deletion, global PATH change, global Xcode switch or existing cache replacement was performed. NetNewsWire used a dedicated SPM repository/artifact cache.",
+    "temporaryUIToolDefaults": "Cleared the owned named profile and restored the originally empty global profile. No tool defaults were persisted to project files."
+  },
+  "requiredUnknown": ["Original Xcode distribution archive SHA-256", "Original iOS runtime distribution archive SHA-256", "Confirmed notification choice and unobscured first screen"],
+  "unverified": ["Runstir CLI and GUI", "Physical device", "macOS 26.6 execution", "Preserved VM", "Full feature behavior and long-running stability"],
+  "freshCloneHandoff": "../../../fresh-clone-handoff.json"
+}

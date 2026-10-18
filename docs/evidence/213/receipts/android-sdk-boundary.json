@@ -1,0 +1,52 @@
+[
+  {
+    "path": "cmdline-tools/latest",
+    "sourcePropertiesSHA256": "f75142561a53d330b9ca0254fa030db205f5a779d89180d4f71fe6337145baca",
+    "symlinkCount": 0
+  },
+  {
+    "path": "platform-tools",
+    "sourcePropertiesSHA256": "2dccd788c0234d8cf7f7457377e57f57527a86a629c6ed54feb8af0f549dac38",
+    "symlinkCount": 0
+  },
+  {
+    "path": "emulator",
+    "sourcePropertiesSHA256": "ee589ca350515c29dc3bad30dd5ebe8efb11d1a50c17c8815125d3c4bd12a3a8",
+    "symlinkCount": 0
+  },
+  {
+    "path": "platforms/android-36",
+    "sourcePropertiesSHA256": "72291ff6611dbfc46fdfb6de2821c4a62c87befa5200713847eda426e3a501c2",
+    "symlinkCount": 0
+  },
+  {
+    "path": "build-tools/35.0.0",
+    "sourcePropertiesSHA256": "084847d70abc41284feee7ea717e7c92eab0d1be05f048c27445a359cfe109d8",
+    "symlinkCount": 0
+  },
+  {
+    "path": "build-tools/36.0.0",
+    "sourcePropertiesSHA256": "7dee6632e9ad6cb111da2bb99d747211e27927061b1276d040bb1d71fded5ebb",
+    "symlinkCount": 0
+  },
+  {
+    "path": "ndk/28.2.13676358",
+    "sourcePropertiesSHA256": "c00aa236fdb205e9be9edd9e2169763e48aca52735efff4e16f34205d49783b5",
+    "symlinkCount": 23
+  },
+  {
+    "path": "ndk/27.0.12077973",
+    "sourcePropertiesSHA256": "1c4a54b31c5ed242a901b4a472d412819b5e08405df1c58066bd555f9dd52515",
+    "symlinkCount": 23
+  },
+  {
+    "path": "ndk/27.1.12297006",
+    "sourcePropertiesSHA256": "e9b907b9c90bc2f0aaa87049580cc0c3ee0bb6aff50b58e4d1a8876ba3aeb026",
+    "symlinkCount": 23
+  },
+  {
+    "path": "system-images/android-35/google_apis/arm64-v8a",
+    "sourcePropertiesSHA256": "bd5cb4bc86ef478b0f37a034aa2b460165b391e8cb6504cb13b8ca1c462c4848",
+    "symlinkCount": 0
+  }
+]

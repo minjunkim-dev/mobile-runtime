@@ -1,0 +1,167 @@
+{
+  "source": "70cb2877b259690832cec686e925087ddb1c1d01",
+  "interaction": "actual CUA native app actions only; no API harness replacement",
+  "runtimePackaging": "dedicated bundle ID dev.runstir.gui.validation204; task-local ad-hoc; same compiled material sections",
+  "license": {
+    "source": "70cb2877b259690832cec686e925087ddb1c1d01",
+    "surface": "actual CUA native GUI",
+    "bundleID": "dev.runstir.gui.validation204",
+    "pid": 21285,
+    "actions": [
+      "open exact license-source via NSOpenPanel",
+      "click 준비 계획 확인",
+      "observed needs-approval / exit 0",
+      "click 현재 계획 승인·준비"
+    ],
+    "planID": "07cb21fefbf49592bf2a9a41e242842023e68bf5eb6c2b4e00eae5530f688666",
+    "packageKinds": [
+      "license",
+      "license"
+    ],
+    "at": 1792077422.9139688,
+    "finalState": "waiting-manual",
+    "exitCode": 1,
+    "completed": [],
+    "packageDestinationsPresent": false,
+    "licenseAccepted": false,
+    "finalCUAAt": 1792077441.413656,
+    "screenshot": "CUA screenshot in task transcript; not a stored PNG"
+  },
+  "acceptedPlan": {
+    "source": "70cb2877b259690832cec686e925087ddb1c1d01",
+    "CUA": "실제 준비 계획 확인 → 현재 계획 승인·준비",
+    "planID": "e5890e010633c70bb5b27c36e480e3ee215ffd8a2963238110bcaf6ad96c2280",
+    "packageKinds": [
+      "install",
+      "install"
+    ],
+    "time": 1792077526.408014
+  },
+  "cancel": {
+    "observation": {
+      "action": "observe-for-CUA-cancel",
+      "payload": "/OWNED_ROOT/gui-sdk/.runstir-install-5165B320-A1F1-4520-8F48-674C6A983621/payload.zip",
+      "originalMode": 420,
+      "bytesObserved": 8192,
+      "at": 1792077532.993425,
+      "seconds": 31.695,
+      "stage": "normal official payload download",
+      "regular": true,
+      "ownedUID": 501
+    },
+    "result": {
+      "surface": "CUA native GUI",
+      "action": "clicked 작업 취소 after normal payload bytes observed",
+      "state": "cancelled",
+      "exitCode": 130,
+      "planID": "e5890e010633c70bb5b27c36e480e3ee215ffd8a2963238110bcaf6ad96c2280",
+      "at": 1792077570.871892,
+      "packagesPresent": {
+        "build-tools/34.0.0": false,
+        "platforms/android-35": false
+      },
+      "scratchRemaining": []
+    }
+  },
+  "controlledPermissionFailure": {
+    "observation": {
+      "action": "controlled-chmod-000",
+      "payload": "/OWNED_ROOT/gui-sdk/.runstir-install-8CDD6F39-4FA3-4B49-B072-732BEF3F0396/payload.zip",
+      "originalMode": 420,
+      "bytesObserved": 4096,
+      "at": 1792077617.8662798,
+      "seconds": 46.929,
+      "stage": "normal official payload download",
+      "regular": true,
+      "ownedUID": 501
+    },
+    "result": {
+      "surface": "CUA native GUI",
+      "state": "failed",
+      "exitCode": 2,
+      "errorDomain": "NSCocoaErrorDomain",
+      "errorCode": 257,
+      "underlyingError": "NSPOSIXErrorDomain 13 Permission denied",
+      "fault": "controlled payload read permission; not network outage",
+      "payloadRemovedByOwnedCleanup": true,
+      "packagesPresent": {
+        "build-tools/34.0.0": false,
+        "platforms/android-35": false
+      },
+      "scratchRemaining": [],
+      "at": 1792077656.8702688
+    }
+  },
+  "partial": {
+    "surface": "actual CUA GUI",
+    "state": "partial",
+    "exitCode": 1,
+    "approvedPlanID": "225595350e7b26b9d587fc03e7d2520de179cea649d1ab0a26f1c1564641cca2",
+    "remainingPlanID": "c1b5772c2541d5e4ad51b157523d1db946077ae88f7eff5f8c8497d455a50b3d",
+    "completed": [
+      "android.sdk.package.build-tools;34.0.0"
+    ],
+    "remainingPackage": "platforms;android-35",
+    "platformKind": "permission",
+    "buildToolsFileCount": 171,
+    "at": 1792077775.287738
+  },
+  "staleAndLock": {
+    "surface": "actual CUA GUI",
+    "staleApprovedPlanID": "c1b5772c2541d5e4ad51b157523d1db946077ae88f7eff5f8c8497d455a50b3d",
+    "state": "needs-approval",
+    "exitCode": 1,
+    "error": "Plan conditions changed. No preparation changes started.",
+    "newPlanID": "e2a5a6da684501d2bc703b77854cafbcaab449227190777ed513c37233247f9b",
+    "remainingInstall": [
+      "platforms;android-35"
+    ],
+    "nextAction": "CUA 준비 계획 확인 attempt returned locked Mac/manual unlock required",
+    "at": 1792077923.604136,
+    "guiRemainingInstallVerified": false,
+    "packagesPresent": {
+      "build-tools/34.0.0": true,
+      "platforms/android-35": false
+    }
+  },
+  "remainingInstalled": {
+    "source": "70cb2877b259690832cec686e925087ddb1c1d01",
+    "surface": "actual CUA GUI",
+    "approvedPlanID": "e2a5a6da684501d2bc703b77854cafbcaab449227190777ed513c37233247f9b",
+    "finalPlanID": "f1bcfef81b6e77b8c22e0adb37d92789b30b4c71c6a21ba54c86c64b2f4469ef",
+    "state": "partial",
+    "exitCode": 1,
+    "completed": [
+      "android.sdk.package.platforms;android-35"
+    ],
+    "remaining": [
+      "android.android.avd"
+    ],
+    "buildToolsKind": "reuse",
+    "platform35Kind": "reuse",
+    "lastAction": "CUA screenshot then super+q",
+    "at": 1792078165.496566,
+    "lockedAttemptPreserved": true,
+    "manualUnlockConfirmedByUser": true
+  },
+  "normalGUIExits": {
+    "license": {
+      "exitCode": 0,
+      "at": 1792077430.782646
+    },
+    "accepted": {
+      "exitCode": 0,
+      "at": 1792078155.697056
+    }
+  },
+  "observedUIExcerpts": [
+    "setup: waiting-manual / exit 1",
+    "setup: cancelled / exit 130",
+    "setup: failed / exit 2; NSCocoaErrorDomain 257, NSPOSIXErrorDomain 13 Permission denied",
+    "setup: partial / exit 1; 완료한 변경: android.sdk.package.build-tools;34.0.0",
+    "setup: needs-approval / exit 1; Plan conditions changed. No preparation changes started.",
+    "setup: partial / exit 1; 완료한 변경: android.sdk.package.platforms;android-35; 남은 작업: android.android.avd"
+  ],
+  "screenshots": "Actual screenshots observed through CUA in the task transcript. No new local PNG is claimed.",
+  "outside204": "Native Android general inspection still shows provider pending; app build/install/launch belongs to later tickets and was not executed."
+}

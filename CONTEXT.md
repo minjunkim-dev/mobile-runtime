@@ -5,7 +5,9 @@ Reproducible mobile development runtime. 프로젝트가 요구하는 환경을 
 현재 `main`은 iOS React Native MVP와 Android Phase 4A CLI provider를 제공한다.
 Private Phase 4A Android 내부 alpha는 SHA를 고정한 공개 OSS 실제 앱 표본 하나와
 macOS 검증 조합 하나에서 통과했다(`docs/private-android-alpha-runbook.md` 6절). CLI가 현재 실행 표면이며 SwiftUI
-macOS 앱은 같은 Core/provider 계약을 표현할 후속 표면이다.
+macOS 앱은 EnvironmentKit의 공통 확인·빌드·실행·종료 진입을 사용한다.
+native iOS는 선택한 Xcode 컨테이너와 공유 app scheme을 이 진입에 연결한다.
+실제 Runstir 실행과 GUI 조작의 검증 범위는 각 티켓의 근거로 별도 기록한다.
 
 ## Language
 
@@ -20,6 +22,17 @@ _Avoid_: mobile-runtime (제품명), mobile (working name)
 
 **프로젝트 종류 (Project kind)**:
 앱의 도구와 실행 경로를 구분하는 네이티브·Flutter·React Native 분류다. iOS·Android 플랫폼과 별개의 구분이다.
+
+`ProjectFramework`의 공통 값은 `react-native`, `flutter`, `native-ios`, `native-android`다.
+`ProjectCandidate`와 `ProjectAnchor`는 같은 framework를 유지한다.
+native iOS 후보는 앱 루트와 선택한 `.xcodeproj` 또는 `.xcworkspace`를 별도로 유지한다.
+복수 컨테이너는 보고된 `--app` 후보 id로 선택한다.
+RN 후보 id는 기존 값을 유지한다.
+RN·Flutter의 `ios/`와 `android/`는 독립 네이티브 후보로 중복 등록하지 않는다.
+Flutter는 이 계약에서 탐지만 제공한다. 준비 연결은 #205에서 구현한다.
+native Android는 평가한 Gradle application module·runnable variant를 공통 Android doctor/build/up/down에 연결한다.
+native Android의 공유 CLI·GUI 실행 경계는 ADR-0037을 따른다. 실제 실행 검증 범위는 #211의 근거에 기록한다.
+native iOS의 공유 CLI·GUI 실행 경계는 ADR-0036과 `docs/native-ios.md`를 따른다.
 
 **플랫폼 (Platform)**:
 앱이 빌드되고 실행되는 iOS 또는 Android 환경이다. Runstir를 실행하는 호스트 macOS와 구분한다.
@@ -321,6 +334,9 @@ _Avoid_: plugin, provider(→ 플랫폼 쪽 용어)
 
 **앵커 (Anchor)**:
 프로젝트 탐지의 기준점 — RN에서는 react-native를 의존성으로 가진 package.json. adapter 활성화와 mobile.yml 탐색이 같은 앵커를 공유한다.
+native iOS에서는 선택한 Xcode 컨테이너의 앱 루트가 앵커다.
+`detect(candidate:)`는 framework와 컨테이너 선택을 보존한다.
+앱 루트만 다시 탐지하여 선택한 컨테이너를 바꾸지 않는다.
 
 **워크스페이스 루트 (Workspace root)**:
 앵커에서 위로 올라가 만나는 첫 락파일의 위치. 패키지 매니저와 install 실행 위치가 여기서 나오고, 루트가 선언한 `packageManager`·`engines`도 앵커의 것과 함께 요구가 된다. 단일 repo에서는 앵커와 같은 자리다. `workspaces` 필드는 파싱하지 않는다 — ADR-0003.

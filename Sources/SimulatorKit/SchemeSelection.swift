@@ -37,7 +37,7 @@ struct SchemeSelector {
             target: String,
             kind: XcodeBuildTarget.Kind
         ) -> Remediation {
-            let list = "xcodebuild -list \(kind.rawValue) \(target)"
+            let list = ["xcodebuild", "-list", kind.rawValue, target].map(shellArgument).joined(separator: " ")
             switch self {
             case .noSchemeNamed:
                 return Remediation(summary: "Set ios.scheme to one of them.", command: list)

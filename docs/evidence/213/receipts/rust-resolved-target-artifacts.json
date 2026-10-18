@@ -1,0 +1,43 @@
+{
+  "toolchain": "1.97.1",
+  "officialManifest": "https://static.rust-lang.org/dist/channel-rust-1.97.1.toml",
+  "manifestSHA256": "03569b1886ceb5c05276b50c8431ab111de944cd6140fe1fa7d821dd8e0f29cf",
+  "targets": {
+    "aarch64-apple-darwin": {
+      "available": "true",
+      "url": "https://static.rust-lang.org/dist/2026-07-16/rust-std-1.97.1-aarch64-apple-darwin.tar.gz",
+      "hash": "27b3da11e1adefeba0213aff73587acf0bf50641c774f09103fb7b29a341ed5d",
+      "xz_url": "https://static.rust-lang.org/dist/2026-07-16/rust-std-1.97.1-aarch64-apple-darwin.tar.xz",
+      "xz_hash": "a4895f5c6995e83cab8687e46b14324592398049def71ce75ca308c981cf200d"
+    },
+    "aarch64-apple-ios-sim": {
+      "available": "true",
+      "url": "https://static.rust-lang.org/dist/2026-07-16/rust-std-1.97.1-aarch64-apple-ios-sim.tar.gz",
+      "hash": "a709e03f2cae93a1d0de5c8bed12a9b87ed6c0cb6c0f6e6f3887deaca3848510",
+      "xz_url": "https://static.rust-lang.org/dist/2026-07-16/rust-std-1.97.1-aarch64-apple-ios-sim.tar.xz",
+      "xz_hash": "3deb094abb0f7382aad761b8e1e89cebd68bec0591d39e313330ef709b99f6e4"
+    },
+    "aarch64-linux-android": {
+      "available": "true",
+      "url": "https://static.rust-lang.org/dist/2026-07-16/rust-std-1.97.1-aarch64-linux-android.tar.gz",
+      "hash": "b52b3278f560ad33550ed99efbb3d46c5223074e67c6329aa09e63e8375ad51e",
+      "xz_url": "https://static.rust-lang.org/dist/2026-07-16/rust-std-1.97.1-aarch64-linux-android.tar.xz",
+      "xz_hash": "d664a49fb80d125d68f779112aa97d2a3f5def5f807a35540aa77fce0b350c4f"
+    },
+    "i686-linux-android": {
+      "available": "true",
+      "url": "https://static.rust-lang.org/dist/2026-07-16/rust-std-1.97.1-i686-linux-android.tar.gz",
+      "hash": "4908e75ba2e057ab2a961c492396232c5f5a6c108cf515f91d27fcb93bf334dd",
+      "xz_url": "https://static.rust-lang.org/dist/2026-07-16/rust-std-1.97.1-i686-linux-android.tar.xz",
+      "xz_hash": "603b22ec3681d5dab9c3f81265f22f4a19adf30e99720c733136440e85b221a7"
+    },
+    "x86_64-linux-android": {
+      "available": "true",
+      "url": "https://static.rust-lang.org/dist/2026-07-16/rust-std-1.97.1-x86_64-linux-android.tar.gz",
+      "hash": "40c55b7926ca5c0cdaeb64f7a499d1647ae2f6e87d9892d28799e85269c87465",
+      "xz_url": "https://static.rust-lang.org/dist/2026-07-16/rust-std-1.97.1-x86_64-linux-android.tar.xz",
+      "xz_hash": "465ab02385c392e5399804ba81b32606e0bf279153f3746082297afad632a34b"
+    }
+  },
+  "checksumScope": "official manifest declaration; rustup verified install, completed raw archives not retained for independent hashing"
+}

@@ -26,7 +26,7 @@ public enum ProcessOutput: Sendable, Hashable {
 /// A subprocess invocation. `environment` is applied on top of the inherited
 /// environment; the runner has no policy of its own (no `DEVELOPER_DIR` opinion).
 public struct ProcessCommand: Sendable, CustomStringConvertible {
-    /// Resolved through `PATH`. Absolute paths are not supported — no caller needs one.
+    /// A command name resolves through `PATH`; an absolute path selects that exact executable.
     public var executable: String
     public var arguments: [String]
     public var environment: [String: String]
@@ -213,10 +213,12 @@ public struct SystemProcessRunner: ProcessRunner {
 
         let invocation = Self.invocation(command)
         let work = Task { () async throws -> ProcessResult in
+            let executable: Subprocess.Executable = invocation.executable.hasPrefix("/")
+                ? .path(.init(invocation.executable)) : .name(invocation.executable)
             switch command.output {
             case .collected:
                 let result = try await Subprocess.run(
-                    .name(invocation.executable),
+                    executable,
                     arguments: Arguments(invocation.arguments),
                     environment: environment,
                     output: .string(limit: Self.outputLimit),
@@ -232,7 +234,7 @@ public struct SystemProcessRunner: ProcessRunner {
                 let sink = try LogWriter(file: file, onLine: onLine)
                 defer { sink.close() }
                 let result = try await Subprocess.run(
-                    .name(invocation.executable),
+                    executable,
                     arguments: Arguments(invocation.arguments),
                     environment: environment,
                     input: .none,

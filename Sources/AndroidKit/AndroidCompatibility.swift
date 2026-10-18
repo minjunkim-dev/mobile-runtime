@@ -7,11 +7,46 @@ struct AndroidCompatibilityEvaluation: Sendable, Equatable {
     let unknown: [String]
 }
 
-enum AndroidCompatibility {
+public enum AndroidCompatibility {
     static let source = CheckSource(
         tier: 2,
-        origin: "Android AGP compatibility table + Gradle Java compatibility table (2026-08-20)"
+        origin: "Android AGP compatibility table + Gradle Java compatibility table (2026-10-15); https://developer.android.com/build/releases/about-agp; https://docs.gradle.org/current/userguide/compatibility.html"
     )
+
+    /// Preparation uses the same official tables as the evaluated build checks.
+    /// Unknown compatibility never authorizes a new JDK candidate.
+    public static func preparationJDKBlocker(major: Int, gradle: SemanticVersion, agp: SemanticVersion) -> String? {
+        guard let agpGradle = minimumGradle(for: agp), let agpJDK = minimumJDK(for: agp),
+              let javaGradle = minimumGradleForJava(major) else {
+            return "The bundled AGP/Gradle/JDK tables do not cover this exact toolchain"
+        }
+        guard gradle >= agpGradle else { return "AGP \(agp) requires Gradle \(agpGradle) or newer" }
+        guard major >= agpJDK else { return "AGP \(agp) requires JDK \(agpJDK) or newer" }
+        guard gradle >= javaGradle else { return "JDK \(major) requires Gradle \(javaGradle) or newer" }
+        guard gradle < SemanticVersion(major: 9) || major >= 17 else { return "Gradle 9 and newer require JDK 17 or newer" }
+        return nil
+    }
+
+    static func effectiveBuildTools(declared: String?, agp: String?) -> String? {
+        guard let declared, let version = SemanticVersion(declared) else { return nil }
+        // Preserve observed data for doctor. The compatibility evaluation separately
+        // blocks preparation when the plugin's version or compatibility row is unknown.
+        guard let agp = agp.flatMap(SemanticVersion.init(_:)) else { return declared }
+        // Each stable release's Compatibility table gives both minimum and default.
+        // https://developer.android.com/build/releases/agp-<major>-<minor>-0-release-notes
+        // SdkHandler replaces a revision below the minimum with the default:
+        // https://android.googlesource.com/platform/tools/base/+/studio-master-dev/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/SdkHandler.java
+        let table: [Int: [Int: String]] = [
+            7: [0: "30.0.2", 1: "30.0.3", 2: "30.0.3", 3: "30.0.3", 4: "30.0.3"],
+            8: [0: "30.0.3", 1: "33.0.1", 2: "34.0.0", 3: "34.0.0", 4: "34.0.0",
+                5: "34.0.0", 6: "34.0.0", 7: "34.0.0", 8: "35.0.0", 9: "35.0.0",
+                10: "35.0.0", 11: "35.0.0", 12: "35.0.0", 13: "35.0.0"],
+            9: [0: "36.0.0", 1: "36.0.0", 2: "36.0.0", 3: "36.0.0", 4: "36.0.0"],
+        ]
+        guard let minimumText = table[agp.major]?[agp.minor],
+              let minimum = SemanticVersion(minimumText) else { return declared }
+        return version < minimum ? minimumText : declared
+    }
 
     static func evaluate(
         wrapper: AndroidGradleWrapper,
@@ -112,7 +147,7 @@ enum AndroidCompatibility {
                 6: "8.7", 7: "8.9", 8: "8.10.2", 9: "8.11.1", 10: "8.11.1",
                 11: "8.13", 12: "8.13", 13: "8.13",
             ],
-            9: [0: "9.1.0", 1: "9.3.1", 2: "9.4.1", 3: "9.5.0"],
+            9: [0: "9.1.0", 1: "9.3.1", 2: "9.4.1", 3: "9.5.0", 4: "9.6.0"],
         ]
         return table[agp.major]?[agp.minor].flatMap(SemanticVersion.init(_:))
     }

@@ -1,0 +1,1029 @@
+{
+  "schemaVersion": 1,
+  "issue": 210,
+  "evidenceClass": "local Runstir CLI and GUI execution on an owned iOS Simulator",
+  "implementationHead": "cf384de1019f52341a731ce3d0f9e837a84c5696",
+  "base": "2e9f6422366e0bbe751332ae3b16c6ae87659019",
+  "productIdentity": {
+    "productHead": "cf384de1019f52341a731ce3d0f9e837a84c5696",
+    "SourcesTree": "87bc6d859c37902fa09c1afb5d65140d3321d26d",
+    "PackageSwiftBlob": "1631bd8877d2f3fc1fe5cdf32944b09bab11255e",
+    "PackageResolvedBlob": "873d1649d56370831a29f409925c99cd1ee4ebc7",
+    "cliSHA256": "8983b75990b24d31bbdb5d5ba703ace487a9d336f1a87165ed5d5b5a3a09407b",
+    "guiSHA256": "7013e5d05ac103b27a82bc47f7528a64014a6ed568b89e694e440b0f9399c306",
+    "ScriptsTree": "63492f403135b31404347b449af9d97ffe694539",
+    "WorkflowsTree": "a7fa258955373631bc58f554debda07f644d164f"
+  },
+  "implementationDiffSHA256": "9a78aee6baa3625aa2b19dca015c5ae7a98ad44be02e85a322639a823e2c5c26",
+  "implementationFileCount": 30,
+  "toolchain": {
+    "macOS": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0.1\nBuildVersion:\t\t26A434",
+    "architecture": "arm64",
+    "Xcode": "Xcode 27.0\nBuild version 27A266a",
+    "sdk": "27.0",
+    "runtime": "iOS 27.0 (24A434)",
+    "simulator": "<simulator-A>: iPhone 18 Pro",
+    "originalXcodeArchiveSHA256": "unknown",
+    "originalRuntimeArchiveSHA256": "unknown"
+  },
+  "samples": {
+    "food": {
+      "origin": "https://github.com/apple/sample-food-truck.git",
+      "sourceSHA": "3954a769e99f3cc53297d94f2b960ceb2665b3d6",
+      "container": "Food Truck.xcodeproj",
+      "scheme": "Food Truck",
+      "configuration": "Debug",
+      "measuredDeploymentTarget": "16.4",
+      "bundleID": "com.example.apple-samplecode.Food-Truck"
+    },
+    "netnewswire": {
+      "origin": "https://github.com/Ranchero-Software/NetNewsWire.git",
+      "sourceSHA": "aea7795bcc0698ced6f28eba53da886eb6217e64",
+      "container": "NetNewsWire.xcodeproj",
+      "scheme": "NetNewsWire-iOS",
+      "configuration": "Debug",
+      "measuredDeploymentTarget": "17.0",
+      "bundleID": "com.ranchero.NetNewsWire.iOS-DEBUG"
+    }
+  },
+  "projectExecution": {
+    "operatorTrustedBothSourceTrees": true,
+    "SPMAutomaticResolution": false,
+    "requiredXcodeArguments": [
+      "-disableAutomaticPackageResolution",
+      "-onlyUsePackageVersionsFromResolvedFile"
+    ],
+    "simulatorBuildSetting": "CODE_SIGNING_ALLOWED=NO",
+    "SDKRuntimeInstallationPerformed": false,
+    "trackedProjectSettingsEdited": false,
+    "inputEnvironment": "PATH, HOME, TMPDIR, LANG; explicit DEVELOPER_DIR for recorded final build/launch processes"
+  },
+  "netnewswirePreparedDependencies": {
+    "lockSHA256": "451402e67a2e01ab03d23ddbe7d73b2509956811e5265a689760b9d70d3e0097",
+    "checkouts": [
+      {
+        "identity": "plcrashreporter",
+        "expected": "0254f941c646b1ed17b243654723d0f071e990d0",
+        "actual": "0254f941c646b1ed17b243654723d0f071e990d0",
+        "match": true,
+        "dirty": false
+      },
+      {
+        "identity": "sparkle",
+        "expected": "79bc9e872948e47877e76f194cb0c8e0412b0b90",
+        "actual": "79bc9e872948e47877e76f194cb0c8e0412b0b90",
+        "match": true,
+        "dirty": false
+      },
+      {
+        "identity": "tidemark",
+        "expected": "2a5cd8a715ad1145d36009f5d3f146704d3f7ec0",
+        "actual": "2a5cd8a715ad1145d36009f5d3f146704d3f7ec0",
+        "match": true,
+        "dirty": false
+      },
+      {
+        "identity": "zip",
+        "expected": "bca30f6d6c7d37cbc4aa8f6b0002e281dcc36195",
+        "actual": "bca30f6d6c7d37cbc4aa8f6b0002e281dcc36195",
+        "match": true,
+        "dirty": false
+      }
+    ],
+    "cache": "owned copy of exact #214 prepared cache in the source-specific DerivedData",
+    "cacheMetadataChange": "absolute artifact cache-root relocation only",
+    "Sparkle": {
+      "officialURL": "https://github.com/sparkle-project/Sparkle/releases/download/2.9.5/Sparkle-for-Swift-Package-Manager.zip",
+      "declaredArchiveChecksum": "34b9b2071f3de0012eca3faa3a9290bb94e62131e9a74f6dc91514a000097a6c",
+      "archiveBytesSHA256": "unknown-not-retained",
+      "extractedArtifactTreeSHA256": "c3abe10cc8504490701ad6c4c8593e09d0b93e6d10813960ac36ed8d9f63b263",
+      "extractedTreeHashIsNotArchiveChecksum": true
+    },
+    "generatedIgnoredSource": {
+      "path": "Modules/Secrets/Sources/Secrets/SecretKey.swift",
+      "generator": "buildscripts/updateSecrets.sh",
+      "firstBuildFailed": "Account could not find SecretKey; the first observed Secrets source list omitted the generated file",
+      "retry": "same frozen CLI command succeeded after the project build script generated the ignored source",
+      "preFirstBuildGeneratedFileExistence": "not-measured",
+      "trackedSourceChanged": false,
+      "generatorPin": {
+        "path": "Modules/Secrets/Sources/Secrets/SecretKey.swift",
+        "sha256": "79db489c4dddfd8d4738d76c62ea4827364937ad45acc2ee3985f5fc275a03a3",
+        "sameAsFirstRecordedGeneratedInput": false,
+        "generator": "buildscripts/updateSecrets.sh",
+        "inputEnvironment": "PATH, HOME, TMPDIR, LANG and explicit DEVELOPER_DIR; no other process environment forwarded",
+        "contentsPublished": false,
+        "outputHashNote": "SecretKey.swift.gyb uses os.urandom(64) salt. Each build may change the generated output hash with identical source and absent secret inputs.",
+        "generatorInputs": {
+          "buildscripts/updateSecrets.sh": "8c64a305bc24a28b966a23f4d8728cafa26f9b4910bd0bad311eb9af726210bc",
+          "Modules/Secrets/Sources/Secrets/SecretKey.swift.gyb": "46d881c9558f535e57b51c25bc66479c6cf915f1d217ab13c0bc4908f4e22292"
+        },
+        "secretEnvironmentKeys": [
+          "MERCURY_CLIENT_ID",
+          "MERCURY_CLIENT_SECRET",
+          "FEEDLY_CLIENT_ID",
+          "FEEDLY_CLIENT_SECRET",
+          "INOREADER_APP_ID",
+          "INOREADER_APP_KEY"
+        ],
+        "secretInputPresence": {
+          "MERCURY_CLIENT_ID": false,
+          "MERCURY_CLIENT_SECRET": false,
+          "FEEDLY_CLIENT_ID": false,
+          "FEEDLY_CLIENT_SECRET": false,
+          "INOREADER_APP_ID": false,
+          "INOREADER_APP_KEY": false
+        }
+      },
+      "outputHashMayChange": "committed template uses os.urandom(64) salt; case comparisons retain each actual output SHA256"
+    }
+  },
+  "cliCommands": [
+    {
+      "id": "food-build",
+      "argv": [
+        "mobile",
+        "build",
+        "--project",
+        "<food-source>",
+        "--app",
+        "Food Truck.xcodeproj",
+        "--json",
+        "--scheme",
+        "Food Truck",
+        "--progress-json"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 70.67,
+      "status": "unknown",
+      "state": "succeeded",
+      "completedStages": [
+        "validate",
+        "build"
+      ],
+      "stdoutSHA256": "4a0dc9a2a219b5c3200c4285ce0f23540e1edbfc705a690ec555bf27db3ed412",
+      "progressSHA256": "f21c442f728995669d5d0e812b99f54b1c3b89f97f8da5c9d2205b3e02afb308",
+      "buildLogSHA256": "74deee306109e5a2151fe15ac8dcfedb1631d5ef4461bb08dcd6e7c13bd00e6d"
+    },
+    {
+      "id": "food-up",
+      "argv": [
+        "mobile",
+        "up",
+        "--project",
+        "<food-source>",
+        "--app",
+        "Food Truck.xcodeproj",
+        "--json",
+        "--scheme",
+        "Food Truck",
+        "--device",
+        "<simulator-A>",
+        "--progress-json"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 46.622,
+      "status": "unknown",
+      "state": "succeeded",
+      "completedStages": [
+        "validate",
+        "device",
+        "build",
+        "install",
+        "launch"
+      ],
+      "stdoutSHA256": "eef57bad3c0f8e8b13c59691e01f40950159b245694c71e72d36da64ea0b1315",
+      "progressSHA256": "71f16ef3d5dca54f0d9db9762b5291d3aab96a7116a840168cb3f9420d9bd165",
+      "buildLogSHA256": "d4e6f1ce41d342183a3e489ee6ad3cda9caeb35e52316e26388ff5464b6d8ede"
+    },
+    {
+      "id": "food-down-extra-selectors-rejected",
+      "argv": [
+        "mobile",
+        "down",
+        "--project",
+        "<food-source>",
+        "--app",
+        "Food Truck.xcodeproj",
+        "--json",
+        "--scheme",
+        "Food Truck",
+        "--device",
+        "<simulator-A>",
+        "--progress-json"
+      ],
+      "exitCode": 1,
+      "elapsedSeconds": 0.036,
+      "status": "error",
+      "state": "failed",
+      "completedStages": [],
+      "stdoutSHA256": "773373f2697c2c066892a90e376af50cfa9a6973166627cedcc98a87793b621a",
+      "progressSHA256": "4e6513a8d6c54476ab2c7c596ab6806d20830fa58bd9892fcd189762b0570071"
+    },
+    {
+      "id": "food-down",
+      "argv": [
+        "mobile",
+        "down",
+        "--project",
+        "<food-source>",
+        "--app",
+        "Food Truck.xcodeproj",
+        "--json",
+        "--progress-json"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.672,
+      "status": "pass",
+      "state": "succeeded",
+      "completedStages": [
+        "app"
+      ],
+      "stdoutSHA256": "c662989cc7f8fcb10a06970615a6f08301401d00965d5bfda1ca0c3367d7b5e9",
+      "progressSHA256": "7a7685892a6cb635ffacaf9409697d51a4338703258e929b6ad2857848fc9350"
+    },
+    {
+      "id": "netnewswire-doctor",
+      "argv": [
+        "mobile",
+        "doctor",
+        "--project",
+        "<netnewswire-source>",
+        "--app",
+        "NetNewsWire.xcodeproj",
+        "--json"
+      ],
+      "exitCode": 2,
+      "elapsedSeconds": 131.911,
+      "status": "unknown",
+      "state": null,
+      "completedStages": [],
+      "stdoutSHA256": "eefc88086beb2cb15a6940136aab149287397179f90edbb4bd1e1f9416750a33",
+      "progressSHA256": "3bd1539b9095d4826e344101f9664c94d2b746f70826bcac8bc3322b8394dc1b"
+    },
+    {
+      "id": "netnewswire-doctor-retry",
+      "argv": [
+        "mobile",
+        "doctor",
+        "--project",
+        "<netnewswire-source>",
+        "--app",
+        "NetNewsWire.xcodeproj",
+        "--json"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 2.233,
+      "status": "warning",
+      "state": null,
+      "completedStages": [],
+      "stdoutSHA256": "c7ecca86a7fae4ad4d9245686ce4f0bda76e9a80348369e414e0171d6b53e285",
+      "progressSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "netnewswire-build",
+      "argv": [
+        "mobile",
+        "build",
+        "--project",
+        "<netnewswire-source>",
+        "--app",
+        "NetNewsWire.xcodeproj",
+        "--json",
+        "--scheme",
+        "NetNewsWire-iOS",
+        "--progress-json"
+      ],
+      "exitCode": 1,
+      "elapsedSeconds": 50.939,
+      "status": "error",
+      "state": "failed",
+      "completedStages": [
+        "validate"
+      ],
+      "stdoutSHA256": "d38bcebc73051e9b9a5867aa6e7b3e4249cef0ee565b4fe8aaf91c219f2d3d45",
+      "progressSHA256": "40818cb216d5b64b0db6d3eb0aa1f94254c01fe3d9dfee7ab40feb3824efd054",
+      "buildLogSHA256": "e2014f1cd31fb9ae581792ebf526a67ea1350aaaf40aafbfbe8b003f0db9bff4"
+    },
+    {
+      "id": "netnewswire-build-retry",
+      "argv": [
+        "mobile",
+        "build",
+        "--project",
+        "<netnewswire-source>",
+        "--app",
+        "NetNewsWire.xcodeproj",
+        "--json",
+        "--scheme",
+        "NetNewsWire-iOS",
+        "--progress-json"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 43.581,
+      "status": "unknown",
+      "state": "succeeded",
+      "completedStages": [
+        "validate",
+        "build"
+      ],
+      "stdoutSHA256": "2943f3c6be48331cfb63e2b78c3cd8eaf837341d3bf5c67c45c19a6b9aeac4a2",
+      "progressSHA256": "dbc28af99b88492deac313ee4f23fad1295c99b0c26c6b22742691650800152d",
+      "buildLogSHA256": "40084a0584dd3976d9a41a370832034a4e100c614d07b973aca83c05bca8a07c"
+    },
+    {
+      "id": "netnewswire-up",
+      "argv": [
+        "mobile",
+        "up",
+        "--project",
+        "<netnewswire-source>",
+        "--app",
+        "NetNewsWire.xcodeproj",
+        "--json",
+        "--scheme",
+        "NetNewsWire-iOS",
+        "--device",
+        "<simulator-A>",
+        "--progress-json"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 40.43,
+      "status": "unknown",
+      "state": "succeeded",
+      "completedStages": [
+        "validate",
+        "device",
+        "build",
+        "install",
+        "launch"
+      ],
+      "stdoutSHA256": "c43b94d9624c04833d9d746130d394ca54a89c1db3ecb80c960e11c95800aed8",
+      "progressSHA256": "75fdcf321c1396eddb5f46fe38eeb718ef06961034e07d38a52df282becb74c3",
+      "buildLogSHA256": "6077d132817bfbea0bdeabb60659dd78039da25e75ed7af674f50983adf6918e"
+    },
+    {
+      "id": "netnewswire-down",
+      "argv": [
+        "mobile",
+        "down",
+        "--project",
+        "<netnewswire-source>",
+        "--app",
+        "NetNewsWire.xcodeproj",
+        "--json",
+        "--progress-json"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.622,
+      "status": "pass",
+      "state": "succeeded",
+      "completedStages": [
+        "app"
+      ],
+      "stdoutSHA256": "2bf45ffce80c8304a7e0133acd6d5ca1b231931a4d2ec2376ae0ab5cbed8bf13",
+      "progressSHA256": "bdec6fc4cf5a295908bc951b36db8042906eb53da5c7da0d27c08e6b406a483d"
+    }
+  ],
+  "gui": {
+    "sameProductExecutableSHA256": "7013e5d05ac103b27a82bc47f7528a64014a6ed568b89e694e440b0f9399c306",
+    "validationBundleIdentity": "dev.runstir.validation210.final",
+    "bundlePurpose": "isolate validation UI from the installed Runstir app; no release/signing/Gatekeeper claim",
+    "food": {
+      "scheme": "Food Truck",
+      "configuration": "Debug",
+      "device": "<simulator-A>",
+      "projectTrustCheckbox": true,
+      "doctorObserved": "native iOS, generic Xcode requirement title, quoted project argument in scheme guidance",
+      "up": "succeeded / exit 0",
+      "stages": [
+        "validate",
+        "device",
+        "build",
+        "install",
+        "launch"
+      ],
+      "firstScreen": "Truck",
+      "down": "succeeded / exit 0",
+      "initialAXLimitation": "doctor/up/down saved AX files are no-change diffs; normalized values come from the actual live CUA transcript observations, with native screenshots and raw build log retained",
+      "reobservationFullAXRetained": true
+    },
+    "netnewswire": {
+      "scheme": "NetNewsWire-iOS",
+      "configuration": "Debug",
+      "device": "<simulator-A>",
+      "projectTrustCheckbox": true,
+      "doctorObserved": "native iOS and explicit scheme choice required",
+      "up": "succeeded / exit 0",
+      "stages": [
+        "validate",
+        "device",
+        "build",
+        "install",
+        "launch"
+      ],
+      "firstScreen": "Feeds",
+      "down": "succeeded / exit 0",
+      "fullAXSnapshotsRetained": true,
+      "reobservationFullAXRetained": true
+    },
+    "notificationPermission": {
+      "initialAlertObserved": true,
+      "action": "허용 안 함",
+      "alertDismissalVerified": true,
+      "FeedsObservedAfterDismissal": true
+    },
+    "resourceCopies": {
+      "mobile_Core.bundle": {
+        "sameFilesAndBytes": true,
+        "fileCount": 6,
+        "treeSHA256": "090df246f669d6d26ee0a83c800a908a39e1b3de83e9edcdf5e07109ef0c5db1"
+      },
+      "mobile_AndroidKit.bundle": {
+        "sameFilesAndBytes": true,
+        "fileCount": 6,
+        "treeSHA256": "b315f2c8e7d812f0d459a79d89e77627924a48b129d87115c3ede282708f5b23"
+      }
+    }
+  },
+  "screenshots": {
+    "food-cli-first-screen.png": {
+      "sha256": "ce0d278604f3ef05ec3e5752c50514bacc867936fcf2d4723c0f15602371c661",
+      "kind": "unmodified-live-Device-Hub-window-capture",
+      "observedView": "Truck",
+      "privateCapture": "narrow/food-cli-first-screen.png",
+      "scope": "case with immediate before/after inventory comparison"
+    },
+    "food-gui-first-screen.png": {
+      "sha256": "c7a523623ad07f94c4c097ec1010dbf6238d656d370a759fb84b70b9ceae5188",
+      "kind": "unmodified-live-Device-Hub-window-capture",
+      "observedView": "Truck",
+      "privateCapture": "narrow/food-gui-first-screen.png",
+      "scope": "case with immediate before/after inventory comparison"
+    },
+    "netnewswire-cli-first-screen.png": {
+      "sha256": "e3a0216a433dfb2e903bee70108e59596537a50f21d7bd2f8b387b2da893a521",
+      "kind": "unmodified-live-Device-Hub-window-capture",
+      "observedView": "Feeds",
+      "privateCapture": "narrow/netnewswire-cli-first-screen.png",
+      "scope": "case with immediate before/after inventory comparison"
+    },
+    "netnewswire-gui-first-screen.png": {
+      "sha256": "1e1d6854822d8eadee267e28d6b71d54b3d6136bda85e5f1c86ba3ef11bb30fd",
+      "kind": "unmodified-live-Device-Hub-window-capture",
+      "observedView": "Feeds",
+      "privateCapture": "narrow/netnewswire-gui-first-screen.png",
+      "scope": "case with immediate before/after inventory comparison"
+    }
+  },
+  "preservation": {
+    "sources": {
+      "food": {
+        "trackedFiles": 553,
+        "trackedBytesMatch": true,
+        "indexMatch": true,
+        "sourceMatch": true
+      },
+      "netnewswire": {
+        "trackedFiles": 1352,
+        "trackedBytesMatch": true,
+        "indexMatch": true,
+        "sourceMatch": true
+      }
+    },
+    "netnewswireLockMatch": true,
+    "longWindow": {
+      "existingAppsMatch": false,
+      "existingAppsComparison": {
+        "beforeCount": 43,
+        "afterCount": 43,
+        "differentApps": 1,
+        "changedFields": [
+          "Bundle",
+          "BundleContainer",
+          "DataContainer",
+          "Path"
+        ],
+        "otherMetadataEqual": true,
+        "actor": "unknown",
+        "restorationAttempted": false
+      },
+      "allSimulatorStateDifferences": {}
+    },
+    "reobservation": {
+      "caseCount": 4,
+      "actualUpDownPerCase": 1,
+      "caseComparisons": [
+        {
+          "case": "food-cli",
+          "beforeAtUnix": 1792075440.353506,
+          "afterAtUnix": 1792075569.689686,
+          "existingAppsEqual": true,
+          "appCountsBefore": [
+            43
+          ],
+          "appCountsAfter": [
+            43
+          ],
+          "otherSimulatorStateDifferences": {},
+          "ownStateBefore": "Shutdown",
+          "ownStateAfter": "Booted",
+          "generatorInputsMatchPin": true,
+          "generatedOutputSHA256Before": "79db489c4dddfd8d4738d76c62ea4827364937ad45acc2ee3985f5fc275a03a3",
+          "generatedOutputSHA256After": "79db489c4dddfd8d4738d76c62ea4827364937ad45acc2ee3985f5fc275a03a3"
+        },
+        {
+          "case": "netnewswire-cli",
+          "beforeAtUnix": 1792075570.009652,
+          "afterAtUnix": 1792075668.39426,
+          "existingAppsEqual": true,
+          "appCountsBefore": [
+            43
+          ],
+          "appCountsAfter": [
+            43
+          ],
+          "otherSimulatorStateDifferences": {},
+          "ownStateBefore": "Booted",
+          "ownStateAfter": "Booted",
+          "generatorInputsMatchPin": true,
+          "generatedOutputSHA256Before": "79db489c4dddfd8d4738d76c62ea4827364937ad45acc2ee3985f5fc275a03a3",
+          "generatedOutputSHA256After": "8dd27b5aab229cf6b19c5dec94fae832ad4039d4fc9febca32577ce676b23498"
+        },
+        {
+          "case": "food-gui",
+          "beforeAtUnix": 1792075767.725631,
+          "afterAtUnix": 1792075898.7117949,
+          "existingAppsEqual": true,
+          "appCountsBefore": [
+            43
+          ],
+          "appCountsAfter": [
+            43
+          ],
+          "otherSimulatorStateDifferences": {},
+          "ownStateBefore": "Booted",
+          "ownStateAfter": "Booted",
+          "generatorInputsMatchPin": true,
+          "generatedOutputSHA256Before": "8dd27b5aab229cf6b19c5dec94fae832ad4039d4fc9febca32577ce676b23498",
+          "generatedOutputSHA256After": "8dd27b5aab229cf6b19c5dec94fae832ad4039d4fc9febca32577ce676b23498"
+        },
+        {
+          "case": "netnewswire-gui",
+          "beforeAtUnix": 1792076019.4174569,
+          "afterAtUnix": 1792076104.6688828,
+          "existingAppsEqual": true,
+          "appCountsBefore": [
+            43
+          ],
+          "appCountsAfter": [
+            43
+          ],
+          "otherSimulatorStateDifferences": {},
+          "ownStateBefore": "Booted",
+          "ownStateAfter": "Booted",
+          "generatorInputsMatchPin": true,
+          "generatedOutputSHA256Before": "8dd27b5aab229cf6b19c5dec94fae832ad4039d4fc9febca32577ce676b23498",
+          "generatedOutputSHA256After": "9ab03bef5dd0dbb77e1e19641ad5e772e6de420263b219a26941033506a4e65b"
+        }
+      ],
+      "existingAppsEqualAcrossAllCasesAndGaps": false,
+      "betweenCaseIntervals": [
+        {
+          "from": "food-cli-after",
+          "to": "netnewswire-cli-before",
+          "fromAtUnix": 1792075569.689686,
+          "toAtUnix": 1792075570.009652,
+          "fromKST": "2026-10-15T23:46:09.689686+09:00",
+          "toKST": "2026-10-15T23:46:10.009652+09:00",
+          "differentFieldCount": 0,
+          "differentAppCount": 0,
+          "fields": []
+        },
+        {
+          "from": "netnewswire-cli-after",
+          "to": "food-gui-before",
+          "fromAtUnix": 1792075668.39426,
+          "toAtUnix": 1792075767.725631,
+          "fromKST": "2026-10-15T23:47:48.394260+09:00",
+          "toKST": "2026-10-15T23:49:27.725631+09:00",
+          "differentFieldCount": 4,
+          "differentAppCount": 1,
+          "fields": [
+            "Bundle",
+            "BundleContainer",
+            "DataContainer",
+            "Path"
+          ]
+        },
+        {
+          "from": "food-gui-after",
+          "to": "netnewswire-gui-before",
+          "fromAtUnix": 1792075898.7117949,
+          "toAtUnix": 1792076019.4174569,
+          "fromKST": "2026-10-15T23:51:38.711795+09:00",
+          "toKST": "2026-10-15T23:53:39.417457+09:00",
+          "differentFieldCount": 0,
+          "differentAppCount": 0,
+          "fields": []
+        }
+      ],
+      "betweenCaseActor": "unknown",
+      "betweenCaseCause": "unknown",
+      "wholeWindowPreservationEstablished": false,
+      "noFurtherReexecutionOrRestoration": true
+    },
+    "nativeBuildDestinations": {
+      "food-up-xcodebuild.log": {
+        "destination": "platform=iOS Simulator,id=<simulator-A>",
+        "onlyOwnedDevice": true
+      },
+      "food-gui-up-xcodebuild.log": {
+        "destination": "platform=iOS Simulator,id=<simulator-A>",
+        "onlyOwnedDevice": true
+      },
+      "netnewswire-up-xcodebuild.log": {
+        "destination": "platform=iOS Simulator,id=<simulator-A>",
+        "onlyOwnedDevice": true
+      },
+      "netnewswire-gui-up-xcodebuild.log": {
+        "destination": "platform=iOS Simulator,id=<simulator-A>",
+        "onlyOwnedDevice": true
+      }
+    },
+    "existingAppPayloadHashesMeasured": false,
+    "ownAppLaunchServicesPresentAtEnd": {
+      "com.example.apple-samplecode.Food-Truck": false,
+      "com.ranchero.NetNewsWire.iOS-DEBUG": false
+    },
+    "ownedGUIProcessesRemaining": 0,
+    "ownSimulatorFinalState": "Shutdown",
+    "allSimulatorStateDifferencesAfterOwnedShutdown": {},
+    "onlyOwnedSimulatorShutdown": true,
+    "leaseReturned": true
+  },
+  "attemptsAndLimits": [
+    {
+      "id": "netnewswire-doctor",
+      "observation": "first xcodebuild -list exceeded 120 seconds; CLI returned unknown/exit 2",
+      "cause": "unknown",
+      "diagnostic": "identical argv/cwd/environment returned exit 0 in 1.040 seconds; one real CLI retry returned exit 0 in 2.233 seconds; no timeout increase"
+    },
+    {
+      "id": "netnewswire-build",
+      "observation": "first build failed on missing SecretKey; same command retry passed",
+      "settingsRelaxed": false
+    },
+    {
+      "id": "food-down-extra-selectors-rejected",
+      "observation": "extra build/device selectors were rejected before teardown; corrected selector-free down succeeded"
+    },
+    {
+      "id": "Mac-lock",
+      "observation": "CUA paused at locked Mac; human unlocked before GUI continued"
+    },
+    {
+      "id": "GUI-process",
+      "observation": "post-quit AX observation reopened an idle validation GUI; it was closed before final NNW build used the explicit minimal-environment process"
+    },
+    {
+      "id": "existing-app-inventory",
+      "observation": "43 apps before and after; one unrelated app changed four container paths during the full observation interval; actor unknown. No restoration was attempted. Full inventory equality is not established."
+    },
+    {
+      "id": "between-cases-app-inventory",
+      "observation": "Each of four actual up/down cases preserved all 43 existing app records. During the gap from 23:47:48.394 to 23:49:27.726 KST, one existing app changed four container paths. Overall window equality is false. Actor and cause remain unknown. No further runs or restoration."
+    }
+  ],
+  "deterministicValidation": {
+    "SwiftWerrorTests": 570,
+    "suiteCounts": [
+      108,
+      51,
+      352,
+      59
+    ],
+    "explicitWerrorBuild": "pass",
+    "CLIExecutableContracts": [
+      "verify-doctor-input.py",
+      "verify-workflow-input.py",
+      "verify-setup-input.py"
+    ],
+    "shellArgumentRegression": "spaces, apostrophe, and literal $(printf injected) preserved as one argv item; RED then GREEN"
+  },
+  "history": [
+    {
+      "head": "94cb8f395fc7bb3773cacb17c1426c844a8a532f",
+      "scope": "earlier actual CLI build only; superseded product evidence"
+    },
+    {
+      "head": "5c9b27b98b9a1bb340d87c0cfe11491c3d19cd0c",
+      "scope": "earlier CLI/GUI Food execution; initial standalone build raw log was overwritten by the following up; JSON/progress receipts retained"
+    },
+    {
+      "head": "57c159ca44a6f8134aee45b8e49a0b9eb7913858",
+      "scope": "generic title product CLI Food up/down/build and GUI build; superseded by quoted-guidance fix"
+    }
+  ],
+  "unverified": [
+    "original Xcode/runtime distribution archive checksums",
+    "raw Sparkle archive bytes checksum",
+    "cold or unprepared dependency installation",
+    "physical iOS devices and provisioning",
+    "actual cancellation/failure recovery on a live Simulator (behavior fixtures cover the shared boundary)",
+    "Flutter and native Android execution (#205/#211 scope)",
+    "release signing, notarization and Gatekeeper",
+    "final evidence-commit independent review, required CI, broad final-head human approval, merge and main CI"
+  ],
+  "privateEvidenceSHA256": {
+    "devices-after.json": "beabbff5a43e4546575b7a5bc391b2701bfdba3792f0fe5034871b66baf213d8",
+    "devices-before-shutdown.json": "72f9667b83eea51c45ea80f547e62bb108ceabbb9ca1bb6e14326f71009ff3b2",
+    "devices-before.json": "b94af4a3bd00e556337b4541203f6917d14f817896e126eae2562d98d1094ff7",
+    "devices-resume.json": "d0e11d68b51c37c70bc1e0c73c326814401e9c97397f8f882029cff1c44beae2",
+    "existing-apps-after.json": "70864663fb24f6e3449ad28da89ed07c0b9dfcaae59815cf36b033f7a8ced2f3",
+    "existing-apps-before.json": "ef5128806477ef6e4bb3959e1aa35ac338f906fb46dc450dc24b7dd13be4685c",
+    "existing-apps-diff-private.json": "1168de7a44813370d6e0da73e88160b6d2707e2c4a714f4de77d5cd6ac5cbf78",
+    "food-build-command.json": "e1ec03b247908791a4e8c6e0de1e3919e9df0b05548f360a29f53565f49a6e6d",
+    "food-build-xcodebuild.log": "74deee306109e5a2151fe15ac8dcfedb1631d5ef4461bb08dcd6e7c13bd00e6d",
+    "food-build.json": "4a0dc9a2a219b5c3200c4285ce0f23540e1edbfc705a690ec555bf27db3ed412",
+    "food-build.stderr": "f21c442f728995669d5d0e812b99f54b1c3b89f97f8da5c9d2205b3e02afb308",
+    "food-cli-first-screen.ax.txt": "77158026f8247724148b23cce55b2d06f443e1ddb5ba1867f8816dc3f8f2b728",
+    "food-cli-first-screen.png": "cb32a2bf64569ffc4f598905b106db1017f3ac4ff2e0be8916674646a54f2b80",
+    "food-down-command.json": "9c2a0f93eebc1f3fd06c77c0ee4ed7336e7c01616f984bcfec8a89d879efc43f",
+    "food-down-extra-selectors-rejected-command.json": "68be6e661c3371c5adeedc5aa3592e93887d08636a415ed53d2411d8064b10dd",
+    "food-down-extra-selectors-rejected.json": "773373f2697c2c066892a90e376af50cfa9a6973166627cedcc98a87793b621a",
+    "food-down-extra-selectors-rejected.stderr": "4e6513a8d6c54476ab2c7c596ab6806d20830fa58bd9892fcd189762b0570071",
+    "food-down.json": "c662989cc7f8fcb10a06970615a6f08301401d00965d5bfda1ca0c3367d7b5e9",
+    "food-down.stderr": "7a7685892a6cb635ffacaf9409697d51a4338703258e929b6ad2857848fc9350",
+    "food-gui-doctor.ax.txt": "d6f28eab064a69f67b3b3fded2d3b1fb9bd3ed3365fb9a3ffd7d4ac7f85e06f7",
+    "food-gui-down.ax.txt": "93175c4d22fb2816ac8ae4c6166e7a6397b715f6bead2a293dced810d62b0d81",
+    "food-gui-first-screen.ax.txt": "77cd90f9c5e666e29b802055e8519008794af2cb29dd14fa39dc5f07b139abaa",
+    "food-gui-first-screen.png": "b98ef7752eafcbda78f9af2cdd837f25e3039e4404c25693782bbbfa22d148ac",
+    "food-gui-needs-device.ax.txt": "d6f28eab064a69f67b3b3fded2d3b1fb9bd3ed3365fb9a3ffd7d4ac7f85e06f7",
+    "food-gui-up-xcodebuild.log": "4c516e19ebb1281905b5a97621779eda3b26a96399ce64cc9176e134fa5c8234",
+    "food-gui-up.ax.txt": "93175c4d22fb2816ac8ae4c6166e7a6397b715f6bead2a293dced810d62b0d81",
+    "food-source-after.json": "131175f7e21180ba98051eddf5e7e98a40642ebd58c7d34739b0af957bd24b92",
+    "food-source-before.json": "131175f7e21180ba98051eddf5e7e98a40642ebd58c7d34739b0af957bd24b92",
+    "food-up-command.json": "377095129376f0b7d23f8d9f3c41c094c495493a7ceeda5029d789e842886754",
+    "food-up-xcodebuild.log": "d4e6f1ce41d342183a3e489ee6ad3cda9caeb35e52316e26388ff5464b6d8ede",
+    "food-up.json": "eef57bad3c0f8e8b13c59691e01f40950159b245694c71e72d36da64ea0b1315",
+    "food-up.stderr": "71f16ef3d5dca54f0d9db9762b5291d3aab96a7116a840168cb3f9420d9bd165",
+    "gui-netnewswire-process.json": "7a7c9c84736883709f191e3cad092f2e7a3cdef31911849c324835679cd673ec",
+    "gui-netnewswire.stderr": "03a59a317d485c835ace2ee2b0bbd95c5107f269d71591eb263ba71b9031758e",
+    "gui-netnewswire.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "gui-process.json": "e69c4eaff7fae22de5a07f83bd1153fd11d4f1a581edfebd99ef782b7843e738",
+    "gui-resource-identity.json": "52ebad37ea28163ad24675daac8b1c9be56c323ddd29cff83adfbe4fdef8450a",
+    "gui-validation-bundle.json": "6c25ebea844a9d71a64293ce5288ab57407c26e4e0e190e1bea7bc6a137887ec",
+    "gui.stderr": "03a59a317d485c835ace2ee2b0bbd95c5107f269d71591eb263ba71b9031758e",
+    "gui.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "narrow/between-cases-app-diff-private.json": "92704b02c5886caf59542a0961f304ec489eaee6a04b349fc53853c8a0effeca",
+    "narrow/between-cases-summary.json": "0573c45bebb81ee997f3eb77183d663263d8e1e455736bb5fd5e353ad7ae57fd",
+    "narrow/capture.py": "2a4ababb5b7467c9b6c6d9c07547c0b0a5075a7a46f34948987f9e99c9f94c31",
+    "narrow/devices-after-shutdown.json": "99e934c52f1c248cc81b893cf043dbb4dc5721f8f37c930fd59efe089b987eef",
+    "narrow/final-audit.json": "e99f4e2b204dbd8dff787f5d7a165cbd57e1176a8f8cb93711414227381d8315",
+    "narrow/food-cli-after.json": "1139e4ec308659286274801eeebc1db2798d2d675fa9f72338f38c5e846f8097",
+    "narrow/food-cli-before.json": "c597b5f49e315a27105703bcb742fa80b262f514fd8e5785d0f8da73b8cf194e",
+    "narrow/food-cli-comparison.json": "f766cda5e52ef1336191e80df3d2e31ed4057a3560b7e8c557d5816da636ab1a",
+    "narrow/food-cli-first-screen.ax.txt": "14e82a58948fc09093decafbf84a29462b7895d2f2e22b2016fc1968174989ed",
+    "narrow/food-cli-first-screen.png": "ce0d278604f3ef05ec3e5752c50514bacc867936fcf2d4723c0f15602371c661",
+    "narrow/food-down-command.json": "296e98039b4f20fea31a9fb9f4cbf2d1e9223cb00dc9cf528824b9245dadacc2",
+    "narrow/food-down.json": "ff4272f2b4816600e7604a73dd068c76d48ce4a36622dc6b3f5ab9e194f0148f",
+    "narrow/food-down.stderr": "efafa7483d4edbc873206e7cee07f8ddc27584e64ee937f5f76a605f468a1050",
+    "narrow/food-gui-after.json": "962a30c48ffe440c0564b561871a791060489a4a4bcd14974707d71b4b25937a",
+    "narrow/food-gui-before.json": "521204b9bd5809b8aad0cb5e2629b099b60a3deedc4cbd98a44e325b11baca82",
+    "narrow/food-gui-comparison.json": "c483b4021b4eb3244aa3a964bc8be3eae71d4625f56b58d8d8d7a511b1714c00",
+    "narrow/food-gui-doctor.ax.txt": "d6e4a45cce21a740c09b682636c0b8596999cc34f8384ee944cd9ef9d64b9cab",
+    "narrow/food-gui-down.ax.txt": "8caf8bd6a5ece53d0be9053a74cc16cbb4553ae5e836d59a7207273ef4d7d963",
+    "narrow/food-gui-first-screen.ax.txt": "43b4e7e448150daaf5dfc5b167ca48e2fe3700dde3097dcfbb279be64efaf9ab",
+    "narrow/food-gui-first-screen.png": "c7a523623ad07f94c4c097ec1010dbf6238d656d370a759fb84b70b9ceae5188",
+    "narrow/food-gui-process.json": "47b306b31ff0e8ce0f6d81b16808a2e81e4e7dd5cd72bafdfbb2e35873251659",
+    "narrow/food-gui-up-xcodebuild.log": "65b1a4f824e7eb00ffaf82f6623f050680a8c71de4990cd6f21cab6d5e6a2e77",
+    "narrow/food-gui-up.ax.txt": "c4292bc8efd1ad884b8f8c9f05f42231b9aea522ec4b31b7fc087073721d2a36",
+    "narrow/food-gui.stderr": "03a59a317d485c835ace2ee2b0bbd95c5107f269d71591eb263ba71b9031758e",
+    "narrow/food-gui.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "narrow/food-source-after.json": "131175f7e21180ba98051eddf5e7e98a40642ebd58c7d34739b0af957bd24b92",
+    "narrow/food-up-command.json": "b197e59f37d9dec85727fa797fa8f6f6bbfff10d54a38c6c813e3f70f61e5dc4",
+    "narrow/food-up-xcodebuild.log": "72421f5c028ed0d3a76093924d50e989f90da95cd5c847b67d9b550de88d960c",
+    "narrow/food-up.json": "dfe0828a793a681bcd2aa452c91bdb98dc1c5cc0fce3ec2f1b555edd912e2bf1",
+    "narrow/food-up.stderr": "15f4c5245959ab952a233fe1972fc9fd7c8ad6a2d70765b710d4f290bee98fb2",
+    "narrow/generated-input-pin.json": "6bc2d8b7b19c0ba978ed0b98c48e4aa7c4b5bcf198fdeae275a0cd9ea2569729",
+    "narrow/gui-processes-after.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "narrow/netnewswire-cli-after.json": "e71d793be454d000b65a9e8b39fe169f6e7c4fb4ad983b71ff6e2b483914ceb2",
+    "narrow/netnewswire-cli-before.json": "7092e2464958f1834f307e3e5292b30c471153cf6160bb8d40a4c5a04d19ec94",
+    "narrow/netnewswire-cli-comparison.json": "d55cc234a6704cfc02b364a5d977b1326ba0a24ff9221a166a9cbfc8459660b2",
+    "narrow/netnewswire-cli-first-screen.ax.txt": "f448b6847b1b79eebbaabe63e3a6175195b645c308be210071979c8250c15e62",
+    "narrow/netnewswire-cli-first-screen.png": "e3a0216a433dfb2e903bee70108e59596537a50f21d7bd2f8b387b2da893a521",
+    "narrow/netnewswire-down-command.json": "74a447583c02275a06715275519a87a1f06c87c6ea21c1b39ebe32c818c6c6c3",
+    "narrow/netnewswire-down.json": "06e0d3ac1f9654664c2566c9a2b0002dac6ce07b72a546cc19964a3f03ff65de",
+    "narrow/netnewswire-down.stderr": "78a6c7ceb9ff144aef4f9b542a1ea2d176bc9d343f24da026143bae8513504ca",
+    "narrow/netnewswire-gui-after.json": "7a89bf021a3731ae4d7ada17117693fbdae3f002aab09e5b68456b688900ea2d",
+    "narrow/netnewswire-gui-before.json": "c01b960d02ec989dd4db9a6a477700304d065ebf69c846747c6e793cee842130",
+    "narrow/netnewswire-gui-comparison.json": "931851c5c74b4f5ed03509794ec50a6da436b87451d663b0500b0256c7528527",
+    "narrow/netnewswire-gui-doctor.ax.txt": "fb680c38a70c0f175ac1932a20166f8f418c426c30c43ad7d65848ed514c2582",
+    "narrow/netnewswire-gui-down.ax.txt": "db5d10c8539c4914b86e529485bf86762e9f4c33110d4cdeca41bb6378d7bb59",
+    "narrow/netnewswire-gui-first-screen.ax.txt": "f8bda86b17e0e1679754d9264574d7e7a13534747c786cac5456f0c0209dbfdf",
+    "narrow/netnewswire-gui-first-screen.png": "1e1d6854822d8eadee267e28d6b71d54b3d6136bda85e5f1c86ba3ef11bb30fd",
+    "narrow/netnewswire-gui-process.json": "b5b65aaacc583f4815f58ccecb508f7901e2cc20ecf64eb946e133e894bb4d40",
+    "narrow/netnewswire-gui-up-xcodebuild.log": "b419e09883d205729620858767f0f7c927e93f5efddb108dda24ffad15b7d155",
+    "narrow/netnewswire-gui-up.ax.txt": "53f12bd2fa8a3b98c7d0859d2f0ba1bc09c2f8bdc3079fe53f9481aa95afe1fe",
+    "narrow/netnewswire-gui-xcode-process.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "narrow/netnewswire-gui.stderr": "03a59a317d485c835ace2ee2b0bbd95c5107f269d71591eb263ba71b9031758e",
+    "narrow/netnewswire-gui.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "narrow/netnewswire-source-after.json": "462df79973107fb272e686396e03a6d3975b8d3262a9ddfc96f67d7dba9c4785",
+    "narrow/netnewswire-up-command.json": "0ed61f259161fea905d065847f30a914fcfe7af39bdfa692724889bb92b1d88b",
+    "narrow/netnewswire-up-xcodebuild.log": "2d38d6b6e3d0b194690c10b8d99d5ea3de58a40f955345222766870657a49e6c",
+    "narrow/netnewswire-up.json": "eecf93167c5c0ae67d6e0914b4c75c5c9d566ecb3eab7facd40b4440c21bae84",
+    "narrow/netnewswire-up.stderr": "c9c7fdb25148b79d7be694d1ba45eb56cc6c4e3883073cb453ae62574f1cca2c",
+    "narrow/own-launch-services-after.txt": "5a3ca56112e28385871719a1fc5c193e74da46c45b0ec6614e784a2d7566e732",
+    "narrow/product-identity.json": "c41c7a9e95cb95304075cb9bfbfcc1ef606e3fde1ac85c86e12295a64e6c6283",
+    "narrow/run_cli.py": "be7dad5dfd6d8946ccda0f390abdee985e598c4426dbb295563b6eb0d8daa368",
+    "narrow/run_gui.py": "79972da04698b606c8db9124160effec5180a8ff9acaf0d783bad0fcf56bc03c",
+    "netnewswire-build-command.json": "367263906c0ef70e0a43c2b83d6bf112e14ff40fe7cc2ee5a64470b706fe7af0",
+    "netnewswire-build-retry-command.json": "54b022b8fc153f15dc4e05054e020ba96b49ddecc60ba9c59a458bfe24451ec3",
+    "netnewswire-build-retry-xcodebuild.log": "40084a0584dd3976d9a41a370832034a4e100c614d07b973aca83c05bca8a07c",
+    "netnewswire-build-retry.json": "2943f3c6be48331cfb63e2b78c3cd8eaf837341d3bf5c67c45c19a6b9aeac4a2",
+    "netnewswire-build-retry.stderr": "dbc28af99b88492deac313ee4f23fad1295c99b0c26c6b22742691650800152d",
+    "netnewswire-build-xcodebuild.log": "e2014f1cd31fb9ae581792ebf526a67ea1350aaaf40aafbfbe8b003f0db9bff4",
+    "netnewswire-build.json": "d38bcebc73051e9b9a5867aa6e7b3e4249cef0ee565b4fe8aaf91c219f2d3d45",
+    "netnewswire-build.stderr": "40818cb216d5b64b0db6d3eb0aa1f94254c01fe3d9dfee7ab40feb3824efd054",
+    "netnewswire-cli-first-screen.ax.txt": "9ed933ed2e97290f049d27fe0998a52225c949e240391a219d69d68be81953a9",
+    "netnewswire-cli-first-screen.png": "fdf1620df580665d630fa468b58bb8bfe1322dbd85edb7c2fe88620ad65a49a0",
+    "netnewswire-cli-initial.ax.txt": "59703191ff05bd190c06c87e9d6e60301161f3a37a7895f04027278fe46d8c5c",
+    "netnewswire-default-cache.json": "f9eedc173855ca6ce35e1e3160e3a0cf6a594b641f5406b1fc25c8ba3f864669",
+    "netnewswire-doctor-command.json": "1384169af667a3c64b2cdb965b1eec184efc7f01cbf4043b6ea3f681116b3aa3",
+    "netnewswire-doctor-retry-command.json": "375eb542f433189c69acccc2c09e740ae6397c74d88d5178f3c2e0759720814c",
+    "netnewswire-doctor-retry.json": "c7ecca86a7fae4ad4d9245686ce4f0bda76e9a80348369e414e0171d6b53e285",
+    "netnewswire-doctor-retry.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "netnewswire-doctor.json": "eefc88086beb2cb15a6940136aab149287397179f90edbb4bd1e1f9416750a33",
+    "netnewswire-doctor.stderr": "3bd1539b9095d4826e344101f9664c94d2b746f70826bcac8bc3322b8394dc1b",
+    "netnewswire-down-command.json": "19f49149340b5f69b6eef2be98a0ce625a237d33940240a8a3f697d8a3bc3d59",
+    "netnewswire-down.json": "2bf45ffce80c8304a7e0133acd6d5ca1b231931a4d2ec2376ae0ab5cbed8bf13",
+    "netnewswire-down.stderr": "bdec6fc4cf5a295908bc951b36db8042906eb53da5c7da0d27c08e6b406a483d",
+    "netnewswire-generated-input.json": "54816f8cdc645f9a8f98f1c5fc4a115a48bdab2a42420430c924a7cf3c812608",
+    "netnewswire-gui-doctor.ax.txt": "29c67eaef4bdc7d32ae436b344fed1b6a92db4b6ab2907f4a6b9ef7aafa64b09",
+    "netnewswire-gui-down.ax.txt": "c49fd1119993e0a8d88e679c7cc3a5f1134a778f335a166e668ba451cdd358e9",
+    "netnewswire-gui-first-screen.ax.txt": "f448b6847b1b79eebbaabe63e3a6175195b645c308be210071979c8250c15e62",
+    "netnewswire-gui-first-screen.png": "829ef626aa6e88d456906bfcc520624b8b76906c91f5088e736b89d8a579c0a4",
+    "netnewswire-gui-up-xcodebuild.log": "adf9119a0abd318d2f563fe820cfa3cfc6e05b2bf55df84cf319152d9cc9f3c5",
+    "netnewswire-gui-up.ax.txt": "e40abce74180affd8b647dbd52412e43d32ef1b31dcd5b0b27a22145baab8327",
+    "netnewswire-list-diagnostic-command.json": "f0232c601f925b779d64500f97c5dbc457db02cde51f9013c6bbc18179725718",
+    "netnewswire-list-diagnostic.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "netnewswire-list-diagnostic.stdout": "b936184ac998338e2b17d3c07237409168a395160f66a1836937d6f67d4ba16f",
+    "netnewswire-preparation-command.json": "8bafb3a0210e49bef2f58b1bd30597cddfb2408672026c08623210f7e89d2c48",
+    "netnewswire-preparation-settings.json": "bd6596a9907a363e9dee9bfc33e95c766bc89784f405b6ce084410f58696b0bb",
+    "netnewswire-prepared-input.json": "0759aa864950222776e0e308ecb1c322805842454805789472e05bebb60d650c",
+    "netnewswire-retry-build-arm64-source-file-list.txt": "4c8320d68ae5c15bd1c267e8e46913cee7774847b0a4005dbc24a8fedbb21d0f",
+    "netnewswire-retry-build-x86_64-source-file-list.txt": "4c8320d68ae5c15bd1c267e8e46913cee7774847b0a4005dbc24a8fedbb21d0f",
+    "netnewswire-source-after.json": "462df79973107fb272e686396e03a6d3975b8d3262a9ddfc96f67d7dba9c4785",
+    "netnewswire-source-before.json": "462df79973107fb272e686396e03a6d3975b8d3262a9ddfc96f67d7dba9c4785",
+    "netnewswire-up-command.json": "1322bf2c3ee388414b13fe0f0e10f6c885e7acf22b296e39bbe6d5a494c3c7a9",
+    "netnewswire-up-xcodebuild.log": "6077d132817bfbea0bdeabb60659dd78039da25e75ed7af674f50983adf6918e",
+    "netnewswire-up.json": "c43b94d9624c04833d9d746130d394ca54a89c1db3ecb80c960e11c95800aed8",
+    "netnewswire-up.stderr": "75fdcf321c1396eddb5f46fe38eeb718ef06961034e07d38a52df282becb74c3",
+    "own-launch-services-after.txt": "c3214276476166d44772021659399d307947886a59cae06b275271b518c9d0c1",
+    "owned-gui-processes-after.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "preservation-audit.json": "3e3b80e89e9e7507de2cbb1d308a6c136f874e159b8a091b85b3c325de9a6b9b",
+    "product-diff-identity.json": "aa503215a02cab65986895bc40a38abb57570f2412653c5b76801fcce63567a9",
+    "product-identity.json": "c41c7a9e95cb95304075cb9bfbfcc1ef606e3fde1ac85c86e12295a64e6c6283",
+    "run_cli.py": "ef2d3ddabe593b02bfb25a7fb94568a5bdf272e69990953ecf80e43a199519f9",
+    "runstir210-scheme-final-build.log": "c70ebad8ad614c3dfdcfc1dfb62ac7151bf36c223b877938f7a2966ed3dd69cb",
+    "runstir210-scheme-final-verify-doctor-input.py.log": "2bd2116680690859fa36c3eaf4947e39d0aafeef9399eec6d8709288b0a25474",
+    "runstir210-scheme-final-verify-setup-input.py.log": "cbc2e74c9490593dd9805dc6251b19f934972c76662f8d17c73e8cf8d65367c8",
+    "runstir210-scheme-final-verify-workflow-input.py.log": "6ca0d009e4a297358a0822b12950453350c1e52027bf417bdd2fc0c6b0d34b31",
+    "runstir210-scheme-final-werror.log": "e316fdcb76aac23e5a390bede6849048f226129e745ea9d85cb28f0a49461e91",
+    "runstir210-scheme-guidance-red.log": "c0a2e96520cd8414a7175a16877097d26345f5617ace3ee71fa693f84df78683",
+    "source-origins.json": "d854391856ed24d9407783fe01c2fc4f36926b107f85e7189d613e317edd34f6",
+    "toolchain.json": "995d764348d58bbb3f93e585c5cb410524104ab9d7ca09eaa4b9809a5ab88153",
+    "ui-observations.json": "8f63dcd6916de6701e1d6ccfcf785bae9c694a1d94ea0a13a15350d26e15ae2b"
+  },
+  "recordedAtUTC": "2026-10-15T14:55:55.304206+00:00",
+  "evidenceChangeScope": "docs/evidence/210 only; implementation source remains the pinned commit",
+  "reobservationCLICommands": [
+    {
+      "id": "food-up",
+      "argv": [
+        "mobile",
+        "up",
+        "--project",
+        "<food-source>",
+        "--app",
+        "Food Truck.xcodeproj",
+        "--json",
+        "--scheme",
+        "Food Truck",
+        "--device",
+        "<simulator-A>",
+        "--progress-json"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 88.475,
+      "state": "succeeded",
+      "completedStages": [
+        "validate",
+        "device",
+        "build",
+        "install",
+        "launch"
+      ],
+      "stdoutSHA256": "dfe0828a793a681bcd2aa452c91bdb98dc1c5cc0fce3ec2f1b555edd912e2bf1",
+      "progressSHA256": "15f4c5245959ab952a233fe1972fc9fd7c8ad6a2d70765b710d4f290bee98fb2"
+    },
+    {
+      "id": "food-down",
+      "argv": [
+        "mobile",
+        "down",
+        "--project",
+        "<food-source>",
+        "--app",
+        "Food Truck.xcodeproj",
+        "--json",
+        "--progress-json"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.548,
+      "state": "succeeded",
+      "completedStages": [
+        "app"
+      ],
+      "stdoutSHA256": "ff4272f2b4816600e7604a73dd068c76d48ce4a36622dc6b3f5ab9e194f0148f",
+      "progressSHA256": "efafa7483d4edbc873206e7cee07f8ddc27584e64ee937f5f76a605f468a1050"
+    },
+    {
+      "id": "netnewswire-up",
+      "argv": [
+        "mobile",
+        "up",
+        "--project",
+        "<netnewswire-source>",
+        "--app",
+        "NetNewsWire.xcodeproj",
+        "--json",
+        "--scheme",
+        "NetNewsWire-iOS",
+        "--device",
+        "<simulator-A>",
+        "--progress-json"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 72.56,
+      "state": "succeeded",
+      "completedStages": [
+        "validate",
+        "device",
+        "build",
+        "install",
+        "launch"
+      ],
+      "stdoutSHA256": "eecf93167c5c0ae67d6e0914b4c75c5c9d566ecb3eab7facd40b4440c21bae84",
+      "progressSHA256": "c9c7fdb25148b79d7be694d1ba45eb56cc6c4e3883073cb453ae62574f1cca2c"
+    },
+    {
+      "id": "netnewswire-down",
+      "argv": [
+        "mobile",
+        "down",
+        "--project",
+        "<netnewswire-source>",
+        "--app",
+        "NetNewsWire.xcodeproj",
+        "--json",
+        "--progress-json"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.839,
+      "state": "succeeded",
+      "completedStages": [
+        "app"
+      ],
+      "stdoutSHA256": "06e0d3ac1f9654664c2566c9a2b0002dac6ce07b72a546cc19964a3f03ff65de",
+      "progressSHA256": "78a6c7ceb9ff144aef4f9b542a1ea2d176bc9d343f24da026143bae8513504ca"
+    }
+  ],
+  "reobservationGUI": {
+    "food": {
+      "up": "succeeded / exit 0",
+      "down": "succeeded / exit 0",
+      "firstScreen": "Truck",
+      "fullAXFiles": [
+        "narrow/food-gui-doctor.ax.txt",
+        "narrow/food-gui-up.ax.txt",
+        "narrow/food-gui-down.ax.txt"
+      ],
+      "nativeImage": "food-gui-first-screen.png",
+      "beforeAfterComparison": "narrow/food-gui-comparison.json"
+    },
+    "netnewswire": {
+      "up": "succeeded / exit 0",
+      "down": "succeeded / exit 0",
+      "firstScreen": "Feeds",
+      "fullAXFiles": [
+        "narrow/netnewswire-gui-doctor.ax.txt",
+        "narrow/netnewswire-gui-up.ax.txt",
+        "narrow/netnewswire-gui-down.ax.txt"
+      ],
+      "nativeImage": "netnewswire-gui-first-screen.png",
+      "beforeAfterComparison": "narrow/netnewswire-gui-comparison.json"
+    }
+  }
+}

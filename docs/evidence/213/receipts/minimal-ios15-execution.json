@@ -1,0 +1,15 @@
+{
+  "appID": "dev.runstir.runstirFlutterMinimal",
+  "build": "exit0: direct xcodebuild exact arm64/ownUDID",
+  "firstScreen": "visually confirmed Flutter Demo Home Page, counter0, visible add button; no crash/red error/blank screen",
+  "hiddenFlags": 0,
+  "indexDiffExit": 0,
+  "install": "simctl install exit0",
+  "launch": "simctl launch exact UDID/appID exit0",
+  "pid": 99140,
+  "pidPath": "<user-home>/Library/Developer/CoreSimulator/Devices/<owned-simulator>/data/Containers/Bundle/Application/<owned-installation>/Runner.app/Runner",
+  "screenshotFirstAttempt": "external-volume direct save EPERM; owned /tmp capture succeeded and exact bytes copied to owned evidence root",
+  "screenshotSHA256": "5956c5c0198c82543319c968f794c43992f02d4c623ab4b42590b8beea236d7a",
+  "sourceDiffExit": 0,
+  "sourceSHA": "66732bc18ed28d9eed71336b4a2b018e09ad20b9"
+}

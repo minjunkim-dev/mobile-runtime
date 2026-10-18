@@ -39,7 +39,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             Link("공식 다운로드", destination: URL(string: "https://github.com/minjunkim-dev/mobile-runtime/releases")!)
             Text("업데이트하려면 새 DMG의 Runstir.app으로 교체하세요. 별도 CLI는 유지됩니다.")
                 .font(.caption)
-            Text("React Native 프로젝트의 환경을 확인하세요.")
+            Text("프로젝트의 iOS·Android 환경을 확인하세요.")
             Button("프로젝트 열기…") { self.openProject() }.keyboardShortcut("o")
         }.padding(40).frame(maxWidth: .infinity, maxHeight: .infinity))
         welcome = window
@@ -109,7 +109,7 @@ struct InspectionView: View {
                 Picker("앱", selection: $app) {
                     Text("자동 선택").tag("")
                     ForEach(result?.selection.candidates ?? [], id: \.id) { candidate in
-                        Text(candidate.id).tag(candidate.id)
+                        Text("\(candidate.id) · \(candidate.framework.displayName)").tag(candidate.id)
                     }
                 }.disabled(checking || running != nil)
                 Picker("플랫폼", selection: $platform) {
@@ -147,7 +147,7 @@ struct InspectionView: View {
                     Text("setup: \(preparation.operation.state) / exit \(preparation.exitCode)").font(.headline)
                     if let plan = preparation.plan {
                         Text("승인 대상 plan-id: \(plan.id)").font(.caption)
-                        Text("\(plan.projectKind) 준비는 iOS·Android 양쪽을 확인합니다.")
+                        Text("\(plan.projectKind) 준비 대상: \(plan.platforms.map { $0.platform.rawValue }.joined(separator: ", "))")
                         ScrollView {
                             VStack(alignment: .leading, spacing: 4) {
                                 ForEach(plan.inspectionLines, id: \.self) { Text($0) }
@@ -158,7 +158,7 @@ struct InspectionView: View {
                                     if let advice = step.remediation { Text(advice.summary) }
                                 }
                             }.frame(maxWidth: .infinity, alignment: .leading)
-                        }.frame(maxHeight: 150)
+                        }.frame(height: 150)
                         Text(plan.platforms.map { "\($0.platform.rawValue): \($0.state)" }.joined(separator: " / "))
                     }
                     if let error = preparation.operation.error { Text(error).foregroundStyle(.red) }

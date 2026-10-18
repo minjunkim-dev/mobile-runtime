@@ -9,7 +9,7 @@ struct WorkflowOptions: ParsableArguments {
     @Flag(name: .long, help: "Emit versioned NDJSON progress on stderr.") var progressJson = false
     @Flag(name: [.short, .long], help: "Show the underlying tool invocations.") var verbose = false
     @Option(name: .long, help: "Project folder. Defaults to the current working directory.") var project: String?
-    @Option(name: .long, help: "React Native app candidate id.") var app: String?
+    @Option(name: .long, help: "Project app candidate id reported by doctor.") var app: String?
     @Option(name: .long, help: "ios or android. Required for dual-platform apps; no implicit iOS default.") var platform: MobilePlatform?
     @Option(name: .long, help: "Simulator UDID or avd:<name>. Omit for build or down.") var device: String?
     @Option(name: .long, help: "iOS scheme. Defaults to mobile.yml or the only app scheme.") var scheme: String?

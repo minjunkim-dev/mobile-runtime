@@ -1,0 +1,287 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-15",
+  "attempt": "owned-sdk-preservation-rerun",
+  "result": "inconclusive",
+  "executionResult": "two-app-build-install-launch-first-screen-pass",
+  "scope": "native Android baseline without Runstir; physical Mac Emulator only",
+  "pathAliases": {
+    "JDK17_HOME": "existing Zulu 17.0.19 installation; absolute user path retained only in private evidence",
+    "JDK21_HOME": "existing Zulu 21.0.12.1 installation; absolute user path retained only in private evidence"
+  },
+  "apps": {
+    "todo": {
+      "sourceSHA": "ee66e1526b84c026615df032c705842b7d2a521f",
+      "build": {
+        "elapsedSeconds": 25.893,
+        "exitCode": 0,
+        "sourcePreserved": true,
+        "sourceSHA": "ee66e1526b84c026615df032c705842b7d2a521f"
+      },
+      "toolchain": "RUNSTIR215_TOOLCHAIN compileSdk=35 buildTools=34.0.0 javaHome=${JDK17_HOME} javaVersion=17.0.19",
+      "taskSummary": "43 actionable tasks: 43 executed",
+      "trackedFileCount": 119,
+      "trackedSnapshotSHA256": "48ff488ca669c537c70e45e49d7a7d8a6a5bd1864492d016f5927381e9f2869a",
+      "indexSHA256": "a03f90d03813a9c07e76b1d2212fddab1f5ddd6d5e37d9c96d99cd4317a38f6f",
+      "flagsSHA256": "3d6b77ca5549f3a0809c101b26338198204794b8309011c208f59edddfcbce90",
+      "sourcePreserved": true,
+      "mergedPackage": "com.example.android.architecture.blueprints.main",
+      "mergedLauncher": "com.example.android.architecture.blueprints.todoapp.TodoActivity",
+      "appPID": "4051",
+      "resumedActivity": "topResumedActivity=ActivityRecord{494c009 u0 com.example.android.architecture.blueprints.main/com.example.android.architecture.blueprints.todoapp.TodoActivity t8}",
+      "apkSHA256": "717a90c1628f93e72c50f8005c1dedaf92e9895824366fb86e09771dc18bddee",
+      "installedApkSHA256": "717a90c1628f93e72c50f8005c1dedaf92e9895824366fb86e09771dc18bddee",
+      "firstScreen": {
+        "file": "rerun-todo-first-screen.png",
+        "sha256": "d8e94b3e9962cdc9136261952e7083001fbdb195675989b49dbda2a3a2997493",
+        "visuallyInspected": true
+      },
+      "device": {
+        "ro.build.fingerprint": "google/sdk_gphone64_arm64/emu64a:15/AE3A.240806.043/12960925:userdebug/dev-keys",
+        "ro.build.version.sdk": "35",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "ro.kernel.qemu": "1"
+      },
+      "freshHandoff": {
+        "sourceSHA": "ee66e1526b84c026615df032c705842b7d2a521f",
+        "trackedClean": true,
+        "generatedBuildArtifactsPresent": false,
+        "nativeBuildExecuted": false,
+        "runstirExecuted": false
+      },
+      "command": {
+        "argv": [
+          "${TASK_ROOT}/todo-baseline/gradlew",
+          "--no-daemon",
+          "--console=plain",
+          "--offline",
+          "-Dorg.gradle.java.installations.auto-download=false",
+          "-Dorg.gradle.java.installations.paths=${JAVA_HOME}",
+          "-Pandroid.builder.sdkDownload=false",
+          "-Duser.home=${TASK_ROOT}/state-todo/jvm-home",
+          "-Djava.io.tmpdir=${TASK_ROOT}/state-todo/tmp",
+          "-Djava.util.prefs.userRoot=${TASK_ROOT}/state-todo/prefs",
+          "-Pkotlin.compiler.execution.strategy=in-process",
+          "-I",
+          "${INITIAL_ROOT}/inspect-todo.gradle",
+          ":app:assembleDebug"
+        ],
+        "environment": {
+          "ANDROID_AVD_HOME": "${TASK_ROOT}/state-todo/avd",
+          "ANDROID_EMULATOR_HOME": "${TASK_ROOT}/state-todo/android-emulator",
+          "ANDROID_HOME": "${TASK_ROOT}/android-sdk",
+          "ANDROID_SDK_ROOT": "${TASK_ROOT}/android-sdk",
+          "ANDROID_USER_HOME": "${TASK_ROOT}/state-todo/android-user",
+          "GRADLE_USER_HOME": "${TASK_ROOT}/gradle-todo",
+          "HOME": "${USER_HOME}",
+          "JAVA_HOME": "${JAVA_HOME}",
+          "LANG": "en_US.UTF-8",
+          "PATH": "${JAVA_HOME}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+          "TMPDIR": "${TASK_ROOT}/state-todo/tmp/",
+          "XDG_CACHE_HOME": "${TASK_ROOT}/state-todo/jvm-home"
+        },
+        "guard": "${TASK_ROOT}/owned-writes.sb",
+        "source": "ee66e1526b84c026615df032c705842b7d2a521f"
+      },
+      "rawReceipt": "state-todo/command.json",
+      "rawReceiptSHA256": "cd9620370e4cd94254db2a1350a46dbcaf9085bffac865d7d9be8e981525ee73"
+    },
+    "nia": {
+      "sourceSHA": "a49ed253d75e61a2b6ab80a8da677b57437b08eb",
+      "build": {
+        "elapsedSeconds": 15.488,
+        "exitCode": 0,
+        "sourcePreserved": true,
+        "sourceSHA": "a49ed253d75e61a2b6ab80a8da677b57437b08eb"
+      },
+      "toolchain": "RUNSTIR215_TOOLCHAIN compileSdk=36 buildTools=36.0.0 javaHome=${JDK21_HOME} javaVersion=21.0.12.1",
+      "taskSummary": "551 actionable tasks: 231 executed, 316 from cache, 4 up-to-date",
+      "trackedFileCount": 715,
+      "trackedSnapshotSHA256": "958e4eb7c904897a50bea3c4362dbc76278d96ba98e0ad11328faf648759eafe",
+      "indexSHA256": "5dcf523ec293fca1d494f4fd59af0b8d6c2d0c44d14e55b60cbea08e739884f3",
+      "flagsSHA256": "d0b009bfb88de4ff9f3ba094d2a18dfb8135d6a83ed013b22915885a4022ce88",
+      "sourcePreserved": true,
+      "mergedPackage": "com.google.samples.apps.nowinandroid.demo.debug",
+      "mergedLauncher": "com.google.samples.apps.nowinandroid.MainActivity",
+      "appPID": "2957",
+      "resumedActivity": "topResumedActivity=ActivityRecord{b925240 u0 com.google.samples.apps.nowinandroid.demo.debug/com.google.samples.apps.nowinandroid.MainActivity t11}",
+      "apkSHA256": "81f28d6c83e1c59195ba4db6dc66861bf2c455ae6f2ba7e019b4f0a46e4cc086",
+      "installedApkSHA256": "81f28d6c83e1c59195ba4db6dc66861bf2c455ae6f2ba7e019b4f0a46e4cc086",
+      "firstScreen": {
+        "file": "rerun-nia-first-screen.png",
+        "sha256": "d1c90cf3b1e945da0b29402b4acc3e826e70cd27f26a1475478ca1f24e3dc97a",
+        "visuallyInspected": true
+      },
+      "device": {
+        "ro.build.fingerprint": "google/sdk_gphone64_arm64/emu64a:15/AE3A.240806.043/12960925:userdebug/dev-keys",
+        "ro.build.version.sdk": "35",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "ro.kernel.qemu": "1"
+      },
+      "freshHandoff": {
+        "sourceSHA": "a49ed253d75e61a2b6ab80a8da677b57437b08eb",
+        "trackedClean": true,
+        "generatedBuildArtifactsPresent": false,
+        "nativeBuildExecuted": false,
+        "runstirExecuted": false
+      },
+      "command": {
+        "argv": [
+          "${TASK_ROOT}/nia-baseline/gradlew",
+          "--no-daemon",
+          "--console=plain",
+          "--offline",
+          "-Dorg.gradle.java.installations.auto-download=false",
+          "-Dorg.gradle.java.installations.paths=${JAVA_HOME}",
+          "-Pandroid.builder.sdkDownload=false",
+          "-Duser.home=${TASK_ROOT}/state-nia-attempt3/jvm-home",
+          "-Djava.io.tmpdir=${TASK_ROOT}/state-nia-attempt3/tmp",
+          "-Djava.util.prefs.userRoot=${TASK_ROOT}/state-nia-attempt3/prefs",
+          "-Pkotlin.compiler.execution.strategy=in-process",
+          "-I",
+          "${TASK_ROOT}/inspect-toolchain.gradle",
+          ":app:assembleDemoDebug"
+        ],
+        "environment": {
+          "ANDROID_AVD_HOME": "${TASK_ROOT}/state-nia-attempt3/avd",
+          "ANDROID_EMULATOR_HOME": "${TASK_ROOT}/state-nia-attempt3/android-emulator",
+          "ANDROID_HOME": "${TASK_ROOT}/android-sdk",
+          "ANDROID_SDK_ROOT": "${TASK_ROOT}/android-sdk",
+          "ANDROID_USER_HOME": "${TASK_ROOT}/state-nia-attempt3/android-user",
+          "GRADLE_USER_HOME": "${TASK_ROOT}/gradle-nia",
+          "HOME": "${USER_HOME}",
+          "JAVA_HOME": "${JAVA_HOME}",
+          "LANG": "en_US.UTF-8",
+          "PATH": "${JAVA_HOME}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+          "TMPDIR": "${TASK_ROOT}/state-nia-attempt3/tmp/",
+          "XDG_CACHE_HOME": "${TASK_ROOT}/state-nia-attempt3/jvm-home"
+        },
+        "guard": "${TASK_ROOT}/owned-writes.sb",
+        "source": "a49ed253d75e61a2b6ab80a8da677b57437b08eb"
+      },
+      "rawReceipt": "state-nia-attempt3/command.json",
+      "rawReceiptSHA256": "6e2597db434fdfcf9c15e4fcfdc83542e8e7a74cea112d9574a39d382675237f"
+    }
+  },
+  "emulator": {
+    "version": "37.1.11",
+    "serial": "emulator-5564",
+    "adbPort": 5043,
+    "consolePort": 5564,
+    "avd": "runstir215-preserve-api35",
+    "image": "system-images;android-35;google_apis;arm64-v8a",
+    "imageRevision": 9,
+    "requestedCpuAcceleration": "on",
+    "availabilityCheck": "accel:\n0\nHypervisor.Framework OS X Version 27.0\naccel\n",
+    "graphics": "swiftshader",
+    "runtimeAccelerationInternalDiagnostic": "not_collected",
+    "command": {
+      "argv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${TASK_ROOT}/owned-writes.sb",
+        "${TASK_ROOT}/android-sdk/emulator/emulator",
+        "-avd",
+        "runstir215-preserve-api35",
+        "-port",
+        "5564",
+        "-accel",
+        "on",
+        "-gpu",
+        "swiftshader",
+        "-no-snapshot",
+        "-no-audio",
+        "-no-boot-anim"
+      ],
+      "environment": {
+        "HOME": "${USER_HOME}",
+        "LANG": "en_US.UTF-8",
+        "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
+        "ANDROID_HOME": "${TASK_ROOT}/android-sdk",
+        "ANDROID_SDK_ROOT": "${TASK_ROOT}/android-sdk",
+        "ANDROID_USER_HOME": "${TASK_ROOT}/emulator-state/android-user",
+        "ANDROID_EMULATOR_HOME": "${TASK_ROOT}/emulator-state/emulator-home",
+        "ANDROID_AVD_HOME": "${TASK_ROOT}/emulator-avd",
+        "ANDROID_ADB_SERVER_PORT": "5043",
+        "ADB_SERVER_SOCKET": "tcp:localhost:5043",
+        "TMPDIR": "${TASK_ROOT}/emulator-state/tmp/"
+      }
+    },
+    "rawReceipt": "emulator-state-attempt2/command.json",
+    "rawReceiptSHA256": "e66ddd80f81aa67e0327a099311ec87866609bb7efb776c6ec6a9fc32f96de60"
+  },
+  "preservation": {
+    "sdkEntries": 124165,
+    "sdkFullRegularFileBytesAndMetadataEqualAfterStop": true,
+    "sdkBeforeAndFinalReceiptSHA256": "3b7bc351ceb3ebed7af0a836837785f78f045b60b15021980d2f100f1d288aba",
+    "avdEntries": 41,
+    "globalAVDFullRegularFileBytesAndMetadataEqualAfterStop": true,
+    "globalAVDBeforeAndFinalReceiptSHA256": "19767ce9605988e370ab6a9789914c9f894fd8a3ed04732c074c3ebffd869351",
+    "authenticationFiles": "stat only; no content read or hash",
+    "authenticationStatEqualAfterStop": true,
+    "originalKnownPackagesFailureRestored": false
+  },
+  "manualPreparation": {
+    "niaNotifications": "Android package-manager revoke and USER_SET|USER_FIXED in disposable AVD, then cold restart; no UI decline click",
+    "newLicenseAcceptance": false,
+    "sdkAndJdkAutomaticProvisioning": false,
+    "globalPATHChanged": false,
+    "HOMEEnvironmentChanged": false,
+    "notificationPrompt": {
+      "file": "rerun-nia-notification-prompt.png"
+    }
+  },
+  "cleanup": {
+    "actions": [
+      {
+        "argv": [
+          "-s",
+          "emulator-5564",
+          "shell",
+          "am",
+          "force-stop",
+          "com.example.android.architecture.blueprints.main"
+        ],
+        "exitCode": 0
+      },
+      {
+        "argv": [
+          "-s",
+          "emulator-5564",
+          "shell",
+          "am",
+          "force-stop",
+          "com.google.samples.apps.nowinandroid.demo.debug"
+        ],
+        "exitCode": 0
+      },
+      {
+        "argv": [
+          "-s",
+          "emulator-5564",
+          "emu",
+          "kill"
+        ],
+        "exitCode": 0,
+        "output": "OK: killing emulator, bye bye\nOK\n"
+      }
+    ],
+    "listenersAtEnd": [],
+    "existingSDKAutomaticallyRestored": false
+  },
+  "history": [
+    "Original shared-SDK knownPackages preservation failure remains in inputs.json and attempts.md.",
+    "NIA observation init-script attempt1 assumed :app in included build; attempt2 violated Gradle isolated-project access. Both failed without tracked source changes. beforeProject/afterEvaluate corrected only the task-owned observer.",
+    "NIA notification prompt obscured first screen. Permission preparation left an orphan prompt task. Owned AVD reboot timed out. Exact owned Emulator received SIGINT and exited 0. Cold restart without wipe completed; first screen then passed.",
+    "First emulator command used swiftshader_indirect; successful cold restart used swiftshader. The reboot failure cause is unknown."
+  ],
+  "requiredUnknown": [
+    "JDK and existing Android SDK distribution archive identities/checksums were not fixed before this baseline. Installed-file hashes are not distribution archive hashes."
+  ],
+  "limitations": [
+    "Runstir CLI/GUI and fresh-clone native builds are not executed.",
+    "Android physical device is unverified.",
+    "Original preservation failure history is retained; this rerun does not restore its prior marker."
+  ],
+  "privateEvidenceRoot": "${PRIOR_RERUN_ROOT}"
+}

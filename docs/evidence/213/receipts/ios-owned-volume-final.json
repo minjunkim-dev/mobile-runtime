@@ -1,0 +1,11 @@
+{
+  "image": "<evidence-root>/native/ios-owned-volume.sparseimage",
+  "logicalCapacityBytes": 17179869184,
+  "imageBytes": 15732736,
+  "imageSHA256": "9a4ce880796a5970f6251bb98a1a9cb3178e6b90986b7830743af5d48baed6f2",
+  "fsck": "verifyVolume /dev/disk13s1 exit0, volume/container OK",
+  "mount": "legacy attach denied; modern attach mounted no volume, normal mount request interrupted at115s",
+  "normalDetach": "hdiutil detach /dev/disk12 exit0",
+  "foundationProbeInsideVolume": "not executed: mount did not complete",
+  "preserved": true
+}
