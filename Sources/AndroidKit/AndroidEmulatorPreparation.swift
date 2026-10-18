@@ -111,7 +111,7 @@ public struct AndroidEmulatorEnvironment: Sendable {
         let tools = sdk.appendingPathComponent("cmdline-tools")
         let manager = (try? FileManager.default.contentsOfDirectory(at: tools, includingPropertiesForKeys: nil))?
             .sorted { $0.lastPathComponent < $1.lastPathComponent }
-            .map { $0.appendingPathComponent("bin/avdmanager") }
+            .map { tools.appendingPathComponent($0.lastPathComponent, isDirectory: true).appendingPathComponent("bin/avdmanager") }
             .first { FileManager.default.isExecutableFile(atPath: $0.path)
                 && revision(in: $0.deletingLastPathComponent().deletingLastPathComponent()) != nil }
         return Self(sdkRoot: sdk, avdHome: home.standardizedFileURL.resolvingSymlinksInPath(), minSDK: minimum, abis: abis.sorted(),
@@ -120,6 +120,11 @@ public struct AndroidEmulatorEnvironment: Sendable {
     }
 
     public static func profile(_ id: String, runner: any ProcessRunner, manager: URL, environment: [String: String]) async throws -> String {
+        guard let sdk = environment["ANDROID_SDK_ROOT"], environment["ANDROID_HOME"] == sdk else {
+            throw failure("An exact SDK root is required to inspect device profile payloads.")
+        }
+        let root = URL(fileURLWithPath: sdk, isDirectory: true).standardizedFileURL.resolvingSymlinksInPath()
+        let payload = try await profilePayload(manager: manager, sdk: root, runner: runner)
         let scratch = FileManager.default.temporaryDirectory.appendingPathComponent("runstir-android-profile-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: false, attributes: [.posixPermissions: 0o700])
         defer { try? FileManager.default.removeItem(at: scratch) }
@@ -137,7 +142,122 @@ public struct AndroidEmulatorEnvironment: Sendable {
             $0.range(of: pattern, options: .regularExpression) != nil
         }
         guard profiles.count == 1 else { throw failure("The exact device profile \(id) is unavailable or ambiguous.") }
-        return profiles[0].trimmingCharacters(in: .whitespacesAndNewlines) + "\n"
+        guard try await profilePayload(manager: manager, sdk: root, runner: runner) == payload else {
+            throw failure("Device profile tool or catalog payload changed during inspection. Approve a new plan.")
+        }
+        return profiles[0].trimmingCharacters(in: .whitespacesAndNewlines) + "\nPayload SHA-256: \(payload)\n"
+    }
+
+    /// Hash only this tool's reachable JARs and the SDK inputs that can supply/override a device definition.
+    private static func profilePayload(manager: URL, sdk: URL, runner: any ProcessRunner) async throws -> String {
+        do {
+            let tool = manager.deletingLastPathComponent().deletingLastPathComponent()
+            let library = tool.appendingPathComponent("lib", isDirectory: true)
+            guard tool.path.hasPrefix(sdk.path + "/cmdline-tools/"), manager.path == tool.appendingPathComponent("bin/avdmanager").path else {
+                throw failure("The AVD manager layout is unknown.")
+            }
+            var records: [String] = []
+            var bytes = 0
+            func record(_ file: URL, limit: Int) throws {
+                try Task.checkCancellation()
+                let values = try file.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey, .fileSizeKey])
+                guard file.standardizedFileURL.resolvingSymlinksInPath().path == file.path,
+                      file.path.hasPrefix(sdk.path + "/"), values.isRegularFile == true, values.isSymbolicLink != true,
+                      let size = values.fileSize, size >= 0, size <= limit,
+                      records.count < 512, bytes <= 256 * 1024 * 1024 - size else {
+                    throw failure("Device profile payload exceeds its safe file, path or byte boundary.")
+                }
+                let handle = try FileHandle(forReadingFrom: file)
+                defer { try? handle.close() }
+                var hash = SHA256()
+                var read = 0
+                while let data = try handle.read(upToCount: 1024 * 1024), !data.isEmpty {
+                    try Task.checkCancellation()
+                    read += data.count
+                    guard read <= size else { throw failure("Device profile payload changed while reading.") }
+                    hash.update(data: data)
+                }
+                guard read == size else { throw failure("Device profile payload changed while reading.") }
+                bytes += size
+                let name = String(file.path.dropFirst(sdk.path.count + 1))
+                records.append(name + "\u{0}" + hash.finalize().map { String(format: "%02x", $0) }.joined())
+            }
+            try record(manager, limit: 2 * 1024 * 1024)
+            var pending = [library.appendingPathComponent("avdmanager-classpath.jar")]
+            var visited = Set<String>()
+            while let jar = pending.popLast() {
+                guard visited.insert(jar.path).inserted else { continue }
+                guard visited.count <= 128 else { throw failure("The AVD manager classpath exceeds its file limit.") }
+                guard jar.standardizedFileURL.resolvingSymlinksInPath().path == jar.path,
+                      jar.path.hasPrefix(library.path + "/") else { throw failure("The AVD manager classpath leaves its tool library.") }
+                if !exists(jar), jar != library.appendingPathComponent("avdmanager-classpath.jar") {
+                    // Java ignores missing transitive references. Pin absence so adding one invalidates approval.
+                    records.append(String(jar.path.dropFirst(sdk.path.count + 1)) + "\u{0}absent")
+                    continue
+                }
+                try record(jar, limit: 64 * 1024 * 1024)
+                let manifest = try await runner.run(ProcessCommand("/usr/bin/unzip", ["-p", jar.path, "META-INF/MANIFEST.MF"], timeout: .seconds(10)))
+                guard manifest.terminationStatus.isSuccess || (manifest.terminationStatus == .exited(11) && manifest.standardOutput.isEmpty),
+                      manifest.standardOutput.utf8.count <= 64 * 1024 else {
+                    throw failure("The AVD manager JAR manifest is unavailable or exceeds its limit.")
+                }
+                var headers: [String] = []
+                for line in manifest.standardOutput.replacingOccurrences(of: "\r\n", with: "\n").components(separatedBy: "\n") {
+                    if line.isEmpty { break }
+                    if line.hasPrefix(" "), !headers.isEmpty { headers[headers.count - 1] += line.dropFirst() }
+                    else {
+                        guard line.contains(":"), !line.hasPrefix(" ") else { throw failure("The AVD manager manifest has an ambiguous header.") }
+                        headers.append(line)
+                    }
+                }
+                let paths = headers.filter { $0.lowercased().hasPrefix("class-path:") }
+                let declared = manifest.standardOutput.components(separatedBy: .newlines).filter { $0.lowercased().hasPrefix("class-path:") }
+                guard paths.count <= 1, declared.count == paths.count else { throw failure("The AVD manager manifest has duplicate or ambiguous classpaths.") }
+                if jar == library.appendingPathComponent("avdmanager-classpath.jar"), paths.first?.dropFirst("Class-Path:".count).trimmingCharacters(in: .whitespaces).isEmpty != false {
+                    throw failure("The AVD manager root classpath layout is unknown.")
+                }
+                for path in paths.first.map({ String($0.dropFirst("Class-Path:".count)) })?.split(whereSeparator: \.isWhitespace) ?? [] {
+                    let value = String(path)
+                    guard value.range(of: #"^[A-Za-z0-9_./-]+\.jar$"#, options: .regularExpression) != nil,
+                          !value.hasPrefix("/"), value.split(separator: "/", omittingEmptySubsequences: false).allSatisfy({ !$0.isEmpty && $0 != "." && $0 != ".." }) else {
+                        throw failure("The AVD manager classpath contains an unsupported relative path.")
+                    }
+                    let dependency = jar.deletingLastPathComponent().appendingPathComponent(value)
+                    guard dependency.path.hasPrefix(library.path + "/") else { throw failure("The AVD manager classpath leaves its tool library.") }
+                    pending.append(dependency)
+                }
+            }
+            let files = FileManager.default
+            var directories = 0
+            func catalogs(_ directory: URL, depth: Int) throws {
+                guard exists(directory) else { return }
+                directories += 1
+                let values = try directory.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
+                guard directories <= 512, directory.standardizedFileURL.resolvingSymlinksInPath().path == directory.path,
+                      values.isDirectory == true, values.isSymbolicLink != true else {
+                    throw failure("The SDK device catalog layout is unknown or exceeds its directory limit: \(directory.path).")
+                }
+                if depth == 0 {
+                    for name in ["devices.xml", "source.properties", "package.xml"] {
+                        let file = directory.appendingPathComponent(name)
+                        if exists(file) { try record(file, limit: 2 * 1024 * 1024) }
+                    }
+                } else {
+                    let children = try files.contentsOfDirectory(at: directory, includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey])
+                    guard children.count <= 512 else { throw failure("The SDK device catalog inventory exceeds its limit.") }
+                    for child in children.sorted(by: { $0.path < $1.path }) {
+                        let values = try child.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
+                        guard values.isSymbolicLink != true else { throw failure("The SDK device catalog contains a link.") }
+                        if values.isDirectory == true { try catalogs(directory.appendingPathComponent(child.lastPathComponent, isDirectory: true), depth: depth - 1) }
+                    }
+                }
+            }
+            try catalogs(sdk.appendingPathComponent("extras"), depth: 2)
+            try catalogs(sdk.appendingPathComponent("system-images"), depth: 3)
+            return digest(Data(records.sorted().joined(separator: "\n").utf8))
+        } catch is CancellationError { throw CancellationError() }
+        catch let error as DomainError { throw error }
+        catch { throw failure("Device profile payload could not be inspected safely. Preserve it and re-plan.") }
     }
 
     public static func observe(_ request: AndroidAVDRequest, origin: AndroidPreparationResource.Origin) -> AndroidPreparationResource? {
@@ -147,7 +267,7 @@ public struct AndroidEmulatorEnvironment: Sendable {
         let values = data.map { AndroidDoctorContext.properties(String(decoding: $0, as: UTF8.self)) } ?? [:]
         let pointer = bounded(request.pointer).map { AndroidDoctorContext.properties(String(decoding: $0, as: UTF8.self)) } ?? [:]
         let image = values["image.sysdir.1"].map { value in value.hasPrefix("/") ? URL(fileURLWithPath: value) : request.sdkRoot.appendingPathComponent(value) }
-        let complete = pointer["path"] == request.directory.path && values["AvdId"] == request.name
+        let complete = pointer["path"] == request.directory.path && (values["AvdId"] == nil || values["AvdId"] == request.name)
             && values["abi.type"] == "arm64-v8a" && values["hw.device.name"] == request.deviceProfile
             && image?.standardizedFileURL.resolvingSymlinksInPath() == request.imageDirectory.standardizedFileURL.resolvingSymlinksInPath()
             && revision(in: request.imageDirectory) == request.imageRevision

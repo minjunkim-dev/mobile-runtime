@@ -116,6 +116,10 @@ struct AndroidEmulatorPreparation {
                 avdManager: request.avdManager, avdManagerRevision: request.avdManagerRevision,
                 emulatorRevision: request.emulatorRevision, repositorySHA256: request.repositorySHA256)
             try await beforeCommit([scratch])
+            let beforeCreation = try await AndroidEmulatorEnvironment.profile(request.deviceProfile, runner: runner,
+                manager: request.avdManager, environment: ["ANDROID_HOME": request.sdkRoot.path, "ANDROID_SDK_ROOT": request.sdkRoot.path])
+            guard AndroidEmulatorEnvironment.digest(Data(beforeCreation.utf8)) == request.profileSHA256 else { throw failure("The approved device profile payload changed before creation.") }
+            try Task.checkCancellation()
             let result = try await runner.run(ProcessCommand(request.avdManager.path,
                 ["create", "avd", "--name", request.name, "--package", request.imagePackage, "--abi", "arm64-v8a",
                  "--device", request.deviceProfile, "--path", staged.directory.path],
@@ -130,6 +134,11 @@ struct AndroidEmulatorPreparation {
             try Task.checkCancellation()
             try await beforeCommit([scratch])
             try AndroidEmulatorEnvironment.validateImage(request)
+            let beforeRegistration = try await AndroidEmulatorEnvironment.profile(request.deviceProfile, runner: runner,
+                manager: request.avdManager, environment: ["ANDROID_HOME": request.sdkRoot.path, "ANDROID_SDK_ROOT": request.sdkRoot.path])
+            guard AndroidEmulatorEnvironment.digest(Data(beforeRegistration.utf8)) == request.profileSHA256 else { throw failure("The approved device profile payload changed before registration.") }
+            try Task.checkCancellation()
+            try await beforeCommit([scratch])
             try absent(request)
             // Finish both exclusive renames without an asynchronous cancellation point.
             guard renamex_np(staged.directory.path, request.directory.path, UInt32(RENAME_EXCL)) == 0 else {

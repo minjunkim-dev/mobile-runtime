@@ -25,6 +25,31 @@
 SwiftPM scratch/cache/config/security, module cache, TMPDIR도 전용 경로를 사용한다.
 이 격리 확인은 초기 실행의 미확인 상태를 소급 보완하지 않는다.
 
+독립 Spec 수정 검사에서 환경 `TMPDIR`과 실제 Foundation 임시 경로를 따로 확인했다.
+환경 `TMPDIR`은 전용 경로였다.
+Foundation `FileManager.temporaryDirectory`는 macOS의 `/var/folders/.../T`였다.
+기존 `FixtureRepo`와 profile 조회는 이 경로 아래 자기 소유 UUID 디렉터리에 썼다.
+이를 전용 `TMPDIR` 아래 쓰기로 표현하지 않는다.
+임시 UUID 디렉터리의 소유 cleanup 외에 다른 host 임시 파일·lease/cache를 정리하지 않았다.
+
+## 독립 Spec 수정
+
+공식 새 생성 source 형태로 fake 생성 fixture를 바꿨다.
+`config.ini`에 `AvdId`가 없는 정상 생성을 수용한다.
+키가 있으면 불일치를 거부한다. pointer·이름·image·ABI·profile 검증은 유지한다.
+기존 필수 키 조건에서 생성 검사가 실패한 red 로그를 보존했다.
+
+표시문이 같아도 hardware 또는 boot properties payload가 바뀌면 기존 승인을 거부한다.
+생성 중 payload 변경은 등록 전에 실패한다.
+정확한 launcher·Manifest classpath closure·SDK catalog metadata를 `profileSHA256`에 묶었다.
+Manifest continuation·전이 참조·부재 참조·경로와 link·파일 수와 bytes 한도를 검사한다.
+image payload와 관련 없는 tool bytes는 이 fingerprint에 넣지 않는 회귀도 검사한다.
+
+분리된 cmdline-tools21의 JAR을 read-only로 조사했다.
+Manifest closure에는 존재하는 JAR75개와 누락된 전이 참조6개가 있었다.
+존재하는 JAR의 합계는35,810,425 bytes였다.
+이 조사는 SDK 파일 읽기다. SDK 도구나 생성 명령의 실행 증거가 아니다.
+
 ## 제한적 공식 archive 관측
 
 [archive-range.json](archive-range.json)은 공식 r9 image의 suffix 최대128KiB 관측이다.

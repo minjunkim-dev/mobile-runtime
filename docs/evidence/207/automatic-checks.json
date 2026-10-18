@@ -5,12 +5,12 @@
   "fullSwiftTest": {
     "exitCode": 0,
     "suiteCounts": {
-      "AndroidKitTests": 123,
-      "EnvironmentKitTests": 217,
+      "AndroidKitTests": 86,
+      "EnvironmentKitTests": 222,
       "CoreTests": 374,
-      "SimulatorKitTests": 81
+      "SimulatorKitTests": 123
     },
-    "totalTests": 795,
+    "totalTests": 805,
     "warningsAsErrors": true
   },
   "relatedSuites": {
@@ -24,14 +24,23 @@
     "missing repository-source API compile failure",
     "missing AVD creation API compile failure",
     "image dependency major missing accepted before fix",
-    "AVD missing system.img reported reusable before fix"
+    "AVD missing system.img reported reusable before fix",
+    "official fresh-create fixture without AvdId fails under the old required-key check",
+    "identical profile labels with hardware/boot-props payload changes reused old approval before the fix"
   ],
   "command": "env HOME=<owned-home> CFFIXED_USER_HOME=<owned-home> CLANG_MODULE_CACHE_PATH=<owned-module-cache> SWIFTPM_MODULECACHE_OVERRIDE=<owned-module-cache> TMPDIR=<owned-tmp> swift test --force-resolved-versions --scratch-path <owned-build> --cache-path <owned-cache> --config-path <owned-config> --security-path <owned-security> -Xswiftc -warnings-as-errors",
   "isolationProbe": {
     "exitCode": 0,
     "foundationHome": "<validation207>/home",
     "resourceLeasesUserRoot": "<validation207>/home/Library/Caches/dev.runstir/leases",
-    "probeTestRemovedAfterObservation": true
+    "probeTestRemovedAfterObservation": true,
+    "environmentTMPDIR": "<validation207>/tmp",
+    "foundationTemporaryDirectory": "<macOS-system-user-temp>",
+    "observedOwnedScratch": [
+      "<macOS-system-user-temp>/mobile-fixture-<UUID>",
+      "<macOS-system-user-temp>/runstir-android-profile-<UUID>"
+    ],
+    "scope": "Foundation home and ResourceLeases.user point to the private home. Environment TMPDIR does not relocate Foundation temporaryDirectory. Owned UUID test scratch is allowed there; no whole HOME/cache preservation assertion."
   },
   "initialRunLimitation": {
     "homeIsolation": "not set during initial focused runs",
@@ -76,6 +85,71 @@
     {
       "basename": "full-swift.log",
       "sha256": "6be1cdbe9524f89694fdc08e28a1c7f5c651480eb1df7ca21b20b028cc384879"
+    },
+    {
+      "basename": "spec-fixes-red.log",
+      "sha256": "f75558e74cafea28ff763b736143e6c4c431e60ffc2b30a322138d9bd170549a"
+    },
+    {
+      "basename": "profile-payload-red.log",
+      "sha256": "04fffe981173182996da8badea0b1dba35579cb75eba26f6c3311d883022cefd"
+    },
+    {
+      "basename": "spec-fixes-related.log",
+      "sha256": "eb2be5addf30a40039af2164bdb9d1c805e547604de4a065529086f56201016a"
+    },
+    {
+      "basename": "spec-probe-normalized.log",
+      "sha256": "36ed6e21dcc36b9faa1c10ffdb2caeb373eab28619e46c37b33dbe120f31615e"
+    },
+    {
+      "basename": "spec-fixes-full-swift.log",
+      "sha256": "2c51e9a1f57c1656fbdca099fbb8c00e1f8a3d47d4365be400e40bb068ebde40"
     }
-  ]
+  ],
+  "suiteLabelCorrection": "The initial 795 total was correct. AndroidKitTests and SimulatorKitTests labels were reversed in the first record; corrected using actual suite names in the logs.",
+  "specReviewFixes": {
+    "reviewedHead": "0ad2394161293496c2e59a858d7beac128cccf77",
+    "officialSourceCommit": "6bbb16186fa0087f54b6857e1e0aa88d115ab537",
+    "AvdId": "absent accepted for official fresh creation; present must equal approved name; pointer/image/ABI/profile checks retained",
+    "profileIdentity": "selected label block plus launcher, manifest-reachable JARs and SDK device catalog/selection metadata; pre/post probe and before creation/registration rechecks",
+    "excludedFromProfileDigest": [
+      "system image payload",
+      "unrelated tools",
+      "authentication files"
+    ],
+    "bounds": {
+      "classpathEntries": 128,
+      "payloadFiles": 512,
+      "totalPayloadBytes": 268435456,
+      "singleJarBytes": 67108864,
+      "singleCatalogOrLauncherBytes": 2097152,
+      "manifestOutputBytes": 65536,
+      "catalogDirectories": 512
+    },
+    "readOnlyStagedToolObservation": {
+      "commandLineTools": "21.0",
+      "presentJars": 75,
+      "missingTransitiveReferences": 6,
+      "presentJarBytes": 35810425,
+      "SDKToolExecuted": false
+    },
+    "regressions": [
+      "fresh create without AvdId",
+      "matching and mismatching optional AvdId",
+      "same labels with changed hardware or boot props",
+      "payload change immediately before create",
+      "payload change before registration",
+      "manifest continuation and transitive closure",
+      "pinned absence changes when a JAR appears",
+      "unsafe relative/absolute/URI path and symlink rejection",
+      "JAR, manifest and entry-count limits",
+      "duplicate/ambiguous classpath rejection",
+      "missing root layout closes manually",
+      "unrelated tool and image content excluded"
+    ],
+    "fullSwiftTestExitCode": 0,
+    "actualSDKWriterOrAVDCreation": "unverified; not executed",
+    "actualPayloadProbeLatency": "unverified"
+  }
 }

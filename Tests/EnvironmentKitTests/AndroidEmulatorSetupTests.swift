@@ -36,6 +36,30 @@ struct AndroidEmulatorSetupTests {
         #expect(fixture.runner.creator.commands.filter { $0.arguments.contains("create") }.isEmpty)
     }
 
+    @Test("hardware and boot property changes invalidate approval even when profile labels stay identical", arguments: ["hardware", "boot-props"])
+    func changedProfileDefinition(section: String) async throws {
+        let fixture = try await EmulatorSetupFixture()
+        let path = "sdk/system-images/android-35/google_apis/arm64-v8a/devices.xml"
+        try fixture.sdk.repo.write(path, "<devices><device id=\"pixel_7\"><\(section)>original</\(section)></device></devices>")
+        let plan = await PreparationExecution.run(input: fixture.sdk.input, planOnly: true, runner: fixture.runner)
+        try fixture.sdk.repo.write(path, "<devices><device id=\"pixel_7\"><\(section)>changed</\(section)></device></devices>")
+        let result = await PreparationExecution.run(input: fixture.sdk.input, approvedPlanID: try #require(plan.plan?.id), runner: fixture.runner, leases: fixture.leases)
+        #expect(result.operation.state == "needs-approval")
+        #expect(fixture.runner.creator.commands.filter { $0.arguments.contains("create") }.isEmpty)
+    }
+
+    @Test("a profile payload change during creation prevents registration and preserves the changed catalog")
+    func changedPayloadBeforeCommit() async throws {
+        let fixture = try await EmulatorSetupFixture()
+        fixture.runner.mutateCatalog = true
+        let plan = await PreparationExecution.run(input: fixture.sdk.input, planOnly: true, runner: fixture.runner)
+        let result = await PreparationExecution.run(input: fixture.sdk.input, approvedPlanID: try #require(plan.plan?.id), runner: fixture.runner, leases: fixture.leases)
+        #expect(result.operation.state == "failed")
+        #expect(fixture.runner.creator.commands.filter { $0.arguments.contains("create") }.count == 1)
+        #expect(!FileManager.default.fileExists(atPath: fixture.sdk.repo.url("avds/Runstir_API_35_google_apis_arm64.ini").path))
+        #expect(try String(contentsOf: fixture.image.appendingPathComponent("devices.xml"), encoding: .utf8) == "changed boot properties")
+    }
+
     @Test("AVD home and device lease conflicts stop before creation", arguments: [false, true])
     func sharedLease(device: Bool) async throws {
         let fixture = try await EmulatorSetupFixture()
@@ -163,6 +187,7 @@ private final class EmulatorSetupFixture {
             try sdk.repo.write("sdk/\(path)/package.xml", license)
             try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: sdk.repo.url("sdk/\(path)/\(marker)").path)
         }
+        try await AVDCreationRunner.installToolPayload(in: sdk.repo)
         try sdk.repo.write("sdk/emulator/source.properties", "Pkg.Revision=37.2.12\n")
         let properties = "Pkg.Revision=9\nAndroidVersion.ApiLevel=35\nSystemImage.Abi=arm64-v8a\nSystemImage.TagId=google_apis\n"
         try sdk.repo.write("image-payload/arm64-v8a/source.properties", properties)
@@ -186,9 +211,11 @@ private final class EmulatorSetupRunner: ProcessRunner, @unchecked Sendable {
     let creator = AVDCreationRunner()
     var profileSuffix = ""
     var mutateSource = false
+    var mutateCatalog = false
     var minimumSDK = 24
     init(sdk: SDKFixture, payload: Data) { self.sdk = sdk; self.base = sdk.runner(); self.payload = payload }
     func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+        if command.executable == "/usr/bin/unzip" { return try await creator.run(command, onLine: onLine) }
         if command.description == sdk.modelCommand {
             let value = try await base.run(command, onLine: onLine)
             return .init(terminationStatus: value.terminationStatus,
@@ -203,6 +230,7 @@ private final class EmulatorSetupRunner: ProcessRunner, @unchecked Sendable {
             }
             let result = try await creator.run(command, onLine: onLine)
             if mutateSource { try sdk.repo.write("project/settings.gradle.kts", "unexpected mutation") }
+            if mutateCatalog { try sdk.repo.write("sdk/system-images/android-35/google_apis/arm64-v8a/devices.xml", "changed boot properties") }
             return result
         }
         if command.arguments == ["-list-avds"] {

@@ -45,7 +45,20 @@ AVD 생성에는 이 새 계획의 승인이 필요하다.
 AVD 생성 계획은 이름·AVD home·SDK root·image package/revision·설치 metadata digest,
 profile ID/digest·생성 도구 경로/revision·Emulator revision·공식 dependency metadata digest를 고정한다.
 profile 조회도 전용 임시 Android user/AVD home을 사용한다.
-생성 때와 같은 내장 profile을 읽는다. 사용자 profile override를 생성 identity로 섞지 않는다.
+생성 때와 같은 SDK profile을 읽는다. 사용자 profile override를 생성 identity로 섞지 않는다.
+`list device`의 표시문만으로 hardware와 boot properties를 고정하지 않는다.
+`profileSHA256`은 선택 표시문과 실제 생성 payload의 digest를 함께 고정한다.
+생성 payload는 launcher, `avdmanager-classpath.jar`, Manifest Class-Path의 도달 가능한 JAR이다.
+SDK의 `extras/<vendor>/<item>`과 `system-images/<api>/<tag>/<abi>`에서는
+`devices.xml`, `source.properties`, `package.xml`만 읽는다.
+이 catalog는 내장 profile을 덮어쓸 수 있으므로 선택 metadata도 고정한다.
+image payload, 다른 도구와 인증 파일은 이 digest에 넣지 않는다.
+Java가 무시하는 누락된 전이 JAR 참조는 부재 상태로 고정한다.
+그 파일이 나중에 생기면 새 승인을 요구한다.
+Manifest continuation을 처리한다. URI·상위 경로·link·불명확한 root classpath는 차단한다.
+JAR은 최대128개다. 전체 파일은 최대512개이며 내용은 합계256MiB 이하이다.
+개별 JAR은64MiB, catalog·launcher는2MiB, Manifest 출력은64KiB 이하이다.
+계획·승인 재검사·생성 직전·등록 직전에 payload를 다시 확인한다.
 설치 metadata digest는 `source.properties`와 `package.xml`의 내용 식별값이다.
 이미 설치된 `system.img` 전체의 checksum이나 archive provenance를 증명하지 않는다.
 
@@ -60,6 +73,9 @@ AVD 생성은 SDK root·AVD home destination lease와 `device:android:avd:<name>
 `--force`를 사용하지 않는다. 생성 후 boot하지 않는다.
 staging의 Android user/AVD home은 이번 작업만 소유한다.
 생성 결과의 이름·profile·ABI·image 경로와 파일 형식을 확인한다.
+공식 새 생성의 `config.ini`에는 `AvdId`가 없을 수 있다.
+이 키가 없으면 pointer·이름·나머지 identity로 확인한다.
+이 키가 있으면 승인한 이름과 같아야 한다.
 `.ini`와 `.avd`를 각각 독점 rename으로 commit한다.
 기존 파일·불완전한 디렉터리·dangling link도 덮어쓰지 않는다.
 
@@ -91,4 +107,7 @@ source 변경, 이름 충돌과 부분 자원 보존을 검사한다.
 - [Android system-image metadata](https://dl.google.com/android/repository/sys-img/google_apis/sys-img2-4.xml)
 - [avdmanager 계약](https://developer.android.com/tools/avdmanager)
 - [AVD profile 선택과 생성 구현](https://android.googlesource.com/platform/tools/base/+/mirror-goog-studio-master-dev/sdklib/src/main/java/com/android/sdklib/tool/AvdManagerCli.java)
+- [고정 CLI source의 표시문과 실제 hardware/boot properties](https://android.googlesource.com/platform/tools/base/+/6bbb16186fa0087f54b6857e1e0aa88d115ab537/sdklib/src/main/java/com/android/sdklib/tool/AvdManagerCli.java)
+- [고정 DeviceManager의 catalog 우선순위](https://android.googlesource.com/platform/tools/base/+/6bbb16186fa0087f54b6857e1e0aa88d115ab537/sdklib/src/main/java/com/android/sdklib/devices/DeviceManager.java)
+- [고정 AvdManager의 새 생성 config](https://android.googlesource.com/platform/tools/base/+/6bbb16186fa0087f54b6857e1e0aa88d115ab537/sdklib/src/main/java/com/android/sdklib/internal/avd/AvdManager.java)
 - [Android Emulator 가속 조건](https://developer.android.com/studio/run/emulator-acceleration)
