@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Read GitHub settings and report drift; never change repository settings."""
 
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -41,6 +42,62 @@ def read_api(endpoint):
     return json.loads(result.stdout) if result.stdout.strip() else None
 
 
+def codeql_source_drift(profile):
+    """Offline PR check: the pinned main blob must match the checked-out workflow,
+    and every github/codeql-action step must use one commit (init and analyze fail apart)."""
+    source = profile["expected"].get("codeql_main_source")
+    if source is None:  # default setup: no workflow file to pin
+        return []
+    data = (ROOT / source["path"]).read_bytes()
+    blob = hashlib.sha1(b"blob %d\0" % len(data) + data).hexdigest()
+    result = [] if blob == source["sha"] else ["codeql_main_source.sha"]
+    refs = set(codeql_action_refs(data.decode("utf-8")))
+    pinned = len(refs) == 1 and re.fullmatch(r"[0-9a-f]{40}", next(iter(refs)))
+    return result + ([] if pinned or not refs else ["codeql_workflow.action_pins"])
+
+
+def strip_comment(line):
+    """Drop a YAML comment: a `#` at line start or after whitespace, outside quotes."""
+    quote = None
+    for i, char in enumerate(line):
+        if quote:
+            if char == "\\" and quote == '"':
+                continue
+            if char == quote and not (quote == '"' and i and line[i - 1] == "\\"):
+                quote = None
+        elif char in "'\"":
+            quote = char
+        elif char == "#" and (i == 0 or line[i - 1].isspace()):
+            return line[:i].rstrip()
+    return line.rstrip()
+
+
+def codeql_action_refs(text):
+    """Every github/codeql-action ref outside comments and block-scalar text (`run:` scripts).
+    YAML structure is not parsed, so step layout cannot hide a ref. A ref that cannot be read,
+    or a `uses:` given as a block scalar, counts as unpinned and fails the check.
+    shortcut: escapes or line continuation inside quoted scalars are not decoded; this guards
+    honest edits (Dependabot, people, agents), not a hostile author who could edit this file."""
+    refs, block = [], None
+    for raw in text.splitlines():
+        line = strip_comment(raw)
+        if not line.strip():
+            continue
+        indent = len(line) - len(line.lstrip())
+        if block is not None and indent > block:
+            continue
+        block = None
+        unquoted = re.sub(r"\"(?:[^\"\\]|\\.)*\"|'[^']*'", "''", line)
+        if re.search(r":\s*[|>][-+0-9]*$", unquoted):
+            block = len(re.match(r"\s*(?:-\s+)*", line)[0])  # the owning key's column
+            if re.search(r"(?:^|[\s{,])[\"']?uses[\"']?\s*:\s*[|>]", line):
+                refs.append("unrecognized")
+        # GitHub owner/repo names are case-insensitive: GitHub/CodeQL-Action is the same action.
+        for match in re.finditer(r"github/codeql-action/[\w-]*(?:@([^\s\"',}\]]+))?", line, re.IGNORECASE):
+            refs.append(match[1].lower() if match[1] else "unrecognized")
+    return refs
+
+
 # Required controls cannot disappear when someone edits the baseline.
 REQUIRED_FIELDS = {
     "repository": "default_branch visibility allow_merge_commit allow_rebase_merge allow_squash_merge allow_auto_merge delete_branch_on_merge allow_update_branch squash_merge_commit_title squash_merge_commit_message security_and_analysis.dependabot_security_updates.status security_and_analysis.secret_scanning.status security_and_analysis.secret_scanning_push_protection.status",
@@ -56,6 +113,8 @@ REQUIRED_FIELDS = {
     "codeql_workflow": "path state",
     "codeql_main_source": "path type sha",
 }
+# Only advanced setup has a workflow file; default setup must not list it.
+ADVANCED_CODEQL = {"codeql_workflow", "codeql_main_source"}
 STRING_FIELDS = {
     "default_branch", "visibility", "squash_merge_commit_title", "squash_merge_commit_message",
     "status", "allowed_actions", "default_workflow_permissions", "approval_policy", "state", "path", "type", "sha",
@@ -66,9 +125,16 @@ def validate_profile(profile):
     if not isinstance(profile, dict):
         raise ValueError("Baseline must be an object")
     expected = profile.get("expected")
-    if not isinstance(expected, dict) or set(expected) != set(REQUIRED_FIELDS):
+    if not isinstance(expected, dict):
+        raise ValueError("Baseline must include every required control")
+    codeql = expected.get("codeql")
+    default_setup = isinstance(codeql, dict) and codeql.get("state") == "configured"
+    required = set(REQUIRED_FIELDS) - ADVANCED_CODEQL if default_setup else set(REQUIRED_FIELDS)
+    if set(expected) != required:
         raise ValueError("Baseline must include every required control")
     for control, fields in REQUIRED_FIELDS.items():
+        if control not in required:
+            continue
         value = expected[control]
         if control == "rulesets":
             if not isinstance(value, list):

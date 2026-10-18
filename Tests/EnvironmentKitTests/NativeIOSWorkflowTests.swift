@@ -13,7 +13,10 @@ struct NativeIOSWorkflowTests {
         try repo.write("Gemfile", "source 'https://rubygems.org'\ngem 'cocoapods'\n")
         try repo.write("Gemfile.lock", "fixture")
         try repo.write("Podfile", "platform :ios, '17.0'")
-        let runner = runner(repo)
+        var runner = runner(repo)
+        runner.responses["xcrun simctl list runtimes -j"] = .ok(#"{"runtimes":[{"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-27-0","name":"iOS 27.0","version":"27.0","buildversion":"24A434","supportedArchitectures":["arm64"],"isAvailable":true}]}"#)
+        runner.responses["xcrun simctl --set \(FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Developer/CoreSimulator/Devices").path) list devices -j"] = .ok(#"{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-27-0":[{"udid":"B38C3447-963B-42CB-959F-F5234F5A1092","name":"iPhone 17","deviceTypeIdentifier":"com.apple.CoreSimulator.SimDeviceType.iPhone-17","isAvailable":true,"state":"Shutdown"}]}}"#)
+        runner.responses["xcrun simctl list devicetypes -j"] = .ok(#"{"devicetypes":[{"identifier":"com.apple.CoreSimulator.SimDeviceType.iPhone-17","name":"iPhone 17","productFamily":"iPhone","minRuntimeVersionString":"26.0.0","maxRuntimeVersionString":"65535.255.255"}]}"#)
         let result = await PreparationExecution.run(input: ProjectInspectionInput(
             directory: repo.root, environment: [:], app: "App.xcodeproj"), planOnly: true, runner: runner)
         #expect(result.exitCode == 0)
@@ -35,7 +38,7 @@ struct NativeIOSWorkflowTests {
         #expect(!FileManager.default.fileExists(atPath: repo.url("node_modules").path))
     }
 
-    @Test("future framework preparation stays manual without invoking an execution provider", arguments: [
+    @Test("invalid Flutter or incomplete native preparation stays manual without executing tools", arguments: [
         ProjectFramework.flutter, .nativeAndroid
     ])
     func futurePreparation(framework: ProjectFramework) async throws {
@@ -54,7 +57,11 @@ struct NativeIOSWorkflowTests {
         #expect(result.exitCode == 0)
         #expect(result.plan?.projectKind == framework.rawValue)
         #expect(result.plan?.platforms.map(\.platform) == (framework == .flutter ? [.ios, .android] : [.android]))
-        #expect(result.plan?.steps.contains { $0.kind == "provider" } == true)
+        if framework == .flutter {
+            #expect(result.plan?.steps.contains { $0.id == "flutter.declarations" && $0.kind == "migration" } == true)
+        } else {
+            #expect(result.plan?.steps.contains { $0.kind == "provider" } == true)
+        }
         let approved = await PreparationExecution.run(input: input,
             approvedPlanID: try #require(result.plan?.id), trustRepository: true, runner: runner)
         #expect(approved.exitCode == 1)

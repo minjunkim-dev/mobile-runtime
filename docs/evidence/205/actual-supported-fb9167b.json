@@ -1,0 +1,958 @@
+{
+  "schemaVersion": 1,
+  "issue": 205,
+  "status": "component-observed-partial-strict-preservation-failed-final-gates-pending",
+  "measurementDateUTC": "2026-10-18",
+  "source": {
+    "measuredSHA": "fb9167b1f0589645b3ccbdd8b26b0f67d5e00a70",
+    "measuredTree": "bfae13ffa33713d2e7553008679d2949ca148fe8",
+    "sampleSHA": "66732bc18ed28d9eed71336b4a2b018e09ad20b9",
+    "sampleTrackedFiles": 67
+  },
+  "scope": {
+    "preparationOnly": true,
+    "approvedActionsCompleted": [
+      "ios.simulator.create",
+      "dependencies.flutter"
+    ],
+    "SDKInstallerExecutedInThisComponent": false,
+    "appBuildOrRun": false,
+    "wholeEnvironmentReady": false,
+    "wholeIssue205Complete": false
+  },
+  "normalization": "Public path aliases replace private absolute roots. Receipt member names identify private originals. Aliases do not reproduce raw bytes or recompute plan IDs. Only sizes, modes and full hashes are published; no raw base64, source/cache contents, credentials or authentication images.",
+  "aliases": {
+    "<R205>": "Restricted recovery evidence root retained by the validation owner.",
+    "<CLI_ROOT>": "Owned FB CLI validation root in the disposable VM.",
+    "<GUI_ROOT>": "Separate owned FB GUI validation root in the same VM."
+  },
+  "candidate": {
+    "CLI_SHA256": "0ac19e44192b8513e66247feac6a791d90e4027982d3980c2408d93ddcb3340a",
+    "GUI_SHA256": "327b574db2689cf41fe30a505c41eb8a94ae410d173772da0b5a9feb6621827b",
+    "bridgeSHA256": "ba67b958b953d663f01bf23fa08cb5782797eeefbde8529de1f1ae8690becf7d",
+    "GUIBundleID": "dev.runstir.validation.goal205background",
+    "DeveloperIDNotarizationProof": false
+  },
+  "inputs": {
+    "SDKManuallyPreparedBeforeProduct": true,
+    "preparedSDKCensusEntries": 21994,
+    "Flutter": "3.41.9",
+    "Dart": "3.11.5",
+    "channel": "stable",
+    "architecture": "arm64",
+    "frameworkRevision": "00b0c91f06209d9e4a41f71b7a512d6eb3b9c694",
+    "DartConstraint": "^3.11.5",
+    "FlutterVersionDeclaration": "not declared",
+    "exactManagerPin": "not declared",
+    "workspacePackages": 1,
+    "entrypoint": "lib/main.dart",
+    "XcodeVersion": "27.1",
+    "XcodeBuild": "27A9275",
+    "runtimeVersion": "27.1",
+    "runtimeBuild": "24A94425",
+    "deviceType": "com.apple.CoreSimulator.SimDeviceType.iPhone-Duo"
+  },
+  "CLI": {
+    "plan": {
+      "nativePID": 1348,
+      "nativeExitCode": 0,
+      "id": "65b169e2f008c711c6dc6b5ca1e7899694b373fde6904e1add51185526aed322",
+      "serializedPlanSHA256": "aec4f487c8b0ad9b57063b9b590aa4b891fbe2087fb67f9a6b8560999151395d",
+      "iOSCheckCount": 18,
+      "AndroidCheckCount": 19
+    },
+    "approval": {
+      "repositoryTrust": true,
+      "resourceKeyCount": 4,
+      "onlyReviewedPlanApproved": true
+    },
+    "execute": {
+      "nativePID": 1502,
+      "nativeExitCode": 1,
+      "operationState": "partial",
+      "completed": [
+        "ios.simulator.create",
+        "dependencies.flutter"
+      ],
+      "changedFiles": [],
+      "manualIDs": [
+        "android.android.avd",
+        "android.android.emulator.acceleration",
+        "android.android.gradle.compatibility",
+        "android.android.gradle.wrapper",
+        "android.android.jdk",
+        "android.android.project",
+        "android.android.sdk",
+        "android.android.target",
+        "android.sdk.requirements"
+      ],
+      "platformStates": {
+        "ios": "succeeded",
+        "android": "waiting-manual"
+      },
+      "observedDartChildPID": 2074,
+      "DartCommand": "<CLI_ROOT>/home/Library/Application Support/dev.runstir/flutter/versions/3.41.9-arm64-00b0c91f0620/bin/cache/dart-sdk/bin/dart pub --suppress-analytics get --enforce-lockfile",
+      "observedNativeCreateChildPID": 2023,
+      "remainingObservedProcesses": {}
+    },
+    "privateDevice": {
+      "UDID": "9F1BBDDD-22C8-4E71-B384-4F4377E791EA",
+      "state": "Shutdown",
+      "bootOrAppRunClaimed": false
+    },
+    "reinspection": {
+      "nativePID": 2276,
+      "nativeExitCode": 0,
+      "samePrivateDeviceReused": true,
+      "nextPlanID": "3ddd4811e90a206058b4c3cde7de4ce01fd08c80020fde54384ee0c15ec6cb96",
+      "nextPlanApproved": false,
+      "nextPlanExecuted": false
+    },
+    "strictAfter": {
+      "nativeExitCode": 1,
+      "preservation": {
+        "defaultInventory": false,
+        "foreignLeaseRecordsPreserved": true,
+        "globalPATH": true,
+        "launchctlPATH": true,
+        "noNewForeignLeaseRecords": true,
+        "ownedJDK": true,
+        "ownedSDK": true,
+        "protectedRoots": true,
+        "reviewedLeaseRecordsReleasedEmpty": true,
+        "selectedXcode": true
+      },
+      "trackedFieldsPreserved": {
+        "HEAD": true,
+        "files": true,
+        "flagsSHA256": true,
+        "indexSHA256": true,
+        "stageSHA256": true,
+        "status": true
+      },
+      "generatedInputChanges": [],
+      "selectedCacheStatSame": false,
+      "pubCacheBeforeSHA256": "9a64264076d877ac9caad242ca1111264e3bee482b7e6ac73e4f9cd8e0e62953",
+      "pubCacheAfterSHA256": "9a64264076d877ac9caad242ca1111264e3bee482b7e6ac73e4f9cd8e0e62953",
+      "reviewedLeaseCount": 4,
+      "reviewedLeasesUnheld": true
+    }
+  },
+  "GUI": {
+    "nativeGUIChildPID": 2604,
+    "nativeGUIChildExitCode": 0,
+    "nativeGUIChildEndUTC": "2026-10-18T10:35:30Z",
+    "operationEvidence": "Visible GUI states plus private device after-state; not a serialized GUI operation export.",
+    "approvedPlanID": "67f155440d08aa59d9b7efdc229cf83c13ef66f796f940e1adbcdce01ef6a774",
+    "repositoryTrustExplicitlySelected": true,
+    "operationState": "partial",
+    "operationExitCode": 1,
+    "completed": [
+      "ios.simulator.create",
+      "dependencies.flutter"
+    ],
+    "AndroidManualSteps": 9,
+    "nextPlanID": "2ba4c82193e8b9995e6bd6fc82ce335a2e0ac9035de396f10a0632432f447050",
+    "nextPlanApproved": false,
+    "nextPlanExecuted": false,
+    "privateDevice": {
+      "UDID": "A69BE241-B687-4BDA-AAED-4B3A51BDEDF1",
+      "state": "Shutdown",
+      "bootOrAppRunClaimed": false
+    },
+    "serializedFullPlanExported": false,
+    "everyShortDartOrNativeChildObserved": false,
+    "strictAfter": {
+      "nativeExitCode": 1,
+      "preservation": {
+        "defaultInventory": false,
+        "foreignLeaseRecordsPreserved": true,
+        "globalPATH": true,
+        "launchctlPATH": true,
+        "noNewForeignLeaseRecords": true,
+        "ownedJDK": true,
+        "ownedSDK": true,
+        "protectedRoots": true,
+        "reviewedLeaseRecordsReleasedEmpty": true,
+        "selectedXcode": true
+      },
+      "trackedFieldsPreserved": {
+        "HEAD": true,
+        "files": true,
+        "flagsSHA256": true,
+        "indexSHA256": true,
+        "stageSHA256": true,
+        "status": true
+      },
+      "generatedInputChanges": [],
+      "selectedCacheStatSame": false,
+      "pubCacheBeforeSHA256": "6220ec06a53d189ff3d0052525ec2fb969f82a9d773576fa114c5035d10ec2e1",
+      "pubCacheAfterSHA256": "6220ec06a53d189ff3d0052525ec2fb969f82a9d773576fa114c5035d10ec2e1",
+      "reviewedLeaseCount": 4,
+      "reviewedLeasesUnheld": true
+    }
+  },
+  "preservationLimits": {
+    "verdict": "FAIL",
+    "globalDefaultInventoryUnchanged": false,
+    "GUIChangedField": "existing global device CB1AD119-E201-4C9E-8E0E-AA5931E8045D.lastUsedAt",
+    "GUIBeforeUTC": "2026-10-18T10:09:33Z",
+    "GUIAfterUTC": "2026-10-18T10:34:50Z",
+    "GUIFieldActor": "UNKNOWN",
+    "CLILastUsedAtQueryAttribution": "Narrow CLI reinspection query-child/time match only; strict FAIL remains. Do not transfer to GUI.",
+    "selectedCacheMtimeActor": "UNKNOWN",
+    "wholeHOMEOrCachePreservationProven": false,
+    "allUnobservedChildrenAbsentProven": false,
+    "sourceAutoRestored": false
+  },
+  "laterProductInfluenceAnalysis": {
+    "laterProductSHA": "24ee6e9752e1f39ac6a999113743e054082fed48",
+    "laterProductTree": "4bd46b907b9d43dfee68207358515a88e9028c82",
+    "deltaFromMeasuredFB": {
+      "productAddedLines": 3,
+      "testAddedLines": 57,
+      "productPath": "Sources/EnvironmentKit/PreparationExecution.swift",
+      "testPath": "Tests/EnvironmentKitTests/FlutterPreparationTests.swift"
+    },
+    "scope": "The later SDK beforeCommit callback rechecks the original source snapshot after await inspect. It adds no success-path mutation to the measured Duo/Dart component. FB actual remains FB; no exact24ee component execution is claimed.",
+    "fixtureEvidence": {
+      "REDNativeExit": 1,
+      "REDIssues": 2,
+      "GREENNativeExit": 0,
+      "fullWerrorTests": 779,
+      "fullWerrorSuites": 91,
+      "fullWerrorNativeExit": 0,
+      "frozen": {
+        "pathAlias": "<R205>/source-install-guard-fix/FROZEN-v1.json",
+        "bytes": 5454,
+        "sha256": "5264c908be5c0dc859aac874c92fcb3e1ac3edf08020e1f89126a3e326bee48f",
+        "storedMode": "0o644"
+      }
+    },
+    "finalWholeHeadReviewComplete": false
+  },
+  "privateOriginalExports": {
+    "CLI": {
+      "rootAlias": "<R205>/actual-harness-supported/host/cli/export-supported-v1",
+      "index": {
+        "pathAlias": "<R205>/actual-harness-supported/host/cli/export-supported-v1/export-index.json",
+        "bytes": 5684,
+        "sha256": "06e4d497acba3979556e91a2413e1741a4957b54cb1623fb248d546ae0afc625",
+        "storedMode": "0o600"
+      },
+      "memberCount": 31,
+      "memberBytes": 44218683,
+      "allDecodedMemberBytesAndHashesCompared": true,
+      "memberPins": [
+        {
+          "id": "001",
+          "member": "states/after-supported-v1/generated-after.json",
+          "bytes": 1965,
+          "sha256": "792adda654c62080ee570238e3671a9bd1085813a63e591e66c901159093b524",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "002",
+          "member": "states/after-supported-v1/preserved-after.json",
+          "bytes": 22004882,
+          "sha256": "260728817878525c9d3281b307f84843231daeb1430d9dde7a8fc5ea2e9bbe3b",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "003",
+          "member": "states/after-supported-v1/report.json",
+          "bytes": 4409,
+          "sha256": "19466de8ca1f29afe4a45bb5970584cc654515bb2d898ecbbd937bd20ee6b830",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "004",
+          "member": "states/after-supported-v1/source-after.json",
+          "bytes": 12845,
+          "sha256": "2996bb16ac3c51462ebee22e01caa6b3c182d1cd77cb7e26682eac8462d202ee",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "005",
+          "member": "states/baseline.json",
+          "bytes": 515,
+          "sha256": "4105b85144ff58bc8a5078b37e515a20da31ac7c59cdde597edbf346996075a4",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "006",
+          "member": "states/candidate-verified.json",
+          "bytes": 6706,
+          "sha256": "fdb4b795756304f5d8d46a81ac0cea3267a5a658186010c6b76805070f23bb76",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "007",
+          "member": "states/environment.json",
+          "bytes": 1459,
+          "sha256": "d9f3d2fcb224472aacdae07a40ee9defec8217444e62a3ed34ab705fa7e1b1e4",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "008",
+          "member": "states/execute-supported-v1/approval-review.json",
+          "bytes": 705,
+          "sha256": "a848bd63cbdfbeacb7d5e7a1918970ce4d605b38460fb77553598d586b7338f0",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "009",
+          "member": "states/execute-supported-v1/command.json",
+          "bytes": 2696,
+          "sha256": "5d941753db18b025ce17140defcefd572e3bdda241722573ccd5f8600a3759f2",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "010",
+          "member": "states/execute-supported-v1/completion-checks.json",
+          "bytes": 7338,
+          "sha256": "025219ded81c276d29b3b0024eb48bcb4cd01213061237dfbc3248b3b3f7e2ec",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "011",
+          "member": "states/execute-supported-v1/exit.json",
+          "bytes": 16989,
+          "sha256": "6c094efdc36882dc8ab0ba3a6866bf0cd8d9cb3d4c3733f452cac3ce96fd312d",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "012",
+          "member": "states/execute-supported-v1/owned.sb",
+          "bytes": 9041,
+          "sha256": "e29503db5f1be895544ca62b968087235b7f3d61391ab7d1e969879b8a88aa5b",
+          "originalMode": "0o644",
+          "storedMode": "0o644"
+        },
+        {
+          "id": "013",
+          "member": "states/execute-supported-v1/pid.json",
+          "bytes": 46,
+          "sha256": "b1cb73e9b85ddb38475255076978489afa105addd6f0ed060d784c7d718e4424",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "014",
+          "member": "states/execute-supported-v1/stderr",
+          "bytes": 1197,
+          "sha256": "089b6922ed26cf3442a494112069fb0ab784bdedbcbe882d079b2aa3a340ea14",
+          "originalMode": "0o644",
+          "storedMode": "0o644"
+        },
+        {
+          "id": "015",
+          "member": "states/execute-supported-v1/stdout",
+          "bytes": 36751,
+          "sha256": "2194df9b8ff9b1041abfcf5dfe6f43ed3701b7cf7d10cbc7c0fc5ff6d909a3c1",
+          "originalMode": "0o644",
+          "storedMode": "0o644"
+        },
+        {
+          "id": "016",
+          "member": "states/plan-supported-v1/command.json",
+          "bytes": 2285,
+          "sha256": "e9774737416ddd4cc421ee523420843e3d36c47a3c84fb963132048052283d40",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "017",
+          "member": "states/plan-supported-v1/exit.json",
+          "bytes": 3126,
+          "sha256": "348a411e8065fa9e06f561e499f2264cbe2744d7caa3fc7cd7841aed9cb2b229",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "018",
+          "member": "states/plan-supported-v1/owned.sb",
+          "bytes": 8718,
+          "sha256": "efb92f776ba65be060e2a68c41b7dd260cc2fc925d6d6d98f6e9579cd5848a2d",
+          "originalMode": "0o644",
+          "storedMode": "0o644"
+        },
+        {
+          "id": "019",
+          "member": "states/plan-supported-v1/pid.json",
+          "bytes": 45,
+          "sha256": "90855df7ef646e02790beba86e9da056c1ec42173b49ef550eb6e7cbc0b5c01b",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "020",
+          "member": "states/plan-supported-v1/plan-review.json",
+          "bytes": 3630,
+          "sha256": "f41674962ae021935bfb34b62ffe795fd12d51e982f0f9e4ee0486161026bcdc",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "021",
+          "member": "states/plan-supported-v1/stderr",
+          "bytes": 382,
+          "sha256": "7226973798894eacb79f02c673f84df817d7667d5216926b6b03a6a8c0a2665d",
+          "originalMode": "0o644",
+          "storedMode": "0o644"
+        },
+        {
+          "id": "022",
+          "member": "states/plan-supported-v1/stdout",
+          "bytes": 40158,
+          "sha256": "5961dc1aca2e3ee5dfce256bc54a9a13da6ad0903e3c32190b94eaaad67a0709",
+          "originalMode": "0o644",
+          "storedMode": "0o644"
+        },
+        {
+          "id": "023",
+          "member": "states/preserved-before.json",
+          "bytes": 21987476,
+          "sha256": "9accf728420514c7b06ce6f02aab8cad544a9c634d1b09f89ef4ad492c6d5d12",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "024",
+          "member": "states/reinspect-supported-v1/command.json",
+          "bytes": 2289,
+          "sha256": "7d5c67c6c19bc56876e904155ae6d884269382eeec0a3c467897b83a39ae2cdc",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "025",
+          "member": "states/reinspect-supported-v1/exit.json",
+          "bytes": 2936,
+          "sha256": "52c35ddc3bb031cf25e0258c6ada96dad3d017ad38ea98b56cc8a4c66ad19633",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "026",
+          "member": "states/reinspect-supported-v1/owned.sb",
+          "bytes": 8718,
+          "sha256": "efb92f776ba65be060e2a68c41b7dd260cc2fc925d6d6d98f6e9579cd5848a2d",
+          "originalMode": "0o644",
+          "storedMode": "0o644"
+        },
+        {
+          "id": "027",
+          "member": "states/reinspect-supported-v1/pid.json",
+          "bytes": 45,
+          "sha256": "5fce4de314342a7b2c4f02498653a5d864352b48cef052e71943362ff0367798",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "028",
+          "member": "states/reinspect-supported-v1/plan-review.json",
+          "bytes": 1389,
+          "sha256": "47d93afd95081dc5ca4e02dea97999cc5b227ee3f2c7922356f3da843790c6ba",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "029",
+          "member": "states/reinspect-supported-v1/stderr",
+          "bytes": 382,
+          "sha256": "dcb22fbd820858de6c5259cdbaddf1580991c9af8632fdf10b0b01202be66297",
+          "originalMode": "0o644",
+          "storedMode": "0o644"
+        },
+        {
+          "id": "030",
+          "member": "states/reinspect-supported-v1/stdout",
+          "bytes": 36715,
+          "sha256": "ad7376a447197a74c63005ed548ac1ff271ba52abe18fa612d24ba94a0c75e30",
+          "originalMode": "0o644",
+          "storedMode": "0o644"
+        },
+        {
+          "id": "031",
+          "member": "states/source-before.json",
+          "bytes": 12845,
+          "sha256": "2996bb16ac3c51462ebee22e01caa6b3c182d1cd77cb7e26682eac8462d202ee",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        }
+      ],
+      "hostExportReceiptPins": [
+        {
+          "pathAlias": "<R205>/actual-harness-supported/host/cli/export-supported-v1/command.json",
+          "bytes": 891,
+          "sha256": "14bfde0bae6bfc80a3b6afcb403286e2d803c14cb8422a90a67948946f789436",
+          "storedMode": "0o600"
+        },
+        {
+          "pathAlias": "<R205>/actual-harness-supported/host/cli/export-supported-v1/exit.json",
+          "bytes": 361,
+          "sha256": "c7207b2f3d5d70f764f192102c3d1be879e9c8eeb02d08caec26c9c19406feff",
+          "storedMode": "0o600"
+        },
+        {
+          "pathAlias": "<R205>/actual-harness-supported/host/cli/export-supported-v1/pid.json",
+          "bytes": 46,
+          "sha256": "23800cc14e60576869af768ab67290450d50ca978ab186926696183950ce2660",
+          "storedMode": "0o600"
+        },
+        {
+          "pathAlias": "<R205>/actual-harness-supported/host/cli/export-supported-v1/stdout",
+          "bytes": 58963568,
+          "sha256": "86dab68b3a26442093811b4c319377cd4d14c4f0fefbbbcd74641e84e85889ef",
+          "storedMode": "0o644"
+        },
+        {
+          "pathAlias": "<R205>/actual-harness-supported/host/cli/export-supported-v1/stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "storedMode": "0o644"
+        }
+      ]
+    },
+    "GUI": {
+      "rootAlias": "<R205>/actual-harness-supported/host/gui/export-supported-v1",
+      "index": {
+        "pathAlias": "<R205>/actual-harness-supported/host/gui/export-supported-v1/export-index.json",
+        "bytes": 4667,
+        "sha256": "0b28296472e64369997d2757b1a13ca364544902c8841a7c351595d9d00f3c21",
+        "storedMode": "0o600"
+      },
+      "memberCount": 25,
+      "memberBytes": 53073710,
+      "allDecodedMemberBytesAndHashesCompared": true,
+      "memberPins": [
+        {
+          "id": "001",
+          "member": "launch-gui.sh",
+          "bytes": 2326,
+          "sha256": "516ea3ee6e6ad7799da6d43120e53e9c8990dade1a570da44245c5b177fa276d",
+          "originalMode": "0o700",
+          "storedMode": "0o700"
+        },
+        {
+          "id": "002",
+          "member": "owned-gui.sb",
+          "bytes": 9041,
+          "sha256": "8d2f4fb3192ba3c7aa811d3c87385914073e0c2a27f8aacb0620f0df415b7f1c",
+          "originalMode": "0o644",
+          "storedMode": "0o644"
+        },
+        {
+          "id": "003",
+          "member": "states/after-supported-v1/generated-after.json",
+          "bytes": 1965,
+          "sha256": "b3931e801838be155c880225075050a6176169d321a48e8ff5551ace51dd561a",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "004",
+          "member": "states/after-supported-v1/preserved-after.json",
+          "bytes": 26510435,
+          "sha256": "840d791bb5d1162b1cdcb4e431d052a58e1193fbf936c22ebdc11e30eaaee7e5",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "005",
+          "member": "states/after-supported-v1/report.json",
+          "bytes": 4408,
+          "sha256": "2c7fc70ae7db55ec1c851b9f6e28fb0c4e504a9ba6404662f4f4af323679539e",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "006",
+          "member": "states/after-supported-v1/source-after.json",
+          "bytes": 12845,
+          "sha256": "b9b3b9900321fbdd6c9a87a0bb8b486972c67db5df0d3191a268b5428fbd4f62",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "007",
+          "member": "states/baseline.json",
+          "bytes": 515,
+          "sha256": "16d44e7f22dfa90998d5b3ebc4f2003faf7653023dd3ccf3512136c618552c8d",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "008",
+          "member": "states/candidate-verified.json",
+          "bytes": 6706,
+          "sha256": "fdb4b795756304f5d8d46a81ac0cea3267a5a658186010c6b76805070f23bb76",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "009",
+          "member": "states/environment.json",
+          "bytes": 1459,
+          "sha256": "42ad557e71d53c1a89ebaff227b1701d654de9188c4a67e830104071af641b51",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "010",
+          "member": "states/gui-launch-exit.json",
+          "bytes": 58,
+          "sha256": "506a380156d62b02db030c6bf5bffaeca07f13108820992a1c311122bf063306",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "011",
+          "member": "states/gui-launch-start.json",
+          "bytes": 66,
+          "sha256": "bf4db909049c3547ca8b0564c346f56d6e97c369d862d26bc1116c1e366454df",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "012",
+          "member": "states/gui-launcher-prepared.json",
+          "bytes": 4102,
+          "sha256": "c6270892f4f8f8518acaeb05bea35d8d82346c9b026296abfc1dccb91f81bf91",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "013",
+          "member": "states/gui-prelaunch-review.json",
+          "bytes": 1031,
+          "sha256": "393f4dc2b71a42b33f0c2d4eec6c445d6442e7680c8234cecc0a90875f43e7c7",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "014",
+          "member": "states/gui.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "015",
+          "member": "states/gui.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "016",
+          "member": "states/observations/execution-alignment-supported-v1/observation.json",
+          "bytes": 1593,
+          "sha256": "15c205ac8214e265aea9c8a3205e2f1426d9ca296c9cb57b9a68e5150408d15d",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "017",
+          "member": "states/observations/execution-supported-v1/observation.json",
+          "bytes": 1984,
+          "sha256": "6e9b04e86240f6174f55d878d0b21dff91cff5892ea0b375b4df1db3b838fadc",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "018",
+          "member": "states/observations/inspection-supported-v1/observation.json",
+          "bytes": 1593,
+          "sha256": "c9ac3587d86fb37dac525366cdbe0e931c121765235a3edc44f6133d11f34c5c",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "019",
+          "member": "states/observations/launch-supported-v1/observation.json",
+          "bytes": 1590,
+          "sha256": "9d73d9760d642c36f1ecf5673f1445398f8f6dc8c25e739e1d54170231ac4b7e",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "020",
+          "member": "states/observations/normal-quit-supported-v1/observation.json",
+          "bytes": 1342,
+          "sha256": "3f7a963efa3a6926bb0faa0370aaa6914eda41e4b86d66fe304633109889b438",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "021",
+          "member": "states/observations/plan-review-supported-v1/observation.json",
+          "bytes": 1593,
+          "sha256": "e3fe48a7fe4c00dd5b94665e4dece516fbd5a8b4b9afe5dc92cada0c334028e0",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "022",
+          "member": "states/observations/plan-supported-v1/observation.json",
+          "bytes": 1594,
+          "sha256": "8166e0e8d794f21f93a82aa9c367504e99fbe07ca0b2b06f18c05598d8372249",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "023",
+          "member": "states/observations/reinspect-supported-v1/observation.json",
+          "bytes": 1593,
+          "sha256": "bb1f0eb417d5b514656ef96db67ceb7d9c2a0e46b66202c87bcf1f960ff3331c",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "024",
+          "member": "states/preserved-before.json",
+          "bytes": 26493026,
+          "sha256": "3589746065f34aba8b1db15f07a39bfd80fcd838be86ba33be144788b573ed8f",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        },
+        {
+          "id": "025",
+          "member": "states/source-before.json",
+          "bytes": 12845,
+          "sha256": "b9b3b9900321fbdd6c9a87a0bb8b486972c67db5df0d3191a268b5428fbd4f62",
+          "originalMode": "0o600",
+          "storedMode": "0o600"
+        }
+      ],
+      "hostExportReceiptPins": [
+        {
+          "pathAlias": "<R205>/actual-harness-supported/host/gui/export-supported-v1/command.json",
+          "bytes": 891,
+          "sha256": "d703380707a007e68360b83d9a5881d8a86fd853f8ff748c517b7effcdebac8c",
+          "storedMode": "0o600"
+        },
+        {
+          "pathAlias": "<R205>/actual-harness-supported/host/gui/export-supported-v1/exit.json",
+          "bytes": 361,
+          "sha256": "71a9fe5dd2e0e2d0f7687997416243f34196f015e6eb4d9bff4766bf3c6d660a",
+          "storedMode": "0o600"
+        },
+        {
+          "pathAlias": "<R205>/actual-harness-supported/host/gui/export-supported-v1/pid.json",
+          "bytes": 45,
+          "sha256": "8c41a42297c2834c1d49b1257c7683eb41d7b792eb5a74f43ef0e75d74ac1fd4",
+          "storedMode": "0o600"
+        },
+        {
+          "pathAlias": "<R205>/actual-harness-supported/host/gui/export-supported-v1/stdout",
+          "bytes": 70769339,
+          "sha256": "03257e043d2d6b9ed09e755c4954c202298aad01637b90b9fe4d264be69ef17b",
+          "storedMode": "0o644"
+        },
+        {
+          "pathAlias": "<R205>/actual-harness-supported/host/gui/export-supported-v1/stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "storedMode": "0o644"
+        }
+      ]
+    }
+  },
+  "screens": {
+    "copiedToPublicTree": false,
+    "authenticationScreensIncluded": false,
+    "pinCount": 16,
+    "identicalPair": [
+      "13",
+      "14"
+    ],
+    "independentFrameCount": 15,
+    "scope": "16 retained product PNGs; 13 and 14 are byte-identical, not independent observations. No image pixels are published here.",
+    "pins": [
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-gui/01-initial.png",
+        "bytes": 69028,
+        "sha256": "77b8942ff9ad2219f006fb68860b9073ccf67701423209d86255ea29541d6fe6",
+        "storedMode": "0o600",
+        "id": "01"
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-gui/02-initial-inspection.png",
+        "bytes": 113008,
+        "sha256": "0ce9b387d480d512592547eb3461fe9290c1c9c8e43fcbdf035ab7da6aeba313",
+        "storedMode": "0o600",
+        "id": "02"
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-gui/03-plan-top-untrusted.png",
+        "bytes": 137658,
+        "sha256": "10bb1ff4dbaeac1d5ee8fc072212cd3e0dfb591b0cfd1af6ef16533c6c4fe431",
+        "storedMode": "0o600",
+        "id": "03"
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-gui/04-plan-ios-reuse.png",
+        "bytes": 142428,
+        "sha256": "2d0544a073ec99a83c9000960d6dab3b4dd4f06e56ffdfbe68748b49c9428a17",
+        "storedMode": "0o600",
+        "id": "04"
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-gui/05-plan-xcode-jdk.png",
+        "bytes": 148496,
+        "sha256": "96c6679a5aa51eb9ec3c79d09410aaaafb4608f8a3c96530f36ac014155a5751",
+        "storedMode": "0o600",
+        "id": "05"
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-gui/06-plan-flutter-reuse.png",
+        "bytes": 148501,
+        "sha256": "7508871106205226bb8d0fb46c1b237999f798a0ba7cdaebceab1eb11200088c",
+        "storedMode": "0o600",
+        "id": "06"
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-gui/07-plan-metadata-dependency.png",
+        "bytes": 151118,
+        "sha256": "340a3d11a41fd0c4948ba8eecf9e271247fa65c60bfe36693ffc579143d23735",
+        "storedMode": "0o600",
+        "id": "07"
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-gui/08-plan-native-input-runtime.png",
+        "bytes": 151704,
+        "sha256": "578575f4ba948afde4dd5611040aa9db8f24eed5b942dac651d09cb45ec5ebba",
+        "storedMode": "0o600",
+        "id": "08"
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-gui/09-plan-exact-private-duo.png",
+        "bytes": 148706,
+        "sha256": "61d3b5c5656b56ea38214ae43bd27e6ea1842f3319bbbfefeded54885f26b8d0",
+        "storedMode": "0o600",
+        "id": "09"
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-gui/10-plan-auto-dart-command.png",
+        "bytes": 135723,
+        "sha256": "94cd3e5e22b6011c173ccc2bd60806c091c614734492ede2efe0f411bfc5d143",
+        "storedMode": "0o600",
+        "id": "10"
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-gui/11-plan-exact-create-action.png",
+        "bytes": 149302,
+        "sha256": "ba9ce421f5f88ef76f25c6bbd67d82a84610bbb99f13c007616bf9a658b3d53f",
+        "storedMode": "0o600",
+        "id": "11"
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-gui/12-preapproval-trust-selected.png",
+        "bytes": 149460,
+        "sha256": "08f1f0d4805db0500aa2276af0ec9f93ef621ac5bb6b8c3ed2cd436f03e649c9",
+        "storedMode": "0o600",
+        "id": "12"
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-gui/13-execution-create-succeeded.png",
+        "bytes": 134549,
+        "sha256": "2987969833a6b7631640597e7fda6a0be1092d4d34e633ca199c0919c233968c",
+        "storedMode": "0o600",
+        "id": "13"
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-gui/14-completed-two-actions-partial-exit1.png",
+        "bytes": 134549,
+        "sha256": "2987969833a6b7631640597e7fda6a0be1092d4d34e633ca199c0919c233968c",
+        "storedMode": "0o600",
+        "id": "14"
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-gui/15-reinspect-same-next-plan-unapproved.png",
+        "bytes": 135120,
+        "sha256": "bd0ff0024a2bb7959f42e72287da84eb98a67d15888a984f772967a4e25276f8",
+        "storedMode": "0o600",
+        "id": "15"
+      },
+      {
+        "pathAlias": "<R205>/actual-harness-supported/screenshots-gui/16-normal-quit-terminal.png",
+        "bytes": 94744,
+        "sha256": "1352a9623656bbbd3937cb13151ef8795740306b37132f88d46d4cb2bef65621",
+        "storedMode": "0o600",
+        "id": "16"
+      }
+    ],
+    "approvalReview": {
+      "pathAlias": "<R205>/actual-harness-supported/screenshots-gui/ROOT-APPROVAL-REVIEW-v1.json",
+      "bytes": 992,
+      "sha256": "fc8d41ee9b209f0e38bdcc83e5eb9eb862421363289bb45535b0aa1d52bd69c2",
+      "storedMode": "0o600"
+    }
+  },
+  "existingIndependentReviewPins": [
+    {
+      "pathAlias": "<R205>/reviews205/SUPPORTED-CLI-ACTUAL-SECURITY-v1.md",
+      "bytes": 13883,
+      "sha256": "2112d5ba5374d415ff68b26b4f9f241e30ff6a62ef0bde8df6e5731102bebfcf",
+      "storedMode": "0o644"
+    },
+    {
+      "pathAlias": "<R205>/reviews205/SUPPORTED-GUI-ACTUAL-SECURITY-v1.md",
+      "bytes": 15126,
+      "sha256": "723cf79936fc5c75fda4573a1173dbaec672c4b417dfa9186d146500017fc446",
+      "storedMode": "0o644"
+    },
+    {
+      "pathAlias": "<R205>/reviews205/INSTALL-GUARD-STANDARDS-24ee6e9-v1.md",
+      "bytes": 11076,
+      "sha256": "b69bd56439b126a2c357d9097a8b2694a3ea79b8e5dc9c1d2bedc40cd418c7b7",
+      "storedMode": "0o644"
+    },
+    {
+      "pathAlias": "<R205>/reviews205/INSTALL-GUARD-SECURITY-24ee6e9-v1.md",
+      "bytes": 9321,
+      "sha256": "68f4de555e5df352ea905c680fb15edf2a23bff1a9b3902667c040bb937e7fe3",
+      "storedMode": "0o644"
+    }
+  ],
+  "reviewScope": "Existing component/security and source-delta reviews retain their own fixed source/model/context scope. They do not approve this final public document head.",
+  "history": {
+    "e567ActualRetained": "actual-cli-e567b00.md and actual-gui-e567b00.md remain historical e567 evidence.",
+    "failed121Retained": "native-compatibility-121f0db/README.md retains the native incompatibility failure.",
+    "old626CIIsCurrentHeadCI": false
+  },
+  "remainingGates": {
+    "SDKGUIActual": null,
+    "currentStaleSelectorActual": null,
+    "finalPublicREADMEAndManifest": null,
+    "finalWholeHeadIndependentReviews": null,
+    "requiredFinalHeadCI": null,
+    "exactFinalHeadHumanApproval": null,
+    "merge": null,
+    "mainCI": null,
+    "issue205Closure": null
+  },
+  "limits": [
+    "Prepared SDK reuse is not SDK installer execution.",
+    "Duo creation and Dart alignment are not app build/install/launch or a mobile first screen.",
+    "Android manual9 remain; no newly evaluated Android package/variant installation actual is claimed.",
+    "A new unapproved plan is not stale-approval rejection actual.",
+    "Raw strict inventory FAIL and cache actor UNKNOWN remain unresolved by successful actions or zero material review findings.",
+    "Current VM shutdown is outside this component report; GUI process exit0 is not VM stop evidence."
+  ]
+}

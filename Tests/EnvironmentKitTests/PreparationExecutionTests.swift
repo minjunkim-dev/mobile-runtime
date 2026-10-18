@@ -35,6 +35,22 @@ struct PreparationExecutionTests {
         #expect(!FileManager.default.fileExists(atPath: repo.url("node_modules").path))
     }
 
+    @Test("RN preparation preserves its declared custom Pod installer")
+    func declaredRNPodInstaller() async throws {
+        let repo = try project()
+        try repo.write("package.json", #"{"dependencies":{"react-native":"0.81.0"},"scripts":{"pod-install":"cd ios && pod install"}}"#)
+        try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
+        try repo.write("ios/Podfile.lock", "locked pods")
+        var runner = try tools(repo)
+        runner.responses["pod --version"] = .ok("1.16.1")
+        let result = await PreparationExecution.run(
+            input: ProjectInspectionInput(directory: repo.root, environment: [:]), planOnly: true, runner: runner)
+        let pods = try #require(result.plan?.steps.first { $0.id == "dependencies.pods" })
+        #expect(pods.kind == "align")
+        #expect(pods.command == "yarn run pod-install")
+        #expect(!runner.log.all.contains { $0.description == "yarn run pod-install" })
+    }
+
     @Test("approval does not grant repository trust and changed declarations invalidate approval")
     func approvalBoundary() async throws {
         let repo = try project()
@@ -366,7 +382,9 @@ struct PreparationExecutionTests {
             "xcode-select -p": .ok("/test/Xcode"),
             "xcodebuild -version": .ok("Xcode 27.0\nBuild version 18A100"),
             "xcodebuild -checkFirstLaunchStatus": .ok(""),
-            "xcrun simctl list runtimes -j": .ok(#"{"runtimes":[{"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-27-0","name":"iOS 27.0","version":"27.0","isAvailable":true}]}"#),
+            "xcrun simctl list runtimes -j": .ok(#"{"runtimes":[{"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-27-0","name":"iOS 27.0","version":"27.0","buildversion":"24A434","supportedArchitectures":["arm64"],"isAvailable":true}]}"#),
+            "xcrun simctl --set \(FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Developer/CoreSimulator/Devices").path) list devices -j": .ok(#"{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-27-0":[{"udid":"B38C3447-963B-42CB-959F-F5234F5A1092","name":"iPhone 17","deviceTypeIdentifier":"com.apple.CoreSimulator.SimDeviceType.iPhone-17","isAvailable":true,"state":"Shutdown"}]}}"#),
+            "xcrun simctl list devicetypes -j": .ok(#"{"devicetypes":[{"identifier":"com.apple.CoreSimulator.SimDeviceType.iPhone-17","name":"iPhone 17","productFamily":"iPhone","minRuntimeVersionString":"26.0.0","maxRuntimeVersionString":"65535.255.255"}]}"#),
             "node --version": .ok("v22.14.0"),
             "/usr/bin/which node": .ok(node.path),
             "\(node.path) --version": .ok("v22.14.0"),

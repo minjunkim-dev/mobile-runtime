@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "candidateSHA": "121f0db3589fbe4c1d741a791488580469a3c993",
+  "candidateTree": "f090c3a43fabd105257779ea556ecffaa6868299",
+  "status": "failed",
+  "productExitCode": 1,
+  "manualNativeExitCode": 147,
+  "manualNativeErrorDomain": "com.apple.CoreSimulator.SimError",
+  "manualNativeErrorCode": 403,
+  "manualDiagnosticIsProductSuccess": false,
+  "GUIProductLaunched": false,
+  "originalRecoveryIntentPreserved": true,
+  "files": {
+    "native-runtimes.json": { "bytes": 29390, "SHA256": "9026b1a53951686c9bef371533b921867ea52aed02e6ad45086ec3d15ea70f7b" },
+    "manual-native-result.json": { "bytes": 793, "SHA256": "48c9a368e43c09e0995b36aeb6eecb5ca0a1ec53ce56fd782ae78738847b027d" },
+    "product-result.json": { "bytes": 40899, "SHA256": "905eb410a9cf4f364367a82fcb76415f57eb4832dbc89f53aa4286123545ea0d" },
+    "product-exit.json": { "bytes": 13642, "SHA256": "8c5fdf6697f8c9daae853e10a1bbe09200e3da88e9f3af6164321301213c0e0c" },
+    "preservation-report.json": { "bytes": 3392, "SHA256": "f5299150e8ea6d6082c9beaef3f229a9f17cd9e7a22539d707e487f9063685aa" }
+  }
+}

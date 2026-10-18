@@ -16,6 +16,7 @@ struct SimctlDeviceList: Decodable {
         /// False for a device whose runtime the system unmounted. It is still
         /// listed, and it still cannot be booted.
         let isAvailable: Bool
+        let deviceTypeIdentifier: String?
     }
 
     /// Runtime identifier → the devices on it.

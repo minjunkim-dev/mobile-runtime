@@ -1,0 +1,1093 @@
+{
+  "command" : "setup",
+  "exitCode" : 1,
+  "operation" : {
+    "changedFiles" : [
+
+    ],
+    "completed" : [
+
+    ],
+    "error" : "Simulator creation did not confirm the returned identity and actual Shutdown state. Existing devices and any completed creation were preserved.",
+    "id" : "DB92DDE4-22FE-4919-998F-051587E4AE65",
+    "kind" : "setup",
+    "manual" : [
+      {
+        "environment" : {
+
+        },
+        "id" : "android.android.avd",
+        "kind" : "provider",
+        "platform" : "android",
+        "remediation" : {
+          "summary" : "depends on `android.target`, which did not pass"
+        },
+        "source" : {
+          "origin" : "host"
+        },
+        "target" : "host"
+      },
+      {
+        "environment" : {
+
+        },
+        "id" : "android.android.emulator.acceleration",
+        "kind" : "provider",
+        "platform" : "android",
+        "remediation" : {
+          "summary" : "depends on `android.sdk`, which did not pass"
+        },
+        "source" : {
+          "origin" : "host"
+        },
+        "target" : "host"
+      },
+      {
+        "environment" : {
+
+        },
+        "id" : "android.android.gradle.compatibility",
+        "kind" : "provider",
+        "platform" : "android",
+        "remediation" : {
+          "summary" : "depends on `android.jdk`, which did not pass"
+        },
+        "source" : {
+          "origin" : "host"
+        },
+        "target" : "host"
+      },
+      {
+        "environment" : {
+
+        },
+        "id" : "android.android.gradle.wrapper",
+        "kind" : "provider",
+        "observed" : "missing executable android/gradlew, android/gradle/wrapper/gradle-wrapper.jar",
+        "platform" : "android",
+        "remediation" : {
+          "summary" : "Restore the project's Gradle wrapper from its source repository; mobile will not substitute system Gradle."
+        },
+        "required" : "executable gradlew, wrapper JAR/properties, and an exact distributionUrl",
+        "source" : {
+          "origin" : "android/gradle/wrapper",
+          "tier" : 1
+        },
+        "target" : "android/gradle/wrapper"
+      },
+      {
+        "environment" : {
+
+        },
+        "id" : "android.android.jdk",
+        "kind" : "provider",
+        "platform" : "android",
+        "remediation" : {
+          "summary" : "depends on `android.gradle.wrapper`, which did not pass"
+        },
+        "source" : {
+          "origin" : "host"
+        },
+        "target" : "host"
+      },
+      {
+        "environment" : {
+
+        },
+        "id" : "android.android.project",
+        "kind" : "provider",
+        "observed" : "Flutter Android Gradle application inputs are missing or unresolved",
+        "platform" : "android",
+        "remediation" : {
+          "summary" : "Prepare the existing Flutter Android host source manually. Setup does not generate or migrate native targets."
+        },
+        "required" : "checked-in android/ Gradle settings and application source",
+        "source" : {
+          "origin" : "pubspec.yaml + android/ Gradle application",
+          "tier" : 1
+        },
+        "target" : "pubspec.yaml + android/ Gradle application"
+      },
+      {
+        "environment" : {
+
+        },
+        "id" : "android.android.sdk",
+        "kind" : "provider",
+        "platform" : "android",
+        "remediation" : {
+          "summary" : "the selected Gradle target is unavailable"
+        },
+        "source" : {
+          "origin" : "ANDROID_HOME",
+          "tier" : 1
+        },
+        "target" : "ANDROID_HOME"
+      },
+      {
+        "environment" : {
+
+        },
+        "id" : "android.android.target",
+        "kind" : "provider",
+        "platform" : "android",
+        "remediation" : {
+          "summary" : "depends on `android.gradle.wrapper`, which did not pass"
+        },
+        "source" : {
+          "origin" : "host"
+        },
+        "target" : "host"
+      },
+      {
+        "environment" : {
+
+        },
+        "id" : "android.sdk.requirements",
+        "kind" : "provider",
+        "observed" : "An exact locally evaluated Gradle model and wrapper are required; setup does not guess SDK requirements.",
+        "platform" : "android",
+        "remediation" : {
+          "summary" : "An exact locally evaluated Gradle model and wrapper are required; setup does not guess SDK requirements."
+        },
+        "required" : "exact evaluated requirements and official compatible archive metadata",
+        "source" : {
+          "origin" : "Android SDK preparation"
+        },
+        "target" : "Android SDK"
+      }
+    ],
+    "nextAction" : "Preserve existing and completed resources. Finish the listed manual Xcode/account/license/permission action, then inspect and approve the remaining plan.",
+    "remaining" : [
+      "android.android.avd",
+      "android.android.emulator.acceleration",
+      "android.android.gradle.compatibility",
+      "android.android.gradle.wrapper",
+      "android.android.jdk",
+      "android.android.project",
+      "android.android.sdk",
+      "android.android.target",
+      "android.sdk.requirements",
+      "dependencies.flutter",
+      "ios.simulator.create"
+    ],
+    "requiredInput" : [
+
+    ],
+    "resources" : [
+      {
+        "architecture" : "arm64",
+        "identifier" : "com.apple.CoreSimulator.SimRuntime.iOS-27-1",
+        "isAvailable" : true,
+        "kind" : "runtime",
+        "name" : "iOS 27.1",
+        "origin" : "reused",
+        "runtimeBuild" : "24A94425",
+        "runtimeIdentifier" : "com.apple.CoreSimulator.SimRuntime.iOS-27-1",
+        "state" : "available",
+        "version" : "27.1"
+      },
+      {
+        "architecture" : "arm64",
+        "deviceTypeIdentifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro",
+        "kind" : "simulator",
+        "name" : "iPhone 18 Pro - Runstir - iOS 27.1",
+        "origin" : "unknown",
+        "runtimeBuild" : "24A94425",
+        "runtimeIdentifier" : "com.apple.CoreSimulator.SimRuntime.iOS-27-1",
+        "state" : "unknown",
+        "version" : "27.1"
+      }
+    ],
+    "state" : "failed"
+  },
+  "plan" : {
+    "androidRequirements" : {
+      "blockers" : [
+        "An exact locally evaluated Gradle model and wrapper are required; setup does not guess SDK requirements."
+      ],
+      "modules" : [
+
+      ],
+      "packages" : [
+
+      ],
+      "sdkRoot" : "file:///Users/admin/runstir-205-cli-background-20261018/android-sdk/"
+    },
+    "app" : ".",
+    "files" : {
+      "/Users/admin/runstir-205-cli-background-20261018/source/android/app/build.gradle.kts" : "bb21c70f7ff24cf857c44ebb57c8ba18d75e5e575e3965bc84e52e8978c1270b",
+      "/Users/admin/runstir-205-cli-background-20261018/source/android/build.gradle.kts" : "6a26dba2cb8dfba1e74f540b0d17a89d96c1301d3c3bfda14348bed257fddcba",
+      "/Users/admin/runstir-205-cli-background-20261018/source/android/gradle/wrapper/gradle-wrapper.properties" : "297c9e63b6fa6e7e8b221900fa1787c1a0e38869d8957da66389fd0f6b00f78e",
+      "/Users/admin/runstir-205-cli-background-20261018/source/android/settings.gradle.kts" : "a9b5756048f668d4ebf355116678fd334cd5f2169b7d4518ad19b8df14d3af36",
+      "/Users/admin/runstir-205-cli-background-20261018/source/ios/Runner.xcodeproj/project.pbxproj" : "ecd636c30dfba06b989df73ead8b273c4e4add1268c049278e5c8d4a83620c7e",
+      "/Users/admin/runstir-205-cli-background-20261018/source/lib/main.dart" : "525df2a854f3c54c831302c89f3089afd991cd03900c207e261d821bdc9ec656",
+      "/Users/admin/runstir-205-cli-background-20261018/source/mobile.yml" : "dbdba4e2cf3d6d8fbdcb5d13105a948d506959ed179e60b8a92e090b2feeb11a",
+      "/Users/admin/runstir-205-cli-background-20261018/source/pubspec.lock" : "353b981ec19ef69d4e918807244fb842547ebde79b7e00702824513756d4bb89",
+      "/Users/admin/runstir-205-cli-background-20261018/source/pubspec.yaml" : "aefe0727d7ec8d993bf3a6c9e24c238157da7dfc10aa995ad0847fceed606390"
+    },
+    "id" : "62e2137fc98df63a2898929201acf8b3f0c9e859bfce0ad4fe4df768d38c2e25",
+    "installed" : {
+      "/Users/admin/runstir-205-cli-background-20261018/home/Library/Application Support/dev.runstir/flutter/pub-cache" : true,
+      "/Users/admin/runstir-205-cli-background-20261018/input/flutter" : true,
+      "/Users/admin/runstir-205-cli-background-20261018/source/.dart_tool/package_config.json" : true
+    },
+    "platforms" : [
+      {
+        "checks" : [
+          {
+            "environment" : {
+
+            },
+            "id" : "ios.config.syntax",
+            "kind" : "reuse",
+            "observed" : "mobile.yml declares overrides.iosRuntime: 27.0",
+            "platform" : "ios",
+            "required" : "valid YAML declaring only ios.device, ios.scheme, android.module, android.variant, android.launcherActivity, android.avd, overrides.xcode, overrides.iosRuntime",
+            "source" : {
+              "origin" : "mobile.yml",
+              "tier" : 3
+            },
+            "target" : "mobile.yml"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "ios.config.values",
+            "kind" : "reuse",
+            "observed" : "no scheme declared — Runner is the only one",
+            "platform" : "ios",
+            "source" : {
+              "origin" : "mobile.yml",
+              "tier" : 3
+            },
+            "target" : "mobile.yml"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "ios.host.storage",
+            "kind" : "reuse",
+            "observed" : "pass",
+            "platform" : "ios",
+            "required" : "10 GiB preparation recommendation; not a build guarantee",
+            "source" : {
+              "origin" : "host"
+            },
+            "target" : "host"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "ios.host.workspace-access",
+            "kind" : "reuse",
+            "observed" : "2 working/cache locations accessible (no write probe)",
+            "platform" : "ios",
+            "source" : {
+              "origin" : "host"
+            },
+            "target" : "host"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "ios.project.execution-environment",
+            "kind" : "reuse",
+            "observed" : "selected prepared tool paths; global PATH and selections unchanged",
+            "platform" : "ios",
+            "source" : {
+              "origin" : "host"
+            },
+            "target" : "host"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "ios.simulator.daemon",
+            "kind" : "reuse",
+            "observed" : "CoreSimulator responded — 5 of 5 runtimes available",
+            "platform" : "ios",
+            "required" : "simctl responds to `simctl list runtimes -j`",
+            "source" : {
+              "origin" : "host"
+            },
+            "target" : "host"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "ios.simulator.runtime",
+            "kind" : "reuse",
+            "observed" : "iOS 27.1 installed and available",
+            "platform" : "ios",
+            "required" : "an iOS 27.0 or newer simulator runtime, available",
+            "source" : {
+              "origin" : "mobile.yml overrides.iosRuntime",
+              "tier" : 3
+            },
+            "target" : "mobile.yml overrides.iosRuntime"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "ios.xcode.installed",
+            "kind" : "reuse",
+            "observed" : "Xcode 27.1 (27A9275) at /Applications/Xcode_27.1.app/Contents/Developer via DEVELOPER_DIR",
+            "platform" : "ios",
+            "required" : "a full Xcode install reachable through the developer directory",
+            "source" : {
+              "origin" : "host"
+            },
+            "target" : "host"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "ios.xcode.ready",
+            "kind" : "reuse",
+            "observed" : "Xcode initial setup complete",
+            "platform" : "ios",
+            "source" : {
+              "origin" : "host"
+            },
+            "target" : "host"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "ios.xcode.version",
+            "kind" : "reuse",
+            "observed" : "Xcode 27.1 (27A9275)",
+            "platform" : "ios",
+            "required" : "Xcode 27.0 or newer",
+            "source" : {
+              "origin" : "Runstir 1.0 Xcode 27.0 minimum",
+              "tier" : 1
+            },
+            "target" : "Runstir 1.0 Xcode 27.0 minimum"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "tools.java",
+            "kind" : "reuse",
+            "observed" : "existing JDK properties 17.0.19; runtime 17.0.19+10-LTS; vendor Azul Systems, Inc.; architecture aarch64; executable SHA256 2e42a67be88e7815c0cd08c52f7145805b20ca666d46df11539b2587ac641c52",
+            "required" : "zulu-17.0.19+10",
+            "source" : {
+              "origin" : "Gradle wrapper + AGP/JDK compatibility; observed existing project tool",
+              "tier" : 2
+            },
+            "target" : "/Users/admin/runstir-205-cli-background-20261018/input/jdk/bin/java"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "flutter.declarations",
+            "kind" : "reuse",
+            "observed" : "Dart ^3.11.5; Flutter not declared; exact pin not declared",
+            "required" : "preserve declared constraints and exact manager pin",
+            "source" : {
+              "origin" : "/Users/admin/runstir-205-cli-background-20261018/source/pubspec.yaml",
+              "tier" : 1
+            },
+            "target" : "/Users/admin/runstir-205-cli-background-20261018/source"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "flutter.sdk",
+            "kind" : "reuse",
+            "observed" : "Flutter 3.41.9; Dart 3.11.5; stable arm64; revision 00b0c91f06209d9e4a41f71b7a512d6eb3b9c694; SDK evidence SHA256 5a49261dd83254cfa4366b48b725d923b6a36debd75c2d099f0ca4b85528af57",
+            "required" : "Flutter 3.41.9; Dart 3.11.5; stable arm64; revision 00b0c91f06209d9e4a41f71b7a512d6eb3b9c694; https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/flutter_macos_arm64_3.41.9-stable.zip; SHA256 d692b030a63466c44d6b2bc88583380371ecbe328f22cc4057835f59739821a1",
+            "source" : {
+              "origin" : "https://storage.googleapis.com/flutter_infra_release/releases/releases_macos.json; metadata SHA256 be26ba7041e985325ac4dad55f795bbf51fb636da23e1ae41876223ebd51fc84",
+              "tier" : 1
+            },
+            "target" : "/Users/admin/runstir-205-cli-background-20261018/input/flutter"
+          },
+          {
+            "command" : "/Users/admin/runstir-205-cli-background-20261018/input/flutter/bin/cache/dart-sdk/bin/dart pub --suppress-analytics get --enforce-lockfile",
+            "environment" : {
+              "FLUTTER_ROOT" : "/Users/admin/runstir-205-cli-background-20261018/input/flutter",
+              "PUB_CACHE" : "/Users/admin/runstir-205-cli-background-20261018/home/Library/Application Support/dev.runstir/flutter/pub-cache"
+            },
+            "id" : "dependencies.flutter",
+            "kind" : "align",
+            "observed" : "workspace: /Users/admin/runstir-205-cli-background-20261018/source; 1 packages; existing pubspec.lock",
+            "remediation" : {
+              "summary" : "Run the approved locked command in this exact dependency workspace. Native generated inputs and app execution have separate checks."
+            },
+            "required" : "bundled Dart locked alignment; preserve source and lockfiles",
+            "source" : {
+              "origin" : "/Users/admin/runstir-205-cli-background-20261018/source/pubspec.lock",
+              "tier" : 1
+            },
+            "target" : "/Users/admin/runstir-205-cli-background-20261018/home/Library/Application Support/dev.runstir/flutter/pub-cache"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "flutter.entrypoint",
+            "kind" : "reuse",
+            "observed" : "existing Dart file",
+            "required" : "selected app entrypoint",
+            "source" : {
+              "origin" : "/Users/admin/runstir-205-cli-background-20261018/source/lib/main.dart",
+              "tier" : 1
+            },
+            "target" : "/Users/admin/runstir-205-cli-background-20261018/source/lib/main.dart"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "ios.flutter.generated",
+            "kind" : "reuse",
+            "observed" : "existing debug engine marker and generated native input paths match selected Flutter/Dart and package paths",
+            "platform" : "ios",
+            "required" : "existing matching native generated inputs; no source migration",
+            "source" : {
+              "origin" : "/Users/admin/runstir-205-cli-background-20261018/source/ios",
+              "tier" : 1
+            },
+            "target" : "/Users/admin/runstir-205-cli-background-20261018/source/ios"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "ios.runtime",
+            "kind" : "reuse",
+            "observed" : "iOS 27.1 build 24A94425 arm64",
+            "platform" : "ios",
+            "required" : "Compatible existing iOS resource",
+            "source" : {
+              "origin" : "Selected Xcode and simctl"
+            },
+            "target" : "com.apple.CoreSimulator.SimRuntime.iOS-27-1"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "ios.simulator.create",
+            "installation" : {
+              "destination" : "file:///Users/admin/runstir-205-cli-background-20261018/home/Library/Developer/CoreSimulator/Devices/",
+              "executable" : false,
+              "managed" : {
+                "iosSimulator" : {
+                  "_0" : {
+                    "architecture" : "arm64",
+                    "developerDirectory" : "/Applications/Xcode_27.1.app/Contents/Developer",
+                    "deviceSet" : "file:///Users/admin/runstir-205-cli-background-20261018/home/Library/Developer/CoreSimulator/Devices/",
+                    "deviceTypeIdentifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro",
+                    "name" : "iPhone 18 Pro - Runstir - iOS 27.1",
+                    "runtimeBuild" : "24A94425",
+                    "runtimeIdentifier" : "com.apple.CoreSimulator.SimRuntime.iOS-27-1",
+                    "runtimeVersion" : "27.1",
+                    "xcodeBuild" : "27A9275",
+                    "xcodeVersion" : "27.1"
+                  }
+                }
+              },
+              "package" : "ios.simulator",
+              "requiredFile" : "",
+              "resourceRoot" : "file:///Users/admin/runstir-205-cli-background-20261018/home/Library/Developer/CoreSimulator/Devices/",
+              "revision" : "24A94425"
+            },
+            "kind" : "install",
+            "observed" : "no compatible selected Simulator",
+            "platform" : "ios",
+            "remediation" : {
+              "summary" : "Create this exact device without booting it. Existing names and devices are never replaced."
+            },
+            "required" : "create: iPhone 18 Pro - Runstir - iOS 27.1; type: com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro; runtime: com.apple.CoreSimulator.SimRuntime.iOS-27-1 build 24A94425 arm64; destination: /Users/admin/runstir-205-cli-background-20261018/home/Library/Developer/CoreSimulator/Devices; resource: destination:/Users/admin/runstir-205-cli-background-20261018/home/Library/Developer/CoreSimulator/Devices; recovery state: /Users/admin/runstir-205-cli-background-20261018/home/Library/Caches/dev.runstir/ios-preparation",
+            "source" : {
+              "origin" : "Selected Xcode device types and runtime identities",
+              "tier" : 1
+            },
+            "target" : "/Users/admin/runstir-205-cli-background-20261018/home/Library/Developer/CoreSimulator/Devices"
+          }
+        ],
+        "platform" : "ios",
+        "state" : "waiting-manual"
+      },
+      {
+        "checks" : [
+          {
+            "environment" : {
+
+            },
+            "id" : "android.android.avd",
+            "kind" : "provider",
+            "platform" : "android",
+            "remediation" : {
+              "summary" : "depends on `android.target`, which did not pass"
+            },
+            "source" : {
+              "origin" : "host"
+            },
+            "target" : "host"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "android.android.emulator.acceleration",
+            "kind" : "provider",
+            "platform" : "android",
+            "remediation" : {
+              "summary" : "depends on `android.sdk`, which did not pass"
+            },
+            "source" : {
+              "origin" : "host"
+            },
+            "target" : "host"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "android.android.gradle.compatibility",
+            "kind" : "provider",
+            "platform" : "android",
+            "remediation" : {
+              "summary" : "depends on `android.jdk`, which did not pass"
+            },
+            "source" : {
+              "origin" : "host"
+            },
+            "target" : "host"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "android.android.gradle.wrapper",
+            "kind" : "provider",
+            "observed" : "missing executable android/gradlew, android/gradle/wrapper/gradle-wrapper.jar",
+            "platform" : "android",
+            "remediation" : {
+              "summary" : "Restore the project's Gradle wrapper from its source repository; mobile will not substitute system Gradle."
+            },
+            "required" : "executable gradlew, wrapper JAR/properties, and an exact distributionUrl",
+            "source" : {
+              "origin" : "android/gradle/wrapper",
+              "tier" : 1
+            },
+            "target" : "android/gradle/wrapper"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "android.android.jdk",
+            "kind" : "provider",
+            "platform" : "android",
+            "remediation" : {
+              "summary" : "depends on `android.gradle.wrapper`, which did not pass"
+            },
+            "source" : {
+              "origin" : "host"
+            },
+            "target" : "host"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "android.android.project",
+            "kind" : "provider",
+            "observed" : "Flutter Android Gradle application inputs are missing or unresolved",
+            "platform" : "android",
+            "remediation" : {
+              "summary" : "Prepare the existing Flutter Android host source manually. Setup does not generate or migrate native targets."
+            },
+            "required" : "checked-in android/ Gradle settings and application source",
+            "source" : {
+              "origin" : "pubspec.yaml + android/ Gradle application",
+              "tier" : 1
+            },
+            "target" : "pubspec.yaml + android/ Gradle application"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "android.android.sdk",
+            "kind" : "provider",
+            "platform" : "android",
+            "remediation" : {
+              "summary" : "the selected Gradle target is unavailable"
+            },
+            "source" : {
+              "origin" : "ANDROID_HOME",
+              "tier" : 1
+            },
+            "target" : "ANDROID_HOME"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "android.android.target",
+            "kind" : "provider",
+            "platform" : "android",
+            "remediation" : {
+              "summary" : "depends on `android.gradle.wrapper`, which did not pass"
+            },
+            "source" : {
+              "origin" : "host"
+            },
+            "target" : "host"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "android.config.syntax",
+            "kind" : "reuse",
+            "observed" : "mobile.yml declares overrides.iosRuntime: 27.0",
+            "platform" : "android",
+            "required" : "valid YAML declaring only ios.device, ios.scheme, android.module, android.variant, android.launcherActivity, android.avd, overrides.xcode, overrides.iosRuntime",
+            "source" : {
+              "origin" : "mobile.yml",
+              "tier" : 3
+            },
+            "target" : "mobile.yml"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "android.host.storage",
+            "kind" : "reuse",
+            "observed" : "pass",
+            "platform" : "android",
+            "required" : "10 GiB preparation recommendation; not a build guarantee",
+            "source" : {
+              "origin" : "host"
+            },
+            "target" : "host"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "android.host.workspace-access",
+            "kind" : "reuse",
+            "observed" : "3 working/cache locations accessible (no write probe)",
+            "platform" : "android",
+            "source" : {
+              "origin" : "host"
+            },
+            "target" : "host"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "android.project.execution-environment",
+            "kind" : "reuse",
+            "observed" : "selected prepared tool paths; global PATH and selections unchanged",
+            "platform" : "android",
+            "source" : {
+              "origin" : "host"
+            },
+            "target" : "host"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "tools.java",
+            "kind" : "reuse",
+            "observed" : "existing JDK properties 17.0.19; runtime 17.0.19+10-LTS; vendor Azul Systems, Inc.; architecture aarch64; executable SHA256 2e42a67be88e7815c0cd08c52f7145805b20ca666d46df11539b2587ac641c52",
+            "required" : "zulu-17.0.19+10",
+            "source" : {
+              "origin" : "Gradle wrapper + AGP/JDK compatibility; observed existing project tool",
+              "tier" : 2
+            },
+            "target" : "/Users/admin/runstir-205-cli-background-20261018/input/jdk/bin/java"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "flutter.declarations",
+            "kind" : "reuse",
+            "observed" : "Dart ^3.11.5; Flutter not declared; exact pin not declared",
+            "required" : "preserve declared constraints and exact manager pin",
+            "source" : {
+              "origin" : "/Users/admin/runstir-205-cli-background-20261018/source/pubspec.yaml",
+              "tier" : 1
+            },
+            "target" : "/Users/admin/runstir-205-cli-background-20261018/source"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "flutter.sdk",
+            "kind" : "reuse",
+            "observed" : "Flutter 3.41.9; Dart 3.11.5; stable arm64; revision 00b0c91f06209d9e4a41f71b7a512d6eb3b9c694; SDK evidence SHA256 5a49261dd83254cfa4366b48b725d923b6a36debd75c2d099f0ca4b85528af57",
+            "required" : "Flutter 3.41.9; Dart 3.11.5; stable arm64; revision 00b0c91f06209d9e4a41f71b7a512d6eb3b9c694; https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/flutter_macos_arm64_3.41.9-stable.zip; SHA256 d692b030a63466c44d6b2bc88583380371ecbe328f22cc4057835f59739821a1",
+            "source" : {
+              "origin" : "https://storage.googleapis.com/flutter_infra_release/releases/releases_macos.json; metadata SHA256 be26ba7041e985325ac4dad55f795bbf51fb636da23e1ae41876223ebd51fc84",
+              "tier" : 1
+            },
+            "target" : "/Users/admin/runstir-205-cli-background-20261018/input/flutter"
+          },
+          {
+            "command" : "/Users/admin/runstir-205-cli-background-20261018/input/flutter/bin/cache/dart-sdk/bin/dart pub --suppress-analytics get --enforce-lockfile",
+            "environment" : {
+              "FLUTTER_ROOT" : "/Users/admin/runstir-205-cli-background-20261018/input/flutter",
+              "PUB_CACHE" : "/Users/admin/runstir-205-cli-background-20261018/home/Library/Application Support/dev.runstir/flutter/pub-cache"
+            },
+            "id" : "dependencies.flutter",
+            "kind" : "align",
+            "observed" : "workspace: /Users/admin/runstir-205-cli-background-20261018/source; 1 packages; existing pubspec.lock",
+            "remediation" : {
+              "summary" : "Run the approved locked command in this exact dependency workspace. Native generated inputs and app execution have separate checks."
+            },
+            "required" : "bundled Dart locked alignment; preserve source and lockfiles",
+            "source" : {
+              "origin" : "/Users/admin/runstir-205-cli-background-20261018/source/pubspec.lock",
+              "tier" : 1
+            },
+            "target" : "/Users/admin/runstir-205-cli-background-20261018/home/Library/Application Support/dev.runstir/flutter/pub-cache"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "flutter.entrypoint",
+            "kind" : "reuse",
+            "observed" : "existing Dart file",
+            "required" : "selected app entrypoint",
+            "source" : {
+              "origin" : "/Users/admin/runstir-205-cli-background-20261018/source/lib/main.dart",
+              "tier" : 1
+            },
+            "target" : "/Users/admin/runstir-205-cli-background-20261018/source/lib/main.dart"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "android.flutter.generated",
+            "kind" : "reuse",
+            "observed" : "existing debug engine marker and generated native input paths match selected Flutter/Dart and package paths",
+            "platform" : "android",
+            "required" : "existing matching native generated inputs; no source migration",
+            "source" : {
+              "origin" : "/Users/admin/runstir-205-cli-background-20261018/source/android",
+              "tier" : 1
+            },
+            "target" : "/Users/admin/runstir-205-cli-background-20261018/source/android"
+          },
+          {
+            "environment" : {
+
+            },
+            "id" : "android.sdk.requirements",
+            "kind" : "provider",
+            "observed" : "An exact locally evaluated Gradle model and wrapper are required; setup does not guess SDK requirements.",
+            "platform" : "android",
+            "remediation" : {
+              "summary" : "An exact locally evaluated Gradle model and wrapper are required; setup does not guess SDK requirements."
+            },
+            "required" : "exact evaluated requirements and official compatible archive metadata",
+            "source" : {
+              "origin" : "Android SDK preparation"
+            },
+            "target" : "Android SDK"
+          }
+        ],
+        "platform" : "android",
+        "state" : "waiting-manual"
+      }
+    ],
+    "project" : {
+      "file" : 1328594,
+      "path" : "/Users/admin/runstir-205-cli-background-20261018/source",
+      "volume" : 16777231
+    },
+    "projectKind" : "flutter",
+    "resources" : [
+      {
+        "architecture" : "arm64",
+        "identifier" : "com.apple.CoreSimulator.SimRuntime.iOS-27-1",
+        "isAvailable" : true,
+        "kind" : "runtime",
+        "name" : "iOS 27.1",
+        "origin" : "reused",
+        "runtimeBuild" : "24A94425",
+        "runtimeIdentifier" : "com.apple.CoreSimulator.SimRuntime.iOS-27-1",
+        "state" : "available",
+        "version" : "27.1"
+      }
+    ],
+    "steps" : [
+      {
+        "environment" : {
+
+        },
+        "id" : "android.android.avd",
+        "kind" : "provider",
+        "platform" : "android",
+        "remediation" : {
+          "summary" : "depends on `android.target`, which did not pass"
+        },
+        "source" : {
+          "origin" : "host"
+        },
+        "target" : "host"
+      },
+      {
+        "environment" : {
+
+        },
+        "id" : "android.android.emulator.acceleration",
+        "kind" : "provider",
+        "platform" : "android",
+        "remediation" : {
+          "summary" : "depends on `android.sdk`, which did not pass"
+        },
+        "source" : {
+          "origin" : "host"
+        },
+        "target" : "host"
+      },
+      {
+        "environment" : {
+
+        },
+        "id" : "android.android.gradle.compatibility",
+        "kind" : "provider",
+        "platform" : "android",
+        "remediation" : {
+          "summary" : "depends on `android.jdk`, which did not pass"
+        },
+        "source" : {
+          "origin" : "host"
+        },
+        "target" : "host"
+      },
+      {
+        "environment" : {
+
+        },
+        "id" : "android.android.gradle.wrapper",
+        "kind" : "provider",
+        "observed" : "missing executable android/gradlew, android/gradle/wrapper/gradle-wrapper.jar",
+        "platform" : "android",
+        "remediation" : {
+          "summary" : "Restore the project's Gradle wrapper from its source repository; mobile will not substitute system Gradle."
+        },
+        "required" : "executable gradlew, wrapper JAR/properties, and an exact distributionUrl",
+        "source" : {
+          "origin" : "android/gradle/wrapper",
+          "tier" : 1
+        },
+        "target" : "android/gradle/wrapper"
+      },
+      {
+        "environment" : {
+
+        },
+        "id" : "android.android.jdk",
+        "kind" : "provider",
+        "platform" : "android",
+        "remediation" : {
+          "summary" : "depends on `android.gradle.wrapper`, which did not pass"
+        },
+        "source" : {
+          "origin" : "host"
+        },
+        "target" : "host"
+      },
+      {
+        "environment" : {
+
+        },
+        "id" : "android.android.project",
+        "kind" : "provider",
+        "observed" : "Flutter Android Gradle application inputs are missing or unresolved",
+        "platform" : "android",
+        "remediation" : {
+          "summary" : "Prepare the existing Flutter Android host source manually. Setup does not generate or migrate native targets."
+        },
+        "required" : "checked-in android/ Gradle settings and application source",
+        "source" : {
+          "origin" : "pubspec.yaml + android/ Gradle application",
+          "tier" : 1
+        },
+        "target" : "pubspec.yaml + android/ Gradle application"
+      },
+      {
+        "environment" : {
+
+        },
+        "id" : "android.android.sdk",
+        "kind" : "provider",
+        "platform" : "android",
+        "remediation" : {
+          "summary" : "the selected Gradle target is unavailable"
+        },
+        "source" : {
+          "origin" : "ANDROID_HOME",
+          "tier" : 1
+        },
+        "target" : "ANDROID_HOME"
+      },
+      {
+        "environment" : {
+
+        },
+        "id" : "android.android.target",
+        "kind" : "provider",
+        "platform" : "android",
+        "remediation" : {
+          "summary" : "depends on `android.gradle.wrapper`, which did not pass"
+        },
+        "source" : {
+          "origin" : "host"
+        },
+        "target" : "host"
+      },
+      {
+        "environment" : {
+
+        },
+        "id" : "android.sdk.requirements",
+        "kind" : "provider",
+        "observed" : "An exact locally evaluated Gradle model and wrapper are required; setup does not guess SDK requirements.",
+        "platform" : "android",
+        "remediation" : {
+          "summary" : "An exact locally evaluated Gradle model and wrapper are required; setup does not guess SDK requirements."
+        },
+        "required" : "exact evaluated requirements and official compatible archive metadata",
+        "source" : {
+          "origin" : "Android SDK preparation"
+        },
+        "target" : "Android SDK"
+      },
+      {
+        "command" : "/Users/admin/runstir-205-cli-background-20261018/input/flutter/bin/cache/dart-sdk/bin/dart pub --suppress-analytics get --enforce-lockfile",
+        "environment" : {
+          "FLUTTER_ROOT" : "/Users/admin/runstir-205-cli-background-20261018/input/flutter",
+          "PUB_CACHE" : "/Users/admin/runstir-205-cli-background-20261018/home/Library/Application Support/dev.runstir/flutter/pub-cache"
+        },
+        "id" : "dependencies.flutter",
+        "kind" : "align",
+        "observed" : "workspace: /Users/admin/runstir-205-cli-background-20261018/source; 1 packages; existing pubspec.lock",
+        "remediation" : {
+          "summary" : "Run the approved locked command in this exact dependency workspace. Native generated inputs and app execution have separate checks."
+        },
+        "required" : "bundled Dart locked alignment; preserve source and lockfiles",
+        "source" : {
+          "origin" : "/Users/admin/runstir-205-cli-background-20261018/source/pubspec.lock",
+          "tier" : 1
+        },
+        "target" : "/Users/admin/runstir-205-cli-background-20261018/home/Library/Application Support/dev.runstir/flutter/pub-cache"
+      },
+      {
+        "environment" : {
+
+        },
+        "id" : "ios.simulator.create",
+        "installation" : {
+          "destination" : "file:///Users/admin/runstir-205-cli-background-20261018/home/Library/Developer/CoreSimulator/Devices/",
+          "executable" : false,
+          "managed" : {
+            "iosSimulator" : {
+              "_0" : {
+                "architecture" : "arm64",
+                "developerDirectory" : "/Applications/Xcode_27.1.app/Contents/Developer",
+                "deviceSet" : "file:///Users/admin/runstir-205-cli-background-20261018/home/Library/Developer/CoreSimulator/Devices/",
+                "deviceTypeIdentifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro",
+                "name" : "iPhone 18 Pro - Runstir - iOS 27.1",
+                "runtimeBuild" : "24A94425",
+                "runtimeIdentifier" : "com.apple.CoreSimulator.SimRuntime.iOS-27-1",
+                "runtimeVersion" : "27.1",
+                "xcodeBuild" : "27A9275",
+                "xcodeVersion" : "27.1"
+              }
+            }
+          },
+          "package" : "ios.simulator",
+          "requiredFile" : "",
+          "resourceRoot" : "file:///Users/admin/runstir-205-cli-background-20261018/home/Library/Developer/CoreSimulator/Devices/",
+          "revision" : "24A94425"
+        },
+        "kind" : "install",
+        "observed" : "no compatible selected Simulator",
+        "platform" : "ios",
+        "remediation" : {
+          "summary" : "Create this exact device without booting it. Existing names and devices are never replaced."
+        },
+        "required" : "create: iPhone 18 Pro - Runstir - iOS 27.1; type: com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro; runtime: com.apple.CoreSimulator.SimRuntime.iOS-27-1 build 24A94425 arm64; destination: /Users/admin/runstir-205-cli-background-20261018/home/Library/Developer/CoreSimulator/Devices; resource: destination:/Users/admin/runstir-205-cli-background-20261018/home/Library/Developer/CoreSimulator/Devices; recovery state: /Users/admin/runstir-205-cli-background-20261018/home/Library/Caches/dev.runstir/ios-preparation",
+        "source" : {
+          "origin" : "Selected Xcode device types and runtime identities",
+          "tier" : 1
+        },
+        "target" : "/Users/admin/runstir-205-cli-background-20261018/home/Library/Developer/CoreSimulator/Devices"
+      }
+    ]
+  },
+  "schemaVersion" : 1,
+  "selection" : {
+    "candidates" : [
+      {
+        "app" : {
+          "file" : 1328594,
+          "path" : "/Users/admin/runstir-205-cli-background-20261018/source",
+          "volume" : 16777231
+        },
+        "framework" : "flutter",
+        "id" : ".",
+        "platforms" : [
+          "ios",
+          "android"
+        ]
+      }
+    ],
+    "directory" : {
+      "file" : 1328594,
+      "path" : "/Users/admin/runstir-205-cli-background-20261018/source",
+      "volume" : 16777231
+    },
+    "requiredInput" : [
+
+    ],
+    "selected" : {
+      "app" : {
+        "file" : 1328594,
+        "path" : "/Users/admin/runstir-205-cli-background-20261018/source",
+        "volume" : 16777231
+      },
+      "framework" : "flutter",
+      "id" : ".",
+      "platforms" : [
+        "ios",
+        "android"
+      ]
+    }
+  },
+  "status" : "error",
+  "toolVersion" : "0.1.0"
+}

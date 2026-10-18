@@ -45,7 +45,7 @@ let package = Package(
             dependencies: ["Core"],
             resources: [.copy("Resources/mobile-doctor.gradle")]
         ),
-        .target(name: "EnvironmentKit", dependencies: ["Core", "SimulatorKit", "AndroidKit"]),
+        .target(name: "EnvironmentKit", dependencies: ["Core", "SimulatorKit", "AndroidKit", .product(name: "Yams", package: "Yams")]),
         .executableTarget(name: "RunstirGUI", dependencies: ["Core", "EnvironmentKit"]),
         .executableTarget(
             name: "mobile",

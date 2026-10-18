@@ -44,6 +44,7 @@ private struct AndroidProjectCheck: Check {
     var title: String {
         context.anchor.framework == .nativeAndroid
             ? "Native Android Gradle application inputs are present"
+            : context.anchor.framework == .flutter ? "Flutter Android Gradle application inputs are present"
             : "React Native Android project and exact framework inputs are present"
     }
     let context: AndroidDoctorContext
@@ -53,6 +54,22 @@ private struct AndroidProjectCheck: Check {
         if anchor.framework == .nativeAndroid {
             return .pass(observed: "native Android host", required: "checked-in Gradle application",
                          source: CheckSource(tier: 1, origin: "Gradle settings + application model"))
+        }
+        if anchor.framework == .flutter {
+            let directory = anchor.directory.appendingPathComponent("android").standardizedFileURL.resolvingSymlinksInPath()
+            // Embedded Flutter hosts are intentionally excluded from standalone
+            // candidate discovery. Apply its checked-in Gradle-root boundary here.
+            let manager = FileManager.default
+            let native = manager.fileExists(atPath: directory.appendingPathComponent("gradlew").path)
+                && ["settings.gradle", "settings.gradle.kts"].contains { manager.fileExists(atPath: directory.appendingPathComponent($0).path) }
+            guard anchor.hasAndroidDirectory, native else {
+                return .error(observed: "Flutter Android Gradle application inputs are missing or unresolved",
+                    required: "checked-in android/ Gradle settings and application source",
+                    source: CheckSource(tier: 1, origin: "pubspec.yaml + android/ Gradle application"),
+                    remediation: Remediation(summary: "Prepare the existing Flutter Android host source manually. Setup does not generate or migrate native targets."))
+            }
+            return .pass(observed: "Flutter Android Gradle application host", required: "checked-in Gradle application",
+                source: CheckSource(tier: 1, origin: "pubspec.yaml + android/ Gradle application"))
         }
         guard anchor.hasAndroidDirectory else {
             return .error(
