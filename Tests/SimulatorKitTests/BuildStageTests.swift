@@ -76,8 +76,8 @@ private func runner(
 
 /// A build that does not finish until the elapsed line has been printed twice. The
 /// test then asserts what it means — the line appears *while* the build runs —
-/// rather than racing a wall clock on a loaded machine. The deadline is there so a
-/// ticker that never fires fails the test instead of hanging it.
+/// rather than racing a wall clock on a loaded machine. The test's time limit
+/// cancels a missing ticker instead of treating that stall as a successful build.
 private struct BlockingRunner: ProcessRunner {
     let inner: FakeProcessRunner
     let notes: Mutable<[String]>
@@ -90,8 +90,7 @@ private struct BlockingRunner: ProcessRunner {
     ) async throws -> ProcessResult {
         if command.arguments.last == "build" {
             onLine?(progressLine)
-            let deadline = ContinuousClock.now + .seconds(5)
-            while notes.value.count < until, ContinuousClock.now < deadline {
+            while notes.value.filter({ $0.hasPrefix("build") && $0.contains("running…") }).count < until {
                 try await Task.sleep(for: .milliseconds(5))
             }
         }
@@ -579,11 +578,11 @@ struct BuildStageTests {
 
     /// The build is the one step long enough for silence to read as a hang. Output
     /// stays streamed to its run log (ADR-0002); this line says which target is alive.
-    @Test("an elapsed line includes the current Xcode target while the build runs")
-    func elapsedWhileBuilding() async throws {
+    @Test("an elapsed line includes the current Xcode target while the build runs", .timeLimit(.minutes(1)), arguments: [false, true])
+    func elapsedWhileBuilding(withOtherNotes: Bool) async throws {
         let repo = try project(workspace: false)
         let runner = try runner(repo, workspace: false, schemes: ["MyApp"], scheme: "MyApp")
-        let notes = Mutable<[String]>([])
+        let notes = Mutable<[String]>(withOtherNotes ? ["error: fixture diagnostic", "** BUILD STARTED **"] : [])
         let configuration = ConfigContext.detect(
             anchor: ProjectAnchor.detect(from: repo.root), workingDirectory: repo.root
         )
