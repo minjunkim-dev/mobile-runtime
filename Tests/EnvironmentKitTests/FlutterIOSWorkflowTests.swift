@@ -99,12 +99,50 @@ struct FlutterIOSWorkflowTests {
         #expect(launch.arguments.contains("--vm-service-port=\(port)"))
         #expect(launch.arguments.contains("A"))
         #expect(runner.commands.contains { $0.arguments.last == "http://127.0.0.1:\(port)/auth/getVM" })
+        #expect(!runner.commands.contains { $0.arguments.contains("show") || $0.arguments.contains("get_app_container") })
         try FileManager.default.removeItem(at: f.repo.url("sdk"))
         let down = await WorkflowExecution.run(.down, input: f.input(), runner: runner, leases: f.leases)
         #expect(down.exitCode == 0)
         #expect(down.down?.items.map(\.id) == ["app"])
         #expect(down.down?.items.first?.status == .stopped)
         #expect(!runner.commands.contains { $0.arguments.contains("shutdown") || $0.arguments.contains("uninstall") || $0.arguments.contains("8081") })
+    }
+
+    @Test("bounded history readiness retains the install owner and SDK-less down")
+    func historyUpAndDown() async throws {
+        let f = try FlutterIOSFixture()
+        let source = try Data(contentsOf: f.repo.url("lib/main.dart"))
+        let lock = try Data(contentsOf: f.repo.url("pubspec.lock"))
+        let runner = FlutterIOSRunner(fixture: f, fault: "history:ready")
+        let result = await WorkflowExecution.run(.up, input: f.input(), runner: runner, leases: f.leases)
+        #expect(result.exitCode == 0, Comment(rawValue: result.up?.failure?.message ?? ""))
+        let port = try #require(result.operation.port)
+        #expect(result.operation.developmentServiceURI == "http://127.0.0.1:\(port)/synthetic-auth/")
+        #expect(result.up?.context.appPid == 3538)
+        #expect(InstallRecord.read(from: RunLogs(project: f.repo.root))?.bundleId == "dev.test.flutter")
+        #expect(try Data(contentsOf: f.repo.url("lib/main.dart")) == source)
+        #expect(try Data(contentsOf: f.repo.url("pubspec.lock")) == lock)
+        try FileManager.default.removeItem(at: f.repo.url("sdk"))
+        let down = await WorkflowExecution.run(.down, input: f.input(), runner: runner, leases: f.leases)
+        #expect(down.exitCode == 0)
+        #expect(down.down?.items.first?.status == .stopped)
+        #expect(!runner.commands.contains { $0.arguments.contains("shutdown") || $0.arguments.contains("uninstall") })
+        let lease = try f.leases.acquire([.port(port)], owner: LeaseOwner(operationId: "after-down", command: "up", project: f.repo.root.path))
+        lease.release()
+    }
+
+    @Test("a source change during historical observation fails without restoring source")
+    func historySourceChange() async throws {
+        let f = try FlutterIOSFixture()
+        let runner = FlutterIOSRunner(fixture: f, fault: "history:source")
+        let result = await WorkflowExecution.run(.up, input: f.input(), runner: runner, leases: f.leases)
+        #expect(result.exitCode == 1)
+        #expect(result.up?.failure != nil)
+        #expect(result.operation.remaining.contains { $0.contains("lib/main.dart") })
+        #expect(try String(contentsOf: f.repo.url("lib/main.dart"), encoding: .utf8) == "changed by query fixture\n")
+        #expect(InstallRecord.read(from: RunLogs(project: f.repo.root))?.bundleId == "dev.test.flutter")
+        let down = await WorkflowExecution.run(.down, input: f.input(), runner: runner, leases: f.leases)
+        #expect(down.exitCode == 0)
     }
 
     @Test("effective Release, changed target and Xcode fallback never reach build", arguments: ["release", "target", "configuration"])
@@ -351,7 +389,14 @@ final class FlutterIOSRunner: ProcessRunner, @unchecked Sendable {
     let fault: String?
     private let lock = NSLock()
     private var recorded: [ProcessCommand] = []
+    private var launchedPort: String?
+    private var historyQueries = 0
+    private var appRunning = false
     var commands: [ProcessCommand] { lock.withLock { recorded } }
+    var installedBundle: URL {
+        fixture.repo.url(fault == "history:quoted" ? "build/installed/Quote \" ' \\ App.app" : "build/installed/Runner.app")
+    }
+    var installedExecutable: String { installedBundle.appendingPathComponent("Runner").path }
     init(fixture: FlutterIOSFixture, fault: String? = nil) { self.fixture = fixture; self.fault = fault }
     func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
         lock.withLock { recorded.append(command) }
@@ -400,21 +445,76 @@ final class FlutterIOSRunner: ProcessRunner, @unchecked Sendable {
             return ProcessResult(terminationStatus: .exited(1), standardOutput: "", standardError: "")
         }
         if command.executable == "curl", command.arguments.last?.hasSuffix("getVM") == true {
+            if fault == "history:probe-timeout" { throw ProcessError.timedOut(command: command.description, timeout: command.timeout ?? .seconds(5)) }
+            if fault == "history:dies-after-probe" { lock.withLock { appRunning = false } }
             return ok(fault == "not-vm" ? "{}" : "{\"result\":{\"type\":\"VM\"}}")
         }
         if command.arguments.starts(with: ["simctl", "install"]) {
             if fault == "install" { return ProcessResult(terminationStatus: .exited(1), standardOutput: "", standardError: "install failed") }
             return ok("")
         }
-        if command.arguments.starts(with: ["simctl", "terminate"]) { return ok("") }
+        if command.arguments.starts(with: ["simctl", "terminate"]) {
+            lock.withLock { appRunning = false }
+            return ok("")
+        }
+        if command.arguments == ["simctl", "spawn", "A", "launchctl", "list"] {
+            let running = lock.withLock { appRunning }
+            let pid = fault == "history:reused" ? "3539" : "3538"
+            return ok(running && fault != "history:dead" ? "\(pid)\t0\tUIKitApplication:dev.test.flutter[fixture]" : "-\t0\tUIKitApplication:dev.test.flutter[fixture]")
+        }
+        if command.arguments.starts(with: ["simctl", "get_app_container"]) {
+            try FileManager.default.createDirectory(at: installedBundle, withIntermediateDirectories: true)
+            let info = try PropertyListSerialization.data(fromPropertyList: [
+                "CFBundleIdentifier": "dev.test.flutter", "CFBundleExecutable": "Runner",
+            ], format: .binary, options: 0)
+            try info.write(to: installedBundle.appendingPathComponent("Info.plist"))
+            try Data().write(to: installedBundle.appendingPathComponent("Runner"))
+            return ok(fault == "history:control" ? installedBundle.path + "\nother" : installedBundle.path + "\n")
+        }
+        if command.arguments.starts(with: ["simctl", "spawn", "A", "log", "show"]) {
+            let query = lock.withLock { historyQueries += 1; return historyQueries }
+            if fault == "history:timeout" { throw ProcessError.timedOut(command: "bounded simulator history", timeout: command.timeout ?? .seconds(5)) }
+            if fault == "history:cancel" {
+                try FileManager.default.createDirectory(at: fixture.repo.url("build"), withIntermediateDirectories: true)
+                return try await SystemProcessRunner(environment: ["PATH": "/usr/bin:/bin", "HOME": fixture.repo.url("home").path])
+                    .run(ProcessCommand("/bin/sh", ["-c", "echo $$ > \"$1\"; exec /bin/sleep 30", "_", fixture.repo.url("build/query.pid").path], timeout: command.timeout))
+            }
+            if fault == "history:malformed" { return ok("not JSON") }
+            if fault == "history:failed" { return ProcessResult(terminationStatus: .exited(1), standardOutput: "private query output", standardError: "private query diagnostic") }
+            if fault == "history:oversized" { return ok(String(repeating: " ", count: 1_048_577)) }
+            if fault == "history:many" { return ok(String(decoding: try JSONSerialization.data(withJSONObject: Array(repeating: [:] as [String: String], count: 1025)), as: UTF8.self)) }
+            if fault == "no-uri" || fault == "history:empty" || (fault == "history:delayed" && query == 1) { return ok("[]") }
+            if fault == "history:source" { try fixture.repo.write("lib/main.dart", "changed by query fixture\n") }
+            let port = lock.withLock { launchedPort } ?? "12345"
+            let selectedPort = fault == "history:port" ? "12346" : port
+            let date = Date().addingTimeInterval(fault == "history:old" ? -3600 : fault == "history:future" ? 3600 : 0)
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.timeZone = TimeZone(secondsFromGMT: 0)
+            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+            let fraction = Int((date.timeIntervalSince1970 - floor(date.timeIntervalSince1970)) * 1_000_000)
+            let timestamp = formatter.string(from: date) + String(format: ".%06d+0000", fraction)
+            let row: [String: Any] = [
+                "processID": fault == "history:pid" ? 9999 : 3538,
+                "processImagePath": fault == "history:exe" ? installedExecutable + ".other" : installedExecutable,
+                "senderImagePath": fault == "history:sender" ? "/other/image" : installedBundle.appendingPathComponent("Frameworks/Flutter.framework/Flutter").path,
+                "timestamp": fault == "history:time" ? "unknown" : timestamp,
+                "eventMessage": fault == "history:message-limit" ? String(repeating: "a", count: 16_385) : "flutter: The Dart VM service is listening on http://127.0.0.1:\(selectedPort)/synthetic-auth/",
+            ]
+            var returnedRow = row
+            if fault == "history:wrong-key" { returnedRow["processIdentifier"] = returnedRow.removeValue(forKey: "processID") }
+            if fault == "history:boolean-pid" { returnedRow["processID"] = true }
+            return ok(String(decoding: try JSONSerialization.data(withJSONObject: [returnedRow], options: .prettyPrinted), as: UTF8.self))
+        }
         if command.arguments.starts(with: ["simctl", "launch"]) {
             if fault == "launch" { return ProcessResult(terminationStatus: .exited(1), standardOutput: "", standardError: "launch failed") }
             let output = try #require(command.arguments.first { $0.hasPrefix("--stdout=") })
             let path = String(output.dropFirst("--stdout=".count))
             let port = try #require(command.arguments.first { $0.hasPrefix("--vm-service-port=") })
             let value = String(port.dropFirst("--vm-service-port=".count))
+            lock.withLock { launchedPort = value; appRunning = true }
             let uri = fault == "uri" ? "http://example.com:1/auth/" : "http://127.0.0.1:\(value)/auth/"
-            let content = fault == "no-uri" ? "" : "The Dart VM service is listening on \(uri)\n"
+            let content = fault == "no-uri" || fault?.hasPrefix("history:") == true ? "" : "The Dart VM service is listening on \(uri)\n"
             try Data(content.utf8).write(to: URL(fileURLWithPath: path))
             return ok("dev.test.flutter: 3538")
         }

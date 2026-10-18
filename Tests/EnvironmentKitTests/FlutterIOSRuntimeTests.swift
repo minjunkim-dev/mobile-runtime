@@ -270,6 +270,129 @@ struct FlutterIOSRuntimeTests {
         }
     }
 
+    @Test("the actual unified-log schema supplies readiness when redirected app output is empty")
+    func unifiedLaunch() async throws {
+        let f = try FlutterIOSFixture()
+        let runner = FlutterIOSRunner(fixture: f, fault: "history:ready")
+        var context = UpContext()
+        context.device = SelectedDevice(name: "iPhone A", udid: "A", runtime: "27.0")
+        context.product = BuiltProduct(path: f.repo.url("build/Runner.app").path, bundleIdentifier: "dev.test.flutter")
+        let outcome = try await LaunchStage(project: f.repo.root, runner: runner, locator: XcodeLocator(runner: runner),
+            readinessWait: .milliseconds(100), flutterPort: 12345).run(&context)
+        #expect(outcome.status == .pass)
+        #expect(context.appPid == 3538)
+        #expect(context.developmentServiceURI == "http://127.0.0.1:12345/synthetic-auth/")
+        let launch = try #require(runner.commands.first { $0.arguments.contains("launch") })
+        let redirected = try #require(launch.arguments.first { $0.hasPrefix("--stdout=") })
+        #expect(try Data(contentsOf: URL(fileURLWithPath: String(redirected.dropFirst("--stdout=".count)))).isEmpty)
+        #expect(runner.commands.contains { $0.arguments.starts(with: ["simctl", "spawn", "A", "log", "show"]) })
+    }
+
+    @Test("untrusted or unavailable history cannot establish readiness", arguments: [
+        "pid", "exe", "sender", "old", "future", "time", "wrong-key", "boolean-pid", "port", "malformed",
+        "oversized", "many", "message-limit", "control", "timeout", "failed", "empty", "dead", "reused",
+    ])
+    func historyRejected(_ fault: String) async throws {
+        let f = try FlutterIOSFixture()
+        let runner = FlutterIOSRunner(fixture: f, fault: "history:" + fault)
+        var context = UpContext()
+        context.device = SelectedDevice(name: "iPhone A", udid: "A", runtime: "27.0")
+        context.product = BuiltProduct(path: f.repo.url("build/Runner.app").path, bundleIdentifier: "dev.test.flutter")
+        do {
+            _ = try await LaunchStage(project: f.repo.root, runner: runner, locator: XcodeLocator(runner: runner),
+                readinessWait: .milliseconds(25), flutterPort: 12345).run(&context)
+            Issue.record("untrusted history must fail")
+        } catch {
+            #expect(!(error is CancellationError))
+            let message = String(describing: error)
+            #expect(!message.contains("synthetic-auth") && !message.contains("private query"))
+        }
+        #expect(context.appPid == 3538)
+        #expect(context.developmentServiceURI == nil)
+        #expect(!runner.commands.contains { $0.executable == "curl" })
+        if fault == "control" { #expect(!runner.commands.contains { $0.arguments.contains("show") }) }
+        #expect(runner.commands.filter { $0.arguments.contains("show") }.count <= 2)
+        for command in runner.commands where command.arguments.contains("show") {
+            #expect(command.timeout != nil && command.timeout! <= .seconds(5))
+            #expect(command.output == .collected)
+        }
+    }
+
+    @Test("probe errors keep the URI private and an exited app cannot retain readiness", arguments: ["probe-timeout", "dies-after-probe"])
+    func historyProbeFailure(_ fault: String) async throws {
+        let f = try FlutterIOSFixture()
+        let runner = FlutterIOSRunner(fixture: f, fault: "history:" + fault)
+        var context = UpContext()
+        context.device = SelectedDevice(name: "iPhone A", udid: "A", runtime: "27.0")
+        context.product = BuiltProduct(path: f.repo.url("build/Runner.app").path, bundleIdentifier: "dev.test.flutter")
+        do {
+            _ = try await LaunchStage(project: f.repo.root, runner: runner, locator: XcodeLocator(runner: runner),
+                readinessWait: .seconds(1), flutterPort: 12345).run(&context)
+            Issue.record("probe failure must not report readiness")
+        } catch {
+            #expect(!String(describing: error).contains("synthetic-auth"))
+        }
+        #expect(context.developmentServiceURI == nil)
+        #expect(context.appPid == 3538)
+        #expect(runner.commands.contains { $0.executable == "curl" })
+    }
+
+    @Test("history retries finite queries and escapes installed executable predicate literals", arguments: ["delayed", "quoted"])
+    func historyRetryAndEscaping(_ fault: String) async throws {
+        let f = try FlutterIOSFixture()
+        let runner = FlutterIOSRunner(fixture: f, fault: "history:" + fault)
+        var context = UpContext()
+        context.device = SelectedDevice(name: "iPhone A", udid: "A", runtime: "27.0")
+        context.product = BuiltProduct(path: f.repo.url("build/Runner.app").path, bundleIdentifier: "dev.test.flutter")
+        let outcome = try await LaunchStage(project: f.repo.root, runner: runner, locator: XcodeLocator(runner: runner),
+            readinessWait: .seconds(30), flutterPort: 12345).run(&context)
+        #expect(outcome.status == .pass)
+        #expect(context.developmentServiceURI == "http://127.0.0.1:12345/synthetic-auth/")
+        let queries = runner.commands.filter { $0.arguments.starts(with: ["simctl", "spawn", "A", "log", "show"]) }
+        #expect(queries.count == (fault == "delayed" ? 2 : 1))
+        let query = try #require(queries.first)
+        #expect(query.arguments.contains("--last") && query.arguments.contains("5m"))
+        let predicate = try #require(query.arguments.last)
+        let escaped = runner.installedExecutable.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")
+        #expect(predicate.contains("processIdentifier == 3538"))
+        #expect(predicate.contains("processImagePath == \"\(escaped)\""))
+        #expect(predicate.contains("senderImagePath == "))
+        #expect(!predicate.unicodeScalars.contains { CharacterSet.controlCharacters.contains($0) })
+        #expect(query.arguments.filter { $0 == "--predicate" }.count == 1)
+    }
+
+    @Test("cancelling a historical query terminates its finite child and preserves SDK-less down")
+    func historyCancellation() async throws {
+        let f = try FlutterIOSFixture()
+        let runner = FlutterIOSRunner(fixture: f, fault: "history:cancel")
+        let input = f.input()
+        let leases = f.leases
+        let task = Task { await WorkflowExecution.run(.up, input: input, runner: runner, leases: leases) }
+        let marker = f.repo.url("build/query.pid")
+        let deadline = ContinuousClock.now.advanced(by: .seconds(30))
+        while !FileManager.default.fileExists(atPath: marker.path), ContinuousClock.now < deadline {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        task.cancel()
+        let result = await task.value
+        #expect(result.exitCode == 130, Comment(rawValue: result.up?.failure?.message ?? ""))
+        let pid = try #require(Int32(try String(contentsOf: marker, encoding: .utf8).trimmingCharacters(in: .whitespacesAndNewlines)))
+        #expect(kill(pid, 0) == -1)
+        #expect(errno == ESRCH)
+        #expect(result.operation.developmentServiceURI == nil)
+        #expect(result.up?.context.appPid == 3538)
+        #expect(result.operation.remaining.contains { $0.contains("down") })
+        #expect(InstallRecord.read(from: RunLogs(project: f.repo.root))?.bundleId == "dev.test.flutter")
+        let port = try #require(result.operation.port)
+        let lease = try f.leases.acquire([.folder(FolderIdentity(directory: f.repo.root)), .device(.ios, "A"), .port(port)],
+            owner: LeaseOwner(operationId: "after-cancel", command: "down", project: f.repo.root.path))
+        lease.release()
+        try FileManager.default.removeItem(at: f.repo.url("sdk"))
+        let down = await WorkflowExecution.run(.down, input: f.input(), runner: runner, leases: f.leases)
+        #expect(down.exitCode == 0)
+        #expect(down.down?.items.first?.status == .stopped)
+    }
+
     @Test("an unvalidated tuple stays unknown in the shared Flutter validation stage")
     func unknownTuple() async throws {
         let report = await UpPipeline(stages: [ValidateStage(engine: DoctorEngine(checks: [UnknownFlutterTuple()]),

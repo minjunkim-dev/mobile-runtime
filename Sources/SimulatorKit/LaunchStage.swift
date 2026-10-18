@@ -1,4 +1,5 @@
 import Core
+import CoreFoundation
 import Foundation
 
 /// `launch` — terminate, then launch, on every run.
@@ -81,6 +82,7 @@ public struct LaunchStage: Stage {
             environment: environment,
             timeout: .seconds(60)
         )
+        let launchedAt = Date()
         let result = try await runner.run(command)
         guard result.terminationStatus.isSuccess else {
             throw DomainError(
@@ -106,7 +108,8 @@ public struct LaunchStage: Stage {
         }
         context.appPid = pid
         if let port = flutterPort, let file = flutterLog {
-            context.developmentServiceURI = try await flutterServiceURI(log: file, port: port)
+            context.developmentServiceURI = try await flutterServiceURI(log: file, port: port, pid: pid,
+                device: device, product: product, launchedAt: launchedAt, environment: environment)
         }
 
         let detail = "\(product.bundleIdentifier) — pid \(pid)"
@@ -121,14 +124,26 @@ public struct LaunchStage: Stage {
         return .pass(detail + hint)
     }
 
-    private func flutterServiceURI(log: URL, port: Int) async throws -> String {
+    private func flutterServiceURI(log: URL, port: Int, pid: Int32, device: SelectedDevice,
+                                   product: BuiltProduct, launchedAt: Date, environment: [String: String]) async throws -> String {
         let deadline = ContinuousClock.now.advanced(by: readinessWait)
+        var executable: String?
         repeat {
             try Task.checkCancellation()
-            let contents = try String(contentsOf: log, encoding: .utf8)
-            for line in contents.split(whereSeparator: \.isNewline) {
-                guard let range = line.range(of: "The Dart VM service is listening on ") else { continue }
-                let value = line[range.upperBound...].trimmingCharacters(in: .whitespacesAndNewlines)
+            let contents = try flutterLogContents(log)
+            var messages = contents.split(whereSeparator: \.isNewline).map(String.init)
+            if !messages.contains(where: { $0.contains(Self.flutterMarker) }) {
+                if executable == nil {
+                    executable = try await flutterExecutable(device: device, product: product,
+                        environment: environment, deadline: deadline)
+                }
+                guard let executable else { throw ToolUnavailable(description: "The installed Flutter app executable is unknown.") }
+                messages = try await flutterHistory(device: device, executable: executable, pid: pid,
+                    launchedAt: launchedAt, environment: environment, deadline: deadline)
+            }
+            for message in messages {
+                guard let range = message.range(of: Self.flutterMarker) else { continue }
+                let value = message[range.upperBound...].trimmingCharacters(in: .whitespacesAndNewlines)
                 guard let uri = URLComponents(string: value), uri.scheme == "http",
                     ["127.0.0.1", "localhost", "::1"].contains(uri.host ?? ""), uri.port == port,
                     uri.user == nil, uri.password == nil, uri.query == nil, uri.fragment == nil,
@@ -136,23 +151,139 @@ public struct LaunchStage: Stage {
                     throw DomainError(summary: "Flutter reported a different or invalid development service URI.",
                         remediation: Remediation(summary: "Inspect this app's Flutter launch log and selected port, then retry down for this project."))
                 }
-                let probe = try await runner.run(ProcessCommand("curl", ["--fail", "--silent", "--show-error", "--noproxy", "*",
-                    "--connect-timeout", "2", "--max-time", "5", value + (value.hasSuffix("/") ? "" : "/") + "getVM"], timeout: .seconds(10)))
-                try Task.checkCancellation()
+                try await flutterPID(device: device, bundleID: product.bundleIdentifier, pid: pid,
+                    environment: environment, deadline: deadline)
+                let probe = try await flutterQuery(ProcessCommand("curl", ["--fail", "--silent", "--show-error", "--noproxy", "*",
+                    "--connect-timeout", "2", "--max-time", "5", value + (value.hasSuffix("/") ? "" : "/") + "getVM"],
+                    timeout: flutterQueryTimeout(deadline)), failure: "Could not query the observed Flutter development service.")
                 if probe.terminationStatus.isSuccess {
                     guard let document = try? JSONSerialization.jsonObject(with: Data(probe.standardOutput.utf8)) as? [String: Any],
                         (document["result"] as? [String: Any])?["type"] as? String == "VM" else {
                         throw DomainError(summary: "The observed Flutter URI did not answer as a Dart VM service.",
                             remediation: Remediation(summary: "Inspect the selected app and service port. Run down before retrying this project."))
                     }
+                    try await flutterPID(device: device, bundleID: product.bundleIdentifier, pid: pid,
+                        environment: environment, deadline: deadline)
                     return value
                 }
             }
+            let remaining = ContinuousClock.now.duration(to: deadline)
+            if remaining <= .zero { break }
+            try await Task.sleep(for: min(.seconds(1), remaining))
             if ContinuousClock.now >= deadline { break }
-            try await Task.sleep(for: .milliseconds(100))
         } while true
         throw DomainError(summary: "The Flutter app started, but its development service URI was not observed.",
             remediation: Remediation(summary: "Inspect the Flutter app and launch log at \(log.path). Run mobile down --platform ios before retrying."))
+    }
+
+    private static let flutterMarker = "The Dart VM service is listening on "
+    private static let flutterOutputLimit = 1_048_576
+
+    private func flutterLogContents(_ log: URL) throws -> String {
+        let file = try FileHandle(forReadingFrom: log)
+        defer { try? file.close() }
+        let data = try file.read(upToCount: Self.flutterOutputLimit + 1) ?? Data()
+        guard data.count <= Self.flutterOutputLimit, let contents = String(data: data, encoding: .utf8) else {
+            throw ToolUnavailable(description: "The Flutter launch log exceeded its observation limit or was not UTF-8.")
+        }
+        return contents
+    }
+
+    /// Finite collected commands use the existing runner's cancellation and output bound.
+    /// Never include their output or command in errors: a service URI contains credentials.
+    private func flutterQuery(_ command: ProcessCommand, failure: String) async throws -> ProcessResult {
+        do {
+            let result = try await runner.run(command)
+            try Task.checkCancellation()
+            return result
+        } catch is CancellationError { throw CancellationError() }
+        catch { throw ToolUnavailable(description: failure) }
+    }
+
+    private func flutterQueryTimeout(_ deadline: ContinuousClock.Instant) -> Duration {
+        min(.seconds(5), max(.milliseconds(1), ContinuousClock.now.duration(to: deadline)))
+    }
+
+    private func flutterExecutable(device: SelectedDevice, product: BuiltProduct,
+                                   environment: [String: String], deadline: ContinuousClock.Instant) async throws -> String {
+        let failure = "Could not identify the installed Flutter app executable for bounded log observation."
+        let result = try await flutterQuery(ProcessCommand("xcrun",
+            ["simctl", "get_app_container", device.udid, product.bundleIdentifier, "app"],
+            environment: environment, timeout: flutterQueryTimeout(deadline)), failure: failure)
+        let path = result.standardOutput.trimmingCharacters(in: .newlines)
+        guard result.terminationStatus.isSuccess, path.utf8.count <= 4096, path.hasPrefix("/"), path.hasSuffix(".app"),
+              !path.unicodeScalars.contains(where: { CharacterSet.controlCharacters.contains($0) }) else {
+            throw ToolUnavailable(description: failure)
+        }
+        let bundle = URL(fileURLWithPath: path)
+        let info = bundle.appendingPathComponent("Info.plist")
+        let attributes = try info.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey, .fileSizeKey])
+        guard attributes.isRegularFile == true, attributes.isSymbolicLink != true,
+              (attributes.fileSize ?? Self.flutterOutputLimit + 1) <= Self.flutterOutputLimit,
+              let document = try PropertyListSerialization.propertyList(from: Data(contentsOf: info), format: nil) as? [String: Any],
+              document["CFBundleIdentifier"] as? String == product.bundleIdentifier,
+              let name = document["CFBundleExecutable"] as? String, !name.isEmpty, name != ".", name != "..", !name.contains("/"),
+              !name.unicodeScalars.contains(where: { CharacterSet.controlCharacters.contains($0) }) else {
+            throw ToolUnavailable(description: failure)
+        }
+        let executable = bundle.appendingPathComponent(name)
+        let file = try executable.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey])
+        guard file.isRegularFile == true, file.isSymbolicLink != true else { throw ToolUnavailable(description: failure) }
+        return executable.path
+    }
+
+    private func flutterHistory(device: SelectedDevice, executable: String, pid: Int32, launchedAt: Date,
+                                environment: [String: String], deadline: ContinuousClock.Instant) async throws -> [String] {
+        // Predicate keys and returned JSON keys differ: processIdentifier versus processID.
+        func literal(_ value: String) -> String {
+            "\"" + value.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"") + "\""
+        }
+        let sender = URL(fileURLWithPath: executable).deletingLastPathComponent()
+            .appendingPathComponent("Frameworks/Flutter.framework/Flutter").path
+        let predicate = "processIdentifier == \(pid) AND processImagePath == \(literal(executable))"
+            + " AND senderImagePath == \(literal(sender)) AND eventMessage CONTAINS \(literal(Self.flutterMarker))"
+        let failure = "Could not read bounded Flutter app log history."
+        let result = try await flutterQuery(ProcessCommand("xcrun", ["simctl", "spawn", device.udid, "log", "show",
+            "--last", "5m", "--style", "json", "--info", "--debug", "--predicate", predicate],
+            environment: environment, timeout: flutterQueryTimeout(deadline)), failure: failure)
+        let observedAt = Date()
+        guard result.terminationStatus.isSuccess, result.standardOutput.utf8.count <= Self.flutterOutputLimit,
+              let rows = try? JSONSerialization.jsonObject(with: Data(result.standardOutput.utf8)) as? [[String: Any]],
+              rows.count <= 1024 else { throw ToolUnavailable(description: failure) }
+        return rows.compactMap { row in
+            guard let number = row["processID"] as? NSNumber, CFGetTypeID(number) != CFBooleanGetTypeID(),
+                  number.doubleValue == Double(pid), row["processImagePath"] as? String == executable,
+                  row["senderImagePath"] as? String == sender, let rawDate = row["timestamp"] as? String,
+                  let date = Self.flutterTimestamp(rawDate), date >= launchedAt, date <= observedAt,
+                  let message = row["eventMessage"] as? String, message.utf8.count <= 16_384 else { return nil }
+            return message
+        }
+    }
+
+    private static func flutterTimestamp(_ value: String) -> Date? {
+        guard value.range(of: #"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{1,9}[+-]\d{4}$"#, options: .regularExpression) != nil,
+              let dot = value.firstIndex(of: ".") else { return nil }
+        let zone = value.suffix(5)
+        let fraction = value[value.index(after: dot)..<value.index(value.endIndex, offsetBy: -5)]
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ssZ"
+        formatter.isLenient = false
+        guard let whole = formatter.date(from: String(value[..<dot]) + zone),
+              let part = Double("0." + fraction) else { return nil }
+        return whole.addingTimeInterval(part)
+    }
+
+    private func flutterPID(device: SelectedDevice, bundleID: String, pid: Int32,
+                            environment: [String: String], deadline: ContinuousClock.Instant) async throws {
+        let failure = "The launched Flutter app PID is no longer observable for this bundle. Run down before retrying."
+        let result = try await flutterQuery(ProcessCommand("xcrun", ["simctl", "spawn", device.udid, "launchctl", "list"],
+            environment: environment, timeout: flutterQueryTimeout(deadline)), failure: failure)
+        guard result.terminationStatus.isSuccess, result.standardOutput.utf8.count <= Self.flutterOutputLimit,
+              result.standardOutput.split(whereSeparator: \.isNewline).contains(where: { line in
+                  let columns = line.split(separator: "\t")
+                  return columns.count == 3 && columns[2].hasPrefix("UIKitApplication:\(bundleID)[") && Int32(columns[0]) == pid
+              }) else { throw ToolUnavailable(description: failure) }
     }
 
     /// The pid is what a line ends with. Read from the end rather than by splitting on
