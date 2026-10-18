@@ -1,0 +1,44 @@
+{
+  "schema": "runstir.205.public-evidence.v1",
+  "measuredSource": "e567b001a07cba6560a182ae47497de6009e1e80",
+  "scope": "Pins current public CLI and GUI evidence. Earlier fixture/history and metadata-only observations retain their own scope. Selected immutable private originals and screenshots are referenced by ID and hash in actual-cli-e567b00.json and actual-gui-e567b00.json. This manifest excludes itself.",
+  "status": "CLI and GUI SDK preparation observed; CLI operation alignment observed; final review, CI and merge gates pending; whole issue not complete.",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 12718,
+      "mode": "0o644",
+      "sha256": "fb102789576a6fa82d55cd84033a65ed90c65e5209296280958de19faa660aae"
+    },
+    {
+      "path": "official-release.json",
+      "bytes": 1362,
+      "mode": "0o644",
+      "sha256": "76ad85466f0a5f00f2d60a89ffbfba3400c21fb8d414c9ed78758b82e035f9c8"
+    },
+    {
+      "path": "actual-cli-e567b00.md",
+      "bytes": 11895,
+      "mode": "0o644",
+      "sha256": "d6e6ac42f8ce6f95fa3ea8a6b20c50d36183926176fb5d2ca02912e537480c5d"
+    },
+    {
+      "path": "actual-cli-e567b00.json",
+      "bytes": 32198,
+      "mode": "0o644",
+      "sha256": "fcb95e21c4681f6272a7bbebfde109e6042cab0fe3cf6c808a69129e9ec2b187"
+    },
+    {
+      "path": "actual-gui-e567b00.md",
+      "bytes": 9971,
+      "mode": "0o644",
+      "sha256": "38584da94993090a3d8f5670d95a8ca376e78bfbd78d687c1a21a6c3e65649a0"
+    },
+    {
+      "path": "actual-gui-e567b00.json",
+      "bytes": 13685,
+      "mode": "0o644",
+      "sha256": "2b2dfbd038d3da26f25e21468a4041919b86818f23015cde258dcab09e9a51fc"
+    }
+  ]
+}

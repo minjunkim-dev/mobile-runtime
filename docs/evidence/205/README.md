@@ -1,9 +1,13 @@
 # #205 Flutter 준비 구현의 검증 범위
 
-이 기록은 provider와 공통 setup 결합 및 작업 소유 fixture의 결과다.
-CLI 검증은 작업 소유 합성 도구 fixture다.
-실제 Flutter SDK 설치·정렬과 VM·GUI·기기 실행은 이 기록에 없다.
-#205 전체 완료나 #199 AC02·AC03 통과를 선언하지 않는다.
+상태: `e567b00`의 실제 CLI·GUI에서 공식 Flutter SDK 설치를 확인했다.
+CLI는 operation별 locked Dart 정렬도 완료했다. GUI는 새 정렬을 승인하거나 실행하지 않았다.
+두 surface는 `partial / exit 1`을 표시했다. 전체 ready나 앱 build/run 성공은 입증하지 않았다.
+[실제 CLI](actual-cli-e567b00.md)와 [실제 GUI·AC 연결](actual-gui-e567b00.md)에 결과를 기록했다.
+별도 컨텍스트 최종 리뷰·필수 CI·위험별 승인·병합·main CI는 남은 gate다. #205 전체 완료를 선언하지 않는다.
+
+아래 source·fixture 절과 초기 중단 이력은 당시 결과를 보존한다.
+합성 fixture와 공식 SDK의 실제 실행은 구분한다.
 
 ## 입력과 계약
 
@@ -21,7 +25,7 @@ archive는 [공식 ZIP](https://storage.googleapis.com/flutter_infra_release/rel
 provider SHA256은 `d692b030a63466c44d6b2bc88583380371ecbe328f22cc4057835f59739821a1`이다.
 같은 날 archive HEAD는 HTTP `200`, Content-Length `2147160009`를 반환했다.
 HEAD의 body는 읽지 않았다. [official-release.json](./official-release.json)에 연결했다.
-이 표는 실제 payload를 새로 다운로드하거나 설치했다는 뜻이 아니다.
+이 metadata 관측에서 payload를 다운로드하거나 설치하지 않았다. 이후 실제 다운로드·설치는 별도 e567b00 기록이다.
 다른 exact pin은 공식 metadata에서 그 version·arm64·Dart를 다시 확인해야 한다.
 
 ## 행동 검증
@@ -42,7 +46,7 @@ HEAD의 body는 읽지 않았다. [official-release.json](./official-release.jso
 공유 설치 회귀는 `InstallationExecutionTests`, `InstallationActionContractTests`다.
 `FlutterPreparationTests`는 초기 surface RED를 GREEN으로 바꿨다.
 초기 통합 checkpoint는 관련 suite 57개와 전체 Swift 717개를 compiler warnings-as-errors로 통과했다.
-최종 제품 source는 `9d2d1770b380811b54704dab04ee83b834218fed`다.
+당시 제품 source는 `9d2d1770b380811b54704dab04ee83b834218fed`다.
 이 source에서 전체 Swift 723개가 같은 Werror 명령으로 통과했다.
 같은 제품 build에서 doctor·workflow·setup CLI fixture 3개도 순서대로 통과했다.
 setup fixture는 plan·approval·trust·stale·partial·failure·cancel·TTY·JSON·NDJSON을 확인한다.
@@ -134,7 +138,7 @@ plugin 없는 정상 앱에서 공식 SDK가 삭제한 metadata 파일을 필수
 
 old actual 후보는 계획 실행 전에 중지했다.
 새 소유 VM의 clone·부팅·환경 관측·후보 전송까지만 수행했다.
-제품 CLI·setup plan·SDK payload 설치·Dart 정렬·GUI·기기 실행은 0회다.
+이 초기 중단 구간의 제품 CLI·setup plan·SDK payload 설치·Dart 정렬·GUI·기기 실행은 0회다.
 소유 VM은 정상 종료했다. 중단 전 감사에서 원본 VM 세 개의 config·manifest·NVRAM hash와 disk stat은 같았다.
 외장 SSD 재연결 후에는 VM의 stopped 상태를 다시 확인했다.
 이후의 전체 VM disk bytes와 전송 뒤 guest 파일 hash는 수집하지 않았다.
@@ -155,6 +159,11 @@ SDK ZIP의 snapshot·engine cache와 tools package_config 부재도 읽기로 �
 보류한 실험 source와 source-only 제안은 private 조사 기록으로 보존했다.
 제품 tree에는 해당 기능을 넣지 않았다.
 
-#205 실제 도구 없는 환경과 기존 환경의 설치·실패·취소·재실행·CLI·GUI 측정은 별도 gate다.
-전체 AC 완료는 fixture만으로 선언하지 않는다.
+e567b00의 실제 CLI는 기존 SDK 재사용, 새 공식 SDK 설치, 다운로드·정렬 취소와 재시도를 확인했다.
+정렬 성공은 해당 operation의 완료다. 새 operation의 locked get 재승인은 현재 계약이다.
+GUI는 SDK 다운로드 취소·재검사·재승인·설치 재시도와 양플랫폼 부분 완료를 표시했다.
+실패 분기는 #199 Testing Decisions의 공통 fixture 경계에서 검증한다. 실제 설치·취소 흐름과 구분한다.
+Android provider가 추가 요구를 발견한 조건부 재승인은 자동 검사 근거다. 이 VM의 실제 Android 요구 변경으로 표시하지 않는다.
+[현재 AC 근거와 미확인 범위](actual-gui-e567b00.md#ac별-근거)를 읽는다.
+전체 AC 완료는 fixture나 CLI 성공 일부만으로 선언하지 않는다.
 별도 컨텍스트 리뷰·필수 CI·위험별 승인·병합·main CI도 별도 gate다.
