@@ -23,7 +23,7 @@ public func iOSStages(
     deviceID: String? = nil,
     configuration: String = "Debug",
     buildWithoutDevice: Bool = false,
-    metroPort: Int = MetroVerdict.port,
+    metroPort: Int? = nil,
     note: @escaping @Sendable (String) -> Void
 ) -> [any Stage] {
     var stages: [any Stage] = [

@@ -22,14 +22,14 @@ public enum MetroLaunch {
         runner: any ProcessRunner,
         logFile: URL,
         afterReinstall: Bool,
-        port: Int = MetroVerdict.port
+        port: Int? = nil
     ) async throws -> (command: ProcessCommand, pid: Int32) {
         if afterReinstall { await dropWatchmanWatch(of: anchor.directory, runner: runner) }
         var command = anchor.startProcess
-        if port != MetroVerdict.port {
+        if let port {
             command.arguments += (anchor.packageManagerName == "npm" ? ["--"] : []) + ["--port", String(port)]
+            command.environment["RCT_METRO_PORT"] = String(port)
         }
-        command.environment["RCT_METRO_PORT"] = String(port)
         // Metro colors its completed BUNDLE label green and its failed label red.
         // Preserve that distinction when its output goes to our non-TTY log file.
         command.environment["FORCE_COLOR"] = "1"

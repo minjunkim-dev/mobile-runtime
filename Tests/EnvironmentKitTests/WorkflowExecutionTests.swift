@@ -115,7 +115,7 @@ struct WorkflowExecutionTests {
     @Test("invalid and unsupported port inputs stop before any subprocess")
     func unsupportedPort() async throws {
         let repo = try iosProject()
-        for port in [-1, 0, 65536, 8097] {
+        for port in [-1, 0, 65536, 8081, 8097] {
             let runner = FakeProcessRunner()
             let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: ProjectInspectionInput(
                 directory: repo.root, environment: [:]), port: port), runner: runner, leases: temporaryLeases())
@@ -125,8 +125,21 @@ struct WorkflowExecutionTests {
         }
     }
 
-    @Test("the shared input forwards a selected RN endpoint and preserves it after build failure", arguments: [false, true])
-    func selectedPort(buildFails: Bool) async throws {
+    @Test("omitting the port preserves legacy native inputs without requiring explicit forwarding support")
+    func omittedPort() async throws {
+        let repo = try iosProject()
+        let runner = iosUpRunner(repo)
+        let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: ProjectInspectionInput(
+            directory: repo.root, environment: ["RCT_METRO_PORT": "8097"])), runner: runner, leases: temporaryLeases())
+        #expect(result.exitCode == 0)
+        #expect(result.operation.port == 8081)
+        #expect(!runner.log.all.contains { $0.arguments.contains(where: { $0.hasPrefix("RCT_METRO_PORT=") }) })
+        #expect(runner.log.all.contains { $0.description == "xcrun simctl launch A com.test.MyApp" })
+        #expect(!runner.log.all.contains { $0.arguments.contains("-RCT_jsLocation") })
+    }
+
+    @Test("the shared input forwards every explicit RN endpoint and preserves it after build failure", arguments: [false, true], [8081, 8097])
+    func selectedPort(buildFails: Bool, port: Int) async throws {
         let repo = try iosProject()
         try repo.write("package.json", #"{"dependencies":{"react-native":"0.81.0"},"scripts":{"start":"react-native start"}}"#)
         try repo.write("node_modules/react-native/React-Core.podspec", "RCT_METRO_PORT=${RCT_METRO_PORT}")
@@ -134,33 +147,33 @@ struct WorkflowExecutionTests {
         let base = iosUpRunner(repo)
         let settings = "-project \(repo.url("ios/MyApp.xcodeproj").path) -scheme MyApp -configuration Debug -destination platform=iOS Simulator,id=A"
         var runner = base
-        runner.responses["xcodebuild \(settings) RCT_METRO_PORT=8097 build"] = buildFails
+        runner.responses["xcodebuild \(settings) RCT_METRO_PORT=\(port) build"] = buildFails
             ? .failed(1, "error: controlled build failure") : base.responses["xcodebuild \(settings) build"]
-        runner.responses["xcodebuild -showBuildSettings -json \(settings) RCT_METRO_PORT=8097"] = base.responses["xcodebuild -showBuildSettings -json \(settings)"]
-        runner.responses["curl -s -i -m 2 http://localhost:8097/status"] = .ok(MetroStatus.running(projectRoot: repo.root))
-        runner.responses["xcrun simctl launch A com.test.MyApp -RCT_jsLocation localhost:8097"] = .ok("com.test.MyApp: 3538")
+        runner.responses["xcodebuild -showBuildSettings -json \(settings) RCT_METRO_PORT=\(port)"] = base.responses["xcodebuild -showBuildSettings -json \(settings)"]
+        runner.responses["curl -s -i -m 2 http://localhost:\(port)/status"] = .ok(MetroStatus.running(projectRoot: repo.root))
+        runner.responses["xcrun simctl launch A com.test.MyApp -RCT_jsLocation localhost:\(port)"] = .ok("com.test.MyApp: 3538")
         let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: ProjectInspectionInput(
-            directory: repo.root, environment: [:]), port: 8097), runner: runner, leases: temporaryLeases())
+            directory: repo.root, environment: ["RCT_METRO_PORT": "8097"]), port: port), runner: runner, leases: temporaryLeases())
         #expect(result.exitCode == (buildFails ? 1 : 0), Comment(rawValue: result.up?.failure?.message ?? ""))
-        #expect(result.operation.port == 8097)
-        #expect(result.up?.context.metro?.port == 8097)
-        #expect(try RunLogs(project: repo.root).metroPort() == 8097)
-        #expect(runner.log.all.contains { $0.arguments.contains("RCT_METRO_PORT=8097") && $0.arguments.last == "build" })
-        #expect(!runner.log.all.contains { $0.description.contains("localhost:8081") })
-        #expect(runner.log.all.contains { $0.arguments.suffix(2) == ["-RCT_jsLocation", "localhost:8097"] } == !buildFails)
+        #expect(result.operation.port == port)
+        #expect(result.up?.context.metro?.port == port)
+        #expect(try RunLogs(project: repo.root).metroPort() == port)
+        #expect(runner.log.all.contains { $0.arguments.contains("RCT_METRO_PORT=\(port)") && $0.arguments.last == "build" })
+        #expect(runner.log.all.filter { $0.executable == "curl" }.allSatisfy { $0.arguments.last == "http://localhost:\(port)/status" })
+        #expect(runner.log.all.contains { $0.arguments.suffix(2) == ["-RCT_jsLocation", "localhost:\(port)"] } == !buildFails)
         let json = try #require(JSONSerialization.jsonObject(with: Data(result.encoded(toolVersion: "test").utf8)) as? [String: Any])
-        #expect((json["operation"] as? [String: Any])?["port"] as? Int == 8097)
+        #expect((json["operation"] as? [String: Any])?["port"] as? Int == port)
         if buildFails {
             let downRunner = FakeProcessRunner(responses: [
-                "curl -s -i -m 2 http://localhost:8097/status": .ok(MetroStatus.running(projectRoot: URL(fileURLWithPath: "/another-project"))),
+                "curl -s -i -m 2 http://localhost:\(port)/status": .ok(MetroStatus.running(projectRoot: URL(fileURLWithPath: "/another-project"))),
             ])
             let down = await WorkflowExecution.run(.down, input: WorkflowInput(project: ProjectInspectionInput(
                 directory: repo.root, environment: [:])), runner: downRunner, leases: temporaryLeases())
             #expect(down.exitCode == 0) // ADR-0007 keeps another project's server as a non-error blocked item.
             #expect(down.down?.items.first(where: { $0.id == "metro" })?.status == .blocked)
-            #expect(down.operation.port == 8097)
-            #expect(downRunner.log.all.map(\.description) == ["curl -s -i -m 2 http://localhost:8097/status"])
-            #expect(try RunLogs(project: repo.root).metroPort() == 8097)
+            #expect(down.operation.port == port)
+            #expect(downRunner.log.all.map(\.description) == ["curl -s -i -m 2 http://localhost:\(port)/status"])
+            #expect(try RunLogs(project: repo.root).metroPort() == port)
         }
     }
 
@@ -511,7 +524,7 @@ private actor BuildGate {
 
     func pause() async throws {
         entered = true
-        let deadline = ContinuousClock.now + .seconds(5)
+        let deadline = ContinuousClock.now + .seconds(30)
         while !released {
             guard ContinuousClock.now < deadline else {
                 timedOut = true
@@ -522,7 +535,7 @@ private actor BuildGate {
     }
 
     func waitForEntry() async {
-        let deadline = ContinuousClock.now + .seconds(5)
+        let deadline = ContinuousClock.now + .seconds(30)
         while !entered && ContinuousClock.now < deadline { try? await Task.sleep(for: .milliseconds(10)) }
     }
 

@@ -76,7 +76,7 @@ public enum WorkflowExecution {
                 guard anchor.framework == .reactNative, kind != .down, (1...65535).contains(port) else {
                     throw selectionFailure("--port requires React Native build/up and a port from 1 through 65535. This workflow cannot forward it; no project file was changed.")
                 }
-                if port != MetroVerdict.port { try validatePortForwarding(anchor: anchor, platform: platform) }
+                try validatePortForwarding(anchor: anchor, platform: platform)
             }
             if kind == .down && [input.device, input.scheme, input.configuration, input.module, input.variant].contains(where: { $0 != nil }) {
                 throw selectionFailure("down uses the selected project's recorded resources. Omit build and device selectors.")
@@ -251,19 +251,19 @@ public enum WorkflowExecution {
             case (.up, .android):
                 up = await runAndroidUp(anchor: anchor, doctor: wiring.engine, config: config,
                     hostRunner: runner, projectRunner: wiring.projectRunner,
-                    environment: AndroidEnvironment(values: input.project.environment), metroPort: metroPort ?? MetroVerdict.port, note: note,
+                    environment: AndroidEnvironment(values: input.project.environment), metroPort: input.port, note: note,
                     onStageFinished: finished, onStageStarted: started)
             case (.build, .android):
                 up = await UpPipeline(stages: androidBuildStages(anchor: anchor, doctor: wiring.engine, config: config,
                     hostRunner: runner, projectRunner: wiring.projectRunner,
-                    environment: AndroidEnvironment(values: input.project.environment), metroPort: metroPort ?? MetroVerdict.port, note: note))
+                    environment: AndroidEnvironment(values: input.project.environment), metroPort: input.port, note: note))
                     .run(onStageFinished: finished, onStageStarted: started)
             case (.build, .ios), (.up, .ios):
                 up = await UpPipeline(stages: iOSStages(workflow: kind == .build ? .build : .up,
                     anchor: anchor, doctor: wiring.engine, config: config, lookup: wiring.lookup,
                     hostRunner: runner, projectRunner: wiring.projectRunner, locator: wiring.locator,
                     deviceID: operation.device, configuration: operation.configuration ?? "Debug",
-                    buildWithoutDevice: kind == .build && operation.device == nil, metroPort: metroPort ?? MetroVerdict.port, note: note))
+                    buildWithoutDevice: kind == .build && operation.device == nil, metroPort: input.port, note: note))
                     .run(onStageFinished: finished, onStageStarted: started)
             }
             // The app outlives this lease, even after a later stage failed. The next run observes it again.

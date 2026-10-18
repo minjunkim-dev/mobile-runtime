@@ -13,6 +13,10 @@
 
 기존 `WorkflowInput.port` 입력 이름을 CLI와 GUI가 공유한다.
 React Native build/up은 명시적 1~65535 포트를 소비한다. 생략한 기본값은 8081이다.
+명시적 8081도 다른 명시 포트와 같이 start·native build·앱 launch에 전달한다.
+기존 프로젝트의 포트 설정이나 앱의 `RCT_jsLocation`을 실행 입력으로 덮어야 하기 때문이다.
+`WorkflowInput.port`의 nil은 factory 끝까지 nil로 유지한다. 생략 입력만 기존 native 인자를 유지한다.
+기록·probe·lease·down은 명시 여부와 별도로 실제 선택 포트 정수를 사용한다.
 사용 중인 포트를 임의로 바꾸거나 기존 작업을 종료하지 않는다.
 선택 포트의 lease와 현재 Metro root 판정을 모두 통과해야 실행한다.
 

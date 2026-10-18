@@ -35,7 +35,7 @@ public func androidBuildStages(
     projectRunner: any ProcessRunner,
     environment: AndroidEnvironment = AndroidEnvironment(),
     validationCheckIDs: Set<String> = AndroidWorkflowValidation.checkIDs,
-    metroPort: Int = MetroVerdict.port,
+    metroPort: Int? = nil,
     note: @escaping @Sendable (String) -> Void
 ) -> [any Stage] {
     var stages: [any Stage] = [ValidateStage(engine: doctor, checkIDs: validationCheckIDs)]
@@ -66,7 +66,7 @@ public struct AndroidBuildStage: Stage {
     private let environment: AndroidEnvironment
     private let logs: RunLogs
     private let note: @Sendable (String) -> Void
-    private let metroPort: Int
+    private let metroPort: Int?
 
     public init(
         anchor: ProjectAnchor,
@@ -75,7 +75,7 @@ public struct AndroidBuildStage: Stage {
         projectRunner: any ProcessRunner,
         environment: AndroidEnvironment = AndroidEnvironment(),
         logs: RunLogs? = nil,
-        metroPort: Int = MetroVerdict.port,
+        metroPort: Int? = nil,
         note: @escaping @Sendable (String) -> Void = { _ in }
     ) {
         self.anchor = anchor
@@ -162,7 +162,7 @@ public struct AndroidBuildStage: Stage {
             [
                 assembleTask,
                 "--no-daemon",
-            ] + (anchor.framework == .reactNative && metroPort != MetroVerdict.port ? ["-PreactNativeDevServerPort=\(metroPort)"] : [])
+            ] + (anchor.framework == .reactNative ? metroPort.map { ["-PreactNativeDevServerPort=\($0)"] } ?? [] : [])
               + AndroidGradleModelProbe.configurationArguments + [
                 "--console=plain",
                 "-Dorg.gradle.java.installations.auto-download=false", "-Pandroid.builder.sdkDownload=false",

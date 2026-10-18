@@ -24,7 +24,7 @@ actor AndroidRuntime {
     private let logs: RunLogs
     private let store: AndroidActiveRunStore
     private let timeouts: AndroidRuntimeTimeouts
-    private let port: Int
+    private let port: Int?
     private let doctorContext: AndroidDoctorContext
     private var activeRun: AndroidActiveRun?
 
@@ -36,7 +36,7 @@ actor AndroidRuntime {
         environment: AndroidEnvironment,
         logs: RunLogs,
         timeouts: AndroidRuntimeTimeouts,
-        port: Int = MetroVerdict.port
+        port: Int? = nil
     ) {
         self.anchor = anchor
         self.config = config
@@ -207,6 +207,7 @@ actor AndroidRuntime {
     }
 
     func metro(afterReinstall: Bool = false) async throws -> MetroProcess {
+        let port = port ?? MetroVerdict.port
         if let previous = try logs.metroPort(platform: .android), previous != port {
             let old = try run()
             guard old.metro == nil, old.reverse == nil,
@@ -263,7 +264,7 @@ actor AndroidRuntime {
 
         let log = logs.url("metro.log")
         let (command, startPID) = try await MetroLaunch.start(
-            anchor: anchor, runner: projectRunner, logFile: log, afterReinstall: afterReinstall, port: port
+            anchor: anchor, runner: projectRunner, logFile: log, afterReinstall: afterReinstall, port: self.port
         )
         value = try run()
         value.metro = AndroidActiveRun.Metro(
@@ -283,7 +284,6 @@ actor AndroidRuntime {
 
         let anchorDirectory = anchor.directory
         let projectRunner = projectRunner
-        let port = port
         let readiness = try await MetroLaunch.readiness(
             startPID: startPID, runner: projectRunner, bindWait: timeouts.metroBind, poll: timeouts.poll, port: port
         ) { _ in
@@ -324,6 +324,7 @@ actor AndroidRuntime {
     }
 
     func reverse(on device: AndroidDevice) async throws -> AndroidReverse {
+        let port = port ?? MetroVerdict.port
         let sdk = try doctorContext.requiredSDKRoot()
         var value = try run()
         if let existing = value.reverse, existing.serial != device.serial {
@@ -474,6 +475,7 @@ actor AndroidRuntime {
             activities.standardOutput.contains(product.launcherActivity)
         else { return nil }
         if anchor.framework == .reactNative {
+            let port = port ?? MetroVerdict.port
             let source = "tcp:\(port)"
             guard try await doctorContext.reverseMappings(serial: serial, sdk: sdk, runner: hostRunner)[source] == source,
                 try await MetroVerdict.ask(anchor: anchor.directory, runner: projectRunner, port: port) == .mine
@@ -755,7 +757,7 @@ public func androidUpStages(
     environment: AndroidEnvironment = AndroidEnvironment(),
     logs: RunLogs? = nil,
     timeouts: AndroidRuntimeTimeouts = AndroidRuntimeTimeouts(),
-    metroPort: Int = MetroVerdict.port,
+    metroPort: Int? = nil,
     note: @escaping @Sendable (String) -> Void
 ) -> [any Stage] {
     let logs = logs ?? RunLogs(project: anchor.directory)
@@ -803,8 +805,8 @@ public func androidUpStages(
             let metro = try await runtime.metro(afterReinstall: context.nodeModulesReinstalled)
             context.metro = metro
             return metro.state == .spawned
-                ? .pass("started on \(metroPort) — pid \(metro.listenerPid ?? 0)")
-                : .skipped("already running on \(metroPort)")
+                ? .pass("started on \(metro.port) — pid \(metro.listenerPid ?? 0)")
+                : .skipped("already running on \(metro.port)")
         },
         AndroidRuntimeStage(id: "android.reverse") { context in
             guard var product = context.androidProduct, let device = product.device else {
@@ -814,8 +816,8 @@ public func androidUpStages(
             product.reverse = reverse
             context.androidProduct = product
             return reverse.state == .created
-                ? .pass("tcp:\(metroPort)")
-                : .skipped("tcp:\(metroPort) already mapped")
+                ? .pass("tcp:\(metroPort ?? MetroVerdict.port)")
+                : .skipped("tcp:\(metroPort ?? MetroVerdict.port) already mapped")
         },
     ] : []) + [
         AndroidRuntimeStage(id: "android.launch") { context in
@@ -839,7 +841,7 @@ public func runAndroidUp(
     environment: AndroidEnvironment = AndroidEnvironment(),
     logs: RunLogs? = nil,
     timeouts: AndroidRuntimeTimeouts = AndroidRuntimeTimeouts(),
-    metroPort: Int = MetroVerdict.port,
+    metroPort: Int? = nil,
     note: @escaping @Sendable (String) -> Void,
     onStageFinished: (@Sendable (StageResult) -> Void)? = nil,
     onStageStarted: (@Sendable (String) -> Void)? = nil
@@ -849,7 +851,7 @@ public func runAndroidUp(
     do {
         let lease = try store.acquire(operation: "up")
         defer { withExtendedLifetime(lease) {} }
-        if anchor.framework == .reactNative, let previous = try logs.metroPort(platform: .android), previous != metroPort,
+        if anchor.framework == .reactNative, let previous = try logs.metroPort(platform: .android), previous != (metroPort ?? MetroVerdict.port),
             try store.read() != nil {
             throw DomainError(summary: "The selected Metro port differs from the Android active run.",
                 remediation: Remediation(summary: "Run mobile down --platform android before selecting another port."))

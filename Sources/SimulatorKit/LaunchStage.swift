@@ -19,7 +19,7 @@ public struct LaunchStage: Stage {
     /// Injected so tests do not wait, while a first bundle gets enough time on a cold
     /// machine to finish honestly.
     private let readinessWait: Duration
-    private let metroPort: Int
+    private let metroPort: Int?
 
     public static let defaultReadinessWait: Duration = .seconds(120)
 
@@ -29,7 +29,7 @@ public struct LaunchStage: Stage {
         metroRunner: (any ProcessRunner)? = nil,
         locator: XcodeLocator,
         readinessWait: Duration = LaunchStage.defaultReadinessWait,
-        metroPort: Int = MetroVerdict.port
+        metroPort: Int? = nil
     ) {
         self.project = project
         self.runner = runner
@@ -55,7 +55,7 @@ public struct LaunchStage: Stage {
 
         let command = ProcessCommand(
             "xcrun", ["simctl", "launch", device.udid, product.bundleIdentifier]
-                + (context.metro != nil && metroPort != MetroVerdict.port ? ["-RCT_jsLocation", "localhost:\(metroPort)"] : []),
+                + (context.metro != nil ? metroPort.map { ["-RCT_jsLocation", "localhost:\($0)"] } ?? [] : []),
             environment: environment,
             timeout: .seconds(60)
         )
@@ -87,12 +87,12 @@ public struct LaunchStage: Stage {
         let detail = "\(product.bundleIdentifier) — pid \(pid)"
         guard let metro = context.metro else { return .pass(detail) }
         let ready = await MetroReadiness(
-            project: project, runner: metroRunner, timeout: readinessWait, port: metroPort
+            project: project, runner: metroRunner, timeout: readinessWait, port: metroPort ?? MetroVerdict.port
         ).wait(for: metro)
         if ready { return .pass(detail) }
 
         let hint = metro.logPath.map { " — Metro still bundling; log at \($0)" }
-            ?? " — Metro still bundling; check the Metro process on port \(metroPort)"
+            ?? " — Metro still bundling; check the Metro process on port \(metroPort ?? MetroVerdict.port)"
         return .pass(detail + hint)
     }
 

@@ -16,7 +16,7 @@ public struct MetroStage: Stage {
     /// How long the port is given to answer with the bundler's pid after the start
     /// script is launched. Injected for tests, which have no real process to wait for.
     private let bindWait: Duration
-    private let port: Int
+    private let port: Int?
 
     public static let defaultBindWait = MetroLaunch.defaultBindWait
 
@@ -25,7 +25,7 @@ public struct MetroStage: Stage {
         runner: any ProcessRunner,
         logs: RunLogs? = nil,
         bindWait: Duration = MetroStage.defaultBindWait,
-        port: Int = MetroVerdict.port
+        port: Int? = nil
     ) {
         self.anchor = anchor
         self.runner = runner
@@ -35,6 +35,7 @@ public struct MetroStage: Stage {
     }
 
     public func run(_ context: inout UpContext) async throws -> StageOutcome {
+        let port = port ?? MetroVerdict.port
         if let previous = try logs.metroPort(), previous != port {
             let previousState = try await MetroVerdict.ask(anchor: anchor.directory, runner: runner, port: previous)
             guard previousState == .empty else {
@@ -56,7 +57,7 @@ public struct MetroStage: Stage {
 
         let logFile = logs.directory.appendingPathComponent("metro.log")
         let (command, pid) = try await MetroLaunch.start(
-            anchor: anchor, runner: runner, logFile: logFile, afterReinstall: context.nodeModulesReinstalled, port: port
+            anchor: anchor, runner: runner, logFile: logFile, afterReinstall: context.nodeModulesReinstalled, port: self.port
         )
         // Waiting is affordable here because it is bounded and because the stage it
         // delays — `build` — takes minutes.
@@ -91,7 +92,7 @@ public struct MetroStage: Stage {
         logFile: URL
     ) -> DomainError {
         DomainError(
-            summary: "Metro did not start on \(port)",
+            summary: "Metro did not start on \(port ?? MetroVerdict.port)",
             observed: observed,
             remediation: Remediation(
                 summary: "Run the project start command and inspect the log at \(logFile.path).",

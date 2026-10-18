@@ -68,24 +68,32 @@ private actor DelayedListenerRunner: ProcessRunner {
 
 @Suite("metro stage")
 struct MetroStageTests {
-    @Test("an explicit endpoint reaches start, listener probing, failure hints and the retry record")
-    func selectedPortSurvivesFailure() async throws {
+    @Test("omitting the start port preserves the legacy script arguments and inherited native input")
+    func omittedPortStart() async throws {
+        let repo = try app()
+        let anchor = try #require(ProjectAnchor.detect(from: repo.root))
+        let runner = FakeProcessRunner()
+        _ = try await MetroLaunch.start(anchor: anchor, runner: runner, logFile: repo.url("metro.log"), afterReinstall: false)
+        #expect(runner.log.spawned.first?.command.arguments == ["start"])
+        #expect(runner.log.spawned.first?.command.environment["RCT_METRO_PORT"] == nil)
+    }
+    @Test("every explicit endpoint reaches start, listener probing, failure hints and the retry record", arguments: [8081, 8097])
+    func selectedPortSurvivesFailure(port: Int) async throws {
         let repo = try app()
         let anchor = try #require(ProjectAnchor.detect(from: repo.root))
         let logs = try temporaryLogs()
         let runner = FakeProcessRunner(responses: [
-            "curl -s -i -m 2 http://localhost:8097/status": .failed(7, ""),
-            "lsof -nP -iTCP:8097 -sTCP:LISTEN -t": .ok(""),
+            "curl -s -i -m 2 http://localhost:\(port)/status": .failed(7, ""),
+            "lsof -nP -iTCP:\(port) -sTCP:LISTEN -t": .ok(""),
             "kill -0 4242": .failed(1, ""),
         ])
         var context = UpContext()
         await #expect(throws: DomainError.self) {
-            try await MetroStage(anchor: anchor, runner: runner, logs: logs, bindWait: .zero, port: 8097).run(&context)
+            try await MetroStage(anchor: anchor, runner: runner, logs: logs, bindWait: .zero, port: port).run(&context)
         }
-        #expect(try logs.metroPort() == 8097)
-        #expect(runner.log.spawned.first?.command.arguments == ["start", "--port", "8097"])
-        #expect(runner.log.spawned.first?.command.environment["RCT_METRO_PORT"] == "8097")
-        #expect(!runner.log.all.contains { $0.description.contains("8081") })
+        #expect(try logs.metroPort() == port)
+        #expect(runner.log.spawned.first?.command.arguments == ["start", "--port", "\(port)"])
+        #expect(runner.log.spawned.first?.command.environment["RCT_METRO_PORT"] == "\(port)")
     }
 
     @Test("a previous occupied endpoint blocks a port change without overwriting its record")

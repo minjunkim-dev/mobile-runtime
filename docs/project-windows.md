@@ -12,6 +12,9 @@ workspace의 변경 lease는 workspace 폴더에 걸린다. 서로 다른 worktr
 
 React Native GUI의 `Metro port`와 CLI build/up의 `--port`는 같은 `WorkflowInput.port`다.
 기본값은 8081이다. 두 독립 작업에는 서로 다른 포트와 기기를 선택한다.
+`--port 8081`도 명시적 입력이다. 기존 Gradle `reactNativeDevServerPort=8097`이나
+iOS 앱의 `RCT_jsLocation` 값이 있어도 8081을 start·build·launch에 전달한다.
+port를 생략한 경우만 기존 native 인자를 유지한다. 명시적 8081에도 전달 지원 검사를 적용한다.
 포트가 이미 사용 중이면 소유 작업과 이유를 표시한다. 자동 전환이나 종료는 없다.
 native iOS·native Android는 이 개발 서버 입력을 소비하지 않는다. 명시하면 중단한다.
 Flutter 후속 provider도 같은 `WorkflowInput.port`를 소비한다. Flutter의 VM service와
@@ -57,12 +60,18 @@ RN custom port는 `react-native start` script와 설치된 native port 입력을
 private HOME·CFFIXED_USER_HOME·TMPDIR·SwiftPM cache/config/security 경로를 사용했다.
 기존 checkout의 locked dependencies를 복사했다. 자동 도구 설치·keychain·netrc는 사용하지 않았다.
 `RUNSTIR_SIMULATOR_SMOKE_APP`은 전달하지 않았다.
-최종 전체 `swift test -Xswiftc -warnings-as-errors`는 792개를 통과했다.
-SimulatorKit 123개·EnvironmentKit 208개·Core 380개·AndroidKit 81개다.
+최종 전체 `swift test -Xswiftc -warnings-as-errors`는 794개를 통과했다.
+SimulatorKit 123개·EnvironmentKit 209개·Core 381개·AndroidKit 81개다.
 source-only 검사는 61개를 통과했다. CLI `up --help`는 port 옵션을 표시했다.
 CLI의 숫자가 아닌 port 입력은 usage exit 64로 중단했다.
 Android launch-ready의 8081 잔존 질의는 8097 fixture에서 실패한 뒤 수정했다.
 컴파일·fixture 준비 오류와 모든 실패 로그는 최종 성공 로그와 별도로 보존했다.
+Spec 리뷰의 명시적 8081 누락을 RED 회귀로 재현했다.
+8081·8097의 start·native build·launch 전달과 nil 입력의 기존 인자 보존을 확인했다.
+원래 프로젝트에 선언한 Android 포트 8097은 수정하지 않았다.
+명시적 8081의 미지원 native 입력은 CLI JSON에서 변경 단계 없이 중단했다.
+전체 검사 부하에서 독립 build fixture의 5초 gate가 만료한 로그도 보존했다.
+gate 한도를 30초로 바꿨다. 독립 작업 선행 완료·원작업 성공·timeout 부재 검사는 유지했다.
 
 ## RN 입력 원문 확인
 

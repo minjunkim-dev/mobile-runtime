@@ -25,7 +25,7 @@ public struct BuildStage: Stage {
     private let heartbeat: Duration
     private let configuration: String
     private let genericDestination: Bool
-    private let metroPort: Int
+    private let metroPort: Int?
 
     public init(
         config: ConfigContext,
@@ -35,7 +35,7 @@ public struct BuildStage: Stage {
         heartbeat: Duration = .seconds(15),
         configuration: String = "Debug",
         genericDestination: Bool = false,
-        metroPort: Int = MetroVerdict.port,
+        metroPort: Int? = nil,
         note: @escaping @Sendable (String) -> Void
     ) {
         self.config = config
@@ -77,7 +77,7 @@ public struct BuildStage: Stage {
                 "-configuration", configuration,
                 "-destination", destination,
             ] + (anchor.framework == .nativeIOS ? ["CODE_SIGNING_ALLOWED=NO"] : [])
-                + (anchor.framework == .reactNative && metroPort != MetroVerdict.port ? ["RCT_METRO_PORT=\(metroPort)"] : [])
+                + (anchor.framework == .reactNative ? metroPort.map { ["RCT_METRO_PORT=\($0)"] } ?? [] : [])
 
         context.buildLog = try await build(arguments, environment).path
         context.product = try await product(arguments, scheme: scheme, environment: environment,
