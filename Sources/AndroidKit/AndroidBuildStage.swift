@@ -89,6 +89,7 @@ public struct AndroidBuildStage: Stage {
     }
 
     public func run(_ pipeline: inout UpContext) async throws -> StageOutcome {
+        let log = try logs.url("android-build.log")
         let context = AndroidDoctorContext(
             anchor: anchor,
             config: config,
@@ -155,7 +156,6 @@ public struct AndroidBuildStage: Stage {
             )
         }
 
-        let log = logs.url("android-build.log")
         pipeline.buildLog = log.path
         let command = ProcessCommand(
             "./gradlew",

@@ -128,7 +128,7 @@ public struct BuildStage: Stage {
 
     /// - Returns: the log file the whole build was streamed to, kept on a success too.
     private func build(_ arguments: [String], _ environment: [String: String]) async throws -> URL {
-        let file = logs.url("build.log")
+        let file = try logs.url("build.log")
         // Build and product lookup receive the same input-owned output path.
         // Streamed rather than collected: a real app's first clean build runs to tens
         // of megabytes, and the 4 MiB collected limit killed a healthy one (#55).

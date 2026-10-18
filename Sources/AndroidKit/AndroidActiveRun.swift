@@ -87,50 +87,83 @@ struct AndroidActiveRunStore: Sendable {
 
     let project: URL
     let logs: RunLogs
+    private let operation: WorkflowKind
 
-    init(project: URL, logs: RunLogs? = nil) {
+    init(project: URL, logs: RunLogs? = nil, operation: WorkflowKind = .up) {
         self.project = project.resolvingSymlinksInPath()
         self.logs = logs ?? RunLogs(project: project)
+        self.operation = operation
     }
 
-    var file: URL { logs.url(Self.fileName) }
-    var lockFile: URL { logs.url(Self.lockName) }
+    var file: URL {
+        get throws {
+            let current = try logs.url(Self.fileName)
+            do {
+                _ = try FileManager.default.attributesOfItem(atPath: current.path)
+                return current
+            } catch let error as CocoaError where error.code == .fileReadNoSuchFile {}
+            let legacy = logs.directory.appendingPathComponent(Self.fileName)
+            guard try readRecord(at: legacy) != nil else { return current }
+            guard operation == .down else {
+                throw AndroidStateError("an existing legacy Android run must finish mobile down --platform android before a new run")
+            }
+            // A base-main record has a canonical project. Only its original down
+            // cleanup may update it, under its original lifecycle lock.
+            return legacy
+        }
+    }
 
-    func read() throws -> AndroidActiveRun? {
-        guard FileManager.default.fileExists(atPath: file.path) else { return nil }
+    var lockFile: URL {
+        get throws {
+            let record = try file
+            let lock = record.deletingLastPathComponent().appendingPathComponent(Self.lockName)
+            do {
+                let attributes = try FileManager.default.attributesOfItem(atPath: lock.path)
+                guard attributes[.type] as? FileAttributeType == .typeRegular else {
+                    throw AndroidStateError("the Android lifecycle lock is redirected or is not a regular file")
+                }
+            } catch let error as CocoaError where error.code == .fileReadNoSuchFile { return lock }
+            return lock
+        }
+    }
+
+    func read() throws -> AndroidActiveRun? { try readRecord(at: file) }
+
+    private func readRecord(at location: URL) throws -> AndroidActiveRun? {
+        let attributes: [FileAttributeKey: Any]
+        do { attributes = try FileManager.default.attributesOfItem(atPath: location.path) }
+        catch let error as CocoaError where error.code == .fileReadNoSuchFile { return nil }
+        guard attributes[.type] as? FileAttributeType == .typeRegular,
+              let size = attributes[.size] as? NSNumber, size.uint64Value <= 1_048_576 else {
+            throw AndroidStateError("the Android active-run record is redirected or unreadable")
+        }
         do {
-            let run = try JSONDecoder().decode(AndroidActiveRun.self, from: Data(contentsOf: file))
+            let run = try JSONDecoder().decode(AndroidActiveRun.self, from: Data(contentsOf: location))
             guard run.schemaVersion == 1, run.project == project.path else {
                 throw AndroidStateError("the Android active-run record does not belong to this project")
             }
             return run
-        } catch let error as AndroidStateError {
-            throw error
-        } catch {
-            throw AndroidStateError("the Android active-run record is unreadable: \(error)")
-        }
+        } catch let error as AndroidStateError { throw error }
+        catch { throw AndroidStateError("the Android active-run record is unreadable: \(error)") }
     }
 
     func write(_ run: AndroidActiveRun) throws {
         guard run.project == project.path else {
             throw AndroidStateError("refusing to write an Android active run for another project")
         }
-        try FileManager.default.createDirectory(
-            at: logs.directory, withIntermediateDirectories: true
-        )
+        let location = try file
+        _ = try readRecord(at: location)
+        try FileManager.default.createDirectory(at: location.deletingLastPathComponent(), withIntermediateDirectories: true)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
-        try encoder.encode(run).write(to: file, options: .atomic)
+        try encoder.encode(run).write(to: location, options: .atomic)
     }
 
     func removeIfEmpty(_ run: AndroidActiveRun) throws {
         if run.isEmpty {
-            if FileManager.default.fileExists(atPath: file.path) {
-                try FileManager.default.removeItem(at: file)
-            }
-        } else {
-            try write(run)
-        }
+            let location = try file
+            if FileManager.default.fileExists(atPath: location.path) { try FileManager.default.removeItem(at: location) }
+        } else { try write(run) }
     }
 
     func acquire(operation: String) throws -> AndroidLifecycleLease {
@@ -150,7 +183,7 @@ final class AndroidLifecycleLease: @unchecked Sendable {
         try FileManager.default.createDirectory(
             at: file.deletingLastPathComponent(), withIntermediateDirectories: true
         )
-        let descriptor = open(file.path, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR)
+        let descriptor = open(file.path, O_CREAT | O_RDWR | O_NOFOLLOW, S_IRUSR | S_IWUSR)
         guard descriptor >= 0 else {
             throw AndroidStateError("could not open the Android lifecycle lock for \(operation)")
         }

@@ -196,7 +196,7 @@ public enum WorkflowExecution {
             case .down:
                 switch platform {
                 case .ios:
-                    device = InstallRecord.read(from: RunLogs(project: anchor.directory)).map { .device(.ios, $0.udid) }
+                    device = try InstallRecord.read(from: RunLogs(project: anchor.directory), leases: leases, ownerProject: folder.path).map { .device(.ios, $0.udid) }
                 case .android:
                     device = try androidTeardownDeviceKey(anchor: anchor)
                 }
@@ -231,7 +231,7 @@ public enum WorkflowExecution {
             switch (kind, platform) {
             case (.down, .ios):
                 started("down")
-                down = await iOSTeardown(anchor: anchor, runner: runner, locator: wiring.locator).run()
+                down = await iOSTeardown(anchor: anchor, runner: runner, locator: wiring.locator, leases: leases).run()
             case (.down, .android):
                 started("down")
                 down = await androidTeardown(anchor: anchor, config: config, runner: runner, projectRunner: runner,

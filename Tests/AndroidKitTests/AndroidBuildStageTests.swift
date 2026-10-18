@@ -189,6 +189,21 @@ private func buildScenario(
 
 @Suite("Android build stage")
 struct AndroidBuildStageTests {
+    @Test("a missing output folder identity blocks Android build before any tool")
+    func missingOutputIdentity() async throws {
+        let scenario = try buildScenario()
+        let logs = RunLogs(project: scenario.repo.url("missing-input"), temporaryDirectory: try scenario.repo.directory("outputs"))
+        let stage = AndroidBuildStage(anchor: scenario.anchor, config: scenario.config,
+            hostRunner: scenario.runner, projectRunner: scenario.runner,
+            environment: scenario.environment, logs: logs)
+        var context = UpContext()
+
+        await #expect(throws: (any Error).self) { try await stage.run(&context) }
+
+        #expect(scenario.runner.log.all.isEmpty)
+        #expect(!FileManager.default.fileExists(atPath: logs.directory.path))
+    }
+
     @Test("every explicit Metro endpoint overrides the declared native app resource port", arguments: [8081, 8097])
     func selectedDevelopmentPort(port: Int) async throws {
         let scenario = try buildScenario(metroPort: port)

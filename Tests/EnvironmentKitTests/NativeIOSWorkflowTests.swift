@@ -260,7 +260,7 @@ struct NativeIOSWorkflowTests {
         #expect(result.down?.items.map(\.id) == ["app"])
         #expect(runner.log.all.filter { $0.executable == "xcrun" }.map(\.description) == ["xcrun simctl terminate A com.test.App"])
         #expect(!runner.log.all.contains { $0.executable == "kill" || $0.executable == "curl" })
-        #expect(InstallRecord.read(from: logs)?.bundleId == "com.test.App")
+        #expect(try InstallRecord.read(from: logs)?.bundleId == "com.test.App")
     }
 
     @Test("a native device lease conflict stops before build or installation")

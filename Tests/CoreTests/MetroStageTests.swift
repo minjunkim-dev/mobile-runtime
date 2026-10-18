@@ -13,12 +13,7 @@ private func app() throws -> FixtureRepo {
     return repo
 }
 
-private func temporaryLogs() throws -> RunLogs {
-    let temporary = FileManager.default.temporaryDirectory
-        .appendingPathComponent("mobile-metrostage-\(UUID().uuidString)")
-    try FileManager.default.createDirectory(at: temporary, withIntermediateDirectories: true)
-    return RunLogs(project: URL(fileURLWithPath: "/a/MyApp"), temporaryDirectory: temporary)
-}
+private func temporaryLogs() throws -> RunLogs { try RunLogs.temporary() }
 
 @discardableResult
 private func run(
@@ -246,7 +241,7 @@ struct MetroStageTests {
         #expect(spawn.command.description == "yarn start")
         #expect(spawn.command.environment["FORCE_COLOR"] == "1")
         #expect(spawn.command.workingDirectory?.path == repo.root.path)
-        #expect(spawn.logFile == logs.directory.appendingPathComponent("metro.log"))
+        #expect(spawn.logFile == (try logs.url("metro.log")))
         #expect(context.metro?.state == .spawned)
         #expect(context.metro?.pid == runner.spawnedPID)
         #expect(context.metro?.logPath == spawn.logFile.path)

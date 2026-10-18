@@ -110,7 +110,7 @@ actor AndroidRuntime {
             let command = doctorContext.toolCommand(
                 "emulator", ["-avd", selected.avd.name], sdk: sdk
             )
-            let log = logs.url("android-emulator.log")
+            let log = try logs.url("android-emulator.log")
             let pid = try await hostRunner.spawnDetached(command, logFile: log)
             var value = try run()
             value.device = AndroidActiveRun.Device(
@@ -262,7 +262,7 @@ actor AndroidRuntime {
             return MetroProcess(state: .reused, port: port)
         }
 
-        let log = logs.url("metro.log")
+        let log = try logs.url("metro.log")
         let (command, startPID) = try await MetroLaunch.start(
             anchor: anchor, runner: projectRunner, logFile: log, afterReinstall: afterReinstall, port: self.port
         )

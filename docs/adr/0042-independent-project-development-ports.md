@@ -32,10 +32,29 @@ React Native Gradle plugin은 이 값을 앱의 `react_native_dev_server_port` r
 adb reverse와 launch-ready 확인도 같은 포트를 사용한다.
 설치된 native 입력이나 표준 start script의 전달 근거가 없으면 변경 전에 중단한다.
 
-선택 포트는 기존 `RunLogs` 아래 `metro-port-ios`·`metro-port-android`에 원자적으로 저장한다.
+새 로그·설치 기록·Android active-run/lock·선택 포트는 기존 `RunLogs` 아래의
+`folder-<volume>-<file>` child에 저장한다. volume·file은 기존 `FolderIdentity`와 같다.
+읽기 쉬운 기존 32-bit digest는 실제 폴더 identity로 사용하지 않는다.
+`RunLogs.directory`는 legacy 읽기 경계로 보존한다. `RunLogs.url`은 현재 input identity와
+모든 부모·대상 type을 확인한다. symlink·일반 파일 redirect·읽기 실패는 차단한다.
+
+선택 포트는 이 child의 `metro-port-ios`·`metro-port-android`에 원자적으로 저장한다.
 한 작업 폴더에서 양플랫폼 앱을 순차 실행해도 다른 플랫폼의 down 입력을 바꾸지 않는다.
 Metro 시작 전에 저장 실패를 처리한다. build 실패 뒤에도 `down`은 같은 포트를 찾는다.
 정확한 기록 부재만 기존 8081 경로로 처리한다. symlink·형식 오류·읽기 실패는 차단한다.
+base-MAIN에는 선택 포트 파일이 없었다. 새 namespace와 legacy 포트 파일이 둘 다 정확히
+없을 때만 기존 8081 경로를 사용한다. 미병합 개발 head가 남긴 FNV-only 포트 파일은
+소유 폴더를 증명하지 못한다. 값 승계·자동 이동·삭제 없이 차단한다. 이 경계를 제품
+릴리스 간 이관 검증으로 표시하지 않는다.
+
+base-MAIN legacy Android active-run은 canonical project가 일치해야 한다. 새 up은 남은
+own legacy run을 먼저 down하도록 요구한다. 검증된 down만 원래 lifecycle lock과
+PID·현재 Metro root·device 검사를 사용해 원래 cleanup을 수행한다. 기존 로그는 삭제하지 않는다.
+legacy iOS install.json은 폴더 identity가 없다. 같은 reservation book의 confirmed claim에서
+owner project·device·appID가 모두 일치할 때만 down에 사용한다. 이 확인 API는 읽기 전용이다.
+미확인·불일치·unconfirmed claim은 파일과 앱을 보존하고 차단한다. 새 namespace에는
+legacy 값을 자동 복제하지 않는다.
+
 포트를 바꾸기 전에 이전 포트가 비었는지 확인한다. Android active run이 남았으면
 기존 down을 먼저 요구한다. 기록은 endpoint 입력이다. PID·현재 root 판정을 대신하지 않는다.
 

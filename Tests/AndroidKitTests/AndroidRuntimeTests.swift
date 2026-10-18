@@ -124,6 +124,101 @@ private let reverseSource = "tcp:8081"
 
 @Suite("Android owned runtime")
 struct AndroidRuntimeTests {
+    @Test("colliding legacy parents keep independent Android records and lifecycle locks")
+    func collidingAndroidState() throws {
+        let scenario = try runtimeScenario()
+        let temporary = try scenario.repo.directory("collision")
+        let (first, second) = try RunLogs.collidingProjects(temporary: temporary)
+        let oneLogs = RunLogs(project: first, temporaryDirectory: temporary)
+        let twoLogs = RunLogs(project: second, temporaryDirectory: temporary)
+        try #require(oneLogs.directory == twoLogs.directory)
+        let one = AndroidActiveRunStore(project: first, logs: oneLogs)
+        let two = AndroidActiveRunStore(project: second, logs: twoLogs)
+        var a = AndroidActiveRun(project: first, product: scenario.product)
+        var b = AndroidActiveRun(project: second, product: scenario.product)
+        a.metro = .init(state: .spawned, startPID: 7001, listenerPID: 7002, logPath: "first.log")
+        b.metro = .init(state: .spawned, startPID: 8001, listenerPID: 8002, logPath: "second.log")
+        try one.write(a)
+        try two.write(b)
+        let firstLock = try one.acquire(operation: "up")
+        let secondLock = try two.acquire(operation: "up")
+        #expect(try one.file != two.file)
+        #expect(try one.lockFile != two.lockFile)
+        #expect(try one.read() == a)
+        #expect(try two.read() == b)
+        #expect(!FileManager.default.fileExists(atPath: oneLogs.directory.appendingPathComponent(AndroidActiveRunStore.fileName).path))
+        withExtendedLifetime((firstLock, secondLock)) {}
+    }
+
+    @Test("a base-main owned Android Metro uses its original down path and preserves legacy logs")
+    func legacyAndroidMetroDown() async throws {
+        let scenario = try runtimeScenario()
+        let legacy = scenario.logs.directory.appendingPathComponent(AndroidActiveRunStore.fileName)
+        let legacyLock = scenario.logs.directory.appendingPathComponent(AndroidActiveRunStore.lockName)
+        let legacyLog = scenario.logs.directory.appendingPathComponent("metro.log")
+        try FileManager.default.createDirectory(at: scenario.logs.directory, withIntermediateDirectories: true)
+        try Data("preserved log".utf8).write(to: legacyLog)
+        try Data("preserved lock".utf8).write(to: legacyLock)
+        var record = AndroidActiveRun(project: scenario.repo.root, product: scenario.product)
+        record.metro = .init(state: .spawned, startPID: 7002, listenerPID: 7002, logPath: legacyLog.path)
+        let bytes = try JSONEncoder().encode(record)
+        try bytes.write(to: legacy)
+        let rejected = FakeProcessRunner()
+        let up = await runAndroidUp(anchor: scenario.anchor, doctor: DoctorEngine(checks: []),
+            config: scenario.config, hostRunner: rejected, projectRunner: rejected,
+            environment: scenario.environment, logs: scenario.logs, note: { _ in })
+        #expect(up.exitCode != 0)
+        #expect(rejected.log.all.isEmpty)
+        #expect(try Data(contentsOf: legacy) == bytes)
+        let state = ScriptedProcessState([
+            "kill -0 7002": [.ok(""), .failed(1, "")],
+            command("lsof", MetroVerdict.listenerArguments + ["-t"]): [.ok("7002\n"), .failed(1, "")],
+            MetroStatus.command: [.ok(MetroStatus.running(projectRoot: scenario.repo.root))],
+            "lsof -a -p 7002 -d cwd -Fn": [.ok("p7002\nn\(scenario.repo.root.path)\n")],
+            "kill -TERM 7002": [.ok("")],
+        ])
+        let runner = ScriptedProcessRunner(state: state)
+
+        let report = await androidTeardown(anchor: scenario.anchor, config: scenario.config,
+            runner: runner, projectRunner: runner, environment: scenario.environment,
+            logs: scenario.logs, timeouts: AndroidRuntimeTimeouts(cleanupGrace: .zero))
+
+        #expect(report.exitCode == 0)
+        #expect(report.items.first { $0.id == "metro" }?.status == .stopped)
+        #expect(state.all.filter { $0.executable == "kill" && $0.arguments.first == "-TERM" }.map(\.description) == ["kill -TERM 7002"])
+        #expect(!FileManager.default.fileExists(atPath: legacy.path))
+        #expect(try String(contentsOf: legacyLog, encoding: .utf8) == "preserved log")
+        #expect(try String(contentsOf: legacyLock, encoding: .utf8) == "preserved lock")
+        #expect(!FileManager.default.fileExists(atPath: (try scenario.logs.url(AndroidActiveRunStore.fileName)).path))
+        #expect(try scenario.logs.metroPort(platform: .android) == nil)
+    }
+
+    @Test("unknown legacy Android ownership blocks before commands and preserves every record",
+        arguments: ["foreign", "malformed", "symlink", "permission"])
+    func legacyAndroidUnknown(_ mode: String) async throws {
+        let scenario = try runtimeScenario()
+        let legacy = scenario.logs.directory.appendingPathComponent(AndroidActiveRunStore.fileName)
+        try FileManager.default.createDirectory(at: scenario.logs.directory, withIntermediateDirectories: true)
+        let project = mode == "foreign" ? URL(fileURLWithPath: "/another/project") : scenario.repo.root
+        let bytes = mode == "malformed" ? Data("not JSON".utf8)
+            : try JSONEncoder().encode(AndroidActiveRun(project: project, product: scenario.product))
+        let target = mode == "symlink" ? scenario.repo.url("preserved-record") : legacy
+        try bytes.write(to: target)
+        if mode == "symlink" { try FileManager.default.createSymbolicLink(at: legacy, withDestinationURL: target) }
+        if mode == "permission" { try FileManager.default.setAttributes([.posixPermissions: 0], ofItemAtPath: legacy.path) }
+        defer { if mode == "permission" { try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: legacy.path) } }
+        let runner = FakeProcessRunner()
+
+        let report = await androidTeardown(anchor: scenario.anchor, config: scenario.config,
+            runner: runner, projectRunner: runner, environment: scenario.environment, logs: scenario.logs)
+
+        #expect(report.exitCode != 0)
+        #expect(runner.log.all.isEmpty)
+        if mode == "permission" { try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: legacy.path) }
+        #expect(try Data(contentsOf: target) == bytes)
+        #expect(!FileManager.default.fileExists(atPath: (try scenario.logs.url(AndroidActiveRunStore.fileName)).path))
+    }
+
     @Test("teardown derives the same AVD lease key and preserves unknown records")
     func teardownDeviceKey() throws {
         let scenario = try runtimeScenario()
@@ -133,11 +228,11 @@ struct AndroidRuntimeTests {
         active.device = .init(avd: "Pixel", launcherPID: nil, serial: serial, api: 35, abi: "arm64-v8a", state: .reused)
         try store.write(active)
         #expect(try androidTeardownDeviceKey(anchor: scenario.anchor, logs: scenario.logs) == .device(.android, "avd:Pixel"))
-        try Data("unreadable active run".utf8).write(to: store.file)
+        try Data("unreadable active run".utf8).write(to: try store.file)
         #expect(throws: AndroidStateError.self) {
             try androidTeardownDeviceKey(anchor: scenario.anchor, logs: scenario.logs)
         }
-        #expect(try String(contentsOf: store.file, encoding: .utf8) == "unreadable active run")
+        #expect(try String(contentsOf: try store.file, encoding: .utf8) == "unreadable active run")
     }
 
     @Test("another requested AVD preserves the existing active run before any subprocess")
@@ -510,9 +605,9 @@ struct AndroidRuntimeTests {
         let scenario = try runtimeScenario()
         let store = AndroidActiveRunStore(project: scenario.repo.root, logs: scenario.logs)
         try FileManager.default.createDirectory(
-            at: scenario.logs.directory, withIntermediateDirectories: true
+            at: (try store.file).deletingLastPathComponent(), withIntermediateDirectories: true
         )
-        try Data("not json".utf8).write(to: store.file)
+        try Data("not json".utf8).write(to: try store.file)
         let runner = ScriptedProcessRunner(state: ScriptedProcessState([:]))
 
         let cleanup = await AndroidCleanup(
@@ -528,7 +623,7 @@ struct AndroidRuntimeTests {
         #expect(cleanup.report.items.allSatisfy { $0.status == .unknown })
         #expect(cleanup.report.exitCode == 2)
         #expect(cleanup.hasRemainingRecord)
-        #expect(FileManager.default.fileExists(atPath: store.file.path))
+        #expect(FileManager.default.fileExists(atPath: try store.file.path))
     }
 
     @Test("SDK root failures keep unobserved ownership unknown and exit one", arguments: [true, false])

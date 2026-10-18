@@ -22,7 +22,12 @@ iOS build는 실제 입력의 `FolderIdentity` volume·file을 사용한
 독립 clone·worktree는 서로 다른 경로를 쓴다. 같은 실제 폴더의 symlink는 같은 경로를 쓴다.
 입력 identity를 확인할 수 없으면 도구 실행 전에 중단한다.
 기존 output 부모와 output 자체의 symlink·일반 파일은 변경 없이 거부한다.
-기존 로그의 32-bit digest는 그대로 보존한다. Xcode output 분리는 이 digest에 의존하지 않는다.
+기존 `RunLogs.directory`의 32-bit digest는 legacy 읽기에만 사용한다.
+새 로그·설치 기록·Android active-run/lock·선택 포트는 같은 volume·file child에 쓴다.
+legacy 기록을 자동 이동하거나 새 기록으로 복제하지 않는다.
+Android의 검증된 legacy down만 원래 lifecycle lock과 기존 cleanup 계약을 사용한다.
+iOS legacy install은 기존 confirmed claim의 owner project·device·appID가 모두 일치해야 사용한다.
+소유권이 미확인이면 앱과 기존 기록을 보존하고 중단한다.
 build의 generic/concrete destination과 scheme·configuration 선택은 유지한다.
 `xcodebuild -list`에는 이 flag를 추가하지 않는다. 이 조회의 flag 호환과 전체 cache 쓰기 범위는 미검증이다.
 이 변경은 Xcode의 전체 cache·HOME·임시 경로 격리나 실행 중 경로 교체 방지를 보장하지 않는다.

@@ -204,7 +204,7 @@ struct WorkflowExecutionTests {
             directory: repo.root, environment: [:])), runner: runner, leases: temporaryLeases())
         #expect(result.exitCode != 0)
         #expect(runner.log.all.isEmpty)
-        #expect(try String(contentsOf: logs.url("metro-port-ios"), encoding: .utf8) == "not a port")
+        #expect(try String(contentsOf: try logs.url("metro-port-ios"), encoding: .utf8) == "not a port")
     }
 
     @Test("a project without Debug requires configuration before dependency changes")

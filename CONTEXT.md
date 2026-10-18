@@ -178,7 +178,12 @@ iOS build와 관련 `-showBuildSettings`는 같은 실제 입력의 `FolderIdent
 독립 clone·worktree의 산출물을 분리한다. 같은 실제 폴더의 symlink는 같은 경로를 쓴다.
 현재 입력 identity를 읽지 못하면 도구 실행 전에 중단한다.
 기존 output 부모나 output 자체가 symlink·일반 파일이면 중단한다.
-기존 일반 로그의 32-bit digest 경로는 유지한다. 이 경로의 충돌 한계를 output identity로 사용하지 않는다.
+기존 32-bit digest의 `RunLogs.directory`는 legacy 읽기 경계로 유지한다.
+새 로그·설치 기록·Android active-run과 lock·Metro 포트는 같은 volume·file child에 쓴다.
+`RunLogs.url`은 현재 입력과 경로를 확인하지 못하면 throw한다.
+legacy Android는 canonical project와 기존 PID·root 검사를 통과한 down만 원래 경로에서 정리한다.
+legacy iOS install은 기존 reservation book의 owner project·device·appID 일치가 있어야 down에 사용한다.
+소유권을 확인하지 못한 기록과 자원은 보존하고 차단한다. 자동 이관은 하지 않는다.
 이 경로 검사는 외부 도구 실행 중 경로 교체를 원자적으로 막지 않는다.
 scheme의 `-list` 조회에는 검증하지 않은 flag를 추가하지 않는다.
 Xcode의 전체 cache·HOME·임시 경로 격리를 보장하는 계약은 아니다.

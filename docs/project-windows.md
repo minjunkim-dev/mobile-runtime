@@ -104,3 +104,31 @@ Apple의 argument domain 계약은 실행 인자가 저장된 preference보다 �
 
 실패·inconclusive·취소는 별도 시도로 보존한다. 원본 환경을 수정하거나 실패를 fixture 성공으로 대체하지 않는다.
 기존 수용 기준은 유지한다. 배포 서명·공증·업로드·공개는 수행하지 않는다.
+
+
+## 실제 폴더 identity와 기존 실행 호환 경계
+
+새 log·install.json·Android active-run/lock·선택 port는 기존 RunLogs의
+folder-<volume>-<file> child를 공유한다. volume·file은 FolderIdentity의 값이다.
+실제 owned temp FNV collision 입력으로 로그·설치 기록·port·Android record/lock 분리를 검사한다.
+CLI/GUI는 같은 WorkflowExecution과 lease를 유지한다. 검사는 실제 병렬 앱·첫 화면의 근거가 아니다.
+
+base-MAIN의 검증된 legacy Android down은 원래 경로의 lock과 cleanup을 사용한다.
+legacy iOS install은 같은 reservation book의 confirmed owner project·device·appID가 필요하다.
+legacy port 파일은 base-MAIN에 없었다. 이전 미병합 개발 head의 FNV-only port 파일은
+소유권 미확인으로 보존·차단한다. 자동 이관과 값 복제는 하지 않는다.
+
+### 미병합 #208 통합 메모
+
+읽기 전용으로 확인한 #208 head는 7e02d2e8329a11a5aa511d6bc2eb6275e2db08c4다.
+#208 worktree는 수정하지 않았다. 이 head의 공통 RunLogs와 #217 변경은 통합 검토가 필요하다.
+RunLogs.url과 InstallRecord.read의 throws를 모든 새 caller와 fixture에 전파한다.
+FlutterIOSWorkflow.swift의 profile 생성은 기존 best-effort logs.write를 유지한다.
+profile UUID·기존 sandbox와 보호 입력 검사·stage guard·concrete destination 계약을 보존한다.
+FlutterIOSWorkflowTests.swift의 install record 읽기 3곳과 FlutterIOSRuntimeTests.swift의
+읽기 1곳은 try 전파가 필요하다. 공통 CLI/GUI down은 같은 lease book과 owner project를
+AppTeardown에 전달해야 한다. Flutter의 native 입력과 port unsupported 설명은 유지한다.
+
+기존 runtime02의 c008 DerivedData 모델과 query packet은 과거 probe 기록으로만 보존한다.
+새 namespace의 getter 실측이나 실행 계획으로 재사용하지 않는다. 이 수정으로 candidate를
+새로 복사하거나 실제 query·build·VM·기기·GUI 실행을 하지 않았다.

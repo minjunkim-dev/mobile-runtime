@@ -159,7 +159,7 @@ struct IOSUpStagesTests {
         #expect(sent.contains(terminateCommand) == false)
         #expect(sent.contains(launchCommand) == false)
         #expect(runner.log.spawned.isEmpty)
-        #expect(InstallRecord.read(from: RunLogs(project: repo.root)) == nil)
+        #expect(try InstallRecord.read(from: RunLogs(project: repo.root)) == nil)
     }
 
     @Test("Bundler repair runs after validation before Pods on a fresh checkout")

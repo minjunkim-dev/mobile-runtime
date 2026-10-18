@@ -55,7 +55,7 @@ public struct MetroStage: Stage {
             return .skipped("already running on \(port)")
         }
 
-        let logFile = logs.directory.appendingPathComponent("metro.log")
+        let logFile = try logs.url("metro.log")
         let (command, pid) = try await MetroLaunch.start(
             anchor: anchor, runner: runner, logFile: logFile, afterReinstall: context.nodeModulesReinstalled, port: self.port
         )

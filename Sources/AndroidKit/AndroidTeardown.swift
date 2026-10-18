@@ -33,7 +33,7 @@ struct AndroidCleanup: Sendable {
         self.runner = runner
         self.projectRunner = projectRunner
         self.timeouts = timeouts
-        self.store = AndroidActiveRunStore(project: anchor.directory, logs: logs)
+        self.store = AndroidActiveRunStore(project: anchor.directory, logs: logs, operation: .down)
         self.doctorContext = AndroidDoctorContext(
             anchor: anchor,
             config: config,
@@ -115,7 +115,7 @@ struct AndroidCleanup: Sendable {
                 failure: failure,
                 blockedIsFailure: true
             ),
-            hasRemainingRecord: FileManager.default.fileExists(atPath: store.file.path)
+            hasRemainingRecord: (try? store.file).map { FileManager.default.fileExists(atPath: $0.path) } ?? true
         )
     }
 
@@ -534,7 +534,7 @@ struct AndroidCleanup: Sendable {
 
 /// Read while holding the project lease, before acquiring the device lease.
 public func androidTeardownDeviceKey(anchor: ProjectAnchor, logs: RunLogs? = nil) throws -> ResourceKey? {
-    try AndroidActiveRunStore(project: anchor.directory, logs: logs).read()?.device
+    try AndroidActiveRunStore(project: anchor.directory, logs: logs, operation: .down).read()?.device
         .map { .device(.android, "avd:\($0.avd)") }
 }
 
@@ -548,7 +548,7 @@ public func androidTeardown(
     timeouts: AndroidRuntimeTimeouts = AndroidRuntimeTimeouts()
 ) async -> TeardownReport {
     let logs = logs ?? RunLogs(project: anchor.directory)
-    let store = AndroidActiveRunStore(project: anchor.directory, logs: logs)
+    let store = AndroidActiveRunStore(project: anchor.directory, logs: logs, operation: .down)
     do {
         let lease = try store.acquire(operation: "down")
         defer { withExtendedLifetime(lease) {} }
