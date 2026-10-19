@@ -321,8 +321,7 @@ private struct ProcessLogCapture: LogHandler {
         set { metadata[key] = newValue }
     }
 
-    func log(level: Logger.Level, message: Logger.Message, metadata: Logger.Metadata?, source: String,
-             file: String, function: String, line: UInt) {
-        messages.mutate { $0.append("\(message) \(metadata ?? [:])") }
+    func log(event: LogEvent) {
+        messages.mutate { $0.append("\(event.message) \(event.metadata ?? [:])") }
     }
 }
