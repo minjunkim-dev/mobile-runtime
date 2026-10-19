@@ -23,12 +23,13 @@ scheme이 여러 개면 선택을 요구한다.
 다른 configuration도 실제 Flutter build mode가 debug일 때만 사용한다.
 Release·Profile이나 Xcode의 configuration 대체는 실행하지 않는다.
 
-`--port`는 Flutter iOS `up`에만 적용한다.
+`--port`는 Flutter iOS와 Flutter Android의 `up`에 적용한다.
 1부터 65535까지의 정수를 받는다.
 생략하면 현재 사용할 수 있는 loopback 포트를 선택한다.
 기존 listener가 있으면 보존하고 중단한다.
+다른 작업이 같은 포트의 공통 lease를 보유해도 중단한다.
 명시한 포트가 이전 앱에서 사용 중이어도 먼저 `down`으로 종료해야 한다.
-다른 workflow에 포트를 주면 전달을 지원하지 않는 이유를 표시하고 중단한다.
+`build`·`down`이나 다른 framework에 포트를 주면 전달을 지원하지 않는 이유를 표시하고 중단한다.
 
 GUI의 Flutter entrypoint와 VM service port 입력도 같은 계약을 사용한다.
 GUI의 환경 확인과 준비 계획에는 같은 entrypoint를 전달한다.
