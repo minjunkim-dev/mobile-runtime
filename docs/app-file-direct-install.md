@@ -24,9 +24,16 @@ mobile app run /path/Local.apk --device avd:EXISTING-AVD --approve EXACT-PLAN-ID
 `--device`에는 현재 후보의 고정 ID를 사용한다. 기기를 자동 선택하거나 전환하지 않는다.
 가상 기기는 먼저 부팅하고 준비한다. 종료된 Simulator는 수동 준비 필요로 표시한다.
 Android 후보는 현재 연결된 Emulator다. 실제 기기와 새 AVD 생성은 이 경로에 포함하지 않는다.
-기기·OS·architecture를 관측하지 못하면 설치하지 않는다.
+기기 준비 상태·OS·architecture 호환 조건을 확인하지 못하면 설치하지 않는다.
 
 iOS는 기존 Xcode 선택과 `DEVELOPER_DIR` 계약을 따른다.
+같은 고정 Xcode의 devices·runtimes inventory를 runtime identifier로 정확히 연결한다.
+기기의 사용 가능·Booted 상태와 runtime의 architecture capability를 구분한다.
+runtime identifier·build·available과 `supportedArchitectures`의 출처를 계획과 CLI·GUI에 보존한다.
+이는 실제 기기 CPU 측정이 아니다. Simulator 안의 `uname` 실행은 필요하지 않다.
+native macOS arm64와 앱·runtime의 공통 arm64 slice가 있어야 한다. universal 입력도 이 조건을 따른다.
+x86 전용·Rosetta 의존 경로와 누락·중복·불명확한 runtime capability는 판정 불가로 중단한다.
+runtime identity·build·capability·준비 상태가 승인 뒤 바뀌면 설치 전에 중단하고 다시 검사한다.
 Android는 절대 경로 `ANDROID_HOME`과 설치된 `platform-tools/adb`·`build-tools/aapt2`·`apksigner`가 필요하다.
 `JAVA_HOME`에는 이미 설치한 JDK를 지정한다. 서명 검사에는 그 JDK만 사용한다.
 프로젝트 인식 Java shim과 환경의 Java agent 옵션을 실행하지 않는다.

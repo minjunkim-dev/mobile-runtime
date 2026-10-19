@@ -71,21 +71,33 @@ public struct SimulatorAppFile: Sendable {
         guard result.terminationStatus.isSuccess, let list = SimctlDeviceList.decode(result.standardOutput) else {
             throw Self.failure("The available Simulator identities could not be read.")
         }
-        var devices: [AppFileDevice] = []
-        for device in list.simulators.filter(\.isAvailable).sorted(by: { $0.udid < $1.udid }) {
-            var architectures: [String] = []
-            if device.isBooted {
-                let architecture = try await runner.run(ProcessCommand("xcrun", ["simctl", "spawn", device.udid, "uname", "-m"], environment: environment))
-                if architecture.terminationStatus.isSuccess {
-                    architectures = architecture.standardOutput.split(whereSeparator: \.isWhitespace).map(String.init)
-                }
-            }
-            devices.append(AppFileDevice(id: device.udid, handle: device.udid, name: device.name,
-                os: device.runtimeText, architectures: architectures,
-                ready: device.isBooted && architectures.count == 1 && architectures.allSatisfy({ ["arm64", "x86_64"].contains($0) }),
-                toolIdentity: installation.summary))
+        let inventory = try await runner.run(SimctlRuntimeList.command(environment: environment))
+        guard inventory.terminationStatus.isSuccess, let runtimes = SimctlRuntimeList.decode(inventory.standardOutput) else {
+            throw Self.failure("The Simulator runtime capability inventory could not be read.")
         }
-        return devices
+        let simulators = list.simulators
+        guard Set(simulators.map(\.udid)).count == simulators.count else {
+            throw Self.failure("A Simulator identity appears on more than one runtime. Its target is unknown.")
+        }
+        return simulators.sorted(by: { $0.udid < $1.udid }).map { device in
+            let matches = runtimes.runtimes.filter { $0.identifier == device.runtimeIdentifier }
+            let runtime = matches.count == 1 ? matches.first : nil
+            let architectures = runtime.flatMap { runtime -> [String]? in
+                guard runtime.isIOS, runtime.isAvailable,
+                      SemanticVersion(runtime.version) == device.runtime,
+                      let build = runtime.buildversion, !build.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                      let values = runtime.supportedArchitectures, !values.isEmpty,
+                      Set(values).count == values.count,
+                      values.allSatisfy({ ["arm64", "x86_64"].contains($0) }) else { return nil }
+                return values
+            } ?? []
+            return AppFileDevice(id: device.udid, handle: device.udid, name: device.name,
+                os: device.runtimeText, architectures: architectures,
+                ready: device.isAvailable && device.isBooted, toolIdentity: installation.summary,
+                runtimeIdentifier: device.runtimeIdentifier, runtimeBuild: runtime?.buildversion,
+                runtimeAvailable: runtime?.isAvailable,
+                architectureSource: "simctl list runtimes -j supportedArchitectures; runtime capabilities, not measured device CPU")
+        }
     }
 
     public func installed(appID: String, device: AppFileDevice) async throws -> AppFileInstalledState {

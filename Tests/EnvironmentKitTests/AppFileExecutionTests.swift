@@ -60,6 +60,156 @@ struct AppFileExecutionTests {
         #expect(!fixture.runner.commands.contains(where: mutation))
     }
 
+    @Test("prepared runtime inventory does not depend on a guest uname executable")
+    func simulatorRuntimeInventoryWithoutUname() async throws {
+        let fixture = try AppFileFixture(platform: .ios)
+        fixture.runner.unameUnavailable = true
+        let result = await fixture.run(planOnly: true)
+        #expect(result.exitCode == 0)
+        #expect(result.operation.plan != nil)
+        #expect(!fixture.runner.commands.contains { $0.arguments.contains("uname") || $0.arguments.contains("/usr/bin/uname") })
+        let plan = try #require(result.operation.plan)
+        #expect(plan.device.runtimeIdentifier == "com.apple.CoreSimulator.SimRuntime.iOS-27-0")
+        #expect(plan.device.runtimeBuild == "27A000")
+        #expect(plan.device.runtimeAvailable == true)
+        #expect(plan.device.architectureSource?.contains("runtime capabilities, not measured device CPU") == true)
+        let inventories = fixture.runner.commands.filter { $0.arguments.prefix(2) == ["simctl", "list"] }
+        #expect(inventories.map(\.arguments) == [["simctl", "list", "devices", "-j"], ["simctl", "list", "runtimes", "-j"]])
+        #expect(inventories.allSatisfy { $0.environment["DEVELOPER_DIR"] == "/Applications/FixtureXcode.app/Contents/Developer" })
+        #expect(AppFileHumanOutput.lines(result).output.contains { $0.contains("architecture evidence:") && $0.contains("27A000") })
+        let encoded = try result.encoded(toolVersion: "test")
+        #expect(encoded.contains("runtimeIdentifier"))
+        #expect(encoded.contains("architectureSource"))
+    }
+
+    @Test("only one exact available runtime with known capabilities can approve an app", arguments: [
+        "missing", "different-runtime", "duplicate", "unavailable", "missing-caps", "null-caps", "empty-caps",
+        "malformed-caps", "unsupported-caps", "duplicate-caps", "missing-build", "empty-build", "invalid-version", "mismatched-version", "x86-only"
+    ])
+    func unknownRuntimeInventory(_ defect: String) async throws {
+        let fixture = try AppFileFixture(platform: .ios)
+        fixture.runner.runtimeInventoryOverride = try runtimeInventory { rows in
+            switch defect {
+            case "missing": rows = []
+            case "different-runtime": rows[0]["identifier"] = "com.apple.CoreSimulator.SimRuntime.iOS-26-0"
+            case "duplicate": rows.append(rows[0])
+            case "unavailable": rows[0]["isAvailable"] = false
+            case "missing-caps": rows[0].removeValue(forKey: "supportedArchitectures")
+            case "null-caps": rows[0]["supportedArchitectures"] = NSNull()
+            case "empty-caps": rows[0]["supportedArchitectures"] = [String]()
+            case "malformed-caps": rows[0]["supportedArchitectures"] = "arm64"
+            case "unsupported-caps": rows[0]["supportedArchitectures"] = ["arm64e"]
+            case "duplicate-caps": rows[0]["supportedArchitectures"] = ["arm64", "arm64"]
+            case "missing-build": rows[0].removeValue(forKey: "buildversion")
+            case "empty-build": rows[0]["buildversion"] = ""
+            case "invalid-version": rows[0]["version"] = "unknown"
+            case "mismatched-version": rows[0]["version"] = "26.0"
+            default: rows[0]["supportedArchitectures"] = ["x86_64"]
+            }
+        }
+        let result = await fixture.run(planOnly: true)
+        #expect(result.exitCode == 1)
+        #expect(result.operation.plan == nil)
+        #expect(!fixture.runner.commands.contains(where: mutation))
+        #expect(!fixture.runner.commands.contains { $0.arguments.contains("uname") })
+    }
+
+    @Test("boot state and device availability remain separate from runtime capabilities", arguments: ["Shutdown", "unavailable", "ambiguous-device"])
+    func simulatorDeviceReadiness(_ state: String) async throws {
+        let fixture = try AppFileFixture(platform: .ios)
+        let device: [String: Any] = ["name": "Fixture", "udid": fixture.device,
+            "state": state == "Shutdown" ? "Shutdown" : "Booted", "isAvailable": state != "unavailable"]
+        let devices = state == "ambiguous-device" ? [device, device] : [device]
+        fixture.runner.deviceInventoryOverride = try json(["devices": ["com.apple.CoreSimulator.SimRuntime.iOS-27-0": devices]])
+        let result = await fixture.run(planOnly: true)
+        #expect(result.exitCode == 1)
+        #expect(result.operation.plan == nil)
+        if state != "ambiguous-device" {
+            #expect(result.operation.devices.first?.ready == false)
+            #expect(result.operation.devices.first?.architectures == ["arm64"])
+        }
+        #expect(!fixture.runner.commands.contains(where: mutation))
+    }
+
+    @Test("native arm64 accepts common universal slices and retains OS requirements", arguments: ["universal", "universal-app", "x86-app", "x86-host", "unknown-host", "minimum-os"])
+    func nativeSimulatorCompatibility(_ scenario: String) async throws {
+        let fixture = try AppFileFixture(platform: .ios)
+        fixture.runner.binaryArchitectures = scenario == "x86-app" ? "x86_64" : "arm64 x86_64"
+        fixture.runner.runtimeInventoryOverride = try runtimeInventory { $0[0]["supportedArchitectures"] = scenario == "universal-app" ? ["arm64"] : ["arm64", "x86_64"] }
+        if scenario == "minimum-os" { try fixture.updatePlist(["MinimumOSVersion": "28.0"]) }
+        let result = await fixture.run(planOnly: true)
+        if scenario == "x86-app" || scenario == "minimum-os" {
+            #expect(result.exitCode == 1)
+        } else {
+            let plan = try #require(result.operation.plan)
+            let architecture = scenario == "x86-host" ? "x86_64" : scenario == "unknown-host" ? "unsupported" : "arm64"
+            let host = ToolPreparationHost(architecture: architecture, macOS: SemanticVersion(major: 27, minor: 0, patch: 0))
+            if scenario == "universal" || scenario == "universal-app" {
+                try AppFileExecution.compatible(plan.artifact.metadata, device: plan.device, host: host)
+                #expect(plan.device.architectures == (scenario == "universal-app" ? ["arm64"] : ["arm64", "x86_64"]))
+            } else {
+                #expect(throws: DomainError.self) { try AppFileExecution.compatible(plan.artifact.metadata, device: plan.device, host: host) }
+            }
+        }
+        #expect(!fixture.runner.commands.contains(where: mutation))
+    }
+
+    @Test("runtime build, capabilities and readiness changes invalidate approval before installation", arguments: ["build", "caps", "runtime", "state", "availability"])
+    func runtimeChangeAfterApproval(_ change: String) async throws {
+        let fixture = try AppFileFixture(platform: .ios)
+        let initial = await fixture.run(planOnly: true)
+        let plan = try #require(initial.operation.plan)
+        fixture.runner.runtimeInventoryAfterRecheck = try runtimeInventory { rows in
+            switch change {
+            case "build": rows[0]["buildversion"] = "27A111"
+            case "caps": rows[0]["supportedArchitectures"] = ["arm64", "x86_64"]
+            case "runtime": rows[0]["identifier"] = "com.apple.CoreSimulator.SimRuntime.iOS-27-1"; rows[0]["version"] = "27.1"
+            case "availability": rows[0]["isAvailable"] = false
+            default: break
+            }
+        }
+        if change == "state" || change == "runtime" {
+            let runtime = change == "runtime" ? "com.apple.CoreSimulator.SimRuntime.iOS-27-1" : "com.apple.CoreSimulator.SimRuntime.iOS-27-0"
+            fixture.runner.deviceInventoryAfterRecheck = try json(["devices": [runtime: [["name": "Fixture", "udid": fixture.device,
+                "state": change == "state" ? "Shutdown" : "Booted", "isAvailable": true]]]])
+        }
+        let result = await fixture.run(approval: plan.approval)
+        #expect(result.exitCode == 1)
+        #expect(result.operation.installation == "not-requested")
+        #expect(!fixture.runner.commands.contains(where: mutation))
+        if ["build", "caps", "runtime"].contains(change) {
+            #expect(result.operation.state == "needs-approval")
+            #expect(result.operation.plan?.id != plan.id)
+        }
+    }
+
+    @Test("another runtime cannot supply the selected runtime's native capability")
+    func noCrossRuntimeCapabilityFallback() async throws {
+        let fixture = try AppFileFixture(platform: .ios)
+        fixture.runner.runtimeInventoryOverride = try runtimeInventory { rows in
+            var other = rows[0]
+            other["identifier"] = "com.apple.CoreSimulator.SimRuntime.iOS-26-0"
+            other["version"] = "26.0"
+            rows[0]["supportedArchitectures"] = ["x86_64"]
+            rows.append(other)
+        }
+        let result = await fixture.run(planOnly: true)
+        #expect(result.exitCode == 1)
+        #expect(result.operation.devices.first?.architectures == ["x86_64"])
+        #expect(!fixture.runner.commands.contains(where: mutation))
+    }
+
+    private func runtimeInventory(_ change: (inout [[String: Any]]) -> Void) throws -> String {
+        let value = try #require(JSONSerialization.jsonObject(with: Data(AppFileRunner.runtimeInventory.utf8)) as? [String: Any])
+        var rows = try #require(value["runtimes"] as? [[String: Any]])
+        change(&rows)
+        return try json(["runtimes": rows])
+    }
+
+    private func json(_ value: [String: Any]) throws -> String {
+        String(decoding: try JSONSerialization.data(withJSONObject: value), as: UTF8.self)
+    }
+
     @Test("an iPhoneOS executable never passes as a Simulator artifact")
     func wrongBinaryPlatform() async throws {
         let fixture = try AppFileFixture(platform: .ios)
@@ -564,6 +714,7 @@ private final class AppFileFixture {
 /// The one ProcessRunner seam models platform observations; it never runs an SDK.
 private final class AppFileRunner: ProcessRunner, @unchecked Sendable {
     static let badging = "package: name='com.fixture.Local' versionCode='2' versionName='1.2'\nsdkVersion:'23'\ntargetSdkVersion:'36'\nlaunchable-activity: name='com.fixture.Local.MainActivity'\nnative-code: 'arm64-v8a'\n"
+    static let runtimeInventory = #"{"runtimes":[{"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-27-0","name":"iOS 27.0","version":"27.0","buildversion":"27A000","supportedArchitectures":["arm64"],"isAvailable":true}]}"#
     let file: URL
     let payload: URL
     let platform: ProjectPlatform
@@ -571,11 +722,18 @@ private final class AppFileRunner: ProcessRunner, @unchecked Sendable {
     private var recorded: [ProcessCommand] = []
     private var installedBuild: String?
     private var deviceLists = 0
+    private var runtimeLists = 0
     var mutateOriginalDuringStagedInspection = false
     var disconnectOnFinalRecheck = false
     var cancelAfterInstall = false
     var failLaunch = false
     var simulatorPlatform = "7"
+    var unameUnavailable = false
+    var binaryArchitectures = "arm64"
+    var runtimeInventoryOverride: String?
+    var runtimeInventoryAfterRecheck: String?
+    var deviceInventoryOverride: String?
+    var deviceInventoryAfterRecheck: String?
     var badgingOverride: String?
     var installedInventoryOverride: String?
     var invalidSignature = false
@@ -601,9 +759,9 @@ private final class AppFileRunner: ProcessRunner, @unchecked Sendable {
                     try Data("changed during staging".utf8).write(to: payload)
                     mutateOriginalDuringStagedInspection = false
                 }
-                return ok("arm64")
+                return ok(binaryArchitectures)
             }
-            if command.executable == "/usr/bin/otool", args.prefix(3) == ["-arch", "arm64", "-l"] {
+            if command.executable == "/usr/bin/otool", args.count == 4, args[0] == "-arch", ["arm64", "x86_64"].contains(args[1]), args[2] == "-l" {
                 return ok("cmd LC_BUILD_VERSION\n platform \(simulatorPlatform)\n minos 17.0\n")
             }
             if command.description == "xcode-select -p" { return ok("/Applications/FixtureXcode.app/Contents/Developer\n") }
@@ -611,9 +769,17 @@ private final class AppFileRunner: ProcessRunner, @unchecked Sendable {
             if command.executable == "xcrun", args.prefix(3) == ["simctl", "list", "devices"] {
                 deviceLists += 1
                 if disconnectOnFinalRecheck && deviceLists >= 3 { return ok(#"{"devices":{}}"#) }
-                return ok(#"{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-27-0":[{"name":"Fixture","udid":"FIXTURE-UDID","state":"Booted","isAvailable":true}]}}"#)
+                if deviceLists >= 3, let value = deviceInventoryAfterRecheck { return ok(value) }
+                return ok(deviceInventoryOverride ?? #"{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-27-0":[{"name":"Fixture","udid":"FIXTURE-UDID","state":"Booted","isAvailable":true}]}}"#)
             }
-            if command.executable == "xcrun", args == ["simctl", "spawn", "FIXTURE-UDID", "uname", "-m"] { return ok("arm64\n") }
+            if command.executable == "xcrun", args == ["simctl", "list", "runtimes", "-j"] {
+                runtimeLists += 1
+                if runtimeLists >= 3, let value = runtimeInventoryAfterRecheck { return ok(value) }
+                return ok(runtimeInventoryOverride ?? Self.runtimeInventory)
+            }
+            if command.executable == "xcrun", args == ["simctl", "spawn", "FIXTURE-UDID", "uname", "-m"] {
+                return unameUnavailable ? ProcessResult(terminationStatus: .exited(2), standardOutput: "", standardError: "fixture ENOENT: uname") : ok("arm64\n")
+            }
             if command.executable == "xcrun", args == ["simctl", "listapps", "FIXTURE-UDID"] {
                 let apps: [String: [String: String]] = installedBuild.map {
                     [AppFileFixture.appID: ["CFBundleVersion": $0, "CFBundleShortVersionString": "1.2", "Path": "/fixture/installed.app"]]

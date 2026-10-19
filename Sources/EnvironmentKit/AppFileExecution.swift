@@ -49,6 +49,9 @@ public enum AppFileHumanOutput {
         }
         for device in operation.devices {
             output.append("device: \(device.id) — \(device.name), OS \(device.os), \(device.architectures.joined(separator: ", ")), \(device.ready ? "ready" : "manual preparation required")")
+            if let source = device.architectureSource {
+                output.append("architecture evidence: \(source); runtime: \(device.runtimeIdentifier ?? "unknown"), build \(device.runtimeBuild ?? "unknown"), available \(device.runtimeAvailable.map(String.init) ?? "unknown")")
+            }
         }
         if let plan = operation.plan {
             output += ["plan-id: \(plan.id)",
@@ -259,9 +262,21 @@ public enum AppFileExecution {
         return AppFileArtifact(file: first.identity, contentIdentity: first.digest, metadata: metadata)
     }
 
-    private static func compatible(_ metadata: AppFileMetadata, device: AppFileDevice) throws {
+    static func compatible(_ metadata: AppFileMetadata, device: AppFileDevice,
+                           host: ToolPreparationHost = .current) throws {
         guard device.ready else {
             throw AppFileSnapshot.failure("The selected virtual device is not ready. Boot and prepare that device manually, then inspect again. No environment preparation was started.")
+        }
+        if metadata.platform == .ios {
+            guard host.architecture == "arm64", device.runtimeAvailable == true,
+                  let identifier = device.runtimeIdentifier, !identifier.isEmpty,
+                  let build = device.runtimeBuild, !build.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                  let source = device.architectureSource, !source.isEmpty, !device.architectures.isEmpty else {
+                throw AppFileSnapshot.failure("Native arm64 Simulator compatibility is unknown. Confirm the selected runtime's identity, build and architecture capabilities on native macOS arm64, then inspect again.")
+            }
+            guard metadata.architectures.contains("arm64"), device.architectures.contains("arm64") else {
+                throw AppFileSnapshot.failure("Native arm64 Simulator compatibility is unknown for this app and runtime. x86-only or Rosetta-dependent execution is not confirmed.")
+            }
         }
         guard metadata.architectures.contains("any") || !Set(metadata.architectures).isDisjoint(with: device.architectures),
               let minimum = SemanticVersion(metadata.minimumOS), let os = SemanticVersion(device.os), minimum <= os else {

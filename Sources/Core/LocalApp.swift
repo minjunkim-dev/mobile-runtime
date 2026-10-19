@@ -80,12 +80,19 @@ public struct AppFileDevice: Codable, Sendable, Equatable {
     public let handle: String
     public let name: String
     public let os: String
+    /// Platform capability set: runtime slices on iOS, advertised ABIs on Android.
+    /// This is not a measurement of the virtual device's current CPU.
     public let architectures: [String]
     public let ready: Bool
     public let toolIdentity: String
+    public let runtimeIdentifier: String?
+    public let runtimeBuild: String?
+    public let runtimeAvailable: Bool?
+    public let architectureSource: String?
 
     public init(id: String, handle: String, name: String, os: String, architectures: [String],
-                ready: Bool, toolIdentity: String) {
+                ready: Bool, toolIdentity: String, runtimeIdentifier: String? = nil,
+                runtimeBuild: String? = nil, runtimeAvailable: Bool? = nil, architectureSource: String? = nil) {
         self.id = id
         self.handle = handle
         self.name = name
@@ -93,6 +100,10 @@ public struct AppFileDevice: Codable, Sendable, Equatable {
         self.architectures = architectures.sorted()
         self.ready = ready
         self.toolIdentity = toolIdentity
+        self.runtimeIdentifier = runtimeIdentifier
+        self.runtimeBuild = runtimeBuild
+        self.runtimeAvailable = runtimeAvailable
+        self.architectureSource = architectureSource
     }
 }
 

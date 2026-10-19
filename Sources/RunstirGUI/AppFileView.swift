@@ -41,6 +41,11 @@ struct AppFileView: View {
                             Text(artifact.metadata.signatureCondition)
                             if let signer = artifact.metadata.signingIdentity { Text("signer SHA-256: \(signer)").font(.caption) }
                         }
+                        if let candidate = operation.devices.first(where: { $0.id == device }), let source = candidate.architectureSource {
+                            Text("기기 architecture capability: \(candidate.architectures.joined(separator: ", "))")
+                            Text("runtime: \(candidate.runtimeIdentifier ?? "확인 불가") · 빌드: \(candidate.runtimeBuild ?? "확인 불가") · \(candidate.runtimeAvailable.map { $0 ? "사용 가능" : "사용 불가" } ?? "확인 불가")")
+                            Text("근거: \(source). 실제 기기 CPU: 미측정.").font(.caption)
+                        }
                         if let plan = operation.plan, plan.device.id == device {
                             Divider()
                             Text("승인 대상: \(plan.device.name) / \(plan.device.id)").font(.headline)
