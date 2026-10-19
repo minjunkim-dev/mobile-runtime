@@ -11,11 +11,13 @@ struct WorkflowOptions: ParsableArguments {
     @Option(name: .long, help: "Project folder. Defaults to the current working directory.") var project: String?
     @Option(name: .long, help: "Project app candidate id reported by doctor.") var app: String?
     @Option(name: .long, help: "ios or android. Required for dual-platform apps; no implicit iOS default.") var platform: MobilePlatform?
-    @Option(name: .long, help: "Simulator UDID or avd:<name>. Omit for build or down.") var device: String?
+    @Option(name: .long, help: "Simulator UDID for iOS build/up, or avd:<name> for Android up. Omit for Android build and down.") var device: String?
     @Option(name: .long, help: "iOS scheme. Defaults to mobile.yml or the only app scheme.") var scheme: String?
     @Option(name: .long, help: "iOS build configuration. Defaults to Debug only when it exists.") var configuration: String?
     @Option(name: .long, help: "Android application module. Defaults to mobile.yml or the only module.") var module: String?
     @Option(name: .long, help: "Android debuggable variant. Defaults to mobile.yml, debug, or the only variant.") var variant: String?
+    @Option(name: .long, help: "Flutter Dart entrypoint inside the selected app. Defaults to lib/main.dart.") var entrypoint: String?
+    @Option(name: .long, help: "Flutter iOS up VM service port. Omit to select an available port; other workflows reject it.") var port: Int?
     @Flag(name: .long, help: "Do not ask questions. Missing selections return candidates without starting changes.") var nonInteractive = false
 
     func run(_ kind: WorkflowKind) async throws {
@@ -23,8 +25,8 @@ struct WorkflowOptions: ParsableArguments {
         let input = WorkflowInput(project: ProjectInspectionInput(
             directory: URL(fileURLWithPath: project ?? FileManager.default.currentDirectoryPath),
             environment: ProcessInfo.processInfo.environment, app: app,
-            platform: platform.flatMap { ProjectPlatform(rawValue: $0.rawValue) }),
-            device: device, scheme: scheme, configuration: configuration, module: module, variant: variant)
+            platform: platform.flatMap { ProjectPlatform(rawValue: $0.rawValue) }, entrypoint: entrypoint),
+            device: device, scheme: scheme, configuration: configuration, module: module, variant: variant, port: port)
         let structured = progressJson
         let task = Task {
             await WorkflowExecution.run(kind, input: input) { event in
@@ -57,6 +59,7 @@ struct WorkflowOptions: ParsableArguments {
             print("\(kind.rawValue): \(result.operation.state)")
         } else {
             let renderer = HumanReportRenderer(useColor: Terminal.supportsColor, verbose: verbose)
+            if let uri = result.operation.developmentServiceURI { writeError("Flutter VM service: \(uri)") }
             if let report = result.up {
                 UpWriter(command: kind.rawValue, renderer: renderer, standardError: { writeError($0) }).finish(report)
             }

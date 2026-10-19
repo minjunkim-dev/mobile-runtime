@@ -6,6 +6,10 @@ import Yams
 
 /// Provider facts and executable actions. Only explicit child policy enters plan steps.
 struct FlutterPreparation {
+    enum IOSPluginMetadata: Equatable, Sendable {
+        case absent
+        case bytes(Data)
+    }
     var checks: [PreparationStep] = []
     var steps: [PreparationStep] { checks.filter { $0.kind != "reuse" } }
     var installed: [String: Bool] = [:]
@@ -15,6 +19,8 @@ struct FlutterPreparation {
     var dependencyCommand: ProcessCommand?
     var activeEnvironment: [String: String] = [:]
     var sdk: FlutterSDK?
+    var iosPluginDirectories: [String: URL] = [:]
+    var iosPluginMetadata: IOSPluginMetadata?
 
     static func inspect(directory: URL, entrypoint: String? = nil, environment: [String: String],
                         runner: any ProcessRunner, installationRoot: URL? = nil) async throws -> Self {
@@ -113,7 +119,8 @@ struct FlutterPreparation {
                 observed: "existing Dart file", required: "selected app entrypoint", source: CheckSource(tier: 1, origin: project.entrypoint!.path), command: nil, remediation: nil))
         }
         for platform in [ProjectPlatform.ios, .android] {
-            plan.checks += plan.nativeChecks(project: project, platform: platform)
+            let native = plan.nativeChecks(project: project, platform: platform)
+            plan.checks += native
         }
         return plan
     }
@@ -208,7 +215,7 @@ struct FlutterPreparation {
         }
     }
 
-    private func nativeChecks(project: FlutterProject, platform: ProjectPlatform) -> [PreparationStep] {
+    private mutating func nativeChecks(project: FlutterProject, platform: ProjectPlatform) -> [PreparationStep] {
         let directory = project.directory.appendingPathComponent(platform.rawValue)
         guard FileManager.default.fileExists(atPath: directory.path) else {
             let generatedModule = project.directory.appendingPathComponent("." + platform.rawValue)
@@ -248,7 +255,8 @@ struct FlutterPreparation {
         return [generated]
     }
 
-    func pluginMetadataIssue(project: FlutterProject, sdk: FlutterSDK, platform: ProjectPlatform) -> String? {
+    mutating func pluginMetadataIssue(project: FlutterProject, sdk: FlutterSDK, platform: ProjectPlatform) -> String? {
+        if platform == .ios { iosPluginDirectories = [:]; iosPluginMetadata = nil }
         let unknown = "plugin metadata cannot be confirmed from the current resolved package graph and package manifests"
         func json(_ file: URL) -> [String: Any]? {
             (try? JSONSerialization.jsonObject(with: Data(contentsOf: file))) as? [String: Any]
@@ -348,9 +356,12 @@ struct FlutterPreparation {
         if !FileManager.default.fileExists(atPath: file.path),
            (try? FileManager.default.destinationOfSymbolicLink(atPath: file.path)) == nil {
             // Flutter deletes this generated file when findPlugins returns empty.
+            if !hasPlugins && platform == .ios { iosPluginMetadata = .absent }
             return hasPlugins ? "plugin metadata is missing for reachable Flutter plugins" : nil
         }
-        guard let metadata = json(file), metadata["version"] as? String == sdk.version,
+        guard let metadataData = try? Data(contentsOf: file),
+              let metadata = (try? JSONSerialization.jsonObject(with: metadataData)) as? [String: Any],
+              metadata["version"] as? String == sdk.version,
               let plugins = metadata["plugins"] as? [String: Any], let selected = plugins[platform.rawValue] as? [[String: Any]],
               selected.count == expected.count else { return unknown }
         if !hasPlugins, !plugins.values.allSatisfy({ ($0 as? [[String: Any]])?.isEmpty == true }) { return unknown }
@@ -361,6 +372,10 @@ struct FlutterPreparation {
                   URL(fileURLWithPath: path).standardizedFileURL.resolvingSymlinksInPath().path == required.root.path,
                   jsonBoolean(plugin["native_build"]) == required.native,
                   jsonBoolean(plugin["shared_darwin_source"], missing: false) == required.shared else { return unknown }
+        }
+        if platform == .ios {
+            iosPluginDirectories = expected.filter { $0.value.native }.mapValues(\.root)
+            iosPluginMetadata = .bytes(metadataData)
         }
         return nil
     }

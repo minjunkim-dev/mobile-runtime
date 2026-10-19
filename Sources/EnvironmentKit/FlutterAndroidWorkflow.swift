@@ -19,6 +19,8 @@ struct FlutterAndroidWorkflow: Sendable {
 
     let projectEnvironment: ProjectExecutionEnvironment
     let projectRunner: any ProcessRunner
+    let workspace: FlutterWorkspace
+    let entrypoint: URL
 
     static func make(input: ProjectInspectionInput, anchor: ProjectAnchor, runner: any ProcessRunner,
                      preparation existing: FlutterPreparation? = nil, tools existingTools: ToolPreparation? = nil,
@@ -34,7 +36,7 @@ struct FlutterAndroidWorkflow: Sendable {
                 entrypoint: input.entrypoint, environment: input.environment, runner: runner)
         }
         // Reuse the current graph/config validator. A workspace member never needs a local config.
-        _ = try FlutterAndroidExecution.preparedInputs(app: anchor.directory, preparation: preparation, trackedFiles: [])
+        let inputs = try FlutterAndroidExecution.preparedInputs(app: anchor.directory, preparation: preparation, trackedFiles: [])
         guard let workspace = preparation.workspace else { throw failure() }
         let tools: ToolPreparation
         if let existingTools { tools = existingTools }
@@ -66,7 +68,8 @@ struct FlutterAndroidWorkflow: Sendable {
             hostRunner: FlutterChildRunner(base: host, environment: environment))
             .activatingTools(tools.activeTools, environment: input.environment)
         // This is outside mise/tool activation, so it sees the original ./gradlew request.
-        return Self(projectEnvironment: selected, projectRunner: view.runner(base: selected.runner))
+        return Self(projectEnvironment: selected, projectRunner: view.runner(base: selected.runner),
+                    workspace: workspace, entrypoint: inputs.entrypoint)
     }
 
     static func failure() -> DomainError {

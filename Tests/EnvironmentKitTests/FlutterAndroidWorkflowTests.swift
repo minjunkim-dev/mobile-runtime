@@ -239,8 +239,72 @@ struct FlutterAndroidWorkflowTests {
         #expect(!fixture.runner.log.all.contains { $0.executable == "./gradlew" })
     }
 
-    @Test("the final host boundary encloses real mise activation and the protected Gradle request")
-    func miseHostBoundary() async throws {
+    @Test("iOS composition never enters the Android view factory")
+    func iosRoute() async throws {
+        let fixture = try FlutterIOSFixture()
+        let runner = FlutterIOSRunner(fixture: fixture)
+        let trace = Trace()
+        let result = await WorkflowExecution.run(.build, input: fixture.input(), runner: runner,
+            leases: fixture.leases, flutterFactory: { _, _, files in
+                trace.record(files)
+                throw FlutterAndroidWorkflow.failure()
+            })
+        #expect(result.exitCode == 0, Comment(rawValue: result.up?.failure?.message ?? ""))
+        #expect(trace.count == 0)
+    }
+
+    @Test("invalid Android iOS selectors and public port stop before the factory", arguments: ["scheme", "configuration", "port"])
+    func earlySelectors(_ selector: String) async throws {
+        let fixture = try CallerFixture()
+        let trace = Trace()
+        if selector == "port" {
+            let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: fixture.input, port: 8097),
+                runner: fixture.runner, leases: fixture.leases, flutterFactory: fixture.factory(trace))
+            #expect(result.exitCode == 1)
+        } else {
+            let result = try await EnvironmentInspection.run(input: fixture.input, runner: fixture.runner,
+                scheme: selector == "scheme" ? "Runner" : nil,
+                configuration: selector == "configuration" ? "Debug" : nil, flutterFactory: fixture.factory(trace))
+            #expect(result.exitCode == 1)
+        }
+        #expect(trace.count == 0)
+        #expect(fixture.runner.log.all.isEmpty)
+    }
+
+    @Test("shared Android up forwards its allocated leased port and selected entrypoint; down creates no view", arguments: [false, true])
+    func sharedRuntime(_ workspace: Bool) async throws {
+        let fixture = try RuntimeFixture(workspace: workspace)
+        let trace = Trace()
+        let sdk = try fixture.native.repo.directory("owned-sdk-view")
+        let factory: FlutterAndroidWorkflow.Factory = { _, _, files in trace.record(files); return View(sdk: sdk) }
+        let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: fixture.input),
+            runner: fixture.runner, leases: fixture.leases, flutterFactory: factory)
+        #expect(result.exitCode == 0, Comment(rawValue: result.up?.failure?.message ?? ""))
+        let port = try #require(result.operation.port)
+        #expect((1...65535).contains(port))
+        #expect(fixture.runner.forwardedPort == port)
+        #expect(result.up?.context.androidProduct?.flutterConnection?.hostPort == port)
+        #expect(fixture.runner.portLeaseHeld)
+        let owner = try #require(fixture.runner.folderOwner)
+        #expect(try FolderIdentity(directory: URL(fileURLWithPath: owner)) == FolderIdentity(directory: fixture.app))
+        if workspace { #expect(try FolderIdentity(directory: URL(fileURLWithPath: owner)) != FolderIdentity(directory: fixture.native.repo.root)) }
+        let record = try #require(try AndroidActiveRunStore(project: fixture.app).read())
+        let target = try #require(record.target.entrypoint)
+        #expect(try Self.physical(URL(fileURLWithPath: target)).path == Self.physical(fixture.app.appendingPathComponent("lib/main.dart")).path)
+        let reportedTarget = try #require(result.operation.entrypoint)
+        #expect(try Self.physical(URL(fileURLWithPath: reportedTarget)).path == Self.physical(URL(fileURLWithPath: target)).path)
+        #expect(trace.count == 1)
+        #expect(try !result.encoded(toolVersion: "fixture").contains("sentinel-secret"))
+        let down = await WorkflowExecution.run(.down, input: WorkflowInput(project: fixture.input),
+            runner: fixture.runner, leases: fixture.leases, flutterFactory: factory)
+        #expect(down.exitCode == 0, Comment(rawValue: down.down?.toolFailures.joined(separator: "; ") ?? ""))
+        #expect(trace.count == 1)
+        #expect(try AndroidActiveRunStore(project: fixture.app).read() == nil)
+        #expect(fixture.runner.base.log.spawned.isEmpty)
+    }
+
+    @Test("the final host boundary encloses real mise activation and preserves argument privacy", arguments: [false, true])
+    func miseHostBoundary(_ redacted: Bool) async throws {
         let fixture = try CallerFixture()
         let repo = fixture.flutter.repo
         try repo.write("mise.toml", "[tools]\njava = '17.0.12'\n")
@@ -253,10 +317,12 @@ struct FlutterAndroidWorkflowTests {
         let trace = GuardTrace()
         let git = ProcessCommand("git", ["-C", repo.root.path, "ls-files", "--error-unmatch", "--", "mise.toml"])
         let activation = ProcessCommand("mise", ["exec", "--", "true"], workingDirectory: repo.root)
-        let original = ProcessCommand("./gradlew", ["--offline", "help"], workingDirectory: repo.url("android"))
+        let original = ProcessCommand("./gradlew", ["--offline", "help"] + (redacted ? ["-PfixtureCredential=sentinel-secret"] : []),
+            workingDirectory: repo.url("android"), redactArguments: redacted)
         let protected = try FlutterAndroidExecution.policyCommand(original, file: policy)
         let mise = ProcessCommand("mise", ["exec", "--", "sh", "-c", "cd \"$1\" && shift && exec \"$@\"",
-            "mobile-mise", repo.url("android").path, protected.executable] + protected.arguments, workingDirectory: repo.root)
+            "mobile-mise", repo.url("android").path, protected.executable] + protected.arguments,
+            workingDirectory: repo.root, redactArguments: redacted)
         let raw = FakeProcessRunner(responses: [
             try FlutterAndroidExecution.policyCommand(git, file: policy).description: .ok("mise.toml\n"),
             try FlutterAndroidExecution.policyCommand(activation, file: policy).description: .ok(""),
@@ -280,6 +346,8 @@ struct FlutterAndroidWorkflowTests {
             && $0.arguments.starts(with: ["-f", policy.path]) && $0.environment["FLUTTER_ROOT"] == fixture.view.path })
         let emitted = try #require(raw.log.all.last)
         #expect(emitted.arguments == ["-f", policy.path] + [mise.executable] + mise.arguments)
+        #expect(emitted.redactArguments == redacted)
+        if redacted { #expect(!emitted.description.contains("sentinel-secret")) }
         #expect(emitted.environment["MISE_AUTO_INSTALL"] == "false")
         #expect(emitted.environment["JAVA_HOME"] == repo.url("jdk").path)
         let workingDirectory = try #require(emitted.workingDirectory)
@@ -287,6 +355,35 @@ struct FlutterAndroidWorkflowTests {
         #expect(trace.count == 6)
         #expect(trace.failures.isEmpty)
         #expect(raw.log.spawned.isEmpty)
+    }
+
+    @Test("direct and already-owned host wrappers preserve true redaction and safe timeout descriptions")
+    func directPrivacy() async throws {
+        let repo = try FixtureRepo()
+        let policy = try Self.physical(repo.root).appendingPathComponent("parent.sb")
+        try FlutterAndroidExecution.write(Data("(version 1)\n(allow default)\n".utf8), to: policy)
+        let original = ProcessCommand("./gradlew", ["help", "-PfixtureCredential=sentinel-secret"],
+            workingDirectory: repo.root, redactArguments: true)
+        let wrapped = try FlutterAndroidExecution.policyCommand(original, file: policy)
+        #expect(wrapped.redactArguments)
+        #expect(wrapped.arguments == ["-f", policy.path, original.executable] + original.arguments)
+        #expect(!wrapped.description.contains("sentinel-secret"))
+        let raw = FakeProcessRunner(responses: [wrapped.description: .ok("fixture")])
+        let trace = GuardTrace()
+        let host = FlutterAndroidHostGuard(base: raw, policy: policy,
+            check: { try trace.check() }, recordFailure: { trace.record($0, $1) })
+        _ = try await host.run(original)
+        _ = try await host.run(wrapped)
+        #expect(raw.log.all.count == 2)
+        #expect(raw.log.all.allSatisfy { $0.redactArguments && $0.arguments == wrapped.arguments
+            && !$0.description.contains("sentinel-secret") })
+        let failure = FakeProcessRunner(failures: [wrapped.description:
+            ProcessError.timedOut(command: wrapped.description, timeout: .seconds(1))])
+        let failing = FlutterAndroidHostGuard(base: failure, policy: policy,
+            check: { try trace.check() }, recordFailure: { trace.record($0, $1) })
+        do { _ = try await failing.run(original); Issue.record("The fake timeout must escape") }
+        catch { #expect(error is ProcessError); #expect(!String(describing: error).contains("sentinel-secret")) }
+        #expect(failure.log.all.allSatisfy(\.redactArguments))
     }
 
     @Test("only the exact owned parent policy skips an extra host sandbox")
@@ -399,6 +496,108 @@ struct FlutterAndroidWorkflowTests {
         func record(_ values: [URL]) { lock.withLock { calls += 1; files = values.map(\.path) } }
         var count: Int { lock.withLock { calls } }
         var tracked: [String] { lock.withLock { files } }
+    }
+
+    /// Reuses the existing native fake model/SDK/APK fixture, never an installed SDK.
+    private final class RuntimeFixture {
+        let native: NativeAndroidFixture
+        let app: URL
+        let input: ProjectInspectionInput
+        let runner: RuntimeRunner
+        var leases: ResourceLeases { native.leases }
+        init(workspace: Bool) throws {
+            native = try NativeAndroidFixture()
+            let repo = native.repo
+            let original = try native.runner()
+            app = workspace ? try repo.directory("apps/client") : repo.root
+            let android = app.appendingPathComponent("android")
+            try FileManager.default.copyItem(at: native.project, to: android)
+            try "plugins { id(\"com.android.application\") version \"8.13.2\" apply false }\ninclude(\":app\")\n"
+                .write(to: android.appendingPathComponent("settings.gradle.kts"), atomically: false, encoding: .utf8)
+            try FlutterFixture.sdk(repo: repo, at: "flutter-sdk", version: "3.41.9")
+            let manifest = "name: \(workspace ? "client" : "example")\n\(workspace ? "resolution: workspace\n" : "")environment:\n  sdk: ^3.6.0\ndependencies:\n  flutter:\n    sdk: flutter\n"
+            try manifest.write(to: app.appendingPathComponent("pubspec.yaml"), atomically: false, encoding: .utf8)
+            try FileManager.default.createDirectory(at: app.appendingPathComponent("lib"), withIntermediateDirectories: true)
+            try "void main() {}\n".write(to: app.appendingPathComponent("lib/main.dart"), atomically: false, encoding: .utf8)
+            if workspace { try repo.write("pubspec.yaml", "name: example\nenvironment:\n  sdk: ^3.6.0\nworkspace:\n  - apps/client\ndependencies:\n  flutter:\n    sdk: flutter\n") }
+            try repo.write("pubspec.lock", "packages: {}\n")
+            let packages = workspace ? [("example", repo.root), ("client", app), ("flutter", repo.url("flutter-sdk/packages/flutter"))]
+                : [("example", app), ("flutter", repo.url("flutter-sdk/packages/flutter"))]
+            try repo.directory(".dart_tool")
+            try JSONSerialization.data(withJSONObject: ["configVersion": 2, "packages": packages.map { ["name": $0.0, "rootUri": $0.1.absoluteString] }])
+                .write(to: repo.url(".dart_tool/package_config.json"))
+            try JSONSerialization.data(withJSONObject: ["configVersion": 1, "roots": workspace ? ["example", "client"] : ["example"], "packages": packages.map {
+                ["name": $0.0, "dependencies": $0.0 == "flutter" ? [] : ["flutter"], "devDependencies": []] as [String: Any]
+            }]).write(to: repo.url(".dart_tool/package_graph.json"))
+            try "{\"version\":\"3.41.9\",\"plugins\":{\"ios\":[],\"android\":[]}}"
+                .write(to: app.appendingPathComponent(".flutter-plugins-dependencies"), atomically: false, encoding: .utf8)
+            try "sdk.dir=\(repo.url("sdk").path)\nflutter.sdk=\(repo.url("flutter-sdk").path)\n"
+                .write(to: android.appendingPathComponent("local.properties"), atomically: false, encoding: .utf8)
+            var responses: [String: FakeProcessRunner.Response] = [:]
+            for (key, response) in original.responses {
+                let transformed = key.replacingOccurrences(of: native.project.path, with: android.path)
+                let selected = transformed.hasPrefix("adb ") ? transformed.replacingOccurrences(of: "adb ", with: "adb -L tcp:5037 ", options: .anchored) : transformed
+                responses[selected] = .init(status: response.status,
+                    standardOutput: response.standardOutput.replacingOccurrences(of: native.project.path, with: android.path),
+                    standardError: response.standardError.replacingOccurrences(of: native.project.path, with: android.path))
+            }
+            let members = workspace ? [repo.root, app] : [app]
+            responses[repo.url("flutter-sdk/bin/cache/dart-sdk/bin/dart").path + " pub --suppress-analytics workspace list --json"] = .ok(
+                String(decoding: try JSONSerialization.data(withJSONObject: ["packages": members.map { ["path": $0.path] }]), as: UTF8.self))
+            var environment = native.input.environment
+            environment["FLUTTER_ROOT"] = repo.url("flutter-sdk").path
+            input = ProjectInspectionInput(directory: repo.root, environment: environment, app: workspace ? "apps/client" : ".", platform: .android)
+            runner = RuntimeRunner(base: FakeProcessRunner(responses: responses), leases: native.leases,
+                folder: try FolderIdentity(directory: repo.root))
+        }
+        deinit { try? FileManager.default.removeItem(at: RunLogs(project: app).directory) }
+    }
+
+    private final class RuntimeRunner: ProcessRunner, @unchecked Sendable {
+        let base: FakeProcessRunner
+        let leases: ResourceLeases
+        let folder: FolderIdentity
+        private let lock = NSLock()
+        private var mapping: Int?
+        private var stopped = false
+        private var observedPort: Int?
+        private var heldPort = false
+        private var observedOwner: String?
+        init(base: FakeProcessRunner, leases: ResourceLeases, folder: FolderIdentity) {
+            self.base = base; self.leases = leases; self.folder = folder
+        }
+        var forwardedPort: Int? { lock.withLock { observedPort } }
+        var portLeaseHeld: Bool { lock.withLock { heldPort } }
+        var folderOwner: String? { lock.withLock { observedOwner } }
+        func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+            let response: FakeProcessRunner.Response? = try lock.withLock {
+                guard command.executable == "adb", command.arguments.starts(with: ["-L", "tcp:5037"]) else { return nil }
+                let args = Array(command.arguments.dropFirst(2))
+                if args == ["forward", "--list"] { return .ok(mapping.map { "emulator-5554 tcp:\($0) tcp:38881\n" } ?? "") }
+                if args.starts(with: ["-s", "emulator-5554", "forward", "--no-rebind"]), args.count == 6,
+                   let port = Int(args[4].dropFirst(4)) {
+                    let other = LeaseOwner(operationId: "fixture-other", command: "fixture", project: "/other-app")
+                    do { let lease = try leases.acquire([.port(port)], owner: other); lease.release() }
+                    catch is ResourceConflict { heldPort = true }
+                    do { let lease = try leases.acquire([.folder(folder)], owner: other); lease.release() }
+                    catch let conflict as ResourceConflict { observedOwner = conflict.owner?.project }
+                    mapping = port; observedPort = port
+                    return .ok("")
+                }
+                if args.starts(with: ["-s", "emulator-5554", "forward", "--remove"]) { mapping = nil; return .ok("") }
+                if args.contains("logcat"), args.contains("-t") { return .ok("1792400000.123456 8123 8123 I flutter : marker\n") }
+                if args.contains("logcat"), args.contains("-T") { return .ok("1792400001.123456 8123 8123 I flutter : The Dart VM service is listening on http://127.0.0.1:38881/sentinel-secret=/\n") }
+                if args.contains("force-stop"), mapping != nil { stopped = true }
+                if args.contains("pidof"), stopped { return .failed(1, "") }
+                return nil
+            }
+            var selected = base
+            if let response { selected.responses[command.description] = response }
+            return try await selected.run(command, onLine: onLine)
+        }
+        func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+            try await base.spawnDetached(command, logFile: logFile)
+        }
     }
 
     private struct View: FlutterAndroidExecutionView {

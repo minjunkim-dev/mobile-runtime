@@ -323,7 +323,8 @@ final class FlutterAndroidExecution: @unchecked Sendable {
         } catch {
             throw failure("The selected Flutter app declarations cannot be confirmed from current inputs.")
         }
-        guard preparation.pluginMetadataIssue(project: currentProject, sdk: sdk, platform: .android) == nil else {
+        var currentPreparation = preparation
+        guard currentPreparation.pluginMetadataIssue(project: currentProject, sdk: sdk, platform: .android) == nil else {
             throw failure("Flutter Android plugin metadata does not match the current resolved package graph and manifests.")
         }
         let prepared = PreparedInputs(sdk: sdk, entrypoint: try canonical(entrypoint), metadata: hasMetadata ? metadata : nil,
