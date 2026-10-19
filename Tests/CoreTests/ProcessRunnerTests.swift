@@ -58,8 +58,10 @@ struct SystemProcessRunnerTests {
     func privateSpawnFailure(_ redacted: Bool) async throws {
         let messages = Mutable<[String]>([])
         let logger = Logger(label: "process-privacy") { _ in ProcessLogCapture(messages: messages) }
+        let obstruction = try temporaryDirectory().appendingPathComponent("synthetic-auth")
+        try Data("owned fixture obstruction\n".utf8).write(to: obstruction, options: .withoutOverwriting)
         let command = ProcessCommand("/bin/echo", ["private-argument"],
-            output: .streamed(to: URL(fileURLWithPath: "/dev/null/synthetic-auth/out.log")), redactArguments: redacted)
+            output: .streamed(to: obstruction.appendingPathComponent("out.log")), redactArguments: redacted)
         do {
             _ = try await SystemProcessRunner(logger: logger, environment: [:]).run(command)
             Issue.record("the invalid output path must fail")
@@ -74,6 +76,7 @@ struct SystemProcessRunnerTests {
         #expect(messages.value.contains { $0.contains("subprocess failed") })
         #expect(messages.value.joined().contains("private-argument") == !redacted)
         #expect(messages.value.joined().contains("synthetic-auth") == !redacted)
+        #expect(try Data(contentsOf: obstruction) == Data("owned fixture obstruction\n".utf8))
     }
 
     @Test("prepared tool and mise wrappers preserve sensitive arguments and logging policy")
