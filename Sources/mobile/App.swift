@@ -3,6 +3,7 @@ import Core
 import Dispatch
 import EnvironmentKit
 import Foundation
+import Logging
 
 struct AppCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(commandName: "app",
@@ -39,7 +40,14 @@ struct AppFileOptions: ParsableArguments {
     @Flag(name: [.short, .long], help: "Show underlying platform tool invocations.") var verbose = false
 
     func execute(inspectOnly: Bool = false, planOnly: Bool = false, approvedPlanID: String? = nil) async throws {
-        bootstrapLogging(verbose: verbose, silent: progressJson)
+        let silent = progressJson
+        let logLevel: Logger.Level = verbose ? .debug : .info
+        LoggingSystem.bootstrap { label in
+            if silent { return SwiftLogNoOpLogHandler() }
+            var handler = StreamLogHandler(label: label, stream: AppFileLogStream())
+            handler.logLevel = logLevel
+            return handler
+        }
         let input = AppFileInput(file: URL(fileURLWithPath: file), environment: ProcessInfo.processInfo.environment, device: device)
         var approval = approvedPlanID
         if !inspectOnly, !planOnly, approval == nil, !nonInteractive, !json, !progressJson,

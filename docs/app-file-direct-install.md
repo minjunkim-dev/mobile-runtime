@@ -89,6 +89,8 @@ iOS는 `simctl install`을 사용한다. Android는 `adb install -r`을 사용�
 
 JSON은 기존 `schemaVersion: 1`, `toolVersion`, `command`와 공통 encoder를 사용한다.
 사람용 CLI 출력은 제어문자를 `\u{001B}`처럼 표시한다.
+`--verbose` 도구 로그도 마지막 출력 경계에서 같은 규칙을 적용한다.
+logger가 붙인 마지막 줄바꿈 하나만 유지한다. 실제 도구 argv는 바꾸지 않는다.
 파일 metadata·승인 hash·JSON 값은 원본을 유지한다.
 빌드 비교는 숫자 구간과 iOS의 `d`·`a`·`b`·`fc` suffix를 포함한다.
 정식 build는 같은 숫자 구간의 prerelease build 뒤에 온다.

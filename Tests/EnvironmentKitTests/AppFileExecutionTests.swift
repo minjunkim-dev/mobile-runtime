@@ -1,6 +1,7 @@
 import Core
 @testable import EnvironmentKit
 import Foundation
+import Logging
 import TestSupport
 import Testing
 
@@ -237,6 +238,79 @@ struct AppFileExecutionTests {
         #expect(!fixture.runner.commands.contains(where: mutation))
     }
 
+    @Test("verbose tool logging escapes the final stream without changing accepted bundle argv or JSON")
+    func verboseLogControls() async throws {
+        let fixture = try AppFileFixture(platform: .ios)
+        let controls = "name\u{1b}[2J\r\n\u{7f}\u{85}\u{202e}end"
+        let parent = try fixture.repo.directory(controls)
+        let bundle = parent.appendingPathComponent("Local.app")
+        try FileManager.default.copyItem(at: fixture.file, to: bundle)
+        let binary = bundle.appendingPathComponent(controls)
+        try FileManager.default.moveItem(at: bundle.appendingPathComponent("Program"), to: binary)
+        let info = bundle.appendingPathComponent("Info.plist")
+        var plist = try #require(PropertyListSerialization.propertyList(from: Data(contentsOf: info), format: nil) as? [String: Any])
+        plist["CFBundleExecutable"] = controls
+        try PropertyListSerialization.data(fromPropertyList: plist, format: .binary, options: 0).write(to: info)
+        let adapter = AppFileRunner(file: bundle, payload: binary, platform: .ios, installedBuild: nil)
+        let inspected = await AppFileExecution.run(input: AppFileInput(file: bundle, environment: [:]), inspectOnly: true, runner: adapter, leases: fixture.leases)
+        #expect(inspected.exitCode == 0)
+        let read = try #require(adapter.commands.first { $0.executable == "/usr/bin/lipo" })
+        #expect(read.arguments == ["-archs", binary.path])
+        let command = ProcessCommand("/usr/bin/true", read.arguments)
+        let capture = AppFileLogCapture()
+        let stream = AppFileLogStream(sink: { capture.append($0) })
+        var handler = StreamLogHandler(label: controls, stream: stream,
+            metadataProvider: Logger.MetadataProvider { ["provider": .string(controls)] })
+        handler.logLevel = .debug
+        handler.metadata = ["base": .string(controls)]
+        let logger = Logger(label: "fixture") { _ in handler }
+        // A harmless real child exercises SystemProcessRunner's actual debug path.
+        // No lipo, otool or selected app executable runs in this test.
+        let observed = try await SystemProcessRunner(logger: logger, environment: [:]).run(command)
+        #expect(observed.terminationStatus.isSuccess)
+        handler.log(event: LogEvent(level: .debug, message: "\(controls)\r", error: AppFileLogError(detail: controls),
+            metadata: [controls: .dictionary(["nested": .array([.string(controls)])])],
+            source: controls, file: #fileID, function: #function, line: #line))
+        #expect(capture.chunks.count == 2)
+        #expect(capture.chunks.last?.hasSuffix("end\\u{000D}\n") == true)
+        #expect(capture.chunks.allSatisfy { chunk in
+            chunk.hasSuffix("\n") && chunk.dropLast().unicodeScalars.allSatisfy { !CharacterSet.controlCharacters.contains($0) }
+        })
+        #expect(capture.chunks.allSatisfy { $0.contains(#"name\u{001B}[2J\u{000D}\u{000A}\u{007F}\u{0085}\u{202E}end"#) })
+        #expect(command.arguments == read.arguments)
+        #expect(command.description.contains(binary.path))
+        let json = try JSONSerialization.jsonObject(with: Data(inspected.encoded(toolVersion: "test").utf8)) as? [String: Any]
+        let operation = try #require(json?["operation"] as? [String: Any])
+        let artifact = try #require(operation["artifact"] as? [String: Any])
+        #expect((artifact["file"] as? [String: Any])?["path"] as? String == bundle.path)
+        #expect(try String(contentsOf: binary, encoding: .utf8) == "approved bytes")
+
+        handler.logLevel = .info
+        let normal = Logger(label: "normal") { _ in handler }
+        let before = capture.chunks.count
+        normal.debug("hidden \(controls)")
+        #expect(capture.chunks.count == before)
+        normal.info("visible \(controls)")
+        #expect(capture.chunks.count == before + 1)
+        let silent = Logger(label: "silent") { _ in SwiftLogNoOpLogHandler() }
+        silent.info("hidden \(controls)")
+        #expect(capture.chunks.count == before + 1)
+    }
+
+    @Test("log stream preserves only the final ASCII LF across Unicode and multiline boundaries",
+          arguments: [("", ""), ("\n", "\n"), ("\r", "\\u{000D}"), ("\r\n", "\\u{000D}\n"),
+                      ("\n\n", "\\u{000A}\n"), ("line1\nline2", "line1\\u{000A}line2"),
+                      ("line1\nline2\r\n", "line1\\u{000A}line2\\u{000D}\n"),
+                      ("👍🏽\r\n", "👍🏽\\u{000D}\n"), ("e\u{301}\n", "e\u{301}\n"),
+                      ("\u{2028}\n", "\\u{2028}\n"), ("\u{2029}\n", "\\u{2029}\n"),
+                      ("\u{0}\n", "\\u{0000}\n"), ("\u{85}\n", "\\u{0085}\n")])
+    func logStreamDelimiter(_ example: (String, String)) {
+        let capture = AppFileLogCapture()
+        var stream = AppFileLogStream(sink: { capture.append($0) })
+        stream.write(example.0)
+        #expect(capture.chunks == [example.1])
+    }
+
     @Test("changed bytes invalidate an earlier approval without installing", arguments: [ProjectPlatform.ios, .android])
     func changedApproval(_ platform: ProjectPlatform) async throws {
         let fixture = try AppFileFixture(platform: platform)
@@ -422,6 +496,18 @@ struct AppFileExecutionTests {
             || ["gradlew", "flutter", "dart", "node", "npm", "pod", "emulator"].contains(command.executable)
             || command.executable == "xcodebuild" && command.arguments != ["-version"]
     }
+}
+
+private struct AppFileLogError: Error, CustomStringConvertible {
+    let detail: String
+    var description: String { detail }
+}
+
+private final class AppFileLogCapture: @unchecked Sendable {
+    private let lock = NSLock()
+    private var recorded: [String] = []
+    func append(_ text: String) { lock.withLock { recorded.append(text) } }
+    var chunks: [String] { lock.withLock { recorded } }
 }
 
 private final class AppFileFixture {

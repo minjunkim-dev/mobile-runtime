@@ -67,11 +67,30 @@ public enum AppFileHumanOutput {
         escape("\(event.stageId ?? event.kind): \(event.state)\(event.detail.map { " — \($0)" } ?? "")")
     }
 
-    private static func escape(_ value: String) -> String {
+    fileprivate static func escape(_ value: String) -> String {
         value.unicodeScalars.map { scalar in
-            CharacterSet.controlCharacters.contains(scalar)
+            (CharacterSet.controlCharacters.contains(scalar) || scalar.value == 0x2028 || scalar.value == 0x2029)
                 ? String(format: "\\u{%04X}", scalar.value) : String(scalar)
         }.joined()
+    }
+}
+
+/// Last text boundary for AppFile's human tool logs; never transforms actual argv.
+public struct AppFileLogStream: TextOutputStream, Sendable {
+    private let sink: @Sendable (String) -> Void
+
+    public init(sink: @escaping @Sendable (String) -> Void = {
+        FileHandle.standardError.write(Data($0.utf8))
+    }) {
+        self.sink = sink
+    }
+
+    public mutating func write(_ string: String) {
+        // StreamLogHandler appends exactly one LF after the fully rendered entry.
+        // Escape every input-controlled character before that delimiter.
+        let terminated = string.utf8.last == 0x0a
+        let body = terminated ? String(decoding: string.utf8.dropLast(), as: UTF8.self) : string
+        sink(AppFileHumanOutput.escape(body) + (terminated ? "\n" : ""))
     }
 }
 
