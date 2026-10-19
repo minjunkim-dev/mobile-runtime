@@ -248,7 +248,7 @@ struct FlutterPreparation {
         return [generated]
     }
 
-    private func pluginMetadataIssue(project: FlutterProject, sdk: FlutterSDK, platform: ProjectPlatform) -> String? {
+    func pluginMetadataIssue(project: FlutterProject, sdk: FlutterSDK, platform: ProjectPlatform) -> String? {
         let unknown = "plugin metadata cannot be confirmed from the current resolved package graph and package manifests"
         func json(_ file: URL) -> [String: Any]? {
             (try? JSONSerialization.jsonObject(with: Data(contentsOf: file))) as? [String: Any]

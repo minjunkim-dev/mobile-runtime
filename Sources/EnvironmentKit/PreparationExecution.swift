@@ -362,7 +362,7 @@ public enum PreparationExecution {
         guard changedDuringInspection.isEmpty else { throw PreparationSourceChanged(files: changedDuringInspection) }
     }
 
-    private struct Inspection {
+    struct Inspection {
         var plan: PreparationPlan?
         var selection: ProjectSelection?
         var anchor: ProjectAnchor?
@@ -375,7 +375,8 @@ public enum PreparationExecution {
         var androidResources: [AndroidPreparationResource] = []
     }
 
-    private static func inspect(_ input: ProjectInspectionInput, runner: any ProcessRunner, excluding: [URL] = []) async throws -> Inspection {
+    static func inspect(_ input: ProjectInspectionInput, runner: any ProcessRunner, excluding: [URL] = [],
+                        flutterFactory: FlutterAndroidWorkflow.Factory = FlutterAndroidWorkflow.defaultFactory) async throws -> Inspection {
         try Task.checkCancellation()
         let detected = try ProjectInspectionInput(directory: input.directory, environment: input.environment, app: input.app, entrypoint: input.entrypoint).selection()
         // Setup selects an app; both platforms remain in its preparation scope.
@@ -453,9 +454,22 @@ public enum PreparationExecution {
                 continue
             }
             let nativeReady = flutter == nil || flutter?.checks.contains { $0.id == "\(platform.rawValue).flutter.generated" && $0.kind == "reuse" } == true
+            let flutterAndroid = anchor.framework == .flutter && platform == .android
+            var protectedFlutter: FlutterAndroidWorkflow?
+            var executionBlocked = false
+            if flutterAndroid, !pendingTools, nativeReady {
+                do {
+                    protectedFlutter = try await FlutterAndroidWorkflow.make(input: input, anchor: anchor, runner: runner,
+                        preparation: flutter, tools: toolPreparation, factory: flutterFactory)
+                } catch is CancellationError { throw CancellationError() }
+                catch is DomainError { executionBlocked = true }
+            }
             let context = await WorkflowContext.make(input: input, platform: platform, anchor: anchor, runner: runner,
-                includeProjectEnvironment: !pendingTools && (platform != .android || nativeReady),
-                projectEnvironmentOverride: flutter == nil ? nil : currentEnvironment.activatingTools(toolPreparation.activeTools, environment: input.environment))
+                includeProjectEnvironment: !pendingTools && (platform != .android || nativeReady)
+                    && (!flutterAndroid || protectedFlutter != nil),
+                projectEnvironmentOverride: protectedFlutter?.projectEnvironment
+                    ?? (flutter == nil ? nil : currentEnvironment.activatingTools(toolPreparation.activeTools, environment: input.environment)),
+                projectRunnerOverride: protectedFlutter?.projectRunner)
             contexts[platform] = context
             let report = await context.engine.run()
             var sdkPreparation: AndroidSDKPreparation?
@@ -474,6 +488,7 @@ public enum PreparationExecution {
                     remediation: check.outcome.remediation ?? (check.outcome.reason.map { Remediation(summary: $0) }))
             }
             checks += toolPreparation.checks
+            if executionBlocked { checks.append(FlutterAndroidWorkflow.blockedStep(app: anchor.directory)) }
             if let flutter { checks += flutter.checks.filter { $0.platform == nil || $0.platform == platform } }
             if pendingTools {
                 checks.append(PreparationStep(id: "\(platform.rawValue).tools.reinspect", platform: platform, kind: "provider", target: selected.app.path,
@@ -749,7 +764,7 @@ public enum PreparationExecution {
     }
 
     /// Private source/lock observation. Digests never enter the public plan or its identity.
-    fileprivate static func sourceFiles(_ root: URL, excluding destinations: [URL] = []) throws -> [String: String] {
+    static func sourceFiles(_ root: URL, excluding destinations: [URL] = []) throws -> [String: String] {
         let excluded: Set<String> = [".git", "node_modules", "Pods", "vendor", "build", ".build", ".gradle", ".dart_tool", ".mobile", "graft"]
         var failure: (any Error)?
         guard let files = FileManager.default.enumerator(at: root, includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey],

@@ -25,6 +25,10 @@ actor AndroidRuntime {
     private let store: AndroidActiveRunStore
     private let timeouts: AndroidRuntimeTimeouts
     private let doctorContext: AndroidDoctorContext
+    private let environment: AndroidEnvironment
+    private let port: Int?
+    private let flutterEntrypoint: URL?
+    private var flutterLaunchMarker: String?
     private var activeRun: AndroidActiveRun?
 
     init(
@@ -34,7 +38,9 @@ actor AndroidRuntime {
         projectRunner: any ProcessRunner,
         environment: AndroidEnvironment,
         logs: RunLogs,
-        timeouts: AndroidRuntimeTimeouts
+        timeouts: AndroidRuntimeTimeouts,
+        port: Int? = nil,
+        flutterEntrypoint: URL? = nil
     ) {
         self.anchor = anchor
         self.config = config
@@ -43,6 +49,9 @@ actor AndroidRuntime {
         self.logs = logs
         self.store = AndroidActiveRunStore(project: anchor.directory, logs: logs)
         self.timeouts = timeouts
+        self.environment = environment
+        self.port = port
+        self.flutterEntrypoint = flutterEntrypoint
         self.doctorContext = AndroidDoctorContext(
             anchor: anchor,
             config: config,
@@ -162,7 +171,7 @@ actor AndroidRuntime {
         }
 
         let sdk = try doctorContext.requiredSDKRoot()
-        let command = adb(
+        let command = try adb(
             ["-s", device.serial, "install", "-r", product.apkPath],
             sdk: sdk,
             timeout: timeouts.install
@@ -335,7 +344,7 @@ actor AndroidRuntime {
             return AndroidReverse(state: state)
         }
 
-        let create = adb(
+        let create = try adb(
             ["-s", device.serial, "reverse", source, source], sdk: sdk
         )
         let created = try await hostRunner.run(create)
@@ -380,7 +389,13 @@ actor AndroidRuntime {
         else {
             throw AndroidStateError("the installed Android app record is missing")
         }
-        let forceStop = adb(
+        if anchor.framework == .flutter {
+            guard try run().forward == nil else {
+                throw DomainError(summary: "the previous Flutter forward requires normal down before relaunch", remediation: retryDown)
+            }
+            flutterLaunchMarker = try await flutterService().marker(serial: device.serial)
+        }
+        let forceStop = try adb(
             ["-s", device.serial, "shell", "am", "force-stop", product.applicationId],
             sdk: sdk
         )
@@ -395,7 +410,7 @@ actor AndroidRuntime {
 
         let component = "\(product.applicationId)/\(product.launcherActivity)"
         let deadline = ContinuousClock.now + timeouts.launch
-        let start = adb(
+        let start = try adb(
             ["-s", device.serial, "shell", "am", "start", "-W", "-n", component],
             sdk: sdk,
             timeout: timeouts.launch
@@ -441,14 +456,32 @@ actor AndroidRuntime {
         }
     }
 
+    func flutterConnection() async throws -> AndroidFlutterConnection {
+        guard let port, let flutterLaunchMarker else {
+            throw AndroidStateError("Flutter service setup requires a selected host port and pre-launch marker")
+        }
+        let (value, connection) = try await flutterService().connect(
+            run(), marker: flutterLaunchMarker, hostPort: port, store: store)
+        activeRun = value
+        return connection
+    }
+
+    private func flutterService() throws -> AndroidFlutterService {
+        AndroidFlutterService(context: doctorContext, runner: hostRunner,
+            sdk: try doctorContext.requiredSDKRoot(), endpoint: try AndroidADBEndpoint(environment: environment),
+            timeouts: timeouts)
+    }
+
     private func launchedPID(
         product: AndroidBuiltProduct, serial: String, sdk: URL
     ) async throws -> Int32? {
         let pidResult = try await hostRunner.run(adb(
             ["-s", serial, "shell", "pidof", product.applicationId], sdk: sdk
         ))
+        let pidFields = pidResult.standardOutput.split(whereSeparator: \.isWhitespace)
         guard pidResult.terminationStatus.isSuccess,
-            let pid = pidResult.standardOutput.split(whereSeparator: \.isWhitespace)
+            anchor.framework != .flutter || (pidFields.count == 1 && pidResult.standardError.isEmpty),
+            let pid = pidFields
                 .compactMap({ Int32($0) }).first
         else { return nil }
         let activities = try await hostRunner.run(adb(
@@ -469,11 +502,26 @@ actor AndroidRuntime {
 
     private func prepare(_ product: AndroidBuiltProduct) throws {
         if activeRun != nil { return }
+        guard anchor.framework == .flutter || flutterEntrypoint == nil else {
+            throw AndroidStateError("a Flutter entrypoint cannot be attached to another Android framework")
+        }
+        let socket: String?
+        if anchor.framework == .flutter {
+            guard let port, (1...65535).contains(port), let flutterEntrypoint,
+                  flutterEntrypoint.resolvingSymlinksInPath() == flutterEntrypoint,
+                  flutterEntrypoint.path.hasPrefix(anchor.directory.resolvingSymlinksInPath().path + "/"),
+                  flutterEntrypoint.pathExtension == "dart",
+                  (try? flutterEntrypoint.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) == true else {
+                throw AndroidStateError("Flutter Android requires a prepared entrypoint and a leased host TCP port")
+            }
+            socket = try AndroidADBEndpoint(environment: environment).socket
+        } else { socket = nil }
         if let existing = try store.read() {
             guard existing.matches(
                 project: anchor.directory,
                 product: product,
-                avdSelector: config.configuration?.androidAVD
+                avdSelector: config.configuration?.androidAVD,
+                flutterEntrypoint: flutterEntrypoint, flutterServerSocket: socket
             ) else {
                 throw DomainError(
                     summary: "another Android target already has an active run for this project",
@@ -485,7 +533,8 @@ actor AndroidRuntime {
             activeRun = AndroidActiveRun(
                 project: anchor.directory,
                 product: product,
-                avdSelector: config.configuration?.androidAVD
+                avdSelector: config.configuration?.androidAVD,
+                flutterEntrypoint: flutterEntrypoint, flutterServerSocket: socket
             )
         }
     }
@@ -710,8 +759,10 @@ actor AndroidRuntime {
 
     private func adb(
         _ arguments: [String], sdk: URL, timeout: Duration = .seconds(15)
-    ) -> ProcessCommand {
-        doctorContext.toolCommand("adb", arguments, sdk: sdk, timeout: timeout)
+    ) throws -> ProcessCommand {
+        let selected = anchor.framework == .flutter
+            ? try AndroidADBEndpoint(environment: environment).arguments(arguments) : arguments
+        return doctorContext.toolCommand("adb", selected, sdk: sdk, timeout: timeout)
     }
 
     private func pause() async throws {
@@ -740,6 +791,8 @@ public func androidUpStages(
     environment: AndroidEnvironment = AndroidEnvironment(),
     logs: RunLogs? = nil,
     timeouts: AndroidRuntimeTimeouts = AndroidRuntimeTimeouts(),
+    port: Int? = nil,
+    flutterEntrypoint: URL? = nil,
     note: @escaping @Sendable (String) -> Void
 ) -> [any Stage] {
     let logs = logs ?? RunLogs(project: anchor.directory)
@@ -750,7 +803,7 @@ public func androidUpStages(
         projectRunner: projectRunner,
         environment: environment,
         logs: logs,
-        timeouts: timeouts
+        timeouts: timeouts, port: port, flutterEntrypoint: flutterEntrypoint
     )
     return androidBuildStages(
         anchor: anchor,
@@ -809,7 +862,17 @@ public func androidUpStages(
             context.androidProduct = product
             return .pass("\(product.applicationId) — pid \(pid)")
         },
-    ]
+    ] + (anchor.framework == .flutter ? [
+        AndroidRuntimeStage(id: "android.flutter.service") { context in
+            guard var product = context.androidProduct else {
+                throw AndroidStateError("Flutter service setup requires the launched Android product")
+            }
+            let connection = try await runtime.flutterConnection()
+            product.flutterConnection = connection
+            context.androidProduct = product
+            return .pass("host tcp:\(connection.hostPort) → device tcp:\(connection.devicePort)")
+        },
+    ] : [])
 }
 
 public func runAndroidUp(
@@ -821,6 +884,8 @@ public func runAndroidUp(
     environment: AndroidEnvironment = AndroidEnvironment(),
     logs: RunLogs? = nil,
     timeouts: AndroidRuntimeTimeouts = AndroidRuntimeTimeouts(),
+    port: Int? = nil,
+    flutterEntrypoint: URL? = nil,
     note: @escaping @Sendable (String) -> Void,
     onStageFinished: (@Sendable (StageResult) -> Void)? = nil,
     onStageStarted: (@Sendable (String) -> Void)? = nil
@@ -830,6 +895,10 @@ public func runAndroidUp(
     do {
         let lease = try store.acquire(operation: "up")
         defer { withExtendedLifetime(lease) {} }
+        if let active = try store.read(), active.schemaVersion == 2, active.forward != nil {
+            throw DomainError(summary: "the recorded Flutter forward requires normal down before another up",
+                remediation: Remediation(summary: "Preserve the active run and run mobile down --platform android."))
+        }
         if let requested = config.configuration?.androidAVD,
             let active = try store.read(), let device = active.device, device.avd != requested {
             throw DomainError(summary: "selected AVD differs from the Android active run",
@@ -843,7 +912,7 @@ public func runAndroidUp(
             projectRunner: projectRunner,
             environment: environment,
             logs: logs,
-            timeouts: timeouts,
+            timeouts: timeouts, port: port, flutterEntrypoint: flutterEntrypoint,
             note: note
         )
         let report = await UpPipeline(stages: stages).run(

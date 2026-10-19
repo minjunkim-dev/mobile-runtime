@@ -46,6 +46,14 @@ public enum WorkflowExecution {
     public static func run(_ kind: WorkflowKind, input: WorkflowInput,
                            runner suppliedRunner: (any ProcessRunner)? = nil, leases: ResourceLeases = .user,
                            onEvent: @escaping @Sendable (WorkflowEvent) -> Void = { _ in }) async -> WorkflowResult {
+        await run(kind, input: input, runner: suppliedRunner, leases: leases,
+            flutterFactory: FlutterAndroidWorkflow.defaultFactory, onEvent: onEvent)
+    }
+
+    static func run(_ kind: WorkflowKind, input: WorkflowInput,
+                    runner suppliedRunner: (any ProcessRunner)? = nil, leases: ResourceLeases = .user,
+                    flutterFactory: FlutterAndroidWorkflow.Factory,
+                    onEvent: @escaping @Sendable (WorkflowEvent) -> Void = { _ in }) async -> WorkflowResult {
         var operation = WorkflowOperation(id: UUID().uuidString, kind: kind, state: "running")
         let events = WorkflowEvents(id: operation.id, callback: onEvent)
         events.send("started", state: "running")
@@ -67,7 +75,7 @@ public enum WorkflowExecution {
                 throw selectionFailure("No app selected. Choose a reported project candidate.")
             }
             guard anchor.framework == .reactNative || (anchor.framework == .nativeIOS && platform == .ios)
-                || (anchor.framework == .nativeAndroid && platform == .android) else {
+                || ([.nativeAndroid, .flutter].contains(anchor.framework) && platform == .android) else {
                 throw selectionFailure("\(anchor.framework.displayName) execution is not implemented yet.")
             }
             if kind == .down && [input.device, input.scheme, input.configuration, input.module, input.variant].contains(where: { $0 != nil }) {
@@ -81,12 +89,17 @@ public enum WorkflowExecution {
             }
             let runner = suppliedRunner ?? SystemProcessRunner(environment: input.project.environment,
                                                                workingDirectory: anchor.directory)
+            let flutter = anchor.framework == .flutter && kind != .down
+                ? try await FlutterAndroidWorkflow.make(input: input.project, anchor: anchor, runner: runner,
+                    factory: flutterFactory) : nil
             var config = ConfigContext.detect(anchor: anchor, workingDirectory: input.project.directory)
                 .selecting(scheme: input.scheme, module: input.module, variant: input.variant,
                            clearDevice: platform == .ios && (input.device != nil || kind == .build))
             var wiring = await WorkflowContext.make(input: input.project, platform: platform, anchor: anchor,
                 runner: runner, includeProjectEnvironment: kind != .down,
-                includeRuntimeSDKTools: kind != .build || platform == .ios, selectedConfig: config,
+                includeRuntimeSDKTools: kind != .build || platform == .ios,
+                projectEnvironmentOverride: flutter?.projectEnvironment,
+                projectRunnerOverride: flutter?.projectRunner, selectedConfig: config,
                 selectedConfiguration: input.configuration)
             try Task.checkCancellation()
 
@@ -167,7 +180,9 @@ public enum WorkflowExecution {
                     throw selectionFailure("Select \(operation.requiredInput.joined(separator: ", ")) before starting changes.")
                 }
                 wiring = await WorkflowContext.make(input: input.project, platform: platform, anchor: anchor,
-                    runner: runner, includeRuntimeSDKTools: kind != .build || platform == .ios, selectedConfig: config,
+                    runner: runner, includeRuntimeSDKTools: kind != .build || platform == .ios,
+                    projectEnvironmentOverride: flutter?.projectEnvironment,
+                    projectRunnerOverride: flutter?.projectRunner, selectedConfig: config,
                     selectedConfiguration: operation.configuration)
                 try Task.checkCancellation()
             }

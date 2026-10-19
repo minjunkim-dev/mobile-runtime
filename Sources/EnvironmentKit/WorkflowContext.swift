@@ -31,6 +31,7 @@ public struct WorkflowContext: Sendable {
         includeProjectEnvironment: Bool = true,
         includeRuntimeSDKTools: Bool = true,
         projectEnvironmentOverride: ProjectExecutionEnvironment? = nil,
+        projectRunnerOverride: (any ProcessRunner)? = nil,
         selectedConfig: ConfigContext? = nil,
         selectedConfiguration: String? = nil
     ) async -> WorkflowContext {
@@ -59,6 +60,14 @@ public struct WorkflowContext: Sendable {
         } else {
             projectEnvironment = nil
         }
+        let blockedFlutter = platform == .android && anchor?.framework == .flutter
+            && includeProjectEnvironment && projectRunnerOverride == nil
+        if blockedFlutter {
+            projectEnvironment = nil
+            toolObservationChecks.append(FlutterAndroidReadinessCheck())
+        }
+        let projectRunner: any ProcessRunner = blockedFlutter
+            ? FlutterAndroidReadinessCheck() : projectRunnerOverride ?? projectEnvironment?.runner ?? runner
         var paths = [workingDirectory, FileManager.default.temporaryDirectory]
         if let anchor {
             paths.append(anchor.directory)
@@ -120,7 +129,7 @@ public struct WorkflowContext: Sendable {
             var android = config.checks()
             if let anchor, let projectEnvironment {
                 let context = AndroidDoctorContext(anchor: anchor, config: config, hostRunner: runner,
-                    projectRunner: projectEnvironment.runner, environment: AndroidEnvironment(values: input.environment))
+                    projectRunner: projectRunner, environment: AndroidEnvironment(values: input.environment))
                 androidContext = context
                 let platformChecks = androidChecks(context: context, includeRuntimeSDKTools: includeRuntimeSDKTools)
                 // The project identity is the first Android fact; the shared tool
@@ -128,6 +137,12 @@ public struct WorkflowContext: Sendable {
                 android.append(platformChecks[0])
                 android.append(contentsOf: projectEnvironment.commonChecks(anchor: anchor, context: config))
                 android.append(contentsOf: platformChecks.dropFirst())
+            } else if let anchor, anchor.framework == .flutter {
+                // Source identity does not require a prepared model or an executable project environment.
+                let refused = FlutterAndroidReadinessCheck()
+                let identity = AndroidDoctorContext(anchor: anchor, config: config, hostRunner: refused,
+                    projectRunner: refused, environment: AndroidEnvironment(values: input.environment))
+                android.append(contentsOf: androidChecks(context: identity, includeRuntimeSDKTools: false).prefix(1))
             }
             checks = workspaceChecks + android
         }
@@ -138,7 +153,7 @@ public struct WorkflowContext: Sendable {
             config: config,
             lookup: lookup,
             runner: runner,
-            projectRunner: projectEnvironment?.runner ?? runner,
+            projectRunner: projectRunner,
             androidContext: androidContext,
             locator: locator
         )
