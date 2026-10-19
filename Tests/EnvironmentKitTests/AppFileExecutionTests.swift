@@ -60,6 +60,43 @@ struct AppFileExecutionTests {
         #expect(!fixture.runner.commands.contains(where: mutation))
     }
 
+    @Test("an explicit matching platform reaches the same approved installation", arguments: [ProjectPlatform.ios, .android])
+    func matchingPlatform(_ platform: ProjectPlatform) async throws {
+        let fixture = try AppFileFixture(platform: platform)
+        let proposed = await fixture.run(planOnly: true, platform: platform)
+        let plan = try #require(proposed.operation.plan)
+        #expect(plan.artifact.metadata.platform == platform)
+        #expect(!fixture.runner.commands.contains(where: mutation))
+        let installed = await fixture.run(approval: plan.approval, platform: platform)
+        #expect(installed.exitCode == 0)
+        #expect(installed.operation.completed == ["inspect", "install", "launch"])
+    }
+
+    @Test("a platform mismatch stops inspection and cannot consume an approval", arguments: [ProjectPlatform.ios, .android])
+    func mismatchedPlatform(_ platform: ProjectPlatform) async throws {
+        let fixture = try AppFileFixture(platform: platform)
+        let other: ProjectPlatform = platform == .ios ? .android : .ios
+        let bytes = try Data(contentsOf: fixture.payload)
+        for inspectOnly in [true, false] {
+            let rejected = await fixture.run(inspectOnly: inspectOnly, planOnly: !inspectOnly, platform: other)
+            #expect(rejected.exitCode == 1)
+            #expect(rejected.operation.plan == nil)
+            #expect(rejected.operation.devices.isEmpty)
+            #expect(rejected.operation.error?.contains("does not match") == true)
+        }
+        #expect(!FileManager.default.fileExists(atPath: fixture.leases.directory.path))
+        let proposed = await fixture.run(planOnly: true, platform: platform)
+        let plan = try #require(proposed.operation.plan)
+        let rejected = await fixture.run(approval: plan.approval, platform: other)
+        #expect(rejected.exitCode == 1)
+        #expect(rejected.operation.plan == nil)
+        #expect(rejected.operation.installation == "not-requested")
+        #expect(rejected.operation.launch == "not-requested")
+        #expect(!FileManager.default.fileExists(atPath: fixture.leases.directory.path))
+        #expect(!fixture.runner.commands.contains(where: mutation))
+        #expect(try Data(contentsOf: fixture.payload) == bytes)
+    }
+
     @Test("prepared runtime inventory does not depend on a guest uname executable")
     func simulatorRuntimeInventoryWithoutUname() async throws {
         let fixture = try AppFileFixture(platform: .ios)
@@ -476,10 +513,10 @@ struct AppFileExecutionTests {
     @Test("a file change during private staging needs a new approval")
     func changedDuringStaging() async throws {
         let fixture = try AppFileFixture(platform: .ios)
-        let proposed = await fixture.run(planOnly: true)
+        let proposed = await fixture.run(planOnly: true, platform: .ios)
         let plan = try #require(proposed.operation.plan)
         fixture.runner.mutateOriginalDuringStagedInspection = true
-        let result = await fixture.run(approval: plan.approval)
+        let result = await fixture.run(approval: plan.approval, platform: .ios)
         #expect(result.exitCode == 1)
         #expect(result.operation.state == "needs-approval")
         #expect(result.operation.plan?.id != plan.id)
@@ -698,8 +735,9 @@ private final class AppFileFixture {
         runner = AppFileRunner(file: file, payload: payload, platform: platform, installedBuild: installedBuild)
     }
 
-    func run(inspectOnly: Bool = false, planOnly: Bool = false, approval: String? = nil, selected: Bool = true) async -> AppFileResult {
-        await AppFileExecution.run(input: AppFileInput(file: file, environment: environment, device: selected ? device : nil),
+    func run(inspectOnly: Bool = false, planOnly: Bool = false, approval: String? = nil, selected: Bool = true,
+             platform: ProjectPlatform? = nil) async -> AppFileResult {
+        await AppFileExecution.run(input: AppFileInput(file: file, environment: environment, device: selected ? device : nil, platform: platform),
             inspectOnly: inspectOnly, planOnly: planOnly, approvedPlanID: approval, runner: runner, leases: leases)
     }
 

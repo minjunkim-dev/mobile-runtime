@@ -13,14 +13,16 @@ iOS 실기기·IPA는 #219다. 목록·보유 버전·설치 이력은 #220이�
 
 ```sh
 mobile app inspect /path/Local.app --json
-mobile app run /path/Local.app --device SIMULATOR-UDID --plan --json
+mobile app run /path/Local.app --platform ios --device SIMULATOR-UDID --plan --json
 mobile app run /path/Local.app --device SIMULATOR-UDID --approve EXACT-PLAN-ID --non-interactive --json --progress-json
 
 mobile app inspect /path/Local.apk --json
-mobile app run /path/Local.apk --device avd:EXISTING-AVD --plan --json
+mobile app run /path/Local.apk --platform android --device avd:EXISTING-AVD --plan --json
 mobile app run /path/Local.apk --device avd:EXISTING-AVD --approve EXACT-PLAN-ID --non-interactive --json
 ```
 
+`inspect`와 `run`의 `--platform ios|android`는 선택 사항이다. 생략하면 검사한 파일의 플랫폼을 사용한다.
+명시한 플랫폼이 검사한 파일과 다르면 계획·설치·실행 전에 중단한다. 기존 승인은 불일치를 허용하지 않는다.
 `--device`에는 현재 후보의 고정 ID를 사용한다. 기기를 자동 선택하거나 전환하지 않는다.
 가상 기기는 먼저 부팅하고 준비한다. 종료된 Simulator는 수동 준비 필요로 표시한다.
 Android 후보는 현재 연결된 Emulator다. 실제 기기와 새 AVD 생성은 이 경로에 포함하지 않는다.

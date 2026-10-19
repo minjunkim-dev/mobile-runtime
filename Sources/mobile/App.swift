@@ -34,6 +34,7 @@ struct AppRun: AsyncParsableCommand {
 struct AppFileOptions: ParsableArguments {
     @Argument(help: "Path to an iOS Simulator .app directory or one Android .apk file.") var file: String
     @Option(name: .long, help: "A current Simulator UDID or avd:<name>. The target never switches automatically.") var device: String?
+    @Option(name: .long, help: "ios or android. Omit to use the inspected file's platform; an explicit mismatch is rejected.") var platform: MobilePlatform?
     @Flag(name: .long, help: "Never prompt. Installation requires exact --approve input.") var nonInteractive = false
     @Flag(name: .long, help: "Emit one versioned JSON document. Implies non-interactive input.") var json = false
     @Flag(name: .long, help: "Emit versioned NDJSON progress on stderr.") var progressJson = false
@@ -48,7 +49,8 @@ struct AppFileOptions: ParsableArguments {
             handler.logLevel = logLevel
             return handler
         }
-        let input = AppFileInput(file: URL(fileURLWithPath: file), environment: ProcessInfo.processInfo.environment, device: device)
+        let input = AppFileInput(file: URL(fileURLWithPath: file), environment: ProcessInfo.processInfo.environment,
+            device: device, platform: platform.flatMap { ProjectPlatform(rawValue: $0.rawValue) })
         var approval = approvedPlanID
         if !inspectOnly, !planOnly, approval == nil, !nonInteractive, !json, !progressJson,
            isatty(FileHandle.standardInput.fileDescriptor) == 1 {

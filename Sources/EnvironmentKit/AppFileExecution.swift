@@ -7,11 +7,13 @@ public struct AppFileInput: Sendable {
     public let file: URL
     public let environment: [String: String]
     public let device: String?
+    public let platform: ProjectPlatform?
 
-    public init(file: URL, environment: [String: String], device: String? = nil) {
+    public init(file: URL, environment: [String: String], device: String? = nil, platform: ProjectPlatform? = nil) {
         self.file = file
         self.environment = environment
         self.device = device
+        self.platform = platform
     }
 }
 
@@ -120,7 +122,7 @@ public enum AppFileExecution {
             let file = URL(fileURLWithPath: first.identity.path)
             let tools = try AppFileProvider(file: file, runner: runner, environment: input.environment)
             provider = tools
-            let artifact = try await inspect(file: file, first: first, provider: tools)
+            let artifact = try await inspect(file: file, first: first, provider: tools, platform: input.platform)
             operation.artifact = artifact
             operation.completed.append("inspect")
             events.send("stage", stage: "inspect", state: "succeeded", detail: "\(artifact.metadata.appID), \(artifact.contentIdentityAlgorithm) \(artifact.contentIdentity)")
@@ -179,7 +181,7 @@ public enum AppFileExecution {
                   try await tools.metadata(staged) == artifact.metadata else {
                 throw AppFileSnapshot.failure("The copied app bytes or metadata differ from the approved file.")
             }
-            let current = try await inspect(file: file, first: AppFileSnapshot.read(file), provider: tools)
+            let current = try await inspect(file: file, first: AppFileSnapshot.read(file), provider: tools, platform: input.platform)
             let currentDevices = try await tools.devices()
             guard let currentDevice = currentDevices.first(where: { $0.id == deviceID }) else {
                 throw AppFileSnapshot.failure("The approved device disconnected before installation.")
@@ -253,11 +255,14 @@ public enum AppFileExecution {
     }
 
     private static func inspect(file: URL, first: (identity: AppFileIdentity, digest: String),
-                                provider: AppFileProvider) async throws -> AppFileArtifact {
+                                provider: AppFileProvider, platform: ProjectPlatform?) async throws -> AppFileArtifact {
         let metadata = try await provider.metadata(file)
         let after = try AppFileSnapshot.read(file)
         guard first.identity == after.identity, first.digest == after.digest else {
             throw AppFileSnapshot.failure("The file changed while its metadata was inspected.")
+        }
+        if let platform, metadata.platform != platform {
+            throw AppFileSnapshot.failure("The selected platform \(platform.rawValue) does not match the inspected file's platform \(metadata.platform.rawValue). Select a matching file or platform, then inspect again.")
         }
         return AppFileArtifact(file: first.identity, contentIdentity: first.digest, metadata: metadata)
     }
