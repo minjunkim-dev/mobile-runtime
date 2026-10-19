@@ -1,0 +1,17 @@
+{
+  "kind": "actual-host-acceleration-preflight",
+  "recordedAt": "2026-10-18T15:33:19.613Z",
+  "host": {"os": "macOS 27.0.1", "architecture": "arm64"},
+  "tool": {"localRevision": "37.1.11", "origin": "isolated APFS copy; selected executable copy checksum matched"},
+  "command": ["sdk/emulator/emulator", "-accel-check"],
+  "exitCode": 0,
+  "stdout": "accel:\n0\nHypervisor.Framework OS X Version 27.0\naccel\n",
+  "scope": "Emulator-reported acceleration prerequisite availability only",
+  "systemImageInstall": "unverified",
+  "avdCreation": "unverified",
+  "emulatorBoot": "unverified",
+  "guiResult": "unverified",
+  "wholeHomeOrCachePreservation": "unverified",
+  "privateReceipt": "state/accel-check-v1.json in the dedicated validation root",
+  "officialReference": "https://developer.android.com/studio/run/emulator-acceleration"
+}
