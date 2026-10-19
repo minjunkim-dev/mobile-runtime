@@ -36,6 +36,11 @@ GUI의 환경 확인과 준비 계획에는 같은 entrypoint를 전달한다.
 GUI의 환경 확인에는 선택한 scheme과 configuration도 전달한다.
 GUI의 iOS build에는 선택한 Simulator identity도 전달한다.
 
+Flutter workspace의 `down`도 현재 선언으로 확인한 workspace 폴더를 잠근다.
+이 확인에는 SDK나 Dart 실행을 사용하지 않는다.
+선택한 앱의 포함 관계나 workspace root를 확인하지 못하면 기존 자원을 보존하고 중단한다.
+복잡한 workspace 패턴은 SDK 없는 정리에서 지원하지 않으므로 선언을 확인해야 한다.
+
 Flutter build와 up은 사용 가능한 Simulator identity를 확인한다.
 선택 가능한 Simulator가 하나면 이를 선택한다.
 여러 개면 명시적 선택을 요구한다.

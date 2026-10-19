@@ -312,6 +312,31 @@ struct FlutterAndroidWorkflowTests {
         #expect(try Self.physical(URL(fileURLWithPath: reportedTarget)).path == Self.physical(URL(fileURLWithPath: target)).path)
         #expect(trace.count == 1)
         #expect(try !result.encoded(toolVersion: "fixture").contains("sentinel-secret"))
+        try FileManager.default.removeItem(at: fixture.native.repo.url("flutter-sdk"))
+        if workspace {
+            let manifest = fixture.native.repo.url("pubspec.yaml")
+            let originalManifest = try Data(contentsOf: manifest)
+            try "name: example\nenvironment:\n  sdk: ^3.6.0\n".write(to: manifest, atomically: false, encoding: .utf8)
+            let beforeUnknown = fixture.runner.base.log.all.count
+            let unknown = await WorkflowExecution.run(.down, input: WorkflowInput(project: fixture.input),
+                runner: fixture.runner, leases: fixture.leases)
+            #expect(unknown.exitCode == 1)
+            #expect(fixture.runner.base.log.all.count == beforeUnknown)
+            #expect(try AndroidActiveRunStore(project: fixture.app).read() == record)
+            try originalManifest.write(to: manifest)
+            let key = ResourceKey.folder(try FolderIdentity(directory: fixture.native.repo.root))
+            let other = LeaseOwner(operationId: "workspace-setup", command: "setup", project: fixture.native.repo.root.path)
+            let folder = try fixture.leases.acquire([key], owner: other)
+            let beforeFolder = fixture.runner.base.log.all.count
+            let blockedFolder = await WorkflowExecution.run(.down, input: WorkflowInput(project: fixture.input),
+                runner: fixture.runner, leases: fixture.leases)
+            #expect(blockedFolder.exitCode == 1)
+            #expect(blockedFolder.operation.conflict?.key == key)
+            #expect(blockedFolder.operation.conflict?.owner == other)
+            #expect(fixture.runner.base.log.all.count == beforeFolder)
+            #expect(try AndroidActiveRunStore(project: fixture.app).read() == record)
+            folder.release()
+        }
         let occupied = try fixture.leases.acquire([.port(port)], owner: LeaseOwner(
             operationId: "other-server", command: "fixture", project: "/other-app"))
         let beforeDown = fixture.runner.base.log.all.count
@@ -328,6 +353,49 @@ struct FlutterAndroidWorkflowTests {
         #expect(trace.count == 1)
         #expect(try AndroidActiveRunStore(project: fixture.app).read() == nil)
         #expect(fixture.runner.base.log.spawned.isEmpty)
+    }
+
+    @Test("physical and system-alias inventory roots retain the same protected inputs and refuse source links")
+    func inventoryRootIdentity() async throws {
+        let fixture = try CallerFixture()
+        let repo = fixture.flutter.repo
+        try repo.write("lib/build/source.dart", "preserved source\n")
+        try repo.write("build/generated.txt", "generated\n")
+        let physical = try Self.physical(repo.root)
+        let system = ["/private/tmp", "/private/var", "/private/etc"].first { physical.path.hasPrefix($0 + "/") }
+        try #require(system != nil)
+        let alias = URL(fileURLWithPath: String(physical.path.dropFirst("/private".count)), isDirectory: true)
+        #expect(try FolderIdentity(directory: physical) == FolderIdentity(directory: alias))
+        let preparation = try await fixture.flutter.inspect(fixture.runner)
+        var observations: [Set<String>] = []
+        var guards: [FlutterAndroidExecution.PreparedInputs] = []
+        for root in [physical, alias] {
+            let files = try PreparationExecution.sourceFiles(root, packageRoots: [root])
+            observations.append(Set(try files.keys.map { try Self.physical(URL(fileURLWithPath: $0)).path }))
+            #expect(files.keys.contains { URL(fileURLWithPath: $0).lastPathComponent == "source.dart" })
+            #expect(!files.keys.contains { URL(fileURLWithPath: $0).lastPathComponent == "generated.txt" })
+            let inputs = try FlutterAndroidExecution.preparedInputs(app: physical, preparation: preparation,
+                trackedFiles: files.keys.map { URL(fileURLWithPath: $0) })
+            try inputs.check()
+            guards.append(inputs)
+        }
+        #expect(observations[0] == observations[1])
+        try repo.write("lib/build/source.dart", "external change\n")
+        for inputs in guards { #expect(throws: DomainError.self) { try inputs.check() } }
+        let outside = try FixtureRepo()
+        try outside.write("other.dart", "preserved outside source\n")
+        #expect(throws: (any Error).self) {
+            try PreparationExecution.sourceFiles(physical, packageRoots: [outside.root])
+        }
+        try FileManager.default.createSymbolicLink(at: repo.url("lib/alias.dart"), withDestinationURL: outside.url("other.dart"))
+        let files = try PreparationExecution.sourceFiles(alias, packageRoots: [alias])
+        #expect(files.contains { URL(fileURLWithPath: $0.key).lastPathComponent == "alias.dart" && $0.value.hasPrefix("symlink:") })
+        #expect(throws: DomainError.self) {
+            try FlutterAndroidExecution.preparedInputs(app: physical, preparation: preparation,
+                trackedFiles: files.keys.map { URL(fileURLWithPath: $0) })
+        }
+        #expect(try String(contentsOf: outside.url("other.dart"), encoding: .utf8) == "preserved outside source\n")
+        withExtendedLifetime(outside) {}
     }
 
     @Test("another owner of a selected Android port blocks changes before install, launch or forward")

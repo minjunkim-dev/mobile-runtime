@@ -207,7 +207,15 @@ public enum WorkflowExecution {
             }
 
             // Stabilize this project's recorded targets before acquiring the resources down changes.
-            let folder = try FolderIdentity(directory: androidFlutter?.workspace.directory ?? wiring.flutter?.workspace?.directory
+            var flutterDownRoot: URL?
+            if kind == .down && anchor.framework == .flutter {
+                guard let project = try? FlutterProject(directory: anchor.directory, entrypoint: input.project.entrypoint),
+                      let root = try? project.workspaceDirectoryForTeardown() else {
+                    throw selectionFailure("Confirm the current Flutter workspace declarations before down. Existing resources were preserved; no SDK was run.")
+                }
+                flutterDownRoot = root
+            }
+            let folder = try FolderIdentity(directory: flutterDownRoot ?? androidFlutter?.workspace.directory ?? wiring.flutter?.workspace?.directory
                 ?? anchor.workspaceRoot?.directory ?? anchor.directory)
             // Flutter shares a workspace lease, but the selected app owns its installed runtime.
             let ownerProject = anchor.framework == .flutter ? candidate.app.path : folder.path

@@ -799,8 +799,8 @@ public enum PreparationExecution {
             }
             let attributes = try url.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
             if let physicalRoot {
-                guard url.path.hasPrefix(root.path + "/") else { throw CocoaError(.fileReadInvalidFileName) }
-                let observed = physicalRoot + String(url.path.dropFirst(root.path.count))
+                let observed = try FolderIdentity(directory: url.deletingLastPathComponent()).path + "/" + url.lastPathComponent
+                guard observed.hasPrefix(physicalRoot + "/") else { throw CocoaError(.fileReadInvalidFileName) }
                 if url.lastPathComponent == ".git"
                     || (generated.contains(observed) && attributes.isDirectory == true && attributes.isSymbolicLink != true) {
                     files.skipDescendants(); continue
