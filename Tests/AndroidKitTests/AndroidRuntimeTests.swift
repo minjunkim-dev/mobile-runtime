@@ -174,7 +174,7 @@ struct AndroidRuntimeTests {
             "kill -0 7002": [.ok(""), .failed(1, "")],
             command("lsof", MetroVerdict.listenerArguments + ["-t"]): [.ok("7002\n"), .failed(1, "")],
             MetroStatus.command: [.ok(MetroStatus.running(projectRoot: scenario.repo.root))],
-            "lsof -a -p 7002 -d cwd -Fn": [.ok("p7002\nn\(scenario.repo.root.path)\n")],
+            "lsof -a -p 7002 -d cwd -Fn": [.ok("p7002\nfcwd\nn\(scenario.repo.root.path)\n")],
             "kill -TERM 7002": [.ok("")],
         ])
         let runner = ScriptedProcessRunner(state: state)
@@ -725,7 +725,7 @@ struct AndroidRuntimeTests {
             "kill -0 7002": [.ok(""), .failed(1, "")],
             command("lsof", MetroVerdict.listenerArguments + ["-t"]): [.ok("7002\n"), .failed(1, "")],
             MetroStatus.command: [.ok(MetroStatus.running(projectRoot: scenario.repo.root))],
-            "lsof -a -p 7002 -d cwd -Fn": [.ok("p7002\nn\(scenario.repo.root.path)\n")],
+            "lsof -a -p 7002 -d cwd -Fn": [.ok("p7002\nfcwd\nn\(scenario.repo.root.path)\n")],
             "kill -TERM 7002": [.ok("")],
         ])
         let runner = ScriptedProcessRunner(state: state)

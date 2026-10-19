@@ -162,14 +162,20 @@ public enum MetroLaunch {
         var directories: [Int32: String] = [:]
         var seen: Set<Int32> = []
         var selected: Int32?
+        var sawCWD = false
         for line in result.standardOutput.split(separator: "\n") {
             if line.first == "p" {
+                if let selected, directories[selected] == nil { throw uncertainStartup() }
                 guard let pid = decimalPID(line.dropFirst()), pids.contains(pid), seen.insert(pid).inserted else {
                     throw uncertainStartup()
                 }
                 selected = pid
+                sawCWD = false
+            } else if line == "fcwd" {
+                guard let pid = selected, !sawCWD, directories[pid] == nil else { throw uncertainStartup() }
+                sawCWD = true
             } else if line.first == "n" {
-                guard let pid = selected, directories[pid] == nil, line.dropFirst().first == "/" else {
+                guard let pid = selected, sawCWD, directories[pid] == nil, line.dropFirst().first == "/" else {
                     throw uncertainStartup()
                 }
                 directories[pid] = URL(fileURLWithPath: String(line.dropFirst())).standardizedFileURL.resolvingSymlinksInPath().path

@@ -21,9 +21,9 @@ public enum MetroStatus {
             processTableCommand: .ok(tree),
             "lsof -a -p \(pids) -nP -iTCP:\(port) -sTCP:LISTEN -t": .ok("\(listenerPID)\n"),
             "lsof -a -p \(listenerPID) -nP -iTCP:\(port) -sTCP:LISTEN -t": .ok("\(listenerPID)\n"),
-            "lsof -a -p \(startPID) -d cwd -Fpn": .ok("p\(startPID)\nn\(projectRoot.path)\n"),
+            "lsof -a -p \(startPID) -d cwd -Fpn": .ok("p\(startPID)\nfcwd\nn\(projectRoot.path)\n"),
             "lsof -a -p \(rootAndListener) -d cwd -Fpn": .ok(
-                "p\(startPID)\nn\(projectRoot.path)\np\(listenerPID)\nn\(projectRoot.path)\n"
+                "p\(startPID)\nfcwd\nn\(projectRoot.path)\np\(listenerPID)\nfcwd\nn\(projectRoot.path)\n"
             ),
         ]
     }

@@ -148,12 +148,41 @@ struct MetroLaunchTests {
     func wrongCWD(rootMoved: Bool) async throws {
         let repo = try startupProject()
         let key = rootMoved ? "lsof -a -p 4242 -d cwd -Fpn" : "lsof -a -p 4242,70947 -d cwd -Fpn"
-        let answer = rootMoved ? "p4242\nn/another-project\n"
-            : "p4242\nn\(repo.root.path)\np70947\nn/another-project\n"
+        let answer = rootMoved ? "p4242\nfcwd\nn/another-project\n"
+            : "p4242\nfcwd\nn\(repo.root.path)\np70947\nfcwd\nn/another-project\n"
         let runner = StartupReplies(root: repo.root, sequences: [key: [.ok(answer)]])
         let report = try await startupReport(repo, runner)
         #expect(report.exitCode == 1)
         #expect(report.context.metro?.listenerPid == nil)
+    }
+
+    @Test("cwd records require exactly one fcwd descriptor and path for every expected process", arguments: [false, true], [
+        "p$PID\nn$ROOT\n",
+        "fcwd\np$PID\nn$ROOT\n",
+        "p$PID\nftxt\nn$ROOT\n",
+        "p$PID\nfcwd\nfcwd\nn$ROOT\n",
+        "p$PID\nfcwd\n",
+        "p$PID\nfcwd\nn$ROOT\nn$ROOT\n",
+        "p$PID\nfcwd\nn$ROOT\np$PID\nfcwd\nn$ROOT\n",
+        "p99999\nfcwd\nn$ROOT\n",
+        "p$PID\nfcwd\nnrelative-path\n",
+        "n$ROOT\np$PID\nfcwd\n",
+        "",
+    ])
+    func malformedCWD(joint: Bool, payload: String) async throws {
+        let repo = try startupProject()
+        let selectedPID = joint ? "70947" : "4242"
+        let key = joint ? "lsof -a -p 4242,70947 -d cwd -Fpn" : "lsof -a -p 4242 -d cwd -Fpn"
+        let prefix = joint ? "p4242\nfcwd\nn\(repo.root.path)\n" : ""
+        let reply = prefix + payload.replacingOccurrences(of: "$PID", with: selectedPID)
+            .replacingOccurrences(of: "$ROOT", with: repo.root.path)
+        let runner = StartupReplies(root: repo.root, sequences: [key: [.ok(reply)]])
+        let report = try await startupReport(repo, runner)
+        #expect(report.exitCode == 1)
+        #expect(report.context.metro?.pid == 4242)
+        #expect(report.context.metro?.listenerPid == nil)
+        #expect(report.stages.map(\.id) == ["metro"])
+        #expect(!runner.log.all.contains { $0.executable == "kill" && $0.arguments != ["-0", "4242"] })
     }
 
     @Test("changed ancestry or process birth between probes is not accepted", arguments: ["parent", "root-birth", "listener-birth"])
@@ -219,4 +248,3 @@ struct MetroLaunchTests {
         #expect(runner.log.all.first?.timeout == .seconds(10))
     }
 }
-
