@@ -179,7 +179,8 @@ struct AndroidPreparationTests {
     @Test("fresh metadata is checked before and after acquiring the SDK lease", arguments: [3, 4])
     func metadataChangesAtExecution(read: Int) async throws {
         let fixture = try await SDKFixture()
-        let runner = fixture.runner(metadataChangesAfter: read)
+        // SDK and Emulator providers each observe the SDK catalog during one inspection.
+        let runner = fixture.runner(metadataChangesAfter: read * 2 - 1)
         let plan = await PreparationExecution.run(input: fixture.input, planOnly: true, runner: runner)
         let result = await PreparationExecution.run(input: fixture.input, approvedPlanID: try #require(plan.plan?.id), runner: runner)
         #expect(result.operation.state == "needs-approval")
@@ -203,7 +204,7 @@ struct AndroidPreparationTests {
     }
 }
 
-private final class SDKFixture: @unchecked Sendable {
+final class SDKFixture: @unchecked Sendable {
     let repo: FixtureRepo
     let input: ProjectInspectionInput
     let modelCommand: String
@@ -269,7 +270,7 @@ private final class SDKFixture: @unchecked Sendable {
     }
 }
 
-private final class SDKPreparationRunner: ProcessRunner, @unchecked Sendable {
+final class SDKPreparationRunner: ProcessRunner, @unchecked Sendable {
     let fixture: SDKFixture
     let failPlatform: Bool
     let repository: String

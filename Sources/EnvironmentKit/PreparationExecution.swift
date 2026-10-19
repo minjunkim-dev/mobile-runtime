@@ -38,6 +38,7 @@ public struct PreparationPlan: Codable, Sendable {
     public var androidRequirements: AndroidSDKRequirements? = nil
     /// Observed iOS identities are approval inputs, separate from payload checksums.
     public var resources: [IOSPreparationResource]? = nil
+    public var androidResources: [AndroidPreparationResource]? = nil
 
     /// The same approval inspection is visible in both clients.
     public var inspectionLines: [String] {
@@ -65,6 +66,7 @@ public struct PreparationOperation: Encodable, Sendable {
     public var conflict: ResourceConflict?
     /// Completed or uncertain OS resources survive failures and cancellation.
     public var resources: [IOSPreparationResource] = []
+    public var androidResources: [AndroidPreparationResource]? = nil
 }
 
 public struct PreparationResult: Sendable {
@@ -108,6 +110,7 @@ public enum PreparationExecution {
             result.plan = prepared.plan
             result.selection = prepared.selection
             result.operation.resources = prepared.resources
+            result.operation.androidResources = prepared.androidResources.isEmpty ? nil : prepared.androidResources
             result.operation.requiredInput = prepared.selection?.requiredInput ?? []
             if !result.operation.requiredInput.isEmpty || prepared.plan == nil {
                 result.operation.error = prepared.selection?.error ?? "Choose a detected project app."
@@ -165,7 +168,7 @@ public enum PreparationExecution {
                 result.operation.error = "Conditions changed while acquiring the preparation target."
                 return finish(result, events)
             }
-            let installedDestinations = installations.compactMap { $0.installation?.destination }
+            let installedDestinations = installations.flatMap { $0.installation?.mutationTargets ?? [] }
             let originalFiles = try sourceFiles(prepared.root, excluding: installedDestinations)
             let sourceRoot = prepared.root
             var existingIOSDevices: [IOSResourceInventory.Device]?
@@ -218,8 +221,14 @@ public enum PreparationExecution {
                             files: originalFiles, excluding: installedDestinations + ownedTemporaryPaths)
                     }
                     result.operation.resources += installed.resources
+                    if !installed.androidResources.isEmpty {
+                        result.operation.androidResources = (result.operation.androidResources ?? []) + installed.androidResources
+                    }
                 } catch let failure as InstallationActionFailure {
                     result.operation.resources += failure.result.resources
+                    if !failure.result.androidResources.isEmpty {
+                        result.operation.androidResources = (result.operation.androidResources ?? []) + failure.result.androidResources
+                    }
                     events.emit("stage", stage: step.id, state: failure.underlying is CancellationError ? "cancelled" : "failed")
                     throw failure.underlying
                 } catch {
@@ -339,10 +348,14 @@ public enum PreparationExecution {
         guard changed.isEmpty else { throw PreparationSourceChanged(files: changed) }
         guard let current = try await inspect(input, runner: host, excluding: excluding).plan,
               current.project == plan.project, current.app == plan.app, current.files == plan.files,
-              current.androidRequirements == plan.androidRequirements,
-              current.steps.contains(where: { $0.id == step.id && $0.kind == "install" && $0.installation == step.installation }) else {
+              current.androidRequirements == plan.androidRequirements else {
             throw DomainError(summary: "Installation conditions changed before the next package commit",
                 remediation: Remediation(summary: "Preserve completed packages. Inspect the remaining plan and approve it again."))
+        }
+        guard current.steps.contains(where: { $0.id == step.id && $0.kind == "install" && $0.installation == step.installation }) else {
+            throw DomainError(summary: "Approved installation identity is no longer available before commit",
+                remediation: Remediation(summary: current.steps.first(where: { $0.id == "android.emulator.preparation" })?.observed
+                    ?? "Preserve completed resources. Inspect and approve the remaining plan again."))
         }
         let inspected = try sourceFiles(root, excluding: excluding)
         let changedDuringInspection = Set(inspected.keys).union(files.keys).filter { inspected[$0] != files[$0] }.sorted()
@@ -359,6 +372,7 @@ public enum PreparationExecution {
         var root: URL
         var installationActions: [String: InstallationAction] = [:]
         var resources: [IOSPreparationResource] = []
+        var androidResources: [AndroidPreparationResource] = []
     }
 
     private static func inspect(_ input: ProjectInspectionInput, runner: any ProcessRunner, excluding: [URL] = []) async throws -> Inspection {
@@ -486,6 +500,16 @@ public enum PreparationExecution {
                 sdkInstalled.merge(sdkPreparation.installed) { _, new in new }
                 value.installationActions.merge(sdkPreparation.actions) { _, new in new }
             }
+            if platform == .android, !pendingTools, nativeReady, let android = context.androidContext {
+                let emulator = try await AndroidEmulatorPreparation.inspect(context: android, runner: runner)
+                checks += emulator.checks
+                sdkInstalled.merge(emulator.installed) { _, new in new }
+                value.installationActions.merge(emulator.actions) { _, new in new }
+                value.androidResources += emulator.resources
+                if emulator.resources.contains(where: { $0.origin == .reused && $0.state == "available" }) {
+                    checks.removeAll { $0.id == "android.android.avd" }
+                }
+            }
             if platform == .ios, !pendingTools, nativeReady {
                 let iosPreparation = try await IOSPreparation.inspect(context: context, input: input)
                 // Native deployment is measured by the provider. Replace only the
@@ -544,7 +568,7 @@ public enum PreparationExecution {
         if anchor.framework != .reactNative && anchor.framework != .flutter {
             value.plan = try makePlan(project: selected.app, app: selected.id, kind: anchor.framework.rawValue,
                                      platforms: platforms, steps: steps, files: approvalFiles(root, excluding: excluding), installed: sdkInstalled,
-                                     androidRequirements: androidRequirements, resources: value.resources)
+                                     androidRequirements: androidRequirements, resources: value.resources, androidResources: value.androidResources)
             return value
         }
         var installed: [String: Bool] = sdkInstalled
@@ -654,7 +678,7 @@ public enum PreparationExecution {
         }
         value.plan = try makePlan(project: selected.app, app: selected.id, kind: anchor.framework.rawValue, platforms: platforms,
                                  steps: steps, files: files, installed: installed,
-                                 androidRequirements: androidRequirements, resources: value.resources)
+                                 androidRequirements: androidRequirements, resources: value.resources, androidResources: value.androidResources)
         return value
     }
 
@@ -690,11 +714,12 @@ public enum PreparationExecution {
     private static func makePlan(project: FolderIdentity, app: String, kind: String,
                                  platforms: [PreparationPlatform], steps: [PreparationStep], files: [String: String], installed: [String: Bool],
                                  androidRequirements: AndroidSDKRequirements? = nil,
-                                 resources: [IOSPreparationResource] = []) throws -> PreparationPlan {
+                                 resources: [IOSPreparationResource] = [], androidResources: [AndroidPreparationResource] = []) throws -> PreparationPlan {
         var plan = PreparationPlan(id: "", project: project, app: app, projectKind: kind,
                                    platforms: platforms, steps: steps.sorted { $0.id < $1.id }, files: files, installed: installed)
         plan.androidRequirements = androidRequirements
         plan.resources = resources.isEmpty ? nil : resources
+        plan.androidResources = androidResources.isEmpty ? nil : androidResources
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
         plan.id = digest(try encoder.encode(plan))

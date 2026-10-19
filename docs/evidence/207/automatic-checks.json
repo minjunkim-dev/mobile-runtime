@@ -1,0 +1,284 @@
+{
+  "kind": "automated-behavior-checks",
+  "base": "c73155c856162d31c15d6c300f0ec1dc8b54d5ff",
+  "source": "commit containing this record",
+  "fullSwiftTest": {
+    "exitCode": 0,
+    "suiteCounts": {
+      "AndroidKitTests": 92,
+      "EnvironmentKitTests": 226,
+      "CoreTests": 374,
+      "SimulatorKitTests": 123
+    },
+    "totalTests": 815,
+    "warningsAsErrors": true
+  },
+  "relatedSuites": {
+    "intermediatePass": {
+      "tests": 51,
+      "scope": "Android Emulator/SDK, AVD action, shared setup, InstallationAction, ZIP installation and preparation"
+    },
+    "finalCoverage": "all related suites are included in the final full Swift run"
+  },
+  "redEvidence": [
+    "missing repository-source API compile failure",
+    "missing AVD creation API compile failure",
+    "image dependency major missing accepted before fix",
+    "AVD missing system.img reported reusable before fix",
+    "official fresh-create fixture without AvdId fails under the old required-key check",
+    "identical profile labels with hardware/boot-props payload changes reused old approval before the fix",
+    "multiple compatible AVDs with missing adb failed before Platform-Tools planning; public preparation plan was nil and the unavailable adb was probed",
+    "namespace-aware parser rejects generated local metadata: common prefix undefined, XML error201",
+    "SDK protection wrapper API absent compile failure"
+  ],
+  "command": "env HOME=<owned-home> CFFIXED_USER_HOME=<owned-home> CLANG_MODULE_CACHE_PATH=<owned-module-cache> SWIFTPM_MODULECACHE_OVERRIDE=<owned-module-cache> TMPDIR=<owned-tmp> swift test --force-resolved-versions --scratch-path <owned-build> --cache-path <owned-cache> --config-path <owned-config> --security-path <owned-security> -Xswiftc -warnings-as-errors",
+  "isolationProbe": {
+    "exitCode": 0,
+    "foundationHome": "<validation207>/home",
+    "resourceLeasesUserRoot": "<validation207>/home/Library/Caches/dev.runstir/leases",
+    "probeTestRemovedAfterObservation": true,
+    "environmentTMPDIR": "<validation207>/tmp",
+    "foundationTemporaryDirectory": "<macOS-system-user-temp>",
+    "observedOwnedScratch": [
+      "<macOS-system-user-temp>/mobile-fixture-<UUID>",
+      "<macOS-system-user-temp>/runstir-android-profile-<UUID>"
+    ],
+    "scope": "Foundation home and ResourceLeases.user point to the private home. Environment TMPDIR does not relocate Foundation temporaryDirectory. Owned UUID test scratch is allowed there; no whole HOME/cache preservation assertion."
+  },
+  "initialRunLimitation": {
+    "homeIsolation": "not set during initial focused runs",
+    "defaultLeaseUse": "some pre-existing tests use ResourceLeases.user",
+    "actualHostCacheFileAccessOrMutation": "not audited",
+    "wholeHomeOrCachePreservation": "unverified",
+    "hostCacheCleanupPerformed": false
+  },
+  "actualSystemImageDownload": "Observed image installer success on prior source82202ccc; fresh current-source SDK tuple remains unverified",
+  "actualAVDCreation": "unverified",
+  "actualEmulatorBoot": "unverified",
+  "actualCLIAndGUIFlow": "unverified",
+  "privateLogs": [
+    {
+      "basename": "red.log",
+      "sha256": "1aff55bdca7d6ff96d0342e49f8db94ee4fff441a66f0a1be8b3737253c1801d"
+    },
+    {
+      "basename": "parser-green.log",
+      "sha256": "401899d4ed1cfbc9fc6df0dcc42bd61d5d5e2db06c658588cffff30f0a0394f6"
+    },
+    {
+      "basename": "avd-red.log",
+      "sha256": "087eea5ee1f3287c89bd88f1fdac7c448185ae57aa0c54cf673edcc0a7a2b0bc"
+    },
+    {
+      "basename": "dependency-red.log",
+      "sha256": "4cf886dc304f4740f77d4598b5366264c0381267478fce792ae467e94b804c87"
+    },
+    {
+      "basename": "image-content-red.log",
+      "sha256": "be8bd007910bc331c3aa9c26aaa7a2d459ae14c1331921ffe462a12ce6cb1a78"
+    },
+    {
+      "basename": "related.log",
+      "sha256": "75cf841862559a8cba822f8620e3ca41f8454167d5a634ef042c8cdf8e44e002"
+    },
+    {
+      "basename": "isolation-probe.log",
+      "sha256": "9838e4c67cfec0b9980e4f9b706e7cfb762a27312bed9beea5d8a379c9cdf5ff"
+    },
+    {
+      "basename": "full-swift.log",
+      "sha256": "6be1cdbe9524f89694fdc08e28a1c7f5c651480eb1df7ca21b20b028cc384879"
+    },
+    {
+      "basename": "spec-fixes-red.log",
+      "sha256": "f75558e74cafea28ff763b736143e6c4c431e60ffc2b30a322138d9bd170549a"
+    },
+    {
+      "basename": "profile-payload-red.log",
+      "sha256": "04fffe981173182996da8badea0b1dba35579cb75eba26f6c3311d883022cefd"
+    },
+    {
+      "basename": "spec-fixes-related.log",
+      "sha256": "eb2be5addf30a40039af2164bdb9d1c805e547604de4a065529086f56201016a"
+    },
+    {
+      "basename": "spec-probe-normalized.log",
+      "sha256": "36ed6e21dcc36b9faa1c10ffdb2caeb373eab28619e46c37b33dbe120f31615e"
+    },
+    {
+      "basename": "spec-fixes-full-swift.log",
+      "sha256": "2c51e9a1f57c1656fbdca099fbb8c00e1f8a3d47d4365be400e40bb068ebde40"
+    },
+    {
+      "basename": "standards-adb-red.log",
+      "sha256": "395ba09a68650eaff1a954f043b018c878eb429393807f217a88bf623c7bbdbc"
+    },
+    {
+      "basename": "standards-adb-green.log",
+      "sha256": "7d4a1291f7d4778b8b2ab67d3840cbcffd9cc9d1d2c00d2fd1fa746407b8535c"
+    },
+    {
+      "basename": "standards-adb-full.log",
+      "sha256": "a890f9e94c74a176a1d871ee7d0ec606577a04f15208fb71533b5801660e71fe"
+    },
+    {
+      "basename": "standards-adb-source-only.log",
+      "sha256": "2fe63ad6fef11334bebfb5beee3028a09f28c165ed4e83f2f8f3d335e4a00b54"
+    },
+    {
+      "basename": "sdk-namespace-red.log",
+      "sha256": "358d019a1b4ca13fbfe7837cd503389e0ffc90b6d348d5dc594f0505340f1cff"
+    },
+    {
+      "basename": "sdk-protection-api-red.log",
+      "sha256": "0ebc936fcb3b9f1209f0e6e9458f4e03beb391644031bf1528e892cf3b792a77"
+    },
+    {
+      "basename": "sdk-protection-green.log",
+      "sha256": "ea2c35c5689daece092f4a0b670b4670daa92fd8c987734d3a6fba272b4fa87f"
+    },
+    {
+      "basename": "sdk-protection-related.log",
+      "sha256": "74a942a6ec68f1cb732712376555dfe1a4ae596e7bd18cc3e60dde5b4b0e836c"
+    },
+    {
+      "basename": "sdk-protection-full.log",
+      "sha256": "969b1f7738cf9099c6fee15f7b63a4c01f46594c33b78525e85fdd43868ab83c"
+    },
+    {
+      "basename": "sdk-protection-source-only.log",
+      "sha256": "6b4751c2459086a8db5102788bb58afbe864ba0dc66e1669589cecdeebc4167b"
+    }
+  ],
+  "suiteLabelCorrection": "The initial 795 total was correct. AndroidKitTests and SimulatorKitTests labels were reversed in the first record; corrected using actual suite names in the logs.",
+  "specReviewFixes": {
+    "reviewedHead": "0ad2394161293496c2e59a858d7beac128cccf77",
+    "officialSourceCommit": "6bbb16186fa0087f54b6857e1e0aa88d115ab537",
+    "AvdId": "absent accepted for official fresh creation; present must equal approved name; pointer/image/ABI/profile checks retained",
+    "profileIdentity": "selected label block plus launcher, manifest-reachable JARs and SDK device catalog/selection metadata; pre/post probe and before creation/registration rechecks",
+    "excludedFromProfileDigest": [
+      "system image payload",
+      "unrelated tools",
+      "authentication files"
+    ],
+    "bounds": {
+      "classpathEntries": 128,
+      "payloadFiles": 512,
+      "totalPayloadBytes": 268435456,
+      "singleJarBytes": 67108864,
+      "singleCatalogOrLauncherBytes": 2097152,
+      "manifestOutputBytes": 65536,
+      "catalogDirectories": 512
+    },
+    "readOnlyStagedToolObservation": {
+      "commandLineTools": "21.0",
+      "presentJars": 75,
+      "missingTransitiveReferences": 6,
+      "presentJarBytes": 35810425,
+      "SDKToolExecuted": false
+    },
+    "regressions": [
+      "fresh create without AvdId",
+      "matching and mismatching optional AvdId",
+      "same labels with changed hardware or boot props",
+      "payload change immediately before create",
+      "payload change before registration",
+      "manifest continuation and transitive closure",
+      "pinned absence changes when a JAR appears",
+      "unsafe relative/absolute/URI path and symlink rejection",
+      "JAR, manifest and entry-count limits",
+      "duplicate/ambiguous classpath rejection",
+      "missing root layout closes manually",
+      "unrelated tool and image content excluded"
+    ],
+    "fullSwiftTestExitCode": 0,
+    "actualSDKWriterOrAVDCreation": "unverified; not executed",
+    "actualPayloadProbeLatency": "unverified"
+  },
+  "missingADBReviewFix": {
+    "reviewedHead": "0a8ec26669b44e18959e79937984a7b9f1b2d0b2",
+    "redLogSHA256": "395ba09a68650eaff1a954f043b018c878eb429393807f217a88bf623c7bbdbc",
+    "publicRegression": "PreparationExecution.run; three tests, four parameter cases",
+    "behavior": "Observe Platform-Tools readiness before running adb; return runtime tool preparation before resolving multiple existing AVDs when those tools are not ready",
+    "preserved": [
+      "incomplete existing Platform-Tools package",
+      "existing AVD bytes",
+      "ambiguity with no running compatible candidate",
+      "compatible running AVD priority",
+      "shared exact-plan approval and leases"
+    ],
+    "focusedExitCode": 0,
+    "fullSwiftTestExitCode": 0,
+    "sourceOnly": {
+      "exitCode": 0,
+      "tests": 61,
+      "command": "python3 -B -m unittest discover -s scripts/source-only -p 'test_*.py' -v"
+    },
+    "actualSDKOrAVDWriterExecuted": false,
+    "toolInstallationOrMiseExecPerformed": false
+  },
+  "sdkWriteProtectionFix": {
+    "reviewedHead": "82202ccc4c9adc70175531b5d8a842eec30da92c",
+    "runtimeBlockerReceipt": {
+      "privateBasename": "cli-image-license-defect-v1.json",
+      "sha256": "093d59bdc524577b16d7b98eda83398835790df5f0bcc1cc57c43e09b622e6e0",
+      "imageStageSucceeded": true,
+      "operationState": "partial",
+      "actualExitCode": 1,
+      "AVDEntries": 0,
+      "preRewriteMetadataBytes": "not captured",
+      "completeSDKMutationSet": "unmeasured",
+      "archiveVerification": "Approved archive size/SHA-1 installer path completed; staged ZIP removed by installer; independent rehash not performed",
+      "localImageObservation": {
+        "revision": "9",
+        "systemImageBytes": 3891265536,
+        "independentImageChecksum": "not measured"
+      }
+    },
+    "localMetadata": "declare common/02; retain exact remote license ID and normalized text hash; no alias or acceptance policy changes",
+    "childProtection": "absolute sandbox-exec with SDK deny file-write* policy; original absolute avdmanager and argv plus environment/workingDirectory/timeout/output preserved; descendant processes inherit protection",
+    "callers": [
+      "profile list device",
+      "create avd"
+    ],
+    "boundaryChecks": [
+      "canonical SDK/tool paths",
+      "SDK symbolic aliases",
+      "SDK and writable directory overlaps",
+      "Android child homes match writable roots",
+      "streamed logs outside SDK",
+      "SBPL quote/backslash escaping",
+      "control path rejection",
+      "no unsandboxed fallback"
+    ],
+    "actualOSSandboxFixture": {
+      "exitCode": 0,
+      "paths": "owned UUID under private test TMPDIR; separate SDK/AVD/HOME/tmp",
+      "descendantSDKWrite": "denied; original bytes retained",
+      "ownedAVDWrite": "allowed",
+      "ownedTemporaryWrite": "allowed",
+      "escapedSDKPaths": [
+        "quote",
+        "backslash"
+      ],
+      "timeout": "ProcessError.timedOut preserved",
+      "cancellation": "running protected child cancelled after owned PID marker appeared"
+    },
+    "focusedIntermediate": {
+      "exitCode": 0,
+      "tests": 46
+    },
+    "finalFullSwiftTest": {
+      "exitCode": 0,
+      "tests": 815,
+      "warningsAsErrors": true
+    },
+    "sourceOnly": {
+      "exitCode": 0,
+      "tests": 61
+    },
+    "taintedRuntimeSDKRestoredOrDeleted": false,
+    "actualSDKOrAVDRevalidationAfterFix": "not started; root resource reassignment required",
+    "remoteOrToolInstallationPerformed": false
+  }
+}
