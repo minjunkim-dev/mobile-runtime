@@ -253,12 +253,13 @@ struct FlutterAndroidWorkflowTests {
         #expect(trace.count == 0)
     }
 
-    @Test("invalid Android iOS selectors and public port stop before the factory", arguments: ["scheme", "configuration", "port"])
+    @Test("invalid Android iOS selectors and build/down ports stop before the factory", arguments: ["scheme", "configuration", "build-port", "down-port"])
     func earlySelectors(_ selector: String) async throws {
         let fixture = try CallerFixture()
         let trace = Trace()
-        if selector == "port" {
-            let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: fixture.input, port: 8097),
+        if selector.hasSuffix("-port") {
+            let result = await WorkflowExecution.run(selector == "build-port" ? .build : .down,
+                input: WorkflowInput(project: fixture.input, port: 8097),
                 runner: fixture.runner, leases: fixture.leases, flutterFactory: fixture.factory(trace))
             #expect(result.exitCode == 1)
         } else {
@@ -271,17 +272,33 @@ struct FlutterAndroidWorkflowTests {
         #expect(fixture.runner.log.all.isEmpty)
     }
 
-    @Test("shared Android up forwards its allocated leased port and selected entrypoint; down creates no view", arguments: [false, true])
-    func sharedRuntime(_ workspace: Bool) async throws {
+    @Test("invalid Flutter Android up ports stop before tools or the factory", arguments: [-1, 0, 65536])
+    func invalidPort(_ port: Int) async throws {
+        let fixture = try CallerFixture()
+        let trace = Trace()
+        let input = WorkflowInput(project: fixture.input, port: port)
+        let result = await WorkflowExecution.run(.up, input: input, runner: fixture.runner, leases: fixture.leases)
+        #expect(result.exitCode == 1)
+        let injected = await WorkflowExecution.run(.up, input: input, runner: fixture.runner,
+            leases: fixture.leases, flutterFactory: fixture.factory(trace))
+        #expect(injected.exitCode == 1)
+        #expect(trace.count == 0)
+        #expect(fixture.runner.log.all.isEmpty)
+    }
+
+    @Test("shared Android up forwards its selected or automatic leased port and entrypoint; down creates no view", arguments: [false, true], [false, true])
+    func sharedRuntime(_ workspace: Bool, _ explicitPort: Bool) async throws {
         let fixture = try RuntimeFixture(workspace: workspace)
         let trace = Trace()
         let sdk = try fixture.native.repo.directory("owned-sdk-view")
         let factory: FlutterAndroidWorkflow.Factory = { _, _, files in trace.record(files); return View(sdk: sdk) }
-        let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: fixture.input),
+        let requested = explicitPort ? try FlutterIOSWorkflow.availablePort(nil) : nil
+        let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: fixture.input, port: requested),
             runner: fixture.runner, leases: fixture.leases, flutterFactory: factory)
         #expect(result.exitCode == 0, Comment(rawValue: result.up?.failure?.message ?? ""))
         let port = try #require(result.operation.port)
         #expect((1...65535).contains(port))
+        if let requested { #expect(port == requested) }
         #expect(fixture.runner.forwardedPort == port)
         #expect(result.up?.context.androidProduct?.flutterConnection?.hostPort == port)
         #expect(fixture.runner.portLeaseHeld)
@@ -295,12 +312,103 @@ struct FlutterAndroidWorkflowTests {
         #expect(try Self.physical(URL(fileURLWithPath: reportedTarget)).path == Self.physical(URL(fileURLWithPath: target)).path)
         #expect(trace.count == 1)
         #expect(try !result.encoded(toolVersion: "fixture").contains("sentinel-secret"))
+        let occupied = try fixture.leases.acquire([.port(port)], owner: LeaseOwner(
+            operationId: "other-server", command: "fixture", project: "/other-app"))
+        let beforeDown = fixture.runner.base.log.all.count
+        let blocked = await WorkflowExecution.run(.down, input: WorkflowInput(project: fixture.input),
+            runner: fixture.runner, leases: fixture.leases)
+        #expect(blocked.exitCode == 1)
+        #expect(blocked.operation.conflict?.key == .port(port))
+        #expect(fixture.runner.base.log.all.count == beforeDown)
+        #expect(try AndroidActiveRunStore(project: fixture.app).read() == record)
+        occupied.release()
         let down = await WorkflowExecution.run(.down, input: WorkflowInput(project: fixture.input),
             runner: fixture.runner, leases: fixture.leases, flutterFactory: factory)
         #expect(down.exitCode == 0, Comment(rawValue: down.down?.toolFailures.joined(separator: "; ") ?? ""))
         #expect(trace.count == 1)
         #expect(try AndroidActiveRunStore(project: fixture.app).read() == nil)
         #expect(fixture.runner.base.log.spawned.isEmpty)
+    }
+
+    @Test("another owner of a selected Android port blocks changes before install, launch or forward")
+    func selectedPortConflict() async throws {
+        let fixture = try RuntimeFixture(workspace: false)
+        let port = try FlutterIOSWorkflow.availablePort(nil)
+        let other = LeaseOwner(operationId: "other-server", command: "fixture", project: "/other-app")
+        let occupied = try fixture.leases.acquire([.port(port)], owner: other)
+        defer { occupied.release() }
+        let trace = Trace()
+        let sdk = try fixture.native.repo.directory("owned-sdk-view")
+        let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: fixture.input, port: port),
+            runner: fixture.runner, leases: fixture.leases, flutterFactory: { _, _, files in
+                trace.record(files); return View(sdk: sdk)
+            })
+        #expect(result.exitCode == 1)
+        #expect(result.operation.conflict?.key == .port(port))
+        #expect(result.operation.conflict?.owner == other)
+        #expect(trace.count == 1)
+        #expect(!fixture.runner.base.log.all.contains { $0.arguments.contains("install")
+            || $0.arguments.contains("force-stop") || $0.arguments.contains("--no-rebind")
+            || $0.arguments.contains { $0.hasPrefix(":app:assemble") } })
+        #expect(fixture.runner.base.log.spawned.isEmpty)
+        #expect(try AndroidActiveRunStore(project: fixture.app).read() == nil)
+    }
+
+    @Test("common source inventory protects nested generated-looking source and log assets", arguments: [false, true])
+    func protectedInventory(_ namedBuildPackage: Bool) async throws {
+        let fixture = try CallerFixture()
+        let repo = fixture.flutter.repo
+        var runner = fixture.runner
+        var sources = ["lib/build/feature.dart", "lib/vendor/feature.dart", "assets/reference.log"]
+        if namedBuildPackage {
+            try repo.write("pubspec.yaml", "name: example\nenvironment:\n  sdk: ^3.6.0\nworkspace:\n  - build\ndependencies:\n  flutter:\n    sdk: flutter\n")
+            try repo.write("build/pubspec.yaml", "name: build\nresolution: workspace\nenvironment:\n  sdk: ^3.6.0\ndependencies:\n  flutter:\n    sdk: flutter\n")
+            sources.append("build/lib/package.dart")
+            let packages = [("example", repo.root), ("build", repo.url("build")), ("flutter", repo.url("sdk/packages/flutter"))]
+            try JSONSerialization.data(withJSONObject: ["configVersion": 2, "packages": packages.map { ["name": $0.0, "rootUri": $0.1.absoluteString] }])
+                .write(to: repo.url(".dart_tool/package_config.json"))
+            try JSONSerialization.data(withJSONObject: ["configVersion": 1, "roots": ["example", "build"], "packages": packages.map {
+                ["name": $0.0, "dependencies": $0.0 == "flutter" ? [] : ["flutter"], "devDependencies": []] as [String: Any]
+            }]).write(to: repo.url(".dart_tool/package_graph.json"))
+            runner.responses[fixture.flutter.workspaceCommand] = .ok(
+                String(decoding: try JSONSerialization.data(withJSONObject: ["packages": [repo.root, repo.url("build")].map { ["path": $0.path] }]), as: UTF8.self))
+        }
+        for source in sources { try repo.write(source, "preserved source\n") }
+        let outputs = [namedBuildPackage ? "build/build/generated.txt" : "build/generated.txt",
+                       ".dart_tool/flutter_build/cache.bin", "android/.gradle/cache.bin"]
+        for output in outputs { try repo.write(output, "old generated bytes\n") }
+        let preparation = try await fixture.flutter.inspect(runner)
+        let trace = Trace()
+        _ = try await FlutterAndroidWorkflow.make(input: fixture.input, anchor: fixture.anchor,
+            runner: runner, preparation: preparation, tools: fixture.tools, factory: fixture.factory(trace))
+        for source in sources { #expect(trace.tracked.contains(try Self.physical(repo.url(source)).path)) }
+        for output in outputs { #expect(!trace.tracked.contains(try Self.physical(repo.url(output)).path)) }
+        let tracked = trace.tracked.map { URL(fileURLWithPath: $0) }
+        let prepared = try FlutterAndroidExecution.preparedInputs(app: repo.root, preparation: preparation, trackedFiles: tracked)
+        let privateRoot = try FlutterAndroidExecution.makeRoot(in: Self.physical(repo.root))
+        let policy = privateRoot.appendingPathComponent("parent.sb")
+        let text = try FlutterAndroidExecution.parentPolicy(protected: Array(prepared.files.keys) + Array(prepared.absent),
+            privateRoot: privateRoot, writable: [])
+        try FlutterAndroidExecution.write(Data(text.utf8), to: policy)
+        let child = SystemProcessRunner(environment: ["PATH": "/usr/bin:/bin:/usr/sbin:/sbin"], workingDirectory: privateRoot)
+        for source in sources {
+            let file = try Self.physical(repo.url(source))
+            let before = try FlutterAndroidExecution.entry(file, bindIdentity: true)
+            for script in ["printf changed > \"$1\"", "/bin/rm \"$1\""] {
+                let command = ProcessCommand("/bin/sh", ["-c", script, "fixture", file.path], workingDirectory: privateRoot)
+                let result = try await child.run(FlutterAndroidExecution.policyCommand(command, file: policy))
+                #expect(!result.terminationStatus.isSuccess)
+                #expect(try FlutterAndroidExecution.entry(file, bindIdentity: true) == before)
+            }
+        }
+        for output in outputs {
+            let file = try Self.physical(repo.url(output))
+            let command = ProcessCommand("/bin/sh", ["-c", "printf generated > \"$1\"", "fixture", file.path], workingDirectory: privateRoot)
+            #expect(try await child.run(FlutterAndroidExecution.policyCommand(command, file: policy)).terminationStatus.isSuccess)
+        }
+        try prepared.check()
+        try "external source change\n".write(to: repo.url(sources[0]), atomically: false, encoding: .utf8)
+        #expect(throws: DomainError.self) { try prepared.check() }
     }
 
     @Test("the final host boundary encloses real mise activation and preserves argument privacy", arguments: [false, true])
@@ -383,7 +491,7 @@ struct FlutterAndroidWorkflowTests {
             check: { try trace.check() }, recordFailure: { trace.record($0, $1) })
         do { _ = try await failing.run(original); Issue.record("The fake timeout must escape") }
         catch { #expect(error is ProcessError); #expect(!String(describing: error).contains("sentinel-secret")) }
-        #expect(failure.log.all.allSatisfy(\.redactArguments))
+        #expect(failure.log.all.allSatisfy { $0.redactArguments })
     }
 
     @Test("only the exact owned parent policy skips an extra host sandbox")

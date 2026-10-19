@@ -764,8 +764,29 @@ public enum PreparationExecution {
     }
 
     /// Private source/lock observation. Digests never enter the public plan or its identity.
-    static func sourceFiles(_ root: URL, excluding destinations: [URL] = []) throws -> [String: String] {
+    static func sourceFiles(_ root: URL, excluding destinations: [URL] = [], packageRoots: [URL]? = nil) throws -> [String: String] {
         let excluded: Set<String> = [".git", "node_modules", "Pods", "vendor", "build", ".build", ".gradle", ".dart_tool", ".mobile", "graft"]
+        // Setup keeps its existing dependency snapshot policy. Protected Flutter execution
+        // supplies verified package roots and excludes only their exact generated paths.
+        var generated: Set<String> = []
+        var physicalRoot: String?
+        if let packageRoots {
+            let parent = try FolderIdentity(directory: root).path
+            let packages = Set(try ([root] + packageRoots).map { try FolderIdentity(directory: $0).path })
+            guard packages.allSatisfy({ $0 == parent || $0.hasPrefix(parent + "/") }) else {
+                throw CocoaError(.fileReadInvalidFileName)
+            }
+            physicalRoot = parent
+            for package in packages {
+                for relative in ["build", ".dart_tool", ".gradle", ".mobile", "android/.gradle", "android/build", "android/app/build", "ios/Pods"] {
+                    let candidate = package + "/" + relative
+                    // A generated-looking directory may itself contain a verified package.
+                    if !packages.contains(where: { $0 == candidate || $0.hasPrefix(candidate + "/") }) {
+                        generated.insert(candidate)
+                    }
+                }
+            }
+        }
         var failure: (any Error)?
         guard let files = FileManager.default.enumerator(at: root, includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey],
             errorHandler: { _, error in failure = error; return false }) else { throw CocoaError(.fileReadNoPermission) }
@@ -777,8 +798,17 @@ public enum PreparationExecution {
                 continue
             }
             let attributes = try url.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
-            if excluded.contains(url.lastPathComponent) { files.skipDescendants(); continue }
-            if url.pathExtension == "log" || url.lastPathComponent == ".DS_Store" { continue }
+            if let physicalRoot {
+                guard url.path.hasPrefix(root.path + "/") else { throw CocoaError(.fileReadInvalidFileName) }
+                let observed = physicalRoot + String(url.path.dropFirst(root.path.count))
+                if url.lastPathComponent == ".git"
+                    || (generated.contains(observed) && attributes.isDirectory == true && attributes.isSymbolicLink != true) {
+                    files.skipDescendants(); continue
+                }
+            } else {
+                if excluded.contains(url.lastPathComponent) { files.skipDescendants(); continue }
+                if url.pathExtension == "log" || url.lastPathComponent == ".DS_Store" { continue }
+            }
             if attributes.isSymbolicLink == true {
                 files.skipDescendants()
                 result[url.path] = "symlink:" + (try FileManager.default.destinationOfSymbolicLink(atPath: url.path))

@@ -129,9 +129,7 @@ struct InspectionView: View {
             if result?.selection.selected?.framework == .flutter {
                 HStack {
                     TextField("Entrypoint (lib/main.dart)", text: $entrypoint)
-                    if (ProjectPlatform(rawValue: platform) ?? result?.selection.platform) == .ios {
-                        TextField("VM service port (자동 선택)", text: $port)
-                    }
+                    TextField("VM service port (자동 선택)", text: $port)
                 }.disabled(checking || running != nil)
             }
             HStack {
@@ -269,7 +267,8 @@ struct InspectionView: View {
     @MainActor private func execute(_ kind: WorkflowKind) {
         guard !checking, running == nil else { return }
         let selectedPlatform = ProjectPlatform(rawValue: platform) ?? result?.selection.platform
-        if kind == .up, selectedPlatform == .ios, !port.isEmpty, Int(port).map({ (1...65535).contains($0) }) != true {
+        let flutterUp = kind == .up && result?.selection.selected?.framework == .flutter
+        if flutterUp, !port.isEmpty, Int(port).map({ (1...65535).contains($0) }) != true {
             error = "포트는 1부터 65535까지의 정수로 입력하세요."
             return
         }
@@ -288,7 +287,7 @@ struct InspectionView: View {
             configuration: kind != .down && !configuration.isEmpty ? configuration : nil,
             module: kind != .down && !module.isEmpty ? module : nil,
             variant: kind != .down && !variant.isEmpty ? variant : nil,
-            port: kind == .up && selectedPlatform == .ios && !port.isEmpty ? Int(port) : nil)
+            port: flutterUp && !port.isEmpty ? Int(port) : nil)
         running = Task {
             let output = await WorkflowExecution.run(kind, input: input) { event in
                 Task { @MainActor in

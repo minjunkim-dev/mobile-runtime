@@ -50,7 +50,8 @@ struct FlutterAndroidWorkflow: Sendable {
         guard tools.checks.contains(where: { $0.id == "tools.java" && $0.kind == "reuse" }),
               !tools.checks.contains(where: { $0.id == "tools.java" && $0.kind != "reuse" }),
               tools.activeTools["java"] != nil else { throw failure() }
-        let tracked = try PreparationExecution.sourceFiles(workspace.directory).keys.sorted().map { URL(fileURLWithPath: $0) }
+        let tracked = try PreparationExecution.sourceFiles(workspace.directory, packageRoots: workspace.packages)
+            .keys.sorted().map { URL(fileURLWithPath: $0) }
         try Task.checkCancellation()
         let view = try factory(anchor.directory, preparation, tracked)
         // An interruption retains the exclusive view. No caller adds a cleanup scope.

@@ -84,8 +84,8 @@ public enum WorkflowExecution {
             if input.project.entrypoint != nil && anchor.framework != .flutter {
                 throw selectionFailure("An explicit entrypoint requires a Flutter app.")
             }
-            if let port = input.port, (anchor.framework != .flutter || platform != .ios || kind != .up || !(1...65535).contains(port)) {
-                throw selectionFailure("--port requires Flutter iOS up and a port from 1 through 65535. This workflow cannot forward it; no project file was changed.")
+            if let port = input.port, (anchor.framework != .flutter || kind != .up || !(1...65535).contains(port)) {
+                throw selectionFailure("--port requires Flutter up and a port from 1 through 65535. This workflow cannot forward it; no project file was changed.")
             }
             if anchor.framework == .flutter && kind != .down {
                 guard let project = try? FlutterProject(directory: anchor.directory, entrypoint: input.project.entrypoint), project.entrypoint != nil else {
@@ -229,7 +229,9 @@ public enum WorkflowExecution {
             let flutterPort = anchor.framework == .flutter && kind == .up
                 ? try FlutterIOSWorkflow.availablePort(input.port) : nil
             operation.port = flutterPort
-            let resources = (device.map { [$0] } ?? [])
+            let recordedAndroid = kind == .down && platform == .android
+                ? try androidTeardownResourceKeys(anchor: anchor) : []
+            let resources = (device.map { [$0] } ?? []) + recordedAndroid
                 + (kind == .build || anchor.framework != .reactNative ? [] : [.port(MetroVerdict.port)])
             let resourceLease = try leases.acquire(resources + (flutterPort.map { [.port($0)] } ?? []), owner: owner)
             defer { resourceLease.release() }
