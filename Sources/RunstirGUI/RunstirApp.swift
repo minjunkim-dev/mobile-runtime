@@ -16,14 +16,18 @@ struct RunstirApp {
 }
 
 @MainActor
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private var windows: [FolderIdentity: NSWindow] = [:]
+    private var fileWindows: [String: NSWindow] = [:]
+    private var sessions: [ObjectIdentifier: GUIOperationSession] = [:]
+    private var terminating = false
     private var welcome: NSWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let menu = NSMenu()
         let appMenu = NSMenu()
         appMenu.addItem(withTitle: "프로젝트 열기…", action: #selector(openProject), keyEquivalent: "o").target = self
+        appMenu.addItem(withTitle: "앱 파일 열기…", action: #selector(openAppFile), keyEquivalent: "O").target = self
         appMenu.addItem(.separator())
         appMenu.addItem(withTitle: "Runstir 종료", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         let item = NSMenuItem()
@@ -35,6 +39,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             Text("Runstir").font(.largeTitle)
             Text("프로젝트의 iOS·Android 환경을 확인하세요.")
             Button("프로젝트 열기…") { self.openProject() }.keyboardShortcut("o")
+            Button("앱 파일 열기…") { self.openAppFile() }
         }.padding(40).frame(maxWidth: .infinity, maxHeight: .infinity))
         welcome = window
         window.makeKeyAndOrderFront(nil)
@@ -42,6 +47,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func openProject() {
+        guard !terminating else { return }
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
@@ -51,13 +57,79 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let identity = try FolderIdentity(directory: directory)
             if let existing = windows[identity] { existing.makeKeyAndOrderFront(nil); return }
             let window = makeWindow(title: "Runstir — \(directory.lastPathComponent)")
-            window.contentView = NSHostingView(rootView: InspectionView(directory: URL(fileURLWithPath: identity.path)))
+            let session = GUIOperationSession()
+            sessions[ObjectIdentifier(window)] = session
+            window.delegate = self
+            window.contentView = NSHostingView(rootView: InspectionView(directory: URL(fileURLWithPath: identity.path), session: session))
             windows[identity] = window
             window.makeKeyAndOrderFront(nil)
         } catch {
             let alert = NSAlert(error: error)
             alert.runModal()
         }
+    }
+
+    @objc func openAppFile() {
+        guard !terminating else { return }
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.treatsFilePackagesAsDirectories = false
+        panel.allowsMultipleSelection = false
+        panel.message = "Simulator .app 또는 단일 APK를 선택하세요. 파일 선택으로 설치하지 않습니다."
+        guard panel.runModal() == .OK, let file = panel.url else { return }
+        do {
+            let identity = try AppFileIdentity(url: file)
+            if let existing = fileWindows[identity.path] { existing.makeKeyAndOrderFront(nil); return }
+            let window = makeWindow(title: "Runstir — \(file.lastPathComponent)")
+            let session = GUIOperationSession()
+            sessions[ObjectIdentifier(window)] = session
+            window.delegate = self
+            window.contentView = NSHostingView(rootView: AppFileView(file: URL(fileURLWithPath: identity.path), session: session))
+            fileWindows[identity.path] = window
+            window.makeKeyAndOrderFront(nil)
+        } catch {
+            NSAlert(error: error).runModal()
+        }
+    }
+
+    func windowShouldClose(_ sender: NSWindow) -> Bool {
+        guard let session = sessions[ObjectIdentifier(sender)], session.task != nil else { return true }
+        guard sender.attachedSheet == nil else { return false }
+        let alert = NSAlert()
+        alert.messageText = "이 창에서 작업이 진행 중입니다."
+        alert.informativeText = "작업을 계속하거나 취소가 완료된 뒤 창을 닫으세요. 완료한 설치와 기존 앱 데이터는 보존합니다."
+        alert.addButton(withTitle: "작업 계속")
+        alert.addButton(withTitle: "취소 후 닫기")
+        alert.beginSheetModal(for: sender) { response in
+            Task { @MainActor in
+                if response == .alertSecondButtonReturn { session.cancel { sender.close() } }
+            }
+        }
+        return false
+    }
+
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        if terminating { return .terminateLater }
+        let active = sessions.values.filter { $0.task != nil }
+        guard !active.isEmpty else { return .terminateNow }
+        let alert = NSAlert()
+        alert.messageText = "\(active.count)개 작업이 진행 중입니다."
+        let titles = sender.windows.filter { sessions[ObjectIdentifier($0)]?.task != nil }.map(\.title)
+        alert.informativeText = titles.joined(separator: "\n") + "\n모든 작업의 취소와 보존 처리가 끝난 뒤 종료합니다. 실행을 마친 모바일 앱과 기기는 종료하지 않습니다."
+        alert.addButton(withTitle: "작업 계속")
+        alert.addButton(withTitle: "모두 취소 후 종료")
+        guard alert.runModal() == .alertSecondButtonReturn else { return .terminateCancel }
+        terminating = true
+        sessions.values.forEach { $0.stopAcceptingNewOperations() }
+        Task { @MainActor in
+            await withTaskGroup(of: Void.self) { group in
+                for session in active { group.addTask { await session.cancelAndWait() } }
+                await group.waitForAll()
+            }
+            sender.reply(toApplicationShouldTerminate: true)
+        }
+        return .terminateLater
     }
 
     private func makeWindow(title: String) -> NSWindow {
@@ -72,6 +144,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
 struct InspectionView: View {
     let directory: URL
+    let session: GUIOperationSession
     @State private var app = ""
     @State private var platform = ""
     @State private var result: EnvironmentInspection?
@@ -83,10 +156,10 @@ struct InspectionView: View {
     @State private var module = ""
     @State private var variant = ""
     @State private var workflow: WorkflowResult?
-    @State private var running: Task<Void, Never>?
+    private var running: Task<Void, Never>? { session.task }
     @State private var currentStage = ""
     @State private var events: [WorkflowEvent] = []
-    @State private var cancelling = false
+    private var cancelling: Bool { session.cancelling }
     @State private var executionID: UUID?
     @State private var devices: [RuntimeDeviceCandidate] = []
     @State private var preparation: PreparationResult?
@@ -166,7 +239,7 @@ struct InspectionView: View {
                 if running != nil {
                     ProgressView().controlSize(.small)
                     Text(cancelling ? "취소 중" : currentStage)
-                    Button("작업 취소") { cancelling = true; running?.cancel() }.disabled(cancelling)
+                    Button("작업 취소") { session.cancel() }.disabled(cancelling)
                 }
             }
             if let workflow {
@@ -235,7 +308,7 @@ struct InspectionView: View {
                 preparation = nil; repositoryTrusted = false
                 scheme = ""; configuration = ""; module = ""; variant = ""
             }
-            .onDisappear { running?.cancel() }
+            .onDisappear { session.cancel() }
     }
 
     @MainActor private func inspect() {
@@ -245,7 +318,7 @@ struct InspectionView: View {
         let environment = ProcessInfo.processInfo.environment
         let input = ProjectInspectionInput(directory: directory, environment: environment,
                                            app: app.isEmpty ? nil : app, platform: ProjectPlatform(rawValue: platform))
-        Task {
+        session.start {
             defer { checking = false }
             do { result = try await EnvironmentInspection.run(input: input) }
             catch { self.error = error.localizedDescription }
@@ -257,7 +330,6 @@ struct InspectionView: View {
         error = nil
         workflow = nil
         events = []
-        cancelling = false
         currentStage = "선택과 환경 확인"
         let generation = UUID()
         executionID = generation
@@ -269,7 +341,7 @@ struct InspectionView: View {
             configuration: kind != .down && !configuration.isEmpty ? configuration : nil,
             module: kind != .down && !module.isEmpty ? module : nil,
             variant: kind != .down && !variant.isEmpty ? variant : nil)
-        running = Task {
+        session.start {
             let output = await WorkflowExecution.run(kind, input: input) { event in
                 Task { @MainActor in
                     guard executionID == generation else { return }
@@ -280,8 +352,6 @@ struct InspectionView: View {
             }
             workflow = output
             if !output.operation.devices.isEmpty { devices = output.operation.devices }
-            running = nil
-            cancelling = false
         }
     }
 
@@ -292,8 +362,8 @@ struct InspectionView: View {
         let trust = repositoryTrusted
         let generation = UUID()
         executionID = generation
-        events = []; cancelling = false; currentStage = "준비 조건 확인"
-        running = Task {
+        events = []; currentStage = "준비 조건 확인"
+        session.start {
             let output = await PreparationExecution.run(input: input, planOnly: approvedPlanID == nil,
                 approvedPlanID: approvedPlanID, trustRepository: trust) { event in
                 Task { @MainActor in
@@ -305,7 +375,6 @@ struct InspectionView: View {
             }
             guard executionID == generation else { return }
             preparation = output
-            running = nil; cancelling = false
         }
     }
 }

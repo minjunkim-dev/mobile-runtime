@@ -12,6 +12,11 @@ public struct ResourceKey: Hashable, Comparable, Codable, Sendable, CustomString
         Self("folder:\(identity.volume):\(identity.file)")
     }
 
+    public static func appFile(_ identity: AppFileIdentity) -> Self {
+        // Stable if a user replaces the bytes at the same path while a task is active.
+        Self("app-file:\(identity.path)")
+    }
+
     /// The canonical path stays the same before and after installation creates it.
     public static func destination(_ url: URL) -> Self {
         Self("destination:\(url.resolvingSymlinksInPath().standardizedFileURL.path)")
