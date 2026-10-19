@@ -131,8 +131,8 @@ directory alias는 link 자체를 관측한다.
 작업 폴더·선택 기기·VM service port의 기존 자원 lease를 확보한다.
 launch 직전에 포트 listener를 다시 확인한다.
 Simulator 앱 인자로 정확한 `--vm-service-port`를 전달한다.
-이번 launch의 새 출력 파일에서 loopback 서비스 URI를 읽는다.
-출력 파일에 서비스 marker가 없으면 같은 Simulator의 bounded unified log history를 조회한다.
+앱 stdout/stderr를 별도 원본 로그 파일로 저장하지 않는다.
+같은 Simulator의 bounded unified log history에서 loopback 서비스 URI를 읽는다.
 조회는 `log show --last 5m --style json --info --debug`를 사용한다.
 `processIdentifier` predicate를 정확한 앱 PID와 서비스 marker에 묶는다.
 현재 설치된 앱의 Info.plist·bundle ID·실행 파일 이름과 regular file 상태를 확인한다.
@@ -167,6 +167,7 @@ deadline 이전의 조회 timeout은 도구 실패로 유지한다.
 조회 도구 실패는 고정 분류 `query-timeout`·`query-spawn-failed`·`query-failed`를 표시한다.
 history 결과는 `history-nonzero-status`·`history-output-limit`·`history-invalid-json`·`history-row-limit`를 구분한다.
 이 분류에 원본 명령·출력·URI를 포함하지 않는다.
+`getVM` 명령의 인자와 내부 오류 내용도 runner의 일반 로그에서 가린다.
 새 분류로 과거 실행의 미수집 원인을 소급 확정하지 않는다.
 취소는 유한한 조회 child가 종료한 뒤 반환한다.
 선택한 포트와 다른 URI는 거부한다.

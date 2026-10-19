@@ -323,7 +323,7 @@ private struct FlutterIOSBuildRunner: ProcessRunner {
         if command.executable == "xcodebuild", command.arguments.last == "build" {
             command = ProcessCommand("/usr/bin/sandbox-exec", ["-f", profile.path, "/usr/bin/xcodebuild"] + command.arguments,
                 environment: command.environment, workingDirectory: command.workingDirectory,
-                timeout: command.timeout, output: command.output)
+                timeout: command.timeout, output: command.output, redactArguments: command.redactArguments)
         }
         return try await base.run(command, onLine: onLine)
     }

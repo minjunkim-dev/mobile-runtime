@@ -127,7 +127,10 @@ struct FlutterIOSWorkflowTests {
     func upAndDown(_ workspace: Bool) async throws {
         let f = try FlutterIOSFixture(workspace: workspace)
         let runner = FlutterIOSRunner(fixture: f)
-        let result = await WorkflowExecution.run(.up, input: f.input(), runner: runner, leases: f.leases)
+        let events = Mutable<[String]>([])
+        let result = await WorkflowExecution.run(.up, input: f.input(), runner: runner, leases: f.leases) { event in
+            if let line = try? event.encoded() { events.mutate { $0.append(line) } }
+        }
         #expect(result.exitCode == 0, Comment(rawValue: result.up?.failure?.message ?? ""))
         let port = try #require(result.operation.port)
         #expect(result.operation.developmentServiceURI == "http://127.0.0.1:\(port)/auth/")
@@ -136,7 +139,10 @@ struct FlutterIOSWorkflowTests {
         #expect(launch.arguments.contains("--vm-service-port=\(port)"))
         #expect(launch.arguments.contains("A"))
         #expect(runner.commands.contains { $0.arguments.last == "http://127.0.0.1:\(port)/auth/getVM" })
-        #expect(!runner.commands.contains { $0.arguments.contains("show") || $0.arguments.contains("get_app_container") })
+        #expect(runner.commands.contains { $0.arguments.contains("show") })
+        #expect(runner.commands.contains { $0.arguments.contains("get_app_container") })
+        #expect(!events.value.joined().contains("/auth/"))
+        #expect(!runner.commands.map(\.description).joined().contains("/auth/"))
         try FileManager.default.removeItem(at: f.repo.url("sdk"))
         let down = await WorkflowExecution.run(.down, input: f.input(), runner: runner, leases: f.leases)
         #expect(down.exitCode == 0)
@@ -576,7 +582,9 @@ final class FlutterIOSRunner: ProcessRunner, @unchecked Sendable {
                 "processImageUUID": fault == "history:process-uuid" ? "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE" : fault == "history:lowercase-uuid" ? Self.processImageUUID.lowercased() : Self.processImageUUID,
                 "senderImageUUID": fault == "history:sender-uuid" ? "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE" : fault == "history:lowercase-uuid" ? Self.senderImageUUID.lowercased() : Self.senderImageUUID,
                 "timestamp": fault == "history:time" ? "unknown" : timestamp,
-                "eventMessage": fault == "history:message-limit" ? String(repeating: "a", count: 16_385) : "flutter: The Dart VM service is listening on http://127.0.0.1:\(selectedPort)/synthetic-auth/",
+                "eventMessage": fault == "history:message-limit" ? String(repeating: "a", count: 16_385)
+                    : "flutter: The Dart VM service is listening on " + (fault == "uri" ? "http://example.com:1/auth/"
+                        : "http://127.0.0.1:\(selectedPort)/\(fault?.hasPrefix("history:") == true ? "synthetic-auth" : "auth")/"),
             ]
             var returnedRow = row
             if fault == "history:wrong-key" { returnedRow["processIdentifier"] = returnedRow.removeValue(forKey: "processID") }
@@ -588,14 +596,9 @@ final class FlutterIOSRunner: ProcessRunner, @unchecked Sendable {
         }
         if command.arguments.starts(with: ["simctl", "launch"]) {
             if fault == "launch" { return ProcessResult(terminationStatus: .exited(1), standardOutput: "", standardError: "launch failed") }
-            let output = try #require(command.arguments.first { $0.hasPrefix("--stdout=") })
-            let path = String(output.dropFirst("--stdout=".count))
             let port = try #require(command.arguments.first { $0.hasPrefix("--vm-service-port=") })
             let value = String(port.dropFirst("--vm-service-port=".count))
             lock.withLock { launchedPort = value; appRunning = true }
-            let uri = fault == "uri" ? "http://example.com:1/auth/" : "http://127.0.0.1:\(value)/auth/"
-            let content = fault == "no-uri" || fault?.hasPrefix("history:") == true ? "" : "The Dart VM service is listening on \(uri)\n"
-            try Data(content.utf8).write(to: URL(fileURLWithPath: path))
             return ok("dev.test.flutter: 3538")
         }
         if command.executable == "xcode-select" { return ok("/test/Xcode") }

@@ -1,4 +1,5 @@
 import Foundation
+import Logging
 import Testing
 import TestSupport
 
@@ -9,6 +10,96 @@ import TestSupport
 @Suite("SystemProcessRunner against real subprocesses")
 struct SystemProcessRunnerTests {
     let runner = SystemProcessRunner()
+
+    @Test("argument redaction preserves actual argv, environment and cwd while hiding debug arguments", arguments: [false, true])
+    func privateArguments(_ redacted: Bool) async throws {
+        let messages = Mutable<[String]>([])
+        let logger = Logger(label: "process-privacy") { _ in ProcessLogCapture(messages: messages) }
+        let directory = try temporaryDirectory()
+        let command = ProcessCommand("/bin/sh", ["-c", "printf '%s\\n' \"$1\" \"$MOBILE_TEST_VAR\" \"$PWD\"", "_", "synthetic-auth"],
+            environment: ["MOBILE_TEST_VAR": "kept"], workingDirectory: directory,
+            timeout: .seconds(10), redactArguments: redacted)
+        let result = try await SystemProcessRunner(logger: logger, environment: ["PATH": "/usr/bin:/bin"]).run(command)
+        let lines = result.standardOutput.split(whereSeparator: \.isNewline)
+        #expect(result.terminationStatus.isSuccess)
+        #expect(lines.count == 3)
+        #expect(lines.first == "synthetic-auth")
+        #expect(lines.dropFirst().first == "kept")
+        #expect(sameDirectory(String(try #require(lines.last)), directory))
+        #expect(command.timeout == .seconds(10))
+        #expect(command.arguments.last == "synthetic-auth")
+        #expect(command.description.contains("synthetic-auth") == !redacted)
+        #expect(messages.value.contains { $0.contains("ran subprocess") })
+        #expect(messages.value.joined().contains("synthetic-auth") == !redacted)
+    }
+
+    @Test("a sensitive timeout keeps its classification and omits arguments from debug logs")
+    func privateTimeout() async throws {
+        let messages = Mutable<[String]>([])
+        let logger = Logger(label: "process-privacy") { _ in ProcessLogCapture(messages: messages) }
+        let command = ProcessCommand("/bin/sh", ["-c", "exec /bin/sleep 30", "_", "synthetic-auth"],
+            timeout: .milliseconds(100), redactArguments: true)
+        do {
+            _ = try await SystemProcessRunner(logger: logger, environment: ["PATH": "/usr/bin:/bin"]).run(command)
+            Issue.record("the sensitive command must time out")
+        } catch let error as ProcessError {
+            guard case .timedOut(let description, let timeout) = error else {
+                Issue.record("expected timeout")
+                return
+            }
+            #expect(!description.contains("synthetic-auth"))
+            #expect(timeout == .milliseconds(100))
+        }
+        #expect(messages.value.contains { $0.contains("subprocess timed out") })
+        #expect(!messages.value.joined().contains("synthetic-auth"))
+    }
+
+    @Test("a sensitive spawn failure hides private underlying diagnostics from debug logs", arguments: [false, true])
+    func privateSpawnFailure(_ redacted: Bool) async throws {
+        let messages = Mutable<[String]>([])
+        let logger = Logger(label: "process-privacy") { _ in ProcessLogCapture(messages: messages) }
+        let command = ProcessCommand("/bin/echo", ["private-argument"],
+            output: .streamed(to: URL(fileURLWithPath: "/dev/null/synthetic-auth/out.log")), redactArguments: redacted)
+        do {
+            _ = try await SystemProcessRunner(logger: logger, environment: [:]).run(command)
+            Issue.record("the invalid output path must fail")
+        } catch let error as ProcessError {
+            guard case .spawnFailed(let description, let underlying) = error else {
+                Issue.record("expected spawn failure")
+                return
+            }
+            #expect(description.contains("private-argument") == !redacted)
+            #expect(String(describing: underlying).contains("synthetic-auth"))
+        }
+        #expect(messages.value.contains { $0.contains("subprocess failed") })
+        #expect(messages.value.joined().contains("private-argument") == !redacted)
+        #expect(messages.value.joined().contains("synthetic-auth") == !redacted)
+    }
+
+    @Test("prepared tool and mise wrappers preserve sensitive arguments and logging policy")
+    func privateWrappedArguments() async throws {
+        let repo = try FixtureRepo()
+        let config = try repo.directory("config")
+        let project = try repo.directory("app")
+        let mise = try repo.write("bin/mise", "#!/bin/sh\nshift\nshift\nexec \"$@\"\n")
+        let node = try repo.write("bin/node", "#!/bin/sh\nprintf '%s\\n' \"$1\" \"$MOBILE_TEST_VAR\" \"$PWD\"\n")
+        for file in [mise, node] { try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: file.path) }
+        let messages = Mutable<[String]>([])
+        let logger = Logger(label: "process-privacy") { _ in ProcessLogCapture(messages: messages) }
+        let host = SystemProcessRunner(logger: logger, environment: ["PATH": "/usr/bin:/bin"])
+        let selected = ProjectExecutionEnvironment(directRunner: MiseProcessRunner(base: host,
+            configDirectory: config, executable: mise.path)).activatingTools(["node": node], environment: ["PATH": "/usr/bin:/bin"])
+        let result = try await selected.runner.run(ProcessCommand("node", ["synthetic-auth"],
+            environment: ["MOBILE_TEST_VAR": "kept"], workingDirectory: project, timeout: .seconds(10), redactArguments: true))
+        #expect(result.terminationStatus.isSuccess)
+        let lines = result.standardOutput.split(whereSeparator: \.isNewline)
+        #expect(lines.count == 3)
+        #expect(lines.first == "synthetic-auth")
+        #expect(lines.dropFirst().first == "kept")
+        #expect(sameDirectory(String(try #require(lines.last)), project))
+        #expect(messages.value.contains { $0.contains("ran subprocess") })
+        #expect(!messages.value.joined().contains("synthetic-auth"))
+    }
 
     @Test("non-zero exit is data, not a thrown error")
     func nonZeroExitIsData() async throws {
@@ -217,5 +308,21 @@ struct SystemProcessRunnerTests {
             .appendingPathComponent("mobile-processrunner-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         return directory
+    }
+}
+
+private struct ProcessLogCapture: LogHandler {
+    let messages: Mutable<[String]>
+    var metadata: Logger.Metadata = [:]
+    var logLevel: Logger.Level = .debug
+
+    subscript(metadataKey key: String) -> Logger.Metadata.Value? {
+        get { metadata[key] }
+        set { metadata[key] = newValue }
+    }
+
+    func log(level: Logger.Level, message: Logger.Message, metadata: Logger.Metadata?, source: String,
+             file: String, function: String, line: UInt) {
+        messages.mutate { $0.append("\(message) \(metadata ?? [:])") }
     }
 }

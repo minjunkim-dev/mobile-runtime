@@ -8,6 +8,26 @@ import Testing
 
 @Suite("Flutter native child boundaries")
 struct FlutterIOSRuntimeTests {
+    @Test("the native build wrapper preserves argument privacy and command controls")
+    func buildCommandPrivacy() async throws {
+        let f = try FlutterIOSFixture()
+        let runner = FlutterIOSRunner(fixture: f)
+        let preparation = try await FlutterPreparation.inspect(directory: f.app, environment: f.flutter.environment, runner: runner)
+        let candidate = try #require(f.input().project.selection().selected)
+        let anchor = try #require(ProjectAnchor.detect(candidate: candidate))
+        let workflow = try FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation, runner: runner)
+        _ = try await workflow.buildRunner.run(ProcessCommand("xcodebuild", ["synthetic-auth", "build"],
+            environment: ["KEEP": "kept"], workingDirectory: f.app, timeout: .seconds(10), redactArguments: true))
+        let wrapped = try #require(runner.commands.last)
+        #expect(wrapped.executable == "/usr/bin/sandbox-exec")
+        #expect(wrapped.arguments.suffix(2) == ["synthetic-auth", "build"])
+        #expect(wrapped.environment["KEEP"] == "kept")
+        #expect(wrapped.workingDirectory == f.app)
+        #expect(wrapped.timeout == .seconds(10))
+        #expect(wrapped.redactArguments)
+        #expect(!wrapped.description.contains("synthetic-auth"))
+    }
+
     @Test("ordinary source directory aliases stop before native build", arguments: ["lib/shared", "ios", "assets", "lib/build", "assets/build", "build"])
     func sourceDirectoryAlias(_ relative: String) async throws {
         let f = try FlutterIOSFixture()
@@ -275,7 +295,7 @@ struct FlutterIOSRuntimeTests {
         }
     }
 
-    @Test("the actual unified-log schema supplies readiness when redirected app output is empty")
+    @Test("unified history supplies readiness without raw launch output files or redirects")
     func unifiedLaunch() async throws {
         let f = try FlutterIOSFixture()
         let runner = FlutterIOSRunner(fixture: f, fault: "history:ready")
@@ -288,8 +308,15 @@ struct FlutterIOSRuntimeTests {
         #expect(context.appPid == 3538)
         #expect(context.developmentServiceURI == "http://127.0.0.1:12345/synthetic-auth/")
         let launch = try #require(runner.commands.first { $0.arguments.contains("launch") })
-        let redirected = try #require(launch.arguments.first { $0.hasPrefix("--stdout=") })
-        #expect(try Data(contentsOf: URL(fileURLWithPath: String(redirected.dropFirst("--stdout=".count)))).isEmpty)
+        #expect(!launch.arguments.contains { $0.hasPrefix("--stdout=") || $0.hasPrefix("--stderr=") })
+        let directory = RunLogs(project: f.repo.root).directory.path
+        let files = FileManager.default.fileExists(atPath: directory)
+            ? try FileManager.default.contentsOfDirectory(atPath: directory) : []
+        #expect(!files.contains { $0.hasPrefix("flutter-launch-") })
+        let probe = try #require(runner.commands.first { $0.executable == "curl" })
+        #expect(probe.redactArguments)
+        #expect(probe.arguments.last == "http://127.0.0.1:12345/synthetic-auth/getVM")
+        #expect(!probe.description.contains("synthetic-auth"))
         #expect(runner.commands.contains { $0.arguments.starts(with: ["simctl", "spawn", "A", "log", "show"]) })
     }
 

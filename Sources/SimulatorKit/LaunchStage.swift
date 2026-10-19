@@ -65,20 +65,11 @@ public struct LaunchStage: Stage {
         )
 
         try Task.checkCancellation()
-        let flutterLog: URL?
-        if flutterPort != nil {
-            let logs = RunLogs(project: project)
-            guard let file = logs.write("", to: "flutter-launch-\(UUID().uuidString).log") else {
-                throw ToolUnavailable(description: "Could not save this Flutter launch log.")
-            }
-            flutterLog = file
-        } else { flutterLog = nil }
-        let output = flutterLog.map { ["--stdout=\($0.path)", "--stderr=\($0.path)"] } ?? []
         let launchArguments = flutterPort.map {
             ["--enable-dart-profiling", "--enable-checked-mode", "--verify-entry-points", "--vm-service-port=\($0)"]
         } ?? []
         let command = ProcessCommand(
-            "xcrun", ["simctl", "launch"] + output + [device.udid, product.bundleIdentifier] + launchArguments,
+            "xcrun", ["simctl", "launch", device.udid, product.bundleIdentifier] + launchArguments,
             environment: environment,
             timeout: .seconds(60)
         )
@@ -107,8 +98,8 @@ public struct LaunchStage: Stage {
             )
         }
         context.appPid = pid
-        if let port = flutterPort, let file = flutterLog {
-            context.developmentServiceURI = try await flutterServiceURI(log: file, port: port, pid: pid,
+        if let port = flutterPort {
+            context.developmentServiceURI = try await flutterServiceURI(port: port, pid: pid,
                 device: device, product: product, launchedAt: launchedAt, environment: environment)
         }
 
@@ -124,23 +115,19 @@ public struct LaunchStage: Stage {
         return .pass(detail + hint)
     }
 
-    private func flutterServiceURI(log: URL, port: Int, pid: Int32, device: SelectedDevice,
+    private func flutterServiceURI(port: Int, pid: Int32, device: SelectedDevice,
                                    product: BuiltProduct, launchedAt: Date, environment: [String: String]) async throws -> String {
         let deadline = ContinuousClock.now.advanced(by: readinessWait)
         var images: (process: Set<UUID>, sender: Set<UUID>)?
         repeat {
             try Task.checkCancellation()
-            let contents = try flutterLogContents(log)
-            var messages = contents.split(whereSeparator: \.isNewline).map(String.init)
-            if !messages.contains(where: { $0.contains(Self.flutterMarker) }) {
-                if images == nil {
-                    images = try await flutterImageUUIDs(device: device, product: product,
-                        environment: environment, deadline: deadline)
-                }
-                guard let images else { throw ToolUnavailable(description: "The installed Flutter app image identities are unknown.") }
-                messages = try await flutterHistory(device: device, images: images, pid: pid,
-                    launchedAt: launchedAt, environment: environment, deadline: deadline)
+            if images == nil {
+                images = try await flutterImageUUIDs(device: device, product: product,
+                    environment: environment, deadline: deadline)
             }
+            guard let images else { throw ToolUnavailable(description: "The installed Flutter app image identities are unknown.") }
+            let messages = try await flutterHistory(device: device, images: images, pid: pid,
+                launchedAt: launchedAt, environment: environment, deadline: deadline)
             for message in messages {
                 guard let range = message.range(of: Self.flutterMarker) else { continue }
                 let value = message[range.upperBound...].trimmingCharacters(in: .whitespacesAndNewlines)
@@ -149,13 +136,13 @@ public struct LaunchStage: Stage {
                     uri.user == nil, uri.password == nil, uri.query == nil, uri.fragment == nil,
                     !uri.path.isEmpty else {
                     throw DomainError(summary: "Flutter reported a different or invalid development service URI.",
-                        remediation: Remediation(summary: "Inspect this app's Flutter launch log and selected port, then retry down for this project."))
+                        remediation: Remediation(summary: "Inspect this Flutter app and selected port, then retry down for this project."))
                 }
                 try await flutterPID(device: device, bundleID: product.bundleIdentifier, pid: pid,
                     environment: environment, deadline: deadline)
                 let probe = try await flutterQuery(ProcessCommand("curl", ["--fail", "--silent", "--show-error", "--noproxy", "*",
                     "--connect-timeout", "2", "--max-time", "5", value + (value.hasSuffix("/") ? "" : "/") + "getVM"],
-                    timeout: flutterQueryTimeout(deadline)), failure: "Could not query the observed Flutter development service.", deadline: deadline)
+                    timeout: flutterQueryTimeout(deadline), redactArguments: true), failure: "Could not query the observed Flutter development service.", deadline: deadline)
                 if probe.terminationStatus.isSuccess {
                     guard let document = try? JSONSerialization.jsonObject(with: Data(probe.standardOutput.utf8)) as? [String: Any],
                         (document["result"] as? [String: Any])?["type"] as? String == "VM" else {
@@ -173,21 +160,11 @@ public struct LaunchStage: Stage {
             if ContinuousClock.now >= deadline { break }
         } while true
         throw DomainError(summary: "The Flutter app started, but its development service URI was not observed.",
-            remediation: Remediation(summary: "Inspect the Flutter app and launch log at \(log.path). Run mobile down --platform ios before retrying."))
+            remediation: Remediation(summary: "Inspect the Flutter app and its development service. Run mobile down --platform ios before retrying."))
     }
 
     private static let flutterMarker = "The Dart VM service is listening on "
     private static let flutterOutputLimit = 1_048_576
-
-    private func flutterLogContents(_ log: URL) throws -> String {
-        let file = try FileHandle(forReadingFrom: log)
-        defer { try? file.close() }
-        let data = try file.read(upToCount: Self.flutterOutputLimit + 1) ?? Data()
-        guard data.count <= Self.flutterOutputLimit, let contents = String(data: data, encoding: .utf8) else {
-            throw ToolUnavailable(description: "The Flutter launch log exceeded its observation limit or was not UTF-8.")
-        }
-        return contents
-    }
 
     /// Finite collected commands use the existing runner's cancellation and output bound.
     /// Never include their output or command in errors: a service URI contains credentials.
@@ -200,7 +177,7 @@ public struct LaunchStage: Stage {
         } catch is CancellationError { throw CancellationError() }
         catch ProcessError.timedOut where ContinuousClock.now >= deadline {
             throw DomainError(summary: "The Flutter development service readiness deadline expired.",
-                remediation: Remediation(summary: "Inspect the selected app and launch log. Run mobile down --platform ios before retrying."))
+                remediation: Remediation(summary: "Inspect the selected app and its development service. Run mobile down --platform ios before retrying."))
         }
         catch ProcessError.timedOut { throw ToolUnavailable(description: failure + " [query-timeout]") }
         catch ProcessError.spawnFailed { throw ToolUnavailable(description: failure + " [query-spawn-failed]") }
