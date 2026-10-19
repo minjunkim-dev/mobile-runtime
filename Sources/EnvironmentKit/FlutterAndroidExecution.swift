@@ -566,8 +566,11 @@ final class FlutterAndroidExecution: @unchecked Sendable {
             guard inside(root, path), root.path != path.path else { throw failure("A private SDK write exception escapes its exclusive root.") }
             return "(subpath \(seatbelt(path.path)))"
         }
+        let rootFilter = "(subpath \(seatbelt(root.path)))"
+        let filter = exceptions.isEmpty ? rootFilter
+            : "(require-all \(rootFilter) (require-not (require-any \(exceptions.joined()))))"
         return "(version 1)(allow default)" + (try protection(protected))
-            + "(deny file-write* (require-all (subpath \(seatbelt(root.path))) (require-not (require-any \(exceptions.joined())))))"
+            + "(deny file-write* \(filter))"
             + ancestorProtection([root])
     }
 

@@ -1,5 +1,10 @@
 import Core
 import Foundation
+#if canImport(Darwin)
+import Darwin
+#else
+import Glibc
+#endif
 
 struct AndroidRuntimeStage: Stage {
     let id: String
@@ -507,13 +512,24 @@ actor AndroidRuntime {
         }
         let socket: String?
         if anchor.framework == .flutter {
+            let invalid = AndroidStateError("Flutter Android requires a prepared entrypoint and a leased host TCP port")
             guard let port, (1...65535).contains(port), let flutterEntrypoint,
-                  flutterEntrypoint.resolvingSymlinksInPath() == flutterEntrypoint,
-                  flutterEntrypoint.path.hasPrefix(anchor.directory.resolvingSymlinksInPath().path + "/"),
+                  flutterEntrypoint.isFileURL, flutterEntrypoint.query == nil, flutterEntrypoint.fragment == nil,
                   flutterEntrypoint.pathExtension == "dart",
-                  (try? flutterEntrypoint.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) == true else {
-                throw AndroidStateError("Flutter Android requires a prepared entrypoint and a leased host TCP port")
+                  (try? flutterEntrypoint.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) == true,
+                  let file = realpath(flutterEntrypoint.path, nil) else { throw invalid }
+            defer { free(file) }
+            guard let app = realpath(anchor.directory.path, nil) else { throw invalid }
+            defer { free(app) }
+            var expected = flutterEntrypoint.path
+            #if canImport(Darwin)
+            for alias in ["/tmp", "/var", "/etc"] where expected.hasPrefix(alias + "/") {
+                expected = "/private" + expected
+                break
             }
+            #endif
+            guard String(cString: file) == expected,
+                  expected.hasPrefix(String(cString: app) + "/") else { throw invalid }
             socket = try AndroidADBEndpoint(environment: environment).socket
         } else { socket = nil }
         if let existing = try store.read() {

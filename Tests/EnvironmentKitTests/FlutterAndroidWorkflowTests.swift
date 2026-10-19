@@ -295,7 +295,12 @@ struct FlutterAndroidWorkflowTests {
         let requested = explicitPort ? try FlutterIOSWorkflow.availablePort(nil) : nil
         let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: fixture.input, port: requested),
             runner: fixture.runner, leases: fixture.leases, flutterFactory: factory)
-        #expect(result.exitCode == 0, Comment(rawValue: result.up?.failure?.message ?? ""))
+        #expect(result.exitCode == 0, Comment(rawValue: result.up?.failure?.message ?? result.operation.nextAction ?? ""))
+        let selected = try #require(result.operation.selection?.selected)
+        let appIdentity = try FolderIdentity(directory: fixture.app)
+        let workspaceIdentity = try FolderIdentity(directory: fixture.native.repo.root)
+        #expect(selected.app == appIdentity)
+        #expect(selected.workspace == workspaceIdentity)
         let port = try #require(result.operation.port)
         #expect((1...65535).contains(port))
         if let requested { #expect(port == requested) }
@@ -412,7 +417,7 @@ struct FlutterAndroidWorkflowTests {
                 trace.record(files); return View(sdk: sdk)
             })
         #expect(result.exitCode == 1)
-        #expect(result.operation.conflict?.key == .port(port))
+        #expect(result.operation.conflict?.key == .port(port), Comment(rawValue: result.up?.failure?.message ?? result.operation.nextAction ?? ""))
         #expect(result.operation.conflict?.owner == other)
         #expect(trace.count == 1)
         #expect(!fixture.runner.base.log.all.contains { $0.arguments.contains("install")
@@ -472,7 +477,8 @@ struct FlutterAndroidWorkflowTests {
         for output in outputs {
             let file = try Self.physical(repo.url(output))
             let command = ProcessCommand("/bin/sh", ["-c", "printf generated > \"$1\"", "fixture", file.path], workingDirectory: privateRoot)
-            #expect(try await child.run(FlutterAndroidExecution.policyCommand(command, file: policy)).terminationStatus.isSuccess)
+            let result = try await child.run(FlutterAndroidExecution.policyCommand(command, file: policy))
+            #expect(result.terminationStatus.isSuccess, Comment(rawValue: result.combinedOutput))
         }
         try prepared.check()
         try "external source change\n".write(to: repo.url(sources[0]), atomically: false, encoding: .utf8)
@@ -714,15 +720,18 @@ struct FlutterAndroidWorkflowTests {
                 let transformed = key.replacingOccurrences(of: native.project.path, with: android.path)
                 let selected = transformed.hasPrefix("adb ") ? transformed.replacingOccurrences(of: "adb ", with: "adb -L tcp:5037 ", options: .anchored) : transformed
                 responses[selected] = .init(status: response.status,
-                    standardOutput: response.standardOutput.replacingOccurrences(of: native.project.path, with: android.path),
+                    standardOutput: response.standardOutput.replacingOccurrences(of: native.project.path, with: android.path)
+                        + (key.hasPrefix("aapt2 dump badging ") ? "native-code: 'arm64-v8a'\n" : ""),
                     standardError: response.standardError.replacingOccurrences(of: native.project.path, with: android.path))
             }
             let members = workspace ? [repo.root, app] : [app]
+            responses[FlutterRelease.command.description] = .ok(
+                String(decoding: try FlutterFixture.releaseMetadata(), as: UTF8.self))
             responses[repo.url("flutter-sdk/bin/cache/dart-sdk/bin/dart").path + " pub --suppress-analytics workspace list --json"] = .ok(
                 String(decoding: try JSONSerialization.data(withJSONObject: ["packages": members.map { ["path": $0.path] }]), as: UTF8.self))
             var environment = native.input.environment
             environment["FLUTTER_ROOT"] = repo.url("flutter-sdk").path
-            input = ProjectInspectionInput(directory: repo.root, environment: environment, app: workspace ? "apps/client" : ".", platform: .android)
+            input = ProjectInspectionInput(directory: app, environment: environment, platform: .android)
             runner = RuntimeRunner(base: FakeProcessRunner(responses: responses), leases: native.leases,
                 folder: try FolderIdentity(directory: repo.root))
         }
@@ -763,7 +772,8 @@ struct FlutterAndroidWorkflowTests {
                 if args.starts(with: ["-s", "emulator-5554", "forward", "--remove"]) { mapping = nil; return .ok("") }
                 if args.contains("logcat"), args.contains("-t") { return .ok("1792400000.123456 8123 8123 I flutter : marker\n") }
                 if args.contains("logcat"), args.contains("-T") { return .ok("1792400001.123456 8123 8123 I flutter : The Dart VM service is listening on http://127.0.0.1:38881/sentinel-secret=/\n") }
-                if args.contains("force-stop"), mapping != nil { stopped = true }
+                if args.contains("force-stop") { stopped = true }
+                if args.starts(with: ["-s", "emulator-5554", "shell", "am", "start"]) { stopped = false }
                 if args.contains("pidof"), stopped { return .failed(1, "") }
                 return nil
             }

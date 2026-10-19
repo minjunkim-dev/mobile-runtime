@@ -478,6 +478,37 @@ struct AndroidFlutterServiceTests {
         #expect(!runner.commands.contains { $0.arguments.contains("reverse") || $0.arguments.contains("start-server") || $0.arguments.contains("kill-server") })
     }
 
+    @Test("runtime rejects symbolic, escaped and nonregular Flutter entrypoints before device commands", arguments: ["leaf", "parent", "outside", "missing", "directory"])
+    func invalidRuntimeEntrypoint(_ kind: String) async throws {
+        let fixture = try FlutterRuntimeFixture()
+        let outside = try FixtureRepo()
+        try outside.write("main.dart", "preserved outside source")
+        let entrypoint: URL
+        switch kind {
+        case "leaf":
+            entrypoint = fixture.repo.url("lib/alias.dart")
+            try FileManager.default.createSymbolicLink(at: entrypoint, withDestinationURL: fixture.entrypoint)
+        case "parent":
+            let alias = fixture.repo.url("linked-lib")
+            try FileManager.default.createSymbolicLink(at: alias, withDestinationURL: fixture.entrypoint.deletingLastPathComponent())
+            entrypoint = alias.appendingPathComponent("main.dart")
+        case "outside": entrypoint = outside.url("main.dart")
+        case "directory": entrypoint = try fixture.repo.directory("lib/not-a-file.dart")
+        default: entrypoint = fixture.repo.url("lib/missing.dart")
+        }
+        let runner = FlutterADB()
+        let stages = androidUpStages(anchor: fixture.anchor, doctor: DoctorEngine(checks: []), config: fixture.config,
+            hostRunner: runner, projectRunner: runner, environment: fixture.environment, logs: fixture.logs,
+            port: 8097, flutterEntrypoint: entrypoint, note: { _ in })
+        let report = await UpPipeline(stages: [FlutterProductStage(product: fixture.product)]
+            + stages.filter { $0.id == "android.device" }).run()
+        #expect(report.exitCode == 2)
+        #expect(runner.commands.isEmpty)
+        #expect(try fixture.store.read() == nil)
+        #expect(try String(contentsOf: outside.url("main.dart"), encoding: .utf8) == "preserved outside source")
+        withExtendedLifetime(outside) {}
+    }
+
     @Test("unreadable and substituted records remain unchanged", arguments: ["malformed", "symlink", "unreadable", "oversized"])
     func unreadableState(kind: String) throws {
         let fixture = try FlutterRuntimeFixture()
