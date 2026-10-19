@@ -343,12 +343,38 @@ struct AndroidFlutterServiceTests {
             try FileManager.default.createSymbolicLink(at: file, withDestinationURL: foreign)
         }
         await #expect(throws: AndroidStateError.self) {
-            _ = try await fixture.service(runner).connect(initial, marker: flutterMarker, hostPort: 8097, store: fixture.store)
+            _ = try await fixture.service(runner, launch: AndroidRuntimeTimeouts().launch)
+                .connect(initial, marker: flutterMarker, hostPort: 8097, store: fixture.store)
         }
         #expect(runner.table.isEmpty)
         #expect(runner.commands.filter { $0.arguments.contains("--remove") }.count == 1)
         #expect(try String(contentsOf: foreign, encoding: .utf8) == "foreign state")
         #expect(try JSONDecoder().decode(AndroidActiveRun.self, from: Data(contentsOf: backup)).forward?.state == .pending)
+        #expect(throws: AndroidStateError.self) { _ = try fixture.store.read() }
+    }
+
+    @Test("an expired cleanup deadline preserves the confirmed mapping and foreign state without commands")
+    func expiredCleanupDeadline() async throws {
+        let fixture = try FlutterRuntimeFixture()
+        let initial = fixture.active()
+        try fixture.store.write(initial)
+        let runner = FlutterADB()
+        let service = try fixture.service(runner, launch: AndroidRuntimeTimeouts().launch)
+        let (created, _) = try await service.connect(initial, marker: flutterMarker, hostPort: 8097, store: fixture.store)
+        let file = fixture.store.file
+        let backup = fixture.repo.url("confirmed.json")
+        let foreign = fixture.repo.url("foreign.txt")
+        try Data("foreign state".utf8).write(to: foreign)
+        try FileManager.default.moveItem(at: file, to: backup)
+        try FileManager.default.createSymbolicLink(at: file, withDestinationURL: foreign)
+        let before = runner.commands.count
+        await #expect(throws: AndroidStateError.self) {
+            _ = try await service.remove(created, deadline: ContinuousClock.now - .seconds(1))
+        }
+        #expect(runner.commands.count == before)
+        #expect(runner.table == "\(flutterSerial) tcp:8097 tcp:38881\n")
+        #expect(try String(contentsOf: foreign, encoding: .utf8) == "foreign state")
+        #expect(try JSONDecoder().decode(AndroidActiveRun.self, from: Data(contentsOf: backup)) == created)
         #expect(throws: AndroidStateError.self) { _ = try fixture.store.read() }
     }
 
