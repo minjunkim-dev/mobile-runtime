@@ -179,7 +179,7 @@ public struct AndroidAppFile: Sendable {
         try await requireIdentity(device)
         guard let activity = metadata.launcherActivity else { throw Self.failure("The APK launcher is unknown.") }
         let component = metadata.appID + "/" + (activity.hasPrefix(".") ? metadata.appID + activity : activity)
-        let result = try await adb(["-s", device.handle, "shell", "am", "start", "-W", "-n", component], timeout: .seconds(60))
+        let result = try await adb(["-s", device.handle, "shell", "am", "start", "-W", "-n", shellArgument(component)], timeout: .seconds(60))
         guard result.terminationStatus.isSuccess,
               !result.combinedOutput.contains("Error:"), !result.combinedOutput.contains("Exception") else {
             throw Self.failure("Android refused the launch request: " + result.combinedOutput.lastLines(8))

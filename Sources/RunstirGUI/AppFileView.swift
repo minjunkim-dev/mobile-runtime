@@ -47,13 +47,13 @@ struct AppFileView: View {
                             Text("기존 앱: \(plan.installed.state) · 표시 버전 \(plan.installed.version ?? "확인 불가") · 빌드 \(plan.installed.build ?? "확인 불가")")
                             Text(plan.replacement ? "같은 앱을 데이터 보존 방식으로 교체합니다. 자동 삭제와 초기화는 하지 않습니다." : "선택한 앱을 설치하고 실행을 요청합니다.")
                             ForEach(plan.warnings, id: \.self) { Text($0) }
-                            if plan.downgrade {
-                                Toggle("이전 빌드 설치 경고를 확인했습니다. 설치 성공과 데이터 보존은 보장하지 않습니다.", isOn: $downgradeAcknowledged)
+                            if plan.requiresRiskApproval {
+                                Toggle("이전 또는 비교 불가 빌드의 위험을 확인했습니다. 설치 성공과 데이터 보존은 보장하지 않습니다.", isOn: $downgradeAcknowledged)
                                     .disabled(session.task != nil)
                             }
                             Text("plan-id: \(plan.id)").font(.caption)
                             Button("현재 계획 승인·설치·실행 요청") { execute(approval: plan.approval) }
-                                .disabled(session.task != nil || !session.acceptsNewOperations || (plan.downgrade && !downgradeAcknowledged))
+                                .disabled(session.task != nil || !session.acceptsNewOperations || (plan.requiresRiskApproval && !downgradeAcknowledged))
                             Text("실행 직전에 파일·기기·기존 앱 상태를 다시 확인합니다.").font(.caption)
                         }
                         Divider()

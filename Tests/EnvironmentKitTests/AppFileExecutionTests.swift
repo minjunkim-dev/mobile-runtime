@@ -1,5 +1,5 @@
 import Core
-import EnvironmentKit
+@testable import EnvironmentKit
 import Foundation
 import TestSupport
 import Testing
@@ -133,8 +133,108 @@ struct AppFileExecutionTests {
         let before = try AppFileIdentity(url: first)
         #expect(ResourceKey.appFile(before) == ResourceKey.appFile(try AppFileIdentity(url: alias)))
         #expect(ResourceKey.appFile(before) != ResourceKey.appFile(try AppFileIdentity(url: second)))
+        #expect(ResourceKey.appFileObject(before) != ResourceKey.appFileObject(try AppFileIdentity(url: second)))
         try Data("replacement bytes".utf8).write(to: first, options: .atomic)
         #expect(ResourceKey.appFile(before) == ResourceKey.appFile(try AppFileIdentity(url: first)))
+        #expect(ResourceKey.appFileObject(before) != ResourceKey.appFileObject(try AppFileIdentity(url: first)))
+    }
+
+    @Test("hardlink input conflicts on the physical file even with no shared device lease")
+    func hardlinkLease() async throws {
+        let fixture = try AppFileFixture(platform: .android)
+        let alias = fixture.repo.url("alias.apk")
+        try FileManager.default.linkItem(at: fixture.file, to: alias)
+        let original = try AppFileIdentity(url: fixture.file)
+        let linked = try AppFileIdentity(url: alias)
+        #expect(original == linked)
+        #expect(original.path != linked.path)
+        let proposed = await fixture.run(planOnly: true)
+        let plan = try #require(proposed.operation.plan)
+        let owner = LeaseOwner(operationId: "other-device", command: "app run alias.apk", project: "other")
+        let held = try fixture.leases.acquire([.appFile(linked), .appFileObject(linked)], owner: owner)
+        defer { held.release() }
+        let result = await fixture.run(approval: plan.approval)
+        #expect(result.exitCode == 1)
+        #expect(result.operation.conflict?.key == .appFileObject(original))
+        #expect(result.operation.conflict?.owner == owner)
+        #expect(!fixture.runner.commands.contains(where: mutation))
+        #expect(try String(contentsOf: alias, encoding: .utf8) == "approved bytes")
+    }
+
+    @Test("an atomic rebuild at the same path retains its existing app claim ownership")
+    func atomicRebuildClaim() async throws {
+        let fixture = try AppFileFixture(platform: .android)
+        let first = await fixture.run(planOnly: true)
+        let firstPlan = try #require(first.operation.plan)
+        let installed = await fixture.run(approval: firstPlan.approval)
+        #expect(installed.exitCode == 0)
+        let original = try AppFileIdentity(url: fixture.file)
+        try Data("new approved bytes".utf8).write(to: fixture.file, options: .atomic)
+        #expect(try AppFileIdentity(url: fixture.file) != original)
+        let proposed = await fixture.run(planOnly: true)
+        let plan = try #require(proposed.operation.plan)
+        #expect(plan.id != firstPlan.id)
+        #expect(plan.replacement)
+        let replaced = await fixture.run(approval: plan.approval)
+        #expect(replaced.exitCode == 0)
+        #expect(replaced.operation.conflict == nil)
+        #expect(replaced.operation.installation == "installed")
+        #expect(fixture.runner.commands.filter { $0.arguments.contains("install") }.count == 2)
+        #expect(try String(contentsOf: fixture.file, encoding: .utf8) == "new approved bytes")
+        #expect(!fixture.runner.commands.contains(where: forbidden))
+    }
+
+    @Test("Android dollar launcher survives the remote shell as one literal component")
+    func dollarLauncher() async throws {
+        let fixture = try AppFileFixture(platform: .android)
+        let activity = "com.fixture.Local.Main$Activity"
+        fixture.runner.badgingOverride = AppFileRunner.badging.replacingOccurrences(of: "com.fixture.Local.MainActivity", with: activity)
+        let proposed = await fixture.run(planOnly: true)
+        let plan = try #require(proposed.operation.plan)
+        let result = await fixture.run(approval: plan.approval)
+        #expect(result.exitCode == 0)
+        let command = try #require(fixture.runner.commands.first { $0.arguments.contains("start") })
+        // adb sends these arguments joined with spaces to a remote shell.
+        // A local shell tests that boundary without executing adb or the input APK.
+        let remote = command.arguments.dropFirst(3).joined(separator: " ")
+        let shell = try await SystemProcessRunner(environment: ["Activity": "EXPANDED"]).run(
+            ProcessCommand("/bin/sh", ["-c", "set -- " + remote + "; printf '%s' \"$5\""], workingDirectory: fixture.repo.root))
+        #expect(shell.terminationStatus.isSuccess)
+        #expect(shell.standardOutput == AppFileFixture.appID + "/" + activity)
+        #expect(!fixture.runner.commands.contains(where: forbidden))
+    }
+
+    @Test("binary plist control characters remain raw in JSON but cannot rewrite human approval output")
+    func terminalControls() async throws {
+        let fixture = try AppFileFixture(platform: .ios)
+        let controls = "display\u{1b}[2J\r\n\u{7f}\u{85}\u{202e}end"
+        try fixture.updatePlist(["CFBundleShortVersionString": controls], format: .binary)
+        let result = await fixture.run(planOnly: true)
+        let plan = try #require(result.operation.plan)
+        #expect(plan.artifact.metadata.version == controls)
+        let json = try JSONSerialization.jsonObject(with: Data(result.encoded(toolVersion: "test").utf8)) as? [String: Any]
+        let operation = try #require(json?["operation"] as? [String: Any])
+        let artifact = try #require(operation["artifact"] as? [String: Any])
+        #expect((artifact["metadata"] as? [String: Any])?["version"] as? String == controls)
+        let rendered = AppFileHumanOutput.lines(result)
+        #expect(rendered.output.contains("plan-id: " + plan.id))
+        #expect(rendered.output.contains("approval: " + plan.approval))
+        #expect((rendered.output + rendered.errors).allSatisfy { line in
+            line.unicodeScalars.allSatisfy { !CharacterSet.controlCharacters.contains($0) }
+        })
+        #expect(rendered.output.contains { $0.contains(#"display\u{001B}[2J\u{000D}\u{000A}\u{007F}\u{0085}\u{202E}end"#) })
+        var failure = result.operation
+        failure.error = controls
+        failure.nextAction = controls
+        let failed = AppFileHumanOutput.lines(AppFileResult(operation: failure, exitCode: 1))
+        let progress = AppFileHumanOutput.progress(WorkflowEvent(operationId: "test", sequence: 1, kind: "stage", state: "failed", detail: controls))
+        #expect((failed.output + failed.errors + [progress]).allSatisfy { line in
+            line.unicodeScalars.allSatisfy { !CharacterSet.controlCharacters.contains($0) }
+        })
+        try fixture.updatePlist(["CFBundleShortVersionString": "displayend"], format: .binary)
+        let changed = await fixture.run(planOnly: true)
+        #expect(changed.operation.plan?.id != plan.id)
+        #expect(!fixture.runner.commands.contains(where: mutation))
     }
 
     @Test("changed bytes invalidate an earlier approval without installing", arguments: [ProjectPlatform.ios, .android])
@@ -210,6 +310,61 @@ struct AppFileExecutionTests {
         let accepted = await fixture.run(approval: plan.approval)
         #expect(accepted.exitCode == 0)
         #expect(!fixture.runner.commands.contains(where: forbidden))
+    }
+
+    @Test("accepted iOS prerelease builds retain ordering and the older-build approval boundary",
+          arguments: [("3", "2b1", true), ("3", "2.0b1", true), ("3", "3b1", true),
+                      ("3fc2", "3fc1", true), ("3b2", "3b1", true), ("3b1", "3a9", true),
+                      ("3a1", "3d9", true), ("3fc1", "3b9", true), ("2b1", "3", false),
+                      ("3b1", "3fc1", false), ("3b1", "3.0b1", false), ("3b1", "3b2", false)])
+    func prereleaseBuild(_ example: (String, String, Bool)) async throws {
+        let (installed, proposed, older) = example
+        let fixture = try AppFileFixture(platform: .ios, installedBuild: installed)
+        try fixture.updatePlist(["CFBundleVersion": proposed])
+        let result = await fixture.run(planOnly: true)
+        let plan = try #require(result.operation.plan)
+        #expect(plan.downgrade == older)
+        #expect(!plan.buildOrderUnknown)
+        #expect(plan.requiresRiskApproval == older)
+        #expect(plan.warnings.contains { $0.hasPrefix("OLDER BUILD:") } == older)
+        #expect(plan.approval.hasPrefix("DOWNGRADE:") == older)
+        if older {
+            let refused = await fixture.run(approval: plan.id)
+            #expect(refused.operation.state == "needs-approval")
+        }
+        #expect(!fixture.runner.commands.contains(where: mutation))
+    }
+
+    @Test("unknown build order remains distinct from downgrade and requires bound risk approval",
+          arguments: [("release-unknown", "2"), ("3", "18446744073709551616")])
+    func unknownBuildOrder(_ example: (String, String)) async throws {
+        let fixture = try AppFileFixture(platform: .ios, installedBuild: example.0)
+        try fixture.updatePlist(["CFBundleVersion": example.1])
+        let result = await fixture.run(planOnly: true)
+        let plan = try #require(result.operation.plan)
+        #expect(!plan.downgrade)
+        #expect(plan.buildOrderUnknown)
+        #expect(plan.requiresRiskApproval)
+        #expect(plan.approval == "DOWNGRADE:" + plan.id)
+        #expect(plan.warnings.contains { $0.hasPrefix("UNKNOWN BUILD ORDER:") })
+        #expect(!plan.warnings.contains { $0.hasPrefix("OLDER BUILD:") })
+        #expect(AppFileHumanOutput.lines(result).errors.contains { $0.hasPrefix("UNKNOWN BUILD ORDER:") })
+        let json = try JSONSerialization.jsonObject(with: Data(result.encoded(toolVersion: "test").utf8)) as? [String: Any]
+        let operation = try #require(json?["operation"] as? [String: Any])
+        let encodedPlan = try #require(operation["plan"] as? [String: Any])
+        #expect(encodedPlan["buildOrderUnknown"] as? Bool == true)
+        #expect(encodedPlan["downgrade"] as? Bool == false)
+        #expect(encodedPlan["approval"] as? String == plan.approval)
+        let refused = await fixture.run(approval: plan.id)
+        #expect(refused.operation.state == "needs-approval")
+        try fixture.updatePlist(["CFBundleVersion": "4"])
+        fixture.runner.setInstalledBuild("3")
+        let changed = await fixture.run(approval: plan.approval)
+        #expect(changed.operation.state == "needs-approval")
+        #expect(changed.operation.plan?.id != plan.id)
+        #expect(changed.operation.plan?.buildOrderUnknown == false)
+        #expect(changed.operation.plan?.requiresRiskApproval == false)
+        #expect(!fixture.runner.commands.contains(where: mutation))
     }
 
     @Test("project claims block direct installation under the same shared device lease")
@@ -311,6 +466,13 @@ private final class AppFileFixture {
         await AppFileExecution.run(input: AppFileInput(file: file, environment: environment, device: selected ? device : nil),
             inspectOnly: inspectOnly, planOnly: planOnly, approvedPlanID: approval, runner: runner, leases: leases)
     }
+
+    func updatePlist(_ changes: [String: String], format: PropertyListSerialization.PropertyListFormat = .xml) throws {
+        let url = file.appendingPathComponent("Info.plist")
+        var plist = try #require(PropertyListSerialization.propertyList(from: Data(contentsOf: url), format: nil) as? [String: Any])
+        changes.forEach { plist[$0] = $1 }
+        try PropertyListSerialization.data(fromPropertyList: plist, format: format, options: 0).write(to: url)
+    }
 }
 
 /// The one ProcessRunner seam models platform observations; it never runs an SDK.
@@ -333,6 +495,8 @@ private final class AppFileRunner: ProcessRunner, @unchecked Sendable {
     var invalidSignature = false
     var requiresSplits = false
     var commands: [ProcessCommand] { lock.withLock { recorded } }
+
+    func setInstalledBuild(_ build: String) { lock.withLock { installedBuild = build } }
 
     init(file: URL, payload: URL, platform: ProjectPlatform, installedBuild: String?) {
         self.file = file
@@ -401,7 +565,7 @@ private final class AppFileRunner: ProcessRunner, @unchecked Sendable {
                 }
                 if args == prefix + ["dumpsys", "package", AppFileFixture.appID] { return ok("  versionName=1.2\n  codePath=/fixture/installed.apk\n") }
                 if args.prefix(4) == ["-s", "emulator-5554", "install", "-r"] { installedBuild = "2"; return ok("Success\n") }
-                if args == prefix + ["am", "start", "-W", "-n", "com.fixture.Local/com.fixture.Local.MainActivity"] {
+                if args.prefix(7) == prefix + ["am", "start", "-W", "-n"], args.count == 8 {
                     if failLaunch { return ProcessResult(terminationStatus: .exited(1), standardOutput: "", standardError: "fixture launch failure") }
                     return ok("Status: ok\n")
                 }

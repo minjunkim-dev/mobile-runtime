@@ -120,19 +120,24 @@ public struct AppFilePlan: Codable, Sendable {
     public let installed: AppFileInstalledState
     public let replacement: Bool
     public let downgrade: Bool
+    public let buildOrderUnknown: Bool
     public let warnings: [String]
     public let approval: String
 
+    public var requiresRiskApproval: Bool { downgrade || buildOrderUnknown }
+
     public init(id: String, artifact: AppFileArtifact, device: AppFileDevice,
-                installed: AppFileInstalledState, replacement: Bool, downgrade: Bool, warnings: [String]) {
+                installed: AppFileInstalledState, replacement: Bool, downgrade: Bool,
+                buildOrderUnknown: Bool = false, warnings: [String]) {
         self.id = id
         self.artifact = artifact
         self.device = device
         self.installed = installed
         self.replacement = replacement
         self.downgrade = downgrade
+        self.buildOrderUnknown = buildOrderUnknown
         self.warnings = warnings
-        approval = downgrade ? "DOWNGRADE:" + id : id
+        approval = (downgrade || buildOrderUnknown) ? "DOWNGRADE:" + id : id
     }
 }
 

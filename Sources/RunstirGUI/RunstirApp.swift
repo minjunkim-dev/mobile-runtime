@@ -80,7 +80,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         guard panel.runModal() == .OK, let file = panel.url else { return }
         do {
             let identity = try AppFileIdentity(url: file)
-            if let existing = fileWindows[identity.path] { existing.makeKeyAndOrderFront(nil); return }
+            // Re-read each window's selected path: an atomic replacement must not
+            // leave a stale inode mapping that merges two now-distinct files.
+            if let existing = fileWindows[identity.path] ?? fileWindows.first(where: {
+                (try? AppFileIdentity(url: URL(fileURLWithPath: $0.key))) == identity
+            })?.value { existing.makeKeyAndOrderFront(nil); return }
             let window = makeWindow(title: "Runstir — \(file.lastPathComponent)")
             let session = GUIOperationSession()
             sessions[ObjectIdentifier(window)] = session

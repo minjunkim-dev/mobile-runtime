@@ -21,7 +21,7 @@ struct AppRun: AsyncParsableCommand {
     static let configuration = CommandConfiguration(commandName: "run", abstract: "Approve the current file/device/replacement plan, install preserving data, and request launch.")
     @OptionGroup var options: AppFileOptions
     @Flag(name: .long, help: "Return the exact change plan without installing.") var plan = false
-    @Option(name: .long, help: "Approve exactly the current plan-id. Older builds require the displayed DOWNGRADE acknowledgement.") var approve: String?
+    @Option(name: .long, help: "Approve exactly the current plan-id. Older or unorderable builds require the displayed DOWNGRADE risk acknowledgement.") var approve: String?
 
     mutating func validate() throws {
         if plan && approve != nil { throw ValidationError("--plan and --approve cannot be combined.") }
@@ -61,7 +61,7 @@ struct AppFileOptions: ParsableArguments {
                     if structured {
                         if let line = try? event.encoded() { writeError(line) }
                     } else {
-                        writeError("\(event.stageId ?? event.kind): \(event.state)\(event.detail.map { " — \($0)" } ?? "")")
+                        writeError(AppFileHumanOutput.progress(event))
                     }
                 }
         }
@@ -85,29 +85,8 @@ struct AppFileOptions: ParsableArguments {
     }
 
     private func render(_ result: AppFileResult) {
-        let operation = result.operation
-        print("\(operation.command): \(operation.state)")
-        if let artifact = operation.artifact {
-            print("file: \(artifact.file.path)")
-            print("origin: \(artifact.origin) — producer trust and safety are unverified")
-            print("\(artifact.contentIdentityAlgorithm): \(artifact.contentIdentity)")
-            print("\(artifact.metadata.platform.rawValue): \(artifact.metadata.appID), version \(artifact.metadata.version ?? "unknown"), build \(artifact.metadata.build)")
-            print("architecture: \(artifact.metadata.architectures.joined(separator: ", ")); minimum OS: \(artifact.metadata.minimumOS)")
-            print(artifact.metadata.signatureCondition)
-            if let signer = artifact.metadata.signingIdentity { print("signer SHA-256: \(signer)") }
-        }
-        for device in operation.devices {
-            print("device: \(device.id) — \(device.name), OS \(device.os), \(device.architectures.joined(separator: ", ")), \(device.ready ? "ready" : "manual preparation required")")
-        }
-        if let plan = operation.plan {
-            print("plan-id: \(plan.id)")
-            print("target: \(plan.device.id); installed: \(plan.installed.state), version \(plan.installed.version ?? "unknown"), build \(plan.installed.build ?? "unknown")")
-            plan.warnings.forEach { writeError($0) }
-            print("approval: \(plan.approval)")
-        }
-        print("installation: \(operation.installation); launch request: \(operation.launch); running: \(operation.running); first screen: \(operation.firstScreen)")
-        print("external server: \(operation.externalServer)")
-        if let error = operation.error { writeError(error) }
-        if let next = operation.nextAction { print(next) }
+        let lines = AppFileHumanOutput.lines(result)
+        lines.output.forEach { print($0) }
+        lines.errors.forEach { writeError($0) }
     }
 }

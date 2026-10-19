@@ -32,6 +32,49 @@ public struct AppFileResult: Sendable {
     }
 }
 
+/// Human CLI output only. Structured output and approval inputs retain original values.
+public enum AppFileHumanOutput {
+    public static func lines(_ result: AppFileResult) -> (output: [String], errors: [String]) {
+        let operation = result.operation
+        var output = ["\(operation.command): \(operation.state)"]
+        var errors: [String] = []
+        if let artifact = operation.artifact {
+            output += ["file: \(artifact.file.path)",
+                "origin: \(artifact.origin) — producer trust and safety are unverified",
+                "\(artifact.contentIdentityAlgorithm): \(artifact.contentIdentity)",
+                "\(artifact.metadata.platform.rawValue): \(artifact.metadata.appID), version \(artifact.metadata.version ?? "unknown"), build \(artifact.metadata.build)",
+                "architecture: \(artifact.metadata.architectures.joined(separator: ", ")); minimum OS: \(artifact.metadata.minimumOS)",
+                artifact.metadata.signatureCondition]
+            if let signer = artifact.metadata.signingIdentity { output.append("signer SHA-256: \(signer)") }
+        }
+        for device in operation.devices {
+            output.append("device: \(device.id) — \(device.name), OS \(device.os), \(device.architectures.joined(separator: ", ")), \(device.ready ? "ready" : "manual preparation required")")
+        }
+        if let plan = operation.plan {
+            output += ["plan-id: \(plan.id)",
+                "target: \(plan.device.id); installed: \(plan.installed.state), version \(plan.installed.version ?? "unknown"), build \(plan.installed.build ?? "unknown")",
+                "approval: \(plan.approval)"]
+            errors += plan.warnings
+        }
+        output += ["installation: \(operation.installation); launch request: \(operation.launch); running: \(operation.running); first screen: \(operation.firstScreen)",
+            "external server: \(operation.externalServer)"]
+        if let error = operation.error { errors.append(error) }
+        if let next = operation.nextAction { output.append(next) }
+        return (output.map(escape), errors.map(escape))
+    }
+
+    public static func progress(_ event: WorkflowEvent) -> String {
+        escape("\(event.stageId ?? event.kind): \(event.state)\(event.detail.map { " — \($0)" } ?? "")")
+    }
+
+    private static func escape(_ value: String) -> String {
+        value.unicodeScalars.map { scalar in
+            CharacterSet.controlCharacters.contains(scalar)
+                ? String(format: "\\u{%04X}", scalar.value) : String(scalar)
+        }.joined()
+    }
+}
+
 /// CLI and GUI share file inspection, exact approval, leases and observed results.
 public enum AppFileExecution {
     public static func run(input: AppFileInput, inspectOnly: Bool = false, planOnly: Bool = false,
@@ -83,14 +126,14 @@ public enum AppFileExecution {
             guard approvedPlanID == plan.approval else {
                 operation.state = "needs-approval"
                 operation.requiredInput = ["--approve"]
-                operation.nextAction = "Inspect and approve the current plan: \(plan.approval). A downgrade warning requires its DOWNGRADE acknowledgement."
+                operation.nextAction = "Inspect and approve the current plan: \(plan.approval). An older or unorderable build requires its DOWNGRADE risk acknowledgement."
                 return finish(operation, code: 1, events: events)
             }
 
             let owner = LeaseOwner(operationId: operation.id, command: "app run \(artifact.file.path)",
                 project: ResourceKey.appFile(artifact.file).rawValue + ":app:" + artifact.metadata.appID)
             let deviceKey = ResourceKey.device(artifact.metadata.platform, device.id)
-            let lease = try leases.acquire([.appFile(artifact.file), deviceKey,
+            let lease = try leases.acquire([.appFile(artifact.file), .appFileObject(artifact.file), deviceKey,
                 .app(artifact.metadata.platform, device: device.handle, appID: artifact.metadata.appID)], owner: owner)
             defer { lease.release() }
             try await leases.check(device: deviceKey, project: owner.project) { claim in
@@ -216,28 +259,47 @@ public enum AppFileExecution {
         let old = installed.build.flatMap(versionComponents)
         let new = versionComponents(artifact.metadata.build)
         let downgrade = old.flatMap { old in new.map { $0.lexicographicallyPrecedes(old) } } ?? false
+        let buildOrderUnknown = replacement && (old == nil || new == nil)
         var warnings = ["File identity does not prove the producer is trusted or the app is safe.",
             "Installation, launch request, running state and first-screen evidence are separate observations."]
         if replacement { warnings.append("Replace the same app ID using the platform's data-preserving install. No uninstall, reset or delete-and-retry is allowed.") }
         if downgrade { warnings.append("OLDER BUILD: the new build is older than the installed build. The platform may refuse it. Data preservation and automatic rollback are not guaranteed.") }
-        else if replacement && (old == nil || new == nil) { warnings.append("The build labels cannot be ordered. The previous-version relationship is unknown.") }
+        else if buildOrderUnknown { warnings.append("UNKNOWN BUILD ORDER: the build labels cannot be ordered. The new build may be older. Separate DOWNGRADE risk acknowledgement is required; installation and data preservation are not guaranteed.") }
         struct Identity: Encodable {
             let artifact: AppFileArtifact
             let device: AppFileDevice
             let installed: AppFileInstalledState
+            let downgrade: Bool
+            let buildOrderUnknown: Bool
             let warnings: [String]
         }
-        let id = try AppFileSnapshot.digest(Identity(artifact: artifact, device: device, installed: installed, warnings: warnings))
+        let id = try AppFileSnapshot.digest(Identity(artifact: artifact, device: device, installed: installed,
+            downgrade: downgrade, buildOrderUnknown: buildOrderUnknown, warnings: warnings))
         return AppFilePlan(id: id, artifact: artifact, device: device, installed: installed,
-            replacement: replacement, downgrade: downgrade, warnings: warnings)
+            replacement: replacement, downgrade: downgrade, buildOrderUnknown: buildOrderUnknown, warnings: warnings)
     }
 
     private static func versionComponents(_ value: String) -> [UInt64]? {
-        let fields = value.split(separator: ".", omittingEmptySubsequences: false)
-        guard !fields.isEmpty, fields.count <= 4 else { return nil }
+        // Same grammar as accepted CFBundleVersion metadata. A release follows
+        // its development, alpha, beta and final-candidate builds in that order.
+        let suffixStart = value.firstIndex { $0.isLetter }
+        let numeric = suffixStart.map { String(value[..<$0]) } ?? value
+        let suffix = suffixStart.map { String(value[$0...]) } ?? ""
+        let fields = numeric.split(separator: ".", omittingEmptySubsequences: false)
+        guard !fields.isEmpty, fields.count <= 4,
+              fields.allSatisfy({ !$0.isEmpty && $0.utf8.allSatisfy { (48...57).contains($0) } }) else { return nil }
         let numbers = fields.compactMap { UInt64($0) }
         guard numbers.count == fields.count else { return nil }
-        return numbers + Array(repeating: 0, count: 4 - numbers.count)
+        var stage: UInt64 = 4
+        var sequence: UInt64 = 0
+        if !suffix.isEmpty {
+            guard let pair = [("d", UInt64(0)), ("a", 1), ("b", 2), ("fc", 3)].first(where: { suffix.hasPrefix($0.0) }) else { return nil }
+            let serial = suffix.dropFirst(pair.0.count)
+            guard !serial.isEmpty, serial.utf8.allSatisfy({ (48...57).contains($0) }), let number = UInt64(serial) else { return nil }
+            stage = pair.1
+            sequence = number
+        }
+        return numbers + Array(repeating: 0, count: 4 - numbers.count) + [stage, sequence]
     }
 
     private static func finish(_ operation: AppFileOperation, code: Int32, events: WorkflowEvents) -> AppFileResult {

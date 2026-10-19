@@ -72,9 +72,11 @@ bundle digest와 단일 파일 checksum을 같은 알고리즘 이름으로 표�
 사본 복사가 안전하게 돌아온 뒤 취소를 처리한다. 사본은 해당 작업이 끝날 때만 정리한다.
 기존 앱·데이터·다른 작업의 파일은 정리하지 않는다.
 
-파일 lease와 창은 canonical 파일 경로를 기준으로 한다.
-symlink 별칭은 같은 창과 lease를 사용한다. 같은 경로의 atomic 교체도 동시에 실행하지 않는다.
-내용이 같아도 다른 경로의 파일은 합치지 않는다.
+파일 lease는 canonical 파일 경로와 volume·inode identity를 함께 잠근다.
+symlink와 hardlink 별칭은 같은 창과 실제 파일 lease를 사용한다.
+같은 경로의 atomic 교체도 동시에 실행하지 않는다.
+창을 재사용할 때 현재 경로의 실제 파일 identity를 다시 읽는다.
+별도 복사본은 내용이 같아도 합치지 않는다.
 기기·앱 lease와 실행 claim은 프로젝트 흐름과 같은 `ResourceLeases`를 사용한다.
 다른 작업의 실행 중·확인 불가 claim은 소유 작업과 이유를 표시하고 보존한다.
 
@@ -86,6 +88,13 @@ iOS는 `simctl install`을 사용한다. Android는 `adb install -r`을 사용�
 이 관측은 설치된 payload 전체 hash나 표본 데이터 보존의 증명이 아니다.
 
 JSON은 기존 `schemaVersion: 1`, `toolVersion`, `command`와 공통 encoder를 사용한다.
+사람용 CLI 출력은 제어문자를 `\u{001B}`처럼 표시한다.
+파일 metadata·승인 hash·JSON 값은 원본을 유지한다.
+빌드 비교는 숫자 구간과 iOS의 `d`·`a`·`b`·`fc` suffix를 포함한다.
+정식 build는 같은 숫자 구간의 prerelease build 뒤에 온다.
+`downgrade`는 확인한 이전 빌드를 뜻한다. `buildOrderUnknown`은 비교 불가를 뜻한다.
+두 경우 모두 별도 `DOWNGRADE:` 위험 승인을 요구한다.
+GUI도 두 경우에 위험 확인을 요구한다. 비교 불가를 안전한 upgrade로 처리하지 않는다.
 `operation`은 다음 값을 별도로 제공한다.
 
 | 값 | 의미 |
