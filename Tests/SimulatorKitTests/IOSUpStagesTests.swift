@@ -68,7 +68,7 @@ private func pipeline(
     _ repo: FixtureRepo,
     _ runner: FakeProcessRunner,
     workflow: IOSWorkflow = .up,
-    projectRunner: FakeProcessRunner? = nil,
+    projectRunner: (any ProcessRunner)? = nil,
     from workingDirectory: URL? = nil
 ) -> UpPipeline {
     let projectRunner = projectRunner ?? runner
@@ -225,11 +225,9 @@ struct IOSUpStagesTests {
         var project = FakeProcessRunner(responses: fixtures.responses)
         project.responses["yarn install --frozen-lockfile"] = .ok("")
         project.responses[MetroStatus.command] = .failed(7, "")
-        let listener = (["lsof"] + MetroVerdict.listenerArguments + ["-t"])
-            .joined(separator: " ")
-        project.responses[listener] = .ok("9876\n")
+        let startingProject = MetroStatus.StartingRunner(project, projectRoot: repo.root, listenerPID: 9876)
 
-        let report = await pipeline(repo, host, projectRunner: project).run()
+        let report = await pipeline(repo, host, projectRunner: startingProject).run()
 
         #expect(report.exitCode == 0)
         let hostCommands = host.log.all.map(\.description)

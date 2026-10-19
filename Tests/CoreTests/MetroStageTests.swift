@@ -29,37 +29,7 @@ private func run(
     ).run(&context)
 }
 
-private actor DelayedListenerRunner: ProcessRunner {
-    private let inner: FakeProcessRunner
-    private let bindDelay: Duration
-    private var spawnedAt: ContinuousClock.Instant?
-
-    init(_ inner: FakeProcessRunner, bindDelay: Duration = .milliseconds(250)) {
-        self.inner = inner
-        self.bindDelay = bindDelay
-    }
-
-    func run(
-        _ command: ProcessCommand,
-        onLine: (@Sendable (String) -> Void)?
-    ) async throws -> ProcessResult {
-        guard command.description == "lsof -nP -iTCP:8081 -sTCP:LISTEN -t" else {
-            return try await inner.run(command, onLine: onLine)
-        }
-        let bound = spawnedAt.map { ContinuousClock.now >= $0 + bindDelay } ?? false
-        return ProcessResult(
-            terminationStatus: .exited(bound ? 0 : 1),
-            standardOutput: bound ? "70947\n" : "",
-            standardError: ""
-        )
-    }
-
-    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
-        let pid = try await inner.spawnDetached(command, logFile: logFile)
-        spawnedAt = .now
-        return pid
-    }
-}
+private typealias DelayedListenerRunner = MetroStatus.StartingRunner
 
 @Suite("metro stage")
 struct MetroStageTests {
@@ -79,7 +49,7 @@ struct MetroStageTests {
         let logs = try temporaryLogs()
         let runner = FakeProcessRunner(responses: [
             "curl -s -i -m 2 http://localhost:\(port)/status": .failed(7, ""),
-            "lsof -nP -iTCP:\(port) -sTCP:LISTEN -t": .ok(""),
+            MetroStatus.processTableCommand: .ok(""),
             "kill -0 4242": .failed(1, ""),
         ])
         var context = UpContext()
@@ -229,10 +199,9 @@ struct MetroStageTests {
         let logs = try temporaryLogs()
         var context = UpContext()
 
-        let runner = FakeProcessRunner(responses: [
+        let runner = DelayedListenerRunner(FakeProcessRunner(responses: [
             MetroStatus.command: .failed(7, ""),
-            "lsof -nP -iTCP:8081 -sTCP:LISTEN -t": .ok("70947\n"),
-        ])
+        ]), projectRoot: repo.root)
         let outcome = try await run(repo, runner, context: &context, logs: logs)
 
         #expect(outcome.status == .pass)
@@ -255,10 +224,9 @@ struct MetroStageTests {
             #"{"dependencies":{"react-native":"0.81.0"},"packageManager":"yarn@4.16.0"}"#
         )
         try repo.write("yarn.lock", "")
-        let runner = FakeProcessRunner(responses: [
+        let runner = DelayedListenerRunner(FakeProcessRunner(responses: [
             MetroStatus.command: .failed(7, ""),
-            "lsof -nP -iTCP:8081 -sTCP:LISTEN -t": .ok("70947\n"),
-        ])
+        ]), projectRoot: repo.root)
         var context = UpContext()
 
         _ = try await run(repo, runner, context: &context)
@@ -276,10 +244,9 @@ struct MetroStageTests {
     @Test("the pid holding 8081 is reported next to the process up started")
     func reportsTheListener() async throws {
         let repo = try app()
-        let runner = FakeProcessRunner(responses: [
+        let runner = DelayedListenerRunner(FakeProcessRunner(responses: [
             MetroStatus.command: .failed(7, ""),
-            "lsof -nP -iTCP:8081 -sTCP:LISTEN -t": .ok("70947\n"),
-        ])
+        ]), projectRoot: repo.root)
         var context = UpContext()
 
         let outcome = try await run(repo, runner, context: &context)
@@ -295,7 +262,7 @@ struct MetroStageTests {
         let logs = try temporaryLogs()
         let runner = FakeProcessRunner(responses: [
             MetroStatus.command: .failed(7, ""),
-            "lsof -nP -iTCP:8081 -sTCP:LISTEN -t": .ok(""),
+            MetroStatus.processTableCommand: .ok(""),
             "kill -0 4242": .failed(1, "No such process"),
         ])
         var context = UpContext()
@@ -307,17 +274,21 @@ struct MetroStageTests {
         #expect(error?.observed?.contains("exited") == true)
         #expect(error?.remediation.command == "yarn start")
         #expect(error?.remediation.summary.contains(logs.directory.path) == true)
-        #expect(context.metro == nil)
+        #expect(context.metro?.pid == 4242)
+        #expect(context.metro?.listenerPid == nil)
     }
 
     @Test("a live start process that never binds times out before build")
     func bindTimeout() async throws {
         let repo = try app()
-        let runner = FakeProcessRunner(responses: [
+        var responses = MetroStatus.startupResponses(projectRoot: repo.root)
+        responses[MetroStatus.processTableCommand] = .ok("4242 1 Mon Oct 19 17:00:00 2026\n")
+        responses["lsof -a -p 4242 -nP -iTCP:8081 -sTCP:LISTEN -t"] = .ok("")
+        responses.merge([
             MetroStatus.command: .failed(7, ""),
-            "lsof -nP -iTCP:8081 -sTCP:LISTEN -t": .ok(""),
             "kill -0 4242": .ok(""),
-        ])
+        ]) { _, new in new }
+        let runner = FakeProcessRunner(responses: responses)
         var context = UpContext()
 
         let error = await #expect(throws: DomainError.self) {
@@ -325,20 +296,21 @@ struct MetroStageTests {
         }
 
         #expect(error?.observed?.contains("within") == true)
-        #expect(context.metro == nil)
+        #expect(context.metro?.state == .spawned)
+        #expect(context.metro?.listenerPid == nil)
     }
 
     /// Android accepts a listener only when the Metro verdict says it is this
     /// project's; any other answer must keep waiting, never report it as started.
     @Test("a listener the caller does not accept is not reported as the started Metro")
     func unacceptedListener() async throws {
-        let runner = FakeProcessRunner(responses: [
-            "lsof -nP -iTCP:8081 -sTCP:LISTEN -t": .ok("70947\n"),
-            "kill -0 4242": .failed(1, "No such process"),
-        ])
+        let repo = try app()
+        var responses = MetroStatus.startupResponses(projectRoot: repo.root)
+        responses["kill -0 4242"] = .failed(1, "No such process")
+        let runner = FakeProcessRunner(responses: responses)
 
         let readiness = try await MetroLaunch.readiness(
-            startPID: 4242, runner: runner, bindWait: .zero, poll: .zero
+            startPID: 4242, anchor: repo.root, runner: runner, bindWait: .zero, poll: .zero
         ) { _ in false }
 
         #expect(readiness == .exited)
@@ -350,7 +322,7 @@ struct MetroStageTests {
         let runner = DelayedListenerRunner(FakeProcessRunner(responses: [
             MetroStatus.command: .failed(7, ""),
             "kill -0 4242": .ok(""),
-        ]))
+        ]), projectRoot: repo.root, bindDelay: .milliseconds(250))
         var context = UpContext()
 
         let outcome = try await run(
@@ -369,7 +341,7 @@ struct MetroStageTests {
             MetroStatus.command: .failed(7, ""),
             "kill -0 4242": .ok(""),
         ])
-        let runner = DelayedListenerRunner(inner, bindDelay: .seconds(11))
+        let runner = DelayedListenerRunner(inner, projectRoot: repo.root, bindDelay: .seconds(11))
         var context = UpContext()
 
         let outcome = try await MetroStage(

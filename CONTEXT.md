@@ -223,10 +223,12 @@ _Avoid_: 점유(무엇이 잡고 있는지 안다는 뜻이 섞인다)
 _Avoid_: daemon, background job
 
 **Metro 기동 (Metro launch)**:
-프로젝트 start 스크립트를 detached spawn하고 8081 listener가 생길 때까지 기다리는 절차다. bind 대기는 시작 PID의 조기 종료를 함께 확인하며 기본 60초다. iOS와 Android가 같은 절차를 쓴다. 누구의 Metro인가는 Metro 판정과 플랫폼별 소유 기록이 정한다(ADR-0013).
+프로젝트 start 스크립트를 detached spawn하고 선택 포트의 listener가 생길 때까지 기다리는 절차다. bind 대기는 시작 PID의 조기 종료를 함께 확인하며 기본 60초다. 새 실행의 readiness는 현재 시작 PID·부모·시작 시각으로 연결한 자식 트리와 프로젝트 cwd를 확인한 뒤 PID-bound listener 조회를 쓴다. Metro 판정이 `mine`이어야 성공한다. 불명확한 트리·PID·cwd와 도구 timeout·취소를 전역 조회나 HTTP-only 성공으로 우회하지 않는다. `down`의 전역 listener 조회와 정체성 판정은 유지한다. iOS와 Android가 같은 기동 절차를 쓰며 플랫폼별 정리 계약은 유지한다(ADR-0007, ADR-0013).
 
 **MetroProcess**:
 up이 남긴 Metro의 보고. `state`(reused/spawned)와, spawn했을 때만 PID·로그 경로. 재사용에는 PID가 없다 — **우리가 띄우지 않은** 프로세스이고, CI는 자기가 띄운 것만 정리해야 한다. 재사용이 성립했다는 것은 그 Metro가 이 프로젝트의 것이라는 뜻이지(Metro 판정), 이 실행이 시작했다는 뜻이 아니다. 실패한 `up`이 `mobile down`을 권하는 것은 `spawned`일 때뿐인 이유가 그것이다.
+
+spawn 직후에는 시작 PID·로그 경로·선택 포트를 부분 결과로 보존한다. listener PID는 readiness를 통과한 뒤에만 채운다. 부분 결과는 listener 준비 성공이나 프로세스의 현재 생존을 뜻하지 않는다. iOS 실패·취소는 detached Metro를 자동 종료하지 않는다.
 
 **도구 프로비저닝 (Tool provisioning)**:
 Xcode·iOS runtime·도구 관리자 자체 또는 누락된 Node·Ruby·JDK 버전을 설치하거나 저장소 설정을 trust하는 일. 명시적 사용자 동의가 필요한 별도 흐름이며 `up`은 수행하지 않는다.

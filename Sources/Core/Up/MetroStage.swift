@@ -59,10 +59,19 @@ public struct MetroStage: Stage {
         let (command, pid) = try await MetroLaunch.start(
             anchor: anchor, runner: runner, logFile: logFile, afterReinstall: context.nodeModulesReinstalled, port: self.port
         )
+        context.metro = MetroProcess(state: .spawned, pid: pid, logPath: logFile.path, port: port)
         // Waiting is affordable here because it is bounded and because the stage it
         // delays — `build` — takes minutes.
         let listener: Int32
-        switch try await MetroLaunch.readiness(startPID: pid, runner: runner, bindWait: bindWait, port: port) {
+        let anchorDirectory = anchor.directory
+        let readiness = try await MetroLaunch.readiness(
+            startPID: pid, anchor: anchorDirectory, runner: runner, bindWait: bindWait, port: port
+        ) { _ in
+            let observed = try await MetroVerdict.ask(anchor: anchorDirectory, runner: runner, port: port)
+            if let blocker = observed.blocker(port: port) { throw blocker }
+            return observed == .mine
+        }
+        switch readiness {
         case .listening(let pid):
             listener = pid
         case .exited:

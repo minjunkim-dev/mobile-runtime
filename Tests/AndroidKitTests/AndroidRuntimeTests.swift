@@ -290,11 +290,11 @@ struct AndroidRuntimeTests {
         #expect(AndroidUpValidation.checkIDs.contains("android.avd"))
     }
 
-    @Test("reuses one compatible Emulator and records the selected Metro endpoint, reverse and launch ownership", arguments: [8081, 8097])
-    func runsAndroidRuntimeStages(port: Int) async throws {
+    @Test("records selected Metro endpoint and ownership for reused and newly started bundlers", arguments: [8081, 8097], [false, true])
+    func runsAndroidRuntimeStages(port: Int, startMetro: Bool) async throws {
         let scenario = try runtimeScenario()
         let reverseSource = "tcp:\(port)"
-        let responses: [String: [FakeProcessRunner.Response]] = [
+        var responses: [String: [FakeProcessRunner.Response]] = [
             command("emulator", ["-list-avds"]): [.ok("Pixel\n")],
             command("adb", ["devices"]): [.ok("List of devices attached\n\(serial) device\n")],
             command("adb", ["-s", serial, "emu", "avd", "name"]): [.ok("Pixel\n")],
@@ -331,6 +331,14 @@ struct AndroidRuntimeTests {
             command("adb", ["-s", serial, "shell", "pidof", scenario.product.applicationId]): [.ok("8123\n")],
             command("adb", ["-s", serial, "shell", "dumpsys", "activity", "activities"]): [.ok("mResumedActivity dev.mobile.fixture/dev.mobile.fixture.MainActivity\n")],
         ]
+        if startMetro {
+            responses["curl -s -i -m 2 http://localhost:\(port)/status"] = [
+                .failed(7, ""), .ok(MetroStatus.running(projectRoot: scenario.repo.root)),
+            ]
+            for (command, response) in MetroStatus.startupResponses(
+                projectRoot: scenario.repo.root, startPID: 7001, listenerPID: 7003, port: port
+            ) { responses[command] = [response] }
+        }
         let state = ScriptedProcessState(responses)
         let runner = ScriptedProcessRunner(state: state)
         let runtime = AndroidRuntime(
@@ -352,7 +360,7 @@ struct AndroidRuntimeTests {
 
         #expect(device.state == .reused)
         #expect(device.avd == "Pixel")
-        #expect(metro.state == .reused)
+        #expect(metro.state == (startMetro ? .spawned : .reused))
         #expect(metro.port == port)
         #expect(try scenario.logs.metroPort(platform: .android) == port)
         #expect(reverse.state == .created)
@@ -362,7 +370,12 @@ struct AndroidRuntimeTests {
         ).read()
         let record = try #require(saved)
         #expect(record.device?.state == .reused)
-        #expect(record.metro?.state == .reused)
+        #expect(record.metro?.state == (startMetro ? .spawned : .reused))
+        if startMetro {
+            #expect(record.metro?.startPID == 7001)
+            #expect(record.metro?.listenerPID == 7003)
+            #expect(!state.all.contains { $0.description == "lsof -nP -iTCP:\(port) -sTCP:LISTEN -t" })
+        }
         #expect(record.reverse?.state == .created)
         #expect(record.app?.launched == true)
         #expect(record.app?.pid == 8123)
