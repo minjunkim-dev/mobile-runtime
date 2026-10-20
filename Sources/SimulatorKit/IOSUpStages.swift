@@ -23,12 +23,13 @@ public func iOSStages(
     deviceID: String? = nil,
     configuration: String = "Debug",
     buildWithoutDevice: Bool = false,
+    flutterPort: Int? = nil,
     note: @escaping @Sendable (String) -> Void
 ) -> [any Stage] {
     var stages: [any Stage] = [
         ValidateStage(
             engine: doctor,
-            checkIDs: IOSWorkflowValidation.checkIDs,
+            checkIDs: IOSWorkflowValidation.checkIDs.union(anchor.framework == .flutter ? ["flutter.declarations", "flutter.sdk", "flutter.workspace", "flutter.entrypoint", "dependencies.flutter", "ios.flutter.generated", "ios.flutter.host", "ios.flutter.project", "flutter.ios-prepared-sdk"] : []),
             promoteToError: IOSWorkflowValidation.promotesToError
         ),
     ]
@@ -41,7 +42,8 @@ public func iOSStages(
             lookup: lookup,
             runner: hostRunner,
             locator: locator,
-            deviceID: deviceID
+            deviceID: deviceID,
+            bootIfNeeded: workflow == .up
         ))
     }
     if case .up = workflow, anchor.framework == .reactNative {
@@ -59,7 +61,7 @@ public func iOSStages(
             runner: hostRunner,
             metroRunner: projectRunner,
             locator: locator,
-            readinessWait: readinessWait
+            readinessWait: readinessWait, flutterPort: flutterPort
         ))
     }
     return stages
