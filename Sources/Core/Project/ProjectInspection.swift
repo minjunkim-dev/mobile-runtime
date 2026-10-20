@@ -40,6 +40,10 @@ public struct ProjectCandidate: Codable, Sendable, Equatable {
     public let framework: ProjectFramework
     /// An app-root-relative Xcode container, chosen before invoking platform tools.
     public let iosContainer: String?
+
+    public func resolvingWorkspace(_ identity: FolderIdentity) -> Self {
+        Self(id: id, app: app, workspace: identity, platforms: platforms, framework: framework, iosContainer: iosContainer)
+    }
 }
 
 public struct ProjectSelection: Codable, Sendable {

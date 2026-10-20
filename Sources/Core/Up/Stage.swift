@@ -226,6 +226,9 @@ public struct UpContext: Sendable {
     /// without going looking for it.
     public var appPid: Int32?
 
+    /// Observed from this Flutter app launch, never inferred from a successful PID.
+    public var developmentServiceURI: String?
+
     /// Android rollback can raise a domain failure to a tool failure. Kept out of
     /// JSON; the item-level evidence is encoded under `result.android.rollback`.
     public var androidRollbackExitCode: Int32?
