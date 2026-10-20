@@ -31,6 +31,33 @@ private func run(
 
 private typealias DelayedListenerRunner = MetroStatus.StartingRunner
 
+private actor NextProbeListenerRunner: ProcessRunner {
+    private let inner: FakeProcessRunner
+    private(set) var listenerReadiness: [Bool] = []
+
+    init(projectRoot: URL) {
+        var responses = MetroStatus.startupResponses(projectRoot: projectRoot)
+        responses[MetroStatus.command] = .ok(MetroStatus.running(projectRoot: projectRoot))
+        responses["kill -0 4242"] = .ok("")
+        inner = FakeProcessRunner(responses: responses)
+    }
+
+    func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+        var response = inner
+        if command.executable == "lsof", command.arguments.contains("-p"), command.arguments.contains("-t"),
+            inner.responses[command.description] != nil {
+            let ready = !listenerReadiness.isEmpty
+            listenerReadiness.append(ready)
+            if !ready { response.responses[command.description] = .failed(1, "") }
+        }
+        return try await response.run(command, onLine: onLine)
+    }
+
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+        try await inner.spawnDetached(command, logFile: logFile)
+    }
+}
+
 @Suite("metro stage")
 struct MetroStageTests {
     @Test("omitting the start port preserves the legacy script arguments and inherited native input")
@@ -316,21 +343,22 @@ struct MetroStageTests {
         #expect(readiness == .exited)
     }
 
-    @Test("a delayed listener passes once it binds within the deadline")
+    @Test("an initially empty listener probe passes when the next probe finds its owned listener")
     func delayedBind() async throws {
         let repo = try app()
-        let runner = DelayedListenerRunner(FakeProcessRunner(responses: [
-            MetroStatus.command: .failed(7, ""),
-            "kill -0 4242": .ok(""),
-        ]), projectRoot: repo.root, bindDelay: .milliseconds(250))
-        var context = UpContext()
+        let projectRoot = repo.root
+        let runner = NextProbeListenerRunner(projectRoot: projectRoot)
 
-        let outcome = try await run(
-            repo, runner, context: &context, bindWait: .seconds(1)
-        )
+        let readiness = try await MetroLaunch.readiness(
+            startPID: 4242, anchor: projectRoot, runner: runner, bindWait: .seconds(1), poll: .zero
+        ) { _ in
+            try await MetroVerdict.ask(anchor: projectRoot, runner: runner) == .mine
+        }
 
-        #expect(outcome.status == .pass)
-        #expect(context.metro?.listenerPid == 70947)
+        #expect(readiness == .listening(70947))
+        let probes = await runner.listenerReadiness
+        #expect(probes.count >= 2)
+        #expect(probes.starts(with: [false, true]))
     }
 
     @Test("a cold Metro that binds after ten seconds passes with the production wait")
