@@ -234,15 +234,26 @@ public enum WorkflowExecution {
                 }
             case .build: device = nil
             }
-            let flutterPort = anchor.framework == .flutter && kind == .up
-                ? try FlutterIOSWorkflow.availablePort(input.port) : nil
+            let flutterReentry = platform == .android && anchor.framework == .flutter && kind == .up
+                ? try androidFlutterReentry(anchor: anchor) : nil
+            let flutterPort: Int?
+            if anchor.framework == .flutter && kind == .up {
+                if input.port == nil, let flutterReentry { flutterPort = flutterReentry.hostPort }
+                else { flutterPort = try FlutterIOSWorkflow.availablePort(input.port) }
+            } else { flutterPort = nil }
             operation.port = flutterPort
             let recordedAndroid = kind == .down && platform == .android
                 ? try androidTeardownResourceKeys(anchor: anchor) : []
-            let resources = (device.map { [$0] } ?? []) + recordedAndroid
+            let resources = (device.map { [$0] } ?? []) + recordedAndroid + (flutterReentry?.resourceKeys ?? [])
                 + (kind == .build || anchor.framework != .reactNative ? [] : [.port(MetroVerdict.port)])
             let resourceLease = try leases.acquire(resources + (flutterPort.map { [.port($0)] } ?? []), owner: owner)
             defer { resourceLease.release() }
+            if let flutterReentry {
+                guard flutterPort == flutterReentry.hostPort,
+                      try androidFlutterReentry(anchor: anchor) == flutterReentry else {
+                    throw selectionFailure("The recorded Flutter run changed while acquiring its resources. Preserve it and run mobile down --platform android.")
+                }
+            }
             if let device {
                 let environment = AndroidEnvironment(values: input.project.environment)
                 try await leases.check(device: device, project: owner.project) { [wiring] claim in
@@ -284,7 +295,8 @@ public enum WorkflowExecution {
                 up = await runAndroidUp(anchor: anchor, doctor: wiring.engine, config: config,
                     hostRunner: runner, projectRunner: wiring.projectRunner,
                     environment: AndroidEnvironment(values: input.project.environment),
-                    port: flutterPort, flutterEntrypoint: androidFlutter?.entrypoint, note: note,
+                    port: flutterPort, flutterEntrypoint: androidFlutter?.entrypoint,
+                    reentry: flutterReentry, note: note,
                     onStageFinished: finished, onStageStarted: started)
             case (.build, .android):
                 up = await UpPipeline(stages: androidBuildStages(anchor: anchor, doctor: wiring.engine, config: config,

@@ -378,7 +378,7 @@ struct AndroidFlutterServiceTests {
         #expect(throws: AndroidStateError.self) { _ = try fixture.store.read() }
     }
 
-    @Test("down exports the recorded general port key and another up cannot overwrite the run")
+    @Test("down exports the recorded general port key and a different up port cannot overwrite the run")
     func recordedKeysAndRepeatUp() async throws {
         let fixture = try FlutterRuntimeFixture()
         let initial = fixture.active()
@@ -409,6 +409,45 @@ struct AndroidFlutterServiceTests {
         #expect(throws: AndroidStateError.self) {
             _ = try AndroidADBEndpoint(environment: AndroidEnvironment(values: ["ADB_SERVER_SOCKET": ""]))
         }
+    }
+
+    @Test("a changed whole ledger refuses an otherwise matching forward removal")
+    func removalRequiresExpectedLedger() async throws {
+        let fixture = try FlutterRuntimeFixture()
+        let initial = fixture.active()
+        try fixture.store.write(initial)
+        let runner = FlutterADB()
+        let service = try fixture.service(runner)
+        let (created, _) = try await service.connect(initial, marker: flutterMarker, hostPort: 8097, store: fixture.store)
+        var changed = created
+        changed.forward?.state = .pending
+        try fixture.store.write(changed)
+        let before = runner.commands.count
+        await #expect(throws: AndroidStateError.self) {
+            _ = try await service.remove(created, expectedStore: fixture.store)
+        }
+        #expect(try fixture.store.read() == changed)
+        #expect(runner.table == "\(flutterSerial) tcp:8097 tcp:38881\n")
+        #expect(!runner.commands.dropFirst(before).contains { $0.arguments.contains("--remove") || $0.arguments.contains("force-stop") })
+    }
+
+    @Test("re-entry retirement requires the recorded app to remain live while down may remove its stopped-app forward")
+    func reentryRetirementRequiresLivePID() async throws {
+        let fixture = try FlutterRuntimeFixture()
+        let initial = fixture.active()
+        try fixture.store.write(initial)
+        let runner = FlutterADB()
+        let service = try fixture.service(runner)
+        let (created, _) = try await service.connect(initial, marker: flutterMarker, hostPort: 8097, store: fixture.store)
+        runner.pid = nil
+        let before = runner.commands.count
+        await #expect(throws: AndroidStateError.self) {
+            _ = try await service.remove(created, expectedStore: fixture.store)
+        }
+        #expect(try fixture.store.read() == created)
+        #expect(runner.table == "\(flutterSerial) tcp:8097 tcp:38881\n")
+        #expect(!runner.commands.dropFirst(before).contains { $0.arguments.contains("--remove") })
+        #expect(try await service.remove(created).status == .stopped)
     }
 
     @Test("Flutter service follows launch without changing the existing build prefix")

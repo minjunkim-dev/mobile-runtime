@@ -45,10 +45,12 @@ struct AndroidCleanup: Sendable {
         )
     }
 
-    func run() async -> Result {
-        let ids = anchor.framework == .flutter
+    func run(eligibleResources: Set<String>? = nil) async -> Result {
+        let allIDs = anchor.framework == .flutter
             ? [AndroidFlutterService.cleanupID, "android.app", "android.emulator"]
             : ["android.app", "android.adb.reverse", "metro", "android.emulator"]
+        // Excluded pre-existing resources retain both their state and ledger.
+        let ids = allIDs.filter { eligibleResources?.contains($0) ?? true }
         let original: AndroidActiveRun?
         do {
             original = try store.read()

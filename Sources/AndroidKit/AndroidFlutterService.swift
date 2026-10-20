@@ -128,7 +128,8 @@ struct AndroidFlutterService: Sendable {
         return (value, AndroidFlutterConnection(hostPort: hostPort, devicePort: devicePort))
     }
 
-    func remove(_ value: AndroidActiveRun, deadline: ContinuousClock.Instant? = nil) async throws -> TeardownItem {
+    func remove(_ value: AndroidActiveRun, deadline: ContinuousClock.Instant? = nil,
+                expectedStore: AndroidActiveRunStore? = nil) async throws -> TeardownItem {
         try value.validate()
         guard let forward = value.forward else { return .skipped(Self.cleanupID, "not recorded") }
         guard endpoint.socket == forward.serverSocket else {
@@ -142,11 +143,14 @@ struct AndroidFlutterService: Sendable {
               current == Mapping(serial: forward.serial, remote: "tcp:\(forward.devicePort)") else {
             return blocked("forward ownership is pending or the global mapping was replaced")
         }
-        try await verify(value, pid: forward.appPID, allowStoppedApp: true, deadline: deadline)
+        try await verify(value, pid: forward.appPID, allowStoppedApp: expectedStore == nil, deadline: deadline)
         // ADB removes by LOCAL only. The immediate tuple check and Runstir leases
         // are best effort; external writers and identical-tuple ABA remain possible.
         guard try await mappings(deadline: deadline)[local] == current else {
             return blocked("the global forward changed before cleanup")
+        }
+        if let expectedStore, try expectedStore.read() != value {
+            throw AndroidStateError("Android ownership changed before forward removal")
         }
         _ = try await command(["-s", forward.serial, "forward", "--remove", local], deadline: deadline)
         guard try await mappings(deadline: deadline)[local] == nil else {

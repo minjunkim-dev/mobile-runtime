@@ -427,6 +427,173 @@ struct FlutterAndroidWorkflowTests {
         #expect(try AndroidActiveRunStore(project: fixture.app).read() == nil)
     }
 
+    @Test("repeated up installs the new APK and replaces only its verified forward under the old port lease")
+    func repeatedUp() async throws {
+        let fixture = try RuntimeFixture(workspace: false)
+        let sdk = try fixture.native.repo.directory("owned-sdk-view")
+        let factory: FlutterAndroidWorkflow.Factory = { _, _, _ in View(sdk: sdk) }
+        let first = await WorkflowExecution.run(.up, input: WorkflowInput(project: fixture.input),
+            runner: fixture.runner, leases: fixture.leases, flutterFactory: factory)
+        #expect(first.exitCode == 0)
+        let store = AndroidActiveRunStore(project: fixture.app)
+        let old = try #require(try store.read())
+        let apk = try #require(first.up?.context.androidProduct?.apkPath)
+        let freshBytes = Data("newly assembled APK fixture".utf8)
+        try freshBytes.write(to: URL(fileURLWithPath: apk))
+        let before = fixture.runner.base.log.all.count
+        let second = await WorkflowExecution.run(.up, input: WorkflowInput(project: fixture.input),
+            runner: fixture.runner, leases: fixture.leases, flutterFactory: factory)
+        #expect(second.exitCode == 0, Comment(rawValue: second.up?.failure?.message ?? second.operation.nextAction ?? ""))
+        let current = try #require(try store.read())
+        #expect(second.operation.port == old.forward?.hostPort)
+        #expect(current.device == old.device)
+        #expect(current.forward?.state == .created)
+        #expect(current.forward?.operationID != old.forward?.operationID)
+        #expect(current.app?.pid != old.app?.pid)
+        #expect(fixture.runner.installedArtifacts.last == freshBytes)
+        #expect(fixture.runner.retiredPortLeaseHeld)
+        let commands = Array(fixture.runner.base.log.all.dropFirst(before))
+        let remove = try #require(commands.firstIndex { $0.arguments.contains("--remove") })
+        let install = try #require(commands.firstIndex { $0.arguments.contains("install") })
+        let launch = try #require(commands.firstIndex { $0.arguments.contains("start") })
+        #expect(remove < install && install < launch)
+        #expect(commands.filter { $0.arguments.contains("--remove") }.count == 1)
+        #expect(!commands.contains { $0.arguments.contains("kill") || $0.arguments.contains("uninstall") })
+    }
+
+    @Test("omitted port re-entry takes the recorded common port lease before any new build or app change")
+    func recordedPortConflict() async throws {
+        let fixture = try RuntimeFixture(workspace: false)
+        let sdk = try fixture.native.repo.directory("owned-sdk-view")
+        let factory: FlutterAndroidWorkflow.Factory = { _, _, _ in View(sdk: sdk) }
+        let first = await WorkflowExecution.run(.up, input: WorkflowInput(project: fixture.input),
+            runner: fixture.runner, leases: fixture.leases, flutterFactory: factory)
+        #expect(first.exitCode == 0)
+        let store = AndroidActiveRunStore(project: fixture.app)
+        let old = try #require(try store.read())
+        let port = try #require(old.forward?.hostPort)
+        let owner = LeaseOwner(operationId: "other-port", command: "fixture", project: "/other-app")
+        let held = try fixture.leases.acquire([.port(port)], owner: owner)
+        defer { held.release() }
+        let before = fixture.runner.base.log.all.count
+        let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: fixture.input),
+            runner: fixture.runner, leases: fixture.leases, flutterFactory: factory)
+        #expect(result.exitCode == 1)
+        #expect(result.operation.conflict?.key == .port(port))
+        #expect(result.operation.conflict?.owner == owner)
+        #expect(try store.read() == old)
+        #expect(!fixture.runner.base.log.all.dropFirst(before).contains { $0.arguments.contains("install")
+            || $0.arguments.contains("force-stop") || $0.arguments.contains("--remove")
+            || $0.arguments.contains { $0.hasPrefix(":app:assemble") } })
+    }
+
+    @Test("unretired foreign, changed, pending and cancelled runs preserve the old app, device and forward", arguments: ["mapping", "pid", "target", "record", "pending", "cancel"])
+    func rejectedReentry(_ fault: String) async throws {
+        let fixture = try RuntimeFixture(workspace: false)
+        let sdk = try fixture.native.repo.directory("owned-sdk-view")
+        let factory: FlutterAndroidWorkflow.Factory = { _, _, _ in View(sdk: sdk) }
+        let first = await WorkflowExecution.run(.up, input: WorkflowInput(project: fixture.input),
+            runner: fixture.runner, leases: fixture.leases, flutterFactory: factory)
+        #expect(first.exitCode == 0)
+        let store = AndroidActiveRunStore(project: fixture.app)
+        let old = try #require(try store.read())
+        var expected = old
+        if fault == "target" {
+            var object = try #require(JSONSerialization.jsonObject(with: JSONEncoder().encode(old)) as? [String: Any])
+            var target = try #require(object["target"] as? [String: Any])
+            var forward = try #require(object["forward"] as? [String: Any])
+            target["variant"] = "release"; forward["variant"] = "release"
+            object["target"] = target; object["forward"] = forward
+            expected = try JSONDecoder().decode(AndroidActiveRun.self, from: JSONSerialization.data(withJSONObject: object))
+            try store.write(expected)
+        }
+        if fault == "mapping" { fixture.runner.forwardSerial = "emulator-5556" }
+        if fault == "pid" { fixture.runner.pidOverride = 9999 }
+        if fault == "pending" {
+            var pending = old
+            pending.forward?.state = .pending
+            try store.write(pending)
+        }
+        if fault == "record" {
+            fixture.runner.beforeForwardList = {
+                var changed = try #require(try store.read())
+                changed.forward?.state = .pending
+                try store.write(changed)
+            }
+        }
+        if fault == "cancel" { fixture.runner.beforeForwardList = { throw CancellationError() } }
+        let before = fixture.runner.base.log.all.count
+        let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: fixture.input),
+            runner: fixture.runner, leases: fixture.leases, flutterFactory: factory)
+        #expect(result.exitCode == (fault == "cancel" ? 130 : fault == "pending" || fault == "target" ? 1 : 2))
+        let current = try #require(try store.read())
+        #expect(current.device == old.device && current.app == old.app)
+        if fault == "record" || fault == "pending" { #expect(current.forward?.state == .pending) }
+        else { #expect(current == expected) }
+        #expect(!fixture.runner.base.log.all.dropFirst(before).contains { $0.arguments.contains("install")
+            || $0.arguments.contains("force-stop") || $0.arguments.contains("--remove") || $0.arguments.contains("kill") })
+    }
+
+    @Test("confirmed retirement whose ledger commit fails starts no install, launch or old-resource cleanup", arguments: [false, true])
+    func retirementCommitFailure(symbolicLink: Bool) async throws {
+        let fixture = try RuntimeFixture(workspace: false)
+        let sdk = try fixture.native.repo.directory("owned-sdk-view")
+        let factory: FlutterAndroidWorkflow.Factory = { _, _, _ in View(sdk: sdk) }
+        let first = await WorkflowExecution.run(.up, input: WorkflowInput(project: fixture.input),
+            runner: fixture.runner, leases: fixture.leases, flutterFactory: factory)
+        #expect(first.exitCode == 0)
+        let store = AndroidActiveRunStore(project: fixture.app)
+        let old = try #require(try store.read())
+        let backup = fixture.native.repo.url("old-forward.json")
+        let foreign = fixture.native.repo.url("foreign.txt")
+        try Data("foreign record".utf8).write(to: foreign)
+        fixture.runner.afterForwardRemoval = {
+            try FileManager.default.moveItem(at: store.file, to: backup)
+            if symbolicLink { try FileManager.default.createSymbolicLink(at: store.file, withDestinationURL: foreign) }
+            else {
+                var changed = old
+                changed.forward?.state = .pending
+                try store.write(changed)
+            }
+        }
+        let before = fixture.runner.base.log.all.count
+        let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: fixture.input),
+            runner: fixture.runner, leases: fixture.leases, flutterFactory: factory)
+        #expect(result.exitCode == 2)
+        #expect(try JSONDecoder().decode(AndroidActiveRun.self, from: Data(contentsOf: backup)) == old)
+        #expect(try String(contentsOf: foreign, encoding: .utf8) == "foreign record")
+        if symbolicLink { #expect(throws: AndroidStateError.self) { _ = try store.read() } }
+        else { #expect(try store.read()?.forward?.state == .pending) }
+        let commands = Array(fixture.runner.base.log.all.dropFirst(before))
+        #expect(commands.filter { $0.arguments.contains("--remove") }.count == 1)
+        #expect(!commands.contains { $0.arguments.contains("install") || $0.arguments.contains("force-stop") || $0.arguments.contains("kill") })
+    }
+
+    @Test("a failed new service rolls back only its new app and preserves an earlier started device record")
+    func reentryRollbackScope() async throws {
+        let fixture = try RuntimeFixture(workspace: false)
+        let sdk = try fixture.native.repo.directory("owned-sdk-view")
+        let factory: FlutterAndroidWorkflow.Factory = { _, _, _ in View(sdk: sdk) }
+        let first = await WorkflowExecution.run(.up, input: WorkflowInput(project: fixture.input),
+            runner: fixture.runner, leases: fixture.leases, flutterFactory: factory)
+        #expect(first.exitCode == 0)
+        let store = AndroidActiveRunStore(project: fixture.app)
+        var old = try #require(try store.read())
+        old.device?.state = .started
+        old.device?.launcherPID = 7777
+        try store.write(old)
+        fixture.runner.failFreshService = true
+        let before = fixture.runner.base.log.all.count
+        let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: fixture.input),
+            runner: fixture.runner, leases: fixture.leases, flutterFactory: factory)
+        #expect(result.exitCode == 2)
+        let remaining = try #require(try store.read())
+        #expect(remaining.device == old.device)
+        #expect(remaining.app == nil && remaining.forward == nil)
+        #expect(result.up?.context.androidProduct?.rollback?.map(\.id) == ["android.adb.forward", "android.app"])
+        #expect(!fixture.runner.base.log.all.dropFirst(before).contains { $0.arguments.contains("kill") })
+    }
+
     @Test("common source inventory protects nested generated-looking source and log assets", arguments: [false, true])
     func protectedInventory(_ namedBuildPackage: Bool) async throws {
         let fixture = try CallerFixture()
@@ -748,17 +915,30 @@ struct FlutterAndroidWorkflowTests {
         private var observedPort: Int?
         private var heldPort = false
         private var observedOwner: String?
+        private var launches = 0
+        private var installed: [Data] = []
+        private var retiredLease = false
+        var forwardSerial = "emulator-5554"
+        var beforeForwardList: (@Sendable () throws -> Void)?
+        var afterForwardRemoval: (@Sendable () throws -> Void)?
+        var failFreshService = false
+        var pidOverride: Int?
         init(base: FakeProcessRunner, leases: ResourceLeases, folder: FolderIdentity) {
             self.base = base; self.leases = leases; self.folder = folder
         }
         var forwardedPort: Int? { lock.withLock { observedPort } }
         var portLeaseHeld: Bool { lock.withLock { heldPort } }
         var folderOwner: String? { lock.withLock { observedOwner } }
+        var installedArtifacts: [Data] { lock.withLock { installed } }
+        var retiredPortLeaseHeld: Bool { lock.withLock { retiredLease } }
         func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
             let response: FakeProcessRunner.Response? = try lock.withLock {
                 guard command.executable == "adb", command.arguments.starts(with: ["-L", "tcp:5037"]) else { return nil }
                 let args = Array(command.arguments.dropFirst(2))
-                if args == ["forward", "--list"] { return .ok(mapping.map { "emulator-5554 tcp:\($0) tcp:38881\n" } ?? "") }
+                if args == ["forward", "--list"] {
+                    let callback = beforeForwardList; beforeForwardList = nil; try callback?()
+                    return .ok(mapping.map { "\(forwardSerial) tcp:\($0) tcp:38881\n" } ?? "")
+                }
                 if args.starts(with: ["-s", "emulator-5554", "forward", "--no-rebind"]), args.count == 6,
                    let port = Int(args[4].dropFirst(4)) {
                     let other = LeaseOwner(operationId: "fixture-other", command: "fixture", project: "/other-app")
@@ -769,12 +949,27 @@ struct FlutterAndroidWorkflowTests {
                     mapping = port; observedPort = port
                     return .ok("")
                 }
-                if args.starts(with: ["-s", "emulator-5554", "forward", "--remove"]) { mapping = nil; return .ok("") }
+                if args.starts(with: ["-s", "emulator-5554", "forward", "--remove"]) {
+                    if let mapping {
+                        do { let lease = try leases.acquire([.port(mapping)], owner: LeaseOwner(
+                            operationId: "fixture-retire", command: "fixture", project: "/other-app")); lease.release() }
+                        catch is ResourceConflict { retiredLease = true }
+                    }
+                    mapping = nil
+                    let callback = afterForwardRemoval; afterForwardRemoval = nil; try callback?()
+                    return .ok("")
+                }
                 if args.contains("logcat"), args.contains("-t") { return .ok("1792400000.123456 8123 8123 I flutter : marker\n") }
-                if args.contains("logcat"), args.contains("-T") { return .ok("1792400001.123456 8123 8123 I flutter : The Dart VM service is listening on http://127.0.0.1:38881/sentinel-secret=/\n") }
+                if args.contains("logcat"), args.contains("-T") {
+                    if failFreshService && launches > 1 { return .failed(1, "fixture service failure") }
+                    let pid = 8122 + max(1, launches)
+                    return .ok("1792400001.123456 \(pid) \(pid) I flutter : The Dart VM service is listening on http://127.0.0.1:38881/sentinel-secret=/\n")
+                }
+                if args.contains("install"), let path = args.last { installed.append(try Data(contentsOf: URL(fileURLWithPath: path))) }
                 if args.contains("force-stop") { stopped = true }
-                if args.starts(with: ["-s", "emulator-5554", "shell", "am", "start"]) { stopped = false }
+                if args.starts(with: ["-s", "emulator-5554", "shell", "am", "start"]) { stopped = false; launches += 1 }
                 if args.contains("pidof"), stopped { return .failed(1, "") }
+                if args.contains("pidof") { return .ok("\(pidOverride ?? (8122 + max(1, launches)))\n") }
                 return nil
             }
             var selected = base

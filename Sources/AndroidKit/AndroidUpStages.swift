@@ -15,6 +15,26 @@ struct AndroidRuntimeStage: Stage {
     }
 }
 
+/// Routing evidence only. The runtime revalidates the complete record and live
+/// identity after its caller acquires these existing shared resource keys.
+public struct AndroidFlutterReentry: Sendable, Equatable {
+    let active: AndroidActiveRun
+    public let hostPort: Int
+    public let resourceKeys: [ResourceKey]
+}
+
+public func androidFlutterReentry(anchor: ProjectAnchor, logs: RunLogs? = nil) throws -> AndroidFlutterReentry? {
+    guard anchor.framework == .flutter,
+          let active = try AndroidActiveRunStore(project: anchor.directory, logs: logs).read(),
+          let forward = active.forward else { return nil }
+    guard active.schemaVersion == 2, forward.state == .created else {
+        throw DomainError(summary: "the previous Flutter forward ownership is incomplete",
+            remediation: Remediation(summary: "Preserve the active run and run mobile down --platform android."))
+    }
+    return AndroidFlutterReentry(active: active, hostPort: forward.hostPort,
+        resourceKeys: [.device(.android, "avd:\(forward.avd)"), .port(forward.hostPort)])
+}
+
 actor AndroidRuntime {
     private struct RunningEmulator: Sendable, Equatable {
         let serial: String
@@ -33,6 +53,9 @@ actor AndroidRuntime {
     private let environment: AndroidEnvironment
     private let port: Int?
     private let flutterEntrypoint: URL?
+    private let reentry: AndroidFlutterReentry?
+    private var retiredForward = false
+    private var launchedThisAttempt = false
     private var flutterLaunchMarker: String?
     private var activeRun: AndroidActiveRun?
 
@@ -45,7 +68,8 @@ actor AndroidRuntime {
         logs: RunLogs,
         timeouts: AndroidRuntimeTimeouts,
         port: Int? = nil,
-        flutterEntrypoint: URL? = nil
+        flutterEntrypoint: URL? = nil,
+        reentry: AndroidFlutterReentry? = nil
     ) {
         self.anchor = anchor
         self.config = config
@@ -57,6 +81,7 @@ actor AndroidRuntime {
         self.environment = environment
         self.port = port
         self.flutterEntrypoint = flutterEntrypoint
+        self.reentry = reentry
         self.doctorContext = AndroidDoctorContext(
             anchor: anchor,
             config: config,
@@ -175,6 +200,11 @@ actor AndroidRuntime {
             )
         }
 
+        if value.forward != nil {
+            try await retireForward(product, on: device)
+            value = try run()
+        }
+        try Task.checkCancellation()
         let sdk = try doctorContext.requiredSDKRoot()
         let command = try adb(
             ["-s", device.serial, "install", "-r", product.apkPath],
@@ -215,6 +245,45 @@ actor AndroidRuntime {
             )
         }
         try await requireResolvedLauncher(product, serial: device.serial, sdk: sdk)
+    }
+
+    private func retireForward(_ product: AndroidBuiltProduct, on device: AndroidDevice) async throws {
+        let value = try run()
+        guard let reentry, value == reentry.active, try store.read() == value,
+              let forward = value.forward, forward.state == .created,
+              port == forward.hostPort, forward.serial == device.serial,
+              forward.avd == device.avd,
+              try AndroidADBEndpoint(environment: environment).socket == forward.serverSocket else {
+            throw AndroidStateError("the recorded Flutter forward changed before re-entry")
+        }
+        let service = try flutterService()
+        let deadline = ContinuousClock.now + timeouts.launch
+        let expected = AndroidFlutterService.Mapping(serial: forward.serial, remote: "tcp:\(forward.devicePort)")
+        try await service.verify(value, pid: forward.appPID, deadline: deadline)
+        try await requireResolvedLauncher(product, serial: device.serial, sdk: doctorContext.requiredSDKRoot())
+        guard try await service.mappings(deadline: deadline)["tcp:\(forward.hostPort)"] == expected,
+              try store.read() == value else {
+            throw AndroidStateError("the recorded Flutter forward identity cannot be confirmed")
+        }
+        try Task.checkCancellation()
+        let removed = try await service.remove(value, deadline: deadline, expectedStore: store)
+        guard removed.status == .stopped else {
+            throw AndroidStateError("the recorded Flutter forward was not confirmed retired")
+        }
+        guard try store.read() == value else {
+            throw AndroidStateError("the Android active run changed after forward retirement")
+        }
+        var retired = value
+        retired.forward = nil
+        // Commit confirmed removal before cancellation or any install/launch.
+        try save(retired)
+        retiredForward = true
+    }
+
+    func rollbackResources() -> Set<String>? {
+        guard reentry != nil else { return nil }
+        guard retiredForward, launchedThisAttempt else { return [] }
+        return [AndroidFlutterService.cleanupID, "android.app"]
     }
 
     func metro(afterReinstall: Bool = false) async throws -> MetroProcess {
@@ -449,6 +518,7 @@ actor AndroidRuntime {
                 value = try run()
                 value.app?.pid = pid
                 try save(value)
+                launchedThisAttempt = true
                 return pid
             }
             guard ContinuousClock.now < deadline else {
@@ -532,7 +602,11 @@ actor AndroidRuntime {
                   expected.hasPrefix(String(cString: app) + "/") else { throw invalid }
             socket = try AndroidADBEndpoint(environment: environment).socket
         } else { socket = nil }
-        if let existing = try store.read() {
+        let existing = try store.read()
+        if let reentry, existing != reentry.active {
+            throw AndroidStateError("the Android active run changed after resource selection")
+        }
+        if let existing {
             guard existing.matches(
                 project: anchor.directory,
                 product: product,
@@ -830,7 +904,11 @@ public func androidUpStages(
         environment: environment,
         validationCheckIDs: AndroidUpValidation.checkIDs,
         note: note
-    ) + [
+    ) + androidRuntimeStages(anchor: anchor, runtime: runtime)
+}
+
+private func androidRuntimeStages(anchor: ProjectAnchor, runtime: AndroidRuntime) -> [any Stage] {
+    [
         AndroidRuntimeStage(id: "android.device") { context in
             guard var product = context.androidProduct else {
                 throw AndroidStateError("android.device requires android.build output")
@@ -902,6 +980,7 @@ public func runAndroidUp(
     timeouts: AndroidRuntimeTimeouts = AndroidRuntimeTimeouts(),
     port: Int? = nil,
     flutterEntrypoint: URL? = nil,
+    reentry requestedReentry: AndroidFlutterReentry? = nil,
     note: @escaping @Sendable (String) -> Void,
     onStageFinished: (@Sendable (StageResult) -> Void)? = nil,
     onStageStarted: (@Sendable (String) -> Void)? = nil
@@ -911,8 +990,9 @@ public func runAndroidUp(
     do {
         let lease = try store.acquire(operation: "up")
         defer { withExtendedLifetime(lease) {} }
-        if let active = try store.read(), active.schemaVersion == 2, active.forward != nil {
-            throw DomainError(summary: "the recorded Flutter forward requires normal down before another up",
+        let reentry = try requestedReentry ?? androidFlutterReentry(anchor: anchor, logs: logs)
+        if let reentry, try store.read() != reentry.active || (port != nil && port != reentry.hostPort) {
+            throw DomainError(summary: "the recorded Flutter run or selected port changed before re-entry",
                 remediation: Remediation(summary: "Preserve the active run and run mobile down --platform android."))
         }
         if let requested = config.configuration?.androidAVD,
@@ -920,22 +1000,30 @@ public func runAndroidUp(
             throw DomainError(summary: "selected AVD differs from the Android active run",
                               remediation: Remediation(summary: "Run mobile down --platform android for this project before selecting another AVD."))
         }
-        let stages = androidUpStages(
+        let runtime = AndroidRuntime(anchor: anchor, config: config, hostRunner: hostRunner,
+            projectRunner: projectRunner, environment: environment, logs: logs, timeouts: timeouts,
+            port: port ?? reentry?.hostPort, flutterEntrypoint: flutterEntrypoint, reentry: reentry)
+        let stages = androidBuildStages(
             anchor: anchor,
             doctor: doctor,
             config: config,
             hostRunner: hostRunner,
             projectRunner: projectRunner,
             environment: environment,
-            logs: logs,
-            timeouts: timeouts, port: port, flutterEntrypoint: flutterEntrypoint,
+            validationCheckIDs: AndroidUpValidation.checkIDs,
             note: note
-        )
+        ) + androidRuntimeStages(anchor: anchor, runtime: runtime)
         let report = await UpPipeline(stages: stages).run(
             onStageFinished: onStageFinished, onStageStarted: onStageStarted
         )
         guard report.failure != nil, report.context.androidProduct != nil else { return report }
 
+        let eligibleResources = await runtime.rollbackResources()
+        if eligibleResources?.isEmpty == true {
+            var context = report.context
+            context.androidRequiresTeardown = true
+            return UpReport(stages: report.stages, context: context, failure: report.failure)
+        }
         let cleanup = await Task.detached { await AndroidCleanup(
             anchor: anchor,
             config: config,
@@ -944,7 +1032,7 @@ public func runAndroidUp(
             environment: environment,
             logs: logs,
             timeouts: timeouts
-        ).run() }.value
+        ).run(eligibleResources: eligibleResources) }.value
         var context = report.context
         var product = context.androidProduct
         product?.rollback = cleanup.report.items
