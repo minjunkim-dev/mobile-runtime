@@ -23,7 +23,14 @@ enum AppFileSnapshot {
             }
             for case let member as URL in enumerator {
                 guard members.count < 200_000 else { throw failure("The .app exceeds the inspection member limit.") }
-                members.append(member)
+                // Foundation can enumerate /private/var while the root uses /var. Resolve
+                // only the parent: the final member must remain a link when it is a link.
+                let canonicalMember = member.deletingLastPathComponent().resolvingSymlinksInPath()
+                    .appendingPathComponent(member.lastPathComponent, isDirectory: false)
+                guard canonicalMember.path.hasPrefix(root.path + "/") else {
+                    throw failure("The .app member is outside its inspected root.")
+                }
+                members.append(canonicalMember)
             }
             if let readError { throw readError }
         }

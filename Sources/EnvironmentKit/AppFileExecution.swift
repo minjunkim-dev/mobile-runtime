@@ -1,6 +1,7 @@
 import AndroidKit
 import Core
 import Foundation
+import Logging
 import SimulatorKit
 
 public struct AppFileInput: Sendable {
@@ -177,8 +178,12 @@ public enum AppFileExecution {
                 detail: "Copying only the approved input into this operation's private stage. Cancellation waits for the filesystem copy to return; installation has not started.")
             try FileManager.default.copyItem(at: file, to: staged)
             let stagedSnapshot = try AppFileSnapshot.read(staged)
-            guard stagedSnapshot.digest == artifact.contentIdentity,
-                  try await tools.metadata(staged) == artifact.metadata else {
+            let digestMatches = stagedSnapshot.digest == artifact.contentIdentity
+            let stagedMetadata: AppFileMetadata? = digestMatches ? try await tools.metadata(staged) : nil
+            guard digestMatches, stagedMetadata == artifact.metadata else {
+                Logger(label: "mobile.app-file.snapshot").debug("App file snapshot mismatch", metadata: [
+                    "expectedDigest": .string(artifact.contentIdentity), "stagedDigest": .string(stagedSnapshot.digest),
+                    "metadataEqual": .string(stagedMetadata.map { "\($0 == artifact.metadata)" } ?? "not-compared")])
                 throw AppFileSnapshot.failure("The copied app bytes or metadata differ from the approved file.")
             }
             let current = try await inspect(file: file, first: AppFileSnapshot.read(file), provider: tools, platform: input.platform)

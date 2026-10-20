@@ -523,6 +523,97 @@ struct AppFileExecutionTests {
         #expect(!fixture.runner.commands.contains(where: mutation))
     }
 
+
+    @Test("canonical app digest ignores real temporary aliases and root basenames")
+    func snapshotCanonicalPaths() throws {
+        let repo = try FixtureRepo()
+        let app = try repo.directory("Original.app")
+        _ = try repo.directory("Original.app/Nested")
+        for (name, bytes, mode) in [("Info.plist", "fixture Info bytes", 0o600),
+                                   ("Runner", "fixture Runner never executed", 0o700),
+                                   ("Nested/executable", "executable bytes never executed", 0o755),
+                                   ("Nested/private", "private bytes", 0o600),
+                                   ("Nested/public", "public bytes", 0o644)] {
+            let file = try repo.write("Original.app/" + name, bytes)
+            try FileManager.default.setAttributes([.posixPermissions: mode], ofItemAtPath: file.path)
+        }
+        for directory in [app, app.appendingPathComponent("Nested")] {
+            try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: directory.path)
+        }
+        let before = try AppFileSnapshot.read(app)
+        // Intended canonical-format fixture value; not an old Swift-runtime measurement.
+        #expect(before.digest == "19d696ca4c5c9a5fe3269051bd87c28638a290b6c98d8a856fb1607548e424b3")
+        // macOS temporary paths have real /tmp or /var aliases under /private.
+        #expect(before.identity.path.hasPrefix("/tmp/") || before.identity.path.hasPrefix("/var/"))
+        let privateAlias = URL(fileURLWithPath: "/private" + before.identity.path)
+        let aliased = try AppFileSnapshot.read(privateAlias)
+        #expect(aliased.digest == before.digest && aliased.identity == before.identity)
+        let renamed = repo.url("Other.app")
+        try FileManager.default.copyItem(at: app, to: renamed)
+        let after = try AppFileSnapshot.read(renamed)
+        #expect(after.digest == before.digest && after.identity != before.identity)
+        let rootAlias = repo.url("Alias.app")
+        try FileManager.default.createSymbolicLink(at: rootAlias, withDestinationURL: app)
+        let rootAliased = try AppFileSnapshot.read(rootAlias)
+        #expect(rootAliased.digest == before.digest && rootAliased.identity == before.identity)
+        let apk = try repo.write("sample.apk", "approved bytes")
+        #expect(try AppFileSnapshot.read(apk).digest == "5f7730eeb4cbfa3d0e84c8c98324072c1dc903c0b6c4d85e143389c86e9872f7")
+    }
+
+    @Test("canonicalization keeps final internal links and rejects sibling-prefix or invalid links",
+          arguments: ["internal", "sibling", "outside", "absolute", "dangling"])
+    func snapshotCanonicalLinks(_ target: String) async throws {
+        let fixture = try AppFileFixture(platform: .ios)
+        let destination: String
+        switch target {
+        case "internal": destination = "Program"
+        case "sibling":
+            _ = try fixture.repo.write("Local.app-other/Program", "private sibling bytes")
+            destination = "../Local.app-other/Program"
+        case "outside":
+            _ = try fixture.repo.write("outside", "private outside bytes")
+            destination = "../outside"
+        case "absolute": destination = fixture.payload.path
+        default: destination = "missing"
+        }
+        try FileManager.default.createSymbolicLink(atPath: fixture.file.appendingPathComponent("Link").path,
+            withDestinationPath: destination)
+        let inspected = await fixture.run(inspectOnly: true)
+        if target == "internal" {
+            #expect(inspected.exitCode == 0)
+            let copy = fixture.repo.url("Other.app")
+            try FileManager.default.copyItem(at: fixture.file, to: copy)
+            #expect(try FileManager.default.destinationOfSymbolicLink(atPath: copy.appendingPathComponent("Link").path) == "Program")
+            #expect(try AppFileSnapshot.read(copy).digest == inspected.operation.artifact?.contentIdentity)
+        } else {
+            #expect(inspected.exitCode == 1)
+            #expect(fixture.runner.commands.isEmpty)
+            #expect(inspected.operation.installation == "not-requested" && inspected.operation.launch == "not-requested")
+        }
+    }
+
+    @Test("a staged digest mismatch keeps its generic failure and never installs or launches")
+    func snapshotMismatchStopsWorkflow() async throws {
+        let fixture = try AppFileFixture(platform: .ios)
+        let proposed = await fixture.run(planOnly: true)
+        let plan = try #require(proposed.operation.plan)
+        let payload = fixture.payload
+        let result = await AppFileExecution.run(input: AppFileInput(file: fixture.file, environment: fixture.environment, device: fixture.device),
+            approvedPlanID: plan.approval, runner: fixture.runner, leases: fixture.leases) { event in
+                if event.stageId == "snapshot", event.state == "running" {
+                    try? Data("intentional fixture mutation".utf8).write(to: payload)
+                }
+            }
+        #expect(try String(contentsOf: payload, encoding: .utf8) == "intentional fixture mutation")
+        #expect(result.exitCode == 1)
+        #expect(result.operation.error == "The copied app bytes or metadata differ from the approved file.")
+        #expect(result.operation.installation == "not-requested" && result.operation.launch == "not-requested")
+        #expect(result.operation.completed == ["inspect"])
+        #expect(!fixture.runner.commands.contains(where: mutation))
+        let stage = FileManager.default.temporaryDirectory.appendingPathComponent("dev.runstir-app-file-" + result.operation.id)
+        #expect(!FileManager.default.fileExists(atPath: stage.path))
+    }
+
     @Test("disconnect before installation never switches to another target")
     func disconnected() async throws {
         let fixture = try AppFileFixture(platform: .ios)
@@ -689,6 +780,7 @@ private struct AppFileLogError: Error, CustomStringConvertible {
     let detail: String
     var description: String { detail }
 }
+
 
 private final class AppFileLogCapture: @unchecked Sendable {
     private let lock = NSLock()
