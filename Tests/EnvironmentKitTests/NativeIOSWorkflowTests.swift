@@ -102,6 +102,7 @@ struct NativeIOSWorkflowTests {
         #expect(result.operation.device == "A")
         let build = try #require(runner.log.all.first { $0.arguments.last == "build" })
         #expect(build.arguments.contains("platform=iOS Simulator,id=A"))
+        #expect(!build.arguments.contains("ONLY_ACTIVE_ARCH=YES"))
         #expect(!runner.log.all.contains { $0.arguments.contains("bootstatus") || $0.arguments.contains("boot") || $0.arguments.contains("install") || $0.arguments.contains("launch") })
         #expect(runner.log.spawned.isEmpty)
     }

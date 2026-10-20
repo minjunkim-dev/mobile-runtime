@@ -26,7 +26,9 @@ public struct WorkflowOperation: Codable, Sendable {
     public var configuration: String?
     public var module: String?
     public var variant: String?
+    public var entrypoint: String?
     public var port: Int?
+    public var developmentServiceURI: String?
     public var requiredInput: [String] = []
     public var devices: [RuntimeDeviceCandidate] = []
     public var schemes: [String] = []

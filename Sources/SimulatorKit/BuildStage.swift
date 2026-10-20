@@ -78,12 +78,13 @@ public struct BuildStage: Stage {
                 "-configuration", configuration,
                 "-destination", destination,
                 "-derivedDataPath", derivedData.path,
-            ] + (anchor.framework == .nativeIOS ? ["CODE_SIGNING_ALLOWED=NO"] : [])
+            ] + (anchor.framework != .reactNative ? ["CODE_SIGNING_ALLOWED=NO"] : [])
+                + (anchor.framework == .flutter && !genericDestination ? ["ONLY_ACTIVE_ARCH=YES"] : [])
                 + (anchor.framework == .reactNative ? metroPort.map { ["RCT_METRO_PORT=\($0)"] } ?? [] : [])
 
         context.buildLog = try await build(arguments, environment).path
         context.product = try await product(arguments, scheme: scheme, environment: environment,
-            nativeTarget: anchor.framework == .nativeIOS ? target : nil)
+            nativeTarget: anchor.framework != .reactNative ? target : nil)
         return .pass(scheme)
     }
 

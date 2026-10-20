@@ -36,6 +36,8 @@ public struct ProcessCommand: Sendable, CustomStringConvertible {
     /// by it should not change spelling because a caller named a directory.
     public var workingDirectory: URL?
     public var timeout: Duration?
+    /// Credentials in arguments must not enter command descriptions or runner logs.
+    public var redactArguments: Bool
     /// Deliberately absent from `description` for the same reason `workingDirectory`
     /// is: the description is what a human would type, and it keys the test fixtures.
     public var output: ProcessOutput
@@ -46,7 +48,8 @@ public struct ProcessCommand: Sendable, CustomStringConvertible {
         environment: [String: String] = [:],
         workingDirectory: URL? = nil,
         timeout: Duration? = .seconds(30),
-        output: ProcessOutput = .collected
+        output: ProcessOutput = .collected,
+        redactArguments: Bool = false
     ) {
         self.executable = executable
         self.arguments = arguments
@@ -54,10 +57,12 @@ public struct ProcessCommand: Sendable, CustomStringConvertible {
         self.workingDirectory = workingDirectory
         self.timeout = timeout
         self.output = output
+        self.redactArguments = redactArguments
     }
 
     public var description: String {
-        ([executable] + arguments).joined(separator: " ")
+        if redactArguments { return executable + " [arguments redacted]" }
+        return ([executable] + arguments).joined(separator: " ")
     }
 }
 
@@ -303,7 +308,7 @@ public struct SystemProcessRunner: ProcessRunner {
         } catch is CancellationError where expired.isRaised {
             throw timedOut()
         } catch {
-            log("subprocess failed", ("error", "\(error)"))
+            log("subprocess failed", ("error", command.redactArguments ? "[redacted]" : "\(error)"))
             if error is CancellationError { throw error }  // our caller was cancelled, not the child
             throw ProcessError.spawnFailed(command: command.description, underlying: error)
         }

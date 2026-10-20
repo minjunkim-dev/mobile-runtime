@@ -69,15 +69,27 @@ public enum WorkflowExecution {
                 throw selectionFailure("No app selected. Choose a reported project candidate.")
             }
             guard anchor.framework == .reactNative || (anchor.framework == .nativeIOS && platform == .ios)
-                || (anchor.framework == .nativeAndroid && platform == .android) else {
+                || (anchor.framework == .nativeAndroid && platform == .android)
+                || (anchor.framework == .flutter && platform == .ios) else {
                 throw selectionFailure("\(anchor.framework.displayName) execution is not implemented yet.")
             }
-            if let port = input.port {
-                guard anchor.framework == .reactNative, kind != .down, (1...65535).contains(port) else {
-                    throw selectionFailure("--port requires React Native build/up and a port from 1 through 65535. This workflow cannot forward it; no project file was changed.")
-                }
-                try validatePortForwarding(anchor: anchor, platform: platform)
+            if input.project.entrypoint != nil && anchor.framework != .flutter {
+                throw selectionFailure("An explicit entrypoint requires a Flutter app.")
             }
+            if let port = input.port {
+                let supported = (anchor.framework == .reactNative && kind != .down)
+                    || (anchor.framework == .flutter && platform == .ios && kind == .up)
+                guard supported, (1...65535).contains(port) else {
+                    throw selectionFailure("--port requires React Native build/up or Flutter iOS up and a port from 1 through 65535. This workflow cannot forward it; no project file was changed.")
+                }
+                if anchor.framework == .reactNative { try validatePortForwarding(anchor: anchor, platform: platform) }
+            }
+            if anchor.framework == .flutter && kind != .down {
+                guard let project = try? FlutterProject(directory: anchor.directory, entrypoint: input.project.entrypoint), project.entrypoint != nil else {
+                    throw selectionFailure("Choose an existing Dart entrypoint inside a valid Flutter app. No tool was run and no source was changed.")
+                }
+            }
+            operation.entrypoint = input.project.entrypoint
             if kind == .down && [input.device, input.scheme, input.configuration, input.module, input.variant].contains(where: { $0 != nil }) {
                 throw selectionFailure("down uses the selected project's recorded resources. Omit build and device selectors.")
             }
@@ -91,18 +103,19 @@ public enum WorkflowExecution {
                                                                workingDirectory: anchor.directory)
             var config = ConfigContext.detect(anchor: anchor, workingDirectory: input.project.directory)
                 .selecting(scheme: input.scheme, module: input.module, variant: input.variant,
-                           clearDevice: platform == .ios && (input.device != nil || kind == .build))
+                           clearDevice: platform == .ios && (input.device != nil || (kind == .build && anchor.framework != .flutter)))
             var wiring = await WorkflowContext.make(input: input.project, platform: platform, anchor: anchor,
                 runner: runner, includeProjectEnvironment: kind != .down,
                 includeRuntimeSDKTools: kind != .build || platform == .ios, selectedConfig: config,
                 selectedConfiguration: input.configuration)
+            operation.selection = try FlutterIOSWorkflow.selection(selection, workspace: wiring.flutter?.workspace)
             try Task.checkCancellation()
 
             if kind != .down {
                 let report = await wiring.engine.run()
                 try Task.checkCancellation()
                 let ids = (platform == .ios ? IOSWorkflowValidation.checkIDs : AndroidWorkflowValidation.checkIDs)
-                    .union(report.checks.filter { $0.id.hasPrefix("tools.") }.map(\.id))
+                    .union(report.checks.filter { $0.id.hasPrefix("tools.") || $0.id.hasPrefix("flutter.") || $0.id == "dependencies.flutter" || $0.id.hasPrefix("ios.flutter.") }.map(\.id))
                 let blocking = report.checks.filter { ids.contains($0.id) && $0.status == .error }
                 if report.hasToolFailure {
                     var context = UpContext()
@@ -120,9 +133,11 @@ public enum WorkflowExecution {
                 }
 
                 if platform == .ios {
+                    let needsDevice = kind == .up || anchor.framework == .flutter || input.device != nil
                     let choices = try await IOSWorkflowCandidates.load(anchor: anchor, config: config, lookup: wiring.lookup,
-                        runner: wiring.projectRunner, locator: wiring.locator, includeDevices: kind == .up || input.device != nil,
-                        configuration: input.configuration)
+                        runner: wiring.projectRunner, locator: wiring.locator, includeDevices: needsDevice,
+                        configuration: input.configuration, entrypoint: input.project.entrypoint,
+                        flutterSDKRoot: wiring.flutter?.sdk?.root)
                     operation.schemes = choices.schemes
                     operation.configurations = choices.configurations
                     operation.devices = choices.devices
@@ -137,10 +152,10 @@ public enum WorkflowExecution {
                     }
                     if operation.configuration == nil { operation.requiredInput.append("--configuration") }
                     operation.device = input.device ?? choices.declaredDeviceID
-                    if kind == .up && operation.device == nil && config.configuration?.device == nil && choices.devices.count == 1 {
+                    if needsDevice && operation.device == nil && config.configuration?.device == nil && choices.devices.count == 1 {
                         operation.device = choices.devices.first?.id
                     }
-                    if kind == .up || input.device != nil {
+                    if needsDevice {
                         if config.configuration?.device != nil && operation.device == nil && input.device == nil {
                             throw selectionFailure("ios.device does not resolve to a compatible Simulator. Refresh and select a device identity.")
                         }
@@ -181,30 +196,34 @@ public enum WorkflowExecution {
             }
 
             // Stabilize this project's recorded targets before acquiring the resources down changes.
-            let folder = try FolderIdentity(directory: anchor.workspaceRoot?.directory ?? anchor.directory)
-            let owner = LeaseOwner(operationId: operation.id, command: kind.rawValue, project: folder.path)
+            let folder = try FolderIdentity(directory: wiring.flutter?.workspace?.directory ?? anchor.workspaceRoot?.directory ?? anchor.directory)
+            // Flutter shares a workspace lease, but the selected app owns its installed runtime.
+            let ownerProject = anchor.framework == .flutter ? candidate.app.path : folder.path
+            let owner = LeaseOwner(operationId: operation.id, command: kind.rawValue, project: ownerProject)
             let folderLease = try leases.acquire([.folder(folder)], owner: owner)
             defer { folderLease.release() }
             let logs = RunLogs(project: anchor.directory)
             let recordedPort = try anchor.framework == .reactNative ? logs.metroPort(platform: platform) : nil
             let metroPort = anchor.framework == .reactNative
                 ? (kind == .down ? recordedPort ?? MetroVerdict.port : input.port ?? MetroVerdict.port) : nil
-            operation.port = metroPort
             let device: ResourceKey?
             switch kind {
             case .up: device = operation.device.map { .device(platform, $0) }
             case .down:
                 switch platform {
                 case .ios:
-                    device = try InstallRecord.read(from: RunLogs(project: anchor.directory), leases: leases, ownerProject: folder.path).map { .device(.ios, $0.udid) }
+                    device = try InstallRecord.read(from: RunLogs(project: anchor.directory), leases: leases, ownerProject: owner.project).map { .device(.ios, $0.udid) }
                 case .android:
                     device = try androidTeardownDeviceKey(anchor: anchor)
                 }
             case .build: device = nil
             }
+            let flutterPort = anchor.framework == .flutter && kind == .up
+                ? try FlutterIOSWorkflow.availablePort(input.port) : nil
+            operation.port = flutterPort ?? metroPort
             let resources = (device.map { [$0] } ?? [])
                 + (kind == .build ? [] : [metroPort, recordedPort].compactMap { $0 }.map(ResourceKey.port))
-            let resourceLease = try leases.acquire(resources, owner: owner)
+            let resourceLease = try leases.acquire(resources + (flutterPort.map { [.port($0)] } ?? []), owner: owner)
             defer { resourceLease.release() }
             if kind == .up, let recordedPort, let metroPort, recordedPort != metroPort {
                 guard try await MetroVerdict.ask(anchor: anchor.directory, runner: wiring.projectRunner, port: recordedPort) == .empty else {
@@ -213,7 +232,7 @@ public enum WorkflowExecution {
             }
             if let device {
                 let environment = AndroidEnvironment(values: input.project.environment)
-                try await leases.check(device: device, project: folder.path) { [wiring] claim in
+                try await leases.check(device: device, project: owner.project) { [wiring] claim in
                     switch claim.platform {
                     case .ios:
                         try await simulatorAppObservation(udid: claim.handle, bundleID: claim.appID, runner: runner, locator: wiring.locator)
@@ -231,7 +250,8 @@ public enum WorkflowExecution {
             switch (kind, platform) {
             case (.down, .ios):
                 started("down")
-                down = await iOSTeardown(anchor: anchor, runner: runner, locator: wiring.locator, leases: leases).run()
+                down = await iOSTeardown(anchor: anchor, runner: runner, locator: wiring.locator,
+                    leases: leases, ownerProject: owner.project).run()
             case (.down, .android):
                 started("down")
                 down = await androidTeardown(anchor: anchor, config: config, runner: runner, projectRunner: runner,
@@ -259,12 +279,26 @@ public enum WorkflowExecution {
                     environment: AndroidEnvironment(values: input.project.environment), metroPort: input.port, note: note))
                     .run(onStageFinished: finished, onStageStarted: started)
             case (.build, .ios), (.up, .ios):
-                up = await UpPipeline(stages: iOSStages(workflow: kind == .build ? .build : .up,
+                let flutter = try anchor.framework == .flutter
+                    ? FlutterIOSWorkflow(anchor: anchor, input: input.project, preparation: wiring.flutter, runner: wiring.projectRunner) : nil
+                let stages = iOSStages(workflow: kind == .build ? .build : .up,
                     anchor: anchor, doctor: wiring.engine, config: config, lookup: wiring.lookup,
-                    hostRunner: runner, projectRunner: wiring.projectRunner, locator: wiring.locator,
+                    hostRunner: runner, projectRunner: flutter?.buildRunner ?? wiring.projectRunner, locator: wiring.locator,
                     deviceID: operation.device, configuration: operation.configuration ?? "Debug",
-                    buildWithoutDevice: kind == .build && operation.device == nil, metroPort: input.port, note: note))
+                    buildWithoutDevice: kind == .build && operation.device == nil,
+                    metroPort: input.port, flutterPort: flutterPort, note: note)
+                up = await UpPipeline(stages: flutter?.guarding(stages) ?? stages)
                     .run(onStageFinished: finished, onStageStarted: started)
+                if let flutter, !flutter.changedFiles.isEmpty {
+                    operation.remaining += flutter.changedFiles.map { "Unexpected changed source: \($0). No file was restored." }
+                }
+            }
+            if let report = up, anchor.framework == .flutter {
+                operation.entrypoint = wiring.flutter?.entrypoint?.path
+                operation.developmentServiceURI = report.context.developmentServiceURI
+                if report.failure != nil && report.context.product != nil && kind == .up {
+                    operation.remaining.append("The recorded Flutter app may remain installed or running. Run mobile down --platform ios for this project.")
+                }
             }
             // The app outlives this lease, even after a later stage failed. The next run observes it again.
             if let device, let report = up, let claim = claim(report.context, device: device, platform: platform, owner: owner) {

@@ -12,11 +12,12 @@ public func iOSTeardown(
     locator: XcodeLocator,
     logs: RunLogs? = nil,
     grace: Duration = MetroTeardown.defaultGrace,
-    leases: ResourceLeases = .user
+    leases: ResourceLeases = .user,
+    ownerProject: String? = nil
 ) -> Teardown {
     let logs = logs ?? RunLogs(project: anchor.directory)
     let app = AppTeardown(logs: logs, runner: runner, locator: locator, leases: leases,
-        ownerProject: (anchor.workspaceRoot?.directory ?? anchor.directory).standardizedFileURL.resolvingSymlinksInPath().path)
+        ownerProject: ownerProject ?? (anchor.workspaceRoot?.directory ?? anchor.directory).standardizedFileURL.resolvingSymlinksInPath().path)
     guard anchor.framework == .reactNative else {
         return Teardown(jobs: [(id: AppTeardown.id, run: { @Sendable in await app.run() })])
     }

@@ -46,14 +46,14 @@ struct XcodeBuildTarget {
         let names = (try? fileManager.contentsOfDirectory(atPath: ios.path)) ?? []
         let workspaces = names.filter { $0.hasSuffix(".xcworkspace") }
         if let workspace = workspaces.only {
-            return XcodeBuildTarget(kind: .workspace, url: ios.appendingPathComponent(workspace))
+            return XcodeBuildTarget(kind: .workspace, url: ios.appendingPathComponent(workspace), freezesPackages: anchor.framework == .flutter)
         }
         // Several workspaces is not "no workspace": falling through to the project
         // would build the one target CocoaPods cannot link, and blame the code.
         guard workspaces.isEmpty,
             let project = XcodeSchemeList.project(inIOSDirectoryOf: anchor, fileManager: fileManager)
         else { return nil }
-        return XcodeBuildTarget(kind: .project, url: project)
+        return XcodeBuildTarget(kind: .project, url: project, freezesPackages: anchor.framework == .flutter)
     }
 }
 

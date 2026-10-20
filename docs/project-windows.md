@@ -17,8 +17,9 @@ iOS 앱의 `RCT_jsLocation` 값이 있어도 8081을 start·build·launch에 전
 port를 생략한 경우만 기존 native 인자를 유지한다. 명시적 8081에도 전달 지원 검사를 적용한다.
 포트가 이미 사용 중이면 소유 작업과 이유를 표시한다. 자동 전환이나 종료는 없다.
 native iOS·native Android는 이 개발 서버 입력을 소비하지 않는다. 명시하면 중단한다.
-Flutter 후속 provider도 같은 `WorkflowInput.port`를 소비한다. Flutter의 VM service와
-RN의 Metro는 다른 개발 연결이다. 미병합 #208의 같은 이름·타입·GUI state를 재사용해 통합한다.
+Flutter iOS up도 같은 `WorkflowInput.port`를 소비한다. Flutter의 VM service와
+RN의 Metro는 다른 개발 연결이다. Flutter는 생략 시 사용 가능한 포트를 선택한다.
+Flutter build/down은 명시적 port를 거부한다. GUI Flutter build/down은 port를 전달하지 않는다.
 두 port 필드나 별도 parser를 만들지 않는다.
 
 통합 검토 기준은 #207 `47509165a12bd1ea0dafad495e01ba1ee1f4df3a`와
@@ -118,16 +119,17 @@ legacy iOS install은 같은 reservation book의 confirmed owner project·device
 legacy port 파일은 base-MAIN에 없었다. 이전 미병합 개발 head의 FNV-only port 파일은
 소유권 미확인으로 보존·차단한다. 자동 이관과 값 복제는 하지 않는다.
 
-### 미병합 #208 통합 메모
+### main65의 #208 통합
 
-읽기 전용으로 확인한 #208 head는 7e02d2e8329a11a5aa511d6bc2eb6275e2db08c4다.
-#208 worktree는 수정하지 않았다. 이 head의 공통 RunLogs와 #217 변경은 통합 검토가 필요하다.
-RunLogs.url과 InstallRecord.read의 throws를 모든 새 caller와 fixture에 전파한다.
+통합한 main은 `65e14c4e32dda320f2fda7fb0c5156eee437139e`다.
+main의 #208 산출물은 `aacd2482925ea51a29a26059fff1ff7c45ad8beb`과 같은 tree다.
+RunLogs의 folder identity namespace를 유지한다. InstallRecord.read의 throws를 새 fixture에 전파한다.
 FlutterIOSWorkflow.swift의 profile 생성은 기존 best-effort logs.write를 유지한다.
 profile UUID·기존 sandbox와 보호 입력 검사·stage guard·concrete destination 계약을 보존한다.
-FlutterIOSWorkflowTests.swift의 install record 읽기 3곳과 FlutterIOSRuntimeTests.swift의
-읽기 1곳은 try 전파가 필요하다. 공통 CLI/GUI down은 같은 lease book과 owner project를
-AppTeardown에 전달해야 한다. Flutter의 native 입력과 port unsupported 설명은 유지한다.
+공통 CLI/GUI down은 같은 lease book과 선택 app의 owner project를 AppTeardown에 전달한다.
+Flutter의 native 입력과 RN의 selected port를 framework별로 유지한다.
+위 자동 검증 수치와 9fcc의 실제 실행 기록은 통합 전 근거다.
+통합 source의 host 검증은 별도 receipt로 기록한다. 통합 source의 실제 VM·기기·GUI 실행은 별도다.
 
 기존 runtime02의 c008 DerivedData 모델과 query packet은 과거 probe 기록으로만 보존한다.
 새 namespace의 getter 실측이나 실행 계획으로 재사용하지 않는다. 이 수정으로 candidate를
