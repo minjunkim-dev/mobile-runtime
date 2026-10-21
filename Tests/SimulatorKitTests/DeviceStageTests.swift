@@ -187,6 +187,37 @@ struct DeviceStageTests {
         #expect(error?.remediation.command?.hasPrefix("xcrun simctl boot ") == true)
     }
 
+    @Test("bootstatus exit zero still rejects an explicit data migration failure")
+    func migrationFailsWithSuccessfulExit() async throws {
+        let runner = try runner(
+            devices: Fixture.text("simctl-list-devices-shutdown.stdout.json"),
+            boot: .ok("""
+                Monitoring boot status for Runstir208-iOS271-20261019 (1A9A7AED-AD23-4097-8126-9BF0128609D7).
+                Booting device...
+                [2026-10-20 13:24:07 +0000] Status=0, isTerminal=NO, Elapsed=00:00.
+                \tBooting
+
+                [2026-10-20 13:24:22 +0000] Status=1, isTerminal=NO, Elapsed=00:15.
+                \tWaiting on BackBoard
+
+                [2026-10-20 13:24:52 +0000] Status=3, isTerminal=YES, Elapsed=00:44.
+                \tData Migration Failed
+
+
+                """)
+        )
+        var context = UpContext()
+
+        let error = await #expect(throws: DomainError.self) {
+            try await run(runner, context: &context)
+        }
+
+        #expect(error?.summary == "iPhone 16 did not boot")
+        #expect(error?.observed == "Data Migration Failed")
+        #expect(context.device?.name == "iPhone 16")
+        #expect(bootCommands(runner).count == 1)
+    }
+
     /// Re-running `up` on a machine it already set up must not restart the simulator.
     /// The second run reads what simctl says after the first one's boot, which is the
     /// same capture with one field moved on — the state is the only thing booting

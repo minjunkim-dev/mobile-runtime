@@ -109,10 +109,14 @@ public struct DeviceStage: Stage {
             timeout: .seconds(120)
         )
         let result = try await runner.run(command)
-        guard result.terminationStatus.isSuccess else {
+        let migrationFailure = (result.standardError + "\n" + result.standardOutput)
+            .split(whereSeparator: \.isNewline)
+            .first { $0.contains("Data Migration Failed") }
+            .map { String($0).trimmingCharacters(in: .whitespaces) }
+        guard result.terminationStatus.isSuccess, migrationFailure == nil else {
             throw DomainError(
                 summary: "\(simulator.name) did not boot",
-                observed: result.standardError.firstLine ?? result.standardOutput.firstLine
+                observed: migrationFailure ?? result.standardError.firstLine ?? result.standardOutput.firstLine
                     ?? "`\(command.description)` failed",
                 remediation: Remediation(
                     summary: "Boot it by hand to see what the Simulator says. A device wedged in "

@@ -25,7 +25,7 @@ struct Mobile: AsyncParsableCommand {
         commandName: "mobile",
         abstract: "Reproducible mobile development runtime.",
         version: Tool.version,
-        subcommands: [Doctor.self, Setup.self, Build.self, Up.self, Down.self]
+        subcommands: [Doctor.self, Setup.self, Build.self, Up.self, Down.self, AppCommand.self]
     )
 
     // Bare `mobile` is exploration, not an error: help on stdout, exit 0.
