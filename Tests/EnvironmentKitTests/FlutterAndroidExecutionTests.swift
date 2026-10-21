@@ -52,28 +52,54 @@ struct FlutterAndroidExecutionTests {
         #expect(try String(contentsOf: copy.appendingPathComponent("bin/tool"), encoding: .utf8) == "selected SDK bytes")
     }
 
-    @Test("SDK hashing and copying release temporary file buffers before the caller pool drains", arguments: [false, true])
-    func boundedFileBuffers(_ copying: Bool) throws {
-        let fixture = try Fixture()
-        defer { fixture.remove() }
-        let source = try fixture.directory("source")
-        let file = source.appendingPathComponent("payload")
-        try autoreleasepool { try Data(repeating: 0x5a, count: 4 * 1024 * 1024).write(to: file) }
-        let original = try autoreleasepool { try FlutterAndroidExecution.entry(file, bindIdentity: true) }
-        let (before, after) = try autoreleasepool {
-            let before = try Self.physicalFootprint()
-            for index in 0..<6 {
-                if copying {
-                    try FlutterAndroidExecution.copyTree(source, to: fixture.root.appendingPathComponent("copy-\(index)"),
-                        snapshot: ["payload": original])
-                } else {
-                    #expect(try FlutterAndroidExecution.entry(file, bindIdentity: true) == original)
-                }
+    @Test("SDK hashing and copying release temporary file buffers before the caller pool drains")
+    func boundedFileBuffers() async throws {
+        let childMarker = "RUNSTIR_FLUTTER_FILE_BUFFER_CHILD"
+        if ProcessInfo.processInfo.environment[childMarker] != "1" {
+            // A serialized suite does not isolate process-wide memory from other suites.
+            var path = [CChar](repeating: 0, count: 4 * Int(PATH_MAX))
+            let length = path.withUnsafeMutableBytes { proc_pidpath(getpid(), $0.baseAddress, UInt32($0.count)) }
+            try #require(length > 0)
+            let executable = String(decoding: path.prefix { $0 != 0 }.map { UInt8(bitPattern: $0) }, as: UTF8.self)
+            var arguments = ["--testing-library", "swift-testing", "--no-parallel",
+                "--filter", "FlutterAndroidExecutionTests/boundedFileBuffers"]
+            if URL(fileURLWithPath: executable).lastPathComponent == "swiftpm-testing-helper" {
+                let index = try #require(CommandLine.arguments.firstIndex(of: "--test-bundle-path"))
+                try #require(index + 1 < CommandLine.arguments.count)
+                let bundle = CommandLine.arguments[index + 1]
+                arguments.insert(contentsOf: ["--test-bundle-path", bundle, bundle], at: 0)
             }
-            return (before, try Self.physicalFootprint())
+            let result = try await SystemProcessRunner().run(ProcessCommand(executable, arguments,
+                environment: [childMarker: "1"], timeout: .seconds(30)))
+            print(result.combinedOutput)
+            #expect(result.terminationStatus.isSuccess)
+            for copying in [false, true] {
+                #expect(result.standardOutput.contains("FlutterAndroidExecutionTests.boundedFileBuffers copying=\(copying) "))
+            }
+            return
         }
-        print("FlutterAndroidExecutionTests.boundedFileBuffers copying=\(copying) before=\(before) after=\(after) growth=\(after > before ? after - before : 0)")
-        #expect(after <= before + 16 * 1024 * 1024)
+        for copying in [false, true] {
+            let fixture = try Fixture()
+            defer { fixture.remove() }
+            let source = try fixture.directory("source")
+            let file = source.appendingPathComponent("payload")
+            try autoreleasepool { try Data(repeating: 0x5a, count: 4 * 1024 * 1024).write(to: file) }
+            let original = try autoreleasepool { try FlutterAndroidExecution.entry(file, bindIdentity: true) }
+            let (before, after) = try autoreleasepool {
+                let before = try Self.physicalFootprint()
+                for index in 0..<6 {
+                    if copying {
+                        try FlutterAndroidExecution.copyTree(source, to: fixture.root.appendingPathComponent("copy-\(index)"),
+                            snapshot: ["payload": original])
+                    } else {
+                        #expect(try FlutterAndroidExecution.entry(file, bindIdentity: true) == original)
+                    }
+                }
+                return (before, try Self.physicalFootprint())
+            }
+            print("FlutterAndroidExecutionTests.boundedFileBuffers copying=\(copying) before=\(before) after=\(after) growth=\(after > before ? after - before : 0)")
+            #expect(after <= before + 16 * 1024 * 1024)
+        }
     }
 
     @Test("external links, unresolved links, hardlinks and external Git layouts stop isolation", arguments: [
