@@ -366,7 +366,7 @@ public enum WorkflowExecution {
 
 private struct WorkflowStopped: Error {}
 
-private final class WorkflowEvents: @unchecked Sendable {
+final class WorkflowEvents: @unchecked Sendable {
     private let lock = NSLock()
     private let id: String
     private let callback: @Sendable (WorkflowEvent) -> Void
