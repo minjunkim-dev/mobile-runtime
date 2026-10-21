@@ -143,14 +143,17 @@ struct AndroidFlutterService: Sendable {
         while true {
             try Task.checkCancellation()
             let budget = min(.seconds(5), try remaining(until: deadline))
-            let probe: ProcessResult
+            let probe: ProcessResult?
             do {
-                probe = try await runner.run(ProcessCommand("curl", ["--fail", "--silent", "--show-error", "--noproxy", "*",
+                probe = try await runner.run(ProcessCommand("curl", ["-q", "--fail", "--silent", "--show-error", "--noproxy", "*",
                     "--connect-timeout", "2", "--max-time", "5", text + (text.hasSuffix("/") ? "" : "/") + "getVM"],
                     timeout: budget, redactArguments: true))
             } catch is CancellationError { throw CancellationError() }
+            // A slow answer retries like a refused one; the deadline below decides.
+            catch ProcessError.timedOut { probe = nil }
             catch { throw AndroidStateError("the forwarded Flutter VM service could not be queried") }
-            if probe.terminationStatus.isSuccess {
+            try Task.checkCancellation()
+            if let probe, probe.terminationStatus.isSuccess {
                 guard let document = try? JSONSerialization.jsonObject(with: Data(probe.standardOutput.utf8)) as? [String: Any],
                       (document["result"] as? [String: Any])?["type"] as? String == "VM" else {
                     throw AndroidStateError("the forwarded Flutter URI did not answer as a Dart VM service")

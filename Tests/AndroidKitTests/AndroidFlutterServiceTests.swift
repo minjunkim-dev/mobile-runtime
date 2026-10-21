@@ -86,6 +86,9 @@ private final class FlutterADB: ProcessRunner, @unchecked Sendable {
     var packagePathFailure = false
     var postStopPIDFailure = false
     var vmAnswer = #"{"jsonrpc":"2.0","result":{"type":"VM"},"id":""}"#
+    /// Probes that refuse the connection before the VM answers; negative never answers.
+    var vmRefusals = 0
+    var vmRefusalTimesOut = false
 
     var commands: [ProcessCommand] { lock.withLock { recorded } }
 
@@ -98,6 +101,11 @@ private final class FlutterADB: ProcessRunner, @unchecked Sendable {
             if command.executable == "curl" {
                 guard command.redactArguments, command.arguments.last == "http://127.0.0.1:8097/private-token=/getVM" else {
                     throw FixtureMiss(command: command.description)
+                }
+                if vmRefusals != 0 {
+                    vmRefusals -= 1
+                    if vmRefusalTimesOut { throw ProcessError.timedOut(command: command.description, timeout: .seconds(5)) }
+                    return ProcessResult(terminationStatus: .exited(7), standardOutput: "", standardError: "curl: (7) refused")
                 }
                 return ProcessResult(terminationStatus: .exited(0), standardOutput: vmAnswer, standardError: "")
             }
@@ -210,6 +218,28 @@ struct AndroidFlutterServiceTests {
         }
         #expect(try fixture.store.read()?.forward?.state == .created)
         #expect(runner.commands.contains { $0.executable == "curl" && $0.description == "curl [arguments redacted]" })
+    }
+
+    @Test("a refused or slow probe retries until the VM answers or the launch deadline expires",
+          arguments: [1, -1], [false, true])
+    func refusedProbe(refusals: Int, timesOut: Bool) async throws {
+        let fixture = try FlutterRuntimeFixture()
+        let initial = fixture.active()
+        try fixture.store.write(initial)
+        let runner = FlutterADB()
+        runner.vmRefusals = refusals
+        runner.vmRefusalTimesOut = timesOut
+        let service = try fixture.service(runner, launch: .milliseconds(300))
+        if refusals > 0 {
+            _ = try await service.connect(initial, marker: flutterMarker, hostPort: 8097, store: fixture.store)
+            #expect(runner.commands.filter { $0.executable == "curl" }.count == refusals + 1)
+        } else {
+            await #expect(throws: AndroidStateError.self) {
+                _ = try await service.connect(initial, marker: flutterMarker, hostPort: 8097, store: fixture.store)
+            }
+            #expect(runner.commands.filter { $0.executable == "curl" }.count > 1)
+        }
+        #expect(try fixture.store.read()?.forward?.state == .created)
     }
 
     @Test("foreign global mapping is preserved before create")
