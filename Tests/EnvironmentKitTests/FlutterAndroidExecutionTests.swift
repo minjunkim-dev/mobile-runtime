@@ -52,6 +52,30 @@ struct FlutterAndroidExecutionTests {
         #expect(try String(contentsOf: copy.appendingPathComponent("bin/tool"), encoding: .utf8) == "selected SDK bytes")
     }
 
+    @Test("SDK hashing and copying release temporary file buffers before the caller pool drains", arguments: [false, true])
+    func boundedFileBuffers(_ copying: Bool) throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let source = try fixture.directory("source")
+        let file = source.appendingPathComponent("payload")
+        try autoreleasepool { try Data(repeating: 0x5a, count: 4 * 1024 * 1024).write(to: file) }
+        let original = try autoreleasepool { try FlutterAndroidExecution.entry(file, bindIdentity: true) }
+        let (before, after) = try autoreleasepool {
+            let before = try Self.physicalFootprint()
+            for index in 0..<6 {
+                if copying {
+                    try FlutterAndroidExecution.copyTree(source, to: fixture.root.appendingPathComponent("copy-\(index)"),
+                        snapshot: ["payload": original])
+                } else {
+                    #expect(try FlutterAndroidExecution.entry(file, bindIdentity: true) == original)
+                }
+            }
+            return (before, try Self.physicalFootprint())
+        }
+        print("FlutterAndroidExecutionTests.boundedFileBuffers copying=\(copying) before=\(before) after=\(after) growth=\(after > before ? after - before : 0)")
+        #expect(after <= before + 16 * 1024 * 1024)
+    }
+
     @Test("external links, unresolved links, hardlinks and external Git layouts stop isolation", arguments: [
         "external", "absolute", "dangling", "hardlink", "gitfile",
     ])
@@ -485,6 +509,18 @@ struct FlutterAndroidExecutionTests {
     }
     include(":app")
     """#.replacingOccurrences(of: ";", with: "")
+
+    private static func physicalFootprint() throws -> UInt64 {
+        var info = task_vm_info_data_t()
+        var count = mach_msg_type_number_t(MemoryLayout<task_vm_info_data_t>.size / MemoryLayout<integer_t>.size)
+        let result = withUnsafeMutablePointer(to: &info) { pointer in
+            pointer.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
+                task_info(mach_task_self_, task_flavor_t(TASK_VM_INFO), $0, &count)
+            }
+        }
+        try #require(result == KERN_SUCCESS)
+        return info.phys_footprint
+    }
 
     private struct Fixture: Sendable {
         let root: URL

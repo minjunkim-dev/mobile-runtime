@@ -440,10 +440,15 @@ final class FlutterAndroidExecution: @unchecked Sendable {
             guard destinationFD >= 0 else { throw failure("An SDK copy destination already exists or cannot be created exclusively.") }
             let destinationHandle = FileHandle(fileDescriptor: destinationFD, closeOnDealloc: true)
             var digest = SHA256()
-            while let data = try handle.read(upToCount: 4 * 1024 * 1024), !data.isEmpty {
-                try Task.checkCancellation()
-                digest.update(data: data)
-                try destinationHandle.write(contentsOf: data)
+            while true {
+                let hasData = try autoreleasepool {
+                    guard let data = try handle.read(upToCount: 4 * 1024 * 1024), !data.isEmpty else { return false }
+                    try Task.checkCancellation()
+                    digest.update(data: data)
+                    try destinationHandle.write(contentsOf: data)
+                    return true
+                }
+                if !hasData { break }
             }
             guard fchmod(destinationFD, mode_t(value.mode)) == 0 else { throw failure("Private SDK file permissions could not be retained.") }
             try destinationHandle.close()
@@ -517,8 +522,15 @@ final class FlutterAndroidExecution: @unchecked Sendable {
             }
             let handle = FileHandle(fileDescriptor: descriptor, closeOnDealloc: false)
             var digest = SHA256()
-            while let data = try handle.read(upToCount: 4 * 1024 * 1024), !data.isEmpty {
-                try Task.checkCancellation(); digest.update(data: data)
+            // Foundation's temporary read buffers must not wait for the caller's pool to drain.
+            while true {
+                let hasData = try autoreleasepool {
+                    guard let data = try handle.read(upToCount: 4 * 1024 * 1024), !data.isEmpty else { return false }
+                    try Task.checkCancellation()
+                    digest.update(data: data)
+                    return true
+                }
+                if !hasData { break }
             }
             var after = stat()
             guard fstat(descriptor, &after) == 0, after.st_size == info.st_size,
