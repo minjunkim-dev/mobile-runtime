@@ -85,6 +85,7 @@ private final class FlutterADB: ProcessRunner, @unchecked Sendable {
     var logcatDelay: Duration?
     var packagePathFailure = false
     var postStopPIDFailure = false
+    var vmAnswer = #"{"jsonrpc":"2.0","result":{"type":"VM"},"id":""}"#
 
     var commands: [ProcessCommand] { lock.withLock { recorded } }
 
@@ -94,6 +95,12 @@ private final class FlutterADB: ProcessRunner, @unchecked Sendable {
         }
         return try lock.withLock {
             recorded.append(command)
+            if command.executable == "curl" {
+                guard command.redactArguments, command.arguments.last == "http://127.0.0.1:8097/private-token=/getVM" else {
+                    throw FixtureMiss(command: command.description)
+                }
+                return ProcessResult(terminationStatus: .exited(0), standardOutput: vmAnswer, standardError: "")
+            }
             guard command.executable == "adb", Array(command.arguments.prefix(2)) == ["-L", "tcp:5037"] else {
                 throw FixtureMiss(command: command.description)
             }
@@ -189,6 +196,20 @@ struct AndroidFlutterServiceTests {
         #expect(try fixture.store.read() == nil)
         #expect(!runner.commands.contains { $0.arguments.contains("reverse") || $0.arguments.contains("kill-server") })
         #expect(runner.commands.allSatisfy { if case .collected = $0.output { true } else { false } })
+    }
+
+    @Test("a forwarded port that does not answer as a Dart VM keeps the created forward owned")
+    func forwardWithoutVM() async throws {
+        let fixture = try FlutterRuntimeFixture()
+        let initial = fixture.active()
+        try fixture.store.write(initial)
+        let runner = FlutterADB()
+        runner.vmAnswer = #"{"result":{"type":"Isolate"}}"#
+        await #expect(throws: AndroidStateError.self) {
+            _ = try await fixture.service(runner).connect(initial, marker: flutterMarker, hostPort: 8097, store: fixture.store)
+        }
+        #expect(try fixture.store.read()?.forward?.state == .created)
+        #expect(runner.commands.contains { $0.executable == "curl" && $0.description == "curl [arguments redacted]" })
     }
 
     @Test("foreign global mapping is preserved before create")

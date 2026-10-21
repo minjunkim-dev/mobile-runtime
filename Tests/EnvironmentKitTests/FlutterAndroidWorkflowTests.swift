@@ -961,6 +961,10 @@ struct FlutterAndroidWorkflowTests {
         var retiredPortLeaseHeld: Bool { lock.withLock { retiredLease } }
         func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
             let response: FakeProcessRunner.Response? = try lock.withLock {
+                if command.executable == "curl", command.redactArguments,
+                   command.arguments.last?.hasPrefix("http://127.0.0.1:\(mapping ?? 0)/sentinel-secret=/") == true {
+                    return .ok(#"{"result":{"type":"VM"}}"#)
+                }
                 guard command.executable == "adb", command.arguments.starts(with: ["-L", "tcp:5037"]) else { return nil }
                 let args = Array(command.arguments.dropFirst(2))
                 if args == ["forward", "--list"] {

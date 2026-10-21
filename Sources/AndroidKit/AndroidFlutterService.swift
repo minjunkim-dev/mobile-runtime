@@ -124,8 +124,44 @@ struct AndroidFlutterService: Sendable {
             throw AndroidStateError("the created Flutter forward was replaced; preserve ownership")
         }
         try await verify(value, pid: pid, deadline: deadline)
+        try await answeringVM(uri, hostPort: hostPort, deadline: deadline)
+        try await verify(value, pid: pid, deadline: deadline)
         _ = try remaining(until: deadline)
         return (value, AndroidFlutterConnection(hostPort: hostPort, devicePort: devicePort))
+    }
+
+    /// The forward alone does not prove a Dart VM answers on the host port.
+    /// Never include the command or its output in errors: the URI path is a credential.
+    private func answeringVM(_ uri: URL, hostPort: Int, deadline: ContinuousClock.Instant) async throws {
+        guard var components = URLComponents(url: uri, resolvingAgainstBaseURL: false), !uri.path.isEmpty else {
+            throw AndroidStateError("Flutter VM service has no authenticated path")
+        }
+        components.host = "127.0.0.1"
+        components.port = hostPort
+        guard let forwarded = components.url else { throw AndroidStateError("Flutter VM service has no host URI") }
+        let text = forwarded.absoluteString
+        while true {
+            try Task.checkCancellation()
+            let budget = min(.seconds(5), try remaining(until: deadline))
+            let probe: ProcessResult
+            do {
+                probe = try await runner.run(ProcessCommand("curl", ["--fail", "--silent", "--show-error", "--noproxy", "*",
+                    "--connect-timeout", "2", "--max-time", "5", text + (text.hasSuffix("/") ? "" : "/") + "getVM"],
+                    timeout: budget, redactArguments: true))
+            } catch is CancellationError { throw CancellationError() }
+            catch { throw AndroidStateError("the forwarded Flutter VM service could not be queried") }
+            if probe.terminationStatus.isSuccess {
+                guard let document = try? JSONSerialization.jsonObject(with: Data(probe.standardOutput.utf8)) as? [String: Any],
+                      (document["result"] as? [String: Any])?["type"] as? String == "VM" else {
+                    throw AndroidStateError("the forwarded Flutter URI did not answer as a Dart VM service")
+                }
+                return
+            }
+            guard ContinuousClock.now < deadline else {
+                throw AndroidStateError("the forwarded Flutter VM service did not answer before the launch deadline")
+            }
+            if timeouts.poll > .zero { try await Task.sleep(for: min(timeouts.poll, try remaining(until: deadline))) }
+        }
     }
 
     func remove(_ value: AndroidActiveRun, deadline: ContinuousClock.Instant? = nil,
