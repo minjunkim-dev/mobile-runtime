@@ -283,11 +283,18 @@ final class FlutterAndroidExecution: @unchecked Sendable {
             }
             defer { broker?.close() }
             // The base runner retains timeout, cancellation, streaming and nonzero status semantics.
-            let result = try await withTaskCancellationHandler {
-                try await base.run(protected, onLine: onLine)
-            } onCancel: {
-                broker?.close()
+            let result: ProcessResult
+            do {
+                result = try await withTaskCancellationHandler {
+                    try await base.run(protected, onLine: onLine)
+                } onCancel: {
+                    broker?.close()
+                }
+            } catch {
+                await broker?.finish()
+                throw error
             }
+            await broker?.finish()
             try execution.check()
             return result
         }

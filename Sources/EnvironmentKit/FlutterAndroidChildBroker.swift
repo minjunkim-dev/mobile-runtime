@@ -18,6 +18,10 @@ final class FlutterAndroidChildBroker: @unchecked Sendable {
     }
 
     func close() { state.close() }
+    func finish() async {
+        state.close()
+        await state.waitForChild()
+    }
     deinit { close() }
 }
 
@@ -264,6 +268,10 @@ private final class ChildBrokerJob: @unchecked Sendable {
     var isFinishing: Bool { lock.withLock { finishing } }
     func finish() { lock.withLock { finishing = true } }
     func complete() { lock.withLock { completed = true; task = nil }; done.signal() }
+    func wait() async {
+        let active = lock.withLock { task }
+        await active?.value
+    }
 }
 
 private final class ChildBrokerState: @unchecked Sendable {
@@ -280,6 +288,7 @@ private final class ChildBrokerState: @unchecked Sendable {
     private var closed = false
     private var connection: ChildBrokerSocket?
     private var job: ChildBrokerJob?
+    private var closingJob: ChildBrokerJob?
 
     init(root: URL, runner: any ProcessRunner,
          command: @escaping @Sendable ([String]) throws -> ProcessCommand) throws {
@@ -317,6 +326,7 @@ private final class ChildBrokerState: @unchecked Sendable {
         let active = lock.withLock { () -> (ChildBrokerSocket?, ChildBrokerJob?)? in
             guard !closed else { return nil }
             closed = true
+            closingJob = job
             return (connection, job)
         }
         guard let active else { return }
@@ -329,6 +339,11 @@ private final class ChildBrokerState: @unchecked Sendable {
            info.st_mode & S_IFMT == S_IFSOCK {
             Darwin.unlink(endpoint.path)
         }
+    }
+
+    func waitForChild() async {
+        let active = lock.withLock { closingJob }
+        await active?.wait()
     }
 
     func listen() {

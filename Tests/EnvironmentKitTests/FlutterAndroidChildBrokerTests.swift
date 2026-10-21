@@ -62,7 +62,7 @@ struct FlutterAndroidChildBrokerTests {
         let started = AsyncStream<Data>.makeStream()
         let broker = try FlutterAndroidChildBroker(root: root,
             runner: SystemProcessRunner(environment: ["PATH": "/usr/bin:/bin"], workingDirectory: root)) { _ in
-            ProcessCommand("/bin/sh", ["-c", "printf '%s\\n' $$; exec /bin/sleep 30"],
+            ProcessCommand("/bin/sh", ["-c", "trap '/bin/sleep 0.2; exit 0' TERM; printf '%s\\n' $$; while :; do :; done"],
                            workingDirectory: root, timeout: .seconds(10))
         }
         defer { broker.close() }
@@ -82,9 +82,7 @@ struct FlutterAndroidChildBrokerTests {
         let process = try #require(Int32(String(decoding: processBytes, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)))
         if !disconnect { broker.close() }
         #expect(await client.value != 0)
-        let clock = ContinuousClock()
-        let deadline = clock.now.advanced(by: .seconds(8))
-        while kill(process, 0) == 0, clock.now < deadline { try await Task.sleep(for: .milliseconds(20)) }
+        await broker.finish()
         #expect(kill(process, 0) == -1 && errno == ESRCH)
         let late = await Task.detached {
             FlutterAndroidChildClient.run(arguments: ["mobile", "--runstir-flutter-child", "assemble"],
