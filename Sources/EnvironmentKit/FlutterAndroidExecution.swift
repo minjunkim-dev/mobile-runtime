@@ -561,7 +561,8 @@ final class FlutterAndroidExecution: @unchecked Sendable {
 
     static func parentPolicy(protected: [URL], privateRoot: URL, writable: [URL]) throws -> String {
         let root = try canonical(privateRoot)
-        let exceptions = try writable.map { path -> String in
+        let projectCache = root.appendingPathComponent("app/android/.gradle")
+        let exceptions = try (writable + [projectCache]).map { path -> String in
             let path = try canonical(path, mayBeAbsent: true)
             guard inside(root, path), root.path != path.path else { throw failure("A private SDK write exception escapes its exclusive root.") }
             return "(subpath \(seatbelt(path.path)))"
