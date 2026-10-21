@@ -229,7 +229,7 @@ struct AndroidFlutterServiceTests {
         let runner = FlutterADB()
         runner.vmRefusals = refusals
         runner.vmRefusalTimesOut = timesOut
-        let service = try fixture.service(runner, launch: .milliseconds(300))
+        let service = try fixture.service(runner)
         if refusals > 0 {
             _ = try await service.connect(initial, marker: flutterMarker, hostPort: 8097, store: fixture.store)
             #expect(runner.commands.filter { $0.executable == "curl" }.count == refusals + 1)
