@@ -67,7 +67,18 @@ struct FlutterAndroidWorkflow: Sendable {
               tools.activeTools["java"] != nil else { throw failure() }
         let selected = observed.activatingTools(tools.activeTools, environment: input.environment)
         // This is outside mise/tool activation, so it sees the original ./gradlew request.
-        return Self(projectEnvironment: selected, projectRunner: view.runner(base: selected.runner),
+        let projectRunner: any ProcessRunner
+        if let execution = view as? FlutterAndroidExecution, let java = tools.activeTools["java"] {
+            var childEnvironment = environment
+            childEnvironment["JAVA_HOME"] = java.deletingLastPathComponent().deletingLastPathComponent().path
+            childEnvironment["PATH"] = java.deletingLastPathComponent().path + ":"
+                + (environment["PATH"] ?? input.environment["PATH"] ?? "/usr/bin:/bin:/usr/sbin:/sbin")
+            childEnvironment["MISE_AUTO_INSTALL"] = "false"
+            projectRunner = execution.runner(base: selected.runner, childRunner: runner, childEnvironment: childEnvironment)
+        } else {
+            projectRunner = view.runner(base: selected.runner)
+        }
+        return Self(projectEnvironment: selected, projectRunner: projectRunner,
                     workspace: workspace, entrypoint: inputs.entrypoint)
     }
 

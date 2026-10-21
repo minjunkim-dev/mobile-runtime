@@ -690,9 +690,8 @@ struct FlutterAndroidWorkflowTests {
         let activation = ProcessCommand("mise", ["exec", "--", "true"], workingDirectory: repo.root)
         let original = ProcessCommand("./gradlew", ["--offline", "help"] + (redacted ? ["-PfixtureCredential=sentinel-secret"] : []),
             workingDirectory: repo.url("android"), redactArguments: redacted)
-        let protected = try FlutterAndroidExecution.policyCommand(original, file: policy)
         let mise = ProcessCommand("mise", ["exec", "--", "sh", "-c", "cd \"$1\" && shift && exec \"$@\"",
-            "mobile-mise", repo.url("android").path, protected.executable] + protected.arguments,
+            "mobile-mise", repo.url("android").path, original.executable] + original.arguments,
             workingDirectory: repo.root, redactArguments: redacted)
         let raw = FakeProcessRunner(responses: [
             try FlutterAndroidExecution.policyCommand(git, file: policy).description: .ok("mise.toml\n"),
@@ -710,13 +709,14 @@ struct FlutterAndroidWorkflowTests {
             hostRunner: FlutterChildRunner(base: host, environment: ["FLUTTER_ROOT": fixture.view.path]))
             .activatingTools(fixture.tools.activeTools, environment: fixture.input.environment)
         #expect(try await environment.run().status == .pass)
-        let result = try await environment.runner.run(protected)
+        let result = try await environment.runner.run(original)
         #expect(result.standardOutput == "guarded fixture")
         #expect(raw.log.all.count == 3)
         #expect(raw.log.all.allSatisfy { $0.executable == "/usr/bin/sandbox-exec"
             && $0.arguments.starts(with: ["-f", policy.path]) && $0.environment["FLUTTER_ROOT"] == fixture.view.path })
         let emitted = try #require(raw.log.all.last)
         #expect(emitted.arguments == ["-f", policy.path] + [mise.executable] + mise.arguments)
+        #expect(emitted.arguments.filter { $0 == "/usr/bin/sandbox-exec" }.isEmpty)
         #expect(emitted.redactArguments == redacted)
         if redacted { #expect(!emitted.description.contains("sentinel-secret")) }
         #expect(emitted.environment["MISE_AUTO_INSTALL"] == "false")

@@ -80,6 +80,12 @@ final class FlutterAndroidExecution: @unchecked Sendable {
         let required = [originalSettings, wrapper, android.appendingPathComponent("gradle.properties"),
                         android.appendingPathComponent("local.properties")]
         var inputs = prepared.files
+        guard let client = Bundle.main.executableURL?.resolvingSymlinksInPath(),
+              FileManager.default.isExecutableFile(atPath: client.path),
+              try entry(client).kind == .file else {
+            throw failure("The current Runstir executable cannot supply its private Flutter child client.")
+        }
+        inputs[client] = try entry(client, bindIdentity: true)
         for path in required {
             let path = try canonical(path)
             guard inside(app, path), try entry(path).kind == .file else {
@@ -137,17 +143,10 @@ final class FlutterAndroidExecution: @unchecked Sendable {
         let childPolicy = try Self.childPolicy(protected: Array(inputs.keys) + Array(absent), sdk: copy,
             writable: outputs + [root.appendingPathComponent("home"), root.appendingPathComponent("tmp")])
         try write(Data(childPolicy.utf8), to: policy)
-        let executable = copy.appendingPathComponent("bin/cache/dart-sdk/bin/dart")
-        let packages = copy.appendingPathComponent("packages/flutter_tools/.dart_tool/package_config.json")
         let script = """
         #!/bin/sh
         set -eu
-        unset FLUTTER_ALREADY_LOCKED DART_VM_OPTIONS FLUTTER_TOOL_ARGS
-        export FLUTTER_ROOT=\(shell(copy.path))
-        export HOME=\(shell(root.appendingPathComponent("home").path))
-        export CFFIXED_USER_HOME="$HOME"
-        export TMPDIR=\(shell(root.appendingPathComponent("tmp").path + "/"))
-        exec /usr/bin/sandbox-exec -f \(shell(policy.path)) \(shell(executable.path)) --disable-dart-dev \(shell("--packages=" + packages.path)) \(shell(copy.appendingPathComponent("bin/cache/flutter_tools.snapshot").path)) --suppress-analytics "$@"
+        exec \(shell(client.path)) --runstir-flutter-child "$@"
         """
         try write(Data((script + "\n").utf8), to: launcher, mode: 0o700)
         try write(Data(binding(settings: settings, android: android, app: app, sdk: copy,
@@ -190,7 +189,17 @@ final class FlutterAndroidExecution: @unchecked Sendable {
         self.unusedTree = unusedTree
     }
 
-    func runner(base: any ProcessRunner) -> any ProcessRunner { ProtectedRunner(base: base, execution: self) }
+    func runner(base: any ProcessRunner) -> any ProcessRunner {
+        ProtectedRunner(base: base, childRunner: base, childEnvironment: [:], wrapParent: true, execution: self)
+    }
+
+    /// The selected project runner applies the parent policy after tool activation.
+    /// Dart starts from the raw owner so macOS never reapplies a sandbox to a child.
+    func runner(base: any ProcessRunner, childRunner: any ProcessRunner,
+                childEnvironment: [String: String]) -> any ProcessRunner {
+        ProtectedRunner(base: base, childRunner: childRunner, childEnvironment: childEnvironment,
+                        wrapParent: false, execution: self)
+    }
 
     func check() throws {
         guard try Identity(root) == identity, try Self.tree(originalSDK, bindIdentity: true) == originalTree,
@@ -202,7 +211,7 @@ final class FlutterAndroidExecution: @unchecked Sendable {
         }
     }
 
-    private func command(_ original: ProcessCommand) throws -> ProcessCommand {
+    private func command(_ original: ProcessCommand, wrapParent: Bool) throws -> ProcessCommand {
         try check()
         guard original.executable == "./gradlew" else { return original }
         guard let directory = original.workingDirectory, try Self.preparedPath(directory).path == android.path,
@@ -217,7 +226,26 @@ final class FlutterAndroidExecution: @unchecked Sendable {
             + ["--no-daemon", "--no-configuration-cache", "-Dorg.gradle.unsafe.isolated-projects=false", "-c", settings.path,
                "-I", initScript.path, "-Pflutter.sdk=\(sdk.path)", "-Ptarget=\(entrypoint.path)"]
         result.environment["FLUTTER_ROOT"] = sdk.path
-        return try Self.policyCommand(result, file: parentPolicy)
+        return wrapParent ? try Self.policyCommand(result, file: parentPolicy) : result
+    }
+
+    func childCommand(arguments: [String], environment: [String: String], timeout: Duration?) throws -> ProcessCommand {
+        try check()
+        var environment = environment
+        environment["FLUTTER_ROOT"] = sdk.path
+        environment["HOME"] = root.appendingPathComponent("home").path
+        environment["CFFIXED_USER_HOME"] = environment["HOME"]
+        environment["TMPDIR"] = root.appendingPathComponent("tmp").path + "/"
+        let dart = sdk.appendingPathComponent("bin/cache/dart-sdk/bin/dart")
+        let packages = sdk.appendingPathComponent("packages/flutter_tools/.dart_tool/package_config.json")
+        return ProcessCommand("/usr/bin/sandbox-exec",
+            ["-f", root.appendingPathComponent("child.sb").path, "/usr/bin/env",
+             "-u", "FLUTTER_ALREADY_LOCKED", "-u", "DART_VM_OPTIONS", "-u", "FLUTTER_TOOL_ARGS",
+             "-u", "RUNSTIR_FLUTTER_CHILD_SOCKET", "-u", "RUNSTIR_FLUTTER_CHILD_TOKEN",
+             dart.path, "--disable-dart-dev", "--packages=" + packages.path,
+             sdk.appendingPathComponent("bin/cache/flutter_tools.snapshot").path, "--suppress-analytics"] + arguments,
+            environment: environment, workingDirectory: android.deletingLastPathComponent(), timeout: timeout,
+            output: .streamed(to: root.appendingPathComponent("flutter-output.log")), redactArguments: true)
     }
 
     /// No ProcessRunner API proves that every Gradle descendant has terminated.
@@ -233,12 +261,33 @@ final class FlutterAndroidExecution: @unchecked Sendable {
 
     private struct ProtectedRunner: ProcessRunner {
         let base: any ProcessRunner
+        let childRunner: any ProcessRunner
+        let childEnvironment: [String: String]
+        let wrapParent: Bool
         let execution: FlutterAndroidExecution
         func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
-            let protected = try execution.command(command)
+            var protected = try execution.command(command, wrapParent: wrapParent)
             execution.lock.withLock { execution.used = true }
+            let broker: FlutterAndroidChildBroker?
+            if command.executable == "./gradlew" {
+                // A fresh channel belongs only to this outer operation, never a Gradle daemon.
+                let environment = command.environment.merging(childEnvironment) { _, owned in owned }
+                let timeout = command.timeout
+                let active = try FlutterAndroidChildBroker(root: execution.root, runner: childRunner) { arguments in
+                    try execution.childCommand(arguments: arguments, environment: environment, timeout: timeout)
+                }
+                broker = active
+                protected.environment.merge(active.environment) { _, owned in owned }
+            } else {
+                broker = nil
+            }
+            defer { broker?.close() }
             // The base runner retains timeout, cancellation, streaming and nonzero status semantics.
-            let result = try await base.run(protected, onLine: onLine)
+            let result = try await withTaskCancellationHandler {
+                try await base.run(protected, onLine: onLine)
+            } onCancel: {
+                broker?.close()
+            }
             try execution.check()
             return result
         }

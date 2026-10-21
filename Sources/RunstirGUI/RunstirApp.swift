@@ -7,6 +7,7 @@ import SwiftUI
 @main
 struct RunstirApp {
     @MainActor static func main() {
+        FlutterAndroidChildClient.runIfRequested()
         let application = NSApplication.shared
         let delegate = AppDelegate()
         application.delegate = delegate
