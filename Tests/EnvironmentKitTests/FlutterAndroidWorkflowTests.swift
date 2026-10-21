@@ -38,6 +38,28 @@ struct FlutterAndroidWorkflowTests {
         #expect(fixture.runner.log.spawned.isEmpty)
     }
 
+    @Test("an unavailable protected view starts no JDK observation and preserves source")
+    func unavailableViewBeforeTools() async throws {
+        let fixture = try CallerFixture()
+        try fixture.flutter.repo.write("lib/feature.dart", "void feature() {}\n")
+        let source = fixture.flutter.repo.url("lib/feature.dart")
+        let before = try Data(contentsOf: source)
+        let preparation = try await fixture.flutter.inspect(fixture.runner)
+        let observed = fixture.runner.log.all.count
+        let trace = Trace()
+        await #expect(throws: DomainError.self) {
+            _ = try await FlutterAndroidWorkflow.make(input: fixture.input, anchor: fixture.anchor,
+                runner: fixture.runner, preparation: preparation, factory: { _, _, files in
+                    trace.record(files)
+                    throw FlutterAndroidWorkflow.failure()
+                })
+        }
+        #expect(trace.count == 1)
+        #expect(fixture.runner.log.all.dropFirst(observed).isEmpty)
+        #expect(fixture.runner.log.spawned.isEmpty)
+        #expect(try Data(contentsOf: source) == before)
+    }
+
     @Test("doctor's first model uses the prepared private view")
     func doctorUsesView() async throws {
         let fixture = try CallerFixture()

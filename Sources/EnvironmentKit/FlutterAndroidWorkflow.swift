@@ -38,18 +38,6 @@ struct FlutterAndroidWorkflow: Sendable {
         // Reuse the current graph/config validator. A workspace member never needs a local config.
         let inputs = try FlutterAndroidExecution.preparedInputs(app: anchor.directory, preparation: preparation, trackedFiles: [])
         guard let workspace = preparation.workspace else { throw failure() }
-        let tools: ToolPreparation
-        if let existingTools { tools = existingTools }
-        else {
-            let observed = await ProjectExecutionEnvironment.resolve(anchor: anchor,
-                hostRunner: FlutterChildRunner(base: runner, environment: preparation.activeEnvironment))
-            let requirements = try await ToolRequirements.resolve(anchor: anchor, platforms: [.android], runner: observed.runner)
-            tools = try await ToolPreparation.inspect(requirements: requirements, directory: anchor.directory,
-                environment: input.environment, runner: runner, currentToolRunner: observed.runner, planInstallations: false)
-        }
-        guard tools.checks.contains(where: { $0.id == "tools.java" && $0.kind == "reuse" }),
-              !tools.checks.contains(where: { $0.id == "tools.java" && $0.kind != "reuse" }),
-              tools.activeTools["java"] != nil else { throw failure() }
         let tracked = try PreparationExecution.sourceFiles(workspace.directory, packageRoots: workspace.packages)
             .keys.sorted().map { URL(fileURLWithPath: $0) }
         try Task.checkCancellation()
@@ -65,9 +53,19 @@ struct FlutterAndroidWorkflow: Sendable {
             // Only internal caller fixtures supply another view implementation.
             host = runner
         }
-        let selected = await ProjectExecutionEnvironment.resolve(anchor: anchor,
+        let observed = await ProjectExecutionEnvironment.resolve(anchor: anchor,
             hostRunner: FlutterChildRunner(base: host, environment: environment))
-            .activatingTools(tools.activeTools, environment: input.environment)
+        let tools: ToolPreparation
+        if let existingTools { tools = existingTools }
+        else {
+            let requirements = try await ToolRequirements.resolve(anchor: anchor, platforms: [.android], runner: observed.runner)
+            tools = try await ToolPreparation.inspect(requirements: requirements, directory: anchor.directory,
+                environment: input.environment, runner: host, currentToolRunner: observed.runner, planInstallations: false)
+        }
+        guard tools.checks.contains(where: { $0.id == "tools.java" && $0.kind == "reuse" }),
+              !tools.checks.contains(where: { $0.id == "tools.java" && $0.kind != "reuse" }),
+              tools.activeTools["java"] != nil else { throw failure() }
+        let selected = observed.activatingTools(tools.activeTools, environment: input.environment)
         // This is outside mise/tool activation, so it sees the original ./gradlew request.
         return Self(projectEnvironment: selected, projectRunner: view.runner(base: selected.runner),
                     workspace: workspace, entrypoint: inputs.entrypoint)
