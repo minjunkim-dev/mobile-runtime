@@ -1,0 +1,675 @@
+{
+  "schemaVersion": 1,
+  "issue": 205,
+  "status": "old-approval-rejection-observed-strict-preservation-failed-final-gates-pending",
+  "measurementDateUTC": "2026-10-18",
+  "source": {
+    "measuredSHA": "24ee6e9752e1f39ac6a999113743e054082fed48",
+    "measuredTree": "4bd46b907b9d43dfee68207358515a88e9028c82",
+    "CLI_SHA256": "e29f2db3fc2a8a7edc44ced5d6a9cb65852a8dd15096a908229b9e8ec4abcc81",
+    "sampleSHA": "66732bc18ed28d9eed71336b4a2b018e09ad20b9",
+    "sampleTrackedFiles": 67
+  },
+  "scope": {
+    "oldWholePreparationApprovalRejected": true,
+    "supportedSelectorDeclarationBytesParticipateInApprovalIdentity": true,
+    "implicitDebugToExplicitDebugDeclaration": true,
+    "effectiveGradleVariantChangedOrDiscovered": false,
+    "additionalSDKRequirementDiscovered": false,
+    "AndroidPackageInstall": false,
+    "appBuildOrRun": false,
+    "wholeIssue205Complete": false
+  },
+  "normalization": "Private roots use public aliases. Only exact member names, sizes, original modes and full hashes identify private originals. Raw base64, source/cache contents, credentials and authentication images are not published. Aliases cannot reproduce plan IDs from normalized text.",
+  "aliases": {
+    "<N205>": "Restricted actual-host root retained by the validation owner.",
+    "<R205>": "Restricted recovery evidence root.",
+    "<SDK_CLI_ROOT>": "Owned SDK-only CLI root reused after SDK installation."
+  },
+  "prerequisites": {
+    "priorSDKCLI": "sdk-cli-24ee6e9.json",
+    "existingSDKReused": true,
+    "SDKCensusEntries": 21990,
+    "SDKCensusSHA256": "e8fef0699a9944f66487f8e49e2862c8512081f2692f90e96460afc01db6c1ce",
+    "completedSDKPreserved": true,
+    "priorSDKStrictFAILNotRewritten": true,
+    "sameReviewedChildEnvironmentAndPostPlanProfile": true,
+    "newVersionPayloadOrGlobalSelectionChange": false
+  },
+  "intentionalInput": {
+    "pathAlias": "<SDK_CLI_ROOT>/source/mobile.yml",
+    "wasAbsent": true,
+    "bytes": 26,
+    "sha256": "b9bcbe5225b34a9e7b6b65d5bd529fa413ef24df42d84eb921b4078fb0393b62",
+    "mode": "0o600",
+    "supportedDeclaration": "android.variant: debug",
+    "meaning": "The absent declaration used the implicit debug choice; explicit debug declaration bytes are now approval input. No effective Gradle selection or package requirement change is claimed.",
+    "configLeftInPlace": true,
+    "automaticRestoration": false
+  },
+  "plans": {
+    "A": "faf5660f31c9b30966c4931693f4f1849a6fd08e457e91aab16650e20fe16418",
+    "repeatAWholePlanEqual": true,
+    "B": "df9efc652b4929a4d4cadf54603b625c5c768ad5c7d1939b61126f0c2660d4f5",
+    "returnedBEqualsFreshB": true,
+    "newBApproved": false,
+    "repositoryTrust": false,
+    "operationalPlanPayloadsUnchanged": true,
+    "configDerivedDisplayChanges": [
+      {
+        "after": {
+          "environment": {},
+          "id": "ios.config.values",
+          "kind": "reuse",
+          "observed": "no scheme declared — Runner is the only one",
+          "platform": "ios",
+          "source": {
+            "origin": "mobile.yml",
+            "tier": 3
+          },
+          "target": "mobile.yml"
+        },
+        "before": {
+          "environment": {},
+          "id": "ios.config.values",
+          "kind": "reuse",
+          "observed": "no scheme declared — Runner is the only one",
+          "platform": "ios",
+          "source": {
+            "origin": "no mobile.yml",
+            "tier": 3
+          },
+          "target": "no mobile.yml"
+        },
+        "classification": "config.values source origin and display target",
+        "path": "/platforms/0/checks/ios.config.values"
+      },
+      {
+        "after": {
+          "environment": {},
+          "id": "ios.config.syntax",
+          "kind": "reuse",
+          "observed": "mobile.yml declares android.variant: debug",
+          "platform": "ios",
+          "required": "valid YAML declaring only ios.device, ios.scheme, android.module, android.variant, android.launcherActivity, android.avd, overrides.xcode, overrides.iosRuntime",
+          "source": {
+            "origin": "mobile.yml",
+            "tier": 3
+          },
+          "target": "mobile.yml"
+        },
+        "before": null,
+        "classification": "new parsed config syntax reuse display",
+        "path": "/platforms/0/checks/ios.config.syntax"
+      },
+      {
+        "after": {
+          "environment": {},
+          "id": "android.config.syntax",
+          "kind": "reuse",
+          "observed": "mobile.yml declares android.variant: debug",
+          "platform": "android",
+          "required": "valid YAML declaring only ios.device, ios.scheme, android.module, android.variant, android.launcherActivity, android.avd, overrides.xcode, overrides.iosRuntime",
+          "source": {
+            "origin": "mobile.yml",
+            "tier": 3
+          },
+          "target": "mobile.yml"
+        },
+        "before": null,
+        "classification": "new parsed config syntax reuse display",
+        "path": "/platforms/1/checks/android.config.syntax"
+      }
+    ],
+    "configDisplayChangeCount": 3,
+    "scope": "Only exact config provenance/syntax displays and the added config digest/plan identity differ. Full execution steps, commands, destinations, environments, artifacts and native preparation requests remain unchanged."
+  },
+  "actualCommands": [
+    {
+      "label": "01-plan-a",
+      "nativeProductPID": 5769,
+      "nativeProductExitCode": 0,
+      "JSONExitCode": 0,
+      "operationState": "needs-approval",
+      "completed": [],
+      "changedFiles": [],
+      "error": null,
+      "returnedPlanID": "faf5660f31c9b30966c4931693f4f1849a6fd08e457e91aab16650e20fe16418",
+      "remainingObservedProcesses": {}
+    },
+    {
+      "label": "02-repeat-a",
+      "nativeProductPID": 5824,
+      "nativeProductExitCode": 0,
+      "JSONExitCode": 0,
+      "operationState": "needs-approval",
+      "completed": [],
+      "changedFiles": [],
+      "error": null,
+      "returnedPlanID": "faf5660f31c9b30966c4931693f4f1849a6fd08e457e91aab16650e20fe16418",
+      "remainingObservedProcesses": {}
+    },
+    {
+      "label": "03-old-a-denied",
+      "nativeProductPID": 5883,
+      "nativeProductExitCode": 1,
+      "JSONExitCode": 1,
+      "operationState": "needs-approval",
+      "completed": [],
+      "changedFiles": [],
+      "error": "Plan conditions changed. No preparation changes started.",
+      "returnedPlanID": "df9efc652b4929a4d4cadf54603b625c5c768ad5c7d1939b61126f0c2660d4f5",
+      "remainingObservedProcesses": {}
+    },
+    {
+      "label": "04-plan-b",
+      "nativeProductPID": 5937,
+      "nativeProductExitCode": 0,
+      "JSONExitCode": 0,
+      "operationState": "needs-approval",
+      "completed": [],
+      "changedFiles": [],
+      "error": null,
+      "returnedPlanID": "df9efc652b4929a4d4cadf54603b625c5c768ad5c7d1939b61126f0c2660d4f5",
+      "remainingObservedProcesses": {}
+    }
+  ],
+  "denial": {
+    "nativeProductPID": 5883,
+    "nativeProductExitCode": 1,
+    "JSONExitCode": 1,
+    "state": "needs-approval",
+    "error": "Plan conditions changed. No preparation changes started.",
+    "completed": [],
+    "changedFiles": [],
+    "runningPreparationStageEvents": 0,
+    "operationStartedEventIsNotPreparationStage": true,
+    "newBApproved": false,
+    "noNativeInspectionQueriesClaimed": false
+  },
+  "strictPreservation": {
+    "rootProbeNativePID": 70906,
+    "rootProbeNativeExitCode": 1,
+    "checks": {
+      "SDK": true,
+      "SDKIdentity": true,
+      "candidate": true,
+      "defaultInventory": false,
+      "globalPATH": true,
+      "launchctlPATH": true,
+      "leaseRecords": true,
+      "ownedJDK": true,
+      "ownedSet": true,
+      "protectedRoots": true,
+      "selectedCacheStat": true,
+      "selectedXcode": true
+    },
+    "trueCheckCount": 11,
+    "failedCheckCount": 1,
+    "strictDefaultInventoryKept": true,
+    "SDKAndSDKIdentityBeforeAfterEqual": true,
+    "tracked67BytesAndModesEqual": true,
+    "unchangedTrackedSnapshotFields": [
+      "HEAD",
+      "files",
+      "flagsSHA256",
+      "indexSHA256",
+      "stageSHA256"
+    ],
+    "rawGitStatusBefore": "",
+    "rawGitStatusAfter": "?? mobile.yml\n",
+    "rawGitStatusEqual": false,
+    "statusChangeClassification": "Intentional new untracked mobile.yml; not normalized to equal.",
+    "fullSourceRowsBefore": 142,
+    "fullSourceRowsAfter": 143,
+    "fullSourceDeltaMembers": [
+      "mobile.yml"
+    ],
+    "otherFullSourceRowChanges": 0,
+    "globalDefaultChangedLeaf": "existing global iOS27.0 device lastUsedAt",
+    "globalDefaultBeforeUTC": "2026-10-18T11:11:18Z",
+    "globalDefaultAfterUTC": "2026-10-18T11:25:55Z",
+    "globalDefaultActor": "UNKNOWN",
+    "sourceOrDeviceMetadataRestored": false,
+    "wholeHOMEOrCachePreservationProven": false,
+    "unobservedChildPreservationProven": false
+  },
+  "export": {
+    "nativeHostPID": 78216,
+    "nativeHostExitCode": 0,
+    "rawCapture": {
+      "pathAlias": "<N205>/selector-stale-v2-export/stdout",
+      "bytes": 91753475,
+      "sha256": "b66e8783e84935a52cde9c90364b98776f08450f69d2b0138fa167b158a0c969",
+      "storedMode": "0o644"
+    },
+    "memberCount": 29,
+    "memberBytes": 68811680,
+    "strictBase64SizeAndFullHashCompared": true,
+    "decodedHostFilesCreatedByThisWriter": false,
+    "originalModeScope": "Original guest mode from raw export. No decoded-host mode is invented because this receipt was parsed only in memory.",
+    "memberPins": [
+      {
+        "id": "001",
+        "member": "01-plan-a/command.json",
+        "bytes": 2344,
+        "sha256": "f6c46e4d3b5e80cc46416ee48496c14fe033aee14b5c07cd0f636fe972c1580e",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "002",
+        "member": "01-plan-a/exit.json",
+        "bytes": 2005,
+        "sha256": "a88f8995d5c4a8adddc5d7503dd49e9783bb507c1ed38b259af6936e2d26b667",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "003",
+        "member": "01-plan-a/pid.json",
+        "bytes": 46,
+        "sha256": "b420bcdc02586fe82250c8b99b1aff458eeeab991c8cb9e00ff49e8ebc87083d",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "004",
+        "member": "01-plan-a/stderr",
+        "bytes": 382,
+        "sha256": "536b7cba2e1f004eb21cfd24e81f87882039f638b3186e30fe19e284204e06e8",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "005",
+        "member": "01-plan-a/stdout",
+        "bytes": 24581,
+        "sha256": "9669425df3ea7b9e5fbeffb098e5c914f65a4bad517eb47101d1a84df87df0bd",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "006",
+        "member": "02-repeat-a/command.json",
+        "bytes": 2346,
+        "sha256": "2e5a2f2f92afe937115bcc22dfa71f08f07ffc5e00e5feb48b6402741c572b6f",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "007",
+        "member": "02-repeat-a/exit.json",
+        "bytes": 3496,
+        "sha256": "3225a96f30a706724969d856ae2f46b3d0b5b437d2f458fdbbb57de5ac1fa565",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "008",
+        "member": "02-repeat-a/pid.json",
+        "bytes": 45,
+        "sha256": "87b7a8b5e0a497a85fd3419f132cf46d264fff9cf04915e03815de0e1c4277e0",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "009",
+        "member": "02-repeat-a/stderr",
+        "bytes": 382,
+        "sha256": "57354130ff1d7cd9ef0f53aa149d74e9f48d3ba0e13735626841414dbd3d8d6c",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "010",
+        "member": "02-repeat-a/stdout",
+        "bytes": 24581,
+        "sha256": "b6946035042b2d5706b1f682e20687e4f7f087e85b40c826fb084a75b6c7786f",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "011",
+        "member": "03-old-a-denied/command.json",
+        "bytes": 2484,
+        "sha256": "69b3a8793bc90e7817673fe26b5d960942a7b0e03f09663ef4aa5537d64f944f",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "012",
+        "member": "03-old-a-denied/exit.json",
+        "bytes": 1864,
+        "sha256": "1fd137fa2acebdd93b419c126820a374e51699b9db6776712000b2f791aeb58d",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "013",
+        "member": "03-old-a-denied/pid.json",
+        "bytes": 45,
+        "sha256": "5b447d00a7c8400e7eed2c8f21f2896e9fa45c3ab4f3d184a1880ff5f6277ebd",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "014",
+        "member": "03-old-a-denied/stderr",
+        "bytes": 351,
+        "sha256": "81bf417d3408ed2a196154f57c17cafa5e812e1f78e6d9dca716d0969f69455b",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "015",
+        "member": "03-old-a-denied/stdout",
+        "bytes": 25919,
+        "sha256": "96fe90aab37a2ce96b835a448e32617444f25091e5c69e1473b2ddbfaa00c100",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "016",
+        "member": "04-plan-b/command.json",
+        "bytes": 2346,
+        "sha256": "a1e7d1f5e886e83cdb3537d4437dafcf1568f206a75a8809a24246a5c74e023e",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "017",
+        "member": "04-plan-b/exit.json",
+        "bytes": 2631,
+        "sha256": "a747d4d63ac699358af630f721b6ada4ff9007b43aa1f5d8cddf8d09e8c6370c",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "018",
+        "member": "04-plan-b/pid.json",
+        "bytes": 45,
+        "sha256": "4c14e00a3e24769724a8392d354dd37bbdfb8f191e6216331ef526755d9eecdb",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "019",
+        "member": "04-plan-b/stderr",
+        "bytes": 382,
+        "sha256": "04b098880f88cc97c3e90009b71df45aab6218914190037f1e94b83e58837792",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "020",
+        "member": "04-plan-b/stdout",
+        "bytes": 25875,
+        "sha256": "6223f5e175b487e1823ae620d5a88bc34da97531498bd45fcf882d859ed2673e",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "021",
+        "member": "after.json",
+        "bytes": 34339321,
+        "sha256": "d15bf6f9153ea21fc6404ddcfd93aadcab8132fe3367a92f4cd6ae5e8559bf4d",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "022",
+        "member": "before.json",
+        "bytes": 34339146,
+        "sha256": "acb0e1f2d13b45582623e914f7172a148ece531038f883acfe2d27e6f1040b59",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "023",
+        "member": "config-added.json",
+        "bytes": 389,
+        "sha256": "0a2cf67b1923bb355f8c499eb7775a5b56fa8aeed024231b836cbf4aff9b97e7",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "024",
+        "member": "config-intent.json",
+        "bytes": 311,
+        "sha256": "288e03a75e00dbce7335528cf77e0e519cbd1620b33e9172c5725599fb7758ba",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "025",
+        "member": "plan-delta-review.json",
+        "bytes": 2444,
+        "sha256": "b4aea0398e6104a4d099d2076004a0c102d680a2319429375dc4a880dc84d314",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "026",
+        "member": "prerequisite-rows.json",
+        "bytes": 1455,
+        "sha256": "bb2fcd12ed27ea1152ba9874b93440a42aa56d8d1d450ccd1cc2f7df5972787b",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "027",
+        "member": "preservation.json",
+        "bytes": 465,
+        "sha256": "b9b7a3daba0558e14ea467e54022225214d2664f0c49689422f348fc0d26f2fc",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "028",
+        "member": "root-review.json",
+        "bytes": 3053,
+        "sha256": "54d019c6aa08bfb0a159fab05a37973aea0f6f419d60b93d954940483aa313a1",
+        "originalMode": "0o600"
+      },
+      {
+        "id": "029",
+        "member": "selector-result.json",
+        "bytes": 2946,
+        "sha256": "d1a5bafccb662aecd91560acaf88b08db989c8918506936cd71864597121f9f4",
+        "originalMode": "0o600"
+      }
+    ],
+    "hostReceiptPins": [
+      {
+        "pathAlias": "<N205>/selector-stale-v2-run/command.json",
+        "bytes": 523,
+        "sha256": "5a2cf98a998eee39bd36c56e29487932a15bd047e693f85eb467bdd8028af1c8",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/selector-stale-v2-run/exit.json",
+        "bytes": 63,
+        "sha256": "748b2a4296a563c265f910a7766460b27deb1ab6bb24313ed04ac21ffd4f1b69",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/selector-stale-v2-run/pid.json",
+        "bytes": 46,
+        "sha256": "e768c487b3d8e86fd0d47d6b7d30931f12c08a50276fc3c55706b63ffa592a3f",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/selector-stale-v2-run/stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/selector-stale-v2-run/stderr",
+        "bytes": 828,
+        "sha256": "da328d8a6294330fde4447d5df4f0e5bc81d6f6f4dd3676523314e620c01e30d",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/selector-stale-v2-export/command.json",
+        "bytes": 529,
+        "sha256": "d6a7223a571a5186b6fe1a6e4b602df698e735dde4ee0b4925051489992d6b19",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/selector-stale-v2-export/exit.json",
+        "bytes": 63,
+        "sha256": "11b789278a88da3bc1011e6b44f34d6f185215ca410b6c5389427d7848b20c9b",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/selector-stale-v2-export/pid.json",
+        "bytes": 47,
+        "sha256": "4b0d96f5f2720e107b065cd427a1be36c97717e4402de4539034143f9de8a0e8",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/selector-stale-v2-export/stdout",
+        "bytes": 91753475,
+        "sha256": "b66e8783e84935a52cde9c90364b98776f08450f69d2b0138fa167b158a0c969",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<N205>/selector-stale-v2-export/stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "storedMode": "0o644"
+      }
+    ]
+  },
+  "probePreparation": {
+    "V1TransferredOrExecutedInVM": false,
+    "V1PreUseDefects": [
+      "Wrong event key could miss kind=stage/stageId running events.",
+      "A/B equality guard rejected legitimate exact config-derived display changes."
+    ],
+    "V2ProbeSHA256": "4f5cfa82353fbd6a4ebf5a28344e7b0dbc3657508670d81b49d721b44961a148",
+    "permissionEnvironmentOrProfileExpansion": false,
+    "RED": {
+      "nativePID": 62861,
+      "nativeExitCode": 1,
+      "tests": 52,
+      "failures": 2,
+      "errors": 1
+    },
+    "GREEN": {
+      "nativePID": 65215,
+      "nativeExitCode": 0,
+      "tests": 52,
+      "externalOperations": 0
+    },
+    "syntheticOnly": true,
+    "sourceAndCheckPins": [
+      {
+        "pathAlias": "<R205>/selector-stale-24ee6e9/probe.py",
+        "bytes": 22444,
+        "sha256": "3532e3a2de8f43eaadaa0a6da81cf662c51e0eb6b150074c5064a1eb26211ad5",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<R205>/selector-stale-24ee6e9/selfcheck.py",
+        "bytes": 15905,
+        "sha256": "d8ea5c36cfba852fed914d4ad6a67b2ced7616b06f4922807a7f1c818a3846a5",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<R205>/selector-stale-24ee6e9/FROZEN-v1.json",
+        "bytes": 1615,
+        "sha256": "82a3f8a7f0ec0f65d6d665655e1d7d456eb270d6652f0270a5686305512d9579",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<R205>/selector-stale-24ee6e9/probe-v2.py",
+        "bytes": 25652,
+        "sha256": "4f5cfa82353fbd6a4ebf5a28344e7b0dbc3657508670d81b49d721b44961a148",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<R205>/selector-stale-24ee6e9/selfcheck-v2.py",
+        "bytes": 19457,
+        "sha256": "fca3e65988a8df8d8ff78590ea995a8bd1ebc034225296dd007cd526e8a25175",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<R205>/selector-stale-24ee6e9/README-v2.md",
+        "bytes": 7631,
+        "sha256": "5a7105c4d7e71778e3ddfe89e379efaa3791b9406f457819ac6e73942194d479",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<R205>/selector-stale-24ee6e9/FROZEN-v2.json",
+        "bytes": 7490,
+        "sha256": "d477ac7c38847c5e7e38a6eab4b91cb112522c9f8ec334022cdaaa7bfb4d1179",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<R205>/selector-stale-24ee6e9/V2-DIFF.patch",
+        "bytes": 6092,
+        "sha256": "6149660527bf329758778fabb2d0096c59be71db7c5fd6444e658d32e70cbf06",
+        "storedMode": "0o644"
+      },
+      {
+        "pathAlias": "<R205>/selector-stale-24ee6e9/RED-v2.json",
+        "bytes": 871,
+        "sha256": "8f6ff3e6ec1634f4581aa1cd9ac8e762f70b84e2b084872b87aa11d6f69af95d",
+        "storedMode": "0o600"
+      },
+      {
+        "pathAlias": "<R205>/selector-stale-24ee6e9/RED-v2.stdout",
+        "bytes": 118,
+        "sha256": "5df19464b6636783d263c8d1fe5747b538effdc1d99a544d31e9b4ccf56d6f2f",
+        "storedMode": "0o600"
+      },
+      {
+        "pathAlias": "<R205>/selector-stale-24ee6e9/RED-v2.stderr",
+        "bytes": 11929,
+        "sha256": "a80560e56b29a1577070fd8dd9ba9dd72f69c57aa1a7fa1fad5588c6d604a5d2",
+        "storedMode": "0o600"
+      },
+      {
+        "pathAlias": "<R205>/selector-stale-24ee6e9/GREEN-v2.json",
+        "bytes": 885,
+        "sha256": "63b19553a0d2c37b3d0534b1bd7afba5a7f947943c4427a570f4d19fcb4bbfe7",
+        "storedMode": "0o600"
+      },
+      {
+        "pathAlias": "<R205>/selector-stale-24ee6e9/GREEN-v2.stdout",
+        "bytes": 118,
+        "sha256": "f3ae5f3d30ff76ad94bde2c235c008e71516ddc80f756af758c98cd2c6279cd8",
+        "storedMode": "0o600"
+      },
+      {
+        "pathAlias": "<R205>/selector-stale-24ee6e9/GREEN-v2.stderr",
+        "bytes": 8102,
+        "sha256": "a502914714a456f761a491cd92cf038b3252df8d7f30a166a07d6c526f7e5a35",
+        "storedMode": "0o600"
+      }
+    ]
+  },
+  "hostAnalysisHistory": {
+    "authority": "Root-reported host analysis history, separate from product execution.",
+    "initialWholeStatAssertionIncludingAtime": "FAILED",
+    "subsequentFrozenIdentityAndFullRawSHAValidation": "PASS",
+    "productOutcomeChangedByTheseAnalysisAssertions": false
+  },
+  "ACMapping": {
+    "AC3": "Observed old whole preparation approval rejection after supported selector declaration bytes changed. No Android model discovery or package installation actual.",
+    "AC5_parentAC03": "Actual stale approval denial, preserved completed SDK and explicit named-resource/tracked comparison; strict inventory FAIL remains.",
+    "otherACCompletionClaimed": false
+  },
+  "independentActualSecurityReview": {
+    "report": {
+      "pathAlias": "<R205>/reviews205/INSTALL-GUARD-SELECTOR-STALE-ACTUAL-SECURITY-v1.md",
+      "bytes": 13664,
+      "sha256": "2353247fd1cf0226d753d3254517d5fdc9f2138a2446713771bef513a18143d3",
+      "storedMode": "0o644"
+    },
+    "materialFindings": 0,
+    "strictDefaultInventoryFailureRetained": true,
+    "timestampActor": "UNKNOWN",
+    "sameModelSeparateContext": true,
+    "reviewerSeparatedFromProductProbeAndActualOperation": true,
+    "reviewerAuthoredEarlierSDKDecoder": true,
+    "earlierSDKDecoderUsedForThisSelectorExport": false,
+    "reviewScope": "Raw29 members and native receipts, frozen29 pins, exact V2 diff, synthetic RED52 failures2/errors1 to GREEN52, actual A/repeat/config/stale denial/B, SDK21990/tracked67/source-only config delta, raw strict inventory FAIL and unknown timestamp actor. Read-window raw identity/full SHA remained stable with atime excluded. This is not final public-doc-head approval, Gradle discovery/install, whole preservation or issue completion."
+  },
+  "remainingGates": {
+    "SDKGUIActual": null,
+    "finalPublicREADMEAndManifest": null,
+    "finalWholeHeadIndependentReviews": null,
+    "requiredFinalHeadCI": null,
+    "exactFinalHeadHumanApproval": null,
+    "merge": null,
+    "mainCI": null,
+    "issue205Closure": null
+  },
+  "limits": [
+    "The supported selector changed from implicit debug to an explicit debug declaration. No actual Gradle model or effective variant change is proven.",
+    "The stale error prevents preparation stages; native inspection probes still occurred and global inventory changed.",
+    "Root probe exit1 is the final strict default-inventory failure. Product denial exit1 is the expected stale-approval result; they are different receipts.",
+    "Eleven named checks passing does not erase the raw strict inventory failure or UNKNOWN actor.",
+    "SDK21990/census and tracked67 equality are named evidence, not whole HOME/cache/VM or all-child preservation.",
+    "The prior SDK source directory/global timestamp unknowns remain in sdk-cli-24ee6e9.json; this later baseline does not resolve them.",
+    "V1 pre-use findings and pure RED/GREEN are harness evidence, not extra actual product runs or network failure actuals.",
+    "The independent stale actual Security report records material finding0 while retaining strict inventory FAIL and actor UNKNOWN. It is not final document-head approval, required CI, merge or issue completion."
+  ]
+}

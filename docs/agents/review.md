@@ -24,12 +24,27 @@ CI 성공은 티켓의 실제 측정이나 독립 리뷰를 대체하지 않는�
 | 검사 | 확인하는 것 | 확인하지 않는 것 |
 | --- | --- | --- |
 | Repository hygiene | 라이선스, workflow, shell, source-only 합성 테스트 | 실제 ADB 자원과 provenance |
-| macOS Swift build and tests | 잠근 의존성, 경고 없는 빌드, Swift 동작, 실제 CLI 입력 계약, 배포 archive | 실제 모바일 첫 화면과 release 승인 |
+| macOS Swift build and tests | 잠근 의존성, 경고 없는 빌드, Swift 동작, 실제 CLI 입력 계약 | 실제 모바일 첫 화면과 release 승인 |
+| macOS release package verification | 별도 disposable build와 배포 archive의 리소스 독립성 | 공개 배포와 release 승인 |
 | Linux Core compile | Apple 프레임워크 없는 Core 컴파일 | Linux 제품 지원 |
 
+수동 `Simulator smoke` workflow는 필수 `CI`가 아니다. 실제 simctl 동작을 확인한다. 실행 시점은 `docs/ci-reproducibility.md`를 따른다.
 source-only 테스트는 `test_*.py`를 자동 탐색한다. AST 검사는 정적 I/O 금지 제약에만 사용한다.
 새 동작 검사는 interface를 실행한다. 기존 검사를 약화해서 CI를 통과시키지 않는다.
 새 formatter 도입은 별도 변경으로 평가한다. 기존 전체 소스를 포맷하는 변경을 섞지 않는다.
+
+## CI 실패 처리
+
+담당 로컬 에이전트는 맡은 PR의 CI가 완료될 때까지 결과를 확인한다.
+
+1. PR의 head·base SHA와 실패한 run·attempt를 기록한다. `gh run view <RUN_ID> --repo <OWNER/REPO> --log-failed`로 실패 로그를 확인한다.
+2. 코드 결함과 인프라 장애를 구분한다. 가능한 실패는 로컬에서 재현한다. 재현하지 못한 범위는 기록한다.
+3. 범위 안의 원인을 수정하고 관련 검사를 실행한다. 검사 삭제·skip·조건 완화로 실패를 숨기지 않는다. 같은 실패를 근거 없이 반복 재실행하지 않는다.
+4. 수정 내용을 커밋·푸시한다. 새 head의 CI를 확인한다. 이전 커밋의 성공을 새 head의 근거로 사용하지 않는다.
+5. 최종 head의 전체 diff를 별도 Standards·Spec 컨텍스트에서 다시 검토한다. 필요한 Security 리뷰, 티켓 검증과 필수 CI를 확인한 뒤 위험별 병합 조건을 적용한다.
+
+접근 권한 부족이나 해결하지 못한 실패가 남으면 원인과 미확인 범위를 보고하고 병합하지 않는다.
+이 절차는 담당 에이전트의 작업 중 수행한다. 별도 상시 감시 프로그램을 뜻하지 않는다.
 
 ## PR 본문과 병합
 
@@ -46,9 +61,13 @@ Summary에는 변경 흐름을 보여주는 작은 도식을 둔다. Evidence에
 많은 프로젝트의 실행 동작이나 공개 계약을 바꾸는 변경은 broad로 처리한다.
 diff 크기로 위험을 결정하지 않는다. 정책상 사람이 승인할 변경은 `ready-for-human`으로 표시한다.
 현재 GitHub 보호 설정은 `CI`만 강제한다. 위 사람 승인과 독립 리뷰는 에이전트 절차다. 서버가 자동으로 강제한다고 주장하지 않는다.
-최종 head SHA를 확인하고 `gh pr merge --squash --match-head-commit <SHA>`로 병합한다.
+병합 직전에 GitHub API로 head·base와 검사 결과를 다시 확인한다.
+최종 head SHA를 확인하고 `gh pr merge <PR> --repo <OWNER/REPO> --squash --match-head-commit <SHA>`로 병합한다.
+`--admin`으로 보호를 우회하지 않는다.
 리뷰 이후 커밋이나 base가 바뀌면 영향받는 검증을 갱신한다.
 사용자가 병합을 금지한 작업은 검증 후에도 PR을 열어 둔다.
+저장소 `Allow auto-merge`는 On으로 둔다. 모든 PR에 자동 병합을 예약하지 않는다.
+기본 흐름은 최종 검증 후 직접 병합이다. GitHub 자동 병합 예약은 독립 리뷰 결과를 대상 SHA의 필수 체크로 연결한 뒤 별도 구성한다.
 
 ## 로컬 보안 리뷰
 
@@ -66,7 +85,7 @@ diff 크기로 위험을 결정하지 않는다. 정책상 사람이 승인할 �
 ## Bugbot 수동 보조 리뷰
 
 Bugbot은 선택적인 추가 리뷰어다. 필수 `CI`나 독립 리뷰를 대체하지 않는다.
-리뷰 규칙은 [.cursor/BUGBOT.md](../../.cursor/BUGBOT.md)에서 프로젝트의 코딩 규칙과 도메인 문서로 연결한다.
+리뷰 규칙은 [.cursor/BUGBOT.md](../../.cursor/BUGBOT.md)의 핵심 규칙과 변경 경로의 영역 규칙으로 제한한다.
 이 파일은 리뷰 지시문이다. 실행 방식과 결제 설정은 대시보드에서 확인한다.
 Trigger Mode는 `Manual Only`, Autofix Mode는 `Off`, On-demand Spending은 `Disabled`로 유지한다.
 PR 요약은 `As Comment`로 사용한다. 위험 점수를 함께 표시한다. Draft 자동 리뷰는 `Off`로 유지한다.
@@ -89,3 +108,28 @@ Bugbot의 기본 findings 상태는 `neutral`이다. check를 필수로 등록�
 반복된 지적에는 재현 사례와 원인을 남긴다. 결정적인 실패 조건이면 자동 체크로 옮긴다.
 판단이 필요하면 코딩 규칙을 고친다. 정보를 못 찾았다면 AGENTS.md에 경로만 추가한다.
 불필요한 탐색이나 비대한 지시문을 줄인다. 실제로 반복되지 않은 가상 문제의 체크는 추가하지 않는다.
+
+## Bugbot 입력과 로컬 문서 선택
+
+Bugbot에는 root `.cursor/BUGBOT.md`의 핵심 규칙과 변경 경로의 하위 `.cursor/BUGBOT.md`만 전달한다.
+규칙 파일에는 상세 문서·다른 영역 규칙으로 향하는 상대 Markdown 링크를 두지 않는다.
+상세 문서 원문을 복제하거나 모든 문서를 읽도록 일괄 지시하지 않는다.
+영역 규칙은 변경 경로에 따라 적용한다. root에서 모든 영역을 연결하지 않는다.
+
+로컬 독립 리뷰 에이전트는 `docs/coding-standards.md`와 티켓의 확정 완료 조건을 읽는다.
+그다음 변경 영역에 필요한 원문만 선택한다. 아래 표는 로컬 리뷰의 길잡이다. Bugbot 입력 목록이 아니다.
+
+| 변경 영역 | 로컬 리뷰가 선택할 상세 문서 |
+| --- | --- |
+| Swift·CLI·GUI·실행 | `CONTEXT.md`, 관련 `docs/adr/`의 public contract·trust·approval·lease 결정 |
+| 검사·패키징·source-only | 해당 스크립트의 계약 문서·ADR·티켓의 실제 측정 조건 |
+| GitHub·CI·Draft | `docs/REPOSITORY_SETUP.md`, `docs/release-install.md`, 관련 workflow와 입력 계약 |
+| 문서·권리 | 변경한 기준 문서·관련 ADR, `LICENSE`와 출처 기록 |
+
+
+CI는 모든 추적된 root·영역 규칙을 합쳐 95,000자 이하인지 확인한다. 개별 규칙은 30,000자 이하로 유지한다.
+필수 규칙 파일 누락·빈 파일·symlink와 상세 문서의 로컬 링크도 거부한다.
+상세 문서 길이는 이 Bugbot 예산에 포함하지 않는다. 새 영역을 추가하면 필수 규칙 목록을 갱신한다.
+이 합계는 모든 영역을 더한 보수적인 값이다. 특정 PR의 서버 입력·팀 규칙·학습 규칙 전체를 증명하지 않는다.
+서버 포함·생략·잘림은 필요한 수동 리뷰의 `bugbot run verbose=true` 표로 확인한다.
+Manual Only·Autofix Off·On-demand Off를 유지한다. 이 정리로 새 Bugbot 실행이나 결제 설정 변경을 시작하지 않는다.

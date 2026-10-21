@@ -45,7 +45,7 @@ public struct MetroTeardown: Sendable {
     }
 
     private func stop() async throws -> TeardownItem {
-        let pids = try await listeningPIDs()
+        let pids = try await MetroLaunch.listeners(runner: runner)
         guard !pids.isEmpty else {
             // The port answered as this project's Metro a moment ago and lsof finds
             // nobody holding it. Two of our own tools disagreeing is our problem, not
@@ -108,17 +108,6 @@ public struct MetroTeardown: Sendable {
                 )
             )
         }
-    }
-
-    /// Asked at the moment it is needed rather than remembered from a run: a pid in a
-    /// file goes stale silently, and a reused one points at a stranger.
-    private func listeningPIDs() async throws -> [Int32] {
-        let result = try await runner.run(
-            ProcessCommand("lsof", MetroVerdict.listenerArguments + ["-t"], timeout: .seconds(10))
-        )
-        // Non-zero from lsof is "found nothing", which the caller reads as the
-        // disagreement it is — there is nothing to interpret in the exit code itself.
-        return result.standardOutput.split(separator: "\n").compactMap { Int32($0.trimmingCharacters(in: .whitespaces)) }
     }
 
     /// The judge's own spelling of the question, so the line a user is handed and the

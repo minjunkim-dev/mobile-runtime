@@ -4,6 +4,7 @@ import json
 import os
 import pathlib
 import pty
+import selectors
 import signal
 import subprocess
 import sys
@@ -110,7 +111,11 @@ else: sys.exit('Unexpected tool')
     concurrent_plan = run("--plan", expected=0, extra={"TMPDIR": str(other_tmp)})
     concurrent = run("--approve", concurrent_plan["plan"]["id"], "--trust-repository", expected=1,
         extra={"TMPDIR": str(other_tmp)})
-    assert "Another setup" in concurrent["operation"]["error"]
+    conflict = concurrent["operation"]["conflict"]
+    assert conflict["key"].startswith("folder:"), conflict
+    assert conflict["owner"]["command"] == "setup", conflict
+    assert conflict["owner"]["operationId"] != concurrent["operation"]["id"], conflict
+    assert conflict["owner"]["pid"] == process.pid, conflict
     assert concurrent["operation"]["completed"] == []
     process.send_signal(signal.SIGINT)
     stdout, stderr = process.communicate(timeout=15)
@@ -123,18 +128,42 @@ else: sys.exit('Unexpected tool')
 
     # A real TTY accepts only the displayed plan-id and a separate trust answer.
     master, slave = pty.openpty()
-    process = subprocess.Popen([str(mobile), "setup", "--project", str(project)], env=environment,
-        stdin=slave, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    os.close(slave)
-    prompts = []
-    for line in process.stderr:
-        prompts.append(line)
-        if line.startswith("Type this exact plan-id"):
-            os.write(master, (line.strip().rsplit(": ", 1)[1] + "\n").encode())
-        elif line.startswith("Repository trust is separate"):
-            os.write(master, b"TRUST\n")
-    output, _ = process.communicate(timeout=20)
-    os.close(master)
+    # The final human report can fill a pipe while this loop waits for stderr EOF.
+    # A file drains stdout independently, and the prompt reader has one deadline.
+    with tempfile.TemporaryFile(mode="w+") as report, selectors.DefaultSelector() as selector:
+        process = subprocess.Popen([str(mobile), "setup", "--project", str(project)], env=environment,
+            stdin=slave, stdout=report, stderr=subprocess.PIPE, start_new_session=True)
+        os.close(slave)
+        prompts = []
+        pending = b""
+        deadline = time.monotonic() + 20
+        selector.register(process.stderr, selectors.EVENT_READ)
+        try:
+            while True:
+                remaining = deadline - time.monotonic()
+                assert remaining > 0, ("TTY prompts timed out", prompts[-3:])
+                if not selector.select(timeout=min(remaining, 0.2)):
+                    continue
+                data = os.read(process.stderr.fileno(), 8192)
+                if not data:
+                    break
+                pending += data
+                while b"\n" in pending:
+                    line, pending = pending.split(b"\n", 1)
+                    text = line.decode()
+                    prompts.append(text)
+                    if text.startswith("Type this exact plan-id"):
+                        os.write(master, (text.rsplit(": ", 1)[1] + "\n").encode())
+                    elif text.startswith("Repository trust is separate"):
+                        os.write(master, b"TRUST\n")
+            process.communicate(timeout=max(0.1, deadline - time.monotonic()))
+            report.seek(0)
+            output = report.read()
+        finally:
+            if process.poll() is None:
+                os.killpg(process.pid, signal.SIGKILL)
+                process.wait(timeout=5)
+            os.close(master)
     assert process.returncode == 1 and "setup: partial" in output, (output, prompts)
     assert any("Type this exact plan-id" in line for line in prompts)
     assert any("Repository trust is separate" in line for line in prompts)

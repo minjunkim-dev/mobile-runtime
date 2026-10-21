@@ -33,7 +33,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let window = makeWindow(title: "Runstir")
         window.contentView = NSHostingView(rootView: VStack(spacing: 16) {
             Text("Runstir").font(.largeTitle)
-            Text("React Native 프로젝트의 환경을 확인하세요.")
+            Text("프로젝트의 iOS·Android 환경을 확인하세요.")
             Button("프로젝트 열기…") { self.openProject() }.keyboardShortcut("o")
         }.padding(40).frame(maxWidth: .infinity, maxHeight: .infinity))
         welcome = window
@@ -82,6 +82,8 @@ struct InspectionView: View {
     @State private var configuration = ""
     @State private var module = ""
     @State private var variant = ""
+    @State private var entrypoint = ""
+    @State private var port = ""
     @State private var workflow: WorkflowResult?
     @State private var running: Task<Void, Never>?
     @State private var currentStage = ""
@@ -99,7 +101,7 @@ struct InspectionView: View {
                 Picker("앱", selection: $app) {
                     Text("자동 선택").tag("")
                     ForEach(result?.selection.candidates ?? [], id: \.id) { candidate in
-                        Text(candidate.id).tag(candidate.id)
+                        Text("\(candidate.id) · \(candidate.framework.displayName)").tag(candidate.id)
                     }
                 }.disabled(checking || running != nil)
                 Picker("플랫폼", selection: $platform) {
@@ -124,6 +126,12 @@ struct InspectionView: View {
                     TextField("Configuration (Debug)", text: $configuration)
                 }
             }.disabled(checking || running != nil)
+            if result?.selection.selected?.framework == .flutter {
+                HStack {
+                    TextField("Entrypoint (lib/main.dart)", text: $entrypoint)
+                    TextField("VM service port (자동 선택)", text: $port)
+                }.disabled(checking || running != nil)
+            }
             HStack {
                 Button("준비 계획 확인") { prepare() }.disabled(checking || running != nil)
                 Toggle("저장소 스크립트 신뢰", isOn: $repositoryTrusted)
@@ -137,7 +145,7 @@ struct InspectionView: View {
                     Text("setup: \(preparation.operation.state) / exit \(preparation.exitCode)").font(.headline)
                     if let plan = preparation.plan {
                         Text("승인 대상 plan-id: \(plan.id)").font(.caption)
-                        Text("\(plan.projectKind) 준비는 iOS·Android 양쪽을 확인합니다.")
+                        Text("\(plan.projectKind) 준비 대상: \(plan.platforms.map { $0.platform.rawValue }.joined(separator: ", "))")
                         ScrollView {
                             VStack(alignment: .leading, spacing: 4) {
                                 ForEach(plan.inspectionLines, id: \.self) { Text($0) }
@@ -148,7 +156,7 @@ struct InspectionView: View {
                                     if let advice = step.remediation { Text(advice.summary) }
                                 }
                             }.frame(maxWidth: .infinity, alignment: .leading)
-                        }.frame(maxHeight: 150)
+                        }.frame(height: 150)
                         Text(plan.platforms.map { "\($0.platform.rawValue): \($0.state)" }.joined(separator: " / "))
                     }
                     if let error = preparation.operation.error { Text(error).foregroundStyle(.red) }
@@ -184,6 +192,7 @@ struct InspectionView: View {
                     if !workflow.operation.variants.isEmpty { Text("Variant 후보: \(workflow.operation.variants.joined(separator: ", "))") }
                     if let next = workflow.operation.nextAction { Text("다음 행동: \(next)") }
                     ForEach(workflow.operation.remaining, id: \.self) { Text("남은 작업: \($0)") }
+                    if let uri = workflow.operation.developmentServiceURI { Text("Flutter VM service: \(uri)") }
                     if let log = workflow.up?.context.buildLog { Text("빌드 로그: \(log)") }
                 }.textSelection(.enabled)
             }
@@ -234,6 +243,7 @@ struct InspectionView: View {
                 device = ""; devices = []; workflow = nil
                 preparation = nil; repositoryTrusted = false
                 scheme = ""; configuration = ""; module = ""; variant = ""
+                entrypoint = ""; port = ""
             }
             .onDisappear { running?.cancel() }
     }
@@ -244,16 +254,22 @@ struct InspectionView: View {
         error = nil
         let environment = ProcessInfo.processInfo.environment
         let input = ProjectInspectionInput(directory: directory, environment: environment,
-                                           app: app.isEmpty ? nil : app, platform: ProjectPlatform(rawValue: platform))
+                                           app: app.isEmpty ? nil : app, platform: ProjectPlatform(rawValue: platform),
+                                           entrypoint: entrypoint.isEmpty ? nil : entrypoint)
         Task {
             defer { checking = false }
-            do { result = try await EnvironmentInspection.run(input: input) }
+            do { result = try await EnvironmentInspection.run(input: input,
+                scheme: scheme.isEmpty ? nil : scheme, configuration: configuration.isEmpty ? nil : configuration) }
             catch { self.error = error.localizedDescription }
         }
     }
 
     @MainActor private func execute(_ kind: WorkflowKind) {
         guard !checking, running == nil else { return }
+        if kind == .up, !port.isEmpty, Int(port).map({ (1...65535).contains($0) }) != true {
+            error = "포트는 1부터 65535까지의 정수로 입력하세요."
+            return
+        }
         error = nil
         workflow = nil
         events = []
@@ -261,14 +277,16 @@ struct InspectionView: View {
         currentStage = "선택과 환경 확인"
         let generation = UUID()
         executionID = generation
+        let selectedPlatform = ProjectPlatform(rawValue: platform) ?? result?.selection.platform
         let input = WorkflowInput(project: ProjectInspectionInput(directory: directory,
             environment: ProcessInfo.processInfo.environment, app: app.isEmpty ? nil : app,
-            platform: ProjectPlatform(rawValue: platform)),
-            device: kind == .up && !device.isEmpty ? device : nil,
+            platform: ProjectPlatform(rawValue: platform), entrypoint: entrypoint.isEmpty ? nil : entrypoint),
+            device: (kind == .up || (kind == .build && selectedPlatform == .ios)) && !device.isEmpty ? device : nil,
             scheme: kind != .down && !scheme.isEmpty ? scheme : nil,
             configuration: kind != .down && !configuration.isEmpty ? configuration : nil,
             module: kind != .down && !module.isEmpty ? module : nil,
-            variant: kind != .down && !variant.isEmpty ? variant : nil)
+            variant: kind != .down && !variant.isEmpty ? variant : nil,
+            port: kind == .up && !port.isEmpty ? Int(port) : nil)
         running = Task {
             let output = await WorkflowExecution.run(kind, input: input) { event in
                 Task { @MainActor in
@@ -288,7 +306,8 @@ struct InspectionView: View {
     @MainActor private func prepare(approvedPlanID: String? = nil) {
         guard !checking, running == nil else { return }
         let input = ProjectInspectionInput(directory: directory, environment: ProcessInfo.processInfo.environment,
-            app: app.isEmpty ? nil : app, platform: ProjectPlatform(rawValue: platform))
+            app: app.isEmpty ? nil : app, platform: ProjectPlatform(rawValue: platform),
+                                           entrypoint: entrypoint.isEmpty ? nil : entrypoint)
         let trust = repositoryTrusted
         let generation = UUID()
         executionID = generation

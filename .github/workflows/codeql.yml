@@ -1,0 +1,84 @@
+name: CodeQL
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 1 * * 3'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codeql-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Swift analysis holds a shared macOS runner for about 25 minutes; PRs run it only for Swift build inputs.
+  languages:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      include: ${{ steps.select.outputs.include }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - id: select
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          include='[{"language":"actions","runner":"ubuntu-24.04","build-mode":"none"},{"language":"python","runner":"ubuntu-24.04","build-mode":"none"},{"language":"ruby","runner":"ubuntu-24.04","build-mode":"none"}'
+          # --quiet exits 1 for a change and 128 for an unreadable diff; both analyze Swift.
+          if [ "$GITHUB_EVENT_NAME" != pull_request ] ||
+             ! git diff --quiet --no-renames "$BASE_SHA" HEAD -- Sources Tests 'Package*.swift' Package.resolved .github/workflows/codeql.yml; then
+            include+=',{"language":"swift","runner":"macos-26","build-mode":"manual"}'
+          fi
+          echo "include=$include]" >> "$GITHUB_OUTPUT"
+          echo "CodeQL languages: $include]" >> "$GITHUB_STEP_SUMMARY"
+
+  analyze:
+    needs: languages
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.languages.outputs.include) }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify supported Swift toolchain and resolve locked dependencies
+        if: matrix.language == 'swift'
+        run: |
+          xcodebuild -version
+          swift --version
+          sw_vers -productVersion
+          xcode_major="$(xcodebuild -version | awk '/^Xcode / {split($2, version, "."); print version[1]}')"
+          test "$xcode_major" = 26
+          test "$(sw_vers -productVersion | cut -d. -f1)" = 26
+          swift package --force-resolved-versions --cache-path "$RUNNER_TEMP/swiftpm" resolve
+          git diff --exit-code -- Package.resolved
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+      - name: Build locked Swift sources for extraction
+        if: matrix.language == 'swift'
+        run: |
+          swift build --force-resolved-versions --cache-path "$RUNNER_TEMP/swiftpm" -Xswiftc -warnings-as-errors
+          git diff --exit-code -- Package.resolved
+      - name: Analyze and upload results
+        uses: github/codeql-action/analyze@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4
+        with:
+          category: /language:${{ matrix.language }}

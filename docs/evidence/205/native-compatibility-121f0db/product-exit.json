@@ -1,0 +1,342 @@
+{
+  "PID": 2861,
+  "SIGINTSent": false,
+  "at": 1792313729.7101052,
+  "exitCode": 1,
+  "observedProcesses": {
+    "2861": {
+      "PGID": 2861,
+      "PID": 2861,
+      "PPID": 2858,
+      "command": "/Users/admin/runstir-205-cli-background-20261018/candidate/artifacts/cli/mobile setup --project /Users/admin/runstir-205-cli-background-20261018/source --platform ios --non-interactive --json --progress-json --approve 62e2137fc98df63a2898929201acf8b3f0c9e859bfce0ad4fe4df768d38c2e25 --trust-repository",
+      "kernelPath": "/Users/admin/runstir-205-cli-background-20261018/candidate/artifacts/cli/mobile",
+      "start": "Sun Oct 18 08:55:17 2026"
+    },
+    "2865": {
+      "PGID": 2861,
+      "PID": 2865,
+      "PPID": 2861,
+      "command": "<defunct>",
+      "kernelPath": null,
+      "start": "Sun Oct 18 08:55:17 2026"
+    },
+    "2887": {
+      "PGID": 2861,
+      "PID": 2887,
+      "PPID": 2861,
+      "command": "/Applications/Xcode_27.1.app/Contents/Developer/usr/bin/xcodebuild -version",
+      "kernelPath": "/Applications/Xcode_27.1.app/Contents/Developer/usr/bin/xcodebuild",
+      "start": "Sun Oct 18 08:55:18 2026"
+    },
+    "2888": {
+      "PGID": 2861,
+      "PID": 2888,
+      "PPID": 2861,
+      "command": "/Applications/Xcode_27.1.app/Contents/Developer/usr/bin/xcodebuild -version",
+      "kernelPath": "/Applications/Xcode_27.1.app/Contents/Developer/usr/bin/xcodebuild",
+      "start": "Sun Oct 18 08:55:18 2026"
+    },
+    "2892": {
+      "PGID": 2861,
+      "PID": 2892,
+      "PPID": 2861,
+      "command": "/Applications/Xcode_27.1.app/Contents/Developer/usr/bin/xcodebuild -list -json -project /Users/admin/runstir-205-cli-background-20261018/source/ios/Runner.xcodeproj",
+      "kernelPath": "/Applications/Xcode_27.1.app/Contents/Developer/usr/bin/xcodebuild",
+      "start": "Sun Oct 18 08:55:18 2026"
+    },
+    "2912": {
+      "PGID": 2861,
+      "PID": 2912,
+      "PPID": 2861,
+      "command": "/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/simctl list runtimes -j",
+      "kernelPath": "/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/simctl",
+      "start": "Sun Oct 18 08:55:19 2026"
+    },
+    "2949": {
+      "PGID": 2861,
+      "PID": 2949,
+      "PPID": 2861,
+      "command": "/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/simctl list devicetypes -j",
+      "kernelPath": "/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/simctl",
+      "start": "Sun Oct 18 08:55:19 2026"
+    },
+    "2961": {
+      "PGID": 2861,
+      "PID": 2961,
+      "PPID": 2861,
+      "command": "curl --fail --silent --show-error --location --proto =https --proto-redir =https --max-redirs 3 --connect-timeout 15 --max-time 30 --max-filesize 4194304 https://storage.googleapis.com/flutter_infra_release/releases/releases_macos.json",
+      "kernelPath": "/usr/bin/curl",
+      "start": "Sun Oct 18 08:55:20 2026"
+    },
+    "2982": {
+      "PGID": 2861,
+      "PID": 2982,
+      "PPID": 2861,
+      "command": "/Applications/Xcode_27.1.app/Contents/Developer/usr/bin/xcodebuild -version",
+      "kernelPath": null,
+      "start": "Sun Oct 18 08:55:20 2026"
+    },
+    "2984": {
+      "PGID": 2861,
+      "PID": 2984,
+      "PPID": 2861,
+      "command": "/Applications/Xcode_27.1.app/Contents/Developer/usr/bin/xcodebuild -version",
+      "kernelPath": null,
+      "start": "Sun Oct 18 08:55:20 2026"
+    },
+    "2988": {
+      "PGID": 2861,
+      "PID": 2988,
+      "PPID": 2861,
+      "command": "/Applications/Xcode_27.1.app/Contents/Developer/usr/bin/xcodebuild -list -json -project /Users/admin/runstir-205-cli-background-20261018/source/ios/Runner.xcodeproj",
+      "kernelPath": "/Applications/Xcode_27.1.app/Contents/Developer/usr/bin/xcodebuild",
+      "start": "Sun Oct 18 08:55:20 2026"
+    },
+    "2994": {
+      "PGID": 2861,
+      "PID": 2994,
+      "PPID": 2861,
+      "command": "/Applications/Xcode_27.1.app/Contents/Developer/usr/bin/xcodebuild -checkFirstLaunchStatus",
+      "kernelPath": "/Applications/Xcode_27.1.app/Contents/Developer/usr/bin/xcodebuild",
+      "start": "Sun Oct 18 08:55:21 2026"
+    },
+    "2995": {
+      "PGID": 2861,
+      "PID": 2995,
+      "PPID": 2861,
+      "command": "/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/simctl list runtimes -j",
+      "kernelPath": "/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/simctl",
+      "start": "Sun Oct 18 08:55:21 2026"
+    },
+    "3018": {
+      "PGID": 2861,
+      "PID": 3018,
+      "PPID": 2861,
+      "command": "/Applications/Xcode_27.1.app/Contents/Developer/usr/bin/xcodebuild -checkFirstLaunchStatus",
+      "kernelPath": "/Applications/Xcode_27.1.app/Contents/Developer/usr/bin/xcodebuild",
+      "start": "Sun Oct 18 08:55:21 2026"
+    },
+    "3044": {
+      "PGID": 2861,
+      "PID": 3044,
+      "PPID": 2861,
+      "command": "/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/simctl list devicetypes -j",
+      "kernelPath": "/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/simctl",
+      "start": "Sun Oct 18 08:55:22 2026"
+    },
+    "3050": {
+      "PGID": 2861,
+      "PID": 3050,
+      "PPID": 3044,
+      "command": "(bash)",
+      "kernelPath": null,
+      "start": "Sun Oct 18 08:55:22 2026"
+    },
+    "3052": {
+      "PGID": 2861,
+      "PID": 3052,
+      "PPID": 3050,
+      "command": "(sort)",
+      "kernelPath": null,
+      "start": "Sun Oct 18 08:55:22 2026"
+    },
+    "3053": {
+      "PGID": 2861,
+      "PID": 3053,
+      "PPID": 3050,
+      "command": "(head)",
+      "kernelPath": null,
+      "start": "Sun Oct 18 08:55:22 2026"
+    },
+    "3056": {
+      "PGID": 2861,
+      "PID": 3056,
+      "PPID": 2861,
+      "command": "curl --fail --silent --show-error --location --proto =https --proto-redir =https --max-redirs 3 --connect-timeout 15 --max-time 30 --max-filesize 4194304 https://storage.googleapis.com/flutter_infra_release/releases/releases_macos.json",
+      "kernelPath": "/usr/bin/curl",
+      "start": "Sun Oct 18 08:55:22 2026"
+    },
+    "3061": {
+      "PGID": 2861,
+      "PID": 3061,
+      "PPID": 2861,
+      "command": "(dart)",
+      "kernelPath": null,
+      "start": "Sun Oct 18 08:55:22 2026"
+    },
+    "3083": {
+      "PGID": 2861,
+      "PID": 3083,
+      "PPID": 2861,
+      "command": "/Applications/Xcode_27.1.app/Contents/Developer/usr/bin/xcodebuild -list -json -project /Users/admin/runstir-205-cli-background-20261018/source/ios/Runner.xcodeproj",
+      "kernelPath": "/Applications/Xcode_27.1.app/Contents/Developer/usr/bin/xcodebuild",
+      "start": "Sun Oct 18 08:55:23 2026"
+    },
+    "3091": {
+      "PGID": 2861,
+      "PID": 3091,
+      "PPID": 2861,
+      "command": "/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/simctl list runtimes -j",
+      "kernelPath": "/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/simctl",
+      "start": "Sun Oct 18 08:55:23 2026"
+    },
+    "3114": {
+      "PGID": 2861,
+      "PID": 3114,
+      "PPID": 2861,
+      "command": "(xcodebuild)",
+      "kernelPath": null,
+      "start": "Sun Oct 18 08:55:23 2026"
+    },
+    "3140": {
+      "PGID": 2861,
+      "PID": 3140,
+      "PPID": 2861,
+      "command": "/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/simctl list devicetypes -j",
+      "kernelPath": "/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/simctl",
+      "start": "Sun Oct 18 08:55:24 2026"
+    },
+    "3152": {
+      "PGID": 2861,
+      "PID": 3152,
+      "PPID": 2861,
+      "command": "curl --fail --silent --show-error --location --proto =https --proto-redir =https --max-redirs 3 --connect-timeout 15 --max-time 30 --max-filesize 4194304 https://storage.googleapis.com/flutter_infra_release/releases/releases_macos.json",
+      "kernelPath": "/usr/bin/curl",
+      "start": "Sun Oct 18 08:55:24 2026"
+    },
+    "3177": {
+      "PGID": 2861,
+      "PID": 3177,
+      "PPID": 2861,
+      "command": "/Applications/Xcode_27.1.app/Contents/Developer/usr/bin/xcodebuild -list -json -project /Users/admin/runstir-205-cli-background-20261018/source/ios/Runner.xcodeproj",
+      "kernelPath": "/Applications/Xcode_27.1.app/Contents/Developer/usr/bin/xcodebuild",
+      "start": "Sun Oct 18 08:55:24 2026"
+    },
+    "3184": {
+      "PGID": 2861,
+      "PID": 3184,
+      "PPID": 2861,
+      "command": "/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/simctl list runtimes -j",
+      "kernelPath": "/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/simctl",
+      "start": "Sun Oct 18 08:55:25 2026"
+    },
+    "3185": {
+      "PGID": 2861,
+      "PID": 3185,
+      "PPID": 2861,
+      "command": "(xcodebuild)",
+      "kernelPath": null,
+      "start": "Sun Oct 18 08:55:25 2026"
+    },
+    "3211": {
+      "PGID": 2861,
+      "PID": 3211,
+      "PPID": 2861,
+      "command": "/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/simctl list runtimes -j",
+      "kernelPath": "/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/simctl",
+      "start": "Sun Oct 18 08:55:25 2026"
+    },
+    "3235": {
+      "PGID": 2861,
+      "PID": 3235,
+      "PPID": 2861,
+      "command": "/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/simctl list devicetypes -j",
+      "kernelPath": "/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/simctl",
+      "start": "Sun Oct 18 08:55:26 2026"
+    },
+    "3241": {
+      "PGID": 2861,
+      "PID": 3241,
+      "PPID": 3235,
+      "command": "(bash)",
+      "kernelPath": null,
+      "start": "Sun Oct 18 08:55:26 2026"
+    },
+    "3243": {
+      "PGID": 2861,
+      "PID": 3243,
+      "PPID": 3241,
+      "command": "(sort)",
+      "kernelPath": null,
+      "start": "Sun Oct 18 08:55:26 2026"
+    },
+    "3244": {
+      "PGID": 2861,
+      "PID": 3244,
+      "PPID": 3241,
+      "command": "(head)",
+      "kernelPath": null,
+      "start": "Sun Oct 18 08:55:26 2026"
+    },
+    "3247": {
+      "PGID": 2861,
+      "PID": 3247,
+      "PPID": 2861,
+      "command": "curl --fail --silent --show-error --location --proto =https --proto-redir =https --max-redirs 3 --connect-timeout 15 --max-time 30 --max-filesize 4194304 https://storage.googleapis.com/flutter_infra_release/releases/releases_macos.json",
+      "kernelPath": "/usr/bin/curl",
+      "start": "Sun Oct 18 08:55:26 2026"
+    },
+    "3254": {
+      "PGID": 2861,
+      "PID": 3254,
+      "PPID": 2861,
+      "command": "java -XshowSettings:properties -version",
+      "kernelPath": "/Users/admin/runstir-205-cli-background-20261018/input/jdk/bin/java",
+      "start": "Sun Oct 18 08:55:26 2026"
+    },
+    "3273": {
+      "PGID": 2861,
+      "PID": 3273,
+      "PPID": 2861,
+      "command": "/Applications/Xcode_27.1.app/Contents/Developer/usr/bin/xcodebuild -list -json -project /Users/admin/runstir-205-cli-background-20261018/source/ios/Runner.xcodeproj",
+      "kernelPath": "/Applications/Xcode_27.1.app/Contents/Developer/usr/bin/xcodebuild",
+      "start": "Sun Oct 18 08:55:26 2026"
+    },
+    "3307": {
+      "PGID": 2861,
+      "PID": 3307,
+      "PPID": 2861,
+      "command": "/bin/bash /Applications/Xcode_27.1.app/Contents/Developer/usr/bin/simctl list runtimes -j",
+      "kernelPath": "/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/simctl",
+      "start": "Sun Oct 18 08:55:27 2026"
+    },
+    "3340": {
+      "PGID": 2861,
+      "PID": 3340,
+      "PPID": 2861,
+      "command": "/Applications/Xcode_27.1.app/Contents/Developer/usr/bin/xcodebuild -version",
+      "kernelPath": "/Applications/Xcode_27.1.app/Contents/Developer/usr/bin/xcodebuild",
+      "start": "Sun Oct 18 08:55:28 2026"
+    },
+    "3358": {
+      "PGID": 2861,
+      "PID": 3358,
+      "PPID": 2861,
+      "command": "/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/simctl --set /Users/admin/runstir-205-cli-background-20261018/home/Library/Developer/CoreSimulator/Devices list devices -j",
+      "kernelPath": "/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/simctl",
+      "start": "Sun Oct 18 08:55:28 2026"
+    },
+    "3396": {
+      "PGID": 2861,
+      "PID": 3396,
+      "PPID": 2861,
+      "command": "/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/simctl list runtimes -j",
+      "kernelPath": "/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/simctl",
+      "start": "Sun Oct 18 08:55:28 2026"
+    },
+    "3430": {
+      "PGID": 2861,
+      "PID": 3430,
+      "PPID": 2861,
+      "command": "/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/simctl list runtimes -j",
+      "kernelPath": "/Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/simctl",
+      "start": "Sun Oct 18 08:55:29 2026"
+    }
+  },
+  "remainingObservedProcesses": {},
+  "scope": "Product child exit; outer Tart transport exit is separate. Unseen children unknown.",
+  "seconds": 12.388841152191162,
+  "stderrSHA256": "9562c9f46403cd8132c55f745e1c5583df89d497572bd670609cd0ea173c96c3",
+  "stdoutSHA256": "905eb410a9cf4f364367a82fcb76415f57eb4832dbc89f53aa4286123545ea0d",
+  "stillRunning": false
+}

@@ -1,0 +1,7 @@
+{
+  "forbiddenExit": 1,
+  "forbiddenPathAbsent": true,
+  "forbiddenStderr": "touch: <evidence-parent>/forbidden-write-probe-112024: Operation not permitted\n",
+  "ownedWriteExit": 0,
+  "ownedWriteSucceeded": true
+}

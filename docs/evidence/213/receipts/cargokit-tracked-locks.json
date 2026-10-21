@@ -1,0 +1,16 @@
+[
+  {
+    "source": "baseline-localsend",
+    "path": "packages/localsend_isolates/rust_builder/cargokit/build_tool/pubspec.lock",
+    "tracked": true,
+    "SHA256": "d16c36cbd3089b521fab03a8ced72e46f768021438486835233a1f655913372a",
+    "bytes": 13052
+  },
+  {
+    "source": "prepared-localsend",
+    "path": "packages/localsend_isolates/rust_builder/cargokit/build_tool/pubspec.lock",
+    "tracked": true,
+    "SHA256": "d16c36cbd3089b521fab03a8ced72e46f768021438486835233a1f655913372a",
+    "bytes": 13052
+  }
+]

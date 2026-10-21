@@ -9,6 +9,12 @@ Current decisions live in `CONTEXT.md` and `docs/adr/`.
 [Wayfinder Map: MVP 스펙 (Phase 0~3)](https://github.com/minjunkim-dev/mobile-runtime/issues/1)
 is the closed historical MVP map.
 
+## Shared instructions
+
+This file is the shared project instruction source for coding agents.
+Do not maintain separate tool-specific project instruction files.
+GitHub settings and the read-only audit follow `docs/REPOSITORY_SETUP.md`.
+
 ## Agent skills
 
 ### Issue tracker
@@ -25,4 +31,6 @@ Single-context — `CONTEXT.md` and `docs/adr/` at the repo root. See `docs/agen
 
 ### Pull requests
 
-The agent merges its own pull request once the ticket's verification is done (tests, review, and any measurement the ticket asks for) and the required check `CI` is green. It does not wait for a separate human approval.
+Follow `docs/agents/review.md` for independent review, direct fixes, final-head verification, and merge risk. Reviewers read `docs/coding-standards.md`; do not inline the standards here.
+
+The agent merges its own two-way, narrow-impact pull request after the ticket's verification, independent review, and required `CI` check pass on the final head. One-way or broad-impact changes require human approval of that final head. Green CI does not replace measurements required by the ticket.

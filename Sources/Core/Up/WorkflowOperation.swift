@@ -26,6 +26,9 @@ public struct WorkflowOperation: Codable, Sendable {
     public var configuration: String?
     public var module: String?
     public var variant: String?
+    public var entrypoint: String?
+    public var port: Int?
+    public var developmentServiceURI: String?
     public var requiredInput: [String] = []
     public var devices: [RuntimeDeviceCandidate] = []
     public var schemes: [String] = []
@@ -35,6 +38,8 @@ public struct WorkflowOperation: Codable, Sendable {
     public var completed: [String] = []
     public var remaining: [String] = []
     public var nextAction: String?
+    /// The resource, its owner and the reason this operation stopped before changes.
+    public var conflict: ResourceConflict?
 
     public init(id: String, kind: WorkflowKind, state: String) {
         self.id = id

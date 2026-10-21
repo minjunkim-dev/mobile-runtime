@@ -87,7 +87,7 @@ actor AndroidRuntime {
             )
         }
 
-        let sdk = try sdkRoot()
+        let sdk = try doctorContext.requiredSDKRoot()
         let installed = try await installedAVDs(sdk: sdk, product: product)
         let running = try await runningEmulators(sdk: sdk)
         let selected = try selectAVD(installed: installed, running: running)
@@ -161,7 +161,7 @@ actor AndroidRuntime {
             )
         }
 
-        let sdk = try sdkRoot()
+        let sdk = try doctorContext.requiredSDKRoot()
         let command = adb(
             ["-s", device.serial, "install", "-r", product.apkPath],
             sdk: sdk,
@@ -220,7 +220,7 @@ actor AndroidRuntime {
                 }
             case .spawned:
                 guard let listener = existing.listenerPID,
-                    try await currentListener() == listener,
+                    try await MetroLaunch.listeners(runner: projectRunner).first == listener,
                     try await MetroVerdict.ask(anchor: anchor.directory, runner: projectRunner) == .mine
                 else {
                     throw DomainError(
@@ -249,9 +249,9 @@ actor AndroidRuntime {
         }
 
         let log = logs.url("metro.log")
-        if afterReinstall { await MetroStage.dropWatchmanWatch(of: anchor.directory, runner: projectRunner) }
-        let command = anchor.startProcess
-        let startPID = try await projectRunner.spawnDetached(command, logFile: log)
+        let (command, startPID) = try await MetroLaunch.start(
+            anchor: anchor, runner: projectRunner, logFile: log, afterReinstall: afterReinstall
+        )
         value = try run()
         value.metro = AndroidActiveRun.Metro(
             state: .spawned,
@@ -268,49 +268,48 @@ actor AndroidRuntime {
             throw error
         }
 
-        let deadline = ContinuousClock.now + timeouts.metroBind
-        while true {
-            if let listener = try await currentListener() {
-                let observed = try await MetroVerdict.ask(
-                    anchor: anchor.directory, runner: projectRunner
+        let anchorDirectory = anchor.directory
+        let projectRunner = projectRunner
+        let readiness = try await MetroLaunch.readiness(
+            startPID: startPID, runner: projectRunner, bindWait: timeouts.metroBind, poll: timeouts.poll
+        ) { _ in
+            let observed = try await MetroVerdict.ask(anchor: anchorDirectory, runner: projectRunner)
+            if case .mine = observed { return true }
+            if let blocker = observed.blocker { throw blocker }
+            return false
+        }
+        switch readiness {
+        case .listening(let listener):
+            value = try run()
+            value.metro?.listenerPID = listener
+            try save(value)
+            return MetroProcess(
+                state: .spawned,
+                pid: startPID,
+                listenerPid: listener,
+                logPath: log.path
+            )
+        case .exited:
+            throw DomainError(
+                summary: "Metro exited before listening on \(MetroVerdict.port)",
+                remediation: Remediation(
+                    summary: "Inspect the Metro log at \(log.path).",
+                    command: command.description
                 )
-                if case .mine = observed {
-                    value = try run()
-                    value.metro?.listenerPID = listener
-                    try save(value)
-                    return MetroProcess(
-                        state: .spawned,
-                        pid: startPID,
-                        listenerPid: listener,
-                        logPath: log.path
-                    )
-                }
-                if let blocker = observed.blocker { throw blocker }
-            }
-            guard try await processIsRunning(startPID) else {
-                throw DomainError(
-                    summary: "Metro exited before listening on \(MetroVerdict.port)",
-                    remediation: Remediation(
-                        summary: "Inspect the Metro log at \(log.path).",
-                        command: command.description
-                    )
+            )
+        case .timedOut:
+            throw DomainError(
+                summary: "Metro did not listen on \(MetroVerdict.port) within \(timeouts.metroBind)",
+                remediation: Remediation(
+                    summary: "Inspect the Metro log at \(log.path).",
+                    command: command.description
                 )
-            }
-            guard ContinuousClock.now < deadline else {
-                throw DomainError(
-                    summary: "Metro did not listen on \(MetroVerdict.port) within \(timeouts.metroBind)",
-                    remediation: Remediation(
-                        summary: "Inspect the Metro log at \(log.path).",
-                        command: command.description
-                    )
-                )
-            }
-            try await pause()
+            )
         }
     }
 
     func reverse(on device: AndroidDevice) async throws -> AndroidReverse {
-        let sdk = try sdkRoot()
+        let sdk = try doctorContext.requiredSDKRoot()
         var value = try run()
         if let existing = value.reverse, existing.serial != device.serial {
             throw DomainError(
@@ -319,7 +318,7 @@ actor AndroidRuntime {
             )
         }
 
-        let mappings = try await reverseMappings(serial: device.serial, sdk: sdk)
+        let mappings = try await doctorContext.reverseMappings(serial: device.serial, sdk: sdk, runner: hostRunner)
         let source = "tcp:\(MetroVerdict.port)"
         if let target = mappings[source], target != source {
             throw DomainError(
@@ -355,7 +354,7 @@ actor AndroidRuntime {
         do {
             try save(value)
         } catch {
-            if let mappings = try? await reverseMappings(serial: device.serial, sdk: sdk),
+            if let mappings = try? await doctorContext.reverseMappings(serial: device.serial, sdk: sdk, runner: hostRunner),
                 mappings[source] == source
             {
                 _ = try? await hostRunner.run(adb(
@@ -364,7 +363,7 @@ actor AndroidRuntime {
             }
             throw error
         }
-        guard try await reverseMappings(serial: device.serial, sdk: sdk)[source] == source else {
+        guard try await doctorContext.reverseMappings(serial: device.serial, sdk: sdk, runner: hostRunner)[source] == source else {
             throw DomainError(
                 summary: "adb reverse did not retain the Metro mapping",
                 remediation: retryDown
@@ -374,7 +373,7 @@ actor AndroidRuntime {
     }
 
     func launch(_ product: AndroidBuiltProduct, on device: AndroidDevice) async throws -> Int32 {
-        let sdk = try sdkRoot()
+        let sdk = try doctorContext.requiredSDKRoot()
         guard let app = try run().app,
             app.serial == device.serial,
             app.applicationId == product.applicationId
@@ -459,41 +458,13 @@ actor AndroidRuntime {
             activities.standardOutput.contains(product.applicationId),
             activities.standardOutput.contains(product.launcherActivity)
         else { return nil }
-        let source = "tcp:\(MetroVerdict.port)"
-        guard try await reverseMappings(serial: serial, sdk: sdk)[source] == source,
-            try await MetroVerdict.ask(anchor: anchor.directory, runner: projectRunner) == .mine
-        else { return nil }
+        if anchor.framework == .reactNative {
+            let source = "tcp:\(MetroVerdict.port)"
+            guard try await doctorContext.reverseMappings(serial: serial, sdk: sdk, runner: hostRunner)[source] == source,
+                try await MetroVerdict.ask(anchor: anchor.directory, runner: projectRunner) == .mine
+            else { return nil }
+        }
         return pid
-    }
-
-    private func reverseMappings(serial: String, sdk: URL) async throws -> [String: String] {
-        let result = try await hostRunner.run(adb(
-            ["-s", serial, "reverse", "--list"], sdk: sdk
-        ))
-        guard result.terminationStatus.isSuccess else {
-            throw AndroidStateError("adb reverse --list could not be observed")
-        }
-        return result.standardOutput.split(separator: "\n").reduce(into: [:]) { mappings, line in
-            let fields = line.split(whereSeparator: \.isWhitespace).map(String.init)
-            guard fields.count >= 2 else { return }
-            mappings[fields[fields.count - 2]] = fields[fields.count - 1]
-        }
-    }
-
-    private func currentListener() async throws -> Int32? {
-        let result = try await projectRunner.run(
-            ProcessCommand(
-                "lsof", MetroVerdict.listenerArguments + ["-t"], timeout: .seconds(10)
-            )
-        )
-        return result.standardOutput.split(separator: "\n")
-            .compactMap { Int32($0.trimmingCharacters(in: .whitespaces)) }.first
-    }
-
-    private func processIsRunning(_ pid: Int32) async throws -> Bool {
-        try await projectRunner.run(
-            ProcessCommand("kill", ["-0", "\(pid)"], timeout: .seconds(10))
-        ).terminationStatus.isSuccess
     }
 
     private func prepare(_ product: AndroidBuiltProduct) throws {
@@ -531,19 +502,6 @@ actor AndroidRuntime {
         activeRun = run
     }
 
-    private func sdkRoot() throws -> URL {
-        switch doctorContext.sdkRoot() {
-        case .resolved(let sdk, _): return sdk
-        case .conflict(let reason), .missing(let reason):
-            throw DomainError(
-                summary: reason,
-                remediation: Remediation(
-                    summary: "Make android/local.properties sdk.dir and ANDROID_HOME name one installed SDK."
-                )
-            )
-        }
-    }
-
     private func installedAVDs(
         sdk: URL, product: AndroidBuiltProduct
     ) async throws -> [AndroidAVD] {
@@ -571,7 +529,7 @@ actor AndroidRuntime {
                 avd.config != nil,
                 avd.systemImagePresent
             else { return false }
-            return product.abis.contains(abi)
+            return (anchor.framework == .nativeAndroid && product.abis.isEmpty) || product.abis.contains(abi)
         }
         guard !compatible.isEmpty else {
             let observed = avds.isEmpty
@@ -584,8 +542,9 @@ actor AndroidRuntime {
                 summary: "no existing AVD is compatible with the built APK",
                 observed: observed,
                 remediation: Remediation(
-                    summary: "Select an existing AVD with API >= \(minSDK) and one of "
-                        + "\(product.abis.joined(separator: ", ")); mobile will not provision it."
+                    summary: "Select an existing AVD with API >= \(minSDK)"
+                        + (product.abis.isEmpty ? "" : " and ABI \(product.abis.joined(separator: ", "))")
+                        + "; mobile will not provision it."
                 )
             )
         }
@@ -660,7 +619,7 @@ actor AndroidRuntime {
         product: AndroidBuiltProduct,
         deadline: ContinuousClock.Instant
     ) async throws -> (serial: String, api: Int, abi: String) {
-        let sdk = try sdkRoot()
+        let sdk = try doctorContext.requiredSDKRoot()
         while true {
             let running = try await runningEmulators(sdk: sdk).filter { $0.avd == avd }
             if running.count == 1, let emulator = running.first,
@@ -710,7 +669,9 @@ actor AndroidRuntime {
         let abis = abiResult.standardOutput
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .split(separator: ",").map(String.init)
-        guard let abi = abis.first(where: product.abis.contains) else { return nil }
+        guard let abi = abis.first(where: {
+            (anchor.framework == .nativeAndroid && product.abis.isEmpty) || product.abis.contains($0)
+        }) else { return nil }
         return (api, abi)
     }
 
@@ -819,6 +780,7 @@ public func androidUpStages(
             try await runtime.install(product, on: device)
             return .pass(product.applicationId)
         },
+    ] + (anchor.framework == .reactNative ? [
         AndroidRuntimeStage(id: "metro") { context in
             let metro = try await runtime.metro(afterReinstall: context.nodeModulesReinstalled)
             context.metro = metro
@@ -837,6 +799,7 @@ public func androidUpStages(
                 ? .pass("tcp:\(MetroVerdict.port)")
                 : .skipped("tcp:\(MetroVerdict.port) already mapped")
         },
+    ] : []) + [
         AndroidRuntimeStage(id: "android.launch") { context in
             guard var product = context.androidProduct, let device = product.device else {
                 throw AndroidStateError("android.launch requires a selected Emulator")

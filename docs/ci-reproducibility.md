@@ -1,10 +1,17 @@
 # CI 캐시 재현성 검증
 
-issue #133의 CI는 저장소 위생, macOS build·test, Linux Core compile을 병렬로
-실행한다. 필수 check는 결과를 모으는 `CI` 하나다. 셋 중 실패·취소·skip이 있으면
+CI는 저장소 위생, macOS build·test, macOS release package, Linux Core compile을 병렬로
+실행한다. 필수 check는 결과를 모으는 `CI` 하나다. 넷 중 실패·취소·skip이 있으면
 `CI`도 실패한다. LICENSE와 README의 SPDX 선언은 #132의 공개 문서를 기준으로 한다.
 
 ## 캐시와 무효화
+
+release package는 별도 macOS 실행기에서 disposable build를 수행한다.
+debug 빌드 캐시를 사용하지 않는다. archive의 리소스 독립 검증을 그대로 실행한다.
+2026-10-15 조사에서 실행 `38582765099`의 build·test는 149초, package는 106초였다.
+기존 순차 실행의 합을 줄이기 위해 두 검사를 분리했다.
+새 실행기의 준비 시간과 사용 분량은 추가된다. 병렬 실행 후 실제 시간을 다시 비교한다.
+패키징을 테스트 성공 뒤로 미루는 조건은 추가하지 않는다. 필수 `CI`가 두 결과를 모두 요구한다.
 
 SwiftPM 공유 의존성과 빌드 산출물을 따로 캐시한다. key는 `CACHE_VERSION`(`v1`),
 runner OS·arch, 툴체인 fingerprint, `Package.resolved` 해시로 만든다. 빌드 key에는
@@ -37,3 +44,38 @@ Xcode·Swift·SDK 버전이며, Linux는 고정 Swift 이미지 digest와 컨테
 `swift test --force-resolved-versions`, `scripts/verify-core-linux.sh`, `actionlint`,
 `shellcheck scripts/*.sh`다. Docker·Swift 이미지나 검사 도구가 없으면 설치하지 않고
 미실행 사유를 PR에 적는다. 이 검증은 CI 재현성 판정이며 앱 alpha·지원 범위 판정이 아니다.
+
+## 실제 Simulator 스모크는 수동으로 실행한다
+
+필수 `CI`의 SimulatorKit 테스트는 저장한 simctl 출력을 가짜 runner에 넣는다.
+Xcode나 runner image가 바뀌어 실제 simctl 출력·동작이 달라져도 필수 `CI`는 이 변화를 잡지 못한다.
+`.github/workflows/simulator-smoke.yml`(`Simulator smoke`)이 이 빈틈을 맡는다.
+이 workflow는 `workflow_dispatch` 전용이다. PR·main push·schedule에서 실행하지 않는다.
+macOS runner 동시 실행 슬롯은 계정 전체가 공유한다. 실제 Simulator 부팅은 비용이 크다.
+필수 check가 아니다. `CI`의 구성과 병합 조건을 바꾸지 않는다.
+
+실행하는 것:
+
+1. `scripts/build-simulator-smoke-app.sh`로 Xcode project·CocoaPods·Node 없는 최소 SwiftUI 앱을 만든다.
+2. `RealSimulatorSmokeTests`가 실제 simctl로 `simulator.daemon` Check와 runtime·device type·device 목록 해석을 확인한다.
+3. 같은 테스트가 `device` Stage로 Simulator를 고르고 부팅한다. `install`·`launch` Stage로 앱을 설치·실행하고 pid를 확인한다.
+4. `down`의 app 정리(`AppTeardown`)로 앱을 종료한다. 테스트 앱을 제거한다. 테스트가 부팅한 Simulator만 종료한다.
+
+실행하지 않는 것: React Native build, Metro, CocoaPods, 실제 프로젝트의 `mobile up`.
+그 범위는 [ADR-0019](adr/0019-first-external-pre-release.md)와 internal alpha runbook의 실제 실행 검증이 맡는다.
+환경 변수 `RUNSTIR_SIMULATOR_SMOKE_APP`가 없으면 이 테스트는 skip된다. 필수 `CI`에서도 skip된다.
+
+아래 경우에 Actions의 `Simulator smoke` → `Run workflow`로 실행한다.
+
+- Draft Release를 만들기 전
+- `macos-26` runner image나 Xcode 버전이 바뀐 뒤
+- SimulatorKit의 simctl 호출·해석·`device`·`install`·`launch`·app teardown을 크게 바꾼 PR의 병합 전
+
+```sh
+gh workflow run simulator-smoke.yml --repo minjunkim-dev/mobile-runtime --ref <branch>
+```
+
+실행 URL·head SHA·결과와 step summary의 Xcode·runtime·부팅된 기기 목록을 해당 PR이나 릴리스 티켓에 기록한다.
+테스트 전에 부팅된 기기가 있으면 그 실행은 부팅·종료 경로를 검사하지 않았다.
+로컬에서는 `scripts/build-simulator-smoke-app.sh <dir>`가 출력한 앱 경로를 `RUNSTIR_SIMULATOR_SMOKE_APP`에 넣고
+`swift test --filter RealSimulatorSmokeTests`를 실행한다. 이미 부팅된 Simulator를 고르면 부팅 경로는 검사하지 않는다.

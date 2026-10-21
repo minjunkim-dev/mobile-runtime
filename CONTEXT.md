@@ -5,7 +5,9 @@ Reproducible mobile development runtime. 프로젝트가 요구하는 환경을 
 현재 `main`은 iOS React Native MVP와 Android Phase 4A CLI provider를 제공한다.
 Private Phase 4A Android 내부 alpha는 SHA를 고정한 공개 OSS 실제 앱 표본 하나와
 macOS 검증 조합 하나에서 통과했다(`docs/private-android-alpha-runbook.md` 6절). CLI가 현재 실행 표면이며 SwiftUI
-macOS 앱은 같은 Core/provider 계약을 표현할 후속 표면이다.
+macOS 앱은 EnvironmentKit의 공통 확인·빌드·실행·종료 진입을 사용한다.
+native iOS는 선택한 Xcode 컨테이너와 공유 app scheme을 이 진입에 연결한다.
+실제 Runstir 실행과 GUI 조작의 검증 범위는 각 티켓의 근거로 별도 기록한다.
 
 ## Language
 
@@ -20,6 +22,19 @@ _Avoid_: mobile-runtime (제품명), mobile (working name)
 
 **프로젝트 종류 (Project kind)**:
 앱의 도구와 실행 경로를 구분하는 네이티브·Flutter·React Native 분류다. iOS·Android 플랫폼과 별개의 구분이다.
+
+`ProjectFramework`의 공통 값은 `react-native`, `flutter`, `native-ios`, `native-android`다.
+`ProjectCandidate`와 `ProjectAnchor`는 같은 framework를 유지한다.
+native iOS 후보는 앱 루트와 선택한 `.xcodeproj` 또는 `.xcworkspace`를 별도로 유지한다.
+복수 컨테이너는 보고된 `--app` 후보 id로 선택한다.
+RN 후보 id는 기존 값을 유지한다.
+RN·Flutter의 `ios/`와 `android/`는 독립 네이티브 후보로 중복 등록하지 않는다.
+Flutter 준비는 ADR-0040의 공통 승인 계획에 공식 정식 arm64 SDK·bundled Dart exact와 locked Dart 정렬을 연결한다.
+기존 적합 SDK를 재사용한다. 새 SDK는 승인한 exact 버전·경로에 나란히 설치한다.
+native 생성·migration은 수동 단계로 남긴다. 앱 build/run은 별도로 검증한다.
+native Android는 평가한 Gradle application module·runnable variant를 공통 Android doctor/build/up/down에 연결한다.
+native Android의 공유 CLI·GUI 실행 경계는 ADR-0037을 따른다. 실제 실행 검증 범위는 #211의 근거에 기록한다.
+native iOS의 공유 CLI·GUI 실행 경계는 ADR-0036과 `docs/native-ios.md`를 따른다.
 
 **플랫폼 (Platform)**:
 앱이 빌드되고 실행되는 iOS 또는 Android 환경이다. Runstir를 실행하는 호스트 macOS와 구분한다.
@@ -158,6 +173,17 @@ xcodebuild가 겨누는 것 — `ios/*.xcworkspace`가 정확히 하나면 그�
 **빌드 산출물 (Built product)**:
 build Stage가 확정해 install·launch에 넘기는 `.app` 경로와 bundle id. 빌드 로그 파싱이 아니라 `xcodebuild -showBuildSettings`가 근거다 — 로그 포맷은 Xcode 버전마다 움직인다.
 
+iOS build와 관련 `-showBuildSettings`는 같은 input별 `RunLogs/DerivedData`를
+`-derivedDataPath`로 명시한다. 선택용 build settings 조회도 같은 경로를 쓴다.
+기존 로그 폴더 아래 `folder-<volume>-<file>/DerivedData`로 실제 폴더 identity를 분리한다.
+폴더 lease와 같은 volume/inode를 사용한다. 현재 input identity를 읽지 못하면 도구 실행 전에 중단한다.
+기존 로그·실행 기록 경로는 유지한다. 기존 32-bit 로그 digest의 충돌을 산출물 identity로 사용하지 않는다.
+독립 clone·worktree의 산출물을 분리한다. 같은 실제 폴더의 symlink는 같은 경로를 쓴다.
+기존 output 부모나 output 자체가 symlink·일반 파일이면 중단한다.
+이 경로 검사는 외부 도구 실행 중 경로 교체를 원자적으로 막지 않는다.
+scheme의 `-list` 조회에는 검증하지 않은 flag를 추가하지 않는다.
+Xcode의 전체 cache·HOME·임시 경로 격리를 보장하는 계약은 아니다.
+
 **실행 로그 (Run log)**:
 Stage의 전체 출력을 담는 파일. 앱 repo가 아니라 시스템 임시 디렉터리 아래 프로젝트별 경로에 쓴다(앱 repo에 `.gitignore` 항목을 요구하지 않기 위해). 경로는 언제나 실패와 함께 출력된다 — 사람이 찾을 수 없는 로그는 없는 로그다.
 
@@ -174,7 +200,7 @@ lockfile을 읽기 전용 정본으로 두고 node_modules·Bundle gems·Pods �
 프로젝트가 선언한 이미 설치된 Node·Ruby·JDK 등을 이번 실행이 사용하도록 고르는 비파괴적 Resolve 단계. 커밋된 도구 관리자 설정이 있으면 그것이 정본이며, 없을 때만 현재 셸의 도구를 쓴다.
 
 **프로젝트 실행 환경 (Project execution environment)**:
-도구체인 활성화 결과를 project check·의존성 정렬·Metro·build가 함께 쓰는 명령 환경. 호스트 capability를 다루는 명령 환경과 구분한다. `packageManager`가 Yarn/pnpm을 선언하면 세 package-manager 경로는 모두 Corepack을 오프라인으로 사용하며, cache에 없는 manager는 자동 다운로드하지 않고 validation에서 멈춘다. 선언과 lockfile이 서로 다른 manager를 고르면 어느 쪽도 임의로 우선하지 않고 validation error로 멈춘다. 복구 명령도 같은 프로젝트 실행 환경을 보존하지만 사람이 명시적으로 실행하기 전에는 설치하지 않는다.
+도구체인 활성화 결과를 project check·의존성 정렬·Metro·build가 함께 쓰는 명령 환경. 호스트 capability를 다루는 명령 환경과 구분한다. `packageManager`가 Yarn/pnpm을 선언하면 세 package-manager 경로는 모두 Corepack을 오프라인으로 사용하며, cache에 없는 manager는 자동 다운로드하지 않고 validation에서 멈춘다. 선언과 lockfile이 서로 다른 manager를 고르면 어느 쪽도 임의로 우선하지 않고 validation error로 멈춘다. 복구 명령도 같은 프로젝트 실행 환경을 보존하지만 사람이 명시적으로 실행하기 전에는 설치하지 않는다. 복구 명령 표현은 프로젝트 실행 환경이 제공하며, Check는 runner의 구체 타입을 추론하지 않는다(#266 선택지 B).
 
 **선언된 pod 설치 (Declared pod install)**:
 Pods를 어떻게 설치하는가에 대한 근거 체인 — 앵커 `package.json`의 관행 이름 스크립트(`pod-install`, `install-pods` 등) → 맨 `pod install`. 스크립트로 인정하려면 **이름이 관행 목록에 있고 본문이 실제로 pod 설치를 돈다**는 두 조건이 함께 성립해야 한다. 한쪽만 보면 `pods`라는 이름의 청소 스크립트를 설치로 돌리거나(이름만), 루트 `postinstall` 전체를 pod 설치로 착각한다(본문만). repo가 설치 방법을 적어두는 것은 맨 `pod install`이 거기서 통하지 않기 때문이다 — mattermost-mobile의 `RCT_NEW_ARCH_ENABLED=1`이 없으면 `Podfile` 평가 자체가 거부된다. up이 돌리는 명령과 실패 remediation이 주는 복붙 명령은 언제나 같은 답에서 나오고, 그 명령을 무엇이 골랐는지도 함께 나간다. ADR-0006 참조.
@@ -191,6 +217,9 @@ _Avoid_: 점유(무엇이 잡고 있는지 안다는 뜻이 섞인다)
 **Detached spawn**:
 자식을 띄우고 기다리지 않는 실행. 출력은 실행 로그로 리다이렉트되고 PID만 돌아온다. up이 종료해도 Metro가 따라 죽지 않게 하려는 것 — 프로세스 그룹까지 떼지는 않으므로 터미널의 Ctrl-C는 아직 닿는다.
 _Avoid_: daemon, background job
+
+**Metro 기동 (Metro launch)**:
+프로젝트 start 스크립트를 detached spawn하고 8081 listener가 생길 때까지 기다리는 절차다. bind 대기는 시작 PID의 조기 종료를 함께 확인하며 기본 60초다. iOS와 Android가 같은 절차를 쓴다. 누구의 Metro인가는 Metro 판정과 플랫폼별 소유 기록이 정한다(ADR-0013).
 
 **MetroProcess**:
 up이 남긴 Metro의 보고. `state`(reused/spawned)와, spawn했을 때만 PID·로그 경로. 재사용에는 PID가 없다 — **우리가 띄우지 않은** 프로세스이고, CI는 자기가 띄운 것만 정리해야 한다. 재사용이 성립했다는 것은 그 Metro가 이 프로젝트의 것이라는 뜻이지(Metro 판정), 이 실행이 시작했다는 뜻이 아니다. 실패한 `up`이 `mobile down`을 권하는 것은 `spawned`일 때뿐인 이유가 그것이다.
@@ -282,8 +311,16 @@ _Avoid_: 검증 조합, tested on
 _Avoid_: clean repo, test project
 
 **준비 입력 (Prepared input)**:
-고정된 프로젝트 revision과 그 revision에 적용할 준비 조건을 함께 식별한 검증 입력이다. 준비 입력의 고정은 known-good 판정이 아니며, known-good 여부는 별도 baseline 결과로 판정한다. ADR-0024의 RN 준비 입력은 최소 RN과 Mattermost 각각의 새 내장 경로와 원본 Metro 조건을 고정한다. ADR-0025의 원본 선언 Bundler 준비와 ADR-0026의 원본 Ruby plugin 준비도 clone별 독립 조건으로 식별한다. ADR-0027의 제한된 STATE metadata link 조건도 같은 준비 입력에 포함한다. ADR-0028의 최소 Bundler installer 순서 정정과 비식별 관측 진단도 같은 준비 입력에 포함한다. 기존 성공을 새 조건으로 승계하지 않는다. 두 표본 각각의 양플랫폼 첫 화면을 확인한 뒤 독립 fresh를 준비한다.
+고정된 프로젝트 revision과 그 revision에 적용할 준비 조건을 함께 식별한 검증 입력이다. 준비 입력의 고정은 known-good 판정이 아니며, known-good 여부는 별도 baseline 결과로 판정한다. ADR-0024의 RN 준비 입력은 최소 RN과 Mattermost 각각의 새 내장 경로와 원본 Metro 조건을 고정한다. ADR-0025의 원본 선언 Bundler 준비와 ADR-0026의 원본 Ruby plugin 준비도 clone별 독립 조건으로 식별한다. ADR-0027의 제한된 STATE metadata link 조건도 같은 준비 입력에 포함한다. ADR-0028의 최소 Bundler installer 순서 정정과 비식별 관측 진단도 같은 준비 입력에 포함한다. ADR-0029의 기존 executable 조회를 유지한 private errno copy 초기화·실패 직후 읽기·고정 enum 기록도 같은 준비 입력에 포함한다. ADR-0030의 고정한 원본 Pod 호출 여섯 개에 대한 own launcher cwd 경계와 제한된 cache metadata 감사도 같은 준비 입력에 포함한다. ADR-0031의 기존 observer loop 오류 ordinal·완전한 관측 누적 개수·바로 다음 기존 loop-head poll enum 연결도 같은 준비 입력에 포함한다. ADR-0032의 공식 raw asset과 exact인 기존 canonical mise identity 및 새 source-only 준비도 같은 준비 입력에 포함하며 실제 실행 권한은 별도로 유지한다. ADR-0033의 GUI 상태와 ADB phase별 receipt·ownership·STOP·CLEANUP_PENDING 계약도 문서와 source-only memory 모델로 준비하며, 실제 state 적용·startup·snapshot·hostwrite·재개와 원본 resource predicate 변경은 포함하지 않는다. 기존 성공을 새 조건으로 승계하지 않는다. 두 표본 각각의 양플랫폼 첫 화면을 확인한 뒤 독립 fresh를 준비한다.
 _Avoid_: known-good 표본, 준비 성공
+
+**실행 환경 기록 (Execution environment receipt)**:
+한 검증 실행의 특정 호출에 연결한 환경 증거다. 선언값·launcher 전달값·실제 수신 증거를 구분한다. 미수집·부재·빈 값·값 존재는 서로 다른 상태다. 향후 기록은 과거 원본 환경의 공백을 소급 보완하지 않는다. ADR-0034는 이 기록의 source-only 준비 범위를 고정한다.
+_Avoid_: 원본 환경 복원, 현재 환경으로 원본 보충
+
+**Source/build 증거 기록 (Source/build evidence receipt)**:
+공식 산출물과 정확한 build identity 및 source·dependency·toolchain·build 입력 사이의 연결 근거와 판정을 기록한 증거다. 후보·선언·입증을 구분하며 실제 준비 권한을 부여하지 않는다.
+_Avoid_: version 일치 증명, 준비 완료 기록
 
 **검증 결과 (Validation verdict)**:
 고정된 검증 실행의 결과로, 전체 증거 체인이 성공하면 `validated`, known-good baseline 이후 동일한 mobile/toolchain 실패가 재현되면 `failed`, 결과를 귀속할 수 없으면 `inconclusive`다. 검증 조합에만 귀속하며 doctor의 Status나 지원 판정으로 일반화하지 않는다.
@@ -309,6 +346,9 @@ _Avoid_: plugin, provider(→ 플랫폼 쪽 용어)
 
 **앵커 (Anchor)**:
 프로젝트 탐지의 기준점 — RN에서는 react-native를 의존성으로 가진 package.json. adapter 활성화와 mobile.yml 탐색이 같은 앵커를 공유한다.
+native iOS에서는 선택한 Xcode 컨테이너의 앱 루트가 앵커다.
+`detect(candidate:)`는 framework와 컨테이너 선택을 보존한다.
+앱 루트만 다시 탐지하여 선택한 컨테이너를 바꾸지 않는다.
 
 **워크스페이스 루트 (Workspace root)**:
 앵커에서 위로 올라가 만나는 첫 락파일의 위치. 패키지 매니저와 install 실행 위치가 여기서 나오고, 루트가 선언한 `packageManager`·`engines`도 앵커의 것과 함께 요구가 된다. 단일 repo에서는 앵커와 같은 자리다. `workspaces` 필드는 파싱하지 않는다 — ADR-0003.

@@ -23,26 +23,30 @@ public func iOSStages(
     deviceID: String? = nil,
     configuration: String = "Debug",
     buildWithoutDevice: Bool = false,
+    flutterPort: Int? = nil,
     note: @escaping @Sendable (String) -> Void
 ) -> [any Stage] {
     var stages: [any Stage] = [
         ValidateStage(
             engine: doctor,
-            checkIDs: IOSWorkflowValidation.checkIDs,
+            checkIDs: IOSWorkflowValidation.checkIDs.union(anchor.framework == .flutter ? ["flutter.declarations", "flutter.sdk", "flutter.workspace", "flutter.entrypoint", "dependencies.flutter", "ios.flutter.generated", "ios.flutter.host", "ios.flutter.project", "flutter.ios-prepared-sdk"] : []),
             promoteToError: IOSWorkflowValidation.promotesToError
         ),
-        DependenciesStage(anchor: anchor, runner: projectRunner),
     ]
+    if anchor.framework == .reactNative {
+        stages.append(DependenciesStage(anchor: anchor, runner: projectRunner))
+    }
     if !buildWithoutDevice {
         stages.append(DeviceStage(
             declared: config.configuration?.device,
             lookup: lookup,
             runner: hostRunner,
             locator: locator,
-            deviceID: deviceID
+            deviceID: deviceID,
+            bootIfNeeded: workflow == .up
         ))
     }
-    if case .up = workflow {
+    if case .up = workflow, anchor.framework == .reactNative {
         // Before build on purpose: Metro warms up while xcodebuild spends its minutes.
         stages.append(MetroStage(anchor: anchor, runner: projectRunner))
     }
@@ -57,7 +61,7 @@ public func iOSStages(
             runner: hostRunner,
             metroRunner: projectRunner,
             locator: locator,
-            readinessWait: readinessWait
+            readinessWait: readinessWait, flutterPort: flutterPort
         ))
     }
     return stages
@@ -88,6 +92,8 @@ public enum IOSWorkflowValidation {
         "config.values",
         // The project and the toolchain its own declarations pin.
         "project.detected",
+        "project.execution-environment",
+        "project.native-ios",
         "node.version",
         "package-manager.version",
         "cocoapods.version",

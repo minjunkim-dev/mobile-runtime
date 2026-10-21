@@ -1,0 +1,1157 @@
+{
+  "schema": "runstir.203.source-fixture-receipts.v1",
+  "base": "1b55a8899aea36c77443469dabf64647add27294",
+  "source_head": "7fac827f7b086ef754d37c71da94946247aa2e0a",
+  "source_tree": "2aa17625934059410f804ea3601405f48a29b084",
+  "overall_actual_readiness": "UNKNOWN",
+  "scope": "Source and owned fixtures only. No actual official tool archive download/install/activation, VM, GUI, mobile device, SDK or manager install.",
+  "final_validation": {
+    "full_werror": {
+      "methods": 655,
+      "suites": 80
+    },
+    "additional_prefix_test": 1,
+    "cli_input_fixtures": 3,
+    "full_run_test_set_excludes_later_prefix_only_test": true
+  },
+  "raw_preservation": {
+    "private_index_alias": "PRIVATE203/raw-index.json",
+    "private_index_sha256": "0c019313a23505f9bfe58b4393f327aacfd88e56d34aa04c126033f372fbc1da",
+    "receipt_count": 61,
+    "public_excerpts_are_not_raw_byte_copies": true,
+    "historical_exact_shell_invocations": "Null commands were not captured with the preserved logs. Test source names and raw line references remain available. No invocation is reconstructed as an observed command."
+  },
+  "normalization": {
+    "rules": [
+      "review checkout root -> <REVIEW_WT>",
+      "user home prefix -> <USER_HOME>",
+      "macOS temporary path token -> <OWNED_TEMP_PATH>"
+    ],
+    "line_numbers_refer_to_private_raw_log": true,
+    "normalized_excerpt_commands_are_not_actual_command_receipts": true
+  },
+  "entries": [
+    {
+      "id": "goal203-verified-final-werror.log",
+      "classification": "PASS",
+      "note": "Final product source; full suite ran before adding the passing prefix-only test. No product change followed.",
+      "raw": {
+        "sha256": "1bb2e82d3065b344d7af838efbca03aafd680ea1968a9c65f554c0ef38aa48a6",
+        "bytes": 156477,
+        "lines": 1663,
+        "private_receipt": "PRIVATE203/raw/goal203-verified-final-werror.log"
+      },
+      "command": "swift test --disable-automatic-resolution -Xswiftc -warnings-as-errors",
+      "observed_exit_code": 0,
+      "excerpts": [
+        {
+          "source_line": 296,
+          "text": "✔ Test run with 108 tests in 16 suites passed after 0.263 seconds.",
+          "normalized": false
+        },
+        {
+          "source_line": 615,
+          "text": "✔ Test run with 113 tests in 11 suites passed after 32.051 seconds.",
+          "normalized": false
+        },
+        {
+          "source_line": 1452,
+          "text": "✔ Test run with 359 tests in 46 suites passed after 11.295 seconds.",
+          "normalized": false
+        },
+        {
+          "source_line": 1663,
+          "text": "✔ Test run with 75 tests in 7 suites passed after 0.389 seconds.",
+          "normalized": false
+        }
+      ],
+      "passed_test_summary": {
+        "methods": 655,
+        "suites": 80
+      }
+    },
+    {
+      "id": "goal203-node-prefix-red.log",
+      "classification": "PASS",
+      "note": "Historical filename says red, but the proposed concern was false. Existing SemanticVersion already accepts the v prefix. This is one additional regression test, not a reproduced defect.",
+      "raw": {
+        "sha256": "319812b6d18f04e58f5efbb17db3aa6d963da9f84efd4e43f44a4dd3b1be06c8",
+        "bytes": 782,
+        "lines": 17,
+        "private_receipt": "PRIVATE203/raw/goal203-node-prefix-red.log"
+      },
+      "command": "swift test --disable-automatic-resolution -Xswiftc -warnings-as-errors --filter ToolRequirementsTests.exactNodePrefix",
+      "observed_exit_code": 0,
+      "excerpts": [
+        {
+          "source_line": 17,
+          "text": "✔ Test run with 1 test in 1 suite passed after 0.008 seconds.",
+          "normalized": false
+        }
+      ],
+      "passed_test_summary": {
+        "methods": 1,
+        "suites": 1
+      }
+    },
+    {
+      "id": "goal203-final-cli-doctor.log",
+      "classification": "PASS",
+      "note": "CLI executable input fixture; no actual Node/Ruby/JDK installation.",
+      "raw": {
+        "sha256": "2bd2116680690859fa36c3eaf4947e39d0aafeef9399eec6d8709288b0a25474",
+        "bytes": 65,
+        "lines": 1,
+        "private_receipt": "PRIVATE203/raw/goal203-final-cli-doctor.log"
+      },
+      "command": "python3 scripts/verify-doctor-input.py .build/out/Products/Debug/mobile",
+      "observed_exit_code": 0,
+      "excerpts": [
+        {
+          "source_line": 1,
+          "text": "doctor executable selection/JSON/non-interactive/read-only: PASS",
+          "normalized": false
+        }
+      ]
+    },
+    {
+      "id": "goal203-final-cli-workflow.log",
+      "classification": "PASS",
+      "note": "CLI workflow fixture, including fixture SIGINT 130. Not actual app execution.",
+      "raw": {
+        "sha256": "6ca0d009e4a297358a0822b12950453350c1e52027bf417bdd2fc0c6b0d34b31",
+        "bytes": 79,
+        "lines": 1,
+        "private_receipt": "PRIVATE203/raw/goal203-final-cli-workflow.log"
+      },
+      "command": "python3 scripts/verify-workflow-input.py .build/out/Products/Debug/mobile",
+      "observed_exit_code": 0,
+      "excerpts": [
+        {
+          "source_line": 1,
+          "text": "RN workflow executable help/selection/JSON/NDJSON/no-mutation/SIGINT-130: PASS",
+          "normalized": false
+        }
+      ]
+    },
+    {
+      "id": "goal203-final-cli-setup.log",
+      "classification": "PASS",
+      "note": "CLI setup fixture. Provider network/payload operations are synthetic.",
+      "raw": {
+        "sha256": "cbc2e74c9490593dd9805dc6251b19f934972c76662f8d17c73e8cf8d65367c8",
+        "bytes": 122,
+        "lines": 1,
+        "private_receipt": "PRIVATE203/raw/goal203-final-cli-setup.log"
+      },
+      "command": "python3 scripts/verify-setup-input.py .build/out/Products/Debug/mobile",
+      "observed_exit_code": 0,
+      "excerpts": [
+        {
+          "source_line": 1,
+          "text": "setup executable contract PASS: plan, approval, trust, stale conditions, partial, failure, cancellation, TTY, JSON/NDJSON",
+          "normalized": false
+        }
+      ]
+    },
+    {
+      "id": "goal203-shared-red.log",
+      "classification": "RED",
+      "note": "Shared setup did not plan/run missing project tools before integration.",
+      "raw": {
+        "sha256": "a7ca8209119316055e9a5f4cf2103cbea457bd358c29794c644545859ce21137",
+        "bytes": 7213,
+        "lines": 78,
+        "private_receipt": "PRIVATE203/raw/goal203-shared-red.log"
+      },
+      "command": null,
+      "observed_exit_code": null,
+      "excerpts": [
+        {
+          "source_line": 26,
+          "text": "✘ Test \"exact project declarations outrank the fixed candidates and preserve the Java vendor\" recorded an issue at ToolRequirementsTests.swift:16:9: Expectation failed: requirements.first { $0.tool == .node }?.version == \"24.14.0\"",
+          "normalized": false
+        },
+        {
+          "source_line": 30,
+          "text": "✘ Test \"compatible observed Node is reused before proposing a pinned candidate\" recorded an issue at ToolRequirementsTests.swift:26:9: Expectation failed: requirements.first { $0.tool == .node }?.version == \"22.17.0\"",
+          "normalized": false
+        },
+        {
+          "source_line": 34,
+          "text": "✘ Test \"mise and asdf declarations are read without changing them; conflicts stay explicit\" recorded an issue at ToolRequirementsTests.swift:48:9: Expectation failed: Set(requirements.filter { $0.tool == .node }.compactMap(\\.version)) == [\"22.23.2\", \"24.14.0\"]",
+          "normalized": false
+        },
+        {
+          "source_line": 38,
+          "text": "✘ Test \"range conflicts and JDK 21 requirements never produce the JDK 17 candidate\" recorded an issue at ToolRequirementsTests.swift:36:9: Expectation failed: requirements.first { $0.tool == .node }?.blocker != nil",
+          "normalized": false
+        },
+        {
+          "source_line": 41,
+          "text": "✘ Test \"exact project declarations outrank the fixed candidates and preserve the Java vendor\" recorded an issue at ToolRequirementsTests.swift:17:9: Expectation failed: requirements.first { $0.tool == .ruby }?.version == \"3.3.8\"",
+          "normalized": false
+        },
+        {
+          "source_line": 45,
+          "text": "✘ Test \"mise and asdf declarations are read without changing them; conflicts stay explicit\" recorded an issue at ToolRequirementsTests.swift:49:9: Expectation failed: requirements.first { $0.tool == .java }?.version == \"temurin-17.0.18+8\"",
+          "normalized": false
+        },
+        {
+          "source_line": 49,
+          "text": "✘ Test \"range conflicts and JDK 21 requirements never produce the JDK 17 candidate\" recorded an issue at ToolRequirementsTests.swift:37:9: Expectation failed: requirements.first { $0.tool == .java }?.blocker != nil",
+          "normalized": false
+        },
+        {
+          "source_line": 52,
+          "text": "✘ Test \"exact project declarations outrank the fixed candidates and preserve the Java vendor\" recorded an issue at ToolRequirementsTests.swift:18:9: Expectation failed: requirements.first { $0.tool == .java }?.version == \"zulu-21.0.11+10\"",
+          "normalized": false
+        },
+        {
+          "source_line": 56,
+          "text": "✘ Test \"compatible observed Node is reused before proposing a pinned candidate\" recorded an issue at ToolRequirementsTests.swift:27:9: Expectation failed: requirements.first { $0.tool == .node }?.source.origin.contains(\"existing\") == true",
+          "normalized": false
+        },
+        {
+          "source_line": 60,
+          "text": "✘ Test \"compatible observed Node is reused before proposing a pinned candidate\" failed after 0.005 seconds with 2 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 61,
+          "text": "✘ Test \"mise and asdf declarations are read without changing them; conflicts stay explicit\" failed after 0.005 seconds with 2 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 62,
+          "text": "✘ Test \"range conflicts and JDK 21 requirements never produce the JDK 17 candidate\" failed after 0.005 seconds with 2 issues.",
+          "normalized": false
+        }
+      ]
+    },
+    {
+      "id": "goal203-shared-green.log",
+      "classification": "PASS",
+      "note": "Shared fixture integration after correcting duplicate manager action identity.",
+      "raw": {
+        "sha256": "49583ad9a34651231d2ad2be957c4bbaf4e272d49f74c8f098c4163dcb385791",
+        "bytes": 2060,
+        "lines": 32,
+        "private_receipt": "PRIVATE203/raw/goal203-shared-green.log"
+      },
+      "command": null,
+      "observed_exit_code": null,
+      "excerpts": [
+        {
+          "source_line": 32,
+          "text": "✔ Test run with 6 tests in 2 suites passed after 2.032 seconds.",
+          "normalized": false
+        }
+      ],
+      "passed_test_summary": {
+        "methods": 6,
+        "suites": 2
+      }
+    },
+    {
+      "id": "goal203-shared-regression-green.log",
+      "classification": "PASS",
+      "note": "Existing fixture expectations retained with owned executable paths.",
+      "raw": {
+        "sha256": "3cb1345bc87d6527e7f2f02d0dddbf24c1f39bb17cbbf99e7b948653a65ed761",
+        "bytes": 24183,
+        "lines": 219,
+        "private_receipt": "PRIVATE203/raw/goal203-shared-regression-green.log"
+      },
+      "command": null,
+      "observed_exit_code": null,
+      "excerpts": [
+        {
+          "source_line": 219,
+          "text": "✔ Test run with 77 tests in 7 suites passed after 17.765 seconds.",
+          "normalized": false
+        }
+      ],
+      "passed_test_summary": {
+        "methods": 77,
+        "suites": 7
+      }
+    },
+    {
+      "id": "goal203-workflow-exact-red.log",
+      "classification": "RED",
+      "note": "Build/up proceeded despite an unmet exact declaration before the tools.* validation union fix.",
+      "raw": {
+        "sha256": "a4f2b7c311539e4e59e8ee594c7ec510813f84a829e98224fd847da68307843f",
+        "bytes": 4367,
+        "lines": 47,
+        "private_receipt": "PRIVATE203/raw/goal203-workflow-exact-red.log"
+      },
+      "command": null,
+      "observed_exit_code": null,
+      "excerpts": [
+        {
+          "source_line": 21,
+          "text": "✘ Test \"an unmet exact tool declaration blocks build and up before dependency or build changes\" recorded an issue with 1 argument kind → .build at WorkflowExecutionTests.swift:16:9: Expectation failed: result.exitCode == 1",
+          "normalized": false
+        },
+        {
+          "source_line": 24,
+          "text": "✘ Test \"an unmet exact tool declaration blocks build and up before dependency or build changes\" recorded an issue with 1 argument kind → .build at WorkflowExecutionTests.swift:17:9: Expectation failed: result.up?.context.validation?.checks.contains { $0.id == \"tools.node\" && $0.status == .error } == true",
+          "normalized": false
+        },
+        {
+          "source_line": 29,
+          "text": "✘ Test \"an unmet exact tool declaration blocks build and up before dependency or build changes\" recorded an issue with 1 argument kind → .build at WorkflowExecutionTests.swift:18:9: Expectation failed: !runner.log.all.contains { $0.arguments.contains(\"install\") || $0.arguments.contains(\"build\") || $0.executable == \"curl\" }",
+          "normalized": false
+        },
+        {
+          "source_line": 32,
+          "text": "✘ Test \"an unmet exact tool declaration blocks build and up before dependency or build changes\" recorded an issue with 1 argument kind → .up at WorkflowExecutionTests.swift:16:9: Expectation failed: result.exitCode == 1",
+          "normalized": false
+        },
+        {
+          "source_line": 35,
+          "text": "✘ Test \"an unmet exact tool declaration blocks build and up before dependency or build changes\" recorded an issue with 1 argument kind → .up at WorkflowExecutionTests.swift:17:9: Expectation failed: result.up?.context.validation?.checks.contains { $0.id == \"tools.node\" && $0.status == .error } == true",
+          "normalized": false
+        },
+        {
+          "source_line": 40,
+          "text": "✘ Test \"an unmet exact tool declaration blocks build and up before dependency or build changes\" recorded an issue with 1 argument kind → .up at WorkflowExecutionTests.swift:18:9: Expectation failed: !runner.log.all.contains { $0.arguments.contains(\"install\") || $0.arguments.contains(\"build\") || $0.executable == \"curl\" }",
+          "normalized": false
+        },
+        {
+          "source_line": 43,
+          "text": "✘ Test \"an unmet exact tool declaration blocks build and up before dependency or build changes\" with 2 test cases failed after 0.700 seconds with 6 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 44,
+          "text": "✘ Suite \"shared CLI and GUI RN workflows\" failed after 0.700 seconds with 6 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 45,
+          "text": "✘ Test run with 1 test in 1 suite failed after 0.700 seconds with 6 issues.",
+          "normalized": false
+        }
+      ]
+    },
+    {
+      "id": "goal203-existing-java-policy-red.log",
+      "classification": "RED",
+      "note": "Existing-only suitable vendorless/Zulu JDK reuse failed under the initial Temurin-only policy.",
+      "raw": {
+        "sha256": "090e0f952e1388d8d5466aaa356be9478a415c794038a6892f6f848f4ce798ce",
+        "bytes": 2506,
+        "lines": 33,
+        "private_receipt": "PRIVATE203/raw/goal203-existing-java-policy-red.log"
+      },
+      "command": null,
+      "observed_exit_code": null,
+      "excerpts": [
+        {
+          "source_line": 21,
+          "text": "✘ Test \"existing Zulu satisfies vendorless or Zulu JDK 21, but never an explicit Temurin request\" recorded an issue with 1 argument declaration → \"zulu-21.0.11+10\" at ToolPreparationTests.swift:104:9: Expectation failed: (plan.activeTools[\"java\"] == java) == !declaration.hasPrefix(\"temurin-\")",
+          "normalized": false
+        },
+        {
+          "source_line": 25,
+          "text": "✘ Test \"existing Zulu satisfies vendorless or Zulu JDK 21, but never an explicit Temurin request\" recorded an issue with 1 argument declaration → \"21\" at ToolPreparationTests.swift:104:9: Expectation failed: (plan.activeTools[\"java\"] == java) == !declaration.hasPrefix(\"temurin-\")",
+          "normalized": false
+        },
+        {
+          "source_line": 29,
+          "text": "✘ Test \"existing Zulu satisfies vendorless or Zulu JDK 21, but never an explicit Temurin request\" with 3 test cases failed after 0.035 seconds with 2 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 30,
+          "text": "✘ Suite \"approved Node Ruby JDK preparation\" failed after 0.035 seconds with 2 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 31,
+          "text": "✘ Test run with 1 test in 1 suite failed after 0.036 seconds with 2 issues.",
+          "normalized": false
+        }
+      ]
+    },
+    {
+      "id": "goal203-java-prefix-green.log",
+      "classification": "PASS",
+      "note": "Existing JDK identity/qualified-prefix fixture after policy correction.",
+      "raw": {
+        "sha256": "fc0ba3b5555b4f41f1557edd75ae4c93ab4a96d4ebc3c11fd031b221982ba0b9",
+        "bytes": 3978,
+        "lines": 48,
+        "private_receipt": "PRIVATE203/raw/goal203-java-prefix-green.log"
+      },
+      "command": null,
+      "observed_exit_code": null,
+      "excerpts": [
+        {
+          "source_line": 48,
+          "text": "✔ Test run with 8 tests in 2 suites passed after 0.051 seconds.",
+          "normalized": false
+        }
+      ],
+      "passed_test_summary": {
+        "methods": 8,
+        "suites": 2
+      }
+    },
+    {
+      "id": "goal203-java-properties-red.log",
+      "classification": "RED",
+      "note": "Existing Java collector did not expose raw runtime and architecture properties.",
+      "raw": {
+        "sha256": "e81ca1dd03ca302e811a9e22c80464f3ec50f9879200ad438a7a57753ed0e20d",
+        "bytes": 2633,
+        "lines": 55,
+        "private_receipt": "PRIVATE203/raw/goal203-java-properties-red.log"
+      },
+      "command": null,
+      "observed_exit_code": null,
+      "excerpts": [
+        {
+          "source_line": 42,
+          "text": "✘ Test \"raw runtime build vendor architecture and home come from properties\" recorded an issue at JavaObservationTests.swift:16:9: Expectation failed: java.runtimeVersion == \"21.0.11+10-LTS\"",
+          "normalized": false
+        },
+        {
+          "source_line": 46,
+          "text": "✘ Test \"raw runtime build vendor architecture and home come from properties\" recorded an issue at JavaObservationTests.swift:18:9: Expectation failed: java.architecture == \"aarch64\"",
+          "normalized": false
+        },
+        {
+          "source_line": 50,
+          "text": "✘ Test \"raw runtime build vendor architecture and home come from properties\" failed after 0.001 seconds with 2 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 52,
+          "text": "✘ Suite \"selected Java properties observation\" failed after 0.001 seconds with 2 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 53,
+          "text": "✘ Test run with 3 tests in 1 suite failed after 0.001 seconds with 2 issues.",
+          "normalized": false
+        }
+      ]
+    },
+    {
+      "id": "goal203-java-properties-green.log",
+      "classification": "PASS",
+      "note": "Public observer and existing doctor regression suite; no new collector.",
+      "raw": {
+        "sha256": "e364a301d0c8a3f5b6d578a92b1ce68cf02f7d7c000f1ec669449b1cb711938d",
+        "bytes": 10804,
+        "lines": 114,
+        "private_receipt": "PRIVATE203/raw/goal203-java-properties-green.log"
+      },
+      "command": null,
+      "observed_exit_code": null,
+      "excerpts": [
+        {
+          "source_line": 114,
+          "text": "✔ Test run with 37 tests in 2 suites passed after 0.289 seconds.",
+          "normalized": false
+        }
+      ],
+      "passed_test_summary": {
+        "methods": 37,
+        "suites": 2
+      }
+    },
+    {
+      "id": "goal203-java-home-red.log",
+      "classification": "RED",
+      "note": "A shim could report a Java home with different actual runtime properties.",
+      "raw": {
+        "sha256": "966973cf7742c96bf7f81a02fa52d7f43aee749959e415ba9e48329890c326ae",
+        "bytes": 1315,
+        "lines": 21,
+        "private_receipt": "PRIVATE203/raw/goal203-java-home-red.log"
+      },
+      "command": null,
+      "observed_exit_code": null,
+      "excerpts": [
+        {
+          "source_line": 15,
+          "text": "✘ Test \"a shim's reported Java home must match that home's actual properties\" recorded an issue at ToolPreparationTests.swift:131:9: Expectation failed: try await ToolJavaObservation.observe(executable: shim.path, directory: fixture.repo.root, runner: runner) == nil",
+          "normalized": false
+        },
+        {
+          "source_line": 17,
+          "text": "✘ Test \"a shim's reported Java home must match that home's actual properties\" failed after 0.028 seconds with 1 issue.",
+          "normalized": false
+        },
+        {
+          "source_line": 18,
+          "text": "✘ Suite \"approved Node Ruby JDK preparation\" failed after 0.028 seconds with 1 issue.",
+          "normalized": false
+        },
+        {
+          "source_line": 19,
+          "text": "✘ Test run with 1 test in 1 suite failed after 0.028 seconds with 1 issue.",
+          "normalized": false
+        }
+      ]
+    },
+    {
+      "id": "goal203-unreadable-declaration-red.log",
+      "classification": "RED",
+      "note": "Invalid UTF-8 Tier1 inputs could be treated as absent declarations.",
+      "raw": {
+        "sha256": "85286eec656aca06ed9b964a1266918ded4be58920247af8d8dc04913f490707",
+        "bytes": 2647,
+        "lines": 34,
+        "private_receipt": "PRIVATE203/raw/goal203-unreadable-declaration-red.log"
+      },
+      "command": null,
+      "observed_exit_code": null,
+      "excerpts": [
+        {
+          "source_line": 18,
+          "text": "✘ Test \"an unreadable Tier 1 declaration cannot become an absent declaration\" recorded an issue with 1 argument filename → \".nvmrc\" at ToolRequirementsTests.swift:26:9: Expectation failed: requirement.blocker != nil",
+          "normalized": false
+        },
+        {
+          "source_line": 21,
+          "text": "✘ Test \"an unreadable Tier 1 declaration cannot become an absent declaration\" recorded an issue with 1 argument filename → \".tool-versions\" at ToolRequirementsTests.swift:26:9: Expectation failed: requirement.blocker != nil",
+          "normalized": false
+        },
+        {
+          "source_line": 24,
+          "text": "✘ Test \"an unreadable Tier 1 declaration cannot become an absent declaration\" recorded an issue with 1 argument filename → \"Gemfile\" at ToolRequirementsTests.swift:26:9: Expectation failed: requirement.blocker != nil",
+          "normalized": false
+        },
+        {
+          "source_line": 27,
+          "text": "✘ Test \"an unreadable Tier 1 declaration cannot become an absent declaration\" recorded an issue with 1 argument filename → \"mise.toml\" at ToolRequirementsTests.swift:26:9: Expectation failed: requirement.blocker != nil",
+          "normalized": false
+        },
+        {
+          "source_line": 30,
+          "text": "✘ Test \"an unreadable Tier 1 declaration cannot become an absent declaration\" with 4 test cases failed after 0.012 seconds with 4 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 31,
+          "text": "✘ Suite \"project tool preparation requirements\" failed after 0.012 seconds with 4 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 32,
+          "text": "✘ Test run with 1 test in 1 suite failed after 0.012 seconds with 4 issues.",
+          "normalized": false
+        }
+      ]
+    },
+    {
+      "id": "goal203-java-compilation-red.log",
+      "classification": "RED",
+      "note": "JavaVersion.VERSION_21 compilation input did not block the JDK17 candidate.",
+      "raw": {
+        "sha256": "c4c2b40b74d192f0b8afac8f18a0a72e7261a546981cc366fffd8b6c5f4be1ff",
+        "bytes": 2632,
+        "lines": 44,
+        "private_receipt": "PRIVATE203/raw/goal203-java-compilation-red.log"
+      },
+      "command": null,
+      "observed_exit_code": null,
+      "excerpts": [
+        {
+          "source_line": 32,
+          "text": "✘ Test \"JDK 21 compilation declarations also block the JDK 17 candidate\" recorded an issue with 1 argument declaration → \"java { sourceCompatibility = JavaVersion.VERSION_21 }\" at ToolRequirementsTests.swift:51:9: Expectation failed: java.version != \"temurin-17.0.18+8\"",
+          "normalized": false
+        },
+        {
+          "source_line": 37,
+          "text": "✘ Test \"JDK 21 compilation declarations also block the JDK 17 candidate\" recorded an issue with 1 argument declaration → \"java { sourceCompatibility = JavaVersion.VERSION_21 }\" at ToolRequirementsTests.swift:52:9: Expectation failed: java.blocker != nil",
+          "normalized": false
+        },
+        {
+          "source_line": 40,
+          "text": "✘ Test \"JDK 21 compilation declarations also block the JDK 17 candidate\" with 3 test cases failed after 0.021 seconds with 2 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 41,
+          "text": "✘ Suite \"project tool preparation requirements\" failed after 0.021 seconds with 2 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 42,
+          "text": "✘ Test run with 1 test in 1 suite failed after 0.021 seconds with 2 issues.",
+          "normalized": false
+        }
+      ]
+    },
+    {
+      "id": "goal203-java-layout-red.log",
+      "classification": "RED",
+      "note": "Fixture exposed the wrong Java Contents/Home install layout.",
+      "raw": {
+        "sha256": "b363e07a0e285376351e79f27fd36efcebb76727d6dcb2eb4b24c06846b87b2b",
+        "bytes": 4416,
+        "lines": 65,
+        "private_receipt": "PRIVATE203/raw/goal203-java-layout-red.log"
+      },
+      "command": null,
+      "observed_exit_code": null,
+      "excerpts": [
+        {
+          "source_line": 18,
+          "text": "✘ Test \"successful installation is reused and activates only measured project paths\" recorded an issue with 1 argument tool → .java at ToolPreparationTests.swift:35:9: Expectation failed: after.activeTools[tool.rawValue] == fixture.repo.url(\"store/installs/\\(tool.rawValue)/\\(version(tool))/bin/\\(tool.rawValue)\")",
+          "normalized": false
+        },
+        {
+          "source_line": 61,
+          "text": "✘ Test \"successful installation is reused and activates only measured project paths\" with 3 test cases failed after 0.053 seconds with 1 issue.",
+          "normalized": false
+        },
+        {
+          "source_line": 62,
+          "text": "✘ Suite \"approved Node Ruby JDK preparation\" failed after 0.053 seconds with 1 issue.",
+          "normalized": false
+        },
+        {
+          "source_line": 63,
+          "text": "✘ Test run with 1 test in 1 suite failed after 0.053 seconds with 1 issue.",
+          "normalized": false
+        }
+      ]
+    },
+    {
+      "id": "goal203-payload-root-red.log",
+      "classification": "RED",
+      "note": "A link could remain inside the TAR but escape the package root selected for installation.",
+      "raw": {
+        "sha256": "0b8ccd151e47f13d0fbe3f8b1b4089a0f76d1719cb61fff06ae60b2939b9796d",
+        "bytes": 3224,
+        "lines": 40,
+        "private_receipt": "PRIVATE203/raw/goal203-payload-root-red.log"
+      },
+      "command": null,
+      "observed_exit_code": null,
+      "excerpts": [
+        {
+          "source_line": 25,
+          "text": "✘ Test \"a link outside the selected package is rejected before commit\" recorded an issue at ToolArchiveTests.swift:44:15: Expectation failed: an error was expected but none was thrown",
+          "normalized": false
+        },
+        {
+          "source_line": 27,
+          "text": "✘ Test \"a link outside the selected package is rejected before commit\" recorded an issue at ToolArchiveTests.swift:47:9: Expectation failed: !FileManager.default.fileExists(atPath: fixture.metadata.destination.path)",
+          "normalized": false
+        },
+        {
+          "source_line": 34,
+          "text": "✘ Test \"a link outside the selected package is rejected before commit\" failed after 0.043 seconds with 2 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 37,
+          "text": "✘ Suite \"approved tool TAR installation\" failed after 0.077 seconds with 2 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 38,
+          "text": "✘ Test run with 5 tests in 1 suite failed after 0.078 seconds with 2 issues.",
+          "normalized": false
+        }
+      ]
+    },
+    {
+      "id": "goal203-process-boundary-red.log",
+      "classification": "RED",
+      "note": "Absolute command selection incorrectly used name lookup for cwd-nil collected/streamed execution.",
+      "raw": {
+        "sha256": "431cc35204ab48ca04cbc38884027b850dd2c2da05b1c53107269dbedfb2d138",
+        "bytes": 2700,
+        "lines": 26,
+        "private_receipt": "PRIVATE203/raw/goal203-process-boundary-red.log"
+      },
+      "command": null,
+      "observed_exit_code": null,
+      "excerpts": [
+        {
+          "source_line": 19,
+          "text": "✘ Test \"an absolute fixture runs without cwd in either output mode\" recorded an issue with 1 argument streamed → false at AbsoluteExecutableTests.swift:8:6: Caught error: failed to run `<OWNED_TEMP_PATH> with spaces/selected tool`: Failed to launch the new process. Reason: Executable name \"<OWNED_TEMP_PATH> with spaces/selected tool\" must not contain the path separator \"/\". Executable.name(_:) looks a name up in the directories listed in PATH; use Executable.path(_:) to run an executable at a known location.",
+          "normalized": true
+        },
+        {
+          "source_line": 20,
+          "text": "✘ Test \"an absolute fixture runs without cwd in either output mode\" recorded an issue with 1 argument streamed → true at AbsoluteExecutableTests.swift:8:6: Caught error: failed to run `<OWNED_TEMP_PATH> with spaces/selected tool`: Failed to launch the new process. Reason: Executable name \"<OWNED_TEMP_PATH> with spaces/selected tool\" must not contain the path separator \"/\". Executable.name(_:) looks a name up in the directories listed in PATH; use Executable.path(_:) to run an executable at a known location.",
+          "normalized": true
+        },
+        {
+          "source_line": 21,
+          "text": "✘ Test \"an absolute fixture runs without cwd in either output mode\" with 2 test cases failed after 0.005 seconds with 2 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 23,
+          "text": "✘ Suite \"exact executable process boundary\" failed after 0.315 seconds with 2 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 24,
+          "text": "✘ Test run with 2 tests in 1 suite failed after 0.315 seconds with 2 issues.",
+          "normalized": false
+        }
+      ]
+    },
+    {
+      "id": "goal203-process-boundary-green.log",
+      "classification": "PASS",
+      "note": "Owned executable processes prove absolute path and existing named lookup behavior.",
+      "raw": {
+        "sha256": "009493c09d0b9ef644ceda281464d1da44922a5cf46bc84cfb061f60ed59472a",
+        "bytes": 3374,
+        "lines": 50,
+        "private_receipt": "PRIVATE203/raw/goal203-process-boundary-green.log"
+      },
+      "command": null,
+      "observed_exit_code": null,
+      "excerpts": [
+        {
+          "source_line": 50,
+          "text": "✔ Test run with 14 tests in 2 suites passed after 0.621 seconds.",
+          "normalized": false
+        }
+      ],
+      "passed_test_summary": {
+        "methods": 14,
+        "suites": 2
+      }
+    },
+    {
+      "id": "goal203-mise-bootstrap-red.log",
+      "classification": "RED",
+      "note": "Prepared mise activation still depended on a global executable name.",
+      "raw": {
+        "sha256": "aa8a15a5d7cc4107836d7d1ad6f2b56126b3c6d1a1cd0e128ac545bb197fe1aa",
+        "bytes": 2052,
+        "lines": 28,
+        "private_receipt": "PRIVATE203/raw/goal203-mise-bootstrap-red.log"
+      },
+      "command": null,
+      "observed_exit_code": null,
+      "excerpts": [
+        {
+          "source_line": 12,
+          "text": "✘ Test \"a prepared mise runs activation and project commands without a global mise\" recorded an issue at ProjectPreparedToolsTests.swift:87:9: Expectation failed: try await selected.run().status == .pass",
+          "normalized": false
+        },
+        {
+          "source_line": 14,
+          "text": "✘ Test \"a prepared mise runs activation and project commands without a global mise\" recorded an issue at ProjectPreparedToolsTests.swift:89:9: Expectation failed: try await selected.runner.run(command).standardOutput == \"exact project node\"",
+          "normalized": false
+        },
+        {
+          "source_line": 16,
+          "text": "✘ Test \"a prepared mise runs activation and project commands without a global mise\" recorded an issue at ProjectPreparedToolsTests.swift:92:9: Expectation failed: result.terminationStatus.isSuccess",
+          "normalized": false
+        },
+        {
+          "source_line": 21,
+          "text": "✘ Test \"a prepared mise runs activation and project commands without a global mise\" recorded an issue at ProjectPreparedToolsTests.swift:93:9: Expectation failed: result.standardOutput == \"exact project node\"",
+          "normalized": false
+        },
+        {
+          "source_line": 24,
+          "text": "✘ Test \"a prepared mise runs activation and project commands without a global mise\" failed after 0.051 seconds with 4 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 25,
+          "text": "✘ Suite \"project prepared tool activation\" failed after 0.051 seconds with 4 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 26,
+          "text": "✘ Test run with 1 test in 1 suite failed after 0.051 seconds with 4 issues.",
+          "normalized": false
+        }
+      ]
+    },
+    {
+      "id": "goal203-mise-bootstrap-green.log",
+      "classification": "PASS",
+      "note": "Owned fake-mise actual process validates exact activation without a global PATH entry.",
+      "raw": {
+        "sha256": "7cc2043e1bc54c53ba0ff53cf375cbd8c8038fed15011ce2ca6e5902eb216977",
+        "bytes": 5663,
+        "lines": 76,
+        "private_receipt": "PRIVATE203/raw/goal203-mise-bootstrap-green.log"
+      },
+      "command": null,
+      "observed_exit_code": null,
+      "excerpts": [
+        {
+          "source_line": 76,
+          "text": "✔ Test run with 19 tests in 2 suites passed after 0.550 seconds.",
+          "normalized": false
+        }
+      ],
+      "passed_test_summary": {
+        "methods": 19,
+        "suites": 2
+      }
+    },
+    {
+      "id": "goal203-exact-stable-red.log",
+      "classification": "RED",
+      "note": "A prerelease banner could satisfy an exact stable Node request.",
+      "raw": {
+        "sha256": "11293ff3c4e5ae24a6dccc57f230d67c87ac3ca5dd1ca11131edeb2cdf9748c3",
+        "bytes": 1998,
+        "lines": 28,
+        "private_receipt": "PRIVATE203/raw/goal203-exact-stable-red.log"
+      },
+      "command": null,
+      "observed_exit_code": null,
+      "excerpts": [
+        {
+          "source_line": 16,
+          "text": "✘ Test \"the project environment is observed separately and prereleases do not satisfy an exact stable request\" recorded an issue with 1 argument exact → false at ToolPreparationTests.swift:67:9: Expectation failed: plan.steps.isEmpty == exact",
+          "normalized": false
+        },
+        {
+          "source_line": 20,
+          "text": "✘ Test \"the project environment is observed separately and prereleases do not satisfy an exact stable request\" recorded an issue with 1 argument exact → false at ToolPreparationTests.swift:68:9: Expectation failed: (plan.activeTools[\"node\"] == node) == exact",
+          "normalized": false
+        },
+        {
+          "source_line": 24,
+          "text": "✘ Test \"the project environment is observed separately and prereleases do not satisfy an exact stable request\" with 2 test cases failed after 0.026 seconds with 2 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 25,
+          "text": "✘ Suite \"approved Node Ruby JDK preparation\" failed after 0.026 seconds with 2 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 26,
+          "text": "✘ Test run with 1 test in 1 suite failed after 0.026 seconds with 2 issues.",
+          "normalized": false
+        }
+      ]
+    },
+    {
+      "id": "goal203-remediation-red.log",
+      "classification": "RED",
+      "note": "Prepared JAVA_HOME did not reach a child remediation command through mise.",
+      "raw": {
+        "sha256": "79167520d782a019cc14c4d7aeb5c70af69dbaa2343681c84c28669cd50ab676",
+        "bytes": 1906,
+        "lines": 27,
+        "private_receipt": "PRIVATE203/raw/goal203-remediation-red.log"
+      },
+      "command": null,
+      "observed_exit_code": null,
+      "excerpts": [
+        {
+          "source_line": 19,
+          "text": "✘ Test \"a pasteable remediation receives the same prepared JAVA_HOME through mise\" recorded an issue at ProjectPreparedToolsTests.swift:55:9: Expectation failed: result.standardOutput == java.deletingLastPathComponent().deletingLastPathComponent().path",
+          "normalized": false
+        },
+        {
+          "source_line": 23,
+          "text": "✘ Test \"a pasteable remediation receives the same prepared JAVA_HOME through mise\" failed after 0.480 seconds with 1 issue.",
+          "normalized": false
+        },
+        {
+          "source_line": 24,
+          "text": "✘ Suite \"project prepared tool activation\" failed after 0.480 seconds with 1 issue.",
+          "normalized": false
+        },
+        {
+          "source_line": 25,
+          "text": "✘ Test run with 3 tests in 1 suite failed after 0.480 seconds with 1 issue.",
+          "normalized": false
+        }
+      ]
+    },
+    {
+      "id": "goal203-integration-regression.log",
+      "classification": "INTERRUPTED",
+      "note": "Historical fixture run stalled at wait gates after fake /test/bin paths stopped being usable. Only the owned test/helper processes were terminated. Exit143 belongs to that interrupted run. It is not full-suite evidence.",
+      "raw": {
+        "sha256": "2b6878a94cb4466096cb4ba19309661d9df4430cd2df9149e47dbaab77d9d6a8",
+        "bytes": 53577,
+        "lines": 730,
+        "private_receipt": "PRIVATE203/raw/goal203-integration-regression.log"
+      },
+      "command": null,
+      "observed_exit_code": 143,
+      "excerpts": [
+        {
+          "source_line": 155,
+          "text": "✘ Test \"native preparation preserves its selected container without RN plans or tools\" recorded an issue with 1 argument multiple → false at NativeIOSWorkflowTests.swift:24:9: Expectation failed: result.plan?.steps.first { $0.id == \"ios.project.native-ios\" }?.observed?.contains(\"CocoaPods\") == true",
+          "normalized": false
+        },
+        {
+          "source_line": 159,
+          "text": "✘ Test \"native preparation preserves its selected container without RN plans or tools\" recorded an issue with 1 argument multiple → true at NativeIOSWorkflowTests.swift:24:9: Expectation failed: result.plan?.steps.first { $0.id == \"ios.project.native-ios\" }?.observed?.contains(\"CocoaPods\") == true",
+          "normalized": false
+        },
+        {
+          "source_line": 212,
+          "text": "✘ Test \"future framework preparation stays manual without invoking an execution provider\" recorded an issue with 1 argument framework → .nativeAndroid at NativeIOSWorkflowTests.swift:60:9: Expectation failed: runner.log.all.isEmpty",
+          "normalized": false
+        },
+        {
+          "source_line": 216,
+          "text": "✘ Test \"future framework preparation stays manual without invoking an execution provider\" with 2 test cases failed after 16.144 seconds with 1 issue.",
+          "normalized": false
+        },
+        {
+          "source_line": 219,
+          "text": "✘ Test \"native preparation preserves its selected container without RN plans or tools\" recorded an issue with 1 argument multiple → false at NativeIOSWorkflowTests.swift:31:9: Expectation failed: !runner.log.all.contains { [\"node\", \"npm\", \"yarn\", \"pnpm\", \"pod\", \"bundle\", \"ruby\"].contains($0.executable)",
+          "normalized": false
+        },
+        {
+          "source_line": 225,
+          "text": "✘ Test \"completed Node alignment is preserved while the other platform waits manually\" recorded an issue at PreparationExecutionTests.swift:79:9: Expectation failed: prepared.operation.state == \"partial\"",
+          "normalized": false
+        },
+        {
+          "source_line": 228,
+          "text": "✘ Test \"completed Node alignment is preserved while the other platform waits manually\" recorded an issue at PreparationExecutionTests.swift:80:9: Expectation failed: prepared.operation.completed == [\"dependencies.node\"]",
+          "normalized": false
+        },
+        {
+          "source_line": 231,
+          "text": "✘ Test \"completed Node alignment is preserved while the other platform waits manually\" recorded an issue at PreparationExecutionTests.swift:81:9: Expectation failed: prepared.plan?.platforms.first { $0.platform == .ios }?.state == \"succeeded\"",
+          "normalized": false
+        },
+        {
+          "source_line": 236,
+          "text": "✘ Test \"completed Node alignment is preserved while the other platform waits manually\" recorded an issue at PreparationExecutionTests.swift:83:9: Expectation failed: FileManager.default.fileExists(atPath: repo.url(\"node_modules\").path)",
+          "normalized": false
+        },
+        {
+          "source_line": 240,
+          "text": "✘ Test \"completed Node alignment is preserved while the other platform waits manually\" failed after 17.710 seconds with 4 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 242,
+          "text": "✘ Test \"a dependency script's source change stops later commands and is never restored\" recorded an issue at PreparationExecutionTests.swift:95:9: Expectation failed: prepared.operation.state == \"failed\"",
+          "normalized": false
+        },
+        {
+          "source_line": 245,
+          "text": "✘ Test \"a dependency script's source change stops later commands and is never restored\" recorded an issue at PreparationExecutionTests.swift:96:9: Expectation failed: prepared.operation.changedFiles.count == 1",
+          "normalized": false
+        }
+      ]
+    },
+    {
+      "id": "goal203-integration-second.log",
+      "classification": "FIXTURE_ERROR",
+      "note": "Intermediate Bundle fixture path assumptions failed. Expectations were preserved and owned path responses were corrected.",
+      "raw": {
+        "sha256": "bdba8f0ebab91c17e8a83567bedacece3b3361827c9727b35af6e6bc5f89128a",
+        "bytes": 39365,
+        "lines": 252,
+        "private_receipt": "PRIVATE203/raw/goal203-integration-second.log"
+      },
+      "command": null,
+      "observed_exit_code": null,
+      "excerpts": [
+        {
+          "source_line": 156,
+          "text": "✘ Test \"Bundle destination changes invalidate approval and execution preserves the frozen effective path\" recorded an issue at PreparationExecutionTests.swift:219:9: Expectation failed: initial.plan?.steps.first { $0.id == \"dependencies.gems\" }?.target == repo.url(\"vendor/bundle/ruby/3.3.0\").path",
+          "normalized": false
+        },
+        {
+          "source_line": 220,
+          "text": "✘ Test \"Bundle destination changes invalidate approval and execution preserves the frozen effective path\" recorded an issue at PreparationExecutionTests.swift:227:9: Expectation failed: prepared.operation.completed == [\"dependencies.node\", \"dependencies.gems\", \"dependencies.pods\"]",
+          "normalized": false
+        },
+        {
+          "source_line": 223,
+          "text": "✘ Test \"Bundle destination changes invalidate approval and execution preserves the frozen effective path\" recorded an issue at PreparationExecutionTests.swift:228:27: Expectation failed: runner.log.first(matching: \"bundle install\")",
+          "normalized": false
+        },
+        {
+          "source_line": 229,
+          "text": "✘ Test \"Bundle destination changes invalidate approval and execution preserves the frozen effective path\" failed after 16.345 seconds with 3 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 232,
+          "text": "✘ Test \"different projects cannot prepare one shared Bundle destination concurrently\" recorded an issue at PreparationExecutionTests.swift:297:9: Expectation failed: denied.operation.conflict?.key.rawValue.hasPrefix(\"destination:\") == true",
+          "normalized": false
+        },
+        {
+          "source_line": 236,
+          "text": "✘ Test \"different projects cannot prepare one shared Bundle destination concurrently\" recorded an issue at PreparationExecutionTests.swift:298:9: Expectation failed: denied.operation.conflict?.owner?.project == firstRepo.root.path",
+          "normalized": false
+        },
+        {
+          "source_line": 240,
+          "text": "✘ Test \"different projects cannot prepare one shared Bundle destination concurrently\" recorded an issue at PreparationExecutionTests.swift:299:9: Expectation failed: !secondTools.log.all.contains { $0.description == \"yarn install --frozen-lockfile\" }",
+          "normalized": false
+        },
+        {
+          "source_line": 243,
+          "text": "✘ Test \"different projects cannot prepare one shared Bundle destination concurrently\" recorded an issue at PreparationExecutionTests.swift:304:9: Expectation failed: retry.operation.completed == [\"dependencies.node\", \"dependencies.gems\", \"dependencies.pods\"]",
+          "normalized": false
+        },
+        {
+          "source_line": 246,
+          "text": "✘ Test \"different projects cannot prepare one shared Bundle destination concurrently\" failed after 18.728 seconds with 4 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 247,
+          "text": "✘ Suite \"approved environment preparation\" failed after 18.728 seconds with 7 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 250,
+          "text": "✘ Test run with 76 tests in 7 suites failed after 18.980 seconds with 7 issues.",
+          "normalized": false
+        }
+      ]
+    },
+    {
+      "id": "goal203-existing-java-first-green.log",
+      "classification": "FIXTURE_ERROR",
+      "note": "Intermediate fake runner missed a required Node response. This is not a product RED.",
+      "raw": {
+        "sha256": "d7a0eb165cc1af8be78247900c4d45ccd66f8a041a9f89dd551e31cff838fde1",
+        "bytes": 12649,
+        "lines": 126,
+        "private_receipt": "PRIVATE203/raw/goal203-existing-java-first-green.log"
+      },
+      "command": null,
+      "observed_exit_code": null,
+      "excerpts": [
+        {
+          "source_line": 100,
+          "text": "✘ Test \"existing Zulu satisfies vendorless or Zulu JDK 21, but never an explicit Temurin request\" recorded an issue with 1 argument declaration → \"21\" at ToolPreparationTests.swift:90:6: Caught error: no canned response for `node --version`",
+          "normalized": false
+        },
+        {
+          "source_line": 103,
+          "text": "✘ Test \"existing Zulu satisfies vendorless or Zulu JDK 21, but never an explicit Temurin request\" recorded an issue with 1 argument declaration → \"temurin-21.0.11+10\" at ToolPreparationTests.swift:90:6: Caught error: no canned response for `node --version`",
+          "normalized": false
+        },
+        {
+          "source_line": 105,
+          "text": "✘ Test \"existing Zulu satisfies vendorless or Zulu JDK 21, but never an explicit Temurin request\" recorded an issue with 1 argument declaration → \"zulu-21.0.11+10\" at ToolPreparationTests.swift:90:6: Caught error: no canned response for `node --version`",
+          "normalized": false
+        },
+        {
+          "source_line": 108,
+          "text": "✘ Test \"existing Zulu satisfies vendorless or Zulu JDK 21, but never an explicit Temurin request\" with 3 test cases failed after 1.362 seconds with 3 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 123,
+          "text": "✘ Suite \"approved Node Ruby JDK preparation\" failed after 3.759 seconds with 3 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 124,
+          "text": "✘ Test run with 35 tests in 3 suites failed after 3.759 seconds with 3 issues.",
+          "normalized": false
+        }
+      ]
+    },
+    {
+      "id": "goal203-doctor-gate-first.log",
+      "classification": "FIXTURE_ERROR",
+      "note": "Intermediate workflow fake Node paths were not executable. This is not the final doctor-gate result.",
+      "raw": {
+        "sha256": "4537e62827c54da1e9af342e18eab872b5e75dc7cd0e0ed74368f643687a5c38",
+        "bytes": 21582,
+        "lines": 225,
+        "private_receipt": "PRIVATE203/raw/goal203-doctor-gate-first.log"
+      },
+      "command": null,
+      "observed_exit_code": null,
+      "excerpts": [
+        {
+          "source_line": 50,
+          "text": "✘ Test \"a project without Debug requires configuration before dependency changes\" recorded an issue at WorkflowExecutionTests.swift:112:9: Expectation failed: result.operation.state == \"needs-selection\"",
+          "normalized": false
+        },
+        {
+          "source_line": 53,
+          "text": "✘ Test \"a project without Debug requires configuration before dependency changes\" recorded an issue at WorkflowExecutionTests.swift:113:9: Expectation failed: result.operation.requiredInput == [\"--configuration\"]",
+          "normalized": false
+        },
+        {
+          "source_line": 56,
+          "text": "✘ Test \"an up failure before install leaves a durable unknown device reservation\" recorded an issue at WorkflowExecutionTests.swift:273:9: Expectation failed: result.operation.completed.contains(\"dependencies\")",
+          "normalized": false
+        },
+        {
+          "source_line": 59,
+          "text": "✘ Test \"a project without Debug requires configuration before dependency changes\" failed after 0.879 seconds with 2 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 61,
+          "text": "✘ Test \"an up failure before install leaves a durable unknown device reservation\" recorded an issue at WorkflowExecutionTests.swift:275:34: Expectation failed: an error was expected but none was thrown",
+          "normalized": false
+        },
+        {
+          "source_line": 63,
+          "text": "✘ Test \"a folder held by another client stops build before changes and names the owner\" recorded an issue at WorkflowExecutionTests.swift:158:9: Expectation failed: result.operation.conflict?.owner == gui",
+          "normalized": false
+        },
+        {
+          "source_line": 71,
+          "text": "✘ Test \"a folder held by another client stops build before changes and names the owner\" recorded an issue at WorkflowExecutionTests.swift:159:9: Expectation failed: result.up?.failure?.message.contains(\"held by up operation gui-1\") == true",
+          "normalized": false
+        },
+        {
+          "source_line": 76,
+          "text": "✘ Test \"an up failure before install leaves a durable unknown device reservation\" failed after 0.881 seconds with 2 issues.",
+          "normalized": false
+        },
+        {
+          "source_line": 77,
+          "text": "✘ Test \"a finished up leaves a device claim that another project's up observes again\" recorded an issue at WorkflowExecutionTests.swift:207:9: Expectation failed: result.exitCode == 0",
+          "normalized": false
+        },
+        {
+          "source_line": 81,
+          "text": "✘ Test \"one iOS app builds a generic Simulator artifact without boot, install or launch\" recorded an issue at WorkflowExecutionTests.swift:32:9: Expectation failed: result.exitCode == 0",
+          "normalized": false
+        },
+        {
+          "source_line": 85,
+          "text": "✘ Test \"one iOS app builds a generic Simulator artifact without boot, install or launch\" recorded an issue at WorkflowExecutionTests.swift:33:9: Expectation failed: result.operation.state == \"succeeded\"",
+          "normalized": false
+        },
+        {
+          "source_line": 88,
+          "text": "✘ Test \"one iOS app builds a generic Simulator artifact without boot, install or launch\" recorded an issue at WorkflowExecutionTests.swift:34:9: Expectation failed: result.operation.scheme == \"MyApp\"",
+          "normalized": false
+        }
+      ]
+    }
+  ],
+  "not_verified": [
+    "Actual official payload ABI and library requirements",
+    "Real supported tool-manager reuse",
+    "Actual CLI and GUI waiting/failure/cancellation/recheck/rerun states",
+    "VM actual tuple",
+    "Original SDK/cache/HOME full preservation",
+    "Linux compile",
+    "Independent final-head review",
+    "Remote CI"
+  ]
+}

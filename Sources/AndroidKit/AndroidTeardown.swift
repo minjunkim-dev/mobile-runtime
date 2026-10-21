@@ -71,6 +71,7 @@ struct AndroidCleanup: Sendable {
 
         var items: [TeardownItem] = []
         var toolFailures: [String] = []
+        var failure: DomainError?
         for id in ids {
             do {
                 try Task.checkCancellation()
@@ -95,8 +96,12 @@ struct AndroidCleanup: Sendable {
             } catch is CancellationError {
                 let pending = ids.dropFirst(items.count).map { TeardownItem.unknown($0, "cancelled before cleanup completed") }
                 return Result(report: TeardownReport(items: items + pending, toolFailures: toolFailures,
-                                                      blockedIsFailure: true, cancelled: true),
+                                                      failure: failure, blockedIsFailure: true, cancelled: true),
                               hasRemainingRecord: true)
+            } catch let error as DomainError {
+                items.append(TeardownItem(id: id, status: .unknown, detail: error.message,
+                                          remediation: error.remediation))
+                failure = failure ?? error
             } catch {
                 items.append(.unknown(id, "could not verify or update ownership state"))
                 toolFailures.append("\(id): \(error)")
@@ -106,6 +111,7 @@ struct AndroidCleanup: Sendable {
             report: TeardownReport(
                 items: items,
                 toolFailures: toolFailures,
+                failure: failure,
                 blockedIsFailure: true
             ),
             hasRemainingRecord: FileManager.default.fileExists(atPath: store.file.path)
@@ -119,7 +125,7 @@ struct AndroidCleanup: Sendable {
         guard app.launched else {
             return .skipped("android.app", "installed package was not launched")
         }
-        let sdk = try sdkRoot()
+        let sdk = try doctorContext.requiredSDKRoot()
         switch try await verifyDevice(
             device, serial: app.serial, sdk: sdk, resource: "Android app"
         ) {
@@ -173,7 +179,7 @@ struct AndroidCleanup: Sendable {
         guard reverse.state == .created else {
             return .skipped("android.adb.reverse", "pre-existing mapping preserved")
         }
-        let sdk = try sdkRoot()
+        let sdk = try doctorContext.requiredSDKRoot()
         switch try await verifyDevice(
             device, serial: reverse.serial, sdk: sdk, resource: "adb reverse"
         ) {
@@ -183,7 +189,7 @@ struct AndroidCleanup: Sendable {
         case .verified: break
         }
         let source = "tcp:\(MetroVerdict.port)"
-        let mappings = try await reverseMappings(serial: reverse.serial, sdk: sdk)
+        let mappings = try await doctorContext.reverseMappings(serial: reverse.serial, sdk: sdk, runner: runner)
         guard let current = mappings[source] else {
             return .skipped("android.adb.reverse", "mapping already absent")
         }
@@ -209,7 +215,7 @@ struct AndroidCleanup: Sendable {
                 )
             )
         }
-        guard try await reverseMappings(serial: reverse.serial, sdk: sdk)[source] == nil else {
+        guard try await doctorContext.reverseMappings(serial: reverse.serial, sdk: sdk, runner: runner)[source] == nil else {
             return .failed(
                 "android.adb.reverse",
                 cleanupFailure(
@@ -232,7 +238,7 @@ struct AndroidCleanup: Sendable {
         } else {
             false
         }
-        let listener = try await currentListener()
+        let listener = try await MetroLaunch.listeners(runner: projectRunner).first
         if !startRunning && listener == nil {
             return .skipped("metro", "owned Metro already stopped")
         }
@@ -292,7 +298,7 @@ struct AndroidCleanup: Sendable {
             )
         }
         try await pause()
-        let listenerAfter = try await currentListener()
+        let listenerAfter = try await MetroLaunch.listeners(runner: projectRunner).first
         let startAfter = if let pid = metro.startPID {
             try await processIsRunning(pid)
         } else {
@@ -315,7 +321,10 @@ struct AndroidCleanup: Sendable {
         guard device.state == .started else {
             return .skipped("android.emulator", "pre-existing Emulator preserved")
         }
-        let sdk = try sdkRoot()
+        guard let pid = device.launcherPID, pid > 0, device.serial?.isEmpty == false else {
+            return .unknown("android.emulator", "owned Emulator absence requires its recorded serial and launcher PID")
+        }
+        let sdk = try doctorContext.requiredSDKRoot()
         if let serial = device.serial {
             if try await emulatorSerials(sdk: sdk).contains(serial) {
                 let current = try await emulatorAVDName(serial: serial, sdk: sdk)
@@ -355,8 +364,12 @@ struct AndroidCleanup: Sendable {
             }
         }
 
-        guard let pid = device.launcherPID, try await processIsRunning(pid) else {
-            return .skipped("android.emulator", "owned Emulator already stopped")
+        guard let running = try await ownedLauncherPresence(pid) else {
+            return .unknown("android.emulator", "owned Emulator launcher presence could not be confirmed")
+        }
+        if !running {
+            return TeardownItem(id: "android.emulator", status: .skipped,
+                detail: "owned Emulator already stopped", ownedRuntimeStopped: true)
         }
         let commandLine = try await processCommand(pid)
         guard commandLine.contains("emulator"), commandLine.contains("-avd \(device.avd)") else {
@@ -368,11 +381,18 @@ struct AndroidCleanup: Sendable {
                 )
             )
         }
-        _ = try await runner.run(
+        let stopped = try await runner.run(
             ProcessCommand("kill", ["-TERM", "\(pid)"], timeout: .seconds(10))
         )
+        guard stopped.terminationStatus.isSuccess else {
+            return .failed("android.emulator", cleanupFailure(
+                "the owned Emulator launcher could not be stopped", observed: stopped.combinedOutput.lastLines(8)))
+        }
         try await pause()
-        guard try await processIsRunning(pid) == false else {
+        guard let runningAfter = try await ownedLauncherPresence(pid) else {
+            return .unknown("android.emulator", "owned Emulator launcher presence after SIGTERM could not be confirmed")
+        }
+        guard !runningAfter else {
             return .failed(
                 "android.emulator",
                 cleanupFailure(
@@ -384,42 +404,20 @@ struct AndroidCleanup: Sendable {
         return .stopped("android.emulator", "\(device.avd) — launcher pid \(pid)")
     }
 
-    private func sdkRoot() throws -> URL {
-        switch doctorContext.sdkRoot() {
-        case .resolved(let sdk, _): return sdk
-        case .conflict(let reason), .missing(let reason):
-            throw AndroidStateError(reason)
-        }
+    private func ownedLauncherPresence(_ pid: Int32) async throws -> Bool? {
+        let result = try await runner.run(
+            ProcessCommand("ps", ["-p", "\(pid)", "-o", "pid="], timeout: .seconds(10))
+        )
+        guard result.standardError.isEmpty else { return nil }
+        let pids = result.standardOutput.split(whereSeparator: \.isWhitespace).map(String.init)
+        if case .exited(1) = result.terminationStatus, pids.isEmpty { return false }
+        return result.terminationStatus.isSuccess && pids == [String(pid)] ? true : nil
     }
 
     private func adb(
         _ arguments: [String], sdk: URL, timeout: Duration = .seconds(15)
     ) -> ProcessCommand {
         doctorContext.toolCommand("adb", arguments, sdk: sdk, timeout: timeout)
-    }
-
-    private func reverseMappings(serial: String, sdk: URL) async throws -> [String: String] {
-        let result = try await runner.run(adb(
-            ["-s", serial, "reverse", "--list"], sdk: sdk
-        ))
-        guard result.terminationStatus.isSuccess else {
-            throw AndroidStateError("adb reverse --list could not be observed")
-        }
-        return result.standardOutput.split(separator: "\n").reduce(into: [:]) { mappings, line in
-            let fields = line.split(whereSeparator: \.isWhitespace).map(String.init)
-            guard fields.count >= 2 else { return }
-            mappings[fields[fields.count - 2]] = fields[fields.count - 1]
-        }
-    }
-
-    private func currentListener() async throws -> Int32? {
-        let result = try await projectRunner.run(
-            ProcessCommand(
-                "lsof", MetroVerdict.listenerArguments + ["-t"], timeout: .seconds(10)
-            )
-        )
-        return result.standardOutput.split(separator: "\n")
-            .compactMap { Int32($0.trimmingCharacters(in: .whitespaces)) }.first
     }
 
     private func processIsRunning(_ pid: Int32) async throws -> Bool {
@@ -530,6 +528,12 @@ struct AndroidCleanup: Sendable {
             )
         )
     }
+}
+
+/// Read while holding the project lease, before acquiring the device lease.
+public func androidTeardownDeviceKey(anchor: ProjectAnchor, logs: RunLogs? = nil) throws -> ResourceKey? {
+    try AndroidActiveRunStore(project: anchor.directory, logs: logs).read()?.device
+        .map { .device(.android, "avd:\($0.avd)") }
 }
 
 public func androidTeardown(

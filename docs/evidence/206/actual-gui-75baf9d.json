@@ -1,0 +1,320 @@
+{
+  "schemaVersion": 1,
+  "status": "bounded-GUI-actual-evidence",
+  "scope": "Measured source75 GUI candidate only. Later integration-head review, CI, merge and release are separate.",
+  "source": {
+    "HEAD": "75baf9d66592bc20e0c5644ff161ec77686a6c6d",
+    "tree": "f1b2a185d3916689a3cc4fa3e75e869498e681e8",
+    "privatePackagedGUI": {
+      "bytes": 16276528,
+      "SHA256": "e9a463cd02272acae3756bf491f5d485804be7b62a2afb1a588a7f8d14a722c5"
+    },
+    "candidateInputFiles": 28,
+    "guestVerifiedAndLauncherMapsMatchCandidate": true,
+    "guestStrictCodesignExitCode": 0
+  },
+  "locations": {
+    "GUI_APP": "$GUI_APP",
+    "GUI_HOME": "$GUI_HOME",
+    "GUI_PROJECT": "$GUI_PROJECT",
+    "GUI_DEVICE_SET": "$GUI_DEVICE_SET",
+    "VM": "$VALIDATION_VM"
+  },
+  "execution": {
+    "GUIpid": 4261,
+    "launcherPID": 4259,
+    "startedAtUTC": "2026-10-18T05:28:08Z",
+    "UIPath": "Root CUA hidden in-app browser framebuffer",
+    "approval": {
+      "trustRepository": false,
+      "displayedOriginalPlanID": "a3e2af1a92e3b6880b2cecf0b481a73cb95c85bb5beb9d8f6cc6f26d023239c4",
+      "planEvidenceKind": "screenshot09 plus manual pre-action review; not serialized plan JSON",
+      "automaticStepDisplayed": "ios.simulator.create",
+      "approvalClickCountReportedByRoot": 1
+    },
+    "result": {
+      "screen11Status": "setup: succeeded / exit 0",
+      "completedChangeDisplayed": "ios.simulator.create",
+      "runtimeAction": "reuse",
+      "runtime": {
+        "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+        "version": "27.0",
+        "build": "24A434",
+        "architecture": "arm64"
+      },
+      "createdDevice": {
+        "count": 1,
+        "UDID": "E73CDA0C-0B5A-483D-B06F-8551BA403E8E",
+        "type": "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro",
+        "state": "Shutdown",
+        "isAvailable": true,
+        "deviceSet": "$GUI_DEVICE_SET"
+      },
+      "privateDeviceSetBefore": {
+        "observedTreeExists": true,
+        "observedEntries": 0
+      }
+    },
+    "reinspection": {
+      "screen12Status": "setup: needs-approval / exit 0",
+      "displayedPlanID": "18b9d5f20f8b9a3565d1509f4bfbc6633ada6729a78f4d0c39ac06066812ad0e",
+      "planEvidenceKind": "visual transcription from screenshots11/12; serialized JSON not captured",
+      "runtimeActionDisplayed": "reuse",
+      "simulatorActionDisplayed": "reuse",
+      "remainingSimulatorCreateDisplayed": false,
+      "approvalStillRequired": true,
+      "serializedRemainingStepsVerified": false
+    }
+  },
+  "preservation": {
+    "namedChecks": {
+      "originalSource": true,
+      "newSource": true,
+      "SDK": true,
+      "tools": true,
+      "oldCandidate": true,
+      "oldPlanV5Receipts": true,
+      "oldPreparationStates": true,
+      "GuestAgentPATH": true,
+      "launchctlPATH": true,
+      "globalXcodeSelection": true,
+      "previousRootsOptional": true,
+      "candidate28Exact": true,
+      "SDKEntryCountSame": true,
+      "xcodeSelectSame": true,
+      "originalRuntimes": true,
+      "originalManagedRuntimes": true,
+      "adminDefaultSame": true,
+      "reusedExactRuntime27": true,
+      "exactOneGUICreatedDevice": true
+    },
+    "all19NamedChecksTrue": true,
+    "scope": "Named fixture source/Git, SDK/tools, candidate28, selected PATH/Xcode settings, prior runtime/default-device and historical-input observations only.",
+    "selectedAdminHOMEMetadataDeltaNames": [
+      "Library/Caches"
+    ],
+    "deltaActorProven": false,
+    "fullHOMEOrCacheContentsVerified": false,
+    "fullVMDiskPayloadVerified": false,
+    "observerActionsAreObserverOnly": true
+  },
+  "cleanup": {
+    "GUI": {
+      "method": "App-menu Quit through CUA",
+      "actualChildExitCode": 0,
+      "finishedAtUTC": "2026-10-18T06:07:20Z",
+      "GUIAbsent": true,
+      "priorObservedDescendantsStillAlive": [],
+      "allUnseenOrReparentedChildrenProvenAbsent": false
+    },
+    "bridge": {
+      "provenance": "Pinned Root native lifecycle report plus relay receipt",
+      "connections": 1,
+      "reason": "client-eof",
+      "hostTartProxyExitCode": 0,
+      "forcedHostProxyTermination": false,
+      "guestRelayEndReason": "input-eof",
+      "guestRelayAbsenceRootNativeExitCode": 0,
+      "serverAndRelayCollectedActualExitCodes": [
+        0,
+        0
+      ]
+    },
+    "VM": {
+      "provenance": "Pinned Root native lifecycle report",
+      "normalStopActualExitCode": 0,
+      "allFiveVMsObservedStopped": true,
+      "protectedFourVMMapsEqualAcrossSixSnapshots": true,
+      "protectedMapScope": "Small metadata SHA256 and disk stat fields; not full VM payload hashes",
+      "originalBootCommandExit": "UNKNOWN",
+      "normalStopDoesNotResolveOriginalBootExit": true
+    }
+  },
+  "exportVerification": {
+    "receiptFiles": 60,
+    "receiptBytes": 8311513,
+    "copyBytesSHA256Mismatches": 0,
+    "tarReceiptBytesModesSHA256Mismatches": 0,
+    "tarRegularMembers": 61,
+    "embeddedIndexBytesSHA256Exact": true,
+    "archiveBytes": 8437760,
+    "archiveSHA256": "199bdd8f6b913be839712ad6e6768f9253c0b59d0d6e59488eb7f0dec2e2d47f",
+    "indexBytes": 10947,
+    "indexSHA256": "e137582dec789dd9092f045f9ebc7be32568a84948da6e346f51375757f42b1c",
+    "method": "Pure Node filesystem and in-memory tar parsing; no subprocess or extraction",
+    "hostCopiedFileModeUsedAsTarModeProof": false
+  },
+  "boundedChecks": [
+    {
+      "name": "Reviewed GUI approval",
+      "status": "observed",
+      "evidence": [
+        "screen09",
+        "screen10",
+        "pre-action-review"
+      ]
+    },
+    {
+      "name": "Runtime reuse and one private Shutdown device",
+      "status": "observed",
+      "evidence": [
+        "screen11",
+        "native-after"
+      ]
+    },
+    {
+      "name": "Reinspection retains needs-approval",
+      "status": "observed",
+      "evidence": [
+        "screen12"
+      ]
+    },
+    {
+      "name": "19 named preservation checks",
+      "status": "observed",
+      "evidence": [
+        "native-after"
+      ]
+    },
+    {
+      "name": "Normal GUI Quit and exact child exit",
+      "status": "observed",
+      "evidence": [
+        "screen13",
+        "screen14",
+        "gui-exit",
+        "native-after-quit"
+      ]
+    },
+    {
+      "name": "Bridge cleanup and normal VM stop",
+      "status": "root-native-reported",
+      "evidence": [
+        "root-lifecycle",
+        "relay-exit"
+      ]
+    }
+  ],
+  "limitations": [
+    "GUI serialized original/post-operation plan JSON was not captured.",
+    "Individual GUI xcodebuild child exit was not captured; screen setup exit0 and GUI process exit0 are different evidence.",
+    "Reinspection still reported needs-approval, even with runtime/device reuse and no remaining create displayed.",
+    "Selected HOME directory metadata changed at Library/Caches; the actor and full cache contents are not proven.",
+    "GUI reused the runtime; full network transfer or downloaded runtime checksum is not proven.",
+    "Named preservation checks do not prove full HOME/cache/SDK/VM payload equality or absence of every unseen/reparented child.",
+    "Target-project build/run and release are separate from GUI preparation success.",
+    "Later integration-head CI/merge is not established by this source75 run.",
+    "Historical d462/6e measurements retain their original source identities.",
+    "Original Tart boot command exit remains UNKNOWN after its native handle was lost."
+  ],
+  "evidence": [
+    {
+      "id": "candidate-input",
+      "path": "$GUI_PREPARATION/CANDIDATE-INPUT.json",
+      "bytes": 7305,
+      "SHA256": "739ad36aa18fb6f2ec130f2e973f08807323b7ec5321bb047aaf9d9f6d71aa0d"
+    },
+    {
+      "id": "pre-action-review",
+      "path": "$GUI_REVIEW/ROOT-gui-approval-v1.json",
+      "bytes": 1704,
+      "SHA256": "7b02c9f436e11b23ddeea48cdbaf5981bf613b6effebc500034b3f5364b5d390"
+    },
+    {
+      "id": "screen09",
+      "path": "$GUI_SCREENSHOTS/09-background-connected-view-only.jpg",
+      "bytes": 145085,
+      "SHA256": "5bdf309e6af26a0a2e227401e0dc024188a7fe5828a309bce4084687eea1cfbc"
+    },
+    {
+      "id": "screen10",
+      "path": "$GUI_SCREENSHOTS/10-background-approved-running.jpg",
+      "bytes": 138027,
+      "SHA256": "b02e8e8df714621d20682389a4694b3410396def7f0f1782b1115430e62c68cf"
+    },
+    {
+      "id": "screen11",
+      "path": "$GUI_SCREENSHOTS/11-background-setup-succeeded.jpg",
+      "bytes": 134090,
+      "SHA256": "82c7a93ce621b24d007d25aa2d5f2bb6d7ce470206135dcdd0f2848aeada14b1"
+    },
+    {
+      "id": "screen12",
+      "path": "$GUI_SCREENSHOTS/12-background-reinspection-reuse.jpg",
+      "bytes": 134076,
+      "SHA256": "6fd6ea9ff21742334098bb0fc3c42ea449bc7b042cce4fe25d6b1ae1cc893874"
+    },
+    {
+      "id": "screen13",
+      "path": "$GUI_SCREENSHOTS/13-background-normal-quit-menu.jpg",
+      "bytes": 134376,
+      "SHA256": "209f96f2101c87b049e6c1bcc82f3a9d5931ea200a2b816c02e27e82eca90b33"
+    },
+    {
+      "id": "screen14",
+      "path": "$GUI_SCREENSHOTS/14-background-after-normal-quit.jpg",
+      "bytes": 99238,
+      "SHA256": "83837093fde1770c8ec85ea468d994babda0eaa8bd0e8074d2a0175968fad417"
+    },
+    {
+      "id": "gui-start",
+      "path": "$GUI_EXPORT/receipts/gui-launch-start.json",
+      "bytes": 70,
+      "SHA256": "c2086ea273d1496b0665ebda25cadb99cf1224c9655ee9d3f0701a9eef5ed108"
+    },
+    {
+      "id": "gui-exit",
+      "path": "$GUI_EXPORT/receipts/gui-launch-exit.json",
+      "bytes": 65,
+      "SHA256": "8cc5355e8d3c853d6a5b7b57c194f25cace1b4307d3b7bf4d3616d10c86805fc"
+    },
+    {
+      "id": "native-after-quit",
+      "path": "$GUI_EXPORT/receipts/gui-observations/07-after-quit/observation.json",
+      "bytes": 810,
+      "SHA256": "75141796f695840e3f390081e195cc3dab29fef8fca7b12992bf095239f981a7"
+    },
+    {
+      "id": "native-after",
+      "path": "$GUI_EXPORT/receipts/gui-after/08-after/after.json",
+      "bytes": 4070846,
+      "SHA256": "60ea10e09470ba35e38008a86f260ddcc4233a58224bebc10214259b81ecc6b1"
+    },
+    {
+      "id": "export-index",
+      "path": "$GUI_EXPORT/INDEX.json",
+      "bytes": 10947,
+      "SHA256": "e137582dec789dd9092f045f9ebc7be32568a84948da6e346f51375757f42b1c"
+    },
+    {
+      "id": "export-tar",
+      "path": "$GUI_TRANSPORT/09-export/stdout",
+      "bytes": 8437760,
+      "SHA256": "199bdd8f6b913be839712ad6e6768f9253c0b59d0d6e59488eb7f0dec2e2d47f"
+    },
+    {
+      "id": "root-lifecycle",
+      "path": "$BRIDGE_REPORTS/ROOT-ACTUAL-v1.md",
+      "bytes": 4826,
+      "SHA256": "8a2b147964876c30860ab3876bea212ddcb0365ff20bf5753d704ecc2e50b5df"
+    },
+    {
+      "id": "relay-exit",
+      "path": "$BRIDGE_RECEIPTS/ROOT-relay-connection-001.exit.json",
+      "bytes": 534,
+      "SHA256": "7c0cfc3354c996c9dd8c8ff21e05504cd9e8ec67817829e227dc86eb8c617a1a"
+    },
+    {
+      "id": "browser-security",
+      "path": "$BRIDGE_REPORTS/SECURITY-BROWSER-v2.md",
+      "bytes": 4344,
+      "SHA256": "9f449b435c4708c750340c9aa9f3067d3b6c849123dfef80d59d95b99792d5d4"
+    },
+    {
+      "id": "relay-security",
+      "path": "$BRIDGE_REPORTS/SECURITY-ROOT-RELAY-v3.md",
+      "bytes": 4003,
+      "SHA256": "67073ec6d4436a028329d68da65238870d62ce528aaa539fbb0ec349d51b92f9"
+    }
+  ]
+}

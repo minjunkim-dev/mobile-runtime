@@ -37,9 +37,11 @@ public func androidBuildStages(
     validationCheckIDs: Set<String> = AndroidWorkflowValidation.checkIDs,
     note: @escaping @Sendable (String) -> Void
 ) -> [any Stage] {
-    [
-        ValidateStage(engine: doctor, checkIDs: validationCheckIDs),
-        DependenciesStage(anchor: anchor, runner: projectRunner, includePods: false),
+    var stages: [any Stage] = [ValidateStage(engine: doctor, checkIDs: validationCheckIDs)]
+    if anchor.framework == .reactNative {
+        stages.append(DependenciesStage(anchor: anchor, runner: projectRunner, includePods: false))
+    }
+    stages.append(
         AndroidBuildStage(
             anchor: anchor,
             config: config,
@@ -47,8 +49,9 @@ public func androidBuildStages(
             projectRunner: projectRunner,
             environment: environment,
             note: note
-        ),
-    ]
+        )
+    )
+    return stages
 }
 
 public struct AndroidBuildStage: Stage {
@@ -97,7 +100,7 @@ public struct AndroidBuildStage: Stage {
                 observed: reason,
                 remediation: Remediation(
                     summary: "Fix or materialize the declared Gradle inputs, then run the same wrapper model query.",
-                    command: "cd \(shell(anchor.directory.appendingPathComponent("android").path)) && ./gradlew help"
+                    command: "cd \(shellArgument(context.androidDirectory.path)) && ./gradlew help"
                 )
             )
         }
@@ -120,7 +123,7 @@ public struct AndroidBuildStage: Stage {
             let applicationId = variant.applicationId,
             let minSdk = variant.minSdk ?? module.minSdk,
             let targetSdk = variant.targetSdk ?? module.targetSdk,
-            let buildTools = module.buildToolsVersion
+            let buildTools = module.effectiveBuildToolsVersion
         else {
             throw DomainError(
                 summary: "the selected Android variant did not expose complete build metadata",
@@ -136,17 +139,7 @@ public struct AndroidBuildStage: Stage {
             )
         }
 
-        let sdk: URL
-        switch context.sdkRoot() {
-        case .resolved(let value, _): sdk = value
-        case .conflict(let reason), .missing(let reason):
-            throw DomainError(
-                summary: reason,
-                remediation: Remediation(
-                    summary: "Make android/local.properties sdk.dir and ANDROID_HOME name one installed SDK."
-                )
-            )
-        }
+        let sdk = try context.requiredSDKRoot()
         let aapt2 = sdk.appendingPathComponent("build-tools/\(buildTools)/aapt2")
         guard FileManager.default.isExecutableFile(atPath: aapt2.path) else {
             throw DomainError(
@@ -164,12 +157,13 @@ public struct AndroidBuildStage: Stage {
             [
                 assembleTask,
                 "--no-daemon",
+            ] + AndroidGradleModelProbe.configurationArguments + [
                 "--console=plain",
-                "-Porg.gradle.java.installations.auto-download=false",
+                "-Dorg.gradle.java.installations.auto-download=false", "-Pandroid.builder.sdkDownload=false",
                 "-I",
                 modelScript.path,
             ],
-            workingDirectory: anchor.directory.appendingPathComponent("android"),
+            workingDirectory: context.androidDirectory,
             timeout: nil,
             output: .streamed(to: log)
         )
@@ -244,10 +238,10 @@ public struct AndroidBuildStage: Stage {
         try require("targetSdk", targetSdk, aapt.targetSdk)
 
         let declaredABIs = Set(variant.abiFilters.flatMap { $0.isEmpty ? nil : $0 } ?? module.abiFilters)
-        guard !aapt.abis.isEmpty else {
+        guard anchor.framework == .nativeAndroid || !aapt.abis.isEmpty else {
             throw unsupportedOutput("the APK exposes no native ABI metadata")
         }
-        if !declaredABIs.isEmpty, declaredABIs != Set(aapt.abis) {
+        if !aapt.abis.isEmpty, !declaredABIs.isEmpty, declaredABIs != Set(aapt.abis) {
             throw mismatch(
                 "native ABI",
                 expected: declaredABIs.sorted().joined(separator: ","),
@@ -529,11 +523,7 @@ private func names(_ values: [String]) -> String {
     values.isEmpty ? "none" : values.joined(separator: ", ")
 }
 
-private func shell(_ value: String) -> String {
-    "'" + value.replacingOccurrences(of: "'", with: "'\\''") + "'"
-}
-
 private func pasteable(_ command: ProcessCommand) -> String {
-    "cd \(shell(command.workingDirectory?.path ?? ".")) && "
-        + ([command.executable] + command.arguments).map(shell).joined(separator: " ")
+    "cd \(shellArgument(command.workingDirectory?.path ?? ".")) && "
+        + ([command.executable] + command.arguments).map(shellArgument).joined(separator: " ")
 }

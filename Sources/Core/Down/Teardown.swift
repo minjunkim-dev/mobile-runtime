@@ -30,14 +30,19 @@ public struct TeardownItem: Sendable, Equatable, Encodable {
     /// `blocked` alike. A blocked port has a next step too, and it is the one the
     /// verdict already wrote: the process holding 8081, by name.
     public let remediation: Remediation?
+    /// True only when cleanup confirmed an owned runtime is stopped or absent.
+    /// nil preserves the legacy report shape and carries no ownership evidence.
+    public let ownedRuntimeStopped: Bool?
 
     public init(
-        id: String, status: TeardownStatus, detail: String? = nil, remediation: Remediation? = nil
+        id: String, status: TeardownStatus, detail: String? = nil, remediation: Remediation? = nil,
+        ownedRuntimeStopped: Bool? = nil
     ) {
         self.id = id
         self.status = status
         self.detail = detail
         self.remediation = remediation
+        self.ownedRuntimeStopped = ownedRuntimeStopped
     }
 
     public static func stopped(_ id: String, _ detail: String? = nil) -> TeardownItem {
@@ -73,9 +78,8 @@ public struct TeardownReport: Sendable {
     public let items: [TeardownItem]
     /// Jobs that could not be run at all — the tool or the machine, not the project.
     public let toolFailures: [String]
-    /// A failure of the run itself rather than of one of its jobs — standing outside
-    /// a project is the whole of it. Carried the way `up` carries one, so that no
-    /// item has to be invented to hold it.
+    /// A domain failure that prevents the run or an ownership probe from proceeding.
+    /// Unobserved items remain unknown; the failure carries their actionable cause.
     public let failure: DomainError?
     /// Android ownership cleanup treats an identity mismatch as a failed cleanup;
     /// iOS keeps ADR-0007's legacy non-error `blocked` meaning.

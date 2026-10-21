@@ -1,0 +1,2446 @@
+{
+  "schemaVersion": 1,
+  "status": "retained-selected-command-receipts",
+  "snapshotAtEpoch": 1792119128.83332,
+  "candidateSourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+  "normalization": "Paths use input-tuple.json aliases. normalizedArgv preserves argument boundaries. Raw command JSON, including environment values, remains private. rawCommandFileSHA256 hashes original file bytes. originalArgvCanonicalJSONSHA256 hashes UTF-8 json.dumps(original_argv, ensure_ascii=False, separators=(comma, colon)); this is separate from original command-file bytes.",
+  "cases": [
+    {
+      "case": "todo-doctor-initial",
+      "at": 1792111533.407866,
+      "privateCommand": "${RUN211}/state/todo-doctor-initial/command.json",
+      "rawCommandFileSHA256": "921f9108fbda8f13b460dca858f517400e02015a0526e3bcbc992eb0c04072c3",
+      "originalArgvCanonicalJSONSHA256": "0a2d517e81f68b16311cf1c4a52934a8337a7f8fc502b5e1a909d47d752133c7",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile",
+        "doctor",
+        "--platform",
+        "android",
+        "--project",
+        "${RUN211}/sources/todo-cli",
+        "--json",
+        "--progress-json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792111533.859606,
+        "exitCode": 64,
+        "seconds": 0.452,
+        "action": null,
+        "operation": {}
+      },
+      "rawResultFileSHA256": "0828547a7a0680cc15d0fc5c4ed846d8b1574db977ddf328a01225c2a3c189a3",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/todo-cli",
+        "TMPDIR": "${RUN211}${HOST_TMP}/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "todo-doctor-correct-args",
+      "at": 1792111544.1972978,
+      "privateCommand": "${RUN211}/state/todo-doctor-correct-args/command.json",
+      "rawCommandFileSHA256": "5204a984662423ce9936a7e745f95dc9158c9728118b3586cbf6df4230edbd13",
+      "originalArgvCanonicalJSONSHA256": "54dfe107c8237f98bcfe08c4a0dbf9ca0d6191d55582e6d8b18c08cf3ed8c13c",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile",
+        "doctor",
+        "--platform",
+        "android",
+        "--project",
+        "${RUN211}/sources/todo-cli",
+        "--json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792111544.308527,
+        "exitCode": -5,
+        "seconds": 0.111,
+        "action": null,
+        "operation": {}
+      },
+      "rawResultFileSHA256": "769a85187cfe91104c052d53c478565b4634f1ea058aac7c12372ac72842107f",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/todo-cli",
+        "TMPDIR": "${RUN211}${HOST_TMP}/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "todo-doctor-resources-fixed",
+      "at": 1792111573.884693,
+      "privateCommand": "${RUN211}/state/todo-doctor-resources-fixed/command.json",
+      "rawCommandFileSHA256": "855f042d1300fe3c5ffed362b86befd1f0e79424710a67b7a1cbf21f2084c8b9",
+      "originalArgvCanonicalJSONSHA256": "54dfe107c8237f98bcfe08c4a0dbf9ca0d6191d55582e6d8b18c08cf3ed8c13c",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile",
+        "doctor",
+        "--platform",
+        "android",
+        "--project",
+        "${RUN211}/sources/todo-cli",
+        "--json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792111584.01323,
+        "exitCode": 1,
+        "seconds": 10.128,
+        "sourceSHA": "6754c92ff5236de8039173e65e10bb0e71b50ac7",
+        "state": null,
+        "action": null,
+        "operation": {}
+      },
+      "rawResultFileSHA256": "23211663380663f7be68b94ab13bbbd31899796e2b69c95fa959c3f1370969ca",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/todo-cli",
+        "TMPDIR": "${RUN211}${HOST_TMP}/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "todo-doctor-temp-permission",
+      "at": 1792111615.7649999,
+      "privateCommand": "${RUN211}/state/todo-doctor-temp-permission/command.json",
+      "rawCommandFileSHA256": "5f1dcb28199300566ae54df39c683a492ac00417cb0ef9db2a9f1bba2f1ffeef",
+      "originalArgvCanonicalJSONSHA256": "54dfe107c8237f98bcfe08c4a0dbf9ca0d6191d55582e6d8b18c08cf3ed8c13c",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile",
+        "doctor",
+        "--platform",
+        "android",
+        "--project",
+        "${RUN211}/sources/todo-cli",
+        "--json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792111621.110736,
+        "exitCode": 0,
+        "seconds": 5.346,
+        "sourceSHA": "6754c92ff5236de8039173e65e10bb0e71b50ac7",
+        "state": null,
+        "action": null,
+        "operation": {}
+      },
+      "rawResultFileSHA256": "e95ccace30e2005c0355ff1066ae168e7ab9d20cb9c7d6bf0b70029b4d9ec00f",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/todo-cli",
+        "TMPDIR": "${RUN211}${HOST_TMP}/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "todo-build",
+      "at": 1792111655.851257,
+      "privateCommand": "${RUN211}/state/todo-build/command.json",
+      "rawCommandFileSHA256": "3fc13268c837483853b15c804c5e1bb391d987bbf497f3dda488a54b7992b20d",
+      "originalArgvCanonicalJSONSHA256": "bcb37bfd27212f1dd7b73dc0f7d6bac7b1e8fe11c8cf9567d3f8d3f5b6c99f7d",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile",
+        "build",
+        "--platform",
+        "android",
+        "--non-interactive",
+        "--project",
+        "${RUN211}/sources/todo-cli",
+        "--json",
+        "--progress-json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792111681.9386299,
+        "exitCode": 2,
+        "seconds": 26.087,
+        "sourceSHA": "6754c92ff5236de8039173e65e10bb0e71b50ac7",
+        "state": "failed",
+        "action": null,
+        "operation": {
+          "id": "08508D9E-4907-4BC2-AE13-A38CE036B300",
+          "kind": "build",
+          "completed": [
+            "validate"
+          ],
+          "remaining": [],
+          "requiredInput": [],
+          "module": ":app",
+          "modules": [
+            ":app"
+          ],
+          "variant": "debug",
+          "variants": [
+            "debug"
+          ],
+          "nextAction": "Check the failed tool and its logs. Run mobile doctor for the selected project and platform."
+        }
+      },
+      "rawResultFileSHA256": "a98da3784bbe2d738aa21a5921ebd9bc2edf6dbb7623095a5fa80797651805c1",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/todo-cli",
+        "TMPDIR": "${RUN211}${HOST_TMP}/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "todo-build-owned-logs",
+      "at": 1792111951.290844,
+      "privateCommand": "${RUN211}/state/todo-build-owned-logs/command.json",
+      "rawCommandFileSHA256": "691e191fd17776804f7e0c1d66505b653862f72294cb1df31b70b72e0ce963c3",
+      "originalArgvCanonicalJSONSHA256": "4de3990903f8ceada4217b163e65fe8d6a4c230666da12abbb51698e16b55585",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile-v2",
+        "build",
+        "--platform",
+        "android",
+        "--non-interactive",
+        "--project",
+        "${RUN211}/sources/todo-cli",
+        "--json",
+        "--progress-json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792112020.329252,
+        "exitCode": 0,
+        "seconds": 69.038,
+        "sourceSHA": "de99bcad1b2cc171d6a37e832914f2a475c13aaf",
+        "state": "succeeded",
+        "action": null,
+        "operation": {
+          "id": "7A673384-434A-4A5F-B6E7-AC9DFB8A2B6A",
+          "kind": "build",
+          "completed": [
+            "validate",
+            "android.build"
+          ],
+          "remaining": [],
+          "requiredInput": [],
+          "module": ":app",
+          "modules": [
+            ":app"
+          ],
+          "variant": "debug",
+          "variants": [
+            "debug"
+          ]
+        }
+      },
+      "rawResultFileSHA256": "2f17d8d728181935ffa4988c834858d7767b299cd6f51101cdb92839caa0f005",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/todo-cli",
+        "TMPDIR": "${RUN211}${HOST_TMP}/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "todo-setup-plan",
+      "at": 1792111585.4784052,
+      "privateCommand": "${RUN211}/state/todo-setup-plan/command.json",
+      "rawCommandFileSHA256": "1aba489832ae2a3cca468f50ce8739da93553a989aa0cb4a9611ec27a48aa331",
+      "originalArgvCanonicalJSONSHA256": "69db183dd202d5f164a4962d7070410ea38acf9a21da71604c6997f1d7cc6591",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile",
+        "setup",
+        "--platform",
+        "android",
+        "--project",
+        "${RUN211}/sources/todo-cli",
+        "--json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792111590.122764,
+        "exitCode": 1,
+        "seconds": 4.644,
+        "sourceSHA": "6754c92ff5236de8039173e65e10bb0e71b50ac7",
+        "state": "needs-approval",
+        "action": null,
+        "operation": {
+          "id": "5F72B55C-C997-4622-B98F-A7FAAE2E884F",
+          "kind": "setup",
+          "completed": [],
+          "remaining": [
+            "android.android.avd",
+            "android.host.storage",
+            "android.host.workspace-access"
+          ],
+          "requiredInput": [],
+          "nextAction": "Review this plan. Approve only its exact plan-id; repository trust is separate."
+        }
+      },
+      "rawResultFileSHA256": "f6617a1724d96a4e6f2abcea9c6dae48b6e18e8227baa136669f915c90aa3a25",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/todo-cli",
+        "TMPDIR": "${RUN211}${HOST_TMP}/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "nia-doctor",
+      "at": 1792111657.237568,
+      "privateCommand": "${RUN211}/state/nia-doctor/command.json",
+      "rawCommandFileSHA256": "a9e19d777e11564a66e62e65fcd1173dad8af6cea6d925241d6cb629e06ff227",
+      "originalArgvCanonicalJSONSHA256": "7e19c1eee07a317eeae133629151b625fb7973d366f673f01653ba7c94f53bc8",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile",
+        "doctor",
+        "--platform",
+        "android",
+        "--project",
+        "${RUN211}/sources/nia-cli",
+        "--json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/nia-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792111659.5093188,
+        "exitCode": 1,
+        "seconds": 2.272,
+        "sourceSHA": "6754c92ff5236de8039173e65e10bb0e71b50ac7",
+        "state": null,
+        "action": null,
+        "operation": {}
+      },
+      "rawResultFileSHA256": "06a03a58fef901b9b23e6ea02c8f03c40d218fb8d39c23d60525269f3e190d5b",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu21.52.203-ca-jdk21.0.12.1-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/nia-cli",
+        "TMPDIR": "${RUN211}${HOST_TMP}/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "nia-doctor-isolation-fixed",
+      "at": 1792111949.856951,
+      "privateCommand": "${RUN211}/state/nia-doctor-isolation-fixed/command.json",
+      "rawCommandFileSHA256": "71dc27ec3d8aad41c4dcce55ba7b0fc5bb9cee8f63ae0f0006dc93487e742e78",
+      "originalArgvCanonicalJSONSHA256": "46ff4314219c0a19fbd829fbbbb7e6ff952b793e81ff4caaab72b7d379245184",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile-v2",
+        "doctor",
+        "--platform",
+        "android",
+        "--project",
+        "${RUN211}/sources/nia-cli",
+        "--json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/nia-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792111985.116479,
+        "exitCode": 0,
+        "seconds": 35.259,
+        "sourceSHA": "de99bcad1b2cc171d6a37e832914f2a475c13aaf",
+        "state": null,
+        "action": null,
+        "operation": {}
+      },
+      "rawResultFileSHA256": "8e276dd5ce4778c36d34a02feb4b15e972148ab980429f8bf13423b7314630a2",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu21.52.203-ca-jdk21.0.12.1-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/nia-cli",
+        "TMPDIR": "${RUN211}${HOST_TMP}/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "todo-up",
+      "at": 1792112080.765177,
+      "privateCommand": "${RUN211}/state/todo-up/command.json",
+      "rawCommandFileSHA256": "23c717a522351804d8504d7a64a58e08a24260f8df6b64726dac77cef8607e84",
+      "originalArgvCanonicalJSONSHA256": "1ac31d1d749cd4bd747a15cb8372c3d3ea260d98e7e9c1ab5df39dc21f4f2478",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile-v2",
+        "up",
+        "--platform",
+        "android",
+        "--device",
+        "avd:runstir211-api35",
+        "--non-interactive",
+        "--project",
+        "${RUN211}/sources/todo-cli",
+        "--json",
+        "--progress-json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792112092.924427,
+        "exitCode": 2,
+        "seconds": 12.159,
+        "sourceSHA": "de99bcad1b2cc171d6a37e832914f2a475c13aaf",
+        "state": "failed",
+        "action": null,
+        "operation": {
+          "id": "B9916D4A-C523-411F-A85C-BF77B01FAD87",
+          "kind": "up",
+          "completed": [],
+          "remaining": [],
+          "requiredInput": [],
+          "module": ":app",
+          "modules": [
+            ":app"
+          ],
+          "variant": "debug",
+          "variants": [
+            "debug"
+          ],
+          "device": "avd:runstir211-api35",
+          "nextAction": "Check the failed tool and its logs. Run mobile doctor for the selected project and platform."
+        }
+      },
+      "rawResultFileSHA256": "7eb88ae1a7f6f4f2f5fb14c0799502a477bf84dd6d4eb9659542fc4158f3e637",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/todo-cli",
+        "TMPDIR": "${RUN211}${HOST_TMP}/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "todo-up-internal-temp",
+      "at": 1792112271.209723,
+      "privateCommand": "${RUN211}/state/todo-up-internal-temp/command.json",
+      "rawCommandFileSHA256": "9de5089f3781c692c9be3a5b7e1f71e20379ce3225dc089e065d770c7b33d83c",
+      "originalArgvCanonicalJSONSHA256": "1ac31d1d749cd4bd747a15cb8372c3d3ea260d98e7e9c1ab5df39dc21f4f2478",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile-v2",
+        "up",
+        "--platform",
+        "android",
+        "--device",
+        "avd:runstir211-api35",
+        "--non-interactive",
+        "--project",
+        "${RUN211}/sources/todo-cli",
+        "--json",
+        "--progress-json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792112281.949483,
+        "exitCode": 2,
+        "seconds": 10.74,
+        "sourceSHA": "de99bcad1b2cc171d6a37e832914f2a475c13aaf",
+        "state": "failed",
+        "action": null,
+        "operation": {
+          "id": "C5094D1C-A8D4-4779-AFC5-5AD5452B4328",
+          "kind": "up",
+          "completed": [],
+          "remaining": [],
+          "requiredInput": [],
+          "module": ":app",
+          "modules": [
+            ":app"
+          ],
+          "variant": "debug",
+          "variants": [
+            "debug"
+          ],
+          "device": "avd:runstir211-api35",
+          "nextAction": "Check the failed tool and its logs. Run mobile doctor for the selected project and platform."
+        }
+      },
+      "rawResultFileSHA256": "5fb009bf180b7bd7f3028116b6e3bee4afb9fb79e17273e0ed1ef3b0df1e5adf",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/todo-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "todo-up-scoped-foundation",
+      "at": 1792112559.326176,
+      "privateCommand": "${RUN211}/state/todo-up-scoped-foundation/command.json",
+      "rawCommandFileSHA256": "d3768a3889024e6e3957041bdd3c5089fdf8ea5399d56c1603a39ecb6648defd",
+      "originalArgvCanonicalJSONSHA256": "1ac31d1d749cd4bd747a15cb8372c3d3ea260d98e7e9c1ab5df39dc21f4f2478",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile-v2",
+        "up",
+        "--platform",
+        "android",
+        "--device",
+        "avd:runstir211-api35",
+        "--non-interactive",
+        "--project",
+        "${RUN211}/sources/todo-cli",
+        "--json",
+        "--progress-json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792112593.346617,
+        "exitCode": 2,
+        "seconds": 34.02,
+        "sourceSHA": "de99bcad1b2cc171d6a37e832914f2a475c13aaf",
+        "state": "failed",
+        "action": null,
+        "operation": {
+          "id": "60B7EDE5-80B5-4D8B-9525-3FA83B3D3B10",
+          "kind": "up",
+          "completed": [
+            "validate",
+            "android.build"
+          ],
+          "remaining": [],
+          "requiredInput": [],
+          "module": ":app",
+          "modules": [
+            ":app"
+          ],
+          "variant": "debug",
+          "variants": [
+            "debug"
+          ],
+          "device": "avd:runstir211-api35",
+          "nextAction": "Check the failed tool and its logs. Run mobile doctor for the selected project and platform."
+        }
+      },
+      "rawResultFileSHA256": "adfdc26fae865643878ab94a38c58180df1e12128b301126751a43aaee13d9ba",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/todo-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "todo-up-owned-home",
+      "at": 1792112695.954635,
+      "privateCommand": "${RUN211}/state/todo-up-owned-home/command.json",
+      "rawCommandFileSHA256": "1e61e147ae77147c4f33334d27a7db0009203579b2cd311028acf4aa53e64282",
+      "originalArgvCanonicalJSONSHA256": "1ac31d1d749cd4bd747a15cb8372c3d3ea260d98e7e9c1ab5df39dc21f4f2478",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile-v2",
+        "up",
+        "--platform",
+        "android",
+        "--device",
+        "avd:runstir211-api35",
+        "--non-interactive",
+        "--project",
+        "${RUN211}/sources/todo-cli",
+        "--json",
+        "--progress-json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792112774.011148,
+        "exitCode": 0,
+        "seconds": 78.056,
+        "sourceSHA": "de99bcad1b2cc171d6a37e832914f2a475c13aaf",
+        "state": "succeeded",
+        "action": null,
+        "operation": {
+          "id": "A730970C-BF91-4E83-B875-85BC49B08BBC",
+          "kind": "up",
+          "completed": [
+            "validate",
+            "android.build",
+            "android.device",
+            "android.install",
+            "android.launch"
+          ],
+          "remaining": [],
+          "requiredInput": [],
+          "module": ":app",
+          "modules": [
+            ":app"
+          ],
+          "variant": "debug",
+          "variants": [
+            "debug"
+          ],
+          "device": "avd:runstir211-api35"
+        }
+      },
+      "rawResultFileSHA256": "a956add1de67b76d8cc4139ef1ef952900a5ea2c268f4f4cd727c1341242c50a",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/todo-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "todo-cli-down",
+      "at": 1792113001.3448808,
+      "privateCommand": "${RUN211}/state/todo-cli-down/command.json",
+      "rawCommandFileSHA256": "9917c238c1b72c574c8b2e93943002de5850854982059a69e94205cc995fa1b9",
+      "originalArgvCanonicalJSONSHA256": "302540ddbf22eac38f4b3639b73ddd6a2935225cf3e60f0b137c6dad5b04fc44",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile-v2",
+        "down",
+        "--platform",
+        "android",
+        "--non-interactive",
+        "--project",
+        "${RUN211}/sources/todo-cli",
+        "--json",
+        "--progress-json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792113005.993182,
+        "exitCode": 0,
+        "seconds": 4.648,
+        "sourceSHA": "de99bcad1b2cc171d6a37e832914f2a475c13aaf",
+        "state": "succeeded",
+        "action": null,
+        "operation": {
+          "id": "4839F060-B27D-41E6-91C8-DF2B2A5B81C7",
+          "kind": "down",
+          "completed": [
+            "android.app",
+            "android.emulator"
+          ],
+          "remaining": [],
+          "requiredInput": [],
+          "modules": [],
+          "variants": []
+        }
+      },
+      "rawResultFileSHA256": "8761a0618adc2c49e40dc5d5a94b570a10d80834a4a982f89bbaa41a68b88411",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/todo-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "todo-v3-build-cancel",
+      "at": 1792113991.7820082,
+      "privateCommand": "${RUN211}/state/todo-v3-build-cancel/command.json",
+      "rawCommandFileSHA256": "a8460412bcb29fcbae0bd4b992b248e68c728f3687b5c097c4f67f5f6d041898",
+      "originalArgvCanonicalJSONSHA256": "1dfd39e623553f5b3d4ddaa578f77a0d0429e02cda6c9d4561b980fce48c6b51",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile-v3",
+        "build",
+        "--platform",
+        "android",
+        "--project",
+        "${RUN211}/sources/todo-cli",
+        "--json",
+        "--progress-json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792114010.0810409,
+        "exitCode": 130,
+        "seconds": 18.299,
+        "sourceSHA": "baea26fae0ed6b8fddc216c0e0511339cc133796",
+        "state": "cancelled",
+        "action": {
+          "at": 1792114010.027425,
+          "signal": "SIGINT",
+          "PID": 76118,
+          "observedStage": "\"stageId\":\"android.build\""
+        },
+        "operation": {
+          "id": "9533DCE5-6141-4D1F-B4A9-17631E9D2E8B",
+          "kind": "build",
+          "completed": [
+            "validate"
+          ],
+          "remaining": [
+            "Completed changes remain. Inspect this project's resources before retrying or running down."
+          ],
+          "requiredInput": [],
+          "module": ":app",
+          "modules": [
+            ":app"
+          ],
+          "variant": "debug",
+          "variants": [
+            "debug"
+          ],
+          "nextAction": "Inspect completed stages and run down for any remaining runtime resources."
+        }
+      },
+      "rawResultFileSHA256": "27abb698c7881e6d7655b2d41ae0fee172426a347482cad2bb4aa58bae3c76ce",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/todo-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "todo-v3-up",
+      "at": 1792114024.8476539,
+      "privateCommand": "${RUN211}/state/todo-v3-up/command.json",
+      "rawCommandFileSHA256": "ad870c7150a5e9fa842ef10245bcf9bec6605ea65447a60a4f3bbdbe44c8d4fe",
+      "originalArgvCanonicalJSONSHA256": "217c7352e0309204e6e7eccfc7ea0df968a2811dd88225f97c75aed4d5e788ca",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile-v3",
+        "up",
+        "--platform",
+        "android",
+        "--project",
+        "${RUN211}/sources/todo-cli",
+        "--json",
+        "--progress-json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792114060.582548,
+        "exitCode": 0,
+        "seconds": 35.735,
+        "sourceSHA": "baea26fae0ed6b8fddc216c0e0511339cc133796",
+        "state": "succeeded",
+        "action": null,
+        "operation": {
+          "id": "8BF7E154-AF88-4A93-B5C2-89DF17489CD6",
+          "kind": "up",
+          "completed": [
+            "validate",
+            "android.build",
+            "android.device",
+            "android.install",
+            "android.launch"
+          ],
+          "remaining": [],
+          "requiredInput": [],
+          "module": ":app",
+          "modules": [
+            ":app"
+          ],
+          "variant": "debug",
+          "variants": [
+            "debug"
+          ],
+          "device": "avd:runstir211-api35"
+        }
+      },
+      "rawResultFileSHA256": "d70460d5d82a62fcda65f82d0e38ad68ca77883586dd50b3a7e81d103a5caefb",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/todo-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "todo-v3-down",
+      "at": 1792114086.733235,
+      "privateCommand": "${RUN211}/state/todo-v3-down/command.json",
+      "rawCommandFileSHA256": "35e9c54742803b4573f4c096a462c86a46ae2b4ba3e139e287b8fd600994134d",
+      "originalArgvCanonicalJSONSHA256": "6239866229ab1abba0dd8feadb4046c6e2539e1b7af654215972ea440e963df3",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile-v3",
+        "down",
+        "--platform",
+        "android",
+        "--project",
+        "${RUN211}/sources/todo-cli",
+        "--json",
+        "--progress-json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792114095.722604,
+        "exitCode": 0,
+        "seconds": 8.989,
+        "sourceSHA": "baea26fae0ed6b8fddc216c0e0511339cc133796",
+        "state": "succeeded",
+        "action": null,
+        "operation": {
+          "id": "FB877602-E875-477F-89FA-A927F8B45588",
+          "kind": "down",
+          "completed": [
+            "android.app",
+            "android.emulator"
+          ],
+          "remaining": [],
+          "requiredInput": [],
+          "modules": [],
+          "variants": []
+        }
+      },
+      "rawResultFileSHA256": "75ff9edfd883b1badd47024898f220d4746e49e8260ef9411100ef3f6ff9b058",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/todo-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "nia-v3-missing-variant",
+      "at": 1792114330.597555,
+      "privateCommand": "${RUN211}/state/nia-v3-missing-variant/command.json",
+      "rawCommandFileSHA256": "d9ad0a4c37c6415f0dcc97038217a6e89abfab0616d5e39a3eb9876513fdf69b",
+      "originalArgvCanonicalJSONSHA256": "565fe6f1032e5486b3f6b0fcdfc7fc26988b6b753d53c5727d7522510e2cdaf2",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile-v3",
+        "build",
+        "--platform",
+        "android",
+        "--project",
+        "${RUN211}/sources/nia-cli",
+        "--json",
+        "--progress-json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/nia-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792114350.6431649,
+        "exitCode": 1,
+        "seconds": 20.045,
+        "sourceSHA": "baea26fae0ed6b8fddc216c0e0511339cc133796",
+        "state": "needs-selection",
+        "action": null,
+        "operation": {
+          "id": "F43E9DC3-5240-4D7E-A4CD-E03C4ACBF66C",
+          "kind": "build",
+          "completed": [],
+          "remaining": [],
+          "requiredInput": [
+            "--variant"
+          ],
+          "module": ":app",
+          "modules": [
+            ":app",
+            ":app-nia-catalog"
+          ],
+          "variants": [
+            "demoDebug",
+            "prodDebug"
+          ],
+          "nextAction": "Select --variant before starting changes."
+        }
+      },
+      "rawResultFileSHA256": "6c270f7f3482491b23af58f9927b7c8ceb2455a1496d3a35c8897d2f7715c86e",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu21.52.203-ca-jdk21.0.12.1-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/nia-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "nia-v3-unknown-variant",
+      "at": 1792114270.9918778,
+      "privateCommand": "${RUN211}/state/nia-v3-unknown-variant/command.json",
+      "rawCommandFileSHA256": "38d42883b7c0f19cb7ee90879775e5d4e23530f408755c618eae5c646b09e4bd",
+      "originalArgvCanonicalJSONSHA256": "03b138a158e9300b77e8a772c7c83ab4ecf6c520070d74b5d300ab294f9c4f75",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile-v3",
+        "build",
+        "--platform",
+        "android",
+        "--variant",
+        "notADeclaredVariant",
+        "--project",
+        "${RUN211}/sources/nia-cli",
+        "--json",
+        "--progress-json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/nia-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792114283.305629,
+        "exitCode": 1,
+        "seconds": 12.314,
+        "sourceSHA": "baea26fae0ed6b8fddc216c0e0511339cc133796",
+        "state": "failed",
+        "action": null,
+        "operation": {
+          "id": "3960BB3D-D80F-4061-8638-A118BADB51AB",
+          "kind": "build",
+          "completed": [],
+          "remaining": [],
+          "requiredInput": [],
+          "modules": [],
+          "variants": [],
+          "nextAction": "Run mobile doctor for this project and follow its setup instructions. See docs/environment-setup.md."
+        }
+      },
+      "rawResultFileSHA256": "23c9832b8c2bffa3909fc2a884fe4e05503801f3f427c5099f17e9b1ba165d4d",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu21.52.203-ca-jdk21.0.12.1-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/nia-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "todo-v4-up",
+      "at": 1792114895.64329,
+      "privateCommand": "${RUN211}/state/todo-v4-up/command.json",
+      "rawCommandFileSHA256": "3c1d29d2cb96ed58e754b59d2afbfe1637fc7a61933d92edde2f9baefa0e4cc3",
+      "originalArgvCanonicalJSONSHA256": "36a0eeb5d28bf5729591b07308dfb19568a3b0dafebcf99d7cba4fd434ff7f74",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile-v4",
+        "up",
+        "--platform",
+        "android",
+        "--project",
+        "${RUN211}/sources/todo-cli",
+        "--json",
+        "--progress-json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792114942.170398,
+        "exitCode": 0,
+        "seconds": 46.527,
+        "sourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+        "state": "succeeded",
+        "action": null,
+        "operation": {
+          "id": "10D9E340-BDB5-4865-92A0-F7C4D995ED8F",
+          "kind": "up",
+          "completed": [
+            "validate",
+            "android.build",
+            "android.device",
+            "android.install",
+            "android.launch"
+          ],
+          "remaining": [],
+          "requiredInput": [],
+          "module": ":app",
+          "modules": [
+            ":app"
+          ],
+          "variant": "debug",
+          "variants": [
+            "debug"
+          ],
+          "device": "avd:runstir211-api35"
+        }
+      },
+      "rawResultFileSHA256": "9222b947c1520b0d1da670229e2f207b8c32493ed0daabbbcbd6dfb64c7fd543",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/todo-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "todo-v4-down",
+      "at": 1792115165.79439,
+      "privateCommand": "${RUN211}/state/todo-v4-down/command.json",
+      "rawCommandFileSHA256": "198db2069a9fb9acfcacfbbf6b9eda71aea95ae8f34e92eb33aefd20b00c3f2e",
+      "originalArgvCanonicalJSONSHA256": "e3a6034779946ddf567b084528afac2f3a55299077db6da3fc919f243204e4af",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile-v4",
+        "down",
+        "--platform",
+        "android",
+        "--project",
+        "${RUN211}/sources/todo-cli",
+        "--json",
+        "--progress-json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792115175.027283,
+        "exitCode": 0,
+        "seconds": 9.233,
+        "sourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+        "state": "succeeded",
+        "action": null,
+        "operation": {
+          "id": "C45A3B7F-3EF6-4B29-8745-D22822B7C68A",
+          "kind": "down",
+          "completed": [
+            "android.app",
+            "android.emulator"
+          ],
+          "remaining": [],
+          "requiredInput": [],
+          "modules": [],
+          "variants": []
+        }
+      },
+      "rawResultFileSHA256": "832626102097bb4a64b128626188a415ba3cb2d22e93990734fad52f37718a01",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/todo-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "todo-v4-cli-conflict-gui",
+      "at": 1792115784.783561,
+      "privateCommand": "${RUN211}/state/todo-v4-cli-conflict-gui/command.json",
+      "rawCommandFileSHA256": "322349e981ef69841f61b1803544cd600d1e2ae320f32cdeaf1422f6356628a5",
+      "originalArgvCanonicalJSONSHA256": "36a0eeb5d28bf5729591b07308dfb19568a3b0dafebcf99d7cba4fd434ff7f74",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile-v4",
+        "up",
+        "--platform",
+        "android",
+        "--project",
+        "${RUN211}/sources/todo-cli",
+        "--json",
+        "--progress-json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792115800.222323,
+        "exitCode": 1,
+        "seconds": 15.439,
+        "sourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+        "state": "failed",
+        "action": null,
+        "operation": {
+          "id": "72B2C4BB-032A-4B77-884A-A8A27841AE7D",
+          "kind": "up",
+          "completed": [],
+          "remaining": [],
+          "requiredInput": [],
+          "module": ":app",
+          "modules": [
+            ":app"
+          ],
+          "variant": "debug",
+          "variants": [
+            "debug"
+          ],
+          "device": "avd:runstir211-api35",
+          "nextAction": "Select another resource or explicitly stop the owning operation, then check again. Nothing was switched, stopped, queued or removed."
+        }
+      },
+      "rawResultFileSHA256": "be24b731d6439f9cb7ab26b914fc408119e5b70f6d8a5b11cdfe317a4868caca",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/todo-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "nia-v4-build-cancel",
+      "at": 1792115582.757291,
+      "privateCommand": "${RUN211}/state/nia-v4-build-cancel/command.json",
+      "rawCommandFileSHA256": "0993c980a472e7c2873279198c13660f201d0a1373dd1d78c9afb146a1993358",
+      "originalArgvCanonicalJSONSHA256": "632df8a2107f521a3ffe28bb24ad3f6319c1f57f675831022be14b4fb4f7edd3",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile-v4",
+        "build",
+        "--platform",
+        "android",
+        "--project",
+        "${RUN211}/sources/nia-cli",
+        "--json",
+        "--progress-json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/nia-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792115622.634458,
+        "exitCode": 130,
+        "seconds": 39.877,
+        "sourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+        "state": "cancelled",
+        "action": {
+          "at": 1792115622.579492,
+          "signal": "SIGINT",
+          "PID": 2452,
+          "observedStage": "\"stageId\":\"android.build\""
+        },
+        "operation": {
+          "id": "0AF934A8-0472-4BB4-9D20-9EFA6F7CD4C5",
+          "kind": "build",
+          "completed": [
+            "validate"
+          ],
+          "remaining": [
+            "Completed changes remain. Inspect this project's resources before retrying or running down."
+          ],
+          "requiredInput": [],
+          "module": ":app",
+          "modules": [
+            ":app",
+            ":app-nia-catalog"
+          ],
+          "variant": "demoDebug",
+          "variants": [
+            "demoDebug",
+            "prodDebug"
+          ],
+          "nextAction": "Inspect completed stages and run down for any remaining runtime resources."
+        }
+      },
+      "rawResultFileSHA256": "31efe139b8262bdf3bb6eb0f1aef1e4305b030a697fd2a298e396b1b55e2bee0",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu21.52.203-ca-jdk21.0.12.1-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/nia-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "nia-v4-build-retry",
+      "at": 1792115703.184711,
+      "privateCommand": "${RUN211}/state/nia-v4-build-retry/command.json",
+      "rawCommandFileSHA256": "3008418321df0f77ed3adc53b6a8457436aca5e12ca1b89c5c11481c7c3db7e8",
+      "originalArgvCanonicalJSONSHA256": "632df8a2107f521a3ffe28bb24ad3f6319c1f57f675831022be14b4fb4f7edd3",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile-v4",
+        "build",
+        "--platform",
+        "android",
+        "--project",
+        "${RUN211}/sources/nia-cli",
+        "--json",
+        "--progress-json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/nia-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792115772.446582,
+        "exitCode": 0,
+        "seconds": 69.262,
+        "sourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+        "state": "succeeded",
+        "action": null,
+        "operation": {
+          "id": "352351F4-12E2-49A1-909B-19605970CCCF",
+          "kind": "build",
+          "completed": [
+            "validate",
+            "android.build"
+          ],
+          "remaining": [],
+          "requiredInput": [],
+          "module": ":app",
+          "modules": [
+            ":app",
+            ":app-nia-catalog"
+          ],
+          "variant": "demoDebug",
+          "variants": [
+            "demoDebug",
+            "prodDebug"
+          ]
+        }
+      },
+      "rawResultFileSHA256": "035a1860a52585b6b5a583a2fd5944d3a5fd42924465ebcd4eed136af20f716b",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu21.52.203-ca-jdk21.0.12.1-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/nia-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "nia-v4-up",
+      "at": 1792115864.01483,
+      "privateCommand": "${RUN211}/state/nia-v4-up/command.json",
+      "rawCommandFileSHA256": "2ca5d2bfa426dc5c54c9b77fa05a28b61d4f60b3214c4fd53acb11c8bc696807",
+      "originalArgvCanonicalJSONSHA256": "0a454f612e976bbdb618cadbbf337351f2e5d90f7d15d9cdbd883c976c10a4e0",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile-v4",
+        "up",
+        "--platform",
+        "android",
+        "--project",
+        "${RUN211}/sources/nia-cli",
+        "--json",
+        "--progress-json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/nia-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792115924.716025,
+        "exitCode": 0,
+        "seconds": 60.699,
+        "sourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+        "state": "succeeded",
+        "action": null,
+        "operation": {
+          "id": "53807F52-3B60-4FF6-9BC9-8DF7D170F2BF",
+          "kind": "up",
+          "completed": [
+            "validate",
+            "android.build",
+            "android.device",
+            "android.install",
+            "android.launch"
+          ],
+          "remaining": [],
+          "requiredInput": [],
+          "module": ":app",
+          "modules": [
+            ":app",
+            ":app-nia-catalog"
+          ],
+          "variant": "demoDebug",
+          "variants": [
+            "demoDebug",
+            "prodDebug"
+          ],
+          "device": "avd:runstir211-api35"
+        }
+      },
+      "rawResultFileSHA256": "d5088b9dba77dc88704b192e9027fdd1b8f48ea835cb8fde18e471b8d79b7092",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu21.52.203-ca-jdk21.0.12.1-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/nia-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "nia-v4-cli-notification-revoke",
+      "at": 1792116004.323054,
+      "privateCommand": "${RUN211}/state/nia-v4-cli-notification-revoke/command.json",
+      "rawCommandFileSHA256": "6c70be589ad3802d0446eb47f717298a51ca028ab7f0c7bf0d05a2bc71a518b2",
+      "originalArgvCanonicalJSONSHA256": "9e892fc08628b96a2bd8855e87bc1fe1c3f56d66f552e5705998e66ddcba8132",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/sdk/platform-tools/adb",
+        "-P",
+        "5045",
+        "-s",
+        "emulator-5554",
+        "shell",
+        "pm",
+        "revoke",
+        "com.google.samples.apps.nowinandroid.demo.debug",
+        "android.permission.POST_NOTIFICATIONS"
+      ],
+      "normalizedCwd": "${RUN211}/sources/nia-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792116004.376837,
+        "exitCode": 0,
+        "seconds": 0.053,
+        "action": null,
+        "operation": {}
+      },
+      "rawResultFileSHA256": "bd0d7d15fe689051312e0744442f8ce066df1958ba216b257b66ffee53382fd9",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu21.52.203-ca-jdk21.0.12.1-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/nia-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "nia-v4-cli-notification-denied-fixed",
+      "at": 1792116004.377385,
+      "privateCommand": "${RUN211}/state/nia-v4-cli-notification-denied-fixed/command.json",
+      "rawCommandFileSHA256": "6faffe953279ea906775ee4f10b657bd7954df708bc535892e86ff4804dd4614",
+      "originalArgvCanonicalJSONSHA256": "cb67bc6f5eb48d9623e8467068a7b8bd050f74b39342006a1eb3dacfb59f42f9",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/sdk/platform-tools/adb",
+        "-P",
+        "5045",
+        "-s",
+        "emulator-5554",
+        "shell",
+        "pm",
+        "set-permission-flags",
+        "com.google.samples.apps.nowinandroid.demo.debug",
+        "android.permission.POST_NOTIFICATIONS",
+        "user-set",
+        "user-fixed"
+      ],
+      "normalizedCwd": "${RUN211}/sources/nia-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792116004.4330199,
+        "exitCode": 0,
+        "seconds": 0.055,
+        "action": null,
+        "operation": {}
+      },
+      "rawResultFileSHA256": "1140de03688cfba0549591aa7f328577a671eb925ed36ba409aa0f088242acc4",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu21.52.203-ca-jdk21.0.12.1-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/nia-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "nia-v4-down-initial",
+      "at": 1792116004.965833,
+      "privateCommand": "${RUN211}/state/nia-v4-down-initial/command.json",
+      "rawCommandFileSHA256": "e13741089997e3b84bca4cb95cb4f8eb0ebd4617acf85daa0e7e9a7f9d43f80a",
+      "originalArgvCanonicalJSONSHA256": "edb056892b6f91b9958b9efb1b3400ffda27c78d565353bfc37f1e514d974431",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile-v4",
+        "down",
+        "--platform",
+        "android",
+        "--project",
+        "${RUN211}/sources/nia-cli",
+        "--json",
+        "--progress-json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/nia-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792116013.93331,
+        "exitCode": 0,
+        "seconds": 8.967,
+        "sourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+        "state": "succeeded",
+        "action": null,
+        "operation": {
+          "id": "AC1E3883-113B-4513-A74F-1F63E6CB8BEC",
+          "kind": "down",
+          "completed": [
+            "android.app",
+            "android.emulator"
+          ],
+          "remaining": [],
+          "requiredInput": [],
+          "modules": [],
+          "variants": []
+        }
+      },
+      "rawResultFileSHA256": "0e91bee09ef36c43ed932c7879b5569f36762e180d53d3af4f64dbc155f777a2",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu21.52.203-ca-jdk21.0.12.1-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/nia-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "nia-v4-up-after-notification-prep",
+      "at": 1792116042.502008,
+      "privateCommand": "${RUN211}/state/nia-v4-up-after-notification-prep/command.json",
+      "rawCommandFileSHA256": "6cff35f4955d3b936a8141b0d84d05b33fe8f2bf108fb08259e647e66d0e5921",
+      "originalArgvCanonicalJSONSHA256": "0a454f612e976bbdb618cadbbf337351f2e5d90f7d15d9cdbd883c976c10a4e0",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile-v4",
+        "up",
+        "--platform",
+        "android",
+        "--project",
+        "${RUN211}/sources/nia-cli",
+        "--json",
+        "--progress-json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/nia-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792116140.7574232,
+        "exitCode": 1,
+        "seconds": 98.255,
+        "sourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+        "state": "failed",
+        "action": null,
+        "operation": {
+          "id": "CA68435A-0D18-475B-B880-476ECE0B77BC",
+          "kind": "up",
+          "completed": [
+            "validate",
+            "android.build",
+            "android.device",
+            "android.install"
+          ],
+          "remaining": [
+            "Android rollback left owned resources to retry — `mobile down --platform android` retries them."
+          ],
+          "requiredInput": [],
+          "module": ":app",
+          "modules": [
+            ":app",
+            ":app-nia-catalog"
+          ],
+          "variant": "demoDebug",
+          "variants": [
+            "demoDebug",
+            "prodDebug"
+          ],
+          "device": "avd:runstir211-api35",
+          "nextAction": "Preserve the recorded resources and retry ownership cleanup."
+        }
+      },
+      "rawResultFileSHA256": "78391d8dc717100aabfef47ff4491c296c0bb2eca9e88582300ea39edb03e7f0",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu21.52.203-ca-jdk21.0.12.1-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/nia-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "nia-v4-already-stopped-owned-pid-native",
+      "at": 1792116232.5634649,
+      "privateCommand": "${RUN211}/state/nia-v4-already-stopped-owned-pid-native/command.json",
+      "rawCommandFileSHA256": "70d89670e22f314a3ac7a798afdabded8e32665a485c214f97221036bd7ad2bf",
+      "originalArgvCanonicalJSONSHA256": "9a638dce90768816fb3adb304fa7fb9e78d4b863c04e49a9d6ad9a0aea90fc97",
+      "normalizedArgv": [
+        "/bin/ps",
+        "-p",
+        "49852",
+        "-o",
+        "pid="
+      ],
+      "normalizedCwd": "${RUN211}/sources/nia-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792116232.620915,
+        "exitCode": 1,
+        "seconds": 0.057,
+        "action": null,
+        "operation": {}
+      },
+      "rawResultFileSHA256": "793e78ba347b649242350264bde73df54fddbcd59af641d3c8d43ba9e7245be3",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu21.52.203-ca-jdk21.0.12.1-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/nia-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "nia-v4-already-stopped-down-native-ps",
+      "at": 1792116232.621643,
+      "privateCommand": "${RUN211}/state/nia-v4-already-stopped-down-native-ps/command.json",
+      "rawCommandFileSHA256": "6e3818b89fe32fbb63a4ef1012e463fa6a27a9cd8535cb4d61f31ba1b74b572b",
+      "originalArgvCanonicalJSONSHA256": "ada8a06300c27a30223a2cf2b9ee019fc56d46fd960a9a4c0a45fce75ce84281",
+      "normalizedArgv": [
+        "${RUN211}/bin/mobile-v4",
+        "down",
+        "--project",
+        "${RUN211}/sources/nia-cli",
+        "--platform",
+        "android",
+        "--json",
+        "--progress-json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/nia-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792116232.725833,
+        "exitCode": 0,
+        "seconds": 0.104,
+        "sourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+        "state": "succeeded",
+        "action": null,
+        "operation": {
+          "id": "7EDFC596-C505-4213-9F73-93BA0A5F2166",
+          "kind": "down",
+          "completed": [],
+          "remaining": [],
+          "requiredInput": [],
+          "modules": [],
+          "variants": []
+        }
+      },
+      "rawResultFileSHA256": "da40849ff2973ab6e1db62d65bee9219982c811654541cbd38676ed4dceb703f",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu21.52.203-ca-jdk21.0.12.1-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/nia-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "nia-v4-up-cold-boot",
+      "at": 1792116288.634769,
+      "privateCommand": "${RUN211}/state/nia-v4-up-cold-boot/command.json",
+      "rawCommandFileSHA256": "a85396db7be648f8d87f8ce668ec9838dd4f2b02e28db471707bf50f9b02fd7e",
+      "originalArgvCanonicalJSONSHA256": "0a454f612e976bbdb618cadbbf337351f2e5d90f7d15d9cdbd883c976c10a4e0",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile-v4",
+        "up",
+        "--platform",
+        "android",
+        "--project",
+        "${RUN211}/sources/nia-cli",
+        "--json",
+        "--progress-json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/nia-cli",
+      "timeoutSeconds": 1800,
+      "result": {
+        "at": 1792116387.321308,
+        "exitCode": 0,
+        "seconds": 98.686,
+        "sourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+        "state": "succeeded",
+        "action": null,
+        "operation": {
+          "id": "93158B96-5045-4FD0-A593-531D6DFE8C79",
+          "kind": "up",
+          "completed": [
+            "validate",
+            "android.build",
+            "android.device",
+            "android.install",
+            "android.launch"
+          ],
+          "remaining": [],
+          "requiredInput": [],
+          "module": ":app",
+          "modules": [
+            ":app",
+            ":app-nia-catalog"
+          ],
+          "variant": "demoDebug",
+          "variants": [
+            "demoDebug",
+            "prodDebug"
+          ],
+          "device": "avd:runstir211-api35"
+        }
+      },
+      "rawResultFileSHA256": "cded6ee6626e184637513077c4c3eeee752f32215ccacdc7a985bb5451d46fb9",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu21.52.203-ca-jdk21.0.12.1-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/nia-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "nia-v4-cli-after-prep-launch-observation-activity",
+      "at": 1792116152.092833,
+      "privateCommand": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-activity/command.json",
+      "rawCommandFileSHA256": "96ff9225d61112bcdbafe7b29e5df6db59b2d9258a8b28ea76510164398e803b",
+      "originalArgvCanonicalJSONSHA256": "5dc18a6c6e8327a98047c867619dfff036b7db41d79fe893014da29fdd625acf",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/sdk/platform-tools/adb",
+        "-P",
+        "5045",
+        "-s",
+        "emulator-5554",
+        "shell",
+        "dumpsys",
+        "activity",
+        "activities"
+      ],
+      "normalizedCwd": "${RUN211}/sources/nia-cli",
+      "timeoutSeconds": 60,
+      "result": {
+        "at": 1792116152.1513228,
+        "exitCode": 1,
+        "seconds": 0.058,
+        "action": null,
+        "operation": {}
+      },
+      "rawResultFileSHA256": "083d28141c844b84ed7a19573df92f80b2b0579053b05db18c65e9588c2bee5a",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu21.52.203-ca-jdk21.0.12.1-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/nia-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "nia-v4-cli-after-prep-launch-observation-focus",
+      "at": 1792116152.034383,
+      "privateCommand": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-focus/command.json",
+      "rawCommandFileSHA256": "de5a84fbe383ce3ccbf6376fba8e9c5b2aa56ce30a36f11bfbd8330ef78cf603",
+      "originalArgvCanonicalJSONSHA256": "9ecbb279d91ccd19168b8ccfc5b90321c3449faddaddf9b157d37596812b09b5",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/sdk/platform-tools/adb",
+        "-P",
+        "5045",
+        "-s",
+        "emulator-5554",
+        "shell",
+        "dumpsys",
+        "window"
+      ],
+      "normalizedCwd": "${RUN211}/sources/nia-cli",
+      "timeoutSeconds": 60,
+      "result": {
+        "at": 1792116152.0923252,
+        "exitCode": 1,
+        "seconds": 0.058,
+        "action": null,
+        "operation": {}
+      },
+      "rawResultFileSHA256": "dd55ae6a52dc561b0c472f4704e64a3e2ac63b219fcf755e45256f8b0ec6a680",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu21.52.203-ca-jdk21.0.12.1-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/nia-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "nia-v4-cli-after-prep-launch-observation-installed",
+      "at": 1792116152.212505,
+      "privateCommand": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-installed/command.json",
+      "rawCommandFileSHA256": "d5b1dfc31191412a6cd5886f0e69ce8f2f8870e69c3aaaf6bd2e5d39a633f936",
+      "originalArgvCanonicalJSONSHA256": "5fd010120b553fcfb619ee04096d6791ed571a73907c0cbb8bd1f7480cb56c88",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/sdk/platform-tools/adb",
+        "-P",
+        "5045",
+        "-s",
+        "emulator-5554",
+        "shell",
+        "pm",
+        "list",
+        "packages",
+        "-f"
+      ],
+      "normalizedCwd": "${RUN211}/sources/nia-cli",
+      "timeoutSeconds": 60,
+      "result": {
+        "at": 1792116152.271115,
+        "exitCode": 1,
+        "seconds": 0.058,
+        "action": null,
+        "operation": {}
+      },
+      "rawResultFileSHA256": "0746c6d878bd7f5bcb98bfce240a3c7b3e027990c26bac89a3cd37468dda3234",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu21.52.203-ca-jdk21.0.12.1-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/nia-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "nia-v4-cli-after-prep-launch-observation-package",
+      "at": 1792116151.976115,
+      "privateCommand": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-package/command.json",
+      "rawCommandFileSHA256": "7a479209d5d8df586879cc4c08b1b46f731dbca4c1fadd9d118033216cc04950",
+      "originalArgvCanonicalJSONSHA256": "9e00178e2827a918d716dd29325aeabdb5bd403a4e68615b2d7c07a0af9c1cf8",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/sdk/platform-tools/adb",
+        "-P",
+        "5045",
+        "-s",
+        "emulator-5554",
+        "shell",
+        "pm",
+        "path",
+        "com.google.samples.apps.nowinandroid.demo.debug"
+      ],
+      "normalizedCwd": "${RUN211}/sources/nia-cli",
+      "timeoutSeconds": 60,
+      "result": {
+        "at": 1792116152.0334961,
+        "exitCode": 1,
+        "seconds": 0.057,
+        "action": null,
+        "operation": {}
+      },
+      "rawResultFileSHA256": "00f59a166d37f60bd9c67bb2717f727ff109a0eed66c5fb529618d98d2c099c3",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu21.52.203-ca-jdk21.0.12.1-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/nia-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "nia-v4-cli-after-prep-launch-observation-pid",
+      "at": 1792116151.918582,
+      "privateCommand": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-pid/command.json",
+      "rawCommandFileSHA256": "ce4e134493fb15be4c3ace08381d7c131f9be39206c1a24802212b3aa7f96db3",
+      "originalArgvCanonicalJSONSHA256": "0e2912162475a50b564a8ef9f9e66141d9188f242b6c0a6710ae085c3e7592b7",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/sdk/platform-tools/adb",
+        "-P",
+        "5045",
+        "-s",
+        "emulator-5554",
+        "shell",
+        "pidof",
+        "com.google.samples.apps.nowinandroid.demo.debug"
+      ],
+      "normalizedCwd": "${RUN211}/sources/nia-cli",
+      "timeoutSeconds": 60,
+      "result": {
+        "at": 1792116151.975553,
+        "exitCode": 1,
+        "seconds": 0.057,
+        "action": null,
+        "operation": {}
+      },
+      "rawResultFileSHA256": "5293bfc26c933a266b466c3d0d7d5730eb88b9e2e4b0702ffba64b165267ef45",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu21.52.203-ca-jdk21.0.12.1-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/nia-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "nia-v4-cli-after-prep-launch-observation-reverse",
+      "at": 1792116152.272179,
+      "privateCommand": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-reverse/command.json",
+      "rawCommandFileSHA256": "9a9477ee91c4a01e0e3cbbb0ac15ff1a6e6028c4f2fae2cceac54b0ca6396218",
+      "originalArgvCanonicalJSONSHA256": "90c05a1e3ffef2c39ff91e4c443ebbca2fa0721d7a9209026579e30239b5973b",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/sdk/platform-tools/adb",
+        "-P",
+        "5045",
+        "-s",
+        "emulator-5554",
+        "reverse",
+        "--list"
+      ],
+      "normalizedCwd": "${RUN211}/sources/nia-cli",
+      "timeoutSeconds": 60,
+      "result": {
+        "at": 1792116152.3302348,
+        "exitCode": 1,
+        "seconds": 0.058,
+        "action": null,
+        "operation": {}
+      },
+      "rawResultFileSHA256": "f19af226165d263ea09e285c5339dc96466fc8ead929268752a7da2046730418",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu21.52.203-ca-jdk21.0.12.1-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/nia-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "nia-v4-cli-after-prep-launch-observation-runtime",
+      "at": 1792116152.152647,
+      "privateCommand": "${RUN211}/state/nia-v4-cli-after-prep-launch-observation-runtime/command.json",
+      "rawCommandFileSHA256": "1ef75efd007bd866fa141de007ca7a195ef8d004901a4c0c9d94b255eb642447",
+      "originalArgvCanonicalJSONSHA256": "3ee59510bfa7aee54648fcfdb7b996813c576107b8abc92c135385e859c51096",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/sdk/platform-tools/adb",
+        "-P",
+        "5045",
+        "-s",
+        "emulator-5554",
+        "shell",
+        "getprop"
+      ],
+      "normalizedCwd": "${RUN211}/sources/nia-cli",
+      "timeoutSeconds": 60,
+      "result": {
+        "at": 1792116152.2118552,
+        "exitCode": 1,
+        "seconds": 0.058,
+        "action": null,
+        "operation": {}
+      },
+      "rawResultFileSHA256": "2381e9df682b25415ed348540981b9025250d220857648832c36429274437e02",
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu21.52.203-ca-jdk21.0.12.1-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/nia-cli",
+        "TMPDIR": "${HOST_TEMP}/xw/f5qgkfhx2fz43mw3bhr0v5mm0000gn/T/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "otherEnvironmentValuesPublished": false
+    },
+    {
+      "case": "nia-v4-down-cold",
+      "at": 1792116453.8169029,
+      "privateCommand": "${RUN211}/state/nia-v4-down-cold/command.json",
+      "rawCommandFileSHA256": "e67e6cd2a1fd5020fb58138dc7a0a047c7e753044abc505ad0a154343c286809",
+      "originalArgvCanonicalJSONSHA256": "edb056892b6f91b9958b9efb1b3400ffda27c78d565353bfc37f1e514d974431",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "${RUN211}/bin/mobile-v4",
+        "down",
+        "--platform",
+        "android",
+        "--project",
+        "${RUN211}/sources/nia-cli",
+        "--json",
+        "--progress-json"
+      ],
+      "normalizedCwd": "${RUN211}/sources/nia-cli",
+      "timeoutSeconds": 1800,
+      "otherEnvironmentValuesPublished": false,
+      "normalizedEnvironmentWhitelist": {
+        "JAVA_HOME": "${RUN211}/jdks/zulu21.52.203-ca-jdk21.0.12.1-macosx_aarch64/Contents/Home",
+        "ANDROID_HOME": "${RUN211}/sdk",
+        "ANDROID_SDK_ROOT": "${RUN211}/sdk",
+        "ANDROID_USER_HOME": "${RUN211}/android-home",
+        "ANDROID_EMULATOR_HOME": "${RUN211}/emulator-home",
+        "ANDROID_AVD_HOME": "${RUN211}/avd",
+        "ANDROID_ADB_SERVER_PORT": "5045",
+        "ADB_SERVER_SOCKET": "tcp:5045",
+        "GRADLE_USER_HOME": "${RUN211}/gradle/nia-cli",
+        "TMPDIR": "${HOST_TEMP}/runstir-211-cli-gui-20261016/",
+        "XDG_CACHE_HOME": "${RUN211}/home/cache"
+      },
+      "result": {
+        "at": 1792116456.388809,
+        "exitCode": 0,
+        "seconds": 2.572,
+        "sourceSHA": "8862bcad5c003514cee73c41debe65b9301edf1e",
+        "state": "succeeded",
+        "action": null,
+        "operation": {
+          "id": "A78C0A1B-9FFE-4170-915D-A9D50B52F17D",
+          "kind": "down",
+          "completed": [
+            "android.app",
+            "android.emulator"
+          ],
+          "remaining": [],
+          "requiredInput": [],
+          "modules": [],
+          "variants": []
+        }
+      },
+      "rawResultFileSHA256": "5aba2bc11bc1443534c76aec528284030059c2ec19b97d41738752d9678ade6c"
+    },
+    {
+      "case": "reconnect-native-ps14767",
+      "at": 1792118556.3612769,
+      "privateCommand": "${RUN211}/state/reconnect-native-ps14767/command.json",
+      "rawCommandFileSHA256": "1adf631c13d3fda1db1358e28aaf8230f41c7fdf6adf145b5f85a06edd470e51",
+      "originalArgvCanonicalJSONSHA256": "831a006762ed2eacb50c9bb76cdf1a12724c24247b265a6ddc20abcc0b8ad436",
+      "normalizedArgv": [
+        "/bin/ps",
+        "-p",
+        "14767",
+        "-o",
+        "pid="
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "otherEnvironmentValuesPublished": false,
+      "result": {
+        "at": 1792118556.418148,
+        "exitCode": 1,
+        "seconds": 0.057,
+        "action": null
+      },
+      "rawResultFileSHA256": "d54cf0aa1994ba3cd8cf733adbb3da550314364322b152aeeaec332290a326a5",
+      "stdoutBytes": 0,
+      "stderrBytes": 0
+    },
+    {
+      "case": "reconnect-scoped-native-ps14767",
+      "at": 1792118604.43496,
+      "privateCommand": "${RUN211}/state/reconnect-scoped-native-ps14767/command.json",
+      "rawCommandFileSHA256": "cc1c35d1396a004403de5d501a8642678faa41882a3be017cc99e396b8a75d04",
+      "originalArgvCanonicalJSONSHA256": "ddb70cfb9741423e9428b70b3455d433020d1e3e87ae0dbb60d41268206ebd84",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes-ps.sb",
+        "/bin/ps",
+        "-p",
+        "14767",
+        "-o",
+        "pid="
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "otherEnvironmentValuesPublished": false,
+      "result": {
+        "at": 1792118604.4896069,
+        "exitCode": 1,
+        "seconds": 0.054,
+        "action": null
+      },
+      "rawResultFileSHA256": "eb57e8b33cd2407ed1e2c158ee50b658134c49f49ea66b8c319a8879e68e5b04",
+      "stdoutBytes": 0,
+      "stderrBytes": 0
+    },
+    {
+      "case": "reconnect-guarded-ps14767",
+      "at": 1792118556.303172,
+      "privateCommand": "${RUN211}/state/reconnect-guarded-ps14767/command.json",
+      "rawCommandFileSHA256": "e1f22531140f53e204a0247e6de4f9686f6672872e060ea3a38702db571dc75a",
+      "originalArgvCanonicalJSONSHA256": "3a03cbaf960d3c706960e1670654a07e90b69a2072b864f7e748ffa3d0de90b0",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes.sb",
+        "/bin/ps",
+        "-p",
+        "14767",
+        "-o",
+        "pid="
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "otherEnvironmentValuesPublished": false,
+      "result": {
+        "at": 1792118556.3608,
+        "exitCode": 71,
+        "seconds": 0.057,
+        "action": null
+      },
+      "rawResultFileSHA256": "7337c7d9b89e3e7936d63befa0c84a406b3967a875c83879f6f99ff278ea147e",
+      "stdoutBytes": 0,
+      "stderrBytes": 68
+    },
+    {
+      "case": "reconnect-scoped-outside-write-denied",
+      "at": 1792118604.490295,
+      "privateCommand": "${RUN211}/state/reconnect-scoped-outside-write-denied/command.json",
+      "rawCommandFileSHA256": "4b1aa16c1f60c935cb705adc221f6771f4f1b1af4c6639c428c70512bcd5699e",
+      "originalArgvCanonicalJSONSHA256": "5f257d7fb5688d82612811f7e4d973daad5e46475c179d60d490a8d899a1a413",
+      "normalizedArgv": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "${RUN211}/owned-writes-ps.sb",
+        "/bin/sh",
+        "-c",
+        "printf changed > ${PROTECTED_CONTROL}"
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "otherEnvironmentValuesPublished": false,
+      "result": {
+        "at": 1792118604.547159,
+        "exitCode": 1,
+        "seconds": 0.057,
+        "action": null
+      },
+      "rawResultFileSHA256": "02f4ffd191e15967813720386f93ad40700584aa49ace3d5dbf694090c53b561",
+      "stdoutBytes": 0,
+      "stderrBytes": 104
+    },
+    {
+      "case": "final-owned-pids-absent",
+      "at": 1792118926.721795,
+      "privateCommand": "${RUN211}/state/final-owned-pids-absent/command.json",
+      "rawCommandFileSHA256": "46df5b3598e7ee67955b4d0a3bffbf70ea869734982651b75ed93ef57c2166c8",
+      "originalArgvCanonicalJSONSHA256": "756e76f8923d72a269f2dfe1c81910ceba47afa911d7bd3eb30292df372a423d",
+      "normalizedArgv": [
+        "/bin/ps",
+        "-p",
+        "59627,59556,14767",
+        "-o",
+        "pid="
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "otherEnvironmentValuesPublished": false,
+      "result": {
+        "at": 1792118926.779003,
+        "exitCode": 1,
+        "seconds": 0.057,
+        "action": null
+      },
+      "rawResultFileSHA256": "89e78eae8cd0fb4d33c50b74e8682177edef115402b640735a3382735cfcd88b"
+    },
+    {
+      "case": "final-port-5045",
+      "at": 1792118926.779967,
+      "privateCommand": "${RUN211}/state/final-port-5045/command.json",
+      "rawCommandFileSHA256": "1e026ed0ceab28fffca35c7c66a12ecb8a57c5dd1ee002c64f22ce4d87c09550",
+      "originalArgvCanonicalJSONSHA256": "14b7798fc7908c682646dec7b42c3041d3d22afac648ae3723a3237f7b45df92",
+      "normalizedArgv": [
+        "/usr/sbin/lsof",
+        "-nP",
+        "-iTCP:5045",
+        "-sTCP:LISTEN"
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "otherEnvironmentValuesPublished": false,
+      "result": {
+        "at": 1792118926.893091,
+        "exitCode": 1,
+        "seconds": 0.113,
+        "action": null
+      },
+      "rawResultFileSHA256": "59f7f53fc818038ef6239a84328c8bffc9612eeb5bb9a4b8d8457ba4d17b2fb9"
+    },
+    {
+      "case": "final-port-5554",
+      "at": 1792118926.893662,
+      "privateCommand": "${RUN211}/state/final-port-5554/command.json",
+      "rawCommandFileSHA256": "f27429df569bc25359e072c07c10df3a06618781d4ac8c84be88d929a182c9d3",
+      "originalArgvCanonicalJSONSHA256": "dff34a7dc6abed3154f97f66e1bf67dae82ec64a945491b75ef20b221790cecc",
+      "normalizedArgv": [
+        "/usr/sbin/lsof",
+        "-nP",
+        "-iTCP:5554",
+        "-sTCP:LISTEN"
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "otherEnvironmentValuesPublished": false,
+      "result": {
+        "at": 1792118926.9508731,
+        "exitCode": 1,
+        "seconds": 0.057,
+        "action": null
+      },
+      "rawResultFileSHA256": "0baa99244f3ac26cf6806e864101ea5714e805abacd6a774f8588f40e37b8c8c"
+    },
+    {
+      "case": "final-port-5555",
+      "at": 1792118926.951371,
+      "privateCommand": "${RUN211}/state/final-port-5555/command.json",
+      "rawCommandFileSHA256": "717c5bfcbaa871b805cc7d595142f732a9faed34a4f7a41b5235c144dbdcdce9",
+      "originalArgvCanonicalJSONSHA256": "542896eca5caf6b6e4173ba10dcecc979d5733f8ac57ab0467caf27e57163ee0",
+      "normalizedArgv": [
+        "/usr/sbin/lsof",
+        "-nP",
+        "-iTCP:5555",
+        "-sTCP:LISTEN"
+      ],
+      "normalizedCwd": "${RUN211}/sources/todo-cli",
+      "timeoutSeconds": 1800,
+      "otherEnvironmentValuesPublished": false,
+      "result": {
+        "at": 1792118927.008193,
+        "exitCode": 1,
+        "seconds": 0.057,
+        "action": null
+      },
+      "rawResultFileSHA256": "8a6f54d5480cf3e0957102b68379e2a622135c5fddde12c7cb5219bd9d8b09bb"
+    }
+  ],
+  "guiBoundary": "GUI actions are native accessibility observations in results.json and private gui-v4-observations.json. A CLI command does not stand in for a GUI action.",
+  "environmentPolicy": "Only the enumerated SDK/JDK/cache/temp/server location keys are published with normalized paths. USER, LOGNAME, authentication-key configuration and all other values remain private. Key file contents are not read or hashed."
+}

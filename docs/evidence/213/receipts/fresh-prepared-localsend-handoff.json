@@ -1,0 +1,32 @@
+{
+  "appRoot": "app/",
+  "bundleSHA256": "d17f7af56dd559be567514391779f1a8e1083574299236e7f08535d41cf5c11f",
+  "cacheIsolation": [
+    "state/pub-cache/fresh-prepared-localsend",
+    "state/cocoapods-fresh-prepared",
+    "state/cocoapods-cache-fresh-prepared"
+  ],
+  "cloneMethod": "new --no-local clone of original C1, fetch prepared bundle HEAD, detached checkout 61145cf",
+  "dependencyRoot": ".",
+  "entrypoint": "lib/main.dart",
+  "frozenNativePrep": "flutter build ios --config-only --simulator --debug --no-pub --no-codesign --target lib/main.dart; pod wrapper enforces install --deployment; exit0",
+  "handoffScope": "source/lock/frozen dependency handoff for subsequent Runstir AC05/AC06; no Runstir CLI/GUI proof",
+  "nativeBuildRun": "not executed in this fresh clone; actual four baseline executions used fixed baseline clones",
+  "nativePrepLogSHA256": "0c1ef49eb07288820c2bf5e58800ae8c3640fcb826faf299043dfed6aaaf280f",
+  "podfileLockSHA256": "5595ddad3deb164f454565e62ef48b3fae1e4d0b951116781f0246abe810825f",
+  "pubGet": "flutter pub get --enforce-lockfile exit0 with separate fresh PUB_CACHE",
+  "pubspecLockSHA256": "d14333a18b86726a4d8cc792bd3d65482d8e55e53f5895a3bd21d0cdcf7f5b3a",
+  "sourceAuditSHA256": "7874b358d538f5baa3fe2e89ded3b541acf27967ca056ac09f97591c4649419d",
+  "sourcePreservation": {
+    "hiddenFlags": [],
+    "indexDiffExit": 0,
+    "rawOrModeDifferences": [],
+    "sourceSHA": "61145cf100522363e9658af97137097551c64832",
+    "timeUTC": "2026-10-15T13:40:32.143705+00:00",
+    "trackedCount": 1030,
+    "trackedDiffExit": 0
+  },
+  "sourceSHA": "61145cf100522363e9658af97137097551c64832",
+  "tree": "2346d8051c3f556fa545e9c48aa5c1bc7fc2446b",
+  "upstreamPrerequisite": "c1ce322fb3acf08e44f329b8b7208b8b0d91e244"
+}

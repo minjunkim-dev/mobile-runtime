@@ -97,25 +97,13 @@ public struct UpJSONDocument: Encodable, Sendable {
     public func encoded() throws -> String { try JSONOutput.encode(self) }
 }
 
-/// One line per Stage: name, what happened, how long it took. Printed as the Stage
-/// lands, which is why it renders a single result and not a report.
+/// The row a long Stage prints while it is still working: name, what it is doing,
+/// how long it has taken.
 public struct StageLineRenderer: Sendable {
     private static let nameWidth = 14
     private static let outcomeWidth = 24
 
     public init() {}
-
-    public func line(_ result: StageResult) -> String {
-        // A detail is what the reader wanted — which device, which scheme — so on a
-        // pass it takes the column outright. `skipped` and `failed` keep their word:
-        // there, the status is the news and the detail is the reason.
-        let outcome = switch result.status {
-        case .pass: result.detail ?? result.status.rawValue
-        case .skipped, .failed:
-            result.detail.map { "\(result.status.rawValue) — \($0)" } ?? result.status.rawValue
-        }
-        return row(result.id, outcome, result.duration)
-    }
 
     /// A Stage that has not landed yet. `build` is the only step long enough to make
     /// a reader wonder whether the tool died, and the answer to that is the same row
@@ -137,64 +125,24 @@ public struct StageLineRenderer: Sendable {
     }
 }
 
-/// The build/up streams, in one place. stdout carries the `--json` document and nothing
-/// else; everything a human reads goes to stderr, so a piped run and a watched
-/// terminal are the same run. Progress printed while the pipeline runs is exactly
-/// how that rule gets broken, so both streams leave through here rather than
-/// through prints scattered across the command.
+/// The build/up report a human reads, on stderr. stdout is left to the `--json`
+/// document, which `WorkflowResult` writes.
 public struct UpWriter: Sendable {
-    private let json: Bool
-    private let toolVersion: String
     private let command: String
-    private let platform: String?
     private let renderer: HumanReportRenderer
-    private let lines = StageLineRenderer()
-    private let standardOutput: @Sendable (String) -> Void
     private let standardError: @Sendable (String) -> Void
 
     public init(
-        json: Bool,
-        toolVersion: String,
         command: String = "up",
-        platform: String? = nil,
         renderer: HumanReportRenderer,
-        standardOutput: @escaping @Sendable (String) -> Void,
         standardError: @escaping @Sendable (String) -> Void
     ) {
-        self.json = json
-        self.toolVersion = toolVersion
         self.command = command
-        self.platform = platform
         self.renderer = renderer
-        self.standardOutput = standardOutput
         self.standardError = standardError
     }
 
-    /// Called as each Stage lands — the reader watches the run, rather than waiting
-    /// for it. Never stdout, whatever the mode.
-    public func progress(_ result: StageResult) {
-        standardError(lines.line(result))
-    }
-
-    /// A line from a Stage that is still working. Same door as everything else a
-    /// human reads — `--json` has not written its document yet, and one stray line
-    /// on stdout is all it takes to make it unparseable.
-    public func note(_ line: String) {
-        standardError(line)
-    }
-
-    public func finish(_ report: UpReport) throws {
-        if json {
-            return standardOutput(
-                try UpJSONDocument(
-                    report: report,
-                    toolVersion: toolVersion,
-                    command: command,
-                    platform: platform
-                ).encoded()
-            )
-        }
-
+    public func finish(_ report: UpReport) {
         // Whatever validate found — the errors that stopped the run, and the warnings
         // that did not — through doctor's renderer. There is one renderer.
         if let validation = report.context.validation, validation.status != .pass {

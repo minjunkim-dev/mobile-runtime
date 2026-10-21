@@ -1,4 +1,5 @@
 import Foundation
+import Yams
 
 /// A Node version pinned by team convention (`.nvmrc`, `.node-version`). Breaking
 /// a pin is a warning; `engines` is the contract that errors.
@@ -78,13 +79,16 @@ public struct WorkspaceRoot: Sendable, Equatable {
 
 }
 
-/// The project's anchor: the nearest `package.json` that depends on react-native,
-/// plus the Tier 1 declarations sitting next to it. Detection happens once and
-/// everything project-scoped — the checks here, `mobile.yml` later — reads the
-/// same anchor. There is exactly one detection rule in this project.
+/// The selected app root, framework and Tier 1 declarations. Detection and
+/// `mobile.yml` share this root. Native iOS also preserves the selected container.
 public struct ProjectAnchor: Sendable, Equatable {
-    /// The directory holding the anchoring `package.json`.
+    /// The app root holding its authoritative framework declaration or container.
     public let directory: URL
+    public let framework: ProjectFramework
+    public let iosContainer: String?
+    public var iosDirectory: URL {
+        framework == .nativeIOS ? directory : directory.appendingPathComponent("ios")
+    }
     /// From `dependencies.react-native` — a declared range, not a measurement.
     public let declaredReactNativeVersion: String
     /// The version every judgement about this project runs on, picked along the
@@ -211,12 +215,12 @@ public struct ProjectAnchor: Sendable, Equatable {
             if usesBundledCocoaPods {
                 return ProcessCommand(
                     "bundle", ["exec", "pod", "install"],
-                    workingDirectory: directory.appendingPathComponent("ios"), timeout: nil
+                    workingDirectory: iosDirectory, timeout: nil
                 )
             }
             return ProcessCommand(
                 "pod", ["install"],
-                workingDirectory: directory.appendingPathComponent("ios"), timeout: nil
+                workingDirectory: iosDirectory, timeout: nil
             )
         }
         return packageManagerProcess(
@@ -292,9 +296,13 @@ public struct ProjectAnchor: Sendable, Equatable {
     /// The Project checks this anchor can answer. A Check that needs a declaration
     /// to compare against is absent when the declaration is — a project that never
     /// pinned Ruby gets no Ruby line at all, rather than a permanent `unknown`.
-    public func checks(runner: any ProcessRunner, context: ConfigContext) -> [any Check] {
+    public func checks(
+        runner: any ProcessRunner, context: ConfigContext,
+        environment: ProjectExecutionEnvironment? = nil
+    ) -> [any Check] {
         var checks: [any Check] = [ProjectDetectedCheck(anchor: self)]
-        checks.append(contentsOf: commonChecks(runner: runner, context: context))
+        guard framework == .reactNative else { return checks }
+        checks.append(contentsOf: commonChecks(runner: runner, context: context, environment: environment))
         if let cocoapods {
             checks.append(
                 CocoaPodsVersionCheck(
@@ -312,30 +320,86 @@ public struct ProjectAnchor: Sendable, Equatable {
 
     /// Checks whose meaning is the same for both platform providers. Android does
     /// not inherit the iOS-specific project/CocoaPods/Ruby checks just to reuse Node.
-    public func commonChecks(runner: any ProcessRunner, context: ConfigContext) -> [any Check] {
+    public func commonChecks(
+        runner: any ProcessRunner, context: ConfigContext,
+        environment: ProjectExecutionEnvironment? = nil
+    ) -> [any Check] {
+        guard framework == .reactNative else { return [] }
         var checks: [any Check] = [
             NodeVersionCheck(anchor: self, context: context, runner: runner)
         ]
         if let packageManager {
             checks.append(
                 PackageManagerVersionCheck(
-                    requirement: packageManager, anchor: self, context: context, runner: runner
+                    requirement: packageManager, anchor: self, context: context, runner: runner,
+                    environment: environment
                 )
             )
         }
         return checks
     }
 
-    /// Walks up from `directory` looking for the anchor, stopping at the git root
-    /// (or the filesystem root). The nearest react-native `package.json` wins, so a
-    /// monorepo naturally judges the app you are standing in.
-    ///
-    /// - Returns: nil when there is no React Native project above the starting
-    ///   point. That is not an error — it means host checks only.
+    /// Walks to the nearest declared app root, stopping at the Git root.
+    /// Ambiguous frameworks or Xcode containers require an explicit candidate.
     public static func detect(from directory: URL, fileManager: FileManager = .default) -> ProjectAnchor? {
-        walkUp(from: directory.resolvingSymlinksInPath().path, fileManager: fileManager) {
-            read(at: $0, fileManager: fileManager)
+        let found = candidates(from: directory, fileManager: fileManager)
+        return found.count == 1 ? found.first : nil
+    }
+
+    public static func detect(candidate: ProjectCandidate, fileManager: FileManager = .default) -> ProjectAnchor? {
+        candidates(from: URL(fileURLWithPath: candidate.app.path), fileManager: fileManager).first {
+            $0.directory.path == candidate.app.path && $0.framework == candidate.framework
+                && $0.iosContainer == candidate.iosContainer
         }
+    }
+
+    public static func candidates(from directory: URL, fileManager: FileManager = .default) -> [ProjectAnchor] {
+        walkUp(from: directory.resolvingSymlinksInPath().path, fileManager: fileManager) { path in
+            let found = readCandidates(at: path, fileManager: fileManager)
+            return found.isEmpty ? nil : found
+        } ?? []
+    }
+
+    private static func readCandidates(at directory: String, fileManager: FileManager) -> [ProjectAnchor] {
+        var found: [ProjectAnchor] = []
+        if let reactNative = read(at: directory, fileManager: fileManager) { found.append(reactNative) }
+        if declaresFlutter(at: directory, fileManager: fileManager),
+           let anchor = read(at: directory, framework: .flutter, fileManager: fileManager) {
+            found.append(anchor)
+        }
+        let parent = URL(fileURLWithPath: directory).deletingLastPathComponent().path
+        let embeddedHost = walkUp(from: parent, fileManager: fileManager) { ancestor -> Bool? in
+            guard directory == ancestor + "/ios" || directory.hasPrefix(ancestor + "/ios/")
+                || directory == ancestor + "/android" || directory.hasPrefix(ancestor + "/android/") else { return nil }
+            if read(at: ancestor, fileManager: fileManager) != nil { return true }
+            return declaresFlutter(at: ancestor, fileManager: fileManager) ? true : nil
+        } ?? false
+        guard !embeddedHost,
+              !["xcodeproj", "xcworkspace"].contains(URL(fileURLWithPath: directory).pathExtension)
+        else { return found }
+        let names = (try? fileManager.contentsOfDirectory(atPath: directory)) ?? []
+        for name in names.sorted() where (name.hasSuffix(".xcodeproj")
+            && fileManager.fileExists(atPath: directory + "/" + name + "/project.pbxproj"))
+            || (name.hasSuffix(".xcworkspace")
+                && fileManager.fileExists(atPath: directory + "/" + name + "/contents.xcworkspacedata")) {
+            if let anchor = read(at: directory, framework: .nativeIOS, container: name, fileManager: fileManager) {
+                found.append(anchor)
+            }
+        }
+        if fileManager.fileExists(atPath: directory + "/gradlew"),
+           names.contains("settings.gradle") || names.contains("settings.gradle.kts"),
+           let anchor = read(at: directory, framework: .nativeAndroid, fileManager: fileManager) {
+            found.append(anchor)
+        }
+        return found
+    }
+
+    private static func declaresFlutter(at directory: String, fileManager: FileManager) -> Bool {
+        guard let data = fileManager.contents(atPath: directory + "/pubspec.yaml"),
+              let value = try? Yams.load(yaml: String(decoding: data, as: UTF8.self)) as? [String: Any],
+              let dependencies = value["dependencies"] as? [String: Any],
+              let flutter = dependencies["flutter"] as? [String: Any] else { return false }
+        return flutter["sdk"] as? String == "flutter"
     }
 
     /// Climbs from `directory` until `probe` answers, stopping at the git root or the
@@ -358,35 +422,37 @@ public struct ProjectAnchor: Sendable, Equatable {
 
     private static let pinFiles = [".nvmrc", ".node-version"]
 
-    private static func read(at directory: String, fileManager: FileManager) -> ProjectAnchor? {
-        guard let manifest = manifest(in: directory, fileManager: fileManager),
-            let declared = (manifest["dependencies"] as? [String: Any])?["react-native"] as? String
-        else { return nil }
+    private static func read(at directory: String, framework: ProjectFramework = .reactNative,
+                             container: String? = nil, fileManager: FileManager) -> ProjectAnchor? {
+        let manifest = manifest(in: directory, fileManager: fileManager) ?? [:]
+        let declared = (manifest["dependencies"] as? [String: Any])?["react-native"] as? String
+        guard framework != .reactNative || declared != nil else { return nil }
 
-        let workspaceRoot = workspaceRoot(from: directory, fileManager: fileManager)
+        let workspaceRoot = framework == .reactNative ? workspaceRoot(from: directory, fileManager: fileManager) : nil
         // Only when the root is somewhere else: otherwise it is this same manifest,
         // and a declaration would be counted twice.
         let root = workspaceRoot.flatMap {
             $0.directory.path == directory ? nil : Self.manifest(in: $0.directory.path, fileManager: fileManager)
         }
 
-        let podInstall = podInstallDeclaration(in: manifest)
+        let podInstall = framework == .reactNative ? podInstallDeclaration(in: manifest) : nil
         return ProjectAnchor(
             directory: URL(fileURLWithPath: directory),
-            declaredReactNativeVersion: declared,
-            reactNativeVersion: ReactNativeVersion.resolve(
+            framework: framework, iosContainer: container,
+            declaredReactNativeVersion: declared ?? "",
+            reactNativeVersion: framework == .reactNative ? ReactNativeVersion.resolve(
                 anchorDirectory: directory,
-                declared: declared,
+                declared: declared ?? "",
                 installed: installedReactNative(in: directory, fileManager: fileManager),
                 workspaceRoot: workspaceRoot,
                 fileManager: fileManager
-            ),
-            hasIOSDirectory: isDirectory(directory.appending("/ios"), fileManager),
-            hasAndroidDirectory: isDirectory(directory.appending("/android"), fileManager),
-            hasNodeModules: isDirectory(directory.appending("/node_modules"), fileManager),
-            nodePin: pin(in: directory, fileManager: fileManager),
-            nodeEngines: nodeEngines(anchor: manifest, root: root),
-            packageManager: packageManagerRequirement(anchor: manifest, root: root),
+            ) : nil,
+            hasIOSDirectory: framework != .nativeAndroid && (framework == .nativeIOS || isDirectory(directory.appending("/ios"), fileManager)),
+            hasAndroidDirectory: framework != .nativeIOS && (framework == .nativeAndroid || isDirectory(directory.appending("/android"), fileManager)),
+            hasNodeModules: framework == .reactNative && isDirectory(directory.appending("/node_modules"), fileManager),
+            nodePin: framework == .reactNative ? pin(in: directory, fileManager: fileManager) : nil,
+            nodeEngines: framework == .reactNative ? nodeEngines(anchor: manifest, root: root) : [],
+            packageManager: framework == .reactNative ? packageManagerRequirement(anchor: manifest, root: root) : nil,
             cocoapods: CocoaPodsRequirement.resolve(
                 anchorDirectory: directory, fileManager: fileManager
             ),
@@ -396,7 +462,7 @@ public struct ProjectAnchor: Sendable, Equatable {
                 at: directory.appending("/\(xcodeVersionFile)"), fileManager: fileManager
             ),
             deploymentTarget: DeploymentTarget.resolve(
-                anchorDirectory: directory, fileManager: fileManager
+                anchorDirectory: directory, iosDirectory: framework == .nativeIOS ? "" : "ios", fileManager: fileManager
             ),
             workspaceRoot: workspaceRoot,
             podInstallScript: podInstall?.name,

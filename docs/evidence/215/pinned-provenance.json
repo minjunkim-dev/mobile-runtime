@@ -1,0 +1,238 @@
+{
+  "presentation": "Public normalized summaries and selected line excerpts. Text is not byte-identical to private originals. PNGs retain exact original bytes.",
+  "aliases": {
+    "${PINNED_ROOT}": "Private fresh native baseline root",
+    "${PROVENANCE_ROOT}": "Private archive/official metadata root",
+    "${JDK17_HOME}": "Fresh standard JDK17 Contents/Home",
+    "${JDK21_HOME}": "Fresh standard JDK21 Contents/Home",
+    "${EXISTING_SDK}": "Read-only original Android SDK",
+    "${INITIAL_ROOT}": "Historical first attempt root",
+    "${PRIOR_RERUN_ROOT}": "Historical first preservation rerun root"
+  },
+  "originalPrivateIndex": {
+    "name": "EVIDENCE-SHA256-v1.json",
+    "fileCount": 293,
+    "bytes": 56408,
+    "SHA256": "5317cb97ab8bdc02cf61475ef8e9df840bbcc151888454297e9d8e275e1e1ed1",
+    "all293OriginalsRehashed": true,
+    "unchangedAndNotRewritten": true,
+    "newAGPAuditExcludedFromOriginal293": true
+  },
+  "selectedPrivateReceipts": {
+    "state/input-tuple-before-config-v1.json": {
+      "bytes": 16508,
+      "SHA256": "9cd0c718f6d63206d8ff636cc772097fb40879272feca0ec345249332f01c1ac"
+    },
+    "state/configured-archives-summary-v1.json": {
+      "bytes": 1779,
+      "SHA256": "1a6b7d3a9bf5db3e60f23b8f2f2fd49260c633659a9fd32e1b5ec1508f0d39de"
+    },
+    "state/configured-after-archives-summary-v1.json": {
+      "bytes": 1779,
+      "SHA256": "2853393717f936e539cbfd3000fec92dc30ea41324bbbb4d5e0c4f2bcc5fe2aa"
+    },
+    "state/final-native-baseline-summary-v1.json": {
+      "bytes": 8036,
+      "SHA256": "6d69fb077f8690bf7c2be022cd7f987a12d4895a4917163218ea3b8b2aecae4e"
+    },
+    "state/final-protected-preservation-v1.json": {
+      "bytes": 8111,
+      "SHA256": "9bc88394053e39f9a0ecf5635ea74c4028542ef886708e99a215afbe6b56570d"
+    },
+    "state/owned-source-metadata-license-final-v1.json": {
+      "bytes": 5382,
+      "SHA256": "3ff648110ff55ee77c18613bd2161981c19b6ad7e4295497a559905049b21e23"
+    },
+    "state/model-todo-v1.json": {
+      "bytes": 801,
+      "SHA256": "746a7c3fc6c8a70b318984a1274d976a7f8d417d39383763b25e4cae22b99fac"
+    },
+    "state/model-nia-v1.json": {
+      "bytes": 807,
+      "SHA256": "b38eee4f9af9cccd4721c565cd6f527b3056bfefac4daf949220687dd27cf8f0"
+    },
+    "state/build-todo-v1/command.json": {
+      "bytes": 3510,
+      "SHA256": "9f56b938720eb51720c5e0040f65714d073a8ca41c5f2e29798906cbcb079adc"
+    },
+    "state/build-todo-v1/output.log": {
+      "bytes": 5160,
+      "SHA256": "c14b8b098195853cd14d37dd4f5b10dd4fd71c05a31031dbb85f2d2150a8c6c4"
+    },
+    "state/build-todo-v1/result.json": {
+      "bytes": 239,
+      "SHA256": "e0276c9fa6d61cec09a9aecda00b6cdb3719cd8b445b3879ea6ef229c78f28d7"
+    },
+    "state/build-nia-v1/command.json": {
+      "bytes": 3524,
+      "SHA256": "23d1df5275907fd92faecf7e23aeb835c6a5abb08f33ce9bce79669a09ea8f83"
+    },
+    "state/build-nia-v1/output.log": {
+      "bytes": 55051,
+      "SHA256": "6f87c6a959ca89c9dfc4654a95b5db7a49660643a16914472378f58211ac88cc"
+    },
+    "state/build-nia-v1/result.json": {
+      "bytes": 237,
+      "SHA256": "b0f9f3d7eca36b5ede6b83759f39cccea1ad03981900405aa2bd8b4b90413ac4"
+    },
+    "state/audit-before-baselineTodoGradle.json": {
+      "bytes": 7171103,
+      "SHA256": "b5bf6b7a1d874bd36c11fd838a841efded59f20fcf4ee549383e323a043ed9bc"
+    },
+    "state/audit-after-baselineTodoGradle.json": {
+      "bytes": 7171104,
+      "SHA256": "0cd13a19556b7677b135e50cb7d03510fc7c883b43af21eb27a4884642a1c2d9"
+    },
+    "state/audit-before-baselineNIAGradle.json": {
+      "bytes": 14848215,
+      "SHA256": "64ee3ed868d1e19814d2afb6317bfeb44e7c1f070ffd0f86a13e01477e15bd34"
+    },
+    "state/audit-after-baselineNIAGradle.json": {
+      "bytes": 14848216,
+      "SHA256": "7048b1157f9710e4f9ae87b49403cdfbbded86ebab94e810b9c9e02438192fad"
+    },
+    "state/audit-before-globalSDK.json": {
+      "bytes": 34757383,
+      "SHA256": "af7c0dc2006562380c0ecc955012f03c297d98e3c7e76508343ee253c425536e"
+    },
+    "state/audit-after-globalSDK.json": {
+      "bytes": 34757383,
+      "SHA256": "4f515ad341cea5b9b505362363213f86add5eaede97de10b4bb10248980f9634"
+    },
+    "state/audit-before-globalGradle.json": {
+      "bytes": 200107258,
+      "SHA256": "045e044345e5a73f122308392f17cad497435075d9b57889255be2e6e758c1fb"
+    },
+    "state/audit-after-globalGradle.json": {
+      "bytes": 200107256,
+      "SHA256": "d4a55f088d5274cf6c93e86d970166f2099b1357f981bbdedafe08ebe40edaea"
+    },
+    "state/audit-before-todoSource.json": {
+      "bytes": 35894,
+      "SHA256": "db71377db87e44ff6b1e2a883dd2dfa25cb5ccdf68081943acc77a7d35ae6dc1"
+    },
+    "state/audit-after-todoSource.json": {
+      "bytes": 35894,
+      "SHA256": "a5f0b5bb1f22f1995b9fe2410bede7aa3c86098f65999767e857f4260c2ebc9a"
+    },
+    "state/audit-before-niaSource.json": {
+      "bytes": 221799,
+      "SHA256": "c3abc70b5f522b5bed7d0564053a6be6bb71a512722cb90db5739c5b657c9021"
+    },
+    "state/audit-after-niaSource.json": {
+      "bytes": 221798,
+      "SHA256": "92a7c468b9790aadfb1c97f2a3bcda8c00079dc3a8a5847fbc582813b3ac6d08"
+    },
+    "state/todo-focus-supplement-v1.json": {
+      "bytes": 1015,
+      "SHA256": "474311d729ce33f5650f864d2580d8a3abaca4aa22a9a06959fa5c2d4dd9d9d5"
+    },
+    "state/todo-visual-verdict-v1.json": {
+      "bytes": 734,
+      "SHA256": "fbbae206464eee4ab7ec8360dbea62dd41880bebb5014dfbcbc7d630f897e330"
+    },
+    "state/nia-post-prompt-observation-v1.json": {
+      "bytes": 2787,
+      "SHA256": "f0ca6577608eafead40e32e29de6e2d1ba7200db09e39f56f382ec080bae666c"
+    },
+    "state/nia-visual-verdict-v1.json": {
+      "bytes": 1135,
+      "SHA256": "268d1cb03f6027f9cfc76f8703d855c85e4c6a6049cc1186390e4a771a2b8720"
+    },
+    "state/emulator-manager-v1/adb-server-command.json": {
+      "bytes": 2259,
+      "SHA256": "78fca29586b752452001ef6cca57baac918f316fd4ed6961c67a11fe5f460286"
+    },
+    "state/emulator-manager-v1/adb-server.log": {
+      "bytes": 155,
+      "SHA256": "9f0f76ec5bffb2ec8d24866c408c3c7c2e8965d17cec607c3d64bb3f573fa389"
+    },
+    "state/emulator-manager-v1/adb-final.json": {
+      "bytes": 87,
+      "SHA256": "be4b1aebbb909fd076028e271b305c6a8f6474c2a1039d54b3f51d8953d2b21c"
+    },
+    "state/attempt2-infra-correction-v1.json": {
+      "bytes": 731,
+      "SHA256": "b99fb3feab3dae4999a2c624be2510ebc9506260e8feccc90aef26e1113d60f7"
+    },
+    "state/emulator-manager-v2/adb-final.json": {
+      "bytes": 84,
+      "SHA256": "add0bd91a005e0b7363907f644c6d43373ec9166516d9ade561af4095919d8c2"
+    },
+    "state/emulator-manager-v2/emulator-final.json": {
+      "bytes": 85,
+      "SHA256": "78ee1b332023fbbf4e309e6833d087a0622c1fa7e9b155e6e2a44ba0aaa4a2f9"
+    },
+    "state/emulator-manager-v2/complete.json": {
+      "bytes": 180,
+      "SHA256": "74f478977a347d1b4cefb881d5f9d68790b346e99ff113d5563a53777943fdf5"
+    },
+    "state/avd-preservation-field-correction-v1.json": {
+      "bytes": 496,
+      "SHA256": "705d4ecb8b78a583fa3a6db5e576962dd5109d753b4d47525569dbebec5e93e8"
+    },
+    "state/os-android-diagnostic-stat-v1.json": {
+      "bytes": 414,
+      "SHA256": "c79969a497a61dd9b8d0a265263917b3ed761dbac16f718e8b4360630b20651f"
+    },
+    "state/lease-return-v1.json": {
+      "bytes": 425,
+      "SHA256": "5f7c8fcc123f63ec04361e0c6460393f6747c21bc1cf38a189b77754bc2261da"
+    },
+    "state/agp-distribution-input-audit-v1.json": {
+      "bytes": 11866,
+      "SHA256": "263bb7cb3abdcc66f7ec93b9be320a79fa3306a04e0f6e513269f288814bfe33",
+      "extensionToOriginal293": true
+    },
+    "apks/todo-f3de56fe499f.apk": {
+      "bytes": 24681592,
+      "SHA256": "f3de56fe499fa3b31b0d74778f12d67150e8136753cd04f25a4afe10eec21139"
+    },
+    "apks/nia-72dd36d06cc1.apk": {
+      "bytes": 37211209,
+      "SHA256": "72dd36d06cc13f9c2aeceb6b3ba0e62a129e6a48b043d5091b9080e319f630a2"
+    },
+    "state/apk-identities-v1.json": {
+      "bytes": 1556,
+      "SHA256": "f9c782549ca5486a4efb3b5c7467877e7a0f70a72e5917f62f9e2697ab8a65fe"
+    },
+    "state/owned-source-head-final-v1.json": {
+      "bytes": 457,
+      "SHA256": "f572f316a5a0410c0def5ca0e1b9d7940986f282735756bf2cf109774e9eaaba"
+    },
+    "state/emulator-manager-v2/boot-ready.json": {
+      "bytes": 1052,
+      "SHA256": "4dda9c292a9abb214475253bfc6b06a65ad3ba01c2d8eb715835e2c32ab5abc8"
+    },
+    "scripts/inspect-toolchain-v1.gradle": {
+      "bytes": 728,
+      "SHA256": "be665086762052d400187d2ef4a8369a970f860c7b4c303144ae86193f58c7b2"
+    },
+    "owned-writes-v1.sb": {
+      "bytes": 273,
+      "SHA256": "8c2acd99720c8227ed96052833cd6e03b8cc7960494cf9d53b4b079e4f8e013b"
+    }
+  },
+  "screenshots": {
+    "pinned-todo-first-screen.png": {
+      "privateOriginal": "screenshots/todo-first-observed-v1.png",
+      "bytes": 56282,
+      "SHA256": "3844885cc85266512692a6e09eeed1d855638e1da3c1ba4991d6eaf972645257",
+      "unchangedDirectADBPNG": true
+    },
+    "pinned-nia-notification-prompt.png": {
+      "privateOriginal": "screenshots/nia-first-observed-v1.png",
+      "bytes": 208683,
+      "SHA256": "3e847c158e03c9dfbfcc1da99651dd65ec68751e468684ff1651d5d36605ea8d",
+      "unchangedDirectADBPNG": true
+    },
+    "pinned-nia-first-screen.png": {
+      "privateOriginal": "screenshots/nia-first-screen-v2.png",
+      "bytes": 294447,
+      "SHA256": "2897815c865bfd41a3404fab46f78a2e311e4374c767aa9e87c21bf167ec9f44",
+      "unchangedDirectADBPNG": true
+    }
+  },
+  "oldInitialPNGPrivateOrigin": "unknown for todo-first-screen.png, nia-first-screen.png, nia-notification-prompt.png. Existing public bytes are preserved. No replacement capture or invented original.",
+  "rawPublicationBoundary": "No private raw logs, host absolute paths, user names, authentication contents or key/keystore checksums published."
+}

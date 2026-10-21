@@ -8,24 +8,16 @@ import Foundation
 /// exits when the app is on screen, and a bundler that died with it would take Fast
 /// Refresh along — and the three remaining answers stop the run with a sentence.
 public struct MetroStage: Stage {
-    private enum Readiness {
-        case listening(Int32)
-        case exited
-        case timedOut
-    }
-
     public let id = "metro"
 
     private let anchor: ProjectAnchor
     private let runner: any ProcessRunner
     private let logs: RunLogs
     /// How long the port is given to answer with the bundler's pid after the start
-    /// script is launched. A fresh macOS VM exceeded ten seconds during first
-    /// startup, so allow one minute while still checking for an early process exit.
-    /// Injected for tests, which have no real process to wait for.
+    /// script is launched. Injected for tests, which have no real process to wait for.
     private let bindWait: Duration
 
-    public static let defaultBindWait: Duration = .seconds(60)
+    public static let defaultBindWait = MetroLaunch.defaultBindWait
 
     public init(
         anchor: ProjectAnchor,
@@ -52,21 +44,13 @@ public struct MetroStage: Stage {
         }
 
         let logFile = logs.directory.appendingPathComponent("metro.log")
-        // The project's own start script, through the manager its lockfile named —
-        // the same answer `dependencies` installs with.
-        if context.nodeModulesReinstalled { await Self.dropWatchmanWatch(of: anchor.directory, runner: runner) }
-        var command = anchor.startProcess
-        // Metro colors its completed BUNDLE label green and its failed label red.
-        // Preserve that distinction when its output goes to our non-TTY log file.
-        command.environment["FORCE_COLOR"] = "1"
-        let pid = try await runner.spawnDetached(command, logFile: logFile)
-
-        // The pid that comes back is the start script's, and the bundler is two links
-        // below it — a `kill` there does not reach the port (#61). So the port is
-        // asked who holds it, the same way `down` asks.
-        let readiness = try await readiness(startPID: pid)
+        let (command, pid) = try await MetroLaunch.start(
+            anchor: anchor, runner: runner, logFile: logFile, afterReinstall: context.nodeModulesReinstalled
+        )
+        // Waiting is affordable here because it is bounded and because the stage it
+        // delays — `build` — takes minutes.
         let listener: Int32
-        switch readiness {
+        switch try await MetroLaunch.readiness(startPID: pid, runner: runner, bindWait: bindWait) {
         case .listening(let pid):
             listener = pid
         case .exited:
@@ -90,27 +74,6 @@ public struct MetroStage: Stage {
         )
     }
 
-    /// Polled rather than asked once: the start script has to boot Node before
-    /// anything binds, and asking in the same breath as the spawn always answers
-    /// "nobody". Waiting is affordable here because it is bounded and because the
-    /// stage it delays — `build` — takes minutes.
-    ///
-    private func readiness(startPID: Int32) async throws -> Readiness {
-        let deadline = ContinuousClock.now + bindWait
-        while true {
-            if let pid = try await currentListener() { return .listening(pid) }
-            guard try await startProcessIsRunning(startPID) else { return .exited }
-            guard ContinuousClock.now < deadline else { return .timedOut }
-            try await Task.sleep(for: .milliseconds(250))
-        }
-    }
-
-    private func startProcessIsRunning(_ pid: Int32) async throws -> Bool {
-        try await runner.run(
-            ProcessCommand("kill", ["-0", "\(pid)"], timeout: .seconds(10))
-        ).terminationStatus.isSuccess
-    }
-
     private func bindFailure(
         _ observed: String,
         command: ProcessCommand,
@@ -123,38 +86,6 @@ public struct MetroStage: Stage {
                 summary: "Run the project start command and inspect the log at \(logFile.path).",
                 command: command.description
             )
-        )
-    }
-
-    private func currentListener() async throws -> Int32? {
-        let result = try await runner.run(
-            ProcessCommand(
-                "lsof", MetroVerdict.listenerArguments + ["-t"], timeout: .seconds(10)
-            )
-        )
-        return result.standardOutput
-            .split(separator: "\n")
-            .compactMap { Int32($0.trimmingCharacters(in: .whitespaces)) }
-            .first
-    }
-}
-
-extension MetroStage {
-    /// A reinstall swaps thousands of files under watchman, which then recrawls, and a
-    /// Metro that queries mid-recrawl gets a partial file list: it fails to resolve
-    /// modules that are on disk (#149). Dropping the project's watch makes Metro's own
-    /// `watch-project` start a fresh one, which watchman answers only after its full
-    /// crawl. Without watchman there is nothing to drop, so every failure is ignored.
-    public static func dropWatchmanWatch(of directory: URL, runner: any ProcessRunner) async {
-        let probe = ProcessCommand(
-            "watchman", ["watch-project", directory.path], workingDirectory: directory, timeout: .seconds(15)
-        )
-        guard let result = try? await runner.run(probe), result.terminationStatus.isSuccess,
-            let reply = try? JSONSerialization.jsonObject(with: Data(result.standardOutput.utf8)) as? [String: Any],
-            let root = reply["watch"] as? String
-        else { return }
-        _ = try? await runner.run(
-            ProcessCommand("watchman", ["watch-del", root], workingDirectory: directory, timeout: .seconds(15))
         )
     }
 }

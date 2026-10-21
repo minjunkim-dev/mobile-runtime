@@ -1,0 +1,125 @@
+{
+  "at": 1792314082.5841029,
+  "generatedInputChanges": [],
+  "leaseState": {
+    "/Users/admin/Library/Caches/dev.runstir/leases/0b88ddb6950c7842.lock": {
+      "device": 16777231,
+      "exists": true,
+      "inode": 1381318,
+      "link": null,
+      "mode": 33152,
+      "mtimeNs": 1792313729675589322,
+      "unheld": true
+    },
+    "/Users/admin/Library/Caches/dev.runstir/leases/2eecbd8ad253698c.lock": {
+      "device": 16777231,
+      "exists": true,
+      "inode": 1381320,
+      "link": null,
+      "mode": 33152,
+      "mtimeNs": 1792313729675560780,
+      "unheld": true
+    },
+    "/Users/admin/Library/Caches/dev.runstir/leases/31fe9a668ef9b8cb.lock": {
+      "device": 16777231,
+      "exists": true,
+      "inode": 1381321,
+      "link": null,
+      "mode": 33152,
+      "mtimeNs": 1792313729675503155,
+      "unheld": true
+    },
+    "/Users/admin/Library/Caches/dev.runstir/leases/60cb090ff51dbcea.lock": {
+      "device": 16777231,
+      "exists": true,
+      "inode": 1381319,
+      "link": null,
+      "mode": 33152,
+      "mtimeNs": 1792313729675575780,
+      "unheld": true
+    }
+  },
+  "limits": [
+    "Generated inputs/cache deltas require classification; no whole HOME/cache preservation.",
+    "Owned device enumeration is not an app build/run.",
+    "No restoration, lease deletion or resource cleanup is automatic."
+  ],
+  "newTrackedPreserved": {
+    "HEAD": true,
+    "files": true,
+    "flagsSHA256": true,
+    "indexSHA256": true,
+    "stageSHA256": true,
+    "status": true
+  },
+  "ownedDevices": {
+    "devices": {
+      "com.apple.CoreSimulator.SimRuntime.iOS-27-0": [],
+      "com.apple.CoreSimulator.SimRuntime.iOS-27-1": [],
+      "com.apple.CoreSimulator.SimRuntime.tvOS-27-0": [],
+      "com.apple.CoreSimulator.SimRuntime.watchOS-27-0": [],
+      "com.apple.CoreSimulator.SimRuntime.xrOS-27-0": []
+    }
+  },
+  "preservation": {
+    "defaultInventory": false,
+    "existingLeaseRecords": true,
+    "globalPATH": true,
+    "launchctlPATH": true,
+    "ownedJDK": true,
+    "ownedSDK": true,
+    "protectedRoots": true,
+    "selectedXcode": true
+  },
+  "pubCacheAfterSHA256": "a8d4246ae16eb494e31f36dea3e675f29527b2f6b3476e5826b94bffd21424cf",
+  "pubCacheBeforeSHA256": "a8d4246ae16eb494e31f36dea3e675f29527b2f6b3476e5826b94bffd21424cf",
+  "selectedCacheAfter": {
+    "/Users/admin/.cache": {
+      "device": 16777231,
+      "exists": true,
+      "inode": 461366,
+      "link": null,
+      "mode": 16877,
+      "mtimeNs": 1791908220592046230
+    },
+    "/Users/admin/.local/share/mise": {
+      "exists": false
+    },
+    "/Users/admin/.pub-cache": {
+      "exists": false
+    },
+    "/Users/admin/Library/Caches": {
+      "device": 16777231,
+      "exists": true,
+      "inode": 23276,
+      "link": null,
+      "mode": 16832,
+      "mtimeNs": 1792312611417174418
+    }
+  },
+  "selectedCacheBefore": {
+    "/Users/admin/.cache": {
+      "device": 16777231,
+      "exists": true,
+      "inode": 461366,
+      "link": null,
+      "mode": 16877,
+      "mtimeNs": 1791908220592046230
+    },
+    "/Users/admin/.local/share/mise": {
+      "exists": false
+    },
+    "/Users/admin/.pub-cache": {
+      "exists": false
+    },
+    "/Users/admin/Library/Caches": {
+      "device": 16777231,
+      "exists": true,
+      "inode": 23276,
+      "link": null,
+      "mode": 16832,
+      "mtimeNs": 1792309655818797453
+    }
+  },
+  "selectedCacheStatSame": false
+}

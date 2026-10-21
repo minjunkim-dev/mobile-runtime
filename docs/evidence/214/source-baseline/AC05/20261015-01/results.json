@@ -1,0 +1,80 @@
+{
+  "candidateIdentity": "source-baseline",
+  "scenarioID": "AC05",
+  "attemptID": "214-20261015-01",
+  "tupleManifest": "tuple.json",
+  "executionSurface": "native-tools; neither Runstir CLI nor Runstir GUI",
+  "operator": "Codex #214 context; shared iOS lease assigned by coordinator",
+  "overallVerdict": "inconclusive",
+  "requiredUnknown": ["Xcode distribution archive SHA-256", "iOS runtime distribution archive SHA-256"],
+  "samples": [
+    {
+      "sampleIdentity": "food-truck-minimum",
+      "expected": "Original simple scheme builds, installs and launches to the Truck first screen on the owned simulator; tracked bytes and existing resources are preserved.",
+      "build": {
+        "status": "pass",
+        "exitCode": 0,
+        "elapsedSeconds": 53.839,
+        "completedUTC": "2026-10-15T11:20:04.773265+00:00",
+        "privateRawLogSHA256": "b00bd0d077c75db96232e7b83dc9d94a6d2750beda262419fa4307a7c8973a5e",
+        "publicExcerpt": "native-build-excerpts.log",
+        "warnings": "Original source reports StoreKit implementation-only import and unused unstructured throwing task warnings. Build exit 0 does not remove those warnings."
+      },
+      "install": {"status": "pass", "exitCode": 0},
+      "launch": {"status": "pass", "exitCode": 0, "processObservedAlive": true},
+      "firstScreen": {
+        "status": "pass",
+        "evidence": "food-first-screen.png",
+        "SHA256": "34398b9e6b5498305ef2c76554dc904040ec0cc3099325e20b104e0bc6c1d238",
+        "observed": "Truck, New Orders and Forecast are visible on the correct app. No red box, crash UI or blank screen is visible in the inspected first-screen image.",
+        "publicImagePrivacyReview": "Only stock sample data and simulator status UI are visible. No account, credential, local path or device UDID is visible."
+      },
+      "artifact": {
+        "appID": "com.example.apple-samplecode.Food-Truck",
+        "supportedPlatform": "iPhoneSimulator",
+        "sdk": "iphonesimulator27.0",
+        "xcodeBuild": "27A266a",
+        "executableSHA256": "833e7c944378c52a37aac4e85b65fbbfc00fd59de2a56a5dc280506e2f53b537"
+      },
+      "trackedPreservation": {
+        "status": "pass",
+        "fileCount": 553,
+        "beforeRawTrackedSHA256": "4e72b41c4405ff3f5c95d37fbcd6e75d71e11978595a9b27bf6a8cfc3630b2b6",
+        "afterRawTrackedSHA256": "4e72b41c4405ff3f5c95d37fbcd6e75d71e11978595a9b27bf6a8cfc3630b2b6",
+        "beforeAndAfterIndexTree": "1ad91dc9d969793ff96336c571fb191e2046067b",
+        "trackedGitStatus": "clean"
+      },
+      "knownGoodVerdict": "inconclusive; required distribution checksums remain unknown",
+      "unverified": ["Physical device", "Runstir CLI and GUI", "macOS 26.6 execution", "Full feature behavior and long-running stability"]
+    },
+    {
+      "sampleIdentity": "netnewswire-oss",
+      "expected": "The original NetNewsWire-iOS scheme builds an iOS Simulator app from the frozen original lock.",
+      "build": {
+        "status": "fail",
+        "exitCode": 65,
+        "elapsedSeconds": 70.949,
+        "completedUTC": "2026-10-15T11:23:30.560127+00:00",
+        "privateRawLogSHA256": "4da603b903039edcafc31b085db7395182d2aa6b1cd48533d9ee2d555ad7639d",
+        "publicExcerpt": "native-build-excerpts.log",
+        "observed": "The command-level -sdk iphonesimulator override applies to the macOS target as well. macOS and iOS targets collide on NetNewsWire.app, and macOS-only Sparkle has no iOS Simulator library.",
+        "classification": "Investigation command configuration failure before Runstir execution; not evidence of a Runstir defect or sample-wide incompatibility."
+      },
+      "install": {"status": "unverified", "reason": "Build failed; no app from this failed attempt was installed."},
+      "launch": {"status": "unverified", "reason": "Build failed."},
+      "firstScreen": {"status": "unverified", "reason": "Build failed."},
+      "trackedPreservation": {
+        "status": "pass",
+        "fileCount": 1352,
+        "beforeRawTrackedSHA256": "5a6d7f086849f46bc40b2ef7f95242f0e35b1354753061ffda2e34056023aef8",
+        "afterRawTrackedSHA256": "5a6d7f086849f46bc40b2ef7f95242f0e35b1354753061ffda2e34056023aef8",
+        "lockfileSHA256Unchanged": "451402e67a2e01ab03d23ddbe7d73b2509956811e5265a689760b9d70d3e0097"
+      },
+      "nextAttempt": "../20261015-02/results.json"
+    }
+  ],
+  "acceptanceMapping": {
+    "AC05": "Only the native-tool baseline precondition is investigated. Runstir fresh-clone CLI and GUI evidence remain required.",
+    "AC06": "Only the actual Mac identity and first-launch check are observed. No preserved VM or tool-free VM is executed; no Android acceleration is tested."
+  }
+}

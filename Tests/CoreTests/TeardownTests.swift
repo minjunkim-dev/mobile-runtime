@@ -79,6 +79,9 @@ struct TeardownTests {
         #expect(result.toolFailures.count == 1)
         #expect(result.toolFailures.first?.hasPrefix("metro:") == true)
         #expect(result.exitCode == 2)
+        let document = DownJSONDocument(report: result, toolVersion: "0.1.0")
+        #expect(document.error?.message == result.toolFailures.joined(separator: "; "))
+        #expect(document.error?.remediation == nil)
     }
 
     /// `--json` carries what was stopped, what was skipped, and what would not stop,
@@ -97,6 +100,7 @@ struct TeardownTests {
         #expect(document.contains("\"status\" : \"skipped\""))
         #expect(document.contains("\"schemaVersion\" : \(JSONOutput.schemaVersion)"))
         #expect(document.contains("\"platform\"") == false)
+        #expect(!document.contains("\"ownedRuntimeStopped\""))
     }
 
     @Test("Android down adds only the platform discriminator")
@@ -111,43 +115,28 @@ struct TeardownTests {
 
         #expect(document.contains("\"platform\" : \"android\""))
         #expect(document.contains("\"android.emulator\""))
+        #expect(!document.contains("\"ownedRuntimeStopped\""))
     }
 
-    /// stdout is the JSON document and nothing else, so a piped `down` stays
-    /// parseable however much a human would have wanted to read.
-    @Test("human lines and tool failures stay on stderr")
-    func streams() async throws {
-        let out = Mutable<[String]>([])
-        let err = Mutable<[String]>([])
-        let writer = DownWriter(
-            json: true,
-            toolVersion: "0.1.0",
-            renderer: HumanReportRenderer(useColor: false),
-            standardOutput: { line in out.mutate { $0.append(line) } },
-            standardError: { line in err.mutate { $0.append(line) } }
-        )
-
-        try writer.finish(
-            TeardownReport(items: [.stopped("metro", "pid 1")], toolFailures: ["app: no simctl"])
-        )
-
-        #expect(out.value.count == 1)
-        #expect(out.value.first?.contains("\"command\" : \"down\"") == true)
-        #expect(err.value == ["tool failure: app: no simctl"])
+    @Test("confirmed owned runtime absence carries optional evidence in down JSON")
+    func ownedRuntimeJSON() throws {
+        let item = TeardownItem(id: "android.emulator", status: .skipped,
+            detail: "owned Emulator already stopped", ownedRuntimeStopped: true)
+        let document = try DownJSONDocument(report: TeardownReport(items: [item]),
+            toolVersion: "0.1.0", platform: "android").encoded()
+        #expect(document.contains("\"ownedRuntimeStopped\" : true"))
+        #expect(document.contains("\"status\" : \"skipped\""))
     }
 
     @Test("the human report says nothing to stop once, at the end")
     func humanNothingToStop() async throws {
         let err = Mutable<[String]>([])
         let writer = DownWriter(
-            json: false,
-            toolVersion: "0.1.0",
             renderer: HumanReportRenderer(useColor: false),
-            standardOutput: { _ in },
             standardError: { line in err.mutate { $0.append(line) } }
         )
 
-        try writer.finish(
+        writer.finish(
             TeardownReport(items: [
                 .skipped("metro", "nothing on 8081"),
                 .skipped("app", "no install record — nothing to stop"),
@@ -190,14 +179,11 @@ struct TeardownTests {
     func humanBlocked() async throws {
         let err = Mutable<[String]>([])
         let writer = DownWriter(
-            json: false,
-            toolVersion: "0.1.0",
             renderer: HumanReportRenderer(useColor: false),
-            standardOutput: { _ in },
             standardError: { line in err.mutate { $0.append(line) } }
         )
 
-        try writer.finish(
+        writer.finish(
             TeardownReport(items: [
                 .blocked(
                     "metro",
@@ -248,6 +234,29 @@ struct TeardownTests {
         #expect(result.exitCode == 1)
         #expect(try DownJSONDocument(report: result, toolVersion: "0.1.0").encoded()
             .contains("no React Native project here"))
+        let document = DownJSONDocument(report: result, toolVersion: "0.1.0")
+        #expect(document.error?.remediation == failure.remediation)
+    }
+
+    @Test("mixed cleanup failures report the tool cause and retain the domain item")
+    func mixedFailureJSON() {
+        let failure = DomainError(
+            summary: "SDK root is unresolved",
+            remediation: Remediation(summary: "Select one SDK root.")
+        )
+        let result = TeardownReport(
+            items: [TeardownItem(id: "android.app", status: .unknown,
+                                 detail: failure.message, remediation: failure.remediation)],
+            toolFailures: ["metro: could not launch ownership probe"], failure: failure
+        )
+        let document = DownJSONDocument(report: result, toolVersion: "0.1.0")
+
+        #expect(result.exitCode == 2)
+        #expect(document.error?.message == "metro: could not launch ownership probe")
+        #expect(document.error?.remediation == nil)
+        #expect(document.items.first?.status == .unknown)
+        #expect(document.items.first?.detail == failure.message)
+        #expect(document.items.first?.remediation == failure.remediation)
     }
 
     /// Something that would not stop is the news. "Nothing to stop" next to it would
@@ -256,14 +265,11 @@ struct TeardownTests {
     func humanFailure() async throws {
         let err = Mutable<[String]>([])
         let writer = DownWriter(
-            json: false,
-            toolVersion: "0.1.0",
             renderer: HumanReportRenderer(useColor: false),
-            standardOutput: { _ in },
             standardError: { line in err.mutate { $0.append(line) } }
         )
 
-        try writer.finish(
+        writer.finish(
             TeardownReport(items: [
                 .failed(
                     "metro",

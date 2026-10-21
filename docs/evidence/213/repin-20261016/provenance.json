@@ -1,0 +1,704 @@
+{
+  "schemaVersion": 1,
+  "privateAccess": "Task coordinator retains restricted originals. Aliases are resolved in the private validation handoff. No private paths or credential bytes are published.",
+  "representation": "Each raw SHA256/bytes describes the restricted original; public JSON fields are selected/aliased and are not raw originals. PNG bytes are copied unchanged and directly reviewed by Root.",
+  "rawReferenceCount": 138,
+  "rawReferences": [
+    {
+      "alias": "<android-native-root>/screens/native-android-v7/minimal-first-screen.png",
+      "bytes": 64778,
+      "SHA256": "5ba0a56cc2e05f0bfb66035f750a4d7d9d6ca715f25a0061ec40d09f8727f81a"
+    },
+    {
+      "alias": "<android-native-root>/screens/native-android-v7/localsend-first-screen.png",
+      "bytes": 101196,
+      "SHA256": "1fe079396368f0e8b359975640ed6082d4a131c16f63a479bc8c6a06613c9ca8"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/screens/minimal-first-screen-hostlocal-v5.png",
+      "bytes": 127713,
+      "SHA256": "e0664bac9637749cd210b35761edf0420a4b0bf5aa07432e820293100257f521"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/screens/localsend-first-screen-hostlocal-v7.png",
+      "bytes": 114537,
+      "SHA256": "f1908e7e879ff7771280c85ec69876ac565d12489658915ccd12ef7327c437d7"
+    },
+    {
+      "alias": "<android-native-root>/state/host-readonly-receipt-v1.json",
+      "bytes": 494,
+      "SHA256": "e8a33b751bfc816675f5634d515a010d26812500ccb54a144a3354518309cdda"
+    },
+    {
+      "alias": "<android-native-root>/state/android-tool-tuple-prepin-v2.json",
+      "bytes": 70753,
+      "SHA256": "a59eef44e50eb0f2c16188958c0d1399a280e80044e2d23d4005fc6c13e89ada"
+    },
+    {
+      "alias": "<android-native-root>/state/android-tool-tuple-prepin-v5.json",
+      "bytes": 5556,
+      "SHA256": "dbd72ac13a4ebcfa26e28564f0bbbb8f01606e1012e249795f22a309afae0683"
+    },
+    {
+      "alias": "<android-native-root>/state/native-sdk-installation-endpoint-v7.json",
+      "bytes": 2596,
+      "SHA256": "f7d42048c6269c73c9f9c63ec2645216560414caa7f0a3205e1d7b7892e8034b"
+    },
+    {
+      "alias": "<ios-native-root>/apple-distribution-v2/state/apple-distribution-prepin-v2.json",
+      "bytes": 9720,
+      "SHA256": "990c3674e32204548c79e4a3c0cde87a29f1dba67fec732596b176ad0d09b364"
+    },
+    {
+      "alias": "<ios-native-root>/apple-distribution-v2/state/runtime27-exact-dmg-readonly-binding-v2.json",
+      "bytes": 3416,
+      "SHA256": "f3527e792ca04c1a9628d2e5c303c683bc8e806852e8cea67a0c3542fe9ae9d2"
+    },
+    {
+      "alias": "<ios-native-root>/apple-distribution-v2/state/apple-official27_1-requirements-primary.json",
+      "bytes": 2104,
+      "SHA256": "4e0038c3663216dc0927f20eba71a393d1b07b60f1b6983b1a2dc38463083ff1"
+    },
+    {
+      "alias": "<ios-native-root>/state/rust-selected-eight-official-members-v1.json",
+      "bytes": 84437,
+      "SHA256": "40ba70feef1e5e619a779b8f6e38d2e578d09a6c2a1f347ee3a6f112354e55ab"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/state/localsend-rust-file-mirror-prospective-supplement-v1.json",
+      "bytes": 384604,
+      "SHA256": "ecccb0552343e6595fbf0081780739421bb78c94ef152022a379a3ed95837551"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/state/localsend-exact-rustc-selection-proposal-v1.json",
+      "bytes": 7353,
+      "SHA256": "f02fff33a0c4d0ba6fae6da8347199a5710910eeb4098ac0b9abc8f68714f0f8"
+    },
+    {
+      "alias": "<ios-native-root>/state/ios-native-all-input-prepin-v1.json",
+      "bytes": 21849,
+      "SHA256": "f5d90060a785ba6320980db3c0e420221139843ab08ba0a65a3fe351643eada4"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/state/localsend-native-prebuild-input-supplement-v1.json",
+      "bytes": 257100,
+      "SHA256": "1daba7efa1e7ef1325e717868dbd2a66b2fad33958470986f318ac0f41025fce"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/state/localsend-cargo-materialization-supplement-v1.json",
+      "bytes": 8848295,
+      "SHA256": "74dc62ecbd660d9e28414082d8814373a4481d14ca6d9ec0b0f7c13f8631666b"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/state/localsend-cargo-workspace-index-supplement-v1.json",
+      "bytes": 205725,
+      "SHA256": "7096a876ee73b281989dda4a90065d86ceff7e5accf8fe755674ef9e6d77799b"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/state/localsend-selected-offline-cargo-closure-v2.json",
+      "bytes": 494290,
+      "SHA256": "1bd0206b69a730e2114b393cd8b15ea25473d06c01b3c5ef3b9d49215e7799bb"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/state/localsend-pod-cache-prospective-supplement-v3.json",
+      "bytes": 118192,
+      "SHA256": "d5a2205aea0dc0a8fc4b238ce2c3f4449e97c1483e2546e141600f815c76a897"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/state/cargokit-ios-runner-prospective-supplement-v4.json",
+      "bytes": 23963,
+      "SHA256": "8c282499cb79b6935bc7ad697ea4048c916c614626146b8bae5f9794a2ff3f5b"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/state/localsend-rust-file-mirror-precheck-outcome-v1.json",
+      "bytes": 1341,
+      "SHA256": "698e5b2e589106b673aa500434319c8744d0942d001f6fc3c6374b5f13bd79a5"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/state/localsend-rustc-discovery-smoke-outcome-v1.json",
+      "bytes": 2778,
+      "SHA256": "8a7a3bb5f95214385fee76861d62f4c08224598824901aebefb61aa271882f0a"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/state/localsend-direct-build-command-preconditions-v4.json",
+      "bytes": 592985,
+      "SHA256": "e7e80ceffc1e88d8b1314ab24f6c2225aa2e6c337eede91f7a3b575fa3c93706"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-minimal-build-v4/result.json",
+      "bytes": 493,
+      "SHA256": "79865fbe4613a2bf7118f117ccd6e639f39d6503a342cb0b1df5bb8859c4bf84"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-minimal-build-v4/command.json",
+      "bytes": 5583,
+      "SHA256": "e9d551fd2d26761e3b6dfd3a66a5a81958486c54af5101eb23108503f634e80b"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-localsend-build-v6/result.json",
+      "bytes": 492,
+      "SHA256": "1abe1fccf876ffc0328e7e0447ea4238e5772779e3016eb6ea95d4aa75a10d8a"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-localsend-build-v6/command.json",
+      "bytes": 6486,
+      "SHA256": "1fb45a8b5f7efd75ab8ce35f869ae58127725e14ec77396e7278c1f34a4e6039"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-device-v7/minimal-install/result.json",
+      "bytes": 422,
+      "SHA256": "df15ce6c495c7cbcda7dccf7e42ad6903b089687922b1bbb29ac73cd8601d178"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-device-v7/minimal-install/command.json",
+      "bytes": 4535,
+      "SHA256": "aae92bd9f739aa4aabd899926c83f56d6270202d567cb9b8354bc311848654d6"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-device-v7/minimal-launch/result.json",
+      "bytes": 421,
+      "SHA256": "9457d38323ceaae738070553e982f23d435b65c4f56f859d0b8955daa4e9a210"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-device-v7/minimal-launch/command.json",
+      "bytes": 4562,
+      "SHA256": "0a7a9fd6c787857444755b1b4ec9fdfca550f0128ef08650c66923ca34adc8f9"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-device-v7/minimal-pid/result.json",
+      "bytes": 422,
+      "SHA256": "ed182f7c318ca44a1227a4603bf104d458393b4913441b09aca7d38317337ee5"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-device-v7/minimal-pid/command.json",
+      "bytes": 4404,
+      "SHA256": "73f8dadd7ca59e2710208a8d81005830de0bfd7c4fd9f5441604fee634c73d1e"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-device-v7/minimal-installed-apk-digest/result.json",
+      "bytes": 422,
+      "SHA256": "37341da1f60946658a5e4b8e79fe1a7606f99d340c440a8aaaafe1e720d7e7f2"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-device-v7/minimal-installed-apk-digest/command.json",
+      "bytes": 4554,
+      "SHA256": "e2354a5d664f09feb45a964626205a33dcfb17f33c5746664e71d1078c375f30"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-device-v7/minimal-first-screen/result.json",
+      "bytes": 564,
+      "SHA256": "2e24358e6cf079e855aa33034262078d3b5723eba7eeea18d22580ef8fba93b9"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-device-v7/minimal-first-screen/command.json",
+      "bytes": 4352,
+      "SHA256": "593a3f575083c59c8a6a9c388dc99e4a1d0a5ff2a8a9aca784af9194534ad5da"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-device-v7/localsend-install/result.json",
+      "bytes": 421,
+      "SHA256": "214716cdf6652eac356599ac0f9db26387db621cae84a2e92cc6501ba4c26c6f"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-device-v7/localsend-install/command.json",
+      "bytes": 4537,
+      "SHA256": "e49b4e612a4a0437c353941a26f52f31987d65853a59943ea814299a017084df"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-device-v7/localsend-launch/result.json",
+      "bytes": 421,
+      "SHA256": "8a5798cda91dc0742af0a623890d939c7870a27df146569888ffe081a80cb1a7"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-device-v7/localsend-launch/command.json",
+      "bytes": 4543,
+      "SHA256": "e16a11a4901db05151bd9ab8c179188bf06034fe71546dc95d0f2802418c5229"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-device-v7/localsend-pid/result.json",
+      "bytes": 422,
+      "SHA256": "01c4af3fe158f10bf86c2e24bbe71aae251c13bb193312d484766f565d4d9657"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-device-v7/localsend-pid/command.json",
+      "bytes": 4400,
+      "SHA256": "3ec8d642057949ce0e6ace927194e27dfe0c8406fc0bd477a15dbf0462141820"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-device-v7/localsend-installed-apk-digest/result.json",
+      "bytes": 418,
+      "SHA256": "0e3aaa388adcad4ab8c7191c78ba33e79441513d0529fb58963f6c70e386f56b"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-device-v7/localsend-installed-apk-digest/command.json",
+      "bytes": 4550,
+      "SHA256": "87400715997a627b618fd5b8d3da9440417a3d74f1b747ee0e277fbad344a069"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-device-v7/localsend-first-screen/result.json",
+      "bytes": 566,
+      "SHA256": "fa45b473b5417be591428dc6d2037de0eb7e84a4f3238191e2e9cc504f285f0b"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-device-v7/localsend-first-screen/command.json",
+      "bytes": 4352,
+      "SHA256": "77d12f05b1cc03ba5f37ba5d09908cddacbe5b2191709b83bb994252246b05d4"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-device-v7/stop-own-emulator/result.json",
+      "bytes": 422,
+      "SHA256": "2d44790b26e4787e829d8b42e43aacdbee90943b983256329c894b091a1666c0"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-device-v7/stop-own-emulator/command.json",
+      "bytes": 4312,
+      "SHA256": "147f0c02eabb461dec30b561a46c920f62e7591907fd3d035f2fdddf633c1923"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-device-v7/stop-own-adb/result.json",
+      "bytes": 422,
+      "SHA256": "d43f269d460378179c24c9bd22099a51c16f66869c0100be9281acea177f07b5"
+    },
+    {
+      "alias": "<android-native-root>/logs/native-device-v7/stop-own-adb/command.json",
+      "bytes": 4242,
+      "SHA256": "1a522799a29e6ae3c6131341ab5299b1fd4514ea9a1fe9e3c826f6a4fac77fd7"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/minimal-pub-v1/result.json",
+      "bytes": 653,
+      "SHA256": "60e42ede26bb7a95636dff1c43b43a13c24f892be181c53d58c8373fd4602f09"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/minimal-pub-v1/command.json",
+      "bytes": 4210,
+      "SHA256": "684bced27a5163e7581e821f92c72c664af09f983fe25d3b0440a65c1b28e9c5"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/minimal-config-v1/result.json",
+      "bytes": 657,
+      "SHA256": "4bde343067dec4caf0d46b79610e97a76b556d71ac93670995019c4796c4061c"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/minimal-config-v1/command.json",
+      "bytes": 4241,
+      "SHA256": "34b9bbce9acc869ffbac2753f382116d5fe63dafc4e8ebdc4c642b001ab347bd"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/minimal-build-v1/result.json",
+      "bytes": 662,
+      "SHA256": "4fce8afb45fe6ce728b8a364d44d26ddb9cb686e4d95b67f12ec079aeae8c1dd"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/minimal-build-v1/command.json",
+      "bytes": 4770,
+      "SHA256": "f65731cbcfeb4f0da8e13ce8872e9243e759a47a934aa070864d14af9faed4c7"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/minimal-build-v2/result.json",
+      "bytes": 660,
+      "SHA256": "b1093ae5029327a708c74efedc9b67d18f0798211a229423425d2cda108f22cb"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/minimal-build-v2/command.json",
+      "bytes": 4808,
+      "SHA256": "f9a55d219fa12d737156cd374f676a94a522fd49b968fc5e3924ecc14cd302f5"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/minimal-hostlocal-install-v4/result.json",
+      "bytes": 680,
+      "SHA256": "147fc402712c07f90653f44f570e9130a5709925a587ec3d4f7ad17e86720dd2"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/minimal-hostlocal-install-v4/command.json",
+      "bytes": 4611,
+      "SHA256": "365fa1d041a18804c9bd159701c4804ed784fc2b8b57301b196e16d21b5e764b"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/minimal-hostlocal-launch-v4/result.json",
+      "bytes": 680,
+      "SHA256": "d1fc180825d0bb4730e6205f5c0171bfa8796b0c3ce10ecd47ddc16157e8a4e6"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/minimal-hostlocal-launch-v4/command.json",
+      "bytes": 4499,
+      "SHA256": "42427128f89be5b2d8194747153eb425b58f5be5bfcb2bfa16b2e709913066e4"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/minimal-hostlocal-firstscreen-v5/result.json",
+      "bytes": 669,
+      "SHA256": "efc2ac4315556160a063784859f5d424a3a53e328dfa2567c257119c78301e36"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/minimal-hostlocal-firstscreen-v5/command.json",
+      "bytes": 4140,
+      "SHA256": "181f034428e865258d61cbcf157f9632d07c8c80062a83821c27aab223b6b013"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/minimal-hostlocal-terminate-v5/result.json",
+      "bytes": 682,
+      "SHA256": "5fb49abe8f62ee208bf816f5cfbdee812e2503456480deb624efb930aa6c0dc7"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/minimal-hostlocal-terminate-v5/command.json",
+      "bytes": 4501,
+      "SHA256": "3d010436d9b3155f6a812f47b65c39e0459fc4fbeae295dfc9bfb4134ca5fa40"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/hostlocal-own-shutdown-v5/result.json",
+      "bytes": 673,
+      "SHA256": "f98d1f80f9b143e8b0ca554764d7cacd46d251a842a53c8c9a21aaa7fc645ad2"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/hostlocal-own-shutdown-v5/command.json",
+      "bytes": 4460,
+      "SHA256": "fea6da892027eb1bd459fb154f2f42aa2a4f8bde8e51f7bac5eb544319c60807"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-pub-v1/result.json",
+      "bytes": 672,
+      "SHA256": "38fb2962915d77b4a087a217e48190590bc59229560f9fc5a05a0aedaeca33e3"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-pub-v1/command.json",
+      "bytes": 4285,
+      "SHA256": "4ebf360e0e5467281a2b9bfd14a9f57f94e6b6d0316bfab7851ce72bb619686b"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-config-v1/result.json",
+      "bytes": 679,
+      "SHA256": "774c592aba52e74edf51b88eedc74486d11a40cd4513eca9d4e488e296c35f71"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-config-v1/command.json",
+      "bytes": 4316,
+      "SHA256": "7a82d3f0f60b39f57e7394e461cbd4c300f8156c8d3f8b86dfa9ecaebdd669cc"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-config-v2/result.json",
+      "bytes": 681,
+      "SHA256": "e8d74c4e64d5fc59d61099d97bb7d9620917fcc73eb383b3f61497c31e2afe98"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-config-v2/command.json",
+      "bytes": 4293,
+      "SHA256": "3c9e986deeed5659a0c8306836c5660f5dae46d6a5129512ea097ad48c162aa3"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-frozen-pod-v4/result.json",
+      "bytes": 677,
+      "SHA256": "9c06b9efe52baa204a4c3b60c00f5fe0b02568aa59f492baeb34df643fc0e823"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-frozen-pod-v4/command.json",
+      "bytes": 4233,
+      "SHA256": "30602b88c2fe15882fd8c65da452be34e49408e39ca83d2dbec8c1eee0d9c79b"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/cargokit-advisory-single-enforced-refresh-v3/result.json",
+      "bytes": 713,
+      "SHA256": "20c9bcf1987793d3d33474fd9c0370c4ae2f95d4fd31f2d9e845f10a13c93ada"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/cargokit-advisory-single-enforced-refresh-v3/command.json",
+      "bytes": 4654,
+      "SHA256": "0fbd24ea766a1fcdc56ac05e1af63a4639998ecb770612962df2bfdeca3134fe"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/cargokit-official-help-network-metadata-v4/result.json",
+      "bytes": 710,
+      "SHA256": "c789bd6bb8b8b49e7370a1588e79ea2b25cba8ef06606ecee0715c3da773c38a"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/cargokit-official-help-network-metadata-v4/command.json",
+      "bytes": 4637,
+      "SHA256": "8ad3ee85c93235ec23f29bfbd9ba91b4a44e8250af2f1367dbcc687827571a96"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-rust-file-mirror-install-precheck-v1/result.json",
+      "bytes": 717,
+      "SHA256": "d716db2333f177781087b15e8c93ece54779d7727240e4969c8e93497f99e32a"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-rust-file-mirror-install-precheck-v1/command.json",
+      "bytes": 4586,
+      "SHA256": "37ed1ad0afcb6e7aed143bb1c02241d94b641122c8dda6aa285aa53f538d78a0"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-rustc-smoke-check-iossim-v1/result.json",
+      "bytes": 699,
+      "SHA256": "1c349912b20cbba62b2047929b08070b052ffb4b57058a4e1b102da8a2586cb1"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-rustc-smoke-check-iossim-v1/command.json",
+      "bytes": 5123,
+      "SHA256": "0177e588497e418c931b56d058b93668cd4e1d8173db61669f5f789fa8d9ebe0"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-direct-build-v1/result.json",
+      "bytes": 697,
+      "SHA256": "02f2e9c59e14a7db13732deaf40639cea86dff5a0ae0035e9d77e81a5fb1ec30"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-direct-build-v1/command.json",
+      "bytes": 4860,
+      "SHA256": "ae41a1c926770e56fde3d031d9d6b78bb405d682492b44403a6768f40e5a0a6a"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-direct-build-v2/result.json",
+      "bytes": 696,
+      "SHA256": "1fd38a56d4bf006fdee04afd92d073bd4cc01e2405db2ece61e5eafe0b8c881b"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-direct-build-v2/command.json",
+      "bytes": 5111,
+      "SHA256": "6c450398f3f563c2cf9631154ab631f5a28f7991baadaa560cad3248de0dfb24"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-direct-build-v3/result.json",
+      "bytes": 696,
+      "SHA256": "8cf590624e2525b6b66fe1249abb67830f641b4d3ce83fe4d736ddf7137e0e3e"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-direct-build-v3/command.json",
+      "bytes": 5254,
+      "SHA256": "38eed3e7c3445de281a54dcc0fe36224e6b40c9357911c177427bbde5123b3e8"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-direct-build-v4/result.json",
+      "bytes": 693,
+      "SHA256": "a3e7562c01c9d91c4f1d82d3df85cda7c9994d9190af7f76782774be3e30f945"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-native-direct-build-v4/command.json",
+      "bytes": 5413,
+      "SHA256": "8e7768da5a78dbef6ca0e2555c32b39dbbd79a04c0ea6c966ebf9e95871816b4"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-install-v7/result.json",
+      "bytes": 684,
+      "SHA256": "a1968e78daefb8643593957b2272d9e01845df4b3783648bef69986764c5b435"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-install-v7/command.json",
+      "bytes": 5208,
+      "SHA256": "f3ee7534b702760a9a7fe9eccac09fca6797f30d2dd8024b05a557f2e757d8a4"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-launch-v7/result.json",
+      "bytes": 682,
+      "SHA256": "d1b69e734adfda3b2daaa8e5624f6edede341b70a7000fc8ec8f12fafc9e076a"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-launch-v7/command.json",
+      "bytes": 5086,
+      "SHA256": "b167bb8fe48857ca41e90d5189660f1e53a6ad3016206c3d8a90df81e43e4e70"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-positive-pid-v7/result.json",
+      "bytes": 696,
+      "SHA256": "4e3e78e9c6eca735419599eae1218ddbcefdcde5d3b9598cfb9b2f2a245e0317"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-positive-pid-v7/command.json",
+      "bytes": 4909,
+      "SHA256": "112765db527c4bb25bc8ea1c2a6b841ab314abd82c64b7baba4926e89095799f"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-firstscreen-v7/result.json",
+      "bytes": 695,
+      "SHA256": "bb92c2d16087856f8b9b02ddf01623b9c8c2023a2e5d67f4979f8925a8490be7"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-firstscreen-v7/command.json",
+      "bytes": 5175,
+      "SHA256": "4defe364d7dd553392e5058a30292d197fe6c2fb184ee0bd8e7a9f5a5c2241bc"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-terminate-v7/result.json",
+      "bytes": 688,
+      "SHA256": "94749d740ca355c79005bdc09a950112deccbd9dedcdc5f7e5d82a324f11cee5"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-hostlocal-terminate-v7/command.json",
+      "bytes": 5088,
+      "SHA256": "ad6b588e4ac40f8d6a71ed4349713696340ebe78cf1cae9ee11b82c4a14ca5b4"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-own-shutdown-v7/result.json",
+      "bytes": 673,
+      "SHA256": "9f006097e31c8d9ac9d223db2214dbf09584b22117bac10c4c0398f35fadf279"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-own-shutdown-v7/command.json",
+      "bytes": 5052,
+      "SHA256": "33f6593d313af2dbb10b99ab406bec0f6e2fc595d138433ec362a2cdec874d83"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-original-pid-after-termination-v7/result.json",
+      "bytes": 707,
+      "SHA256": "6a71e8ebfd9d15b1a764aacefcf0241b72c730be106bcc63671fbac57798ef48"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/logs/localsend-original-pid-after-termination-v7/command.json",
+      "bytes": 4906,
+      "SHA256": "d6d45b44d91bfa0f4b35874999bbc038d84711e09fb22012d4d4cf3e27fd72bd"
+    },
+    {
+      "alias": "<android-native-root>/state/native-device-minimal-receipt-v7.json",
+      "bytes": 1464,
+      "SHA256": "1341adc8b9af450b01fdae366e81274f2f1885b82824a1ef9ad1e925dbc78c46"
+    },
+    {
+      "alias": "<android-native-root>/state/native-android-root-visual-review-v7.json",
+      "bytes": 1337,
+      "SHA256": "4354658c3e709ee5a63b2353f83c3d9e48ee1f8a70bed61ca3dd641b6bb04c8a"
+    },
+    {
+      "alias": "<android-native-root>/state/preservation-after-native-android-v7.json",
+      "bytes": 7150,
+      "SHA256": "941a6ebbce3ccee285522e2491cd2a53e0edba592958b3757d847ed3ec78fc71"
+    },
+    {
+      "alias": "<android-native-root>/state/native-localsend-build-adjudication-v6.json",
+      "bytes": 26690,
+      "SHA256": "e27558e345f788cc201591bf7dbbc5dd4250bde4cfb002ae5072f29c6fe1d84f"
+    },
+    {
+      "alias": "<android-native-root>/state/native-device-localsend-receipt-v7.json",
+      "bytes": 1556,
+      "SHA256": "8e8faae9ff7940e2e5baf312971d961732b87f32e0a54b951db88aff2d2cfe88"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/state/minimal-installed-app-mapping-hostlocal-v4.json",
+      "bytes": 48873,
+      "SHA256": "8310abc736633d249204865a9e3bcd64aa212a28907efd6ae7353f3f125dae82"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/state/minimal-root-visual-verdict-v5.json",
+      "bytes": 939,
+      "SHA256": "aca25ea22ba12ef402e7073078eea6fd0cce95a264c14a1db34624439e84b232"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/state/minimal-hostlocal-lifecycle-outcome-v5.json",
+      "bytes": 2108,
+      "SHA256": "42736df487fc268c7f4cacc0016747545a039adacf7de58b23565b385f8fe23f"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/state/localsend-native-direct-build-outcome-v4.json",
+      "bytes": 248379,
+      "SHA256": "0c5e7757ca6efd312967020c47e79e3d94b0f358cdc31219d4f4a80cb2c38926"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/state/localsend-installed-app-mapping-hostlocal-v7.json",
+      "bytes": 187769,
+      "SHA256": "005c1bb6938f3f7196f0d385b49894a97f157db0e3f822b7277787f4c3f1cc1e"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/state/localsend-root-visual-verdict-v7.json",
+      "bytes": 1330,
+      "SHA256": "9d7028fc3205ab7bca9a84b7685b46eaabfcf242a02d337788c6028ff52dad82"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/state/localsend-hostlocal-lifecycle-outcome-v7.json",
+      "bytes": 2261,
+      "SHA256": "86525f0b8d60ed709b046238140f73378f79d7f892c0cf5cc09949a247f0157e"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/state/preservation-after-native-ios-v7-summary.json",
+      "bytes": 7549,
+      "SHA256": "af5dd2b72ac089ef5875931609c2d5b222c16cebb61496f839883a7439100676"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/state/localsend-preboot-default-inventory-delta-v6.json",
+      "bytes": 751,
+      "SHA256": "635eb427eae87eeae604178d3cddb6e2872a359690dcecb43dd84cc6dee812f3"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/state/localsend-default-inventory-rebase-authorization-v7.json",
+      "bytes": 1490,
+      "SHA256": "2e410cea11f7217f141a07e0115c690f9386bd7f75db9b4c64930c9099160a61"
+    },
+    {
+      "alias": "<android-native-root>/HANDOFF-native-android-v7.json",
+      "bytes": 1372,
+      "SHA256": "a34d953a89a1e6a071d97312c0583f4fc2e0aacf3223902d8fce3960021d2ec1"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/HANDOFF-native-ios-v7.json",
+      "bytes": 11543,
+      "SHA256": "094b34c61f883e77c5be4b313db85885619df2bc41de8a2b53b3136253ef9a2b"
+    },
+    {
+      "alias": "<android-native-root>/private-receipt-manifest-native-v7.json",
+      "bytes": 143254,
+      "SHA256": "ea1489110573f6a753854dacd9a1f9799a6290cb2510842a3cd9e33688614eae"
+    },
+    {
+      "alias": "<ios-native-root>/private-preparation-receipt-manifest-v1.json",
+      "bytes": 146414,
+      "SHA256": "869b3930f29293a3e76b2de3849911ada3e25fdea99cbe4e6cf90c51a050bfe8"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/private-native-ios-selected-receipt-manifest-v7.json",
+      "bytes": 238621,
+      "SHA256": "4c3d836a98591d3a0df38811411bcd0194e9540a25ff0358858c4fd20ff080cd"
+    },
+    {
+      "alias": "<android-native-root>/state/source-four-clones-additional-preparation-v5.json",
+      "bytes": 3610,
+      "SHA256": "1633af753173ff7841004a8f8851c0b0d7f6eaf9539ac08c040a5cd4b01fadcc"
+    },
+    {
+      "alias": "<android-native-root>/state/source-fresh-runstir-minimal-native-android-endpoint-v7.json",
+      "bytes": 15870,
+      "SHA256": "a708d83271f51da822c167937dd1946896b1ba79a40720d5aa169dd2fab44c2a"
+    },
+    {
+      "alias": "<android-native-root>/state/source-fresh-runstir-localsend-native-android-endpoint-v7.json",
+      "bytes": 231706,
+      "SHA256": "072082c344867fa297e9e12ed6a3e3da6077dcf09e73fcd0eb859ea1c5003310"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/state/cargokit-advisory-single-refresh-outcome-v3.json",
+      "bytes": 2595,
+      "SHA256": "8854e5689e352a0fbc556f01d89609bb01a3f9de651066a63e61b31ddea8f5c5"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/state/localsend-rustup-install-branch-readonly-diagnosis-v2.json",
+      "bytes": 26973,
+      "SHA256": "c1de1b5c728460524c9ff0464719e134cffdc69db264de97e9a0833e11a63c37"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/state/localsend-existing-rust-official-cache-readonly-audit-v1.json",
+      "bytes": 5730,
+      "SHA256": "3c64dc0a7bc2a9f6590264cb8fa95ea2623d53380253e6941eb07089ff7ad1c3"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/state/old-deriveddata-selected-metadata-after-v4.json",
+      "bytes": 6629731,
+      "SHA256": "1864348d9f64d5f7e66c8c39ceac93f8aefd016c8fd13c08287e705a77b66922"
+    },
+    {
+      "alias": "<ios-native-root>/state/gems38-owned-archives-v2.json",
+      "bytes": 21812,
+      "SHA256": "73e63fdbc426f00741a4bce1ecb51ac93377bb614780ee2c7c6889eb209a838f"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/docs-final-contracts/issue-199.json",
+      "bytes": 49442,
+      "SHA256": "90b312404d1e401f84f5dc9f435f6a81d8fa802844673d1e355c3cd1d4e4bc33"
+    },
+    {
+      "alias": "<ios-native-root>/actual-native-ios-v2/docs-final-contracts/issue-213.json",
+      "bytes": 4062,
+      "SHA256": "e53e7def99fac792ade065c1b4302107ca637bcaafb8d37afeb94a9a49a04851"
+    }
+  ],
+  "selectedPrivateScopes": {
+    "androidNativeV7": 558,
+    "iOSPreparationOriginal": 549,
+    "iOSNativeFinal": 834
+  },
+  "privacy": "Existing auth material stayed stat-only. Emulator streams were redacted before storage. No full raw environment/log stream is published here."
+}

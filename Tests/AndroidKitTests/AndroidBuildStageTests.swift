@@ -73,37 +73,44 @@ private func buildScenario(
     badging: String = healthyBadging,
     assembleResponse: FakeProcessRunner.Response = .ok("BUILD SUCCESSFUL\n"),
     modelArtifacts: Bool = true,
-    emitArtifacts: Bool = false
+    emitArtifacts: Bool = false,
+    native: Bool = false
 ) throws -> BuildScenario {
     let repo = try FixtureRepo()
+    if native {
+        try repo.write("settings.gradle.kts", "include(\":app\")")
+    } else {
+        try repo.write("package.json", #"{"dependencies":{"react-native":"0.83.1"},"devDependencies":{"@react-native/gradle-plugin":"0.83.1"}}"#)
+        try repo.write("node_modules/react-native/package.json", #"{"version":"0.83.1"}"#)
+        try repo.write("node_modules/@react-native/gradle-plugin/package.json", #"{"version":"0.83.1"}"#)
+    }
+    func path(_ value: String) -> String { native ? value : "android/" + value }
+    try buildExecutable(repo, "gradle-home/wrapper/dists/gradle-8.13-bin/hash/gradle-8.13/bin/gradle")
+    try repo.write("gradle-home/wrapper/dists/gradle-8.13-bin/hash/gradle-8.13-bin.zip.ok", "")
+    if !native { try repo.directory("android") }
+    try buildExecutable(repo, path("gradlew"))
+    try repo.write(path("gradle/wrapper/gradle-wrapper.jar"), "jar")
     try repo.write(
-        "package.json",
-        #"{"dependencies":{"react-native":"0.83.1"},"devDependencies":{"@react-native/gradle-plugin":"0.83.1"}}"#
-    )
-    try repo.directory("android")
-    try buildExecutable(repo, "android/gradlew")
-    try repo.write("android/gradle/wrapper/gradle-wrapper.jar", "jar")
-    try repo.write(
-        "android/gradle/wrapper/gradle-wrapper.properties",
+        path("gradle/wrapper/gradle-wrapper.properties"),
         "distributionUrl=https\\://services.gradle.org/distributions/gradle-8.13-bin.zip\n"
     )
     let sdk = repo.url("sdk")
     try buildExecutable(repo, "sdk/build-tools/35.0.0/aapt2")
-    try repo.write("android/local.properties", "sdk.dir=\(sdk.path)\n")
+    try repo.write(path("local.properties"), "sdk.dir=\(sdk.path)\n")
 
     try repo.write(
-        "android/app/build/outputs/apk/debug/output-metadata.json",
+        path("app/build/outputs/apk/debug/output-metadata.json"),
         """
         {"applicationId":"dev.mobile.fixture","variantName":"debug","elements":[\(apkElement)]}
         """
     )
-    try repo.write("android/app/build/outputs/apk/debug/app-debug.apk", "apk")
+    try repo.write(path("app/build/outputs/apk/debug/app-debug.apk"), "apk")
     try repo.write(
-        "android/app/build/intermediates/merged_manifests/debug/processDebugManifest/output-metadata.json",
+        path("app/build/intermediates/merged_manifests/debug/processDebugManifest/output-metadata.json"),
         #"{"applicationId":"dev.mobile.fixture","variantName":"debug","elements":[{"type":"SINGLE","filters":[],"outputFile":"AndroidManifest.xml"}]}"#
     )
     try repo.write(
-        "android/app/build/intermediates/merged_manifests/debug/processDebugManifest/AndroidManifest.xml",
+        path("app/build/intermediates/merged_manifests/debug/processDebugManifest/AndroidManifest.xml"),
         """
         <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="dev.mobile.fixture">
           <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="36" />
@@ -123,20 +130,21 @@ private func buildScenario(
     let config = ConfigContext.detect(anchor: anchor, workingDirectory: repo.root)
     let environment = AndroidEnvironment(values: [
         "ANDROID_HOME": sdk.path,
+        "GRADLE_USER_HOME": repo.url("gradle-home").path,
         "PATH": "/usr/bin:/bin",
     ])
     let modelCommand = try #require(
         AndroidGradleModelProbe.command(
-            androidDirectory: repo.url("android"), offline: false, timeout: nil
+            androidDirectory: native ? repo.root : repo.url("android"), offline: false, timeout: nil
         )
     )
-    let apkDirectory = repo.url("android/app/build/outputs/apk/debug").path
+    let apkDirectory = repo.url(path("app/build/outputs/apk/debug")).path
     let mergedManifest = repo.url(
-        "android/app/build/intermediates/merged_manifests/debug/processDebugManifest/AndroidManifest.xml"
+        path("app/build/intermediates/merged_manifests/debug/processDebugManifest/AndroidManifest.xml")
     ).path
     let modelScript = try #require(AndroidGradleModelProbe.scriptURL)
-    let assemble = "./gradlew :app:assembleDebug --no-daemon --console=plain "
-        + "-Porg.gradle.java.installations.auto-download=false -I \(modelScript.path)"
+    let assemble = "./gradlew :app:assembleDebug --no-daemon --no-configuration-cache -Dorg.gradle.unsafe.isolated-projects=false --console=plain "
+        + "-Dorg.gradle.java.installations.auto-download=false -Pandroid.builder.sdkDownload=false -I \(modelScript.path)"
     let emittedArtifacts = AndroidGradleModelProbe.artifactMarker
         + "{\"variant\":\"debug\",\"apkDirectory\":\"\(apkDirectory)\","
         + "\"mergedManifest\":\"\(mergedManifest)\"}\n"
@@ -176,12 +184,95 @@ private func buildScenario(
 
 @Suite("Android build stage")
 struct AndroidBuildStageTests {
-    @Test("workflow target candidates use the existing debug default and normalized module")
-    func workflowTargetDefault() async throws {
+    @Test("native Android builds from its Gradle root without Node dependencies")
+    func nativeBuildPipeline() async throws {
+        let scenario = try buildScenario(native: true)
+        let runner = AAPTAnsweringRunner(base: scenario.runner, badging: healthyBadging)
+        let stages = androidBuildStages(anchor: scenario.anchor, doctor: DoctorEngine(checks: []),
+            config: scenario.config, hostRunner: runner, projectRunner: runner,
+            environment: scenario.environment, note: { _ in })
+        let result = await UpPipeline(stages: stages).run()
+        #expect(result.exitCode == 0, Comment(rawValue: result.failure?.message ?? ""))
+        #expect(result.context.androidProduct?.applicationId == "dev.mobile.fixture")
+        let commands = scenario.runner.log.all
+        #expect(commands.filter { $0.executable == "./gradlew" }.allSatisfy { $0.workingDirectory == scenario.anchor.directory })
+        #expect(!commands.contains { ["node", "npm", "yarn", "pnpm", "corepack"].contains($0.executable) })
+        #expect(!FileManager.default.fileExists(atPath: scenario.repo.url("package.json").path))
+    }
+
+    @Test("only native Java or Kotlin APKs may omit native library ABI metadata", arguments: [false, true])
+    func nativeUniversalAPK(native: Bool) async throws {
+        let scenario = try buildScenario(badging: healthyBadging.replacingOccurrences(of: "native-code: 'arm64-v8a'", with: ""), native: native)
+        var context = UpContext()
+        if !native {
+            await #expect(throws: DomainError.self) { try await scenario.stage.run(&context) }
+            return
+        }
+        let outcome = try await scenario.stage.run(&context)
+        #expect(outcome.status == .pass)
+        #expect(context.androidProduct?.abis.isEmpty == true)
+    }
+
+    @Test("up rollback and down share SDK root domain failures", arguments: [true, false])
+    func sdkRootFailureAcrossLifecycle(conflicting: Bool) async throws {
         let scenario = try buildScenario()
+        try scenario.repo.directory("node_modules")
+        let logs = try RunLogs.temporary(project: scenario.repo.root)
+        let store = AndroidActiveRunStore(project: scenario.repo.root, logs: logs)
+        let product = AndroidBuiltProduct(apkPath: "unused", module: ":app", variant: "debug",
+            assembleTask: ":app:assembleDebug", applicationId: "dev.mobile.fixture", minSdk: "24",
+            targetSdk: "36", abis: ["arm64-v8a"], launcherActivity: "dev.mobile.fixture.MainActivity")
+        var record = AndroidActiveRun(project: scenario.repo.root, product: product)
+        record.device = .init(avd: "Pixel", launcherPID: 7001, serial: "emulator-5554", api: 35,
+                              abi: "arm64-v8a", state: .started)
+        record.reverse = .init(serial: "emulator-5554", state: .created)
+        record.app = .init(serial: "emulator-5554", applicationId: product.applicationId,
+                           launched: true, pid: 8123)
+        try store.write(record)
+        let runner = AAPTAnsweringRunner(base: scenario.runner, badging: healthyBadging)
+        var values = scenario.environment.values
+        if !conflicting { values.removeValue(forKey: "ANDROID_HOME") }
+        let environment = AndroidEnvironment(values: values)
+        let properties = scenario.repo.url("android/local.properties")
+        let changedProperties = Data((conflicting ? "sdk.dir=/different-sdk\n" : "").utf8)
+        let up = await runAndroidUp(anchor: scenario.anchor, doctor: DoctorEngine(checks: []),
+            config: scenario.config, hostRunner: runner, projectRunner: runner,
+            environment: environment, logs: logs, note: { _ in }, onStageFinished: { stage in
+                if stage.id == "android.build", stage.status == .pass {
+                    do { try changedProperties.write(to: properties, options: .atomic) }
+                    catch { Issue.record("Could not change SDK root after build: \(error)") }
+                }
+            })
+
+        #expect(up.stages.last?.id == "android.device")
+        #expect(up.exitCode == 1)
+        #expect(up.context.androidRollbackExitCode == 1)
+        #expect(up.context.androidRequiresTeardown)
+        let remediation = try #require(up.failure?.remediation)
+        let rollback = try #require(up.context.androidProduct?.rollback)
+        #expect(rollback.map(\.status) == [.unknown, .unknown, .skipped, .unknown])
+        for item in rollback where item.status == .unknown {
+            #expect(item.remediation == remediation)
+            #expect(item.detail == up.failure?.message)
+        }
+        #expect(try store.read() == record)
+
+        let down = await androidTeardown(anchor: scenario.anchor, config: scenario.config,
+            runner: runner, projectRunner: runner, environment: environment, logs: logs)
+        #expect(down.exitCode == up.exitCode)
+        #expect(down.failure?.remediation == remediation)
+        #expect(down.items == rollback)
+        #expect(try store.read() == record)
+        #expect(!scenario.runner.log.all.contains { ["adb", "emulator", "kill"].contains($0.executable) })
+        #expect(scenario.runner.log.spawned.isEmpty)
+    }
+
+    @Test("workflow target candidates use the existing debug default and normalized module", arguments: [false, true])
+    func workflowTargetDefault(native: Bool) async throws {
+        let scenario = try buildScenario(native: native)
         var runner = scenario.runner
-        let offline = try #require(AndroidGradleModelProbe.command(androidDirectory: scenario.repo.url("android"), offline: true))
-        let online = try #require(AndroidGradleModelProbe.command(androidDirectory: scenario.repo.url("android"), offline: false, timeout: nil))
+        let offline = try #require(AndroidGradleModelProbe.command(androidDirectory: native ? scenario.repo.root : scenario.repo.url("android"), offline: true))
+        let online = try #require(AndroidGradleModelProbe.command(androidDirectory: native ? scenario.repo.root : scenario.repo.url("android"), offline: false, timeout: nil))
         runner.responses[offline.description] = runner.responses[online.description]
         let target = try await AndroidWorkflowTarget.load(anchor: scenario.anchor,
             config: scenario.config.selecting(module: "app"), hostRunner: runner, projectRunner: runner,
@@ -193,13 +284,13 @@ struct AndroidBuildStageTests {
         #expect(!runner.log.all.contains { $0.arguments.contains(":app:assembleDebug") })
     }
 
-    @Test("workflow target returns flavor candidates without assembling before selection")
-    func workflowFlavorSelection() async throws {
+    @Test("workflow target returns flavor candidates without assembling before selection", arguments: [false, true])
+    func workflowFlavorSelection(native: Bool) async throws {
         let flavors = #"[{"name":"stagingDebug","debuggable":true,"assembleTask":":app:assembleStagingDebug","installTask":":app:installStagingDebug"},{"name":"prodDebug","debuggable":true,"assembleTask":":app:assembleProdDebug","installTask":":app:installProdDebug"}]"#
-        let scenario = try buildScenario(variants: flavors)
+        let scenario = try buildScenario(variants: flavors, native: native)
         var runner = scenario.runner
-        let offline = try #require(AndroidGradleModelProbe.command(androidDirectory: scenario.repo.url("android"), offline: true))
-        let online = try #require(AndroidGradleModelProbe.command(androidDirectory: scenario.repo.url("android"), offline: false, timeout: nil))
+        let offline = try #require(AndroidGradleModelProbe.command(androidDirectory: native ? scenario.repo.root : scenario.repo.url("android"), offline: true))
+        let online = try #require(AndroidGradleModelProbe.command(androidDirectory: native ? scenario.repo.root : scenario.repo.url("android"), offline: false, timeout: nil))
         runner.responses[offline.description] = runner.responses[online.description]
         let target = try await AndroidWorkflowTarget.load(anchor: scenario.anchor, config: scenario.config,
             hostRunner: runner, projectRunner: runner, environment: scenario.environment)

@@ -37,6 +37,13 @@ public struct ProjectCandidate: Codable, Sendable, Equatable {
     public let app: FolderIdentity
     public let workspace: FolderIdentity?
     public let platforms: [ProjectPlatform]
+    public let framework: ProjectFramework
+    /// An app-root-relative Xcode container, chosen before invoking platform tools.
+    public let iosContainer: String?
+
+    public func resolvingWorkspace(_ identity: FolderIdentity) -> Self {
+        Self(id: id, app: app, workspace: identity, platforms: platforms, framework: framework, iosContainer: iosContainer)
+    }
 }
 
 public struct ProjectSelection: Codable, Sendable {
@@ -68,19 +75,21 @@ public struct ProjectInspectionInput: Sendable {
     public let environment: [String: String]
     public let app: String?
     public let platform: ProjectPlatform?
+    /// Explicit Flutter entrypoint. Nil keeps the existing lib/main.dart default.
+    public let entrypoint: String?
 
-    public init(directory: URL, environment: [String: String], app: String? = nil, platform: ProjectPlatform? = nil) {
+    public init(directory: URL, environment: [String: String], app: String? = nil, platform: ProjectPlatform? = nil, entrypoint: String? = nil) {
         self.directory = directory
         self.environment = environment
         self.app = app
         self.platform = platform
+        self.entrypoint = entrypoint
     }
 
     public func selection() throws -> ProjectSelection {
         let identity = try FolderIdentity(directory: directory)
         let root = URL(fileURLWithPath: identity.path)
-        var anchors: [ProjectAnchor] = []
-        if let nearest = ProjectAnchor.detect(from: root) { anchors.append(nearest) }
+        var anchors = ProjectAnchor.candidates(from: root)
         let manifestURL = root.appendingPathComponent("package.json")
         let manifest = (try? Data(contentsOf: manifestURL)).flatMap {
             try? JSONSerialization.jsonObject(with: $0) as? [String: Any]
@@ -107,30 +116,40 @@ public struct ProjectInspectionInput: Sendable {
                     files.skipDescendants()
                     continue
                 }
-                guard url.lastPathComponent == "package.json" else { continue }
+                guard ["package.json", "pubspec.yaml", "settings.gradle", "settings.gradle.kts"].contains(url.lastPathComponent)
+                    || url.pathExtension == "xcodeproj" || url.pathExtension == "xcworkspace" else { continue }
                 let folder = url.deletingLastPathComponent().standardizedFileURL.resolvingSymlinksInPath()
                 let relative = String(folder.path.dropFirst(root.path.count + 1))
                 let included = patterns.filter { !$0.hasPrefix("!") }.contains { matches(relative, $0) }
                 let excluded = patterns.filter { $0.hasPrefix("!") }.contains { matches(relative, String($0.dropFirst())) }
-                guard included, !excluded, let anchor = ProjectAnchor.detect(from: folder),
-                    anchor.directory.standardizedFileURL.resolvingSymlinksInPath().path == folder.path else { continue }
-                anchors.append(anchor)
+                guard included, !excluded else { continue }
+                anchors += ProjectAnchor.candidates(from: folder).filter {
+                    $0.directory.standardizedFileURL.resolvingSymlinksInPath().path == folder.path
+                }
             }
             if let readFailure { throw readFailure }
         }
-        var seen = Set<FolderIdentity>()
+        var seen = Set<String>()
         var candidates: [ProjectCandidate] = []
         for anchor in anchors {
             let appIdentity = try FolderIdentity(directory: anchor.directory)
-            guard seen.insert(appIdentity).inserted else { continue }
+            let key = "\(appIdentity.volume):\(appIdentity.file):\(anchor.framework.rawValue):\(anchor.iosContainer ?? "")"
+            guard seen.insert(key).inserted else { continue }
             let path = appIdentity.path
-            let id = path == root.path ? "." : path.hasPrefix(root.path + "/")
+            var id = path == root.path ? "." : path.hasPrefix(root.path + "/")
                 ? String(path.dropFirst(root.path.count + 1)) : path
+            if let container = anchor.iosContainer {
+                id = id == "." ? container : id + "/" + container
+            } else if anchor.framework != .reactNative,
+                      anchors.contains(where: { $0.directory == anchor.directory && $0.framework != anchor.framework }) {
+                id = anchor.framework.rawValue + ":" + id
+            }
             candidates.append(ProjectCandidate(
                 id: id, app: appIdentity,
                 workspace: try anchor.workspaceRoot.map { try FolderIdentity(directory: $0.directory) }
                     ?? (!patterns.isEmpty && path.hasPrefix(root.path + "/") ? identity : nil),
-                platforms: (anchor.hasIOSDirectory ? [.ios] : []) + (anchor.hasAndroidDirectory ? [.android] : [])
+                platforms: (anchor.hasIOSDirectory ? [.ios] : []) + (anchor.hasAndroidDirectory ? [.android] : []),
+                framework: anchor.framework, iosContainer: anchor.iosContainer
             ))
         }
         candidates.sort { $0.id < $1.id }

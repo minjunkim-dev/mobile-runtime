@@ -23,12 +23,13 @@ public struct DeploymentTarget: Sendable, Equatable {
         self.file = file
     }
 
-    private static let propertiesFile = "ios/Podfile.properties.json"
-    private static let podfile = "ios/Podfile"
     /// The key the Podfile itself reads before it reaches its own literal.
     private static let propertiesKey = "deploymentTarget"
 
-    static func resolve(anchorDirectory: String, fileManager: FileManager) -> DeploymentTarget? {
+    static func resolve(anchorDirectory: String, iosDirectory: String = "ios", fileManager: FileManager) -> DeploymentTarget? {
+        let prefix = iosDirectory.isEmpty ? "" : iosDirectory + "/"
+        let propertiesFile = prefix + "Podfile.properties.json"
+        let podfile = prefix + "Podfile"
         func contents(_ file: String) -> Data? {
             fileManager.contents(atPath: anchorDirectory.appending("/\(file)"))
         }

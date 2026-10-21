@@ -9,3 +9,7 @@ Android provider는 프로젝트·플랫폼별 활성 실행 기록에 Emulator,
 `up`은 `validate → dependencies → android.build`를 무부작용 prefix로 끝낸 다음 Emulator, 앱 설치, Metro, reverse, launch를 진행한다. 실패하면 소유 자원을 역순으로 best-effort rollback하고, `down`도 같은 non-fail-fast 정리 job을 `app → adb.reverse → metro → emulator` 순서로 사용한다. 재사용한 자원과 identity를 확인할 수 없는 자원은 보존하며 uninstall, clear-data, AVD 생성·삭제, `SIGKILL`은 하지 않는다. 남은 기록은 후속 `down`이 재시도하고, 기록이 없으면 세계를 재추론하지 않고 할 일 없음으로 끝낸다.
 
 이 결정은 실패한 `up`이 자원을 남기는 기존 iOS 계약보다 엄격하지만 ADR-0007을 바꾸지 않는다. Android의 정확한 소유 증거가 기존 iOS의 Metro 정체성·설치 기록과 다르므로 공통 provider abstraction도 아직 만들지 않는다. lifecycle 계약은 Core의 CLI 출력과 향후 SwiftUI macOS 앱 표현 양쪽에서 사용할 수 있도록 UI와 분리하되, Private Phase 4A의 납품 범위는 CLI Android provider까지다.
+
+## SDK root 실패 분류 (#265, 2026-10-15)
+
+SDK root 선언 누락과 선언 간 충돌은 사용자 환경의 도메인 실패다. `up`·Android rollback·`down`은 같은 원인과 remediation을 보고하며 exit 1을 사용한다. SDK root를 정하지 못해 소유권을 관측하지 못한 정리 항목은 `unknown`으로 남긴다. 해당 자원과 소유 기록을 보존한다. SDK root 없이도 안전하게 확인할 수 있는 자원은 기존 best-effort 정리를 계속한다. 실제 도구 실행·기록 장애가 함께 있으면 exit 2를 유지한다. 취소는 exit 130을 유지한다. rollback은 원래 `up` 실패를 보존하며 종료 코드만 기존 우선순위에 따라 올릴 수 있다.

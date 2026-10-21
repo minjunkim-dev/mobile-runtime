@@ -49,7 +49,14 @@ public struct BuildStage: Stage {
     }
 
     public func run(_ context: inout UpContext) async throws -> StageOutcome {
-        guard let anchor = config.anchor, let target = XcodeBuildTarget.locate(inIOSDirectoryOf: anchor) else {
+        guard let anchor = config.anchor else {
+            throw Self.noTarget
+        }
+        guard let target = XcodeBuildTarget.locate(inIOSDirectoryOf: anchor) else {
+            if anchor.framework == .nativeIOS {
+                throw DomainError(summary: "the selected native iOS container is no longer available",
+                    remediation: Remediation(summary: "Refresh the project candidates and select an existing Xcode container."))
+            }
             throw Self.noTarget
         }
         // The pipeline runs `device` first. Reaching here without one is mobile's own
@@ -59,6 +66,7 @@ public struct BuildStage: Stage {
         else if let device = context.device { destination = "platform=iOS Simulator,id=\(device.udid)" }
         else { throw ToolUnavailable(description: "build ran before a simulator was chosen — `device` comes first") }
 
+        let derivedData = try logs.derivedDataDirectory
         let environment = await locator.pinnedEnvironment()
         let scheme = try await scheme(anchor, target, environment)
         let arguments =
@@ -66,10 +74,13 @@ public struct BuildStage: Stage {
                 "-scheme", scheme,
                 "-configuration", configuration,
                 "-destination", destination,
-            ]
+                "-derivedDataPath", derivedData.path,
+            ] + (anchor.framework != .reactNative ? ["CODE_SIGNING_ALLOWED=NO"] : [])
+                + (anchor.framework == .flutter && !genericDestination ? ["ONLY_ACTIVE_ARCH=YES"] : [])
 
         context.buildLog = try await build(arguments, environment).path
-        context.product = try await product(arguments, scheme: scheme, environment: environment)
+        context.product = try await product(arguments, scheme: scheme, environment: environment,
+            nativeTarget: anchor.framework != .reactNative ? target : nil)
         return .pass(scheme)
     }
 
@@ -84,7 +95,7 @@ public struct BuildStage: Stage {
         let list = XcodeSchemeList.command(target: target, environment: environment)
         let result = try await runner.run(list)
         guard result.terminationStatus.isSuccess,
-            let schemes = XcodeSchemeList.decode(result.standardOutput)?.schemes, !schemes.isEmpty
+            let schemes = XcodeSchemeList.decode(result.standardOutput)?.schemes(in: target, anchor: anchor), !schemes.isEmpty
         else {
             throw ToolUnavailable(
                 description: "`\(list.description)` listed no schemes — "
@@ -115,9 +126,7 @@ public struct BuildStage: Stage {
     /// - Returns: the log file the whole build was streamed to, kept on a success too.
     private func build(_ arguments: [String], _ environment: [String: String]) async throws -> URL {
         let file = logs.url("build.log")
-        // No `-derivedDataPath`: Xcode's own location is the point, so opening the
-        // project in Xcode shares this build's cache rather than doing it all again.
-        //
+        // Build and product lookup receive the same input-owned output path.
         // Streamed rather than collected: a real app's first clean build runs to tens
         // of megabytes, and the 4 MiB collected limit killed a healthy one (#55).
         let command = ProcessCommand(
@@ -149,7 +158,8 @@ public struct BuildStage: Stage {
     private func product(
         _ arguments: [String],
         scheme: String,
-        environment: [String: String]
+        environment: [String: String],
+        nativeTarget: XcodeBuildTarget?
     ) async throws -> BuiltProduct {
         let command = ProcessCommand(
             "xcodebuild", ["-showBuildSettings", "-json"] + arguments,
@@ -158,7 +168,7 @@ public struct BuildStage: Stage {
         )
         let result = try await runner.run(command)
         guard result.terminationStatus.isSuccess,
-            let product = XcodeBuildSettings.decode(result.standardOutput)?.application(scheme: scheme)
+            let product = XcodeBuildSettings.decode(result.standardOutput)?.application(scheme: scheme, nativeTarget: nativeTarget)
         else {
             throw ToolUnavailable(
                 description: "`\(command.description)` did not say where the app was built — "
@@ -192,7 +202,7 @@ public struct BuildStage: Stage {
     /// remediation that has to be repaired before it runs is not a remediation.
     private static func pasteable(_ command: ProcessCommand) -> String {
         ([command.executable] + command.arguments)
-            .map { $0.contains(" ") ? "'\($0)'" : $0 }
+            .map(shellArgument)
             .joined(separator: " ")
     }
 

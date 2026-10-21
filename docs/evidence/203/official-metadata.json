@@ -1,0 +1,108 @@
+{
+  "schema": "runstir.203.official-metadata-observations.v1",
+  "source_head": "7fac827f7b086ef754d37c71da94946247aa2e0a",
+  "status": "METADATA_ONLY",
+  "payload_bytes_downloaded_or_validated": false,
+  "actual_installation": "UNKNOWN",
+  "github_releases": [
+    {
+      "source_url": "https://api.github.com/repos/jdx/ruby/releases/tags/3.2.2",
+      "tag": "3.2.2",
+      "draft": false,
+      "prerelease": false,
+      "raw_metadata_sha256": "0f60be6dc2a2fb604142518b9506a9508db47a003970094d5d3c9b3d4eb38343",
+      "raw_metadata_bytes": 12850,
+      "private_receipt": "PRIVATE203/raw/goal203-ruby-metadata.json",
+      "selected_asset": {
+        "id": 604544875,
+        "name": "ruby-3.2.2.macos.tar.gz",
+        "size": 39479292,
+        "digest": "sha256:13521c64d1d5579d97707b54321b82e7c7a7c779a919868ac9b4eb8e36da9ba9",
+        "browser_download_url": "https://github.com/jdx/ruby/releases/download/3.2.2/ruby-3.2.2.macos.tar.gz"
+      }
+    },
+    {
+      "source_url": "https://api.github.com/repos/adoptium/temurin17-binaries/releases/tags/jdk-17.0.18%2B8",
+      "tag": "jdk-17.0.18+8",
+      "draft": false,
+      "prerelease": false,
+      "raw_metadata_sha256": "d44bad49cf4f1bad4a7fbe4bc1b84996928ab8765b7771946f85bfdd2ac64b90",
+      "raw_metadata_bytes": 484661,
+      "private_receipt": "PRIVATE203/raw/goal203-jdk-metadata.json",
+      "selected_asset": {
+        "id": 350680641,
+        "name": "OpenJDK17U-jdk_aarch64_mac_hotspot_17.0.18_8.tar.gz",
+        "size": 185658966,
+        "digest": "sha256:d81de06d938384fe76c4aa3c13395933aa11e2d19b0428743f810db06b05e312",
+        "browser_download_url": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.18%2B8/OpenJDK17U-jdk_aarch64_mac_hotspot_17.0.18_8.tar.gz"
+      }
+    },
+    {
+      "source_url": "https://api.github.com/repos/jdx/mise/releases/tags/v2026.10.7",
+      "tag": "v2026.10.7",
+      "draft": false,
+      "prerelease": false,
+      "raw_metadata_sha256": "31895344315efd472c891e4c23527affb57d155423e570a0e889abfe0e77842e",
+      "raw_metadata_bytes": 89913,
+      "private_receipt": "PRIVATE203/raw/goal203-mise-metadata.json",
+      "selected_asset": {
+        "id": 626480980,
+        "name": "mise-v2026.10.7-macos-arm64",
+        "size": 127277984,
+        "digest": "sha256:f5171e341518a57e8c4e9280e28443e35d66212c51164c83be76794e0a78b014",
+        "browser_download_url": "https://github.com/jdx/mise/releases/download/v2026.10.7/mise-v2026.10.7-macos-arm64"
+      }
+    }
+  ],
+  "node": {
+    "source_url": "https://nodejs.org/dist/v22.23.2/SHASUMS256.txt",
+    "filename": "node-v22.23.2-darwin-arm64.tar.gz",
+    "sha256": "61130f394c1630d211dd50aecc4353d379480f36d3ac913cd85dbba1aed585c6",
+    "raw_metadata_sha256": "778ac5b2fcdbd68d9c0ae9f4310674faa3af0910bd0d18e7f6597787c40a3e39",
+    "raw_metadata_bytes": 3777,
+    "private_receipt": "PRIVATE203/raw/goal203-node-shasums.txt",
+    "archive_url": "https://nodejs.org/dist/v22.23.2/node-v22.23.2-darwin-arm64.tar.gz",
+    "http_head_observation": {
+      "reported_content_length": 50068815,
+      "raw_header_receipt_preserved": false,
+      "limit": "Earlier tool output reported HTTP200/Content-Length. No raw HEAD capture survives in this receipt set. This file does not independently prove archive size."
+    }
+  },
+  "ruby_source": {
+    "commit": "290439c46673f25b77bd9ada0f1375a2268d2a46",
+    "archive_root": "ruby-3.2.2",
+    "build_runner_os_is_not_minimum_os": true,
+    "actual_macho_architecture_minimum_os_linked_libraries": "UNKNOWN",
+    "source_files": [
+      {
+        "private_receipt": "PRIVATE203/raw/goal203-ruby-readme.txt",
+        "sha256": "ac79f1e2200fd95ad5c83663b351cc3caea0caba6de60f8c9ed2680ec94e4d20"
+      },
+      {
+        "private_receipt": "PRIVATE203/raw/goal203-ruby-recipes_targets.yml.txt",
+        "sha256": "89590f0f11980072e54af522951e2c3632aa9884263465cdbca17ad88ec5b349"
+      },
+      {
+        "private_receipt": "PRIVATE203/raw/goal203-ruby-recipes_dependencies.yml.txt",
+        "sha256": "95714ef0f9f588c3c3e8026f40169b21c8e14403b1a72e388a5511ecf6e268f1"
+      },
+      {
+        "private_receipt": "PRIVATE203/raw/goal203-ruby-libexec_package.rb.txt",
+        "sha256": "796c583d1539424e10f41cfa40afd0f6952e1d60a0885522ce7d8cf3e34d3ea7"
+      },
+      {
+        "private_receipt": "PRIVATE203/raw/goal203-ruby-.github_workflows_build.yml.txt",
+        "sha256": "54573f2def893d38d535612f0cecf696a6712607e344eee7531bd317783064ce"
+      },
+      {
+        "private_receipt": "PRIVATE203/raw/goal203-ruby-.github_workflows_release.yml.txt",
+        "sha256": "c7dd78a8554dbf5e06744054116b20f5bebf0e9b3a5bd6642ee7094e44cf0bcc"
+      }
+    ]
+  },
+  "limits": [
+    "Metadata and source reads do not validate downloaded payload bytes.",
+    "Selected official asset digest/size are claims from official metadata, not local archive measurements.",
+    "Runtime fixture output is synthetic except the explicitly identified owned shell/Git/gzip/process fixtures."
+  ]
+}

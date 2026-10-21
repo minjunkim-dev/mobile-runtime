@@ -1,0 +1,33 @@
+# Sanitized native command excerpt; attempt214-20261016-03
+build: not repeated; original native attempt02 product reused
+boot: 2026-10-15T15:45:15.322697+00:00 .. 2026-10-15T15:45:15.896419+00:00
+argv: ["/Applications/Xcode.app/Contents/Developer/usr/bin/simctl", "boot", "${OWN_SIMULATOR}"]
+exitCode: 0; elapsedSeconds: 0.574
+rawCommandReceiptSHA256: b74248782fd320b73cd2367d3cdf0690db28bbe069b86b001f103013b90e8275
+bootstatus: 2026-10-15T15:45:16.044658+00:00 .. 2026-10-15T15:45:18.204288+00:00
+argv: ["/Applications/Xcode.app/Contents/Developer/usr/bin/simctl", "bootstatus", "${OWN_SIMULATOR}", "-b"]
+exitCode: 0; elapsedSeconds: 2.16
+rawCommandReceiptSHA256: 3097ccdc9e025e6e7992b45b4d48ea67f65bf06e27b470802998951e9b12a4d4
+install: 2026-10-15T15:45:42.008376+00:00 .. 2026-10-15T15:46:07.470552+00:00
+argv: ["/Applications/Xcode.app/Contents/Developer/usr/bin/simctl", "install", "${OWN_SIMULATOR}", "${ORIGINAL_NATIVE214_APP}"]
+exitCode: 0; elapsedSeconds: 25.462
+rawCommandReceiptSHA256: 4803f55085a9b1c1e52657a8257e8a4ca2035849c27ac8e3bf212dedba93c0d4
+launch: 2026-10-15T15:46:21.675654+00:00 .. 2026-10-15T15:46:24.391952+00:00
+argv: ["/Applications/Xcode.app/Contents/Developer/usr/bin/simctl", "launch", "${OWN_SIMULATOR}", "org.runstir.baseline214.NetNewsWire.iOS-DEBUG"]
+exitCode: 0; elapsedSeconds: 2.716
+rawCommandReceiptSHA256: 73e7863200723d7c97746612b5fb8dca4ad68689e065bf8afc67d4c9bacae026
+installed-container: 2026-10-15T15:46:52.719788+00:00 .. 2026-10-15T15:46:52.920191+00:00
+argv: ["/Applications/Xcode.app/Contents/Developer/usr/bin/simctl", "get_app_container", "${OWN_SIMULATOR}", "org.runstir.baseline214.NetNewsWire.iOS-DEBUG", "app"]
+exitCode: 0; elapsedSeconds: 0.2
+rawCommandReceiptSHA256: e9825a24de856fb960cda72380f102bbf8954b4b9d27189c7173ef92413f76f7
+terminate: 2026-10-15T15:46:52.979988+00:00 .. 2026-10-15T15:46:53.224531+00:00
+argv: ["/Applications/Xcode.app/Contents/Developer/usr/bin/simctl", "terminate", "${OWN_SIMULATOR}", "org.runstir.baseline214.NetNewsWire.iOS-DEBUG"]
+exitCode: 0; elapsedSeconds: 0.245
+rawCommandReceiptSHA256: d5332008e585018724ffc34b68f8194d7dc768f453d4872f2fa3738f682274ef
+shutdown: 2026-10-15T15:46:53.332789+00:00 .. 2026-10-15T15:46:56.606295+00:00
+argv: ["/Applications/Xcode.app/Contents/Developer/usr/bin/simctl", "shutdown", "${OWN_SIMULATOR}"]
+exitCode: 0; elapsedSeconds: 3.277
+rawCommandReceiptSHA256: 24bd5b6dc6e952e245be8884103dedc50d6efe01d2b2ea449dbe856920a9b246
+CUA: Feeds unobscured; Smart Feeds and stock public list visible. No permission UI action in this attempt.
+preservation: existing43 full metadata diff {}; all Simulator state diff {}; source/index/lock/artifact equal.
+final: own app PID absent; own Simulator Shutdown. Overall inconclusive; distribution archive SHA256 unknown.

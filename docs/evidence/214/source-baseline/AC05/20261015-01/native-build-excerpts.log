@@ -1,0 +1,22 @@
+# Public excerpts, not complete raw logs. Paths and device identity are redacted.
+# Food Truck attempt 214-20261015-01
+# Complete private raw UTF-8 log SHA256:
+# b00bd0d077c75db96232e7b83dc9d94a6d2750beda262419fa4307a7c8973a5e
+warning: cannot use struct 'DisplayMessageAction' in a property declaration member of a type not marked '@_implementationOnly'; '_StoreKit_SwiftUI' was not imported by this file
+warning: cannot use struct 'RequestReviewAction' in a property declaration member of a type not marked '@_implementationOnly'; '_StoreKit_SwiftUI' was not imported by this file
+warning: unstructured throwing task created by 'init(name:priority:operation:)' is not used, which may accidentally ignore errors thrown inside the task [#NoUseUnstructuredThrowingTask]
+** BUILD SUCCEEDED **
+exitCode=0
+elapsedSeconds=53.839
+
+# NetNewsWire attempt 214-20261015-01
+# Complete private raw UTF-8 log SHA256:
+# 4da603b903039edcafc31b085db7395182d2aa6b1cd48533d9ee2d555ad7639d
+error: Multiple commands produce '$PRIVATE214/derived-netnewswire/Build/Products/Debug-iphonesimulator/NetNewsWire.app'
+note: Target 'NetNewsWire' (project 'NetNewsWire') has create directory command with output '$PRIVATE214/derived-netnewswire/Build/Products/Debug-iphonesimulator/NetNewsWire.app'
+note: Target 'NetNewsWire-iOS' (project 'NetNewsWire') has create directory command with output '$PRIVATE214/derived-netnewswire/Build/Products/Debug-iphonesimulator/NetNewsWire.app'
+$PRIVATE214/packages-netnewswire/artifacts/sparkle/Sparkle/Sparkle.xcframework:1:1: error: While building for iOS Simulator, no library for this platform was found in '$PRIVATE214/packages-netnewswire/artifacts/sparkle/Sparkle/Sparkle.xcframework'. (in target 'NetNewsWire' from project 'NetNewsWire')
+$PRIVATE214/packages-netnewswire/artifacts/sparkle/Sparkle/Sparkle.xcframework:1:1: error: While building for iOS Simulator, no library for this platform was found in '$PRIVATE214/packages-netnewswire/artifacts/sparkle/Sparkle/Sparkle.xcframework'. (in target 'Sparkle-product' from project 'Sparkle')
+** BUILD FAILED **
+exitCode=65
+elapsedSeconds=70.949

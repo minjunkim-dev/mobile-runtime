@@ -1,0 +1,183 @@
+{
+  "schema": "runstir.205.public-evidence.v2",
+  "measurementDateUTC": "2026-10-18",
+  "scope": "Pins every public file under this evidence directory, excluding this manifest. Each measurement retains its exact product source and original FAIL/UNKNOWN. This multi-source manifest does not relabel earlier actual binaries as a later document or merge head. Final review, CI, human approval, merge and main CI are separate gates recorded in PR #294.",
+  "measuredSources": [
+    {
+      "sha": "e567b001a07cba6560a182ae47497de6009e1e80",
+      "scope": "Historical actual CLI/GUI SDK preparation and CLI alignment/cancellation evidence."
+    },
+    {
+      "sha": "fb9167b1f0589645b3ccbdd8b26b0f67d5e00a70",
+      "scope": "Current component actual CLI/GUI: native-compatible Duo creation, locked Dart alignment, reuse and partial/manual status."
+    },
+    {
+      "sha": "24ee6e9752e1f39ac6a999113743e054082fed48",
+      "scope": "Current actual SDK CLI/GUI install, download cancellation, fresh approval/retry/reuse and stale selector-declaration approval rejection. Product full Werror 779 tests and 199 source inputs."
+    }
+  ],
+  "historicalFailedSource": {
+    "sha": "121f0db3589fbe4c1d741a791488580469a3c993",
+    "scope": "Native runtime/device compatibility failure; nested original failure manifest retains its own exact pins. The nested manifest is pinned here."
+  },
+  "status": "Source-scoped actual preparation evidence complete with recorded strict preservation FAIL and UNKNOWN limits. SDK GUI actual Security report complete. This immutable measurement snapshot does not claim final-head gate completion or whole environment readiness.",
+  "gateResults": "https://github.com/minjunkim-dev/mobile-runtime/pull/294",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 16650,
+      "mode": "0o644",
+      "sha256": "b7ba07abc7128767c0d0d9fa8079e26fcb42df532aab133e54c504da5511d5b7"
+    },
+    {
+      "path": "actual-cli-e567b00.json",
+      "bytes": 32198,
+      "mode": "0o644",
+      "sha256": "fcb95e21c4681f6272a7bbebfde109e6042cab0fe3cf6c808a69129e9ec2b187"
+    },
+    {
+      "path": "actual-cli-e567b00.md",
+      "bytes": 11895,
+      "mode": "0o644",
+      "sha256": "d6e6ac42f8ce6f95fa3ea8a6b20c50d36183926176fb5d2ca02912e537480c5d"
+    },
+    {
+      "path": "actual-gui-e567b00.json",
+      "bytes": 13685,
+      "mode": "0o644",
+      "sha256": "2b2dfbd038d3da26f25e21468a4041919b86818f23015cde258dcab09e9a51fc"
+    },
+    {
+      "path": "actual-gui-e567b00.md",
+      "bytes": 9971,
+      "mode": "0o644",
+      "sha256": "38584da94993090a3d8f5670d95a8ca376e78bfbd78d687c1a21a6c3e65649a0"
+    },
+    {
+      "path": "actual-supported-fb9167b.json",
+      "bytes": 35941,
+      "mode": "0o644",
+      "sha256": "aed2c8848a9c019350ed3f985f9e44d1d3920a39432ede5f8c1b8e7664d42721"
+    },
+    {
+      "path": "actual-supported-fb9167b.md",
+      "bytes": 5818,
+      "mode": "0o644",
+      "sha256": "005d84f2f6333dfbd5d566cee6a93cfc1c0672ded3c47d978b3d3bb01503855d"
+    },
+    {
+      "path": "images/sdk-gui-03-plan.jpg",
+      "bytes": 141518,
+      "mode": "0o644",
+      "sha256": "f4ee0683dfe13447a712f14e19852aca4bf0fb1f4710a244a351413b8ea1eaad"
+    },
+    {
+      "path": "images/sdk-gui-05-cancel.jpg",
+      "bytes": 142283,
+      "mode": "0o644",
+      "sha256": "a31caf791c91290318966b40d99ffa0b8a0ff19b4c68811396c72f35458979ad"
+    },
+    {
+      "path": "images/sdk-gui-08-complete.jpg",
+      "bytes": 135915,
+      "mode": "0o644",
+      "sha256": "70f4642a669291bef9ef16b7e199b5c722ceb63d2500056a4d19b863d3468eb5"
+    },
+    {
+      "path": "images/sdk-gui-09-reuse.jpg",
+      "bytes": 139898,
+      "mode": "0o644",
+      "sha256": "be3a0874665398dbd41a0e3d956241c99a94f8980cffd479dca293a00400e563"
+    },
+    {
+      "path": "images/sdk-gui-10-unapproved.jpg",
+      "bytes": 141008,
+      "mode": "0o644",
+      "sha256": "63e49e5f895b6bec33701da2375e933cca6f8b0f42c3a9365b5d748dbab63e54"
+    },
+    {
+      "path": "native-compatibility-121f0db/README.md",
+      "bytes": 3772,
+      "mode": "0o644",
+      "sha256": "ac3d3a56ce4c8af53f8e85bbb68d7c0a2189a8b5ebfdddf5b2d85095e6148723"
+    },
+    {
+      "path": "native-compatibility-121f0db/manifest.json",
+      "bytes": 1092,
+      "mode": "0o644",
+      "sha256": "05a3902ab6380ef93e55afa609caccfdc959108a32050430872bcc12840e4926"
+    },
+    {
+      "path": "native-compatibility-121f0db/manual-native-result.json",
+      "bytes": 793,
+      "mode": "0o644",
+      "sha256": "48c9a368e43c09e0995b36aeb6eecb5ca0a1ec53ce56fd782ae78738847b027d"
+    },
+    {
+      "path": "native-compatibility-121f0db/native-runtimes.json",
+      "bytes": 29390,
+      "mode": "0o644",
+      "sha256": "9026b1a53951686c9bef371533b921867ea52aed02e6ad45086ec3d15ea70f7b"
+    },
+    {
+      "path": "native-compatibility-121f0db/preservation-report.json",
+      "bytes": 3392,
+      "mode": "0o644",
+      "sha256": "f5299150e8ea6d6082c9beaef3f229a9f17cd9e7a22539d707e487f9063685aa"
+    },
+    {
+      "path": "native-compatibility-121f0db/product-exit.json",
+      "bytes": 13642,
+      "mode": "0o644",
+      "sha256": "8c5fdf6697f8c9daae853e10a1bbe09200e3da88e9f3af6164321301213c0e0c"
+    },
+    {
+      "path": "native-compatibility-121f0db/product-result.json",
+      "bytes": 40899,
+      "mode": "0o644",
+      "sha256": "905eb410a9cf4f364367a82fcb76415f57eb4832dbc89f53aa4286123545ea0d"
+    },
+    {
+      "path": "official-release.json",
+      "bytes": 1362,
+      "mode": "0o644",
+      "sha256": "76ad85466f0a5f00f2d60a89ffbfba3400c21fb8d414c9ed78758b82e035f9c8"
+    },
+    {
+      "path": "sdk-cli-24ee6e9.json",
+      "bytes": 27028,
+      "mode": "0o644",
+      "sha256": "d03a9907322f56ddd43d4677af3a31e4fab801818fd3e9a08aef81abac883cef"
+    },
+    {
+      "path": "sdk-cli-24ee6e9.md",
+      "bytes": 6414,
+      "mode": "0o644",
+      "sha256": "211b323daadb1440aa7e10509809102a85a03b4bd285535e4a5e68b00804832e"
+    },
+    {
+      "path": "sdk-gui-24ee6e9.json",
+      "bytes": 55432,
+      "mode": "0o644",
+      "sha256": "905b6b7662554685784a5d6d3a97250febd7eff0d6c02f62a26d044c65107e3e"
+    },
+    {
+      "path": "sdk-gui-24ee6e9.md",
+      "bytes": 8051,
+      "mode": "0o644",
+      "sha256": "4a5ab3061c9e0c88100106c880e843725ae566c66a83f924bf35fe3c681e12c6"
+    },
+    {
+      "path": "selector-stale-24ee6e9.json",
+      "bytes": 25058,
+      "mode": "0o644",
+      "sha256": "10c4f1d79ea30fcdead6285d6ec0d5e67abd55c2495ecac940fed44c7d8e14d7"
+    },
+    {
+      "path": "selector-stale-24ee6e9.md",
+      "bytes": 6047,
+      "mode": "0o644",
+      "sha256": "de9f598a09b68d4021d7d014740017194e535d8fecdf597999270eac1aa2f3bc"
+    }
+  ]
+}

@@ -8,6 +8,7 @@ struct Setup: AsyncParsableCommand {
     static let configuration = CommandConfiguration(abstract: "Inspect and approve environment preparation. Does not build or launch an app.")
     @Option(name: .long, help: "Project working folder.") var project: String?
     @Option(name: .long, help: "Detected app candidate id.") var app: String?
+    @Option(name: .long, help: "Existing Dart entrypoint relative to the selected Flutter app. Defaults to lib/main.dart.") var entrypoint: String?
     @Option(name: .long, help: "Execution platform hint. RN and Flutter setup still cover both platforms.") var platform: MobilePlatform?
     @Flag(name: .long, help: "Inspect and return the change plan without making changes.") var plan = false
     @Option(name: .long, help: "Approve exactly the current plan-id. Conditions are rechecked before changes.") var approve: String?
@@ -18,6 +19,7 @@ struct Setup: AsyncParsableCommand {
     @Flag(name: [.short, .long], help: "Show tool invocations.") var verbose = false
 
     mutating func validate() throws {
+        if let entrypoint, entrypoint.isEmpty { throw ValidationError("--entrypoint requires a nonempty Dart path.") }
         if plan && approve != nil { throw ValidationError("--plan and --approve cannot be combined.") }
     }
 
@@ -25,7 +27,7 @@ struct Setup: AsyncParsableCommand {
         bootstrapLogging(verbose: verbose, silent: progressJson)
         let input = ProjectInspectionInput(directory: URL(fileURLWithPath: project ?? FileManager.default.currentDirectoryPath),
             environment: ProcessInfo.processInfo.environment, app: app,
-            platform: platform.flatMap { ProjectPlatform(rawValue: $0.rawValue) })
+            platform: platform.flatMap { ProjectPlatform(rawValue: $0.rawValue) }, entrypoint: entrypoint)
         var approved = approve
         var trusted = trustRepository
         if !plan, approved == nil, !nonInteractive, !json, !progressJson, isatty(FileHandle.standardInput.fileDescriptor) == 1 {

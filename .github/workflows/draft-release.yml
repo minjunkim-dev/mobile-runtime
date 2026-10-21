@@ -1,0 +1,107 @@
+name: Draft Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Alpha version without v, e.g. 0.1.0-alpha.5'
+        required: true
+        type: string
+      source_sha:
+        description: 'Full 40-character main commit SHA with successful CI'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: draft-release-${{ inputs.version }}
+  cancel-in-progress: false
+
+env:
+  RELEASE_VERSION: ${{ inputs.version }}
+  SOURCE_SHA: ${{ inputs.source_sha }}
+  GH_REPO: ${{ github.repository }}
+
+jobs:
+  package:
+    if: github.ref == 'refs/heads/main'
+    runs-on: macos-26
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate inputs, main ancestry, CI and unused version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/validate-release-input.py "$RELEASE_VERSION" "$SOURCE_SHA"
+      - name: Checkout the verified source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.source_sha }}
+          path: source
+          persist-credentials: false
+      - name: Package and verify the selected source
+        working-directory: source
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          scripts/package-release.sh "$RELEASE_VERSION" "$RUNNER_TEMP/release"
+      - name: Save the verified archive
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: draft-release
+          path: ${{ runner.temp }}/release/*
+          if-no-files-found: error
+          retention-days: 7
+
+  draft:
+    needs: package
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: draft-release
+          path: release
+      - name: Verify transferred checksum
+        working-directory: release
+        run: sha256sum --check "runstir-$RELEASE_VERSION-macos-arm64.tar.gz.sha256"
+      - name: Create an unpublished pre-release draft
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 scripts/validate-release-input.py "$RELEASE_VERSION" "$SOURCE_SHA"
+          cat > "$RUNNER_TEMP/notes.md" <<EOF
+          Source SHA: $SOURCE_SHA
+          Workflow: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+
+          공개하지 않은 검증 대기 draft다. 실제 배포 archive를 내려받아 ADR-0019의 실행 검증을 완료한 뒤 공개를 판단한다.
+          This draft does not establish device compatibility or release readiness.
+          EOF
+          gh release create "v$RELEASE_VERSION" \
+            "release/runstir-$RELEASE_VERSION-macos-arm64.tar.gz" \
+            "release/runstir-$RELEASE_VERSION-macos-arm64.tar.gz.sha256" \
+            --repo "$GH_REPO" --target "$SOURCE_SHA" \
+            --draft --prerelease --title "Runstir $RELEASE_VERSION (검증 대기)" \
+            --notes-file "$RUNNER_TEMP/notes.md"
+          gh release view "v$RELEASE_VERSION" --repo "$GH_REPO" \
+            --json isDraft,isPrerelease,targetCommitish \
+            --jq "if .isDraft and .isPrerelease and .targetCommitish == \"$SOURCE_SHA\" then . else error(\"Expected an unpublished draft for the verified source\") end"
+          tag_count="$(gh api "repos/$GH_REPO/git/matching-refs/tags/v$RELEASE_VERSION" \
+            --jq "map(select(.ref == \"refs/tags/v$RELEASE_VERSION\")) | length")"
+          if test "$tag_count" != 0; then
+            echo 'A release tag appeared during creation. The draft remains unpublished; inspect the tag and source SHA before proceeding.' >&2
+            exit 1
+          fi

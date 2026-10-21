@@ -1,0 +1,28 @@
+{
+  "at": 1792113032.496503,
+  "URL": "https://storage.googleapis.com/flutter_infra_release/releases/releases_macos.json",
+  "resolvedURL": "https://storage.googleapis.com/flutter_infra_release/releases/releases_macos.json",
+  "HTTP": 200,
+  "bytes": 377935,
+  "SHA256": "be26ba7041e985325ac4dad55f795bbf51fb636da23e1ae41876223ebd51fc84",
+  "release": {
+    "hash": "00b0c91f06209d9e4a41f71b7a512d6eb3b9c694",
+    "channel": "stable",
+    "version": "3.41.9",
+    "dart_sdk_version": "3.11.5",
+    "dart_sdk_arch": "arm64",
+    "release_date": "2026-04-30T17:06:13.044098Z",
+    "archive": "stable/macos/flutter_macos_arm64_3.41.9-stable.zip",
+    "sha256": "d692b030a63466c44d6b2bc88583380371ecbe328f22cc4057835f59739821a1"
+  },
+  "archiveHEAD": {
+    "URL": "https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/flutter_macos_arm64_3.41.9-stable.zip",
+    "resolvedURL": "https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/flutter_macos_arm64_3.41.9-stable.zip",
+    "HTTP": 200,
+    "ContentLength": 2147160009,
+    "bodyBytesRead": 0
+  },
+  "payloadDownloaded": false,
+  "privateOriginalReceiptSHA256": "24175467496796df81274e6f0133364958cca8bb84d09841a2758a65f940b24b",
+  "scope": "Official metadata GET and archive HEAD only; no payload download, extraction, SDK execution, installation or device evidence."
+}
