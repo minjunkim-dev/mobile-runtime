@@ -126,24 +126,27 @@ struct SystemProcessRunnerTests {
         defer { try? Data().write(to: release) }
         let observed = Mutable<[Data]>([Data(), Data()])
         let completed = Mutable(false)
+        let output = Data([1, 255]) + Data("out".utf8)
+        let error = Data([0, 254]) + Data("err".utf8)
+        let (events, continuation) = AsyncStream<Void>.makeStream()
         let command = ProcessCommand("/bin/sh", ["-c",
             "printf '\\001\\377out'; printf '\\000\\376err' >&2; while [ ! -f \"$1\" ]; do /bin/sleep 0.01; done; printf tail; exit 7",
             "_", release.path], timeout: .seconds(5))
         let task = Task {
+            defer { continuation.finish() }
             let result = try await runner.run(command, onBytes: { channel, bytes in
                 let index = switch channel { case .standardOutput: 0; case .standardError: 1 }
                 observed.mutate { $0[index].append(bytes) }
+                continuation.yield(())
             })
             completed.mutate { $0 = true }
             return result
         }
         defer { task.cancel() }
-        let deadline = ContinuousClock.now + .seconds(3)
-        while observed.value.contains(where: \.isEmpty), ContinuousClock.now < deadline {
-            try await Task.sleep(for: .milliseconds(10))
+        for await _ in events {
+            let bytes = observed.value
+            if bytes[0].count >= output.count, bytes[1].count >= error.count { break }
         }
-        let output = Data([1, 255]) + Data("out".utf8)
-        let error = Data([0, 254]) + Data("err".utf8)
         #expect(observed.value == [output, error])
         #expect(!completed.value)
         try Data().write(to: release)
