@@ -104,9 +104,15 @@ public enum WorkflowExecution {
             }
             let runner = suppliedRunner ?? SystemProcessRunner(environment: input.project.environment,
                                                                workingDirectory: anchor.directory)
-            let androidFlutter = anchor.framework == .flutter && platform == .android && kind != .down
-                ? try await FlutterAndroidWorkflow.make(input: input.project, anchor: anchor, runner: runner,
-                    factory: flutterFactory) : nil
+            let androidFlutter: FlutterAndroidWorkflow?
+            if anchor.framework == .flutter && platform == .android && kind != .down {
+                // Copying and checking the SDK view can take minutes before validate reports.
+                events.send("detail", state: "running", detail: "Preparing the protected Flutter Android SDK view")
+                androidFlutter = try await FlutterAndroidWorkflow.make(input: input.project, anchor: anchor,
+                    runner: runner, factory: flutterFactory)
+            } else {
+                androidFlutter = nil
+            }
             if let androidFlutter { operation.entrypoint = androidFlutter.entrypoint.path }
             var config = ConfigContext.detect(anchor: anchor, workingDirectory: input.project.directory)
                 .selecting(scheme: input.scheme, module: input.module, variant: input.variant,

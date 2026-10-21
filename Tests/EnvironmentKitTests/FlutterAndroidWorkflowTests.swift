@@ -189,15 +189,21 @@ struct FlutterAndroidWorkflowTests {
         let fixture = try CallerFixture()
         let trace = Trace()
         let factory = fixture.factory(trace)
+        let events = Mutable<[WorkflowEvent]>([])
+        let eventsBeforeView = Mutable<[WorkflowEvent]>([])
         let task = Task {
             await WorkflowExecution.run(.build, input: WorkflowInput(project: fixture.input),
                 runner: fixture.runner, leases: fixture.leases, flutterFactory: { app, preparation, files in
+                    eventsBeforeView.value = events.value
                     let view = try factory(app, preparation, files)
                     withUnsafeCurrentTask { $0?.cancel() }
                     return view
-                })
+                }, onEvent: { event in events.mutate { $0.append(event) } })
         }
         let result = await task.value
+        // The long view preparation is visible before any stage reports.
+        #expect(eventsBeforeView.value.map(\.kind) == ["started", "detail"])
+        #expect(eventsBeforeView.value.last?.detail == "Preparing the protected Flutter Android SDK view")
         #expect(result.operation.state == "cancelled")
         #expect(result.exitCode == 130)
         #expect(trace.count == 1)
