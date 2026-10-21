@@ -412,12 +412,15 @@ private func outputFailure(_ observed: String) -> DomainError {
     )
 }
 
-private struct APKBadging {
+struct APKBadging {
     let applicationId: String
     let minSdk: String
     let targetSdk: String
     let abis: [String]
     let launcherActivity: String
+    let versionCode: String?
+    let versionName: String?
+    let displayName: String?
 
     static func read(_ text: String) throws -> APKBadging {
         guard let applicationId = capture(#"(?m)^package: name='([^']+)'"#, in: text),
@@ -433,7 +436,10 @@ private struct APKBadging {
             minSdk: minSdk,
             targetSdk: targetSdk,
             abis: captures(#"'([^']+)'"#, in: nativeLine).sorted(),
-            launcherActivity: launcher
+            launcherActivity: launcher,
+            versionCode: capture(#"(?m)^package: .*?versionCode='([0-9]+)'"#, in: text),
+            versionName: capture(#"(?m)^package: .*?versionName='([^']*)'"#, in: text),
+            displayName: capture(#"(?m)^application-label:'([^']*)'"#, in: text)
         )
     }
 }
