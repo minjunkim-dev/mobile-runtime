@@ -30,8 +30,9 @@ struct FlutterAndroidExecutionTests {
         #expect(try FlutterAndroidExecution.tree(fixture.root, bindIdentity: true) == before)
     }
 
-    @Test("private SDK copy preserves source bytes, links and permissions without sharing inodes")
-    func copyPreservesSource() throws {
+    @Test("private SDK clone or byte copy preserves source bytes, links and permissions without sharing inodes",
+          arguments: [true, false])
+    func copyPreservesSource(_ clone: Bool) throws {
         let fixture = try Fixture()
         defer { fixture.remove() }
         let source = try fixture.directory("source")
@@ -41,14 +42,14 @@ struct FlutterAndroidExecutionTests {
         #expect(symlink("../packages/tool.txt", source.appendingPathComponent("bin/relative").path) == 0)
         let original = try FlutterAndroidExecution.tree(source, bindIdentity: true)
         let copy = fixture.root.appendingPathComponent("copy")
-        try FlutterAndroidExecution.copyTree(source, to: copy, snapshot: original)
+        try FlutterAndroidExecution.copyTree(source, to: copy, snapshot: original, clone: clone)
         #expect(try FlutterAndroidExecution.tree(source, bindIdentity: true) == original)
         #expect(try FlutterAndroidExecution.tree(copy) == original.mapValues(\.unbound))
         for key in ["bin/tool", "packages/tool.txt"] {
             #expect(try FlutterAndroidExecution.entry(source.appendingPathComponent(key), bindIdentity: true).nodeIdentity
                 != FlutterAndroidExecution.entry(copy.appendingPathComponent(key), bindIdentity: true).nodeIdentity)
         }
-        #expect(throws: DomainError.self) { try FlutterAndroidExecution.copyTree(source, to: copy, snapshot: original) }
+        #expect(throws: DomainError.self) { try FlutterAndroidExecution.copyTree(source, to: copy, snapshot: original, clone: clone) }
         #expect(try String(contentsOf: copy.appendingPathComponent("bin/tool"), encoding: .utf8) == "selected SDK bytes")
     }
 
@@ -90,7 +91,7 @@ struct FlutterAndroidExecutionTests {
                 for index in 0..<6 {
                     if copying {
                         try FlutterAndroidExecution.copyTree(source, to: fixture.root.appendingPathComponent("copy-\(index)"),
-                            snapshot: ["payload": original])
+                            snapshot: ["payload": original], clone: false)
                     } else {
                         #expect(try FlutterAndroidExecution.entry(file, bindIdentity: true) == original)
                     }
@@ -166,6 +167,86 @@ struct FlutterAndroidExecutionTests {
         await #expect(throws: CancellationError.self) { try await task.value }
         #expect(try FlutterAndroidExecution.tree(source, bindIdentity: true) == before)
         #expect(FileManager.default.fileExists(atPath: fixture.root.appendingPathComponent("partial").path))
+    }
+
+    @Test("a private root is removed when its owner is released after use, a failure or a cancelled copy",
+          arguments: ["used", "failed", "cancelled"])
+    func ownedRootRemoval(_ exit: String) async throws {
+        struct Failure: Error {}
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        try fixture.file("source/tool", "original")
+        let source = fixture.root.appendingPathComponent("source")
+        let before = try FlutterAndroidExecution.tree(source, bindIdentity: true)
+        let scratch = try fixture.directory("scratch")
+        let gate = Gate()
+        let task = Task {
+            let owner = try FlutterAndroidExecution.OwnedRoot(in: scratch)
+            if exit == "cancelled" { await gate.wait() }
+            try FlutterAndroidExecution.copyTree(source, to: owner.url.appendingPathComponent("sdk"), snapshot: before)
+            #expect(FileManager.default.fileExists(atPath: owner.url.appendingPathComponent("sdk/tool").path))
+            if exit == "failed" { throw Failure() }
+        }
+        switch exit {
+        case "used": try await task.value
+        case "failed": await #expect(throws: Failure.self) { try await task.value }
+        default:
+            task.cancel()
+            await gate.release()
+            await #expect(throws: CancellationError.self) { try await task.value }
+        }
+        #expect(try FileManager.default.contentsOfDirectory(atPath: scratch.path).isEmpty)
+        #expect(try FlutterAndroidExecution.tree(source, bindIdentity: true) == before)
+    }
+
+    @Test("a root still owned at process exit is removed by the exit cleanup, and its later release is harmless")
+    func exitCleanupRemovesLiveRoot() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let scratch = try fixture.directory("scratch")
+        var owner: FlutterAndroidExecution.OwnedRoot? = try FlutterAndroidExecution.OwnedRoot(in: scratch)
+        try FlutterAndroidExecution.write(Data("held".utf8), to: try #require(owner?.url).appendingPathComponent("held"))
+        FlutterAndroidExecution.OwnedRoot.removeLive()
+        #expect(try FileManager.default.contentsOfDirectory(atPath: scratch.path).isEmpty)
+        owner = nil
+        #expect(try FileManager.default.contentsOfDirectory(atPath: scratch.path).isEmpty)
+    }
+
+    @Test("a released owner leaves a replaced root in place")
+    func replacedRootRetained() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let scratch = try fixture.directory("scratch")
+        var owner: FlutterAndroidExecution.OwnedRoot? = try FlutterAndroidExecution.OwnedRoot(in: scratch)
+        let root = try #require(owner?.url)
+        try FileManager.default.moveItem(at: root, to: scratch.appendingPathComponent("moved"))
+        #expect(mkdir(root.path, 0o700) == 0)
+        owner = nil
+        #expect(FileManager.default.fileExists(atPath: root.path))
+        #expect(FileManager.default.fileExists(atPath: scratch.appendingPathComponent("moved").path))
+    }
+
+    @Test("private roots use the configured scratch, then an attached SSD scratch, then TMPDIR; only private owned directories")
+    func scratchSelection() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let chosen = try fixture.directory("chosen")
+        let shared = try fixture.directory("shared")
+        #expect(chmod(shared.path, 0o777) == 0)
+        let ssd = try fixture.directory("ssd")
+        let temporary = FileManager.default.temporaryDirectory.path
+        #expect(FlutterAndroidExecution.scratchDirectory(["RUNSTIR_SCRATCH_DIR": chosen.path, "DEVSSD_ROOT": ssd.path]).path == chosen.path)
+        for unusable in [shared.path, fixture.root.appendingPathComponent("missing").path, "chosen", ""] {
+            #expect(FlutterAndroidExecution.scratchDirectory(["RUNSTIR_SCRATCH_DIR": unusable]).path == temporary)
+        }
+        #expect(FlutterAndroidExecution.scratchDirectory(["DEVSSD_ROOT": ssd.path]).path == temporary)
+        try fixture.directory("ssd/scratch")
+        #expect(FlutterAndroidExecution.scratchDirectory(["DEVSSD_ROOT": ssd.path]).path == ssd.appendingPathComponent("scratch").path)
+        #expect(FlutterAndroidExecution.scratchDirectory([:]).path == temporary)
+        // `<root>/s` must still fit the child broker's Unix socket address.
+        let long = try fixture.directory(String(repeating: "d", count: 80))
+        #expect(throws: DomainError.self) { try FlutterAndroidExecution.OwnedRoot(in: long) }
+        #expect(try FileManager.default.contentsOfDirectory(atPath: long.path).isEmpty)
     }
 
     @Test("canonical templates accept version and root name changes, preserving the original bytes", arguments: [false, true])

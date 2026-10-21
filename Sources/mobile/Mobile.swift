@@ -76,7 +76,12 @@ struct Doctor: AsyncParsableCommand {
         )
         let result: EnvironmentInspection
         do {
-            result = try await EnvironmentInspection.run(input: input, scheme: scheme, configuration: configuration)
+            result = try await cancellingOnSignals { [scheme, configuration] in
+                try await EnvironmentInspection.run(input: input, scheme: scheme, configuration: configuration)
+            }
+        } catch is CancellationError {
+            // Same exit as a cancelled build/up/down/setup.
+            throw ExitCode(130)
         } catch {
             throw ValidationError("Cannot inspect project folder: \(error.localizedDescription)")
         }

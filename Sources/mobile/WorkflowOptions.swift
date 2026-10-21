@@ -28,7 +28,7 @@ struct WorkflowOptions: ParsableArguments {
             platform: platform.flatMap { ProjectPlatform(rawValue: $0.rawValue) }, entrypoint: entrypoint),
             device: device, scheme: scheme, configuration: configuration, module: module, variant: variant, port: port)
         let structured = progressJson
-        let task = Task {
+        let result = try await cancellingOnSignals {
             await WorkflowExecution.run(kind, input: input) { event in
                 if structured {
                     if let line = try? event.encoded() { writeError(line) }
@@ -39,20 +39,6 @@ struct WorkflowOptions: ParsableArguments {
                 }
             }
         }
-        let oldInterrupt = signal(SIGINT, SIG_IGN)
-        let oldTerminate = signal(SIGTERM, SIG_IGN)
-        let signals = [SIGINT, SIGTERM].map { number in
-            let source = DispatchSource.makeSignalSource(signal: number, queue: .global())
-            source.setEventHandler { task.cancel() }
-            source.resume()
-            return source
-        }
-        defer {
-            for source in signals { source.cancel() }
-            signal(SIGINT, oldInterrupt)
-            signal(SIGTERM, oldTerminate)
-        }
-        let result = await task.value
         if json {
             print(try result.encoded(toolVersion: Tool.version))
         } else if progressJson {

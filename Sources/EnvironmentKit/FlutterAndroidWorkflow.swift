@@ -42,7 +42,7 @@ struct FlutterAndroidWorkflow: Sendable {
             .keys.sorted().map { URL(fileURLWithPath: $0) }
         try Task.checkCancellation()
         let view = try factory(anchor.directory, preparation, tracked)
-        // An interruption retains the exclusive view. No caller adds a cleanup scope.
+        // Releasing the view removes its exclusive directory, after an interruption too.
         try Task.checkCancellation()
         var environment = preparation.activeEnvironment
         environment["FLUTTER_ROOT"] = view.sdk.path

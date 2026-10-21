@@ -137,7 +137,13 @@ private root의 Unix socket은 같은 UID와 실행별 인증값을 검사한다
 인증값은 private 환경으로 전달한다. argv·공개 로그·계획에 기록하지 않는다.
 stdout·stderr·종료 상태를 전달한다. 연결 해제와 owner 취소는 해당 SDK 작업을 취소한다.
 child는 network와 승인 범위 밖 쓰기를 계속 거부한다.
-실행한 private view는 후손 종료를 별도로 입증하기 전까지 보존한다.
+private view는 작업이 끝나거나 실패·취소되면 지운다. 남은 Gradle 후손은 지운 경로를 다시 만들 수 없다. 두 sandbox 정책이 root 자체의 쓰기를 거부한다.
+CLI는 SIGINT·SIGTERM·SIGHUP을 취소로 바꾼다. 취소한 작업이 아직 풀리지 않은 채 프로세스가 끝나면 남은 root를 종료 처리기에서 지운다. GUI 종료도 같다.
+SIGKILL과 강제 종료는 root를 남길 수 있다.
+같은 APFS volume에서는 SDK 파일을 clone한다. 다른 volume에서는 검증한 byte copy를 사용한다.
+root는 `RUNSTIR_SCRATCH_DIR`, 연결된 `$DEVSSD_ROOT/scratch`, `TMPDIR` 순서로 고른다.
+후보는 이 사용자가 소유하고 group·other가 쓸 수 없는 기존 디렉터리여야 한다. 그래야 다른 사용자가 지운 root 경로를 다시 만들 수 없다.
+ownership을 무시하는 volume(`Owners: Disabled`)에서는 이 보장이 약하다. 그 volume의 보호 입력도 같은 한계를 가진다.
 이 실행 구조의 테스트는 실제 앱 Build·Up·Down·첫 화면 검증을 대신하지 않는다.
 
 ## 검증 경계

@@ -2,9 +2,10 @@ import Core
 import CryptoKit
 import Darwin
 import Foundation
+import OSLog
 
 /// One invocation's private SDK and settings. This does not prepare missing artifacts.
-final class FlutterAndroidExecution: @unchecked Sendable {
+final class FlutterAndroidExecution: Sendable {
     static let revision = "00b0c91f06209d9e4a41f71b7a512d6eb3b9c694"
     let root: URL
     let sdk: URL
@@ -14,16 +15,13 @@ final class FlutterAndroidExecution: @unchecked Sendable {
     private let originalSDK: URL
     private let android: URL
     private let entrypoint: URL
-    private let identity: Identity
+    private let owner: OwnedRoot
     private let originalTree: [String: Entry]
     private let immutableView: [String: Entry]
     private let protectedInputs: [URL: Entry]
     private let privateInputs: [URL: Entry]
     private let absentInputs: Set<URL>
     private let parentPolicy: URL
-    private let unusedTree: [String: Entry]
-    private let lock = NSLock()
-    private var used = false
 
     private static let gradleCache = ["packages/flutter_tools/gradle/.gradle", "packages/flutter_tools/gradle/.kotlin",
                                       "packages/flutter_tools/gradle/build"]
@@ -38,7 +36,7 @@ final class FlutterAndroidExecution: @unchecked Sendable {
 
     /// `trackedFiles` comes from the same resolved dependency workspace's trusted source inventory.
     static func prepare(app: URL, preparation: FlutterPreparation, trackedFiles: [URL],
-                        temporaryDirectory: URL = FileManager.default.temporaryDirectory) throws -> FlutterAndroidExecution {
+                        temporaryDirectory: URL = FlutterAndroidExecution.scratchDirectory()) throws -> FlutterAndroidExecution {
         try Task.checkCancellation()
         let app = try preparedPath(app)
         let prepared = try preparedInputs(app: app, preparation: preparation, trackedFiles: trackedFiles)
@@ -105,8 +103,9 @@ final class FlutterAndroidExecution: @unchecked Sendable {
         guard try entry(sourcePackages).kind == .file else {
             throw failure("The selected SDK tools package configuration is missing; it will not be generated.")
         }
-        let root = try makeRoot(in: temporaryDirectory)
-        // An interrupted preparation retains its exclusive directory for private diagnosis.
+        // Every exit releases `owner`: a thrown or cancelled preparation removes the directory here.
+        let owner = try OwnedRoot(in: temporaryDirectory)
+        let root = owner.url
         try write(Data("{\"schema\":1,\"state\":\"preparing\",\"sdkRevision\":\"\(revision)\"}\n".utf8), to: root.appendingPathComponent("receipt.json"))
         struct Provenance: Encodable {
             let selectedRoot: String
@@ -122,7 +121,7 @@ final class FlutterAndroidExecution: @unchecked Sendable {
         guard try FlutterSDK.read(source).fingerprint == selected.fingerprint,
               try tree(source, bindIdentity: true) == before,
               try tree(copy, excluding: gradleCache) == filtered(before, excluding: gradleCache).mapValues(\.unbound) else {
-            throw failure("Flutter SDK inputs changed while making the private execution copy. The partial copy was retained.")
+            throw failure("Flutter SDK inputs changed while making the private execution copy.")
         }
         let settings = try makeShadow(app: app, settingsFile: originalSettings, ownedRoot: root)
         let shadowAndroid = settings.deletingLastPathComponent()
@@ -166,27 +165,25 @@ final class FlutterAndroidExecution: @unchecked Sendable {
               absent.allSatisfy({ !exists($0) }) else {
             throw failure("Flutter inputs changed before the protected execution became ready.")
         }
-        try write(Data("{\"schema\":1,\"state\":\"ready\",\"cleanup\":\"retain-after-use\"}\n".utf8),
+        try write(Data("{\"schema\":1,\"state\":\"ready\",\"cleanup\":\"remove-after-use\"}\n".utf8),
                   to: root.appendingPathComponent("ready.json"))
         return FlutterAndroidExecution(root: root, sdk: copy, settings: settings, launcher: launcher,
             initScript: initScript, originalSDK: source, android: android, entrypoint: entrypoint,
-            identity: try Identity(root), originalTree: before,
+            owner: owner, originalTree: before,
             immutableView: try tree(copy, excluding: mutableView, bindIdentity: true), protectedInputs: inputs,
-            privateInputs: privateInputs, absentInputs: absent, parentPolicy: parentPolicy, unusedTree: try tree(root, bindIdentity: true))
+            privateInputs: privateInputs, absentInputs: absent, parentPolicy: parentPolicy)
     }
 
     private init(root: URL, sdk: URL, settings: URL, launcher: URL, initScript: URL, originalSDK: URL,
-                 android: URL, entrypoint: URL, identity: Identity, originalTree: [String: Entry],
+                 android: URL, entrypoint: URL, owner: OwnedRoot, originalTree: [String: Entry],
                  immutableView: [String: Entry], protectedInputs: [URL: Entry], privateInputs: [URL: Entry],
-                 absentInputs: Set<URL>, parentPolicy: URL,
-                 unusedTree: [String: Entry]) {
+                 absentInputs: Set<URL>, parentPolicy: URL) {
         self.root = root; self.sdk = sdk; self.settings = settings; self.launcher = launcher
         self.initScript = initScript; self.originalSDK = originalSDK; self.android = android
-        self.entrypoint = entrypoint; self.identity = identity; self.originalTree = originalTree
+        self.entrypoint = entrypoint; self.owner = owner; self.originalTree = originalTree
         self.immutableView = immutableView; self.protectedInputs = protectedInputs
         self.privateInputs = privateInputs; self.parentPolicy = parentPolicy
         self.absentInputs = absentInputs
-        self.unusedTree = unusedTree
     }
 
     func runner(base: any ProcessRunner) -> any ProcessRunner {
@@ -202,7 +199,7 @@ final class FlutterAndroidExecution: @unchecked Sendable {
     }
 
     func check() throws {
-        guard try Identity(root) == identity, try Self.tree(originalSDK, bindIdentity: true) == originalTree,
+        guard try Identity(root) == owner.identity, try Self.tree(originalSDK, bindIdentity: true) == originalTree,
               try Self.tree(sdk, excluding: Self.mutableView, bindIdentity: true) == immutableView,
               try protectedInputs.allSatisfy({ try Self.entry($0.key, bindIdentity: true) == $0.value }),
               try privateInputs.allSatisfy({ try Self.entry($0.key, bindIdentity: true) == $0.value }),
@@ -248,17 +245,6 @@ final class FlutterAndroidExecution: @unchecked Sendable {
             output: .streamed(to: root.appendingPathComponent("flutter-output.log")), redactArguments: true)
     }
 
-    /// No ProcessRunner API proves that every Gradle descendant has terminated.
-    /// Used views remain private; only a never-executed view can be discarded here.
-    func discardUnused() throws {
-        try lock.withLock {
-            guard !used, try Identity(root) == identity, try Self.tree(root, bindIdentity: true) == unusedTree else {
-                throw Self.failure("This execution view has been used or changed. Retain its receipt until child termination is independently established.")
-            }
-            try FileManager.default.removeItem(at: root)
-        }
-    }
-
     private struct ProtectedRunner: ProcessRunner {
         let base: any ProcessRunner
         let childRunner: any ProcessRunner
@@ -267,7 +253,6 @@ final class FlutterAndroidExecution: @unchecked Sendable {
         let execution: FlutterAndroidExecution
         func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
             var protected = try execution.command(command, wrapParent: wrapParent)
-            execution.lock.withLock { execution.used = true }
             let broker: FlutterAndroidChildBroker?
             if command.executable == "./gradlew" {
                 // A fresh channel belongs only to this outer operation, never a Gradle daemon.
@@ -439,6 +424,63 @@ final class FlutterAndroidExecution: @unchecked Sendable {
         }
     }
 
+    /// The exclusive root lives as long as its last owner, or until the process exits: completion, failure and cancellation alike.
+    /// A surviving Gradle descendant cannot recreate the removed path; both policies deny writes to the root itself.
+    final class OwnedRoot: Sendable {
+        let url: URL
+        let identity: Identity
+        init(in parent: URL) throws {
+            // The child broker listens on `<root>/s`, which must fit sockaddr_un.
+            guard parent.appendingPathComponent("runstir-flutter-android-XXXXXX/s").path.utf8.count
+                    < MemoryLayout.size(ofValue: sockaddr_un().sun_path) else {
+                throw failure("The private Flutter execution directory path is too long for its child socket. Choose a shorter RUNSTIR_SCRATCH_DIR.")
+            }
+            url = try makeRoot(in: parent)
+            identity = try Identity(url)
+            _ = Self.exitCleanup
+            Self.lock.withLock { Self.live[url] = identity }
+        }
+        deinit { Self.lock.withLock { Self.live[url] = nil; Self.remove(url, identity) } }
+
+        // A cancelled check that has not unwound can still own a root when the CLI or GUI exits.
+        private static let lock = NSLock()
+        nonisolated(unsafe) private static var live: [URL: Identity] = [:]
+        private static let exitCleanup: Void = { atexit { FlutterAndroidExecution.OwnedRoot.removeLive() } }()
+
+        static func removeLive() {
+            lock.withLock {
+                for (url, identity) in live { remove(url, identity) }
+                live = [:]
+            }
+        }
+
+        private static func remove(_ url: URL, _ identity: Identity) {
+            // A replaced root is not this owner's directory.
+            guard (try? Identity(url)) == identity else { return }
+            do { try FileManager.default.removeItem(at: url) }
+            catch {
+                Logger(subsystem: "dev.runstir", category: "flutter-protection")
+                    .error("Private Flutter execution root was not removed: \(url.path, privacy: .private)")
+            }
+        }
+    }
+
+    /// `RUNSTIR_SCRATCH_DIR`, else an attached `$DEVSSD_ROOT/scratch`, else TMPDIR.
+    /// A candidate must already be a directory this user owns that no one else can write,
+    /// so no other user can recreate a removed root's path. A detached volume's mount path is never created.
+    static func scratchDirectory(_ environment: [String: String] = ProcessInfo.processInfo.environment) -> URL {
+        // Only absolute values: a relative one would silently resolve against the current directory.
+        func absolute(_ key: String) -> URL? {
+            environment[key].flatMap { $0.hasPrefix("/") ? URL(fileURLWithPath: $0, isDirectory: true) : nil }
+        }
+        for case let candidate? in [absolute("RUNSTIR_SCRATCH_DIR"), absolute("DEVSSD_ROOT")?.appendingPathComponent("scratch", isDirectory: true)] {
+            var info = stat()
+            if lstat(candidate.path, &info) == 0, info.st_mode & S_IFMT == S_IFDIR, info.st_uid == getuid(),
+               info.st_mode & 0o022 == 0 { return candidate }
+        }
+        return FileManager.default.temporaryDirectory
+    }
+
     static func makeRoot(in parent: URL) throws -> URL {
         let parent = try preparedPath(parent)
         var pattern = Array(parent.appendingPathComponent("runstir-flutter-android-XXXXXX").path.utf8CString)
@@ -478,7 +520,8 @@ final class FlutterAndroidExecution: @unchecked Sendable {
         return result
     }
 
-    static func copyTree(_ source: URL, to destination: URL, snapshot: [String: Entry], excluding: [String] = []) throws {
+    static func copyTree(_ source: URL, to destination: URL, snapshot: [String: Entry], excluding: [String] = [],
+                         clone: Bool = true) throws {
         try directory(destination)
         let expected = filtered(snapshot, excluding: excluding)
         for (relative, value) in expected.sorted(by: { $0.key < $1.key }) where value.kind == .directory {
@@ -493,6 +536,12 @@ final class FlutterAndroidExecution: @unchecked Sendable {
             let descriptor = open(input.path, O_RDONLY | O_NOFOLLOW)
             guard descriptor >= 0 else { throw failure("An SDK file could not be opened without following links.") }
             let handle = FileHandle(fileDescriptor: descriptor, closeOnDealloc: true)
+            // An APFS clone is its own inode sharing blocks until written; another volume takes the byte copy below.
+            if clone, fclonefileat(descriptor, AT_FDCWD, output.path, 0) == 0 {
+                guard try entry(output) == value.unbound,
+                      try entry(input, bindIdentity: value.nodeIdentity != nil) == value else { throw failure("An SDK file changed during its private copy.") }
+                continue
+            }
             let destinationFD = open(output.path, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW, 0o600)
             guard destinationFD >= 0 else { throw failure("An SDK copy destination already exists or cannot be created exclusively.") }
             let destinationHandle = FileHandle(fileDescriptor: destinationFD, closeOnDealloc: true)
