@@ -431,7 +431,7 @@ struct FlutterAndroidExecutionTests {
         #expect(try FlutterAndroidExecution.entry(sdk.appendingPathComponent("bin/cache/artifacts/engine"), bindIdentity: true) == engine)
     }
 
-    @Test("parent sandbox permits shadow Gradle project cache and protects source and adjacent private inputs")
+    @Test("parent sandbox permits private Gradle and Kotlin generated files and protects adjacent inputs")
     func parentSandbox() async throws {
         let fixture = try Fixture()
         defer { fixture.remove() }
@@ -439,14 +439,19 @@ struct FlutterAndroidExecutionTests {
         let view = try fixture.directory("view")
         let cache = try fixture.directory("view/gradle-cache")
         try fixture.directory("view/app/android")
+        try fixture.directory("view/sdk/packages/flutter_tools/gradle")
         try fixture.directory("ordinary-cache")
         try fixture.file("source/file", "source")
         try fixture.file("view/tool", "tool")
+        try fixture.file("view/sdk/packages/flutter_tools/gradle/src/main/plugin.kt", "plugin source")
         let before = try FlutterAndroidExecution.tree(source, bindIdentity: true)
         let profile = try FlutterAndroidExecution.parentPolicy(protected: [source], privateRoot: view, writable: [cache])
         for script in ["printf bad > \"$1/source/file\"", "printf bad > \"$1/view/tool\"",
                        "printf bad > \"$1/view/app/android/local.properties\"",
                        "/bin/mkdir -p \"$1/view/app/android/.gradle-other/8.14/fileHashes\"",
+                       "/bin/mkdir -p \"$1/view/app/android/build-other/reports\"",
+                       "/bin/mkdir -p \"$1/view/sdk/packages/flutter_tools/gradle/.kotlin-other/sessions\"",
+                       "printf bad > \"$1/view/sdk/packages/flutter_tools/gradle/src/main/plugin.kt\"",
                        "/bin/mv \"$1\" \"$1-moved\""] {
             #expect(try await !fixture.run(profile: profile, script: script).terminationStatus.isSuccess)
         }
@@ -456,8 +461,17 @@ struct FlutterAndroidExecutionTests {
         if accepted.terminationStatus.isSuccess {
             #expect(try String(contentsOf: view.appendingPathComponent("app/android/.gradle/8.14/fileHashes/cache.bin"), encoding: .utf8) == "project-cache")
         }
+        for relative in ["sdk/packages/flutter_tools/gradle/.kotlin/sessions", "app/android/build/reports/problems"] {
+            let generated = try await fixture.run(profile: profile,
+                script: "/bin/mkdir -p \"$1/view/\(relative)\" && printf generated > \"$1/view/\(relative)/output\"")
+            #expect(generated.terminationStatus.isSuccess, Comment(rawValue: generated.combinedOutput))
+            if generated.terminationStatus.isSuccess {
+                #expect(try String(contentsOf: view.appendingPathComponent(relative + "/output"), encoding: .utf8) == "generated")
+            }
+        }
         #expect(try FlutterAndroidExecution.tree(source, bindIdentity: true) == before)
         #expect(try String(contentsOf: view.appendingPathComponent("tool"), encoding: .utf8) == "tool")
+        #expect(try String(contentsOf: view.appendingPathComponent("sdk/packages/flutter_tools/gradle/src/main/plugin.kt"), encoding: .utf8) == "plugin source")
     }
 
     @Test("child network denial is observed against an open owned loopback listener")

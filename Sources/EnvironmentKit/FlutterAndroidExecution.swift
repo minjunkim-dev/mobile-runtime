@@ -25,7 +25,8 @@ final class FlutterAndroidExecution: @unchecked Sendable {
     private let lock = NSLock()
     private var used = false
 
-    private static let gradleCache = ["packages/flutter_tools/gradle/.gradle", "packages/flutter_tools/gradle/build"]
+    private static let gradleCache = ["packages/flutter_tools/gradle/.gradle", "packages/flutter_tools/gradle/.kotlin",
+                                      "packages/flutter_tools/gradle/build"]
     private static let mutableView = gradleCache + ["bin/cache/lockfile"]
     private static let capability = [
         "kotlin/tasks/BaseFlutterTask.kt": "27dd5ea0f0938f3d1cfb54b992601b39cbf25ae8f20bfe2da771d2ebbb630c56",
@@ -152,7 +153,7 @@ final class FlutterAndroidExecution: @unchecked Sendable {
         try write(Data(binding(settings: settings, android: android, app: app, sdk: copy,
                                launcher: launcher, target: entrypoint, plugins: plugins).utf8), to: initScript)
         let parentText = try Self.parentPolicy(protected: Array(inputs.keys) + Array(absent), privateRoot: root,
-            writable: gradleCache.map { copy.appendingPathComponent($0) } + [
+            writable: [
                 shadowAndroid.appendingPathComponent("local.properties"), copy.appendingPathComponent("bin/cache/lockfile"),
                 root.appendingPathComponent("home"), root.appendingPathComponent("tmp")])
         let parentPolicy = root.appendingPathComponent("parent.sb")
@@ -573,8 +574,8 @@ final class FlutterAndroidExecution: @unchecked Sendable {
 
     static func parentPolicy(protected: [URL], privateRoot: URL, writable: [URL]) throws -> String {
         let root = try canonical(privateRoot)
-        let projectCache = root.appendingPathComponent("app/android/.gradle")
-        let exceptions = try (writable + [projectCache]).map { path -> String in
+        let generated = ["app/android/.gradle", "app/android/build"] + gradleCache.map { "sdk/" + $0 }
+        let exceptions = try (writable + generated.map { root.appendingPathComponent($0) }).map { path -> String in
             let path = try canonical(path, mayBeAbsent: true)
             guard inside(root, path), root.path != path.path else { throw failure("A private SDK write exception escapes its exclusive root.") }
             return "(subpath \(seatbelt(path.path)))"
