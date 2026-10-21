@@ -6,6 +6,23 @@ import Testing
 
 @Suite("Flutter Android owner-side child transport", .serialized)
 struct FlutterAndroidChildBrokerTests {
+    @Test("closing an idle listener does not wait behind its readiness polling lock")
+    func idleClose() async throws {
+        for _ in 0..<4 {
+            let root = try makeRoot()
+            defer { try? FileManager.default.removeItem(at: root) }
+            let broker = try FlutterAndroidChildBroker(root: root,
+                runner: SystemProcessRunner(environment: ["PATH": "/usr/bin:/bin"], workingDirectory: root)) { _ in
+                Issue.record("An idle listener must not start a child")
+                return ProcessCommand("/usr/bin/true")
+            }
+            try await Task.sleep(for: .milliseconds(30))
+            let started = ContinuousClock.now
+            broker.close()
+            #expect(started.duration(to: .now) < .seconds(2))
+        }
+    }
+
     @Test("authenticated argv preserves live binary channels and exited or signaled status", arguments: [false, true])
     func outputAndStatus(_ signaled: Bool) async throws {
         let root = try makeRoot()

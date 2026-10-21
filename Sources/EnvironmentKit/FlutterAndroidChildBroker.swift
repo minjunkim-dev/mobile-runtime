@@ -128,8 +128,8 @@ private enum ChildBrokerWire {
     }
 }
 
-/// Every descriptor operation holds the lock, including the bounded poll. Closing
-/// cannot race a later operation onto a descriptor reused by another subsystem.
+/// Descriptor operations are locked. Readiness polling never blocks under that
+/// lock, so close can run between retries without racing a reused descriptor.
 private final class ChildBrokerSocket: @unchecked Sendable {
     private let lock = NSLock()
     private let writer = NSLock()
@@ -182,7 +182,7 @@ private final class ChildBrokerSocket: @unchecked Sendable {
             var observed: Int16 = 0
             let result = try access { descriptor in
                 var item = pollfd(fd: descriptor, events: Int16(events), revents: 0)
-                let result = Darwin.poll(&item, 1, 100)
+                let result = Darwin.poll(&item, 1, 0)
                 observed = item.revents
                 return result
             }
@@ -191,6 +191,7 @@ private final class ChildBrokerSocket: @unchecked Sendable {
                 return
             }
             if result.0 < 0, result.1 != EINTR { throw ChildBrokerError.closed }
+            if result.0 == 0 { Thread.sleep(forTimeInterval: 0.01) }
         }
     }
 
