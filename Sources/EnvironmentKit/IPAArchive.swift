@@ -164,7 +164,8 @@ enum IPAArchive {
             let size = UInt64(directory.u32(cursor + 24))
             guard method == 8 || compressedSize == size else { throw failure("The IPA stored entry sizes disagree: \(shown)") }
             // macOS ditto writes UTF-8 names without the UTF-8 flag; only strict UTF-8 is accepted.
-            guard let text = String(data: name, encoding: .utf8) else {
+            // The round trip refuses a leading byte-order mark that decoding would silently drop.
+            guard let text = String(data: name, encoding: .utf8), Data(text.utf8) == name else {
                 throw failure("The IPA entry name is not valid UTF-8: \(shown)")
             }
             let directoryName = text.hasSuffix("/")

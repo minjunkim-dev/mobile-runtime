@@ -61,7 +61,7 @@ struct IPAArchiveTests {
         "traversal", "absolute", "backslash", "escaping-link", "absolute-link", "chained-escape", "duplicate", "case-collision",
         "below-link", "below-file", "two-apps", "no-app", "payload-extra", "app-is-link", "special-file", "encrypted",
         "lying-size", "oversized", "overlap", "crc", "not-zip", "zip64", "name-mismatch", "unsupported-method",
-        "control-character", "colon", "payload-case", "local-size", "too-deep",
+        "control-character", "colon", "payload-case", "local-size", "too-deep", "byte-order-mark",
     ])
     func rejected(_ defect: String) throws {
         let repo = try FixtureRepo()
@@ -101,6 +101,7 @@ struct IPAArchiveTests {
         case "colon": entries.append(.file(app + "a:b", "x"))
         case "payload-case": entries.append(.file("payload/Y.app/Info.plist", "plist"))
         case "local-size": entries[0].localSize = 1
+        case "byte-order-mark": entries.append(.file("\u{FEFF}" + app + "bom", "x"))
         case "too-deep": entries.append(.file(app + Array(repeating: "d", count: 70).joined(separator: "/"), "x"))
         default: Issue.record("unknown defect \(defect)")
         }
@@ -118,7 +119,7 @@ struct IPAArchiveTests {
             "encrypted": "encrypted", "lying-size": "past its declared size", "oversized": "extraction limit",
             "overlap": "overlap", "crc": "CRC", "not-zip": "not a complete zip", "zip64": "ZIP64",
             "name-mismatch": "local header", "unsupported-method": "unsupported compression",
-            "payload-case": "ambiguous payload", "local-size": "local header", "too-deep": "absolute, escaping or malformed",
+            "payload-case": "ambiguous payload", "local-size": "local header", "too-deep": "absolute, escaping or malformed", "byte-order-mark": "not valid UTF-8",
         ][defect]
         #expect(reason != nil && error?.message.contains(reason!) == true, "\(defect): \(error?.message ?? "no error")")
         #expect(!FileManager.default.fileExists(atPath: repo.url("escaped").path))
