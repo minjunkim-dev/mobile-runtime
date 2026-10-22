@@ -8,9 +8,9 @@
 
 이 경로는 iOS Simulator `.app` 디렉터리와 Android Emulator의 단일 `.apk`를 받는다.
 iOS 실기기용 Development·Ad Hoc `.app`은 아래 [iOS 실기기 `.app`](#ios-실기기-app)의 같은 경로를 쓴다(#219).
+실기기용 `.ipa`는 [IPA](#ipa)에서 안전하게 추출한 `.app`을 같은 경로로 보낸다(#220).
 프로젝트 소스와 계정은 필요하지 않다. 소스 빌드와 환경 준비를 시작하지 않는다.
-IPA는 이 경로에서 받지 않는다. #199 AC12의 실기기 `.ipa` 압축 검사·추출은 별도 구현 범위다. 목록·보유 버전·설치 이력은 #220이다. 앱 콘솔은 #221이다.
-해당 형식과 기능은 이 경로에 추가하지 않는다.
+AAB·split APK 묶음·범용 압축 파일, 앱 목록·보유 버전·설치 이력과 앱 콘솔은 이 경로에 추가하지 않는다.
 
 ```sh
 mobile app inspect /path/Local.app --json
@@ -183,6 +183,36 @@ Runstir는 기기 등록·profile 생성·재서명·계정 입력·pairing 변�
 실행 관측은 `devicectl device info processes`에서 설치 위치 바로 아래 실행 파일의 process다.
 `/private/var`와 `/var` 표기를 같은 위치로 비교한다. 비교할 수 없는 위치는 중지가 아니라 확인 불가다.
 실패·취소 뒤 설치 상태 재관측은 위 경로와 같다. 연결이 끊기면 확인 불가로 남긴다.
+
+## IPA
+
+관련 구현 티켓은 [#220](https://github.com/minjunkim-dev/mobile-runtime/issues/220)이다.
+`.ipa`는 실기기 provider만 쓴다. 명령은 위 `.app`과 같다. 내용 식별값은 IPA 파일 바이트의 `sha256`이다.
+
+```sh
+mobile app inspect /path/Device.ipa --device DEVICE-UDID --json
+mobile app run /path/Device.ipa --device DEVICE-UDID --approve EXACT-PLAN-ID --non-interactive --json
+```
+
+압축을 풀기 전에 central directory의 모든 entry를 검사한다. 하나라도 부적합하면 아무것도 쓰지 않고 이유를 표시한다.
+
+- 절대경로, `..`·`.`·빈 경로 구성요소, 역슬래시, NUL, 1,024바이트 넘는 이름
+- 같은 이름과 대소문자·Unicode 정규화만 다른 이름, 파일·링크 아래의 entry
+- 일반 파일·디렉터리·symlink가 아닌 entry, 암호화, stored·deflate 이외의 압축
+- `Payload` 바로 아래가 `.app` 디렉터리 하나가 아닌 구조(없음·복수·다른 파일)
+- ZIP64·분할 archive, local header와 central directory의 불일치, 서로 겹치는 entry 데이터
+- 자원 한도: entry 100,000개, central directory 64 MiB, 풀린 크기 합계 8 GiB, 임시 volume 여유 공간
+
+추출은 작업 소유 임시 디렉터리(0700)에서 한다. `Payload/<이름>.app` 아래만 푼다. 그 밖의 entry는 검사만 하고 풀지 않는다.
+파일은 새로 만든다(`O_EXCL`·`O_NOFOLLOW`). 선언한 크기를 넘는 출력은 즉시 중단하고 크기와 CRC를 확인한다.
+권한은 rwx 비트를 보존한다. setuid·setgid·sticky는 제거한다. 읽기와 정리를 위해 파일에는 소유자 읽기·쓰기, 디렉터리에는 소유자 rwx를 더한다.
+symlink는 파일을 모두 쓴 뒤 만든다. 대상은 상대 경로이고 앱 안에 머물러야 한다.
+추출한 `.app`은 위 `.app`과 같은 외부·절대·dangling link와 특수 파일 검사를 다시 통과해야 한다.
+
+inspect는 IPA를 임시 위치에 풀어 metadata와 9개 조건을 읽고 그 위치를 지운다.
+승인 뒤 실행은 IPA를 작업 전용 stage에 복사하고 승인한 SHA-256과 비교한다. 그 사본에서 다시 풀어 metadata를 비교하고 그 `.app`만 설치한다.
+원본 IPA는 바꾸지 않는다. 재서명·기기 등록·계정 입력을 하지 않는다. 성공·실패·취소 모두 이 작업이 만든 임시 위치만 지운다.
+안전 parser fixture는 실제 Development·Ad Hoc IPA의 설치 증거가 아니다.
 
 ## 완료 판정에 필요한 실제 검증
 

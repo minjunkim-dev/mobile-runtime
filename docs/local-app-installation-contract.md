@@ -21,7 +21,7 @@ iOS 실기기의 첫 직접 설치는 Development·Ad Hoc으로 서명한 조건
 
 Development·Ad Hoc IPA는 대상 기기의 UDID가 provisioning profile에 포함돼야 한다. 개발자 계정에 기기를 등록해도 기존 IPA가 바뀌지는 않는다. 필요한 경우 해당 기기를 포함한 profile로 앱을 다시 서명·내보내야 한다. 신뢰·Developer Mode 등 해당 설치 경로의 조건도 충족해야 한다. Runstir는 기기 등록을 대행하거나 앱을 자동 재서명하지 않는다. 설치 조건을 갖추는 수동 단계에는 필요한 행동과 다시 확인을 제공한다.
 
-로컬 `devicectl` 도움말의 앱 설치 입력은 `.app`다. IPA 내부 `.app`의 추출·설치 경로는 후속 명세·구현·실제 검증에서 확인한다. 공식 플랫폼 설치 가능성이 Runstir 구현 완료의 증거는 아니다.
+로컬 `devicectl` 도움말의 앱 설치 입력은 `.app`다. IPA는 내부 `.app`을 안전하게 추출해 설치한다([앱 파일 직접 설치](./app-file-direct-install.md#ipa)). 실제 Development·Ad Hoc IPA 설치는 실제 검증에서 확인한다. 공식 플랫폼 설치 가능성이 Runstir 구현 완료의 증거는 아니다.
 
 ## 3. CLI·GUI와 소스 없는 흐름
 
