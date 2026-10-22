@@ -14,15 +14,18 @@ public struct EnvironmentInspection: Sendable {
                            platform: selection.platform == .android ? "android" : nil, selection: selection)
     }
 
+    /// `note` reports long steps that emit no check result, such as the protected SDK view.
     public static func run(input: ProjectInspectionInput, runner: (any ProcessRunner)? = nil,
-                           scheme: String? = nil, configuration: String? = nil) async throws -> Self {
+                           scheme: String? = nil, configuration: String? = nil,
+                           note: @Sendable (String) -> Void = { _ in }) async throws -> Self {
         try await run(input: input, runner: runner, scheme: scheme, configuration: configuration,
-                      flutterFactory: FlutterAndroidWorkflow.defaultFactory)
+                      flutterFactory: FlutterAndroidWorkflow.defaultFactory, note: note)
     }
 
     static func run(input: ProjectInspectionInput, runner: (any ProcessRunner)? = nil,
                     scheme: String? = nil, configuration: String? = nil,
-                    flutterFactory: FlutterAndroidWorkflow.Factory) async throws -> Self {
+                    flutterFactory: FlutterAndroidWorkflow.Factory,
+                    note: @Sendable (String) -> Void = { _ in }) async throws -> Self {
         let runner = runner ?? SystemProcessRunner(environment: input.environment, workingDirectory: input.directory)
         let selection = try input.selection()
         let anchor = selection.error == nil && selection.requiredInput.isEmpty
@@ -50,6 +53,7 @@ public struct EnvironmentInspection: Sendable {
         }
         let config = ConfigContext.detect(anchor: anchor, workingDirectory: input.directory).selecting(scheme: scheme)
         if let anchor, anchor.framework == .flutter, selection.platform == .android {
+            note(FlutterAndroidWorkflow.preparingViewDetail)
             do {
                 let flutter = try await FlutterAndroidWorkflow.make(input: input, anchor: anchor, runner: runner,
                     factory: flutterFactory)

@@ -103,7 +103,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         guard sender.attachedSheet == nil else { return false }
         let alert = NSAlert()
         alert.messageText = "이 창에서 작업이 진행 중입니다."
-        alert.informativeText = "작업을 계속하거나 취소가 완료된 뒤 창을 닫으세요. 완료한 설치와 기존 앱 데이터는 보존합니다."
+        alert.informativeText = """
+            현재 상태: \(session.statusText)
+            작업 계속은 창과 작업을 그대로 둡니다. 취소 후 닫기는 새 단계를 막고 실행 중인 도구가 반환된 뒤 창을 닫습니다.
+            완료한 설치, 실행한 모바일 앱과 기기는 창을 닫아도 종료하지 않습니다. 앱을 종료하려면 이 창의 종료(down)를 사용하세요.
+            """
         alert.addButton(withTitle: "작업 계속")
         alert.addButton(withTitle: "취소 후 닫기")
         alert.beginSheetModal(for: sender) { response in
@@ -120,8 +124,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         guard !active.isEmpty else { return .terminateNow }
         let alert = NSAlert()
         alert.messageText = "\(active.count)개 작업이 진행 중입니다."
-        let titles = sender.windows.filter { sessions[ObjectIdentifier($0)]?.task != nil }.map(\.title)
-        alert.informativeText = titles.joined(separator: "\n") + "\n모든 작업의 취소와 보존 처리가 끝난 뒤 종료합니다. 실행을 마친 모바일 앱과 기기는 종료하지 않습니다."
+        let lines = sender.windows.compactMap { window in
+            sessions[ObjectIdentifier(window)].flatMap { $0.task == nil ? nil : "\(window.title) — \($0.statusText)" }
+        }
+        alert.informativeText = lines.joined(separator: "\n")
+            + "\n작업 계속은 Runstir와 모든 작업을 유지합니다. 모두 취소 후 종료는 새 단계를 막고 모든 도구가 반환될 때까지 창을 유지한 뒤 종료합니다. 실행을 마친 모바일 앱과 기기는 종료하지 않습니다."
         alert.addButton(withTitle: "작업 계속")
         alert.addButton(withTitle: "모두 취소 후 종료")
         guard alert.runModal() == .alertSecondButtonReturn else { return .terminateCancel }
@@ -147,7 +154,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
 }
 
+extension GUIOperationSession {
+    /// Cancellation names the step still returning instead of claiming a stop it cannot force.
+    var statusText: String {
+        guard cancelling else { return progress }
+        return "취소 요청됨. 새 단계를 시작하지 않고 실행 중인 도구가 반환될 때까지 기다립니다."
+            + (progress.isEmpty ? "" : " 현재 단계: \(progress)")
+    }
+}
+
+/// VoiceOver hears results and state changes without moving the keyboard focus.
+@MainActor func announce(_ text: String) {
+    AccessibilityNotification.Announcement(text).post()
+}
+
 struct InspectionView: View {
+    private enum Field: Hashable { case app, platform, device, scheme, configuration, module, variant, port, trust, recheck, approve }
+    private enum Region: Hashable { case inspection, preparation, workflow }
     let directory: URL
     let session: GUIOperationSession
     @State private var app = ""
@@ -164,13 +187,17 @@ struct InspectionView: View {
     @State private var port = ""
     @State private var workflow: WorkflowResult?
     private var running: Task<Void, Never>? { session.task }
-    @State private var currentStage = ""
     @State private var events: [WorkflowEvent] = []
     private var cancelling: Bool { session.cancelling }
     @State private var executionID: UUID?
     @State private var devices: [RuntimeDeviceCandidate] = []
     @State private var preparation: PreparationResult?
     @State private var repositoryTrusted = false
+    @FocusState private var focus: Field?
+    /// Controls stay disabled until the session ends, so focus moves only once the window is idle.
+    @State private var nextFocus: Field?
+    @AccessibilityFocusState private var resultFocus: Region?
+    private var busy: Bool { checking || running != nil || !session.acceptsNewOperations }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -181,13 +208,15 @@ struct InspectionView: View {
                     ForEach(result?.selection.candidates ?? [], id: \.id) { candidate in
                         Text("\(candidate.id) · \(candidate.framework.displayName)").tag(candidate.id)
                     }
-                }.disabled(checking || running != nil)
+                }.disabled(busy).focused($focus, equals: .app)
                 Picker("플랫폼", selection: $platform) {
                     Text("자동 선택").tag("")
                     Text("iOS").tag("ios")
                     Text("Android").tag("android")
-                }.disabled(checking || running != nil)
-                Button("환경 확인") { inspect() }.keyboardShortcut("r").disabled(checking || running != nil)
+                }.disabled(busy).focused($focus, equals: .platform)
+                Button(result == nil ? "환경 확인" : "환경 다시 확인") { inspect() }.keyboardShortcut("r").disabled(busy)
+                    .focused($focus, equals: .recheck)
+                    .accessibilityHint("선택한 앱과 플랫폼의 현재 상태를 다시 확인합니다. 변경하지 않습니다.")
             }
             HStack {
                 Picker("기기", selection: $device) {
@@ -195,34 +224,39 @@ struct InspectionView: View {
                     ForEach(devices, id: \.id) { candidate in
                         Text("\(candidate.name) / \(candidate.detail)").tag(candidate.id)
                     }
-                }
+                }.focused($focus, equals: .device)
                 if platform == "android" || (platform.isEmpty && result?.selection.platform == .android) {
-                    TextField("Module (설정 또는 단일 후보)", text: $module)
-                    TextField("Variant (설정 또는 debug)", text: $variant)
+                    TextField("Module (설정 또는 단일 후보)", text: $module).focused($focus, equals: .module)
+                    TextField("Variant (설정 또는 debug)", text: $variant).focused($focus, equals: .variant)
                 } else {
-                    TextField("Scheme (설정 또는 단일 후보)", text: $scheme)
-                    TextField("Configuration (Debug)", text: $configuration)
+                    TextField("Scheme (설정 또는 단일 후보)", text: $scheme).focused($focus, equals: .scheme)
+                    TextField("Configuration (Debug)", text: $configuration).focused($focus, equals: .configuration)
                 }
-            }.disabled(checking || running != nil)
+            }.disabled(busy)
             if result?.selection.selected?.framework == .reactNative {
-                TextField("Metro port (8081)", text: $port).disabled(checking || running != nil)
+                TextField("Metro port (8081)", text: $port).disabled(busy).focused($focus, equals: .port)
             } else if result?.selection.selected?.framework == .flutter {
                 HStack {
                     TextField("Entrypoint (lib/main.dart)", text: $entrypoint)
-                    TextField("VM service port (자동 선택)", text: $port)
-                }.disabled(checking || running != nil)
+                    TextField("VM service port (자동 선택)", text: $port).focused($focus, equals: .port)
+                }.disabled(busy)
             }
             HStack {
-                Button("준비 계획 확인") { prepare() }.disabled(checking || running != nil)
+                Button("준비 계획 확인") { prepare() }.disabled(busy)
                 Toggle("저장소 스크립트 신뢰", isOn: $repositoryTrusted)
                     .help("준비 승인과 별개입니다. 라이선스 동의와 관리자 권한을 대신하지 않습니다.")
-                    .disabled(checking || running != nil)
+                    .disabled(busy).focused($focus, equals: .trust)
                 Button("현재 계획 승인·준비") { prepare(approvedPlanID: preparation?.plan?.id) }
-                    .disabled(checking || running != nil || preparation?.plan == nil)
+                    .disabled(busy || preparation?.plan == nil).focused($focus, equals: .approve)
+                    .accessibilityHint(preparation?.plan.map { "plan-id \($0.id)만 승인합니다. 저장소 신뢰는 별도입니다." } ?? "먼저 준비 계획을 확인하세요.")
             }
             if let preparation {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("setup: \(preparation.operation.state) / exit \(preparation.exitCode)").font(.headline)
+                        .accessibilityAddTraits(.isHeader).accessibilityFocused($resultFocus, equals: .preparation)
+                    if preparation.operation.state == "waiting-manual" {
+                        Text("수동 대기: 아래 단계를 직접 마친 뒤 환경 다시 확인과 준비 계획 확인을 실행하세요.")
+                    }
                     if let plan = preparation.plan {
                         Text("승인 대상 plan-id: \(plan.id)").font(.caption)
                         Text("\(plan.projectKind) 준비 대상: \(plan.platforms.map { $0.platform.rawValue }.joined(separator: ", "))")
@@ -239,7 +273,7 @@ struct InspectionView: View {
                         }.frame(height: 150)
                         Text(plan.platforms.map { "\($0.platform.rawValue): \($0.state)" }.joined(separator: " / "))
                     }
-                    if let error = preparation.operation.error { Text(error).foregroundStyle(.red) }
+                    if let error = preparation.operation.error { Text("실패: \(error)").foregroundStyle(.red) }
                     if !preparation.operation.completed.isEmpty { Text("완료한 변경: \(preparation.operation.completed.joined(separator: ", "))") }
                     if !preparation.operation.remaining.isEmpty { Text("남은 작업: \(preparation.operation.remaining.joined(separator: ", "))") }
                     ForEach(preparation.operation.changedFiles, id: \.self) { Text("변경 파일: \($0)") }
@@ -248,19 +282,22 @@ struct InspectionView: View {
                 }.textSelection(.enabled)
             }
             HStack {
-                Button("빌드") { execute(.build) }.disabled(checking || running != nil)
-                Button("실행") { execute(.up) }.disabled(checking || running != nil)
-                Button("종료") { execute(.down) }.disabled(checking || running != nil)
+                Button("빌드") { execute(.build) }.disabled(busy)
+                Button("실행") { execute(.up) }.disabled(busy)
+                Button("종료") { execute(.down) }.disabled(busy)
+                    .accessibilityHint("이 프로젝트가 기록한 앱과 개발 서버를 down 소유권 규칙으로 종료합니다. 작업 취소와 다릅니다.")
                 if running != nil {
-                    ProgressView().controlSize(.small)
-                    Text(cancelling ? "취소 중" : currentStage)
-                    Button("작업 취소") { session.cancel() }.disabled(cancelling)
+                    ProgressView().controlSize(.small).accessibilityHidden(true)
+                    Text(session.statusText).accessibilityLabel("작업 상태").accessibilityValue(session.statusText)
+                    Button("작업 취소") { cancel() }.disabled(cancelling)
+                        .accessibilityHint("이 창의 작업만 새 단계를 막습니다. 완료한 변경과 다른 창의 작업은 보존합니다.")
                 }
             }
             if let workflow {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("\(workflow.operation.kind.rawValue): \(workflow.operation.state) / exit \(workflow.exitCode)").font(.headline)
-                    if let message = workflow.up?.failure?.message ?? workflow.down?.failure?.message { Text(message).foregroundStyle(.red) }
+                        .accessibilityAddTraits(.isHeader).accessibilityFocused($resultFocus, equals: .workflow)
+                    if let message = workflow.up?.failure?.message ?? workflow.down?.failure?.message { Text("실패: \(message)").foregroundStyle(.red) }
                     ForEach(workflow.down?.toolFailures ?? [], id: \.self) { Text($0).foregroundStyle(.red) }
                     ForEach(workflow.down?.items ?? [], id: \.id) { item in
                         Text("\(item.id): \(item.status.rawValue)\(item.detail.map { " — \($0)" } ?? "")")
@@ -285,13 +322,14 @@ struct InspectionView: View {
                     }.frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled)
                 }.frame(maxHeight: 130)
             }
-            if checking { ProgressView("환경 확인 중") }
-            if let error { Text(error).foregroundStyle(.red).textSelection(.enabled) }
+            if let error { Text("실패: \(error)").foregroundStyle(.red).textSelection(.enabled) }
             if let result {
+                Text(inspectionSummary(result)).font(.headline)
+                    .accessibilityAddTraits(.isHeader).accessibilityFocused($resultFocus, equals: .inspection)
                 if let selected = result.selection.selected {
                     Text("검사 대상: \(selected.id) / \(result.selection.platform?.rawValue ?? "플랫폼 선택 필요")")
                 }
-                if let selectionError = result.selection.error { Text(selectionError).foregroundStyle(.red) }
+                if let selectionError = result.selection.error { Text("실패: \(selectionError)").foregroundStyle(.red) }
                 if !result.selection.requiredInput.isEmpty {
                     Text("선택 필요: \(result.selection.requiredInput.joined(separator: ", "))")
                 }
@@ -308,7 +346,7 @@ struct InspectionView: View {
                                     Text(remediation.summary)
                                     if let command = remediation.command { Text(command).font(.system(.body, design: .monospaced)) }
                                 }
-                            }.frame(maxWidth: .infinity, alignment: .leading)
+                            }.frame(maxWidth: .infinity, alignment: .leading).accessibilityElement(children: .combine)
                         }
                     }.textSelection(.enabled)
                 }
@@ -326,27 +364,62 @@ struct InspectionView: View {
                 scheme = ""; configuration = ""; module = ""; variant = ""
                 entrypoint = ""; port = ""
             }
+            .onChange(of: busy) { _, busy in
+                if !busy, let nextFocus { focus = nextFocus; self.nextFocus = nil }
+            }
             .onDisappear { session.cancel() }
     }
 
     @MainActor private func inspect() {
-        guard !checking, running == nil else { return }
+        guard !busy else { return }
         checking = true
         error = nil
         let environment = ProcessInfo.processInfo.environment
         let input = ProjectInspectionInput(directory: directory, environment: environment,
                                            app: app.isEmpty ? nil : app, platform: ProjectPlatform(rawValue: platform),
                                            entrypoint: entrypoint.isEmpty ? nil : entrypoint)
+        let generation = UUID()
+        executionID = generation
+        session.progress = "환경 확인 중"
         session.start {
             defer { checking = false }
-            do { result = try await EnvironmentInspection.run(input: input,
-                scheme: scheme.isEmpty ? nil : scheme, configuration: configuration.isEmpty ? nil : configuration) }
-            catch { self.error = error.localizedDescription }
+            do {
+                let inspection = try await EnvironmentInspection.run(input: input,
+                    scheme: scheme.isEmpty ? nil : scheme, configuration: configuration.isEmpty ? nil : configuration) { detail in
+                    Task { @MainActor in if executionID == generation, session.task != nil { session.progress = "환경 확인 중 — \(detail)" } }
+                }
+                result = inspection
+                nextFocus = field(for: inspection.selection.requiredInput) ?? .recheck
+                resultFocus = .inspection
+                announce(inspectionSummary(inspection))
+            } catch {
+                self.error = error.localizedDescription
+                nextFocus = .recheck
+                announce("환경 확인 실패: \(error.localizedDescription)")
+            }
         }
     }
 
+    private func inspectionSummary(_ result: EnvironmentInspection) -> String {
+        if result.selection.error != nil { return "환경 확인: 선택 오류" }
+        if !result.selection.requiredInput.isEmpty { return "환경 확인: 선택 필요 \(result.selection.requiredInput.joined(separator: ", "))" }
+        let count = { (status: CheckStatus) in result.report.checks.filter { $0.status == status }.count }
+        return "환경 확인: exit \(result.exitCode) · error \(count(.error)) · warning \(count(.warning)) · unknown \(count(.unknown))"
+    }
+
+    private func field(for input: [String]) -> Field? {
+        let fields: [String: Field] = ["--app": .app, "--platform": .platform, "--device": .device, "--scheme": .scheme,
+            "--configuration": .configuration, "--module": .module, "--variant": .variant, "--trust-repository": .trust]
+        return input.lazy.compactMap { fields[$0] }.first
+    }
+
+    @MainActor private func cancel() {
+        session.cancel()
+        announce(session.statusText)
+    }
+
     @MainActor private func execute(_ kind: WorkflowKind) {
-        guard !checking, running == nil else { return }
+        guard !busy else { return }
         let selectedPlatform = ProjectPlatform(rawValue: platform) ?? result?.selection.platform
         let usesPort = kind == .up || (kind == .build && result?.selection.selected?.framework == .reactNative)
         if usesPort, !port.isEmpty, Int(port).map({ (1...65535).contains($0) }) != true {
@@ -356,7 +429,7 @@ struct InspectionView: View {
         error = nil
         workflow = nil
         events = []
-        currentStage = "선택과 환경 확인"
+        session.progress = "선택과 환경 확인"
         let generation = UUID()
         executionID = generation
         let input = WorkflowInput(project: ProjectInspectionInput(directory: directory,
@@ -374,23 +447,30 @@ struct InspectionView: View {
                     guard executionID == generation else { return }
                     events.append(event)
                     if events.count > 30 { events.removeFirst(events.count - 30) }
-                    if let stage = event.stageId { currentStage = "\(stage): \(event.state)" }
+                    session.record(event)
                 }
             }
             workflow = output
             if !output.operation.devices.isEmpty { devices = output.operation.devices }
+            switch output.operation.state {
+            case "needs-selection": nextFocus = field(for: output.operation.requiredInput) ?? .recheck
+            case "succeeded": break
+            default: nextFocus = .recheck
+            }
+            resultFocus = .workflow
+            announce("\(output.operation.kind.rawValue): \(output.operation.state), exit \(output.exitCode)")
         }
     }
 
     @MainActor private func prepare(approvedPlanID: String? = nil) {
-        guard !checking, running == nil else { return }
+        guard !busy else { return }
         let input = ProjectInspectionInput(directory: directory, environment: ProcessInfo.processInfo.environment,
             app: app.isEmpty ? nil : app, platform: ProjectPlatform(rawValue: platform),
                                            entrypoint: entrypoint.isEmpty ? nil : entrypoint)
         let trust = repositoryTrusted
         let generation = UUID()
         executionID = generation
-        events = []; currentStage = "준비 조건 확인"
+        events = []; session.progress = "준비 조건 확인"
         session.start {
             let output = await PreparationExecution.run(input: input, planOnly: approvedPlanID == nil,
                 approvedPlanID: approvedPlanID, trustRepository: trust) { event in
@@ -398,11 +478,20 @@ struct InspectionView: View {
                     guard executionID == generation else { return }
                     events.append(event)
                     if events.count > 30 { events.removeFirst(events.count - 30) }
-                    currentStage = "\(event.stageId ?? event.kind): \(event.state)"
+                    session.record(event)
                 }
             }
             guard executionID == generation else { return }
             preparation = output
+            switch output.operation.state {
+            case "needs-approval": nextFocus = output.plan == nil ? .recheck : .approve
+            case "needs-selection": nextFocus = field(for: output.operation.requiredInput) ?? .recheck
+            case "waiting-manual": nextFocus = field(for: output.operation.requiredInput) ?? .recheck
+            case "succeeded": break
+            default: nextFocus = .recheck
+            }
+            resultFocus = .preparation
+            announce("setup: \(output.operation.state), exit \(output.exitCode)")
         }
     }
 }

@@ -203,12 +203,36 @@ struct FlutterAndroidWorkflowTests {
         let result = await task.value
         // The long view preparation is visible before any stage reports.
         #expect(eventsBeforeView.value.map(\.kind) == ["started", "detail"])
-        #expect(eventsBeforeView.value.last?.detail == "Preparing the protected Flutter Android SDK view")
+        #expect(eventsBeforeView.value.last?.detail == FlutterAndroidWorkflow.preparingViewDetail)
         #expect(result.operation.state == "cancelled")
         #expect(result.exitCode == 130)
         #expect(trace.count == 1)
         #expect(FileManager.default.fileExists(atPath: fixture.view.path))
         #expect(!fixture.runner.log.all.contains { $0.executable == "./gradlew" })
+    }
+
+    @Test("doctor and setup report the SDK view preparation before the factory runs", arguments: ["doctor", "setup"])
+    func viewPreparationReported(_ caller: String) async throws {
+        let fixture = try CallerFixture()
+        let trace = Trace()
+        let factory = fixture.factory(trace)
+        let reported = Mutable<[String]>([])
+        let reportedBeforeView = Mutable<[String]>([])
+        let wrapped: FlutterAndroidWorkflow.Factory = { app, preparation, files in
+            reportedBeforeView.value = reported.value
+            return try factory(app, preparation, files)
+        }
+        if caller == "doctor" {
+            _ = try await EnvironmentInspection.run(input: fixture.input, runner: fixture.runner,
+                flutterFactory: wrapped) { detail in reported.mutate { $0.append(detail) } }
+        } else {
+            _ = await PreparationExecution.run(input: fixture.input, planOnly: true, runner: fixture.runner,
+                leases: fixture.leases, flutterFactory: wrapped) { event in
+                    if event.kind == "detail", let detail = event.detail { reported.mutate { $0.append(detail) } }
+                }
+        }
+        #expect(trace.count >= 1)
+        #expect(reportedBeforeView.value.last == FlutterAndroidWorkflow.preparingViewDetail)
     }
 
     @Test("RN and native Android callers never enter the Flutter factory", arguments: ["rn", "native"])

@@ -1,3 +1,4 @@
+import Core
 import Foundation
 import Observation
 
@@ -7,6 +8,8 @@ public final class GUIOperationSession {
     public private(set) var task: Task<Void, Never>?
     public private(set) var cancelling = false
     public private(set) var acceptsNewOperations = true
+    /// The latest progress line. While cancelling it names the step whose tool has not returned.
+    public var progress = ""
     @ObservationIgnored private var generation: UUID?
     @ObservationIgnored private var completions: [@MainActor () -> Void] = []
 
@@ -38,6 +41,11 @@ public final class GUIOperationSession {
     }
 
     public func stopAcceptingNewOperations() { acceptsNewOperations = false }
+
+    /// Event lines use the CLI progress format; the GUI does not reword Core details.
+    public func record(_ event: WorkflowEvent) {
+        progress = "\(event.stageId ?? event.kind): \(event.state)\(event.detail.map { " — \($0)" } ?? "")"
+    }
 
     public func cancelAndWait() async {
         await withCheckedContinuation { continuation in
