@@ -8,11 +8,16 @@ public struct RuntimeDeviceCandidate: Codable, Sendable, Equatable {
     public let id: String
     public let name: String
     public let detail: String
+    /// The AVD folder this listing read, from the selected AVD home. Android only.
+    public let avdFolder: String?
+    /// Virtual devices only (ADR-0045).
+    public var origin: DeviceOrigin?
 
-    public init(id: String, name: String, detail: String) {
+    public init(id: String, name: String, detail: String, avdFolder: String? = nil) {
         self.id = id
         self.name = name
         self.detail = detail
+        self.avdFolder = avdFolder
     }
 }
 

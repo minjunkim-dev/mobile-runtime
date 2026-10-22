@@ -129,7 +129,7 @@ public struct AndroidAppFile: Sendable {
                     os: avd.apiLevel.map(String.init) ?? "unknown", architectures: avd.abi.map { [$0] } ?? [],
                     ready: false, toolIdentity: toolIdentity,
                     architectureSource: "AVD \(avd.config?.path ?? "config missing") abi.type; system image \(avd.systemImageDirectory?.path ?? "missing"); not measured device CPU",
-                    boot: bootable ? "required" : nil))
+                    boot: bootable ? "required" : nil, avdFolder: avd.directory?.path))
             }
         }
         guard Set(devices.map(\.id)).count == devices.count else {
@@ -200,7 +200,7 @@ public struct AndroidAppFile: Sendable {
             devices.append(AppFileDevice(id: "avd:" + name, handle: serial, name: name, os: ready.map { String($0.api) } ?? "unknown",
                 architectures: abis,
                 ready: ready != nil && abis.allSatisfy({ ["arm64-v8a", "armeabi-v7a", "armeabi", "x86", "x86_64"].contains($0) }),
-                toolIdentity: toolIdentity))
+                toolIdentity: toolIdentity, avdFolder: environment.avds(names: [name], sdk: sdk).first?.directory?.path))
         }
         return (devices, names)
     }

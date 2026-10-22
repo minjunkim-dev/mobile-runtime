@@ -241,7 +241,7 @@ struct InspectionView: View {
                 Picker("기기", selection: $device) {
                     Text("설정 또는 단일 후보").tag("")
                     ForEach(devices, id: \.id) { candidate in
-                        Text("\(candidate.name) / \(candidate.detail)").tag(candidate.id)
+                        Text("\(candidate.name) / \(candidate.detail)\(candidate.origin.map { " / \($0.title)" } ?? "")\(candidate.avdFolder.map { " / AVD 폴더 \($0)" } ?? "")").tag(candidate.id)
                     }
                 }.focused($focus, equals: .device)
                 if platform == "android" || (platform.isEmpty && result?.selection.platform == .android) {
@@ -516,6 +516,17 @@ struct InspectionView: View {
             }
             resultFocus = .preparation
             announce("setup: \(output.operation.state), exit \(output.exitCode)")
+        }
+    }
+}
+
+extension DeviceOrigin {
+    /// CONTEXT.md terms; the CLI uses `label`.
+    var title: String {
+        switch self {
+        case .runstirCreated: "Runstir가 만듦"
+        case .external: "외부 기기"
+        case .unknown: "출처 불명"
         }
     }
 }

@@ -18,6 +18,10 @@ struct AndroidEmulatorSetupTests {
         let diagnostic = try result.encoded(toolVersion: "fixture")
         #expect(result.operation.completed.contains("android.virtual-device.create"), Comment(rawValue: diagnostic))
         #expect(result.operation.androidResources?.first?.origin == .created)
+        let created = try #require(result.operation.androidResources?.first)
+        let record = DeviceOriginRecord(environment: fixture.sdk.input.environment)
+        #expect(record.devices() == [try #require(DeviceOriginRecord.Device.avd(name: created.name, folder: created.directory))])
+        #expect(record.origin(platform: .android, id: created.name, folder: created.directory.path) == .runstirCreated)
         let again = await PreparationExecution.run(input: fixture.sdk.input, planOnly: true, runner: fixture.runner)
         let reuseDiagnostic = try again.encoded(toolVersion: "fixture")
         #expect(again.plan?.androidResources?.first?.origin == .reused, Comment(rawValue: reuseDiagnostic))
@@ -57,6 +61,7 @@ struct AndroidEmulatorSetupTests {
         #expect(result.operation.state == "failed")
         #expect(fixture.runner.creator.commands.filter { $0.arguments.contains("create") }.count == 1)
         #expect(!FileManager.default.fileExists(atPath: fixture.sdk.repo.url("avds/Runstir_API_35_google_apis_arm64.ini").path))
+        #expect(!FileManager.default.fileExists(atPath: DeviceOriginRecord(environment: fixture.sdk.input.environment).file.path))
         #expect(try String(contentsOf: fixture.image.appendingPathComponent("devices.xml"), encoding: .utf8) == "changed boot properties")
     }
 

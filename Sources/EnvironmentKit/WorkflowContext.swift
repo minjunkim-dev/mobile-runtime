@@ -121,7 +121,8 @@ public struct WorkflowContext: Sendable {
             uniquePaths.append(path.standardizedFileURL)
         }
         let workspaceChecks: [any Check] = [
-            WorkspaceAccessCheck(paths: uniquePaths, unresolvedCache: unresolvedCache), WorkspaceStorageCheck(paths: uniquePaths)
+            WorkspaceAccessCheck(paths: uniquePaths, unresolvedCache: unresolvedCache), WorkspaceStorageCheck(paths: uniquePaths),
+            DeviceOriginRecordCheck(record: DeviceOriginRecord(environment: input.environment))
         ]
         let checks: [any Check]
         var androidContext: AndroidDoctorContext?

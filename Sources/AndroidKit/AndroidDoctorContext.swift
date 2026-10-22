@@ -51,7 +51,8 @@ public struct AndroidEnvironment: Sendable {
                 config: FileManager.default.fileExists(atPath: config.path) ? config : nil,
                 systemImagePresent: !image.isEmpty
                     && FileManager.default.fileExists(atPath: imageDirectory.path),
-                systemImageDirectory: image.isEmpty ? nil : imageDirectory
+                systemImageDirectory: image.isEmpty ? nil : imageDirectory,
+                directory: directory
             )
         }
     }
@@ -200,6 +201,7 @@ struct AndroidAVD: Sendable, Equatable {
     let config: URL?
     let systemImagePresent: Bool
     let systemImageDirectory: URL?
+    var directory: URL? = nil
 }
 
 public actor AndroidDoctorContext {

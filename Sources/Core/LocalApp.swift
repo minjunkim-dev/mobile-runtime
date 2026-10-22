@@ -156,11 +156,16 @@ public struct AppFileDevice: Codable, Sendable, Equatable {
     public let connection: String?
     /// `required`: a shut-down virtual device that Runstir boots after approval. nil otherwise.
     public let boot: String?
+    /// The AVD folder this listing read, from the selected AVD home. Android only.
+    public let avdFolder: String?
+    /// Virtual devices only (ADR-0045).
+    public var origin: DeviceOrigin?
 
     public init(id: String, handle: String, name: String, os: String, architectures: [String],
                 ready: Bool, toolIdentity: String, runtimeIdentifier: String? = nil,
                 runtimeBuild: String? = nil, runtimeAvailable: Bool? = nil, architectureSource: String? = nil,
-                pairing: String? = nil, developerMode: String? = nil, connection: String? = nil, boot: String? = nil) {
+                pairing: String? = nil, developerMode: String? = nil, connection: String? = nil, boot: String? = nil,
+                avdFolder: String? = nil) {
         self.id = id
         self.handle = handle
         self.name = name
@@ -176,6 +181,7 @@ public struct AppFileDevice: Codable, Sendable, Equatable {
         self.developerMode = developerMode
         self.connection = connection
         self.boot = boot
+        self.avdFolder = avdFolder
     }
 }
 

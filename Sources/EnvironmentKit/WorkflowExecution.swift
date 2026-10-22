@@ -160,7 +160,7 @@ public enum WorkflowExecution {
                         flutterSDKRoot: wiring.flutter?.sdk?.root)
                     operation.schemes = choices.schemes
                     operation.configurations = choices.configurations
-                    operation.devices = choices.devices
+                    operation.devices = DeviceOriginRecord(environment: input.project.environment).annotate(choices.devices, platform: .ios)
                     operation.scheme = config.configuration?.scheme ?? (choices.schemes.count == 1 ? choices.schemes.first : nil)
                     if let scheme = operation.scheme, !choices.schemes.contains(scheme) {
                         throw selectionFailure("Unknown scheme: \(scheme). Select a listed scheme.")
@@ -192,8 +192,9 @@ public enum WorkflowExecution {
                     operation.requiredInput += target.requiredInput
                     config = config.selecting(module: target.module, variant: target.variant)
                     if kind == .up {
-                        operation.devices = try await androidWorkflowDevices(anchor: anchor, config: config, runner: runner,
-                            environment: AndroidEnvironment(values: input.project.environment))
+                        operation.devices = DeviceOriginRecord(environment: input.project.environment).annotate(
+                            try await androidWorkflowDevices(anchor: anchor, config: config, runner: runner,
+                                environment: AndroidEnvironment(values: input.project.environment)), platform: .android)
                         operation.device = input.device ?? config.configuration?.androidAVD.map { "avd:\($0)" }
                         if operation.device == nil && operation.devices.count == 1 { operation.device = operation.devices.first?.id }
                         try selectDevice(&operation)

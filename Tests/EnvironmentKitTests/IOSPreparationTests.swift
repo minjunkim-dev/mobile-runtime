@@ -39,11 +39,29 @@ struct IOSPreparationTests {
         let resources = try #require(operation["resources"] as? [[String: Any]])
         #expect(resources.contains { $0["identifier"] as? String == created.identifier })
         #expect(runner.creations == 1)
+        #expect(DeviceOriginRecord(environment: fixture.input.environment).devices() == [.simulator("B38C3447-963B-42CB-959F-F5234F5A1092")])
         let retry = await PreparationExecution.run(input: fixture.input, planOnly: true, runner: runner)
         #expect(try #require(retry.plan).steps.contains { $0.id == "ios.simulator.create" } == false)
         #expect(retry.plan?.resources?.contains { $0.identifier == created.identifier && $0.origin == .reused } == true)
         #expect(!runner.log.contains { ["boot", "delete", "erase", "shutdown"].contains(where: $0.arguments.contains) })
         try fixture.assertPreserved()
+    }
+
+    @Test("an unreadable origin record leaves the created Simulator and reports partial completion")
+    func unreadableOriginRecord() async throws {
+        let fixture = try IOSPreparationFixture()
+        let runner = IOSPreparationRunner(fixture)
+        let record = DeviceOriginRecord(environment: fixture.input.environment)
+        try FileManager.default.createDirectory(at: record.file.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data("damaged".utf8).write(to: record.file)
+        let plan = await PreparationExecution.run(input: fixture.input, planOnly: true, runner: runner)
+        let done = await PreparationExecution.run(input: fixture.input, approvedPlanID: try #require(plan.plan?.id),
+            trustRepository: true, runner: runner, leases: fixture.leases)
+        #expect(done.operation.completed.contains("ios.simulator.create"))
+        #expect(done.operation.state == "partial" && done.exitCode == 1)
+        #expect(done.operation.error?.contains("B38C3447-963B-42CB-959F-F5234F5A1092") == true)
+        #expect(try String(contentsOf: record.file, encoding: .utf8) == "damaged")
+        #expect(!runner.log.contains { ["boot", "delete", "erase", "shutdown"].contains(where: $0.arguments.contains) })
     }
 
     @Test("a missing runtime is installed before native compatibility permits a new Simulator approval")
@@ -217,6 +235,7 @@ struct IOSPreparationTests {
         #expect(observed.state == (fault.after ? "Shutdown" : "unknown"))
         #expect(observed.origin == .unknown)
         #expect(runner.creations == 1)
+        #expect(!FileManager.default.fileExists(atPath: DeviceOriginRecord(environment: fixture.input.environment).file.path))
         let retry = await PreparationExecution.run(input: fixture.input, planOnly: true, runner: runner)
         #expect(retry.plan?.steps.contains { $0.id == "ios.simulator.create" } == false)
         if !fault.after {

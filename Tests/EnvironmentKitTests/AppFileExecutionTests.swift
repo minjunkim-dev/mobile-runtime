@@ -880,6 +880,24 @@ struct AppFileExecutionTests {
         #expect(result.operation.installation == "not-requested")
     }
 
+    @Test("app-file virtual devices show their recorded origin and the AVD folder", arguments: [ProjectPlatform.ios, .android])
+    func deviceOrigin(_ platform: ProjectPlatform) async throws {
+        let fixture = try AppFileFixture(platform: platform, shutDown: platform == .android)
+        let record = DeviceOriginRecord(environment: fixture.environment)
+        let external = await fixture.run(inspectOnly: true, selected: false)
+        #expect(external.operation.devices.map(\.origin) == [.external])
+        if platform == .ios {
+            try record.record(.simulator(fixture.device))
+        } else {
+            try record.record(try #require(DeviceOriginRecord.Device.avd(name: "Fixture", folder: fixture.repo.url("avd/Fixture.avd"))))
+        }
+        let created = await fixture.run(inspectOnly: true, selected: false)
+        let device = try #require(created.operation.devices.first)
+        #expect(device.origin == .runstirCreated)
+        #expect(device.avdFolder == (platform == .android ? fixture.repo.url("avd/Fixture.avd").path : nil))
+        #expect(AppFileHumanOutput.lines(created).output.contains { $0.hasPrefix("device: \(fixture.device)") && $0.contains("Runstir-created") })
+    }
+
     @Test("an unreadable AVD inventory keeps running Emulators and only drops boot candidates")
     func unlistableAVDs() async throws {
         let fixture = try AppFileFixture(platform: .android, shutDown: true)
@@ -971,7 +989,7 @@ private final class AppFileFixture {
                 "CFBundleExecutable": "Program", "CFBundleVersion": "2", "CFBundleShortVersionString": "1.2",
                 "CFBundleName": "Local", "MinimumOSVersion": "17.0", "CFBundleSupportedPlatforms": ["iPhoneSimulator"]]
             try PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0).write(to: file.appendingPathComponent("Info.plist"))
-            environment = [:]
+            environment = ["HOME": repo.url("home").path]
             device = "FIXTURE-UDID"
         } else {
             file = try repo.write("Local.apk", "approved bytes")
@@ -983,7 +1001,7 @@ private final class AppFileFixture {
             }
             let java = try repo.write("jdk/bin/java", "fixture boundary; never executed")
             try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: java.path)
-            var values = ["ANDROID_HOME": sdk.path, "JAVA_HOME": repo.url("jdk").path]
+            var values = ["ANDROID_HOME": sdk.path, "JAVA_HOME": repo.url("jdk").path, "HOME": repo.url("home").path]
             if shutDown {
                 let emulator = try repo.write("sdk/emulator/emulator", "fixture boundary; never executed")
                 try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: emulator.path)

@@ -84,12 +84,15 @@ struct WorkflowExecutionTests {
         let repo = try iosProject()
         var runner = try iosRunner(repo)
         runner.responses["xcrun simctl list devices -j"] = .ok(#"{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-27-0":[{"name":"iPhone A","udid":"A","state":"Booted","isAvailable":true},{"name":"iPhone B","udid":"B","state":"Shutdown","isAvailable":true}]}}"#)
+        let environment = ["HOME": repo.url("home").path]
+        try DeviceOriginRecord(environment: environment).record(.simulator("B"))
         let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: ProjectInspectionInput(
-            directory: repo.root, environment: [:], platform: .ios)), runner: runner)
+            directory: repo.root, environment: environment, platform: .ios)), runner: runner)
         #expect(result.exitCode == 1)
         #expect(result.operation.state == "needs-selection")
         #expect(result.operation.requiredInput == ["--device"])
         #expect(result.operation.devices.map(\.id) == ["A", "B"])
+        #expect(result.operation.devices.map(\.origin) == [.external, .runstirCreated])
         #expect(!runner.log.all.contains { $0.description == "yarn install --frozen-lockfile" })
         #expect(runner.log.spawned.isEmpty)
     }

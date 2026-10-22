@@ -116,6 +116,8 @@ public enum PreparationExecution {
         let host = runner ?? SystemProcessRunner(environment: input.environment, workingDirectory: input.directory)
         events.emit("started", state: "running", detail: "Inspect preparation platforms")
         let note: @Sendable (String) -> Void = { events.emit("detail", state: "running", detail: $0) }
+        let origins = DeviceOriginRecord(environment: input.environment)
+        var originFailures: [String] = []
         do {
             try Task.checkCancellation()
             let prepared = try await inspect(input, runner: host, flutterFactory: flutterFactory, note: note)
@@ -236,6 +238,19 @@ public enum PreparationExecution {
                     if !installed.androidResources.isEmpty {
                         result.operation.androidResources = (result.operation.androidResources ?? []) + installed.androidResources
                     }
+                    // Only a confirmed creation is recorded. A failed record keeps the device, which then lists as external.
+                    let created: [(String, DeviceOriginRecord.Device?)] = installed.resources
+                        .filter { $0.kind == .simulator && $0.origin == .created }.compactMap(\.identifier).map { ($0, .simulator($0)) }
+                        + installed.androidResources.filter { $0.origin == .created }
+                            .map { ($0.directory.path, .avd(name: $0.name, folder: $0.directory)) }
+                    for (device, entry) in created {
+                        do {
+                            guard let entry else { throw CocoaError(.fileReadNoSuchFile, userInfo: [NSFilePathErrorKey: device]) }
+                            try origins.record(entry)
+                        } catch {
+                            originFailures.append("\(device) was created but its device origin could not be recorded in \(origins.file.path): \(error.localizedDescription)")
+                        }
+                    }
                 } catch let failure as InstallationActionFailure {
                     result.operation.resources += failure.result.resources
                     if !failure.result.androidResources.isEmpty {
@@ -342,6 +357,14 @@ public enum PreparationExecution {
             result.operation.nextAction = "Inspect the failing tool. Preserve completed resources and re-plan."
         }
         result.operation.remaining.removeAll { result.operation.completed.contains($0) }
+        if !originFailures.isEmpty {
+            if result.operation.state == "succeeded" {
+                result.operation.state = "partial"
+                result.exitCode = 1
+                result.operation.nextAction = "The created device was kept and lists as an external device. Inspect the device origin record; Runstir does not repair or overwrite it."
+            }
+            result.operation.error = ((result.operation.error.map { [$0] } ?? []) + originFailures).joined(separator: "; ")
+        }
         return finish(result, events)
     }
 

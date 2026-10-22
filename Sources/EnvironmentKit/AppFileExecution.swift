@@ -55,7 +55,8 @@ public enum AppFileHumanOutput {
         }
         for device in operation.devices {
             let state = device.ready ? "ready" : device.boot == "required" ? "shut down; Runstir boots it after approval" : "manual preparation required"
-            output.append("device: \(device.id) — \(device.name), OS \(device.os), \(device.architectures.joined(separator: ", ")), \(state)")
+            output.append("device: \(device.id) — \(device.name), OS \(device.os), \(device.architectures.joined(separator: ", ")), \(state)"
+                + (device.origin.map { ", \($0.label)" } ?? "") + (device.avdFolder.map { ", AVD folder \($0)" } ?? ""))
             if let pairing = device.pairing {
                 output.append("device state: pairing \(pairing), Developer Mode \(device.developerMode ?? "unknown"), connection \(device.connection ?? "unknown")")
             }
@@ -125,6 +126,7 @@ public enum AppFileExecution {
         let events = WorkflowEvents(id: operation.id, callback: onEvent)
         events.send("started", state: operation.state)
         let runner = suppliedRunner ?? SystemProcessRunner(environment: input.environment)
+        let origins = DeviceOriginRecord(environment: input.environment)
         var provider: AppFileProvider?
         var selected: AppFileDevice?
         var installationRequested = false
@@ -142,7 +144,7 @@ public enum AppFileExecution {
             operation.artifact = artifact
             operation.completed.append("inspect")
             events.send("stage", stage: "inspect", state: "succeeded", detail: "\(artifact.metadata.appID), \(artifact.contentIdentityAlgorithm) \(artifact.contentIdentity)")
-            operation.devices = try await tools.devices(selected: input.device)
+            operation.devices = try await tools.devices(selected: input.device, origins: origins)
             guard let deviceID = input.device else {
                 operation.state = inspectOnly ? "succeeded" : "needs-selection"
                 if !inspectOnly { operation.requiredInput = ["--device"] }
@@ -206,7 +208,7 @@ public enum AppFileExecution {
                 throw AppFileSnapshot.failure("The copied app bytes or metadata differ from the approved file.")
             }
             let current = try await inspect(file: file, first: AppFileSnapshot.read(file), provider: tools, platform: input.platform)
-            let currentDevices = try await tools.devices(selected: deviceID)
+            let currentDevices = try await tools.devices(selected: deviceID, origins: origins)
             guard var currentDevice = currentDevices.first(where: { $0.id == deviceID }) else {
                 throw AppFileSnapshot.failure("The approved device disconnected before installation.")
             }
@@ -233,7 +235,7 @@ public enum AppFileExecution {
                 // The approved plan named this shut-down device. It is booted under the device lease,
                 // like `up`, and left running; no other device is booted, switched or stopped.
                 // One more read right before booting: a device someone else started is never recorded as Runstir's.
-                guard try await tools.devices(selected: deviceID).first(where: { $0.id == deviceID })?.boot == "required" else {
+                guard try await tools.devices(selected: deviceID, origins: origins).first(where: { $0.id == deviceID })?.boot == "required" else {
                     throw AppFileSnapshot.failure("The approved device is no longer shut down. Nothing was booted; inspect and approve again.")
                 }
                 operation.deviceBoot = AppFileDeviceBoot(state: "requested", device: currentDevice.id,
@@ -241,7 +243,7 @@ public enum AppFileExecution {
                 events.send("stage", stage: "boot", state: "running", detail: "Booting \(currentDevice.name). Other devices are not booted or stopped.")
                 let started = try await tools.startBoot(currentDevice, operation: operation.id)
                 operation.deviceBoot = started
-                let live = try await tools.awaitBooted(currentDevice, boot: started)
+                let live = try await tools.awaitBooted(currentDevice, boot: started, origins: origins)
                 guard live.name == currentDevice.name, live.os == currentDevice.os,
                       live.runtimeIdentifier == currentDevice.runtimeIdentifier, live.runtimeBuild == currentDevice.runtimeBuild else {
                     throw AppFileSnapshot.failure("The booted device's identity differs from the approved plan. Inspect and approve again.")
@@ -309,7 +311,7 @@ public enum AppFileExecution {
                     events.send("stage", stage: "reobserve", state: "running",
                         detail: "Checking the device Runstir started booting. It is not stopped.")
                     let id = boot.device
-                    let observation = Task { try await provider.devices(selected: id) }
+                    let observation = Task { try await provider.devices(selected: id, origins: origins) }
                     let observed: String
                     do {
                         let live = try await observation.value.first { $0.id == id }
@@ -520,11 +522,11 @@ private enum AppFileProvider: Sendable {
         }
     }
 
-    func devices(selected: String?) async throws -> [AppFileDevice] {
+    func devices(selected: String?, origins: DeviceOriginRecord) async throws -> [AppFileDevice] {
         switch self {
-        case .ios(let tools): try await tools.devices()
+        case .ios(let tools): origins.annotate(try await tools.devices(), platform: .ios)
         case .iosDevice(let tools): try await tools.devices(selected: selected)
-        case .android(let tools): try await tools.devices()
+        case .android(let tools): origins.annotate(try await tools.devices(), platform: .android)
         }
     }
 
@@ -548,11 +550,11 @@ private enum AppFileProvider: Sendable {
         }
     }
 
-    func awaitBooted(_ device: AppFileDevice, boot: AppFileDeviceBoot) async throws -> AppFileDevice {
+    func awaitBooted(_ device: AppFileDevice, boot: AppFileDeviceBoot, origins: DeviceOriginRecord) async throws -> AppFileDevice {
         switch self {
-        case .ios(let tools): try await tools.awaitBooted(device)
+        case .ios(let tools): try await origins.annotate([tools.awaitBooted(device)], platform: .ios)[0]
         case .iosDevice: throw AppFileSnapshot.failure("Runstir does not boot physical devices.")
-        case .android(let tools): try await tools.awaitBooted(device, boot: boot)
+        case .android(let tools): try await origins.annotate([tools.awaitBooted(device, boot: boot)], platform: .android)[0]
         }
     }
 
