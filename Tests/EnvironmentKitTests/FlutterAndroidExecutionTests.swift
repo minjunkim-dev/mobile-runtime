@@ -261,16 +261,29 @@ struct FlutterAndroidExecutionTests {
         try FileManager.default.createDirectory(at: locked, withIntermediateDirectories: true)
         try FlutterAndroidExecution.write(Data("copied".utf8), to: locked.appendingPathComponent("tool"))
         #expect(chmod(locked.path, 0o555) == 0)
-        // A descendant can also leave directories it cannot be opened through.
-        for (name, mode) in [("closed", 0o000), ("write-only", 0o300)] {
-            let directory = owner.url.appendingPathComponent("app/android/build/\(name)")
-            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-            try FlutterAndroidExecution.write(Data("generated".utf8), to: directory.appendingPathComponent("output"))
-            #expect(chmod(directory.path, mode_t(mode)) == 0)
-        }
         try FlutterAndroidExecution.removeTree(owner.url, identity: owner.identity)
         #expect(!FileManager.default.fileExists(atPath: owner.url.path))
         #expect(try String(contentsOf: protected.appendingPathComponent("input"), encoding: .utf8) == "preserved")
+    }
+
+    @Test("a directory a descendant made unopenable is not chmodded by name; the root is kept and reported", arguments: [0o000, 0o300])
+    func unopenableDirectoryKeepsRoot(_ mode: Int) throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let scratch = try fixture.directory("scratch")
+        let owner = try FlutterAndroidExecution.OwnedRoot(in: scratch)
+        let closed = owner.url.appendingPathComponent("app/android/build/closed")
+        try FileManager.default.createDirectory(at: closed, withIntermediateDirectories: true)
+        try FlutterAndroidExecution.write(Data("generated".utf8), to: closed.appendingPathComponent("output"))
+        try FlutterAndroidExecution.write(Data("generated".utf8), to: owner.url.appendingPathComponent("removable"))
+        #expect(chmod(closed.path, mode_t(mode)) == 0)
+        #expect(throws: DomainError.self) { try FlutterAndroidExecution.removeTree(owner.url, identity: owner.identity) }
+        var info = stat()
+        #expect(lstat(closed.path, &info) == 0 && info.st_mode & 0o777 == mode_t(mode))
+        #expect(!FileManager.default.fileExists(atPath: owner.url.appendingPathComponent("removable").path))
+        #expect(chmod(closed.path, 0o700) == 0)
+        try FlutterAndroidExecution.removeTree(owner.url, identity: owner.identity)
+        #expect(!FileManager.default.fileExists(atPath: owner.url.path))
     }
 
     @Test("a missing root is quietly done, while a root that cannot be opened is reported and kept")

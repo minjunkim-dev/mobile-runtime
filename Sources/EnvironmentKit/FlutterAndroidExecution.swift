@@ -515,11 +515,9 @@ final class FlutterAndroidExecution: Sendable {
                 }
                 continue
             }
-            var child = openat(directory, name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
-            // A directory a descendant made unreadable (0000, 0300) is reopened after its own mode is fixed.
-            if child < 0, errno == EACCES, fchmodat(directory, name, 0o700, AT_SYMLINK_NOFOLLOW) == 0 {
-                child = openat(directory, name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
-            }
+            // Modes change only through an open descriptor: a name can be swapped for a hard link to an outside
+            // file between calls. A directory a descendant made unopenable (0000, 0300) therefore stays.
+            let child = openat(directory, name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
             if child >= 0 {
                 var info = stat()
                 // A mount point is never entered; its entry stays and the root is reported as not removed.
