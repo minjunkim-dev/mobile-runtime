@@ -22,6 +22,9 @@ Android 지원을 뜻하지 않는다. CLI가 현재 실행 표면이고,
 SwiftUI macOS 앱은 같은 Core/provider 계약을 표현할 후속 표면이다. 현재 계약과
 제약은 [CONTEXT.md](CONTEXT.md)와 [ADRs](docs/adr/)에 둔다.
 
+개발 `main`의 소스 없는 앱 파일 실행은 [지원·실제 검증 상태](docs/app-file-direct-install.md#지원과-실제-검증-상태)를 확인한다.
+대표 iOS Development 실기기 결과와 미검증 Ad Hoc·Android 실기기를 구분하며, 공개 배포판의 검증 완료를 뜻하지 않는다.
+
 제품명은 Runstir다. CLI 명령어는 `mobile`이다. iOS의 Xcode 27 Go 게이트는
 고정 BlueWallet 표본과 검증 조합에서 통과했다. [실행 증거](docs/go-round-runbook.md)를 확인한다.
 일반적인 React Native 지원을 뜻하지 않는다.
