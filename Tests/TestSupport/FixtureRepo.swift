@@ -3,7 +3,7 @@ import Foundation
 /// A real repo laid out in a temp directory. The file system is never mocked —
 /// a throwaway directory is cheaper than a fake and tells the truth about
 /// symlinks, missing files and nesting.
-public final class FixtureRepo {
+public final class FixtureRepo: Sendable {
     public let root: URL
 
     public init() throws {

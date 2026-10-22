@@ -30,8 +30,9 @@ struct FlutterAndroidExecutionTests {
         #expect(try FlutterAndroidExecution.tree(fixture.root, bindIdentity: true) == before)
     }
 
-    @Test("private SDK copy preserves source bytes, links and permissions without sharing inodes")
-    func copyPreservesSource() throws {
+    @Test("private SDK clone or byte copy preserves source bytes, links and permissions without sharing inodes",
+          arguments: [true, false])
+    func copyPreservesSource(_ clone: Bool) throws {
         let fixture = try Fixture()
         defer { fixture.remove() }
         let source = try fixture.directory("source")
@@ -41,14 +42,14 @@ struct FlutterAndroidExecutionTests {
         #expect(symlink("../packages/tool.txt", source.appendingPathComponent("bin/relative").path) == 0)
         let original = try FlutterAndroidExecution.tree(source, bindIdentity: true)
         let copy = fixture.root.appendingPathComponent("copy")
-        try FlutterAndroidExecution.copyTree(source, to: copy, snapshot: original)
+        try FlutterAndroidExecution.copyTree(source, to: copy, snapshot: original, clone: clone)
         #expect(try FlutterAndroidExecution.tree(source, bindIdentity: true) == original)
         #expect(try FlutterAndroidExecution.tree(copy) == original.mapValues(\.unbound))
         for key in ["bin/tool", "packages/tool.txt"] {
             #expect(try FlutterAndroidExecution.entry(source.appendingPathComponent(key), bindIdentity: true).nodeIdentity
                 != FlutterAndroidExecution.entry(copy.appendingPathComponent(key), bindIdentity: true).nodeIdentity)
         }
-        #expect(throws: DomainError.self) { try FlutterAndroidExecution.copyTree(source, to: copy, snapshot: original) }
+        #expect(throws: DomainError.self) { try FlutterAndroidExecution.copyTree(source, to: copy, snapshot: original, clone: clone) }
         #expect(try String(contentsOf: copy.appendingPathComponent("bin/tool"), encoding: .utf8) == "selected SDK bytes")
     }
 
@@ -57,20 +58,7 @@ struct FlutterAndroidExecutionTests {
         let childMarker = "RUNSTIR_FLUTTER_FILE_BUFFER_CHILD"
         if ProcessInfo.processInfo.environment[childMarker] != "1" {
             // A serialized suite does not isolate process-wide memory from other suites.
-            var path = [CChar](repeating: 0, count: 4 * Int(PATH_MAX))
-            let length = path.withUnsafeMutableBytes { proc_pidpath(getpid(), $0.baseAddress, UInt32($0.count)) }
-            try #require(length > 0)
-            let executable = String(decoding: path.prefix { $0 != 0 }.map { UInt8(bitPattern: $0) }, as: UTF8.self)
-            var arguments = ["--testing-library", "swift-testing", "--no-parallel",
-                "--filter", "FlutterAndroidExecutionTests/boundedFileBuffers"]
-            if URL(fileURLWithPath: executable).lastPathComponent == "swiftpm-testing-helper" {
-                let index = try #require(CommandLine.arguments.firstIndex(of: "--test-bundle-path"))
-                try #require(index + 1 < CommandLine.arguments.count)
-                let bundle = CommandLine.arguments[index + 1]
-                arguments.insert(contentsOf: ["--test-bundle-path", bundle, bundle], at: 0)
-            }
-            let result = try await SystemProcessRunner().run(ProcessCommand(executable, arguments,
-                environment: [childMarker: "1"], timeout: .seconds(30)))
+            let result = try await Self.rerunAlone("FlutterAndroidExecutionTests/boundedFileBuffers", marker: childMarker)
             print(result.combinedOutput)
             #expect(result.terminationStatus.isSuccess)
             for copying in [false, true] {
@@ -90,7 +78,7 @@ struct FlutterAndroidExecutionTests {
                 for index in 0..<6 {
                     if copying {
                         try FlutterAndroidExecution.copyTree(source, to: fixture.root.appendingPathComponent("copy-\(index)"),
-                            snapshot: ["payload": original])
+                            snapshot: ["payload": original], clone: false)
                     } else {
                         #expect(try FlutterAndroidExecution.entry(file, bindIdentity: true) == original)
                     }
@@ -166,6 +154,234 @@ struct FlutterAndroidExecutionTests {
         await #expect(throws: CancellationError.self) { try await task.value }
         #expect(try FlutterAndroidExecution.tree(source, bindIdentity: true) == before)
         #expect(FileManager.default.fileExists(atPath: fixture.root.appendingPathComponent("partial").path))
+    }
+
+    @Test("a private root is removed when its owner is released after use, a failure or a cancelled copy",
+          arguments: ["used", "failed", "cancelled"])
+    func ownedRootRemoval(_ exit: String) async throws {
+        struct Failure: Error {}
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        try fixture.file("source/tool", "original")
+        let source = fixture.root.appendingPathComponent("source")
+        let before = try FlutterAndroidExecution.tree(source, bindIdentity: true)
+        let scratch = try fixture.directory("scratch")
+        let gate = Gate()
+        let task = Task {
+            let owner = try FlutterAndroidExecution.OwnedRoot(in: scratch)
+            if exit == "cancelled" { await gate.wait() }
+            try FlutterAndroidExecution.copyTree(source, to: owner.url.appendingPathComponent("sdk"), snapshot: before)
+            #expect(FileManager.default.fileExists(atPath: owner.url.appendingPathComponent("sdk/tool").path))
+            if exit == "failed" { throw Failure() }
+        }
+        switch exit {
+        case "used": try await task.value
+        case "failed": await #expect(throws: Failure.self) { try await task.value }
+        default:
+            task.cancel()
+            await gate.release()
+            await #expect(throws: CancellationError.self) { try await task.value }
+        }
+        #expect(try FileManager.default.contentsOfDirectory(atPath: scratch.path).isEmpty)
+        #expect(try FlutterAndroidExecution.tree(source, bindIdentity: true) == before)
+    }
+
+    @Test("a root still owned at process exit is removed by the exit cleanup, and its later release is harmless")
+    func exitCleanupRemovesLiveRoot() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let scratch = try fixture.directory("scratch")
+        var owner: FlutterAndroidExecution.OwnedRoot? = try FlutterAndroidExecution.OwnedRoot(in: scratch)
+        try FlutterAndroidExecution.write(Data("held".utf8), to: try #require(owner?.url).appendingPathComponent("held"))
+        FlutterAndroidExecution.OwnedRoot.removeLive()
+        #expect(try FileManager.default.contentsOfDirectory(atPath: scratch.path).isEmpty)
+        owner = nil
+        #expect(try FileManager.default.contentsOfDirectory(atPath: scratch.path).isEmpty)
+    }
+
+    @Test("a released owner leaves a replaced root in place")
+    func replacedRootRetained() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let scratch = try fixture.directory("scratch")
+        var owner: FlutterAndroidExecution.OwnedRoot? = try FlutterAndroidExecution.OwnedRoot(in: scratch)
+        let root = try #require(owner?.url)
+        try FileManager.default.moveItem(at: root, to: scratch.appendingPathComponent("moved"))
+        #expect(mkdir(root.path, 0o700) == 0)
+        owner = nil
+        #expect(FileManager.default.fileExists(atPath: root.path))
+        #expect(FileManager.default.fileExists(atPath: scratch.appendingPathComponent("moved").path))
+    }
+
+    @Test("private roots use the configured scratch, then an attached SSD scratch, then TMPDIR; only private owned directories")
+    func scratchSelection() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let chosen = try fixture.directory("chosen")
+        let shared = try fixture.directory("shared")
+        #expect(chmod(shared.path, 0o777) == 0)
+        let ssd = try fixture.directory("ssd")
+        let temporary = FileManager.default.temporaryDirectory.path
+        #expect(FlutterAndroidExecution.scratchDirectory(["RUNSTIR_SCRATCH_DIR": chosen.path, "DEVSSD_ROOT": ssd.path]).path == chosen.path)
+        // A real directory reached through a symbolic ancestor would be refused later by preparedPath.
+        let link = fixture.root.appendingPathComponent("link")
+        #expect(symlink(fixture.root.path, link.path) == 0)
+        for unusable in [shared.path, fixture.root.appendingPathComponent("missing").path, "chosen", "",
+                         link.appendingPathComponent("chosen").path] {
+            #expect(FlutterAndroidExecution.scratchDirectory(["RUNSTIR_SCRATCH_DIR": unusable]).path == temporary)
+        }
+        #expect(FlutterAndroidExecution.scratchDirectory(["DEVSSD_ROOT": ssd.path]).path == temporary)
+        try fixture.directory("ssd/scratch")
+        #expect(FlutterAndroidExecution.scratchDirectory(["DEVSSD_ROOT": ssd.path]).path == ssd.appendingPathComponent("scratch").path)
+        #expect(FlutterAndroidExecution.scratchDirectory([:]).path == temporary)
+        // `<root>/s` must still fit the child broker's Unix socket address.
+        let long = try fixture.directory(String(repeating: "d", count: 80))
+        #expect(throws: DomainError.self) { try FlutterAndroidExecution.OwnedRoot(in: long) }
+        #expect(try FileManager.default.contentsOfDirectory(atPath: long.path).isEmpty)
+        // The length is measured on the physical /private path the root will use, not its /tmp spelling.
+        let physical = try fixture.directory(String(repeating: "a", count: 30))
+        let alias = URL(fileURLWithPath: "/tmp/" + physical.path.dropFirst("/private/tmp/".count), isDirectory: true)
+        let suffix = "/runstir-flutter-android-XXXXXX/s".utf8.count
+        try #require(alias.path.utf8.count + suffix < 104 && physical.path.utf8.count + suffix >= 104)
+        #expect(throws: DomainError.self) { try FlutterAndroidExecution.OwnedRoot(in: alias) }
+        #expect(try FileManager.default.contentsOfDirectory(atPath: physical.path).isEmpty)
+    }
+
+    @Test("removal unlinks links inside the root, empties read-only directories and keeps link targets")
+    func removalKeepsLinkTargets() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let scratch = try fixture.directory("scratch")
+        try fixture.file("protected/input", "preserved")
+        let protected = fixture.root.appendingPathComponent("protected")
+        let owner = try FlutterAndroidExecution.OwnedRoot(in: scratch)
+        #expect(symlink(protected.path, owner.url.appendingPathComponent("directory-link").path) == 0)
+        #expect(symlink(protected.appendingPathComponent("input").path, owner.url.appendingPathComponent("file-link").path) == 0)
+        let locked = owner.url.appendingPathComponent("sdk/locked")
+        try FileManager.default.createDirectory(at: locked, withIntermediateDirectories: true)
+        try FlutterAndroidExecution.write(Data("copied".utf8), to: locked.appendingPathComponent("tool"))
+        #expect(chmod(locked.path, 0o555) == 0)
+        try FlutterAndroidExecution.removeTree(owner.url, identity: owner.identity)
+        #expect(!FileManager.default.fileExists(atPath: owner.url.path))
+        #expect(try String(contentsOf: protected.appendingPathComponent("input"), encoding: .utf8) == "preserved")
+    }
+
+    @Test("a directory a descendant made unopenable is not chmodded by name; the root is kept and reported", arguments: [0o000, 0o300])
+    func unopenableDirectoryKeepsRoot(_ mode: Int) throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let scratch = try fixture.directory("scratch")
+        let owner = try FlutterAndroidExecution.OwnedRoot(in: scratch)
+        let closed = owner.url.appendingPathComponent("app/android/build/closed")
+        try FileManager.default.createDirectory(at: closed, withIntermediateDirectories: true)
+        try FlutterAndroidExecution.write(Data("generated".utf8), to: closed.appendingPathComponent("output"))
+        try FlutterAndroidExecution.write(Data("generated".utf8), to: owner.url.appendingPathComponent("removable"))
+        #expect(chmod(closed.path, mode_t(mode)) == 0)
+        #expect(throws: DomainError.self) { try FlutterAndroidExecution.removeTree(owner.url, identity: owner.identity) }
+        var info = stat()
+        #expect(lstat(closed.path, &info) == 0 && info.st_mode & 0o777 == mode_t(mode))
+        #expect(!FileManager.default.fileExists(atPath: owner.url.appendingPathComponent("removable").path))
+        #expect(chmod(closed.path, 0o700) == 0)
+        try FlutterAndroidExecution.removeTree(owner.url, identity: owner.identity)
+        #expect(!FileManager.default.fileExists(atPath: owner.url.path))
+    }
+
+    @Test("a missing root is quietly done, while a root that cannot be opened is reported and kept")
+    func removalReportsUnopenableRoot() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let scratch = try fixture.directory("scratch")
+        let owner = try FlutterAndroidExecution.OwnedRoot(in: scratch)
+        try FileManager.default.moveItem(at: owner.url, to: scratch.appendingPathComponent("moved"))
+        try FlutterAndroidExecution.removeTree(owner.url, identity: owner.identity)
+        try FlutterAndroidExecution.write(Data("not a directory".utf8), to: owner.url)
+        #expect(throws: DomainError.self) { try FlutterAndroidExecution.removeTree(owner.url, identity: owner.identity) }
+        #expect(FileManager.default.fileExists(atPath: owner.url.path))
+        try FileManager.default.removeItem(at: owner.url)
+    }
+
+    @Test("a root that cannot be removed when released stays live for the exit cleanup's retry")
+    func failedReleaseRetriedAtExit() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let scratch = try fixture.directory("scratch")
+        var owner: FlutterAndroidExecution.OwnedRoot? = try FlutterAndroidExecution.OwnedRoot(in: scratch)
+        let root = try #require(owner?.url)
+        let pinned = root.appendingPathComponent("pinned")
+        try FlutterAndroidExecution.write(Data("still in use".utf8), to: pinned)
+        #expect(chflags(pinned.path, UInt32(UF_IMMUTABLE)) == 0)
+        owner = nil
+        #expect(FileManager.default.fileExists(atPath: pinned.path))
+        #expect(chflags(pinned.path, 0) == 0)
+        FlutterAndroidExecution.OwnedRoot.removeLive()
+        #expect(!FileManager.default.fileExists(atPath: root.path))
+    }
+
+    @Test("a very deep tree is removed on a 512 KB worker stack; past the descriptor limit it is kept without a crash")
+    func deepTreeRemoval() async throws {
+        let marker = "RUNSTIR_FLUTTER_DEEP_TREE_CHILD"
+        if ProcessInfo.processInfo.environment[marker] != "1" {
+            // Descriptor limits are process-wide, so they change only in a child test process.
+            let result = try await Self.rerunAlone("FlutterAndroidExecutionTests/deepTreeRemoval", marker: marker)
+            print(result.combinedOutput)
+            #expect(result.terminationStatus.isSuccess)
+            #expect(result.standardOutput.contains("FlutterAndroidExecutionTests.deepTreeRemoval removed=true kept=true"))
+            return
+        }
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let scratch = try fixture.directory("scratch")
+        func remove(_ owner: FlutterAndroidExecution.OwnedRoot, descriptors: rlim_t) throws -> Bool {
+            var limit = rlimit()
+            try #require(getrlimit(RLIMIT_NOFILE, &limit) == 0 && limit.rlim_max >= descriptors)
+            limit.rlim_cur = descriptors
+            try #require(setrlimit(RLIMIT_NOFILE, &limit) == 0)
+            // Swift concurrency and Dispatch worker threads, where deinit can run, have 512 KB stacks.
+            return Self.onSmallStack { try FlutterAndroidExecution.removeTree(owner.url, identity: owner.identity) } == nil
+        }
+        // Recursive removal overflowed a 512 KB stack from about 600 levels. Deeper trees only cost kernel time:
+        // each operation slows with depth (2,000 levels take about 30 s to make and remove).
+        let deep = try FlutterAndroidExecution.OwnedRoot(in: scratch)
+        try Self.deepTree(under: deep.url, levels: 1_000)
+        let removed = try remove(deep, descriptors: 4_096)
+        #expect(removed)
+        #expect(!FileManager.default.fileExists(atPath: deep.url.path))
+        let limited = try FlutterAndroidExecution.OwnedRoot(in: scratch)
+        // Deeper than the descriptor limit, but shallow enough not to slow the suites running beside it.
+        try Self.deepTree(under: limited.url, levels: 400)
+        let kept = try !remove(limited, descriptors: 256)
+        #expect(kept)
+        #expect(FileManager.default.fileExists(atPath: limited.url.path))
+        #expect(try remove(limited, descriptors: 4_096))
+        print("FlutterAndroidExecutionTests.deepTreeRemoval removed=\(removed) kept=\(kept)")
+    }
+
+    @Test("removal never follows a subdirectory a surviving descendant keeps swapping for a link outside the root")
+    func removalIgnoresSwappedLinks() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let scratch = try fixture.directory("scratch")
+        let protected = try fixture.directory("protected")
+        for index in 0..<20 { try fixture.file("protected/input-\(index)", "preserved") }
+        for _ in 0..<60 {
+            let owner = try FlutterAndroidExecution.OwnedRoot(in: scratch)
+            let build = owner.url.appendingPathComponent("app/android/build")
+            // The same names as the protected files: a path resolved through the swapped link would hit them.
+            try FileManager.default.createDirectory(at: build, withIntermediateDirectories: true)
+            for name in (0..<20).map({ "input-\($0)" }) + (0..<200).map({ "pad-\($0)" }) {
+                try FlutterAndroidExecution.write(Data("generated".utf8), to: build.appendingPathComponent(name))
+            }
+            let swapper = Swapper(directory: build, target: protected)
+            swapper.start()
+            try? FlutterAndroidExecution.removeTree(owner.url, identity: owner.identity)
+            swapper.stop()
+            // Whatever the swapper re-created is removed once it has stopped, as the exit cleanup's retry does.
+            try FlutterAndroidExecution.removeTree(owner.url, identity: owner.identity)
+            #expect(!FileManager.default.fileExists(atPath: owner.url.path))
+            for index in 0..<20 {
+                #expect(FileManager.default.fileExists(atPath: protected.appendingPathComponent("input-\(index)").path))
+            }
+        }
     }
 
     @Test("canonical templates accept version and root name changes, preserving the original bytes", arguments: [false, true])
@@ -659,6 +875,80 @@ struct FlutterAndroidExecutionTests {
             // The fixture owns this exclusive root; no product SDK is ever read or removed.
             guard (try? FlutterAndroidExecution.Identity(root)) == identity else { return }
             try? FileManager.default.removeItem(at: root)
+        }
+    }
+
+    /// Re-runs one test alone in a child test process, marked by `marker`.
+    private static func rerunAlone(_ test: String, marker: String) async throws -> ProcessResult {
+        var path = [CChar](repeating: 0, count: 4 * Int(PATH_MAX))
+        let length = path.withUnsafeMutableBytes { proc_pidpath(getpid(), $0.baseAddress, UInt32($0.count)) }
+        try #require(length > 0)
+        let executable = String(decoding: path.prefix { $0 != 0 }.map { UInt8(bitPattern: $0) }, as: UTF8.self)
+        var arguments = ["--testing-library", "swift-testing", "--no-parallel", "--filter", test]
+        if URL(fileURLWithPath: executable).lastPathComponent == "swiftpm-testing-helper" {
+            let index = try #require(CommandLine.arguments.firstIndex(of: "--test-bundle-path"))
+            try #require(index + 1 < CommandLine.arguments.count)
+            let bundle = CommandLine.arguments[index + 1]
+            arguments.insert(contentsOf: ["--test-bundle-path", bundle, bundle], at: 0)
+        }
+        return try await SystemProcessRunner().run(ProcessCommand(executable, arguments,
+            environment: [marker: "1"], timeout: .seconds(60)))
+    }
+
+    /// `levels` nested directories, made through descriptors since the path outgrows PATH_MAX.
+    private static func deepTree(under root: URL, levels: Int) throws {
+        var directory = open(root.path, O_RDONLY | O_DIRECTORY)
+        try #require(directory >= 0)
+        for _ in 0..<levels {
+            let made = mkdirat(directory, "d", 0o700) == 0
+            let next = made ? openat(directory, "d", O_RDONLY | O_DIRECTORY | O_NOFOLLOW) : -1
+            close(directory)
+            try #require(next >= 0)
+            directory = next
+        }
+        let leaf = openat(directory, "leaf", O_WRONLY | O_CREAT | O_EXCL, 0o600)
+        close(directory)
+        try #require(leaf >= 0)
+        close(leaf)
+    }
+
+    private static func onSmallStack(_ body: @escaping @Sendable () throws -> Void) -> (any Error)? {
+        final class Outcome: @unchecked Sendable { var error: (any Error)? }
+        let outcome = Outcome()
+        let done = DispatchSemaphore(value: 0)
+        let thread = Thread {
+            do { try body() } catch { outcome.error = error }
+            done.signal()
+        }
+        thread.stackSize = 512 * 1024
+        thread.start()
+        done.wait()
+        return outcome.error
+    }
+
+    /// Repeatedly swaps `directory` for a link to `target` and back, like a surviving sandboxed descendant.
+    private final class Swapper: @unchecked Sendable {
+        let directory: URL
+        let target: URL
+        private let lock = NSLock()
+        private var stopped = false
+        private let done = DispatchSemaphore(value: 0)
+        init(directory: URL, target: URL) { self.directory = directory; self.target = target }
+        func start() {
+            Thread {
+                let real = self.directory.path + ".real"
+                while !self.lock.withLock({ self.stopped }) {
+                    guard rename(self.directory.path, real) == 0 else { continue }
+                    _ = symlink(self.target.path, self.directory.path)
+                    _ = unlink(self.directory.path)
+                    _ = rename(real, self.directory.path)
+                }
+                self.done.signal()
+            }.start()
+        }
+        func stop() {
+            lock.withLock { stopped = true }
+            done.wait()
         }
     }
 

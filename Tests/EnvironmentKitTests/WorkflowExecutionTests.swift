@@ -485,8 +485,11 @@ struct WorkflowExecutionTests {
         #expect(conflict.owner?.operationId == result.operation.id)
     }
 
+    // Released with this test's suite instance, so no lease directory outlives the test.
+    private let scratch = try! FixtureRepo()
+
     private func temporaryLeases() -> ResourceLeases {
-        ResourceLeases(directory: FileManager.default.temporaryDirectory.appendingPathComponent("runstir-leases-\(UUID().uuidString)"))
+        ResourceLeases(directory: scratch.url("leases-\(UUID().uuidString)"))
     }
 
     private func iosProject(workspaceOnly: Bool = false) throws -> FixtureRepo {

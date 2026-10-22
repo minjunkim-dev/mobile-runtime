@@ -864,6 +864,42 @@ struct FlutterAndroidWorkflowTests {
         #expect(raw.log.all.count == 1)
     }
 
+    @Test("a protection check interrupted by cancellation is not recorded as a protection failure")
+    func cancelledProtectionCheck() async throws {
+        let repo = try FixtureRepo()
+        let policy = try Self.physical(repo.root).appendingPathComponent("parent.sb")
+        try FlutterAndroidExecution.write(Data("(version 1)\n(allow default)\n".utf8), to: policy)
+        let command = ProcessCommand("./gradlew", ["help"], workingDirectory: repo.root)
+        let wrapped = try FlutterAndroidExecution.policyCommand(command, file: policy)
+        let raw = FakeProcessRunner(failures: [wrapped.description: CancellationError()])
+        let trace = GuardTrace(failAt: 2, failure: CancellationError())
+        let host = FlutterAndroidHostGuard(base: raw, policy: policy, check: { try trace.check() }, recordFailure: { trace.record($0, $1) })
+        await #expect(throws: CancellationError.self) { try await host.run(command) }
+        #expect(trace.count == 2)
+        #expect(trace.failures.isEmpty)
+    }
+
+    @Test("protection receipts are private files outside the private root that cleanup removes")
+    func protectionReceiptOutsideRoot() throws {
+        let repo = try FixtureRepo()
+        let root = try Self.physical(repo.root).appendingPathComponent("runstir-flutter-android-fixture")
+        let receipts = repo.url("Library/Logs/dev.runstir/flutter-protection")
+        try FlutterAndroidHostGuard.writeReceipt(primary: FixtureMiss(command: "primary fixture failure"),
+            protection: FixtureMiss(command: "post-command fixture protection"), root: root, to: receipts)
+        let files = try FileManager.default.contentsOfDirectory(at: receipts, includingPropertiesForKeys: nil)
+        let receipt = try #require(files.first)
+        #expect(files.count == 1)
+        #expect(receipt.lastPathComponent.hasPrefix("protection-failure-"))
+        let json = try #require(try JSONSerialization.jsonObject(with: Data(contentsOf: receipt)) as? [String: Any])
+        #expect(json["root"] as? String == root.path)
+        #expect((json["primary"] as? String)?.contains("primary fixture failure") == true)
+        #expect((json["protection"] as? String)?.contains("post-command fixture protection") == true)
+        #expect(try FlutterAndroidExecution.entry(receipt).mode == 0o600)
+        #expect(try FlutterAndroidExecution.entry(receipts).mode == 0o700)
+        #expect(!FileManager.default.fileExists(atPath: root.path))
+        #expect(FlutterAndroidHostGuard.receiptDirectory.path.hasSuffix("/Library/Logs/dev.runstir/flutter-protection"))
+    }
+
     @Test("input changes before or after a successful child stop execution", arguments: [1, 2])
     func protectionAfterSuccess(_ failingCheck: Int) async throws {
         let repo = try FixtureRepo()
@@ -892,10 +928,14 @@ struct FlutterAndroidWorkflowTests {
         private var calls = 0
         private var recorded: [String] = []
         let failAt: Int?
-        init(failAt: Int? = nil) { self.failAt = failAt }
+        let failure: any Error
+        init(failAt: Int? = nil, failure: any Error = FixtureMiss(command: "post-command fixture protection")) {
+            self.failAt = failAt
+            self.failure = failure
+        }
         func check() throws {
             let count = lock.withLock { calls += 1; return calls }
-            if count == failAt { throw FixtureMiss(command: "post-command fixture protection") }
+            if count == failAt { throw failure }
         }
         func record(_ primary: any Error, _ protection: any Error) {
             lock.withLock { recorded.append("\(primary); \(protection)") }
