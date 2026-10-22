@@ -127,14 +127,17 @@ public struct IOSDeviceAppFile: Sendable {
         guard let processes = (json?["result"] as? [String: Any])?["runningProcesses"] as? [[String: Any]] else {
             return .unknown("devicectl could not list processes: " + result.standardError.lastLines(1))
         }
-        // A stopped verdict releases another owner's claim, so an unparseable form stays unknown.
-        let executables = processes.compactMap { ($0["executable"] as? String).flatMap(Self.devicePath) }
-        guard let bundle = Self.devicePath(location), executables.count == processes.count else {
-            return .unknown("devicectl reported an app or process location that could not be compared")
-        }
-        // The main executable sits directly in the bundle; extensions live deeper under PlugIns.
-        let pids = zip(processes, executables).compactMap { process, executable -> Int? in
-            executable.deletingLastPathComponent().path == bundle.path ? process["processIdentifier"] as? Int : nil
+        // A stopped verdict releases another owner's claim, so anything not comparable stays unknown.
+        // A row without an executable cannot be this app and is skipped.
+        guard let bundle = Self.devicePath(location) else { return .unknown("the installed app location could not be compared") }
+        var pids: [Int] = []
+        for process in processes {
+            guard let value = process["executable"] as? String else { continue }
+            guard let executable = Self.devicePath(value) else { return .unknown("devicectl reported a process location that could not be compared") }
+            // The main executable sits directly in the bundle; extensions live deeper under PlugIns.
+            guard executable.deletingLastPathComponent().path == bundle.path else { continue }
+            guard let pid = process["processIdentifier"] as? Int else { return .unknown("the app's process has no identifier") }
+            pids.append(pid)
         }
         return pids.isEmpty ? .stopped : .running("pid " + pids.map(String.init).joined(separator: ", "))
     }

@@ -378,7 +378,7 @@ private final class DeviceRunner: ProcessRunner, @unchecked Sendable {
                     // CoreDevice may spell the container without /private.
                     let base = "file:///var/containers/Bundle/Application/FIXTURE/Device.app/"
                     if unparseableProcess { return try json(["runningProcesses": [["executable": "not a url", "processIdentifier": 1]]]) }
-                    return try json(["runningProcesses": [["executable": base + "Program", "processIdentifier": 4242],
+                    return try json(["runningProcesses": [["processIdentifier": 0], ["executable": base + "Program", "processIdentifier": 4242],
                         ["executable": base + "PlugIns/Widget.appex/Widget", "processIdentifier": 4343]]])
                 }
             }
