@@ -5,9 +5,11 @@ import Testing
 
 @Suite("shared resource leases")
 struct ResourceLeasesTests {
+    // Released with this test's suite instance, so no lease directory outlives the test.
+    private let scratch = try! FixtureRepo()
+
     private func store() -> ResourceLeases {
-        ResourceLeases(directory: FileManager.default.temporaryDirectory
-            .appendingPathComponent("runstir-leases-\(UUID().uuidString)"))
+        ResourceLeases(directory: scratch.url("leases-\(UUID().uuidString)"))
     }
 
     private func owner(_ id: String, project: String = "/work/a") -> LeaseOwner {

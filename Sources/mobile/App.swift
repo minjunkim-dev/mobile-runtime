@@ -65,7 +65,7 @@ struct AppFileOptions: ParsableArguments {
         }
         let exactApproval = approval
         let structured = progressJson
-        let task = Task {
+        let result = try await cancellingOnSignals {
             await AppFileExecution.run(input: input, inspectOnly: inspectOnly, planOnly: planOnly,
                 approvedPlanID: exactApproval) { event in
                     if structured {
@@ -75,20 +75,6 @@ struct AppFileOptions: ParsableArguments {
                     }
                 }
         }
-        let previousInterrupt = signal(SIGINT, SIG_IGN)
-        let previousTerminate = signal(SIGTERM, SIG_IGN)
-        let signals = [SIGINT, SIGTERM].map { number in
-            let source = DispatchSource.makeSignalSource(signal: number, queue: .global())
-            source.setEventHandler { task.cancel() }
-            source.resume()
-            return source
-        }
-        defer {
-            signals.forEach { $0.cancel() }
-            signal(SIGINT, previousInterrupt)
-            signal(SIGTERM, previousTerminate)
-        }
-        let result = await task.value
         if json { print(try result.encoded(toolVersion: Tool.version)) }
         else { render(result) }
         if result.exitCode != 0 { throw ExitCode(result.exitCode) }
