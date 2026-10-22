@@ -880,7 +880,9 @@ private final class AppFileRunner: ProcessRunner, @unchecked Sendable {
     }
 
     func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
-        try lock.withLock {
+        // SystemProcessRunner refuses to start a child in a cancelled task.
+        try Task.checkCancellation()
+        return try lock.withLock {
             recorded.append(command)
             let args = command.arguments
             func ok(_ output: String = "") -> ProcessResult { ProcessResult(terminationStatus: .exited(0), standardOutput: output, standardError: "") }
@@ -918,7 +920,7 @@ private final class AppFileRunner: ProcessRunner, @unchecked Sendable {
             }
             if command.executable == "xcrun", args.prefix(3) == ["simctl", "install", "FIXTURE-UDID"] {
                 installedBuild = "2"
-                if cancelAfterInstall { throw CancellationError() }
+                if cancelAfterInstall { withUnsafeCurrentTask { $0?.cancel() }; throw CancellationError() }
                 return ok()
             }
             if command.executable == "xcrun", args == ["simctl", "launch", "FIXTURE-UDID", AppFileFixture.appID] { return ok("\(AppFileFixture.appID): 42\n") }

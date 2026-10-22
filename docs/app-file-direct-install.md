@@ -7,8 +7,9 @@
 ## 입력과 명령
 
 이 경로는 iOS Simulator `.app` 디렉터리와 Android Emulator의 단일 `.apk`를 받는다.
+iOS 실기기용 Development·Ad Hoc `.app`은 아래 [iOS 실기기 `.app`](#ios-실기기-app)의 같은 경로를 쓴다(#219).
 프로젝트 소스와 계정은 필요하지 않다. 소스 빌드와 환경 준비를 시작하지 않는다.
-iOS 실기기·IPA는 #219다. 목록·보유 버전·설치 이력은 #220이다. 앱 콘솔은 #221이다.
+IPA는 이 경로에서 받지 않는다. #199 AC12의 실기기 `.ipa` 압축 검사·추출은 별도 구현 범위다. 목록·보유 버전·설치 이력은 #220이다. 앱 콘솔은 #221이다.
 해당 형식과 기능은 이 경로에 추가하지 않는다.
 
 ```sh
@@ -117,7 +118,7 @@ GUI도 두 경우에 위험 확인을 요구한다. 비교 불가를 안전한 u
 | `firstScreen` | 항상 `unverified`. 실제 화면 증거는 별도다. |
 | `externalServer` | 확인 불가. Runstir가 서버를 만들거나 연결하지 않았다. |
 
-실패·취소 뒤에는 가능한 범위에서 설치 상태를 다시 관측한다.
+실패·취소 뒤에는 가능한 범위에서 설치 상태를 다시 관측한다. 취소된 작업은 새 도구를 시작하지 못하므로 이 관측은 취소를 물려받지 않는 별도 작업에서 한다.
 재관측이 실패하면 확인 불가로 남긴다. 설치와 데이터를 삭제하지 않는다.
 설치 요청 후 결과를 확인하지 못한 device reservation도 보존한다.
 다음 실행은 현재 상태로 새 계획을 만든다. 파일·기기·교체 내용이 바뀌면 다시 승인한다.
@@ -132,6 +133,57 @@ GUI도 두 경우에 위험 확인을 요구한다. 비교 불가를 안전한 u
 전체 종료는 진행 중인 작업을 표시한다. 새 작업을 막고 모든 취소 처리가 끝날 때까지 기다린다.
 완료한 모바일 앱과 가상 기기를 창 닫기와 GUI 종료로 중단하지 않는다.
 
+## iOS 실기기 `.app`
+
+관련 구현 티켓은 [#219](https://github.com/minjunkim-dev/mobile-runtime/issues/219)다.
+Info.plist의 `CFBundleSupportedPlatforms`가 `iPhoneOS`인 `.app`은 실기기 provider로 보낸다.
+명령·계획·승인·파일 lease·작업 전용 사본·교체/이전 빌드·충돌·결과 형식은 위 경로와 같다.
+
+```sh
+mobile app inspect /path/Device.app --device DEVICE-UDID --json
+mobile app run /path/Device.app --device DEVICE-UDID --plan --json
+mobile app run /path/Device.app --device DEVICE-UDID --approve EXACT-PLAN-ID --non-interactive --json
+```
+
+파일 검사는 Simulator와 같은 Info.plist·Mach-O 규칙을 쓴다. platform은 `iPhoneOS`와 Mach-O platform 2다.
+`embedded.mobileprovision`은 `security cms -D`로 읽는다. 서명은 `codesign --verify --deep --strict -R=anchor apple generic`로 확인한다. profile CMS 서명 자체의 최종 확인은 설치 결과다.
+서명 leaf 인증서를 추출해 profile의 `DeveloperCertificates`에 있는지 SHA-256으로 비교한다.
+`get-task-allow`가 참이면 Development, 아니면 Ad Hoc이다.
+모든 기기를 허용하는 Enterprise profile, 기기 목록이 없는 App Store profile, profile 없는 `.app`은 검사에서 중단한다.
+profile의 UDID 목록은 JSON과 사람용 출력에 넣지 않는다. 개수와 선택 기기의 포함 여부만 보고한다.
+
+기기는 고정한 Xcode의 `devicectl list devices`에서 `reality: physical`, `platform: iOS`만 후보로 쓴다.
+`--device`는 UDID다. 선택한 기기만 `devicectl device info details`로 현재 상태를 읽는다.
+이 조회가 실패하면 연결 조건을 `unreachable`로 기록한다. 다른 기기로 바꾸지 않는다.
+선택하지 않은 기기와 페어링되지 않은 기기는 연락하지 않는다. pairing 요청을 만들지 않기 위해서다.
+목록의 유휴 연결은 준비 여부 판정에 쓰지 않는다.
+architecture는 CoreDevice의 `supportedCPUTypes` capability다. 기기 CPU 측정이 아니다.
+
+선택 기기가 있으면 `operation.prerequisites`에 아래 조건을 `satisfied`·`unsatisfied`·`unknown`으로 기록한다.
+충족하지 않은 조건은 `observed`와 수동 `action`을 가진다. 하나라도 충족하지 않으면 계획을 만들지 않는다.
+조치 뒤 같은 `inspect` 명령이 다시 확인이다. 승인 뒤 설치 직전에도 같은 검사를 다시 한다.
+
+| id | 확인 |
+| --- | --- |
+| `signature` | strict 서명 검증, 서명 team과 profile team, 서명 인증서의 profile 포함 |
+| `profile-app-id` | profile의 application-identifier와 앱 ID |
+| `profile-expiration` | profile 만료 시각 |
+| `profile-device` | 선택 UDID의 profile 포함 |
+| `os` | 앱 최소 iOS와 기기 iOS |
+| `architecture` | 앱 slice와 기기 CPU capability |
+| `trust` | CoreDevice pairing |
+| `developer-mode` | Developer Mode |
+| `connection` | 선택 기기의 현재 연결 |
+
+Runstir는 기기 등록·profile 생성·재서명·계정 입력·pairing 변경·Developer Mode 변경을 하지 않는다.
+기기를 계정에 등록해도 기존 앱 파일은 바뀌지 않는다. 그 기기를 포함한 profile로 다시 서명·내보내야 한다.
+이 조건 검사는 사전 검사다. 최종 수락은 `devicectl device install app`의 결과다.
+설치 관측은 `devicectl device info apps --include-all-apps --bundle-id`의 build다.
+실행 요청은 `devicectl device process launch`다. 기존 실행 종료 옵션을 쓰지 않는다.
+실행 관측은 `devicectl device info processes`에서 설치 위치 바로 아래 실행 파일의 process다.
+`/private/var`와 `/var` 표기를 같은 위치로 비교한다. 비교할 수 없는 위치는 중지가 아니라 확인 불가다.
+실패·취소 뒤 설치 상태 재관측은 위 경로와 같다. 연결이 끊기면 확인 불가로 남긴다.
+
 ## 완료 판정에 필요한 실제 검증
 
 fixture 테스트는 parser·승인·충돌·실패 경계만 확인한다.
@@ -140,6 +192,8 @@ fixture 테스트는 parser·승인·충돌·실패 경계만 확인한다.
 
 1. 같은 파일과 기기 입력으로 CLI와 GUI의 파일 확인·계획·승인·설치·실행 요청·첫 화면을 확인한다.
 2. 실제 Simulator `.app`와 Emulator APK를 각각 확인한다. 파일·내용 식별·기기·OS·architecture·도구를 고정한다.
+   #219는 대표 iOS 실기기의 Development 또는 Ad Hoc `.app`을 같은 기준으로 확인한다. 미충족 조건의 거부와 다시 확인,
+   선택 기기 조회가 미신뢰 기기에 pairing을 요청하는지도 기록한다. 전체 framework 실기기 행렬은 추가하지 않는다.
 3. 같은 앱의 표본 데이터를 넣고 교체·이전 버전 거부·재시도 뒤 데이터 보존을 관측한다.
 4. 부적합·필수 정보 불명·파일 변경·설치 실패·취소·연결 해제 뒤 상태와 재승인을 확인한다.
 5. 파일과 프로젝트의 독립 실행과 기기 충돌을 확인한다. 기존 자원과 다른 작업의 보존을 확인한다.

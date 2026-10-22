@@ -49,12 +49,22 @@ public enum AppFileHumanOutput {
                 "architecture: \(artifact.metadata.architectures.joined(separator: ", ")); minimum OS: \(artifact.metadata.minimumOS)",
                 artifact.metadata.signatureCondition]
             if let signer = artifact.metadata.signingIdentity { output.append("signer SHA-256: \(signer)") }
+            if let profile = artifact.metadata.provisioning {
+                output.append("profile: \(profile.kind) \(profile.profileUUID), team \(profile.teamID), app ID \(profile.applicationIdentifier), expires \(profile.expiration), \(profile.provisionedDeviceCount) devices")
+            }
         }
         for device in operation.devices {
             output.append("device: \(device.id) — \(device.name), OS \(device.os), \(device.architectures.joined(separator: ", ")), \(device.ready ? "ready" : "manual preparation required")")
+            if let pairing = device.pairing {
+                output.append("device state: pairing \(pairing), Developer Mode \(device.developerMode ?? "unknown"), connection \(device.connection ?? "unknown")")
+            }
             if let source = device.architectureSource {
                 output.append("architecture evidence: \(source); runtime: \(device.runtimeIdentifier ?? "unknown"), build \(device.runtimeBuild ?? "unknown"), available \(device.runtimeAvailable.map(String.init) ?? "unknown")")
             }
+        }
+        for check in operation.prerequisites ?? [] {
+            output.append("condition \(check.id): \(check.state) — \(check.observed)")
+            if let action = check.action { output.append("  manual step: \(action)") }
         }
         if let plan = operation.plan {
             output += ["plan-id: \(plan.id)",
@@ -127,17 +137,18 @@ public enum AppFileExecution {
             operation.artifact = artifact
             operation.completed.append("inspect")
             events.send("stage", stage: "inspect", state: "succeeded", detail: "\(artifact.metadata.appID), \(artifact.contentIdentityAlgorithm) \(artifact.contentIdentity)")
-            operation.devices = try await tools.devices()
+            operation.devices = try await tools.devices(selected: input.device)
             guard let deviceID = input.device else {
                 operation.state = inspectOnly ? "succeeded" : "needs-selection"
                 if !inspectOnly { operation.requiredInput = ["--device"] }
-                operation.nextAction = "Select a listed, prepared and booted virtual device. No installation was requested."
+                operation.nextAction = "Select a listed, prepared device: a booted virtual device, or a connected, trusted iOS device with Developer Mode. No installation was requested."
                 return finish(operation, code: inspectOnly ? 0 : 1, events: events)
             }
             guard let device = operation.devices.first(where: { $0.id == deviceID }) else {
                 throw AppFileSnapshot.failure("The selected device is absent or disconnected. Select a current candidate; Runstir will not switch targets.")
             }
             selected = device
+            operation.prerequisites = prerequisites(artifact.metadata, device: device)
             try compatible(artifact.metadata, device: device)
             let installed = try await tools.installed(appID: artifact.metadata.appID, device: device)
             operation.installed = installed
@@ -187,10 +198,11 @@ public enum AppFileExecution {
                 throw AppFileSnapshot.failure("The copied app bytes or metadata differ from the approved file.")
             }
             let current = try await inspect(file: file, first: AppFileSnapshot.read(file), provider: tools, platform: input.platform)
-            let currentDevices = try await tools.devices()
+            let currentDevices = try await tools.devices(selected: deviceID)
             guard let currentDevice = currentDevices.first(where: { $0.id == deviceID }) else {
                 throw AppFileSnapshot.failure("The approved device disconnected before installation.")
             }
+            operation.prerequisites = prerequisites(current.metadata, device: currentDevice)
             try compatible(current.metadata, device: currentDevice)
             let currentInstalled = try await tools.installed(appID: current.metadata.appID, device: currentDevice)
             let currentPlan = try makePlan(artifact: current, device: currentDevice, installed: currentInstalled)
@@ -250,7 +262,12 @@ public enum AppFileExecution {
             if installationRequested {
                 if operation.installation != "installed" { operation.installation = "unconfirmed" }
                 if let provider, let selected, let artifact = operation.artifact {
-                    do { operation.installed = try await provider.installed(appID: artifact.metadata.appID, device: selected) }
+                    // Cancellation stops new steps, not the look at what the interrupted step left.
+                    // An unstructured task does not inherit this task's cancellation.
+                    events.send("stage", stage: "reobserve", state: "running",
+                        detail: "Checking the installed state after the interruption. Nothing is deleted or launched.")
+                    let observation = Task { try await provider.installed(appID: artifact.metadata.appID, device: selected) }
+                    do { operation.installed = try await observation.value }
                     catch { operation.installed = AppFileInstalledState(state: "unknown", detail: "Re-observation failed: \(error)") }
                 }
             }
@@ -273,7 +290,17 @@ public enum AppFileExecution {
     }
 
     static func compatible(_ metadata: AppFileMetadata, device: AppFileDevice,
-                           host: ToolPreparationHost = .current) throws {
+                           host: ToolPreparationHost = .current, now: Date = Date()) throws {
+        if let checks = prerequisites(metadata, device: device, now: now) {
+            let open = checks.filter { $0.state != "satisfied" }
+            guard open.isEmpty else {
+                throw DomainError(summary: "Physical iOS installation conditions are not met: "
+                    + open.map { "\($0.id) \($0.state) (\($0.observed))" }.joined(separator: "; "),
+                    remediation: Remediation(summary: open.compactMap(\.action).joined(separator: " ")
+                        + " Then inspect again with the same file and device. Runstir did not register a device, re-sign the app or collect an account."))
+            }
+            return
+        }
         guard device.ready else {
             throw AppFileSnapshot.failure("The selected virtual device is not ready. Boot and prepare that device manually, then inspect again. No environment preparation was started.")
         }
@@ -292,6 +319,53 @@ public enum AppFileExecution {
               let minimum = SemanticVersion(metadata.minimumOS), let os = SemanticVersion(device.os), minimum <= os else {
             throw AppFileSnapshot.failure("The app architecture or minimum OS is incompatible with the selected device.")
         }
+    }
+
+    /// Physical iOS conditions Runstir can observe; nil for virtual devices and Android.
+    /// The install itself stays the platform's final acceptance.
+    static func prerequisites(_ metadata: AppFileMetadata, device: AppFileDevice,
+                              now: Date = Date()) -> [AppFilePrerequisite]? {
+        guard let profile = metadata.provisioning else { return nil }
+        let reexport = "Sign and export the app again yourself in Xcode or your build system. Runstir does not re-sign."
+        let prefix = profile.applicationIdentifier.prefix { $0 != "." }
+        let pattern = profile.applicationIdentifier.drop { $0 != "." }.dropFirst()
+        let appIDMatches = profile.applicationIdentifierPrefixes.contains(String(prefix)) && (pattern == "*" || pattern == metadata.appID
+            || pattern.hasSuffix(".*") && metadata.appID.hasPrefix(pattern.dropLast()))
+        let expiration = ISO8601DateFormatter().date(from: profile.expiration)
+        let listed = profile.provisionedDevices.contains { $0.caseInsensitiveCompare(device.id) == .orderedSame }
+        let minimum = SemanticVersion(metadata.minimumOS)
+        let os = SemanticVersion(device.os)
+        return [
+            AppFilePrerequisite(id: "signature",
+                satisfied: profile.signatureVerified && profile.signingTeamID == profile.teamID && profile.signingCertificateInProfile,
+                observed: "codesign strict verification \(profile.signatureVerified ? "passed" : "failed"); signing team \(profile.signingTeamID ?? "unknown"), profile team \(profile.teamID); signing certificate \(profile.signingCertificateInProfile ? "is" : "is not") in the profile",
+                action: "Sign with a certificate that this \(profile.kind) profile lists, from the same team. " + reexport),
+            AppFilePrerequisite(id: "profile-app-id", satisfied: appIDMatches,
+                observed: "profile application identifier \(profile.applicationIdentifier); app ID \(metadata.appID)",
+                action: "Use a profile whose App ID matches \(metadata.appID). " + reexport),
+            AppFilePrerequisite(id: "profile-expiration", satisfied: expiration.map { $0 > now },
+                observed: "\(profile.kind) profile \(profile.profileUUID) expires \(profile.expiration)",
+                action: "Use a current, unexpired profile. " + reexport),
+            AppFilePrerequisite(id: "profile-device", satisfied: listed,
+                observed: "UDID \(device.id) is \(listed ? "" : "not ")among the profile's \(profile.provisionedDeviceCount) devices",
+                action: "Register this UDID in your Apple Developer account yourself and regenerate the profile. Registering the device does not change an existing app file. " + reexport),
+            AppFilePrerequisite(id: "os", satisfied: minimum.flatMap { minimum in os.map { minimum <= $0 } },
+                observed: "app minimum iOS \(metadata.minimumOS); device iOS \(device.os)",
+                action: "Update the device's iOS, or use a build whose minimum iOS this device meets."),
+            AppFilePrerequisite(id: "architecture",
+                satisfied: device.architectures.isEmpty ? nil : !Set(metadata.architectures).isDisjoint(with: device.architectures),
+                observed: "app \(metadata.architectures.joined(separator: ", ")); device \(device.architectures.isEmpty ? "unknown" : device.architectures.joined(separator: ", "))",
+                action: "Use a build with an architecture this device supports."),
+            AppFilePrerequisite(id: "trust", satisfied: device.pairing.map { $0 == "paired" },
+                observed: "pairing \(device.pairing ?? "unknown")",
+                action: "Connect and unlock the device, then tap Trust This Computer, or pair it in Xcode's Devices and Simulators window."),
+            AppFilePrerequisite(id: "developer-mode", satisfied: device.developerMode.map { $0 == "enabled" },
+                observed: "Developer Mode \(device.developerMode ?? "unknown")",
+                action: "On the device, turn on Settings > Privacy & Security > Developer Mode and restart when asked. A device whose iOS has no Developer Mode setting is not supported by this devicectl path."),
+            AppFilePrerequisite(id: "connection", satisfied: device.connection.map { $0 == "connected" },
+                observed: "connection \(device.connection ?? "unknown")",
+                action: "Connect the device by USB or the same network and unlock it."),
+        ]
     }
 
     private static func makePlan(artifact: AppFileArtifact, device: AppFileDevice,
@@ -354,23 +428,29 @@ public enum AppFileExecution {
 
 private enum AppFileProvider: Sendable {
     case ios(SimulatorAppFile)
+    case iosDevice(IOSDeviceAppFile)
     case android(AndroidAppFile)
 
     init(file: URL, runner: any ProcessRunner, environment: [String: String]) throws {
-        if file.pathExtension == "app" { self = .ios(SimulatorAppFile(runner: runner, environment: environment)) }
-        else { self = .android(try AndroidAppFile(runner: runner, environment: environment)) }
+        if file.pathExtension == "app" {
+            self = IOSDeviceAppFile.declaresDevice(file)
+                ? .iosDevice(IOSDeviceAppFile(runner: runner, environment: environment))
+                : .ios(SimulatorAppFile(runner: runner, environment: environment))
+        } else { self = .android(try AndroidAppFile(runner: runner, environment: environment)) }
     }
 
     func metadata(_ file: URL) async throws -> AppFileMetadata {
         switch self {
         case .ios(let tools): try await tools.metadata(file)
+        case .iosDevice(let tools): try await tools.metadata(file)
         case .android(let tools): try await tools.metadata(file)
         }
     }
 
-    func devices() async throws -> [AppFileDevice] {
+    func devices(selected: String?) async throws -> [AppFileDevice] {
         switch self {
         case .ios(let tools): try await tools.devices()
+        case .iosDevice(let tools): try await tools.devices(selected: selected)
         case .android(let tools): try await tools.devices()
         }
     }
@@ -378,6 +458,7 @@ private enum AppFileProvider: Sendable {
     func installed(appID: String, device: AppFileDevice) async throws -> AppFileInstalledState {
         switch self {
         case .ios(let tools): try await tools.installed(appID: appID, device: device)
+        case .iosDevice(let tools): try await tools.installed(appID: appID, device: device)
         case .android(let tools): try await tools.installed(appID: appID, device: device)
         }
     }
@@ -385,6 +466,7 @@ private enum AppFileProvider: Sendable {
     func install(file: URL, device: AppFileDevice) async throws {
         switch self {
         case .ios(let tools): try await tools.install(file: file, device: device)
+        case .iosDevice(let tools): try await tools.install(file: file, device: device)
         case .android(let tools): try await tools.install(file: file, device: device)
         }
     }
@@ -392,6 +474,7 @@ private enum AppFileProvider: Sendable {
     func launch(metadata: AppFileMetadata, device: AppFileDevice) async throws {
         switch self {
         case .ios(let tools): try await tools.launch(appID: metadata.appID, device: device)
+        case .iosDevice(let tools): try await tools.launch(appID: metadata.appID, device: device)
         case .android(let tools): try await tools.launch(metadata: metadata, device: device)
         }
     }
@@ -399,6 +482,7 @@ private enum AppFileProvider: Sendable {
     func observe(_ claim: ResourceClaim) async throws -> ClaimObservation {
         switch self {
         case .ios(let tools): try await tools.observe(claim)
+        case .iosDevice(let tools): try await tools.observe(claim)
         case .android(let tools): try await tools.observe(claim)
         }
     }

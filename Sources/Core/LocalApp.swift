@@ -41,10 +41,12 @@ public struct AppFileMetadata: Codable, Sendable, Equatable {
     public let launcherActivity: String?
     public let signatureCondition: String
     public let signingIdentity: String?
+    /// Physical iOS builds only; Simulator and Android files have none.
+    public let provisioning: AppFileProvisioning?
 
     public init(platform: ProjectPlatform, appID: String, name: String?, version: String?, build: String,
                 architectures: [String], minimumOS: String, launcherActivity: String? = nil,
-                signatureCondition: String, signingIdentity: String? = nil) {
+                signatureCondition: String, signingIdentity: String? = nil, provisioning: AppFileProvisioning? = nil) {
         self.platform = platform
         self.appID = appID
         self.name = name.flatMap { $0.isEmpty ? nil : $0 }
@@ -55,6 +57,65 @@ public struct AppFileMetadata: Codable, Sendable, Equatable {
         self.launcherActivity = launcherActivity
         self.signatureCondition = signatureCondition
         self.signingIdentity = signingIdentity
+        self.provisioning = provisioning
+    }
+}
+
+/// Facts read from a physical iOS app's embedded Development or Ad Hoc profile and
+/// signature. Runstir checks them; it never registers devices or re-signs the app.
+public struct AppFileProvisioning: Codable, Sendable, Equatable {
+    public let kind: String
+    public let profileUUID: String
+    public let profileName: String?
+    public let teamID: String
+    /// Usually the team ID; older App IDs can carry a different prefix.
+    public let applicationIdentifierPrefixes: [String]
+    public let applicationIdentifier: String
+    /// ISO 8601.
+    public let expiration: String
+    /// Kept out of JSON and evidence: only the count and the selected device's membership are reported.
+    /// A decoded value therefore has an empty list and never equals a freshly inspected one.
+    public private(set) var provisionedDevices: [String] = []
+    public let provisionedDeviceCount: Int
+    public let signatureVerified: Bool
+    public let signingTeamID: String?
+    public let signingCertificateInProfile: Bool
+
+    private enum CodingKeys: String, CodingKey {
+        case kind, profileUUID, profileName, teamID, applicationIdentifierPrefixes, applicationIdentifier, expiration, provisionedDeviceCount,
+             signatureVerified, signingTeamID, signingCertificateInProfile
+    }
+
+    public init(kind: String, profileUUID: String, profileName: String?, teamID: String,
+                applicationIdentifierPrefixes: [String], applicationIdentifier: String, expiration: String, provisionedDevices: [String],
+                signatureVerified: Bool, signingTeamID: String?, signingCertificateInProfile: Bool) {
+        self.kind = kind
+        self.profileUUID = profileUUID
+        self.profileName = profileName
+        self.teamID = teamID
+        self.applicationIdentifierPrefixes = applicationIdentifierPrefixes
+        self.applicationIdentifier = applicationIdentifier
+        self.expiration = expiration
+        self.provisionedDevices = provisionedDevices
+        provisionedDeviceCount = provisionedDevices.count
+        self.signatureVerified = signatureVerified
+        self.signingTeamID = signingTeamID
+        self.signingCertificateInProfile = signingCertificateInProfile
+    }
+}
+
+/// One observable installation condition. Anything but `satisfied` names a manual action.
+public struct AppFilePrerequisite: Codable, Sendable, Equatable {
+    public let id: String
+    public let state: String
+    public let observed: String
+    public let action: String?
+
+    public init(id: String, satisfied: Bool?, observed: String, action: String) {
+        self.id = id
+        state = satisfied.map { $0 ? "satisfied" : "unsatisfied" } ?? "unknown"
+        self.observed = observed
+        self.action = satisfied == true ? nil : action
     }
 }
 
@@ -89,10 +150,15 @@ public struct AppFileDevice: Codable, Sendable, Equatable {
     public let runtimeBuild: String?
     public let runtimeAvailable: Bool?
     public let architectureSource: String?
+    /// Physical devices only, as CoreDevice reports them.
+    public let pairing: String?
+    public let developerMode: String?
+    public let connection: String?
 
     public init(id: String, handle: String, name: String, os: String, architectures: [String],
                 ready: Bool, toolIdentity: String, runtimeIdentifier: String? = nil,
-                runtimeBuild: String? = nil, runtimeAvailable: Bool? = nil, architectureSource: String? = nil) {
+                runtimeBuild: String? = nil, runtimeAvailable: Bool? = nil, architectureSource: String? = nil,
+                pairing: String? = nil, developerMode: String? = nil, connection: String? = nil) {
         self.id = id
         self.handle = handle
         self.name = name
@@ -104,6 +170,9 @@ public struct AppFileDevice: Codable, Sendable, Equatable {
         self.runtimeBuild = runtimeBuild
         self.runtimeAvailable = runtimeAvailable
         self.architectureSource = architectureSource
+        self.pairing = pairing
+        self.developerMode = developerMode
+        self.connection = connection
     }
 }
 
@@ -159,6 +228,8 @@ public struct AppFileOperation: Codable, Sendable {
     public var artifact: AppFileArtifact?
     public var devices: [AppFileDevice] = []
     public var plan: AppFilePlan?
+    /// The selected physical iOS device's checked conditions; absent for virtual devices.
+    public var prerequisites: [AppFilePrerequisite]?
     public var requiredInput: [String] = []
     public var completed: [String] = []
     public var installation = "not-requested"
