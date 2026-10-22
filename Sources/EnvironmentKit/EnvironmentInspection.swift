@@ -57,7 +57,7 @@ public struct EnvironmentInspection: Sendable {
             do {
                 let flutter = try await FlutterAndroidWorkflow.make(input: input, anchor: anchor, runner: runner,
                     factory: flutterFactory)
-                note("The protected Flutter Android SDK view is ready. Running Android checks.")
+                note(FlutterAndroidWorkflow.viewReadyDetail)
                 let context = await WorkflowContext.make(input: input, platform: .android, anchor: anchor, runner: runner,
                     projectEnvironmentOverride: flutter.projectEnvironment, projectRunnerOverride: flutter.projectRunner,
                     selectedConfig: config)
@@ -75,6 +75,9 @@ public struct EnvironmentInspection: Sendable {
         let context = await WorkflowContext.make(input: input, platform: selection.platform ?? .ios,
                                                  anchor: anchor, runner: runner, selectedConfig: config,
                                                  selectedConfiguration: configuration)
-        return Self(selection: try FlutterIOSWorkflow.selection(selection, workspace: context.flutter?.workspace), report: await context.engine.run())
+        let report = await context.engine.run()
+        // The engine records cancelled checks as unknown; a cancelled inspection is not a result.
+        try Task.checkCancellation()
+        return Self(selection: try FlutterIOSWorkflow.selection(selection, workspace: context.flutter?.workspace), report: report)
     }
 }

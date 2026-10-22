@@ -18,6 +18,7 @@ struct FlutterAndroidWorkflow: Sendable {
     }
     /// The factory copies and checks the SDK synchronously, so cancellation cannot interrupt it.
     static let preparingViewDetail = "Preparing the protected Flutter Android SDK view. Cancellation waits for the SDK copy and check to return."
+    static let viewReadyDetail = "The protected Flutter Android SDK view is ready. Running Android checks."
 
     let projectEnvironment: ProjectExecutionEnvironment
     let projectRunner: any ProcessRunner

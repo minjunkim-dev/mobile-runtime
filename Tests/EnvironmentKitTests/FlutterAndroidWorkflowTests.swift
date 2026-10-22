@@ -233,6 +233,7 @@ struct FlutterAndroidWorkflowTests {
         }
         #expect(trace.count >= 1)
         #expect(reportedBeforeView.value.last == FlutterAndroidWorkflow.preparingViewDetail)
+        #expect(reported.value.last == FlutterAndroidWorkflow.viewReadyDetail)
     }
 
     @Test("RN and native Android callers never enter the Flutter factory", arguments: ["rn", "native"])

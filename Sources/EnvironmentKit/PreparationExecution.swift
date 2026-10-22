@@ -475,6 +475,7 @@ public enum PreparationExecution {
                 do {
                     protectedFlutter = try await FlutterAndroidWorkflow.make(input: input, anchor: anchor, runner: runner,
                         preparation: flutter, tools: toolPreparation, factory: flutterFactory)
+                    note(FlutterAndroidWorkflow.viewReadyDetail)
                 } catch is CancellationError { throw CancellationError() }
                 catch is DomainError { executionBlocked = true }
             }
