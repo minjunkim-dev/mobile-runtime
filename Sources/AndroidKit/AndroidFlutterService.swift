@@ -124,15 +124,15 @@ struct AndroidFlutterService: Sendable {
             throw AndroidStateError("the created Flutter forward was replaced; preserve ownership")
         }
         try await verify(value, pid: pid, deadline: deadline)
-        try await answeringVM(uri, hostPort: hostPort, deadline: deadline)
+        let serviceURI = try await answeringVM(uri, hostPort: hostPort, deadline: deadline)
         try await verify(value, pid: pid, deadline: deadline)
         _ = try remaining(until: deadline)
-        return (value, AndroidFlutterConnection(hostPort: hostPort, devicePort: devicePort))
+        return (value, AndroidFlutterConnection(hostPort: hostPort, devicePort: devicePort, serviceURI: serviceURI))
     }
 
     /// The forward alone does not prove a Dart VM answers on the host port.
     /// Never include the command or its output in errors: the URI path is a credential.
-    private func answeringVM(_ uri: URL, hostPort: Int, deadline: ContinuousClock.Instant) async throws {
+    private func answeringVM(_ uri: URL, hostPort: Int, deadline: ContinuousClock.Instant) async throws -> URL {
         guard var components = URLComponents(url: uri, resolvingAgainstBaseURL: false), !uri.path.isEmpty else {
             throw AndroidStateError("Flutter VM service has no authenticated path")
         }
@@ -158,7 +158,7 @@ struct AndroidFlutterService: Sendable {
                       (document["result"] as? [String: Any])?["type"] as? String == "VM" else {
                     throw AndroidStateError("the forwarded Flutter URI did not answer as a Dart VM service")
                 }
-                return
+                return forwarded
             }
             guard ContinuousClock.now < deadline else {
                 throw AndroidStateError("the forwarded Flutter VM service did not answer before the launch deadline")

@@ -964,6 +964,7 @@ private func androidRuntimeStages(anchor: ProjectAnchor, runtime: AndroidRuntime
             let connection = try await runtime.flutterConnection()
             product.flutterConnection = connection
             context.androidProduct = product
+            context.developmentServiceURI = connection.serviceURI?.absoluteString
             return .pass("host tcp:\(connection.hostPort) → device tcp:\(connection.devicePort)")
         },
     ] : [])
