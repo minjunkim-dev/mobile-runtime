@@ -102,7 +102,7 @@ public struct IOSDeviceAppFile: Sendable {
         let (result, json) = try await devicectl(["device", "install", "app", "--device", device.handle, file.path], timeout: 300)
         guard json != nil else {
             throw DomainError(summary: "devicectl refused the app installation: " + result.standardError.lastLines(8),
-                remediation: Remediation(summary: "Fix the reported signing, profile or device condition manually, then inspect again. Runstir did not delete the existing app or its data, register a device or re-sign the app."))
+                remediation: Remediation(summary: "If the connection was lost, reconnect and unlock the selected device. Inspect again to check its connection and installed app state before approving a new plan. If the error reports a signing or profile problem, correct that condition manually first. Runstir did not delete the existing app or its data, register a device or re-sign the app."))
         }
     }
 
