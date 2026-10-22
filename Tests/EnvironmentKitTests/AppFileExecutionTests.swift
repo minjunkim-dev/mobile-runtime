@@ -766,6 +766,17 @@ struct AppFileExecutionTests {
         #expect(!fixture.runner.commands.contains(where: forbidden))
     }
 
+    @Test("a running Emulator name does not establish the current AVD directory as its origin")
+    func runningOriginDirectory() async throws {
+        let fixture = try AppFileFixture(platform: .android, shutDown: true)
+        fixture.runner.shutDown = false
+        let result = await fixture.run(planOnly: true)
+        let device = try #require(result.operation.devices.first)
+        #expect(device.handle == "emulator-5554")
+        #expect(device.origin != nil)
+        #expect(device.avdDirectory == nil)
+    }
+
     @Test("a selected shut-down device is planned as booted, then booted once only after approval", arguments: [ProjectPlatform.ios, .android])
     func bootAfterApproval(_ platform: ProjectPlatform) async throws {
         let fixture = try AppFileFixture(platform: platform, shutDown: true)
@@ -781,6 +792,11 @@ struct AppFileExecutionTests {
         #expect(!fixture.runner.commands.contains(where: boots) && fixture.runner.spawned.isEmpty)
 
         let result = await fixture.run(approval: plan.approval)
+        if platform == .android {
+            #expect(result.operation.devices.first?.origin == plan.device.origin)
+            #expect(result.operation.devices.first?.avdDirectory == plan.device.avdDirectory)
+            #expect(plan.device.avdDirectory != nil)
+        }
         #expect(result.exitCode == 0, Comment(rawValue: result.operation.error ?? ""))
         #expect(result.operation.completed == ["inspect", "boot", "install", "launch"])
         let boot = try #require(result.operation.deviceBoot)

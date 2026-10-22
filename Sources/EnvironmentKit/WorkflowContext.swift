@@ -174,7 +174,7 @@ public struct WorkflowContext: Sendable {
 
         return WorkflowContext(
             anchor: anchor,
-            engine: DoctorEngine(checks: toolObservationChecks + checks),
+            engine: DoctorEngine(checks: toolObservationChecks + checks + [DeviceOriginCheck()]),
             config: config,
             lookup: lookup,
             runner: runner,

@@ -56,7 +56,9 @@ public func androidWorkflowDevices(anchor: ProjectAnchor, config: ConfigContext,
     let names = result.standardOutput.split(whereSeparator: \.isNewline).map(String.init)
     return context.avds(names: names, sdk: sdk).filter { $0.config != nil && $0.systemImagePresent }
         .map { RuntimeDeviceCandidate(id: "avd:\($0.name)", name: $0.name,
-                                      detail: "API \($0.apiLevel.map(String.init) ?? "unknown") / \($0.abi ?? "unknown")") }
+                                      detail: "API \($0.apiLevel.map(String.init) ?? "unknown") / \($0.abi ?? "unknown")",
+                                      origin: DeviceOriginStore.user.origin(platform: .android, id: $0.name, directory: $0.directory),
+                                      avdDirectory: $0.directory?.path) }
         .sorted { $0.id < $1.id }
 }
 
