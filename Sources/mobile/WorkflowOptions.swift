@@ -55,7 +55,7 @@ struct WorkflowOptions: ParsableArguments {
             for candidate in result.operation.selection?.candidates ?? [] where result.operation.requiredInput.contains("--app") {
                 writeError("app: \(candidate.id)")
             }
-            for candidate in result.operation.devices { writeError("device: \(candidate.id) — \(candidate.name) / \(candidate.detail)") }
+            for candidate in result.operation.devices { writeError("device: \(candidate.id) — \(candidate.name) / \(candidate.detail)\(candidate.origin.map { " / " + $0.displayName } ?? "")\(candidate.avdDirectory.map { " / " + $0 } ?? "")") }
             if !result.operation.schemes.isEmpty { writeError("schemes: \(result.operation.schemes.joined(separator: ", "))") }
             if !result.operation.modules.isEmpty { writeError("modules: \(result.operation.modules.joined(separator: ", "))") }
             if !result.operation.variants.isEmpty { writeError("variants: \(result.operation.variants.joined(separator: ", "))") }

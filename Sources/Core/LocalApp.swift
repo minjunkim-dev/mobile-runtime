@@ -156,6 +156,8 @@ public struct AppFileDevice: Codable, Sendable, Equatable {
     public let connection: String?
     /// `required`: a shut-down virtual device that Runstir boots after approval. nil otherwise.
     public let boot: String?
+    public var origin: DeviceOrigin?
+    public var avdDirectory: String?
 
     public init(id: String, handle: String, name: String, os: String, architectures: [String],
                 ready: Bool, toolIdentity: String, runtimeIdentifier: String? = nil,

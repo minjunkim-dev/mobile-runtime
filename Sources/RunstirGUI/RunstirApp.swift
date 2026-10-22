@@ -241,7 +241,7 @@ struct InspectionView: View {
                 Picker("기기", selection: $device) {
                     Text("설정 또는 단일 후보").tag("")
                     ForEach(devices, id: \.id) { candidate in
-                        Text("\(candidate.name) / \(candidate.detail)").tag(candidate.id)
+                        Text("\(candidate.name) / \(candidate.detail)\(candidate.origin.map { " / " + $0.displayName } ?? "")\(candidate.avdDirectory.map { " / " + $0 } ?? "")").tag(candidate.id)
                     }
                 }.focused($focus, equals: .device)
                 if platform == "android" || (platform.isEmpty && result?.selection.platform == .android) {

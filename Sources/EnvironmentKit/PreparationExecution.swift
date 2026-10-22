@@ -227,6 +227,7 @@ public enum PreparationExecution {
                 }
                 result.operation.state = "running"
                 events.emit("stage", stage: step.id, state: "running", detail: "\(metadata.package) revision \(metadata.revision)")
+                var originError: (any Error)?
                 do {
                     let installed = try await action.run(runner: host) { ownedTemporaryPaths in
                         try await verifyInstallation(input: input, host: host, plan: plan, step: step, root: sourceRoot,
@@ -236,6 +237,17 @@ public enum PreparationExecution {
                     if !installed.androidResources.isEmpty {
                         result.operation.androidResources = (result.operation.androidResources ?? []) + installed.androidResources
                     }
+                    do {
+                        try Task.checkCancellation()
+                        let origins = DeviceOriginStore(leases: leases)
+                        for resource in installed.resources where resource.kind == .simulator && resource.origin == .created {
+                            if let id = resource.identifier { try origins.record(platform: .ios, id: id) }
+                        }
+                        for resource in installed.androidResources where resource.origin == .created {
+                            try origins.record(platform: .android, id: resource.name, directory: resource.directory)
+                        }
+                    } catch is CancellationError { throw CancellationError() }
+                    catch { originError = error }
                 } catch let failure as InstallationActionFailure {
                     result.operation.resources += failure.result.resources
                     if !failure.result.androidResources.isEmpty {
@@ -254,6 +266,13 @@ public enum PreparationExecution {
                 guard changedAfter.isEmpty else {
                     result.operation.changedFiles = changedAfter
                     throw DomainError(summary: "Source changed during resource installation", remediation: Remediation(summary: "Preserve the completed resource. Inspect changed files manually, then re-plan."))
+                }
+                if let originError {
+                    result.operation.state = "partial"
+                    result.operation.error = "The device was created, but its origin could not be recorded: \(originError)"
+                    result.operation.nextAction = "Preserve the created device and origin record. Inspect the record manually; Runstir did not delete the device or repair the record."
+                    result.exitCode = 1
+                    return finish(result, events)
                 }
             }
             if !actions.isEmpty {

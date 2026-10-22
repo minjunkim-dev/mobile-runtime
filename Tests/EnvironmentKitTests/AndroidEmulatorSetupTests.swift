@@ -18,6 +18,9 @@ struct AndroidEmulatorSetupTests {
         let diagnostic = try result.encoded(toolVersion: "fixture")
         #expect(result.operation.completed.contains("android.virtual-device.create"), Comment(rawValue: diagnostic))
         #expect(result.operation.androidResources?.first?.origin == .created)
+        let created = try #require(result.operation.androidResources?.first)
+        #expect(DeviceOriginStore(leases: fixture.leases).origin(platform: .android, id: created.name,
+            directory: created.directory) == .runstir)
         let again = await PreparationExecution.run(input: fixture.sdk.input, planOnly: true, runner: fixture.runner)
         let reuseDiagnostic = try again.encoded(toolVersion: "fixture")
         #expect(again.plan?.androidResources?.first?.origin == .reused, Comment(rawValue: reuseDiagnostic))
@@ -122,6 +125,7 @@ struct AndroidEmulatorSetupTests {
         let result = await PreparationExecution.run(input: fixture.sdk.input, approvedPlanID: try #require(plan.plan?.id), runner: fixture.runner, leases: fixture.leases)
         #expect(result.exitCode == 130)
         #expect(result.operation.state == "cancelled")
+        #expect(!FileManager.default.fileExists(atPath: DeviceOriginStore(leases: fixture.leases).file.path))
         #expect(FileManager.default.fileExists(atPath: fixture.image.appendingPathComponent("system.img").path))
         #expect(!FileManager.default.fileExists(atPath: fixture.sdk.repo.url("avds/Runstir_API_35_google_apis_arm64.ini").path))
     }

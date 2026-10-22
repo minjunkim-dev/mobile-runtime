@@ -109,7 +109,8 @@ public struct IOSWorkflowCandidates: Sendable {
                 configurations = [effective]
             }
         }
-        devices = availableSimulators.map { RuntimeDeviceCandidate(id: $0.udid, name: $0.name, detail: "iOS \($0.runtimeText)") }
+        devices = availableSimulators.map { RuntimeDeviceCandidate(id: $0.udid, name: $0.name, detail: "iOS \($0.runtimeText)",
+            origin: DeviceOriginStore.user.origin(platform: .ios, id: $0.udid)) }
             .sorted { $0.id < $1.id }
         if let name = config.configuration?.device,
             case .success(let selected) = SimulatorSelector(simulators: availableSimulators, lookup: lookup).named(name) {

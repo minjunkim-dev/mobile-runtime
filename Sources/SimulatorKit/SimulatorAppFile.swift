@@ -45,7 +45,7 @@ public struct SimulatorAppFile: Sendable {
                       values.allSatisfy({ ["arm64", "x86_64"].contains($0) }) else { return nil }
                 return values
             } ?? []
-            return AppFileDevice(id: device.udid, handle: device.udid, name: device.name,
+            var candidate = AppFileDevice(id: device.udid, handle: device.udid, name: device.name,
                 os: device.runtimeText, architectures: architectures,
                 ready: device.isAvailable && device.isBooted, toolIdentity: installation.summary,
                 runtimeIdentifier: device.runtimeIdentifier, runtimeBuild: runtime?.buildversion,
@@ -53,6 +53,8 @@ public struct SimulatorAppFile: Sendable {
                 architectureSource: "simctl list runtimes -j supportedArchitectures; runtime capabilities, not measured device CPU",
                 // Only a shut-down device on an installed, readable runtime; a missing runtime stays manual.
                 boot: device.isAvailable && device.isShutdown && !architectures.isEmpty ? "required" : nil)
+            candidate.origin = DeviceOriginStore.user.origin(platform: .ios, id: device.udid)
+            return candidate
         }
     }
 

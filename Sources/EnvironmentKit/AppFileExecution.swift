@@ -55,7 +55,7 @@ public enum AppFileHumanOutput {
         }
         for device in operation.devices {
             let state = device.ready ? "ready" : device.boot == "required" ? "shut down; Runstir boots it after approval" : "manual preparation required"
-            output.append("device: \(device.id) — \(device.name), OS \(device.os), \(device.architectures.joined(separator: ", ")), \(state)")
+            output.append("device: \(device.id) — \(device.name), OS \(device.os), \(device.architectures.joined(separator: ", ")), \(state)\(device.origin.map { ", " + $0.displayName } ?? "")\(device.avdDirectory.map { ", " + $0 } ?? "")")
             if let pairing = device.pairing {
                 output.append("device state: pairing \(pairing), Developer Mode \(device.developerMode ?? "unknown"), connection \(device.connection ?? "unknown")")
             }
@@ -455,7 +455,11 @@ public enum AppFileExecution {
             let buildOrderUnknown: Bool
             let warnings: [String]
         }
-        let id = try AppFileSnapshot.digest(Identity(artifact: artifact, device: device, installed: installed,
+        var approvalDevice = device
+        // Display provenance does not change an existing installation approval.
+        approvalDevice.origin = nil
+        approvalDevice.avdDirectory = nil
+        let id = try AppFileSnapshot.digest(Identity(artifact: artifact, device: approvalDevice, installed: installed,
             downgrade: downgrade, buildOrderUnknown: buildOrderUnknown, warnings: warnings))
         return AppFilePlan(id: id, artifact: artifact, device: device, installed: installed,
             replacement: replacement, downgrade: downgrade, buildOrderUnknown: buildOrderUnknown, warnings: warnings)
