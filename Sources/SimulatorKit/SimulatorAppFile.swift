@@ -50,8 +50,26 @@ public struct SimulatorAppFile: Sendable {
                 ready: device.isAvailable && device.isBooted, toolIdentity: installation.summary,
                 runtimeIdentifier: device.runtimeIdentifier, runtimeBuild: runtime?.buildversion,
                 runtimeAvailable: runtime?.isAvailable,
-                architectureSource: "simctl list runtimes -j supportedArchitectures; runtime capabilities, not measured device CPU")
+                architectureSource: "simctl list runtimes -j supportedArchitectures; runtime capabilities, not measured device CPU",
+                // Only a shut-down device on an installed, readable runtime; a missing runtime stays manual.
+                boot: device.isAvailable && device.isShutdown && !architectures.isEmpty ? "required" : nil)
         }
+    }
+
+    /// Boots the approved Simulator with `up`'s headless `simctl bootstatus -b`. Simulator.app is not opened.
+    public func startBoot(_ device: AppFileDevice) async throws -> AppFileDeviceBoot {
+        guard device.boot == "required" else { throw Self.failure("The selected Simulator cannot be booted by Runstir.") }
+        try await bootSimulator(udid: device.handle, name: device.name, runner: runner,
+            environment: await locator.pinnedEnvironment())
+        return AppFileDeviceBoot(state: "requested", device: device.id, handle: device.handle,
+            detail: "Runstir booted this Simulator and leaves it booted, as `up` does. Shut it down yourself when finished.")
+    }
+
+    public func awaitBooted(_ device: AppFileDevice) async throws -> AppFileDevice {
+        guard let live = try await devices().first(where: { $0.id == device.id }), live.ready else {
+            throw Self.failure("The Simulator was booted but is not observed as Booted.")
+        }
+        return live
     }
 
     public func installed(appID: String, device: AppFileDevice) async throws -> AppFileInstalledState {
@@ -93,7 +111,7 @@ public struct SimulatorAppFile: Sendable {
     }
 
     private static func failure(_ summary: String) -> DomainError {
-        DomainError(summary: summary, remediation: Remediation(summary: "Choose a supported iOS Simulator .app and a prepared, booted Simulator, then inspect again. No app was deleted or re-signed."))
+        DomainError(summary: summary, remediation: Remediation(summary: "Choose a supported iOS Simulator .app and a booted Simulator, or a shut-down one Runstir boots after approval, then inspect again. No app was deleted or re-signed."))
     }
 }
 

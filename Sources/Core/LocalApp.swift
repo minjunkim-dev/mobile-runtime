@@ -154,11 +154,13 @@ public struct AppFileDevice: Codable, Sendable, Equatable {
     public let pairing: String?
     public let developerMode: String?
     public let connection: String?
+    /// `required`: a shut-down virtual device that Runstir boots after approval. nil otherwise.
+    public let boot: String?
 
     public init(id: String, handle: String, name: String, os: String, architectures: [String],
                 ready: Bool, toolIdentity: String, runtimeIdentifier: String? = nil,
                 runtimeBuild: String? = nil, runtimeAvailable: Bool? = nil, architectureSource: String? = nil,
-                pairing: String? = nil, developerMode: String? = nil, connection: String? = nil) {
+                pairing: String? = nil, developerMode: String? = nil, connection: String? = nil, boot: String? = nil) {
         self.id = id
         self.handle = handle
         self.name = name
@@ -173,6 +175,30 @@ public struct AppFileDevice: Codable, Sendable, Equatable {
         self.pairing = pairing
         self.developerMode = developerMode
         self.connection = connection
+        self.boot = boot
+    }
+}
+
+/// A shut-down virtual device this operation booted. Runstir leaves it running and never
+/// stops it later; the app-file path has no `down`. Other devices are never booted or stopped.
+public struct AppFileDeviceBoot: Codable, Sendable, Equatable {
+    /// `requested`, `started` (observed ready) or `unconfirmed` (failed or cancelled before readiness).
+    public var state: String
+    public let device: String
+    /// The Simulator UDID or, once observed, the Emulator's adb serial.
+    public var handle: String?
+    public var launcherPID: Int32?
+    public var log: String?
+    public var detail: String
+
+    public init(state: String, device: String, handle: String? = nil, launcherPID: Int32? = nil,
+                log: String? = nil, detail: String) {
+        self.state = state
+        self.device = device
+        self.handle = handle
+        self.launcherPID = launcherPID
+        self.log = log
+        self.detail = detail
     }
 }
 
@@ -232,6 +258,7 @@ public struct AppFileOperation: Codable, Sendable {
     public var prerequisites: [AppFilePrerequisite]?
     public var requiredInput: [String] = []
     public var completed: [String] = []
+    public var deviceBoot: AppFileDeviceBoot?
     public var installation = "not-requested"
     public var installed: AppFileInstalledState?
     public var launch = "not-requested"
