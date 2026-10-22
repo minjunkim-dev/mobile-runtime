@@ -255,7 +255,7 @@ struct FlutterPreparation {
         return [generated]
     }
 
-    private mutating func pluginMetadataIssue(project: FlutterProject, sdk: FlutterSDK, platform: ProjectPlatform) -> String? {
+    mutating func pluginMetadataIssue(project: FlutterProject, sdk: FlutterSDK, platform: ProjectPlatform) -> String? {
         if platform == .ios { iosPluginDirectories = [:]; iosPluginMetadata = nil }
         let unknown = "plugin metadata cannot be confirmed from the current resolved package graph and package manifests"
         func json(_ file: URL) -> [String: Any]? {

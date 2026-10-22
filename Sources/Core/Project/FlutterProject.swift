@@ -177,6 +177,44 @@ public struct FlutterProject: Sendable {
             migrationFiles: Array(Set(migration)).sorted())
     }
 
+    /// Only the current source boundary needed to lock teardown, without running Dart.
+    /// Unsupported membership patterns never fall back to the selected app's folder.
+    public func workspaceDirectoryForTeardown() throws -> URL {
+        guard usesWorkspace else { return directory }
+        var member = directory
+        var ancestor = directory
+        while ancestor.path != "/" {
+            if FileManager.default.fileExists(atPath: ancestor.appendingPathComponent(".git").path) { break }
+            ancestor.deleteLastPathComponent()
+            if try Self.optionalData(ancestor.appendingPathComponent("pubspec.yaml")) != nil {
+                guard let document = try? Self.manifest(ancestor) else {
+                    throw Self.failure("Read valid workspace declarations before teardown. Existing resources were preserved.")
+                }
+                guard document["resolution"] == nil || document["resolution"] is NSNull
+                        || document["resolution"] as? String == "workspace" else {
+                    throw Self.failure("Confirm the current nested Flutter workspace resolution before teardown.")
+                }
+                if let declared = document["workspace"] {
+                    guard let patterns = declared as? [String], !patterns.isEmpty,
+                          patterns.allSatisfy({ pattern in
+                              !pattern.hasPrefix("/") && !pattern.contains(where: { "?![]{}\\".contains($0) })
+                                  && pattern.split(separator: "/", omittingEmptySubsequences: false)
+                                      .allSatisfy { !$0.isEmpty && $0 != "." && $0 != ".." }
+                          }), member.path.hasPrefix(ancestor.path + "/") else {
+                        throw Self.failure("Confirm the current Flutter workspace root before teardown. Unsupported declarations were preserved.")
+                    }
+                    let relative = String(member.path.dropFirst(ancestor.path.count + 1))
+                    guard patterns.contains(where: { ProjectInspectionInput.matches(relative, $0) }) else {
+                        throw Self.failure("The current workspace declaration does not confirm the selected member. No teardown resource was changed.")
+                    }
+                    if document["resolution"] == nil || document["resolution"] is NSNull { return ancestor }
+                    member = ancestor
+                }
+            }
+        }
+        throw Self.failure("The current Flutter workspace root could not be confirmed before teardown. Preserve existing resources and restore its declarations.")
+    }
+
     private static func manifest(_ directory: URL) throws -> [String: Any] {
         guard let data = try optionalData(directory.appendingPathComponent("pubspec.yaml")),
               var value = try Yams.load(yaml: String(decoding: data, as: UTF8.self)) as? [String: Any] else {

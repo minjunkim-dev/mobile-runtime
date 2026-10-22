@@ -349,7 +349,7 @@ struct AndroidRuntimeTests {
             environment: scenario.environment,
             logs: scenario.logs,
             timeouts: AndroidRuntimeTimeouts(poll: .zero),
-            port: port
+            metroPort: port
         )
 
         let device = try await runtime.device(for: scenario.product)

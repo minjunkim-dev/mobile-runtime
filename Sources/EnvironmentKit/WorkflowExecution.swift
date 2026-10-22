@@ -48,6 +48,14 @@ public enum WorkflowExecution {
     public static func run(_ kind: WorkflowKind, input: WorkflowInput,
                            runner suppliedRunner: (any ProcessRunner)? = nil, leases: ResourceLeases = .user,
                            onEvent: @escaping @Sendable (WorkflowEvent) -> Void = { _ in }) async -> WorkflowResult {
+        await run(kind, input: input, runner: suppliedRunner, leases: leases,
+            flutterFactory: FlutterAndroidWorkflow.defaultFactory, onEvent: onEvent)
+    }
+
+    static func run(_ kind: WorkflowKind, input: WorkflowInput,
+                    runner suppliedRunner: (any ProcessRunner)? = nil, leases: ResourceLeases = .user,
+                    flutterFactory: FlutterAndroidWorkflow.Factory,
+                    onEvent: @escaping @Sendable (WorkflowEvent) -> Void = { _ in }) async -> WorkflowResult {
         var operation = WorkflowOperation(id: UUID().uuidString, kind: kind, state: "running")
         let events = WorkflowEvents(id: operation.id, callback: onEvent)
         events.send("started", state: "running")
@@ -70,7 +78,7 @@ public enum WorkflowExecution {
             }
             guard anchor.framework == .reactNative || (anchor.framework == .nativeIOS && platform == .ios)
                 || (anchor.framework == .nativeAndroid && platform == .android)
-                || (anchor.framework == .flutter && platform == .ios) else {
+                || anchor.framework == .flutter else {
                 throw selectionFailure("\(anchor.framework.displayName) execution is not implemented yet.")
             }
             if input.project.entrypoint != nil && anchor.framework != .flutter {
@@ -78,9 +86,9 @@ public enum WorkflowExecution {
             }
             if let port = input.port {
                 let supported = (anchor.framework == .reactNative && kind != .down)
-                    || (anchor.framework == .flutter && platform == .ios && kind == .up)
+                    || (anchor.framework == .flutter && kind == .up)
                 guard supported, (1...65535).contains(port) else {
-                    throw selectionFailure("--port requires React Native build/up or Flutter iOS up and a port from 1 through 65535. This workflow cannot forward it; no project file was changed.")
+                    throw selectionFailure("--port requires React Native build/up or Flutter up and a port from 1 through 65535. This workflow cannot forward it; no project file was changed.")
                 }
                 if anchor.framework == .reactNative { try validatePortForwarding(anchor: anchor, platform: platform) }
             }
@@ -101,14 +109,26 @@ public enum WorkflowExecution {
             }
             let runner = suppliedRunner ?? SystemProcessRunner(environment: input.project.environment,
                                                                workingDirectory: anchor.directory)
+            let androidFlutter: FlutterAndroidWorkflow?
+            if anchor.framework == .flutter && platform == .android && kind != .down {
+                // Copying and checking the SDK view can take minutes before validate reports.
+                events.send("detail", state: "running", detail: "Preparing the protected Flutter Android SDK view")
+                androidFlutter = try await FlutterAndroidWorkflow.make(input: input.project, anchor: anchor,
+                    runner: runner, factory: flutterFactory)
+            } else {
+                androidFlutter = nil
+            }
+            if let androidFlutter { operation.entrypoint = androidFlutter.entrypoint.path }
             var config = ConfigContext.detect(anchor: anchor, workingDirectory: input.project.directory)
                 .selecting(scheme: input.scheme, module: input.module, variant: input.variant,
                            clearDevice: platform == .ios && (input.device != nil || (kind == .build && anchor.framework != .flutter)))
             var wiring = await WorkflowContext.make(input: input.project, platform: platform, anchor: anchor,
                 runner: runner, includeProjectEnvironment: kind != .down,
-                includeRuntimeSDKTools: kind != .build || platform == .ios, selectedConfig: config,
+                includeRuntimeSDKTools: kind != .build || platform == .ios,
+                projectEnvironmentOverride: androidFlutter?.projectEnvironment,
+                projectRunnerOverride: androidFlutter?.projectRunner, selectedConfig: config,
                 selectedConfiguration: input.configuration)
-            operation.selection = try FlutterIOSWorkflow.selection(selection, workspace: wiring.flutter?.workspace)
+            operation.selection = try FlutterIOSWorkflow.selection(selection, workspace: androidFlutter?.workspace ?? wiring.flutter?.workspace)
             try Task.checkCancellation()
 
             if kind != .down {
@@ -190,13 +210,24 @@ public enum WorkflowExecution {
                     throw selectionFailure("Select \(operation.requiredInput.joined(separator: ", ")) before starting changes.")
                 }
                 wiring = await WorkflowContext.make(input: input.project, platform: platform, anchor: anchor,
-                    runner: runner, includeRuntimeSDKTools: kind != .build || platform == .ios, selectedConfig: config,
+                    runner: runner, includeRuntimeSDKTools: kind != .build || platform == .ios,
+                    projectEnvironmentOverride: androidFlutter?.projectEnvironment,
+                    projectRunnerOverride: androidFlutter?.projectRunner, selectedConfig: config,
                     selectedConfiguration: operation.configuration)
                 try Task.checkCancellation()
             }
 
             // Stabilize this project's recorded targets before acquiring the resources down changes.
-            let folder = try FolderIdentity(directory: wiring.flutter?.workspace?.directory ?? anchor.workspaceRoot?.directory ?? anchor.directory)
+            var flutterDownRoot: URL?
+            if kind == .down && anchor.framework == .flutter {
+                guard let project = try? FlutterProject(directory: anchor.directory, entrypoint: input.project.entrypoint),
+                      let root = try? project.workspaceDirectoryForTeardown() else {
+                    throw selectionFailure("Confirm the current Flutter workspace declarations before down. Existing resources were preserved; no SDK was run.")
+                }
+                flutterDownRoot = root
+            }
+            let folder = try FolderIdentity(directory: flutterDownRoot ?? androidFlutter?.workspace.directory ?? wiring.flutter?.workspace?.directory
+                ?? anchor.workspaceRoot?.directory ?? anchor.directory)
             // Flutter shares a workspace lease, but the selected app owns its installed runtime.
             let ownerProject = anchor.framework == .flutter ? candidate.app.path : folder.path
             let owner = LeaseOwner(operationId: operation.id, command: kind.rawValue, project: ownerProject)
@@ -218,16 +249,29 @@ public enum WorkflowExecution {
                 }
             case .build: device = nil
             }
-            let flutterPort = anchor.framework == .flutter && kind == .up
-                ? try FlutterIOSWorkflow.availablePort(input.port) : nil
+            let flutterReentry = platform == .android && anchor.framework == .flutter && kind == .up
+                ? try androidFlutterReentry(anchor: anchor) : nil
+            let flutterPort: Int?
+            if anchor.framework == .flutter && kind == .up {
+                if input.port == nil, let flutterReentry { flutterPort = flutterReentry.hostPort }
+                else { flutterPort = try FlutterIOSWorkflow.availablePort(input.port) }
+            } else { flutterPort = nil }
             operation.port = flutterPort ?? metroPort
-            let resources = (device.map { [$0] } ?? [])
+            let recordedAndroid = kind == .down && platform == .android
+                ? try androidTeardownResourceKeys(anchor: anchor) : []
+            let resources = (device.map { [$0] } ?? []) + recordedAndroid + (flutterReentry?.resourceKeys ?? [])
                 + (kind == .build ? [] : [metroPort, recordedPort].compactMap { $0 }.map(ResourceKey.port))
             let resourceLease = try leases.acquire(resources + (flutterPort.map { [.port($0)] } ?? []), owner: owner)
             defer { resourceLease.release() }
             if kind == .up, let recordedPort, let metroPort, recordedPort != metroPort {
                 guard try await MetroVerdict.ask(anchor: anchor.directory, runner: wiring.projectRunner, port: recordedPort) == .empty else {
                     throw selectionFailure("The previously selected Metro port \(recordedPort) remains occupied or unconfirmed. Run mobile down for this project before selecting a different port.")
+                }
+            }
+            if let flutterReentry {
+                guard flutterPort == flutterReentry.hostPort,
+                      try androidFlutterReentry(anchor: anchor) == flutterReentry else {
+                    throw selectionFailure("The recorded Flutter run changed while acquiring its resources. Preserve it and run mobile down --platform android.")
                 }
             }
             if let device {
@@ -260,7 +304,7 @@ public enum WorkflowExecution {
                     report.items.contains(where: { $0.id == "android.emulator"
                         && ($0.status == .stopped || $0.ownedRuntimeStopped == true) }) {
                     do {
-                        try leases.releaseAfterTeardown(device: device, project: folder.path)
+                        try leases.releaseAfterTeardown(device: device, project: owner.project)
                     } catch {
                         let detail = "The device claim cleanup could not be confirmed: \(error)"
                         operation.remaining.append(detail)
@@ -271,7 +315,10 @@ public enum WorkflowExecution {
             case (.up, .android):
                 up = await runAndroidUp(anchor: anchor, doctor: wiring.engine, config: config,
                     hostRunner: runner, projectRunner: wiring.projectRunner,
-                    environment: AndroidEnvironment(values: input.project.environment), metroPort: input.port, note: note,
+                    environment: AndroidEnvironment(values: input.project.environment),
+                    metroPort: anchor.framework == .reactNative ? input.port : nil,
+                    port: flutterPort, flutterEntrypoint: androidFlutter?.entrypoint,
+                    reentry: flutterReentry, note: note,
                     onStageFinished: finished, onStageStarted: started)
             case (.build, .android):
                 up = await UpPipeline(stages: androidBuildStages(anchor: anchor, doctor: wiring.engine, config: config,
@@ -293,7 +340,7 @@ public enum WorkflowExecution {
                     operation.remaining += flutter.changedFiles.map { "Unexpected changed source: \($0). No file was restored." }
                 }
             }
-            if let report = up, anchor.framework == .flutter {
+            if let report = up, anchor.framework == .flutter, platform == .ios {
                 operation.entrypoint = wiring.flutter?.entrypoint?.path
                 operation.developmentServiceURI = report.context.developmentServiceURI
                 if report.failure != nil && report.context.product != nil && kind == .up {

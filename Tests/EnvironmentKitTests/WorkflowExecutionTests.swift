@@ -376,6 +376,8 @@ struct WorkflowExecutionTests {
         let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: ProjectInspectionInput(
             directory: repo.root, environment: [:], platform: .ios), device: "A"), runner: runner, leases: leases)
         #expect(result.exitCode == 0, Comment(rawValue: result.up?.failure?.message ?? ""))
+        #expect(result.operation.port == 8081)
+        #expect(runner.log.all.contains { $0.description == MetroStatus.command })
         // The lease ended with the command; the app it launched still holds the device.
         let other = LeaseOwner(operationId: "other-up", command: "up", project: "/work/other")
         let lease = try leases.acquire([.device(.ios, "A"), .port(8081)], owner: other)

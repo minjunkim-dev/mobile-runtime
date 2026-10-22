@@ -7,6 +7,7 @@ import SwiftUI
 @main
 struct RunstirApp {
     @MainActor static func main() {
+        FlutterAndroidChildClient.runIfRequested()
         let application = NSApplication.shared
         let delegate = AppDelegate()
         application.delegate = delegate
@@ -346,6 +347,7 @@ struct InspectionView: View {
 
     @MainActor private func execute(_ kind: WorkflowKind) {
         guard !checking, running == nil else { return }
+        let selectedPlatform = ProjectPlatform(rawValue: platform) ?? result?.selection.platform
         let usesPort = kind == .up || (kind == .build && result?.selection.selected?.framework == .reactNative)
         if usesPort, !port.isEmpty, Int(port).map({ (1...65535).contains($0) }) != true {
             error = "포트는 1부터 65535까지의 정수로 입력하세요."
@@ -357,7 +359,6 @@ struct InspectionView: View {
         currentStage = "선택과 환경 확인"
         let generation = UUID()
         executionID = generation
-        let selectedPlatform = ProjectPlatform(rawValue: platform) ?? result?.selection.platform
         let input = WorkflowInput(project: ProjectInspectionInput(directory: directory,
             environment: ProcessInfo.processInfo.environment, app: app.isEmpty ? nil : app,
             platform: ProjectPlatform(rawValue: platform), entrypoint: entrypoint.isEmpty ? nil : entrypoint),

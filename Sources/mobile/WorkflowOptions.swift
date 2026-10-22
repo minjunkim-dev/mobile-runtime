@@ -17,7 +17,7 @@ struct WorkflowOptions: ParsableArguments {
     @Option(name: .long, help: "Android application module. Defaults to mobile.yml or the only module.") var module: String?
     @Option(name: .long, help: "Android debuggable variant. Defaults to mobile.yml, debug, or the only variant.") var variant: String?
     @Option(name: .long, help: "Flutter Dart entrypoint inside the selected app. Defaults to lib/main.dart.") var entrypoint: String?
-    @Option(name: .long, help: "React Native build/up Metro port (default 8081), or Flutter iOS up VM service port (automatic when omitted). Unsupported workflows stop before changes.") var port: Int?
+    @Option(name: .long, help: "React Native build/up Metro port (default 8081), or Flutter up VM service port (automatic when omitted). Unsupported workflows stop before changes.") var port: Int?
     @Flag(name: .long, help: "Do not ask questions. Missing selections return candidates without starting changes.") var nonInteractive = false
 
     func run(_ kind: WorkflowKind) async throws {

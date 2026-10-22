@@ -66,6 +66,47 @@ struct FlutterProjectTests {
         #expect(throws: (any Error).self) { try value.workspace(from: json) }
     }
 
+    @Test("SDK-free teardown confirms the same source workspace boundary and nested membership")
+    func teardownWorkspace() throws {
+        let repo = try project("apps/group/client", workspace: true)
+        try repo.write("pubspec.yaml", "name: root\nworkspace:\n  - apps/*\n")
+        try repo.write("apps/group/pubspec.yaml", "name: group\nresolution: workspace\nworkspace:\n  - client\n")
+        let value = try FlutterProject(directory: repo.url("apps/group/client"))
+        #expect(try FolderIdentity(directory: value.workspaceDirectoryForTeardown()) == FolderIdentity(directory: repo.root))
+        try repo.write("pubspec_overrides.yaml", "workspace:\n  - other\n")
+        #expect(throws: DomainError.self) { try value.workspaceDirectoryForTeardown() }
+        try repo.write("pubspec_overrides.yaml", "workspace:\n  - apps/group\n")
+        #expect(try FolderIdentity(directory: value.workspaceDirectoryForTeardown()) == FolderIdentity(directory: repo.root))
+    }
+
+    @Test("teardown refuses unconfirmed workspace roots and unsupported or escaped membership", arguments: [
+        "missing", "unlisted", "parent", "absolute", "complex", "nested-git", "malformed",
+    ])
+    func teardownUnknownWorkspace(_ kind: String) throws {
+        let repo = try project("apps/client", workspace: true)
+        let pattern: String
+        switch kind {
+        case "parent": pattern = "../apps/client"
+        case "absolute": pattern = repo.url("apps/client").path
+        case "complex": pattern = "apps/{client,other}"
+        case "unlisted": pattern = "apps/other"
+        default: pattern = "apps/*"
+        }
+        if kind != "missing" { try repo.write("pubspec.yaml", "name: root\nworkspace:\n  - '\(pattern)'\n") }
+        if kind == "malformed" { try repo.write("pubspec.yaml", "workspace: [\n") }
+        if kind == "nested-git" { try repo.directory("apps/.git") }
+        let value = try FlutterProject(directory: repo.url("apps/client"))
+        #expect(throws: DomainError.self) { try value.workspaceDirectoryForTeardown() }
+    }
+
+    @Test("teardown honors a standalone effective resolution without requiring SDK inputs")
+    func teardownStandaloneOverride() throws {
+        let repo = try project(workspace: true)
+        try repo.write("pubspec_overrides.yaml", "resolution:\n")
+        let value = try FlutterProject(directory: repo.root)
+        #expect(try FolderIdentity(directory: value.workspaceDirectoryForTeardown()) == FolderIdentity(directory: repo.root))
+    }
+
     @Test("an entrypoint cannot escape the selected app through a path or symlink")
     func entrypointScope() throws {
         let repo = try project()
