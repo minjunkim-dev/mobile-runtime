@@ -96,9 +96,9 @@ struct AppFileView: View {
             if session.task != nil {
                 HStack {
                     ProgressView().controlSize(.small).accessibilityHidden(true)
-                    Text(session.statusText).accessibilityLabel("작업 상태").accessibilityValue(session.statusText)
                     Button("이 작업 취소") { session.cancel(); announce(session.statusText) }.disabled(session.cancelling)
                         .accessibilityHint("이 창의 새 단계를 막습니다. 완료한 설치와 다른 창의 작업은 보존합니다.")
+                    Text(session.statusText).accessibilityLabel("작업 상태").accessibilityValue(session.statusText)
                 }
             }
             DisclosureGroup("실행 상세") {

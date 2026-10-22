@@ -307,9 +307,10 @@ struct InspectionView: View {
                     .accessibilityHint("이 프로젝트가 기록한 앱과 개발 서버를 down 소유권 규칙으로 종료합니다. 작업 취소와 다릅니다.")
                 if running != nil {
                     ProgressView().controlSize(.small).accessibilityHidden(true)
-                    Text(session.statusText).accessibilityLabel("작업 상태").accessibilityValue(session.statusText)
+                    // Before the growing status text, so the button does not move while it is aimed at.
                     Button("작업 취소") { cancel() }.disabled(cancelling)
                         .accessibilityHint("이 창의 작업만 새 단계를 막습니다. 완료한 변경과 다른 창의 작업은 보존합니다.")
+                    Text(session.statusText).accessibilityLabel("작업 상태").accessibilityValue(session.statusText)
                 }
             }
             if let workflow {
