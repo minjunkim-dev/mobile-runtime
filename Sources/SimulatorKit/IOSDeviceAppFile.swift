@@ -128,12 +128,13 @@ public struct IOSDeviceAppFile: Sendable {
             return .unknown("devicectl could not list processes: " + result.standardError.lastLines(1))
         }
         // A stopped verdict releases another owner's claim, so anything not comparable stays unknown.
-        // A row without an executable cannot be this app and is skipped.
+        // Real devicectl 651 output gives every row a file URL executable and a pid.
         guard let bundle = Self.devicePath(location) else { return .unknown("the installed app location could not be compared") }
         var pids: [Int] = []
         for process in processes {
-            guard let value = process["executable"] as? String else { continue }
-            guard let executable = Self.devicePath(value) else { return .unknown("devicectl reported a process location that could not be compared") }
+            guard let executable = (process["executable"] as? String).flatMap(Self.devicePath) else {
+                return .unknown("devicectl reported a process location that could not be compared")
+            }
             // The main executable sits directly in the bundle; extensions live deeper under PlugIns.
             guard executable.deletingLastPathComponent().path == bundle.path else { continue }
             guard let pid = process["processIdentifier"] as? Int else { return .unknown("the app's process has no identifier") }

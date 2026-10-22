@@ -264,6 +264,8 @@ public enum AppFileExecution {
                 if let provider, let selected, let artifact = operation.artifact {
                     // Cancellation stops new steps, not the look at what the interrupted step left.
                     // An unstructured task does not inherit this task's cancellation.
+                    events.send("stage", stage: "reobserve", state: "running",
+                        detail: "Checking the installed state after the interruption. Nothing is deleted or launched.")
                     let observation = Task { try await provider.installed(appID: artifact.metadata.appID, device: selected) }
                     do { operation.installed = try await observation.value }
                     catch { operation.installed = AppFileInstalledState(state: "unknown", detail: "Re-observation failed: \(error)") }
