@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "issue": 212,
+  "attemptId": "attempt-22",
+  "runstirUsed": false,
+  "status": "baseline-and-fresh-preparation-verified",
+  "fresh": {
+    "originalInputs": {
+      "minimal": {
+        "source": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+        "locks": {
+          "package-lock.json": "3478830fc86d9d1ae7cd46ae129eec9c4915b0ec4e2df247e2cb62b136caeee0",
+          "Gemfile.lock": "3679d60340d049c31b74052580c64ab26b3e6fa611f332c1407121dfc3c791eb",
+          "ios/Podfile.lock": "cec099ee896ed83dd780bd8da0a03e840c3ba6a0803f90c0bbfcd04efaf17d56"
+        },
+        "generatedAbsent": true
+      },
+      "mattermost": {
+        "source": "c2fe3beda22befd2178dce431793c09111ed903e",
+        "locks": {
+          "package-lock.json": "c0ff8ca81bcf9f89abdfa4fc8980e81aae86ca161d25590a8af1b9360733bcb8",
+          "Gemfile.lock": "aacdfd202b0bbb5f2268a0b4af6ea5054d13af98b9b250796c8088ea7fa4e38c",
+          "ios/Podfile.lock": "64d1d50255e98c08f7722481629507a568e6f4efbce551344b658fe2d8f3ef1b"
+        },
+        "generatedAbsent": true
+      }
+    },
+    "minimal": {
+      "source": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+      "locks": {
+        "package-lock.json": "3478830fc86d9d1ae7cd46ae129eec9c4915b0ec4e2df247e2cb62b136caeee0",
+        "Gemfile.lock": "3679d60340d049c31b74052580c64ab26b3e6fa611f332c1407121dfc3c791eb",
+        "ios/Podfile.lock": "cec099ee896ed83dd780bd8da0a03e840c3ba6a0803f90c0bbfcd04efaf17d56"
+      },
+      "trackedDiff": "none",
+      "indexDiff": "none",
+      "frozenPods": "PASS",
+      "tools": "v22.23.2\n10.9.8\nruby 3.4.11 (2026-09-23 revision 592f1ffdb3) +PRISM [arm64-darwin23]\n",
+      "preparedWithoutCopiedDependencies": true,
+      "trackedFilesVerified": 55
+    },
+    "mattermost": {
+      "source": "c2fe3beda22befd2178dce431793c09111ed903e",
+      "trackedFilesVerified": 4216,
+      "submodule": "original uninitialized gitlink preserved",
+      "indexDiff": "none",
+      "trackedDiff": "only SPEC CHECKSUMS.hermes-engine",
+      "hermesChecksum": "f1195f5308ac056f7e8fe4840abd403d5fbc763c",
+      "locks": {
+        "package-lock.json": "c0ff8ca81bcf9f89abdfa4fc8980e81aae86ca161d25590a8af1b9360733bcb8",
+        "Gemfile.lock": "aacdfd202b0bbb5f2268a0b4af6ea5054d13af98b9b250796c8088ea7fa4e38c",
+        "ios/Podfile.lock": "0899555721e430dba4c0ce8b6f2595dfca13334e5eaf2ca4d5f819f8bc51de3b"
+      },
+      "frozenPods": "PASS",
+      "generatedDebugChanges": [
+        {
+          "configuration": "46EB2E0002C040",
+          "from": "12.4",
+          "to": "16.4"
+        },
+        {
+          "configuration": "46EB2E00020430",
+          "from": "11.0",
+          "to": "16.4"
+        },
+        {
+          "configuration": "46EB2E00042F70",
+          "from": "12.0",
+          "to": "16.4"
+        },
+        {
+          "configuration": "46EB2E0001FA00",
+          "from": "10.0",
+          "to": "16.4"
+        },
+        {
+          "configuration": "46EB2E0002A1D0",
+          "from": "12.4",
+          "to": "16.4"
+        },
+        {
+          "configuration": "46EB2E0003E440",
+          "from": "9.0",
+          "to": "16.4"
+        },
+        {
+          "configuration": "46EB2E00046740",
+          "from": "9.0",
+          "to": "16.4"
+        },
+        {
+          "configuration": "46EB2E000429D0",
+          "from": "12.0",
+          "to": "16.4"
+        },
+        {
+          "configuration": "46EB2E00045F20",
+          "from": "9.0",
+          "to": "16.4"
+        },
+        {
+          "configuration": "46EB2E0003F280",
+          "from": "12.0",
+          "to": "16.4"
+        },
+        {
+          "configuration": "46EB2E00045B80",
+          "from": "14.0",
+          "to": "16.4"
+        },
+        {
+          "configuration": "46EB2E00023E30",
+          "from": "15.1",
+          "to": "16.0"
+        }
+      ],
+      "parsedProjectReverse": "PASS",
+      "rawProjectReverse": "PASS",
+      "preparedWithoutCopiedDependencies": true
+    }
+  },
+  "ios": {
+    "minimal": {
+      "firstScreen": "Welcome to React Native",
+      "artifactSha256": "4ebe81608fea3465261d2e741adb56909d20e8e24c2436f5bccfc7543a404c1f"
+    },
+    "mattermost": {
+      "firstScreen": "server connection form rendered behind initial notification permission modal",
+      "permissionChoice": "not performed",
+      "artifactSha256": "c05a01edcfef27dd709b1be591ae692042433cb4440987cf080d066c56181c90"
+    }
+  },
+  "checks": {
+    "freshClone": "155681a6c686485283d74d661b29ef9b",
+    "minimalNpm": "c971dd373b6e4fb788e4bf1d3e246579",
+    "mattermostNpm": "d66dc8d3720f47c8a65fd9e75d0c4a32",
+    "mattermostOriginalNodeSteps": "9522f71cdd144fef8daebf951e25cdad",
+    "minimalMetro": "0a263b468b2f4996a60e12b7547faaf8",
+    "mattermostMetro": "cba51ef34c7b4a84a812f461d6c3ede1",
+    "minimalBundle": "6124e761e9a64ef49412e68c0b7da4b2",
+    "minimalFrozenPods": "14d33ddd5267464f97202e4acdc7aba4",
+    "mattermostBundleAndInitialPods": "fde36b1c1acd4e9494028dd2b3c465d9",
+    "mattermostFrozenPods": "56f815fa0a3b43c7849ed79ccbfa2d28",
+    "minimalFinalAudit": "f1de14e32dfa4211a092d9e3ac7ba5cf",
+    "mattermostFinalAudit": "a73180d3fa5c47cb8b696841136e0c5d",
+    "mattermostXcodeBuild": "db6dfcc8155b449793e558fed50b7ce1",
+    "mattermostInstallLaunch": "eea38b09d6274cb3a0af03432d74f60c",
+    "mattermostScreenAndProcess": "6817fb5f4f8040caa8cc3dff920cc0f8",
+    "ownedAppSimulatorStop": "27267efa44594051833e77997ab7468c"
+  },
+  "publicScreens": {
+    "mattermost-ios-first.png": "97a942386082e41278e5c1b042ab57f3a2709a506a61273471b13a4baff0b299",
+    "minimal-ios-first.png": "c5163c4bdeb25efc1eeee033d84dac4fcda92db87b4b320d1d34b5de536b3313"
+  },
+  "notVerified": [
+    "Runstir fresh native execution",
+    "six-combination candidate gates",
+    "server login",
+    "physical-device matrix",
+    "signing notarization distribution"
+  ]
+}

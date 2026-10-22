@@ -37,4 +37,12 @@ fresh clone은 두 표본의 양플랫폼 첫 화면 뒤 원본 명령으로 독
 
 ## 경계
 
+### 2026-10-23 Simulator 로컬 서명 승인
+
+사용자는 남은 검증을 계속하라고 승인하면서 Simulator 전용 로컬 ad-hoc 서명 변경을 허용했다. Mattermost의 `CODE_SIGNING_ALLOWED=NO` 산출물은 설치됐지만 Keychain entitlement 없이 첫 실행에서 중단됐다. iOS Simulator Debug 빌드에 한해 Xcode가 로컬 서명과 Simulator entitlement를 생성하도록 `CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=-`를 사용한다. Apple 계정·유료 멤버십·인증서·provisioning profile이나 `-allowProvisioningUpdates`는 사용하지 않는다. 원본 앱 entitlement와 source는 수정하지 않는다. 실제 기기 서명·공증·배포 후보의 순서는 바꾸지 않는다.
+
+기존 앱 사본에 원본 entitlement를 펼쳐 수동으로 ad-hoc 서명한 진단은 설치 후 AMFI의 restricted-entitlements 거부로 실패했다. 이를 첫 화면 성공이나 Xcode 빌드 결과로 취급하지 않는다. Xcode의 Simulator 빌드 결과와 실제 첫 화면을 별도로 확인한다.
+
+전용 private device set의 Simulator는 Xcode 목적지 목록에 나오지 않는다. 이 경우 호스트와 같은 arm64의 generic iOS Simulator 대상으로 빌드하고, 설치·실행은 소유한 private set의 UDID를 명시한다. 다른 세션 기기를 빌드 대상으로 선택하거나 부팅하지 않는다. 이 목적지·architecture 선택도 실제 명령에 기록한다.
+
 이 결정은 baseline 기록 방식만 바꾼다. Runstir 제품 정책, 실제 Runstir CLI·GUI 검증, 공동 출시 gate는 바꾸지 않는다. 이전 attempt 기록과 ADR 본문은 그대로 보존한다.
