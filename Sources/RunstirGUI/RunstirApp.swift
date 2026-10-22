@@ -7,6 +7,7 @@ import SwiftUI
 @main
 struct RunstirApp {
     @MainActor static func main() {
+        FlutterAndroidChildClient.runIfRequested()
         let application = NSApplication.shared
         let delegate = AppDelegate()
         application.delegate = delegate
@@ -343,7 +344,9 @@ struct InspectionView: View {
 
     @MainActor private func execute(_ kind: WorkflowKind) {
         guard !checking, running == nil else { return }
-        if kind == .up, !port.isEmpty, Int(port).map({ (1...65535).contains($0) }) != true {
+        let selectedPlatform = ProjectPlatform(rawValue: platform) ?? result?.selection.platform
+        let flutterUp = kind == .up && result?.selection.selected?.framework == .flutter
+        if flutterUp, !port.isEmpty, Int(port).map({ (1...65535).contains($0) }) != true {
             error = "포트는 1부터 65535까지의 정수로 입력하세요."
             return
         }
@@ -353,7 +356,6 @@ struct InspectionView: View {
         currentStage = "선택과 환경 확인"
         let generation = UUID()
         executionID = generation
-        let selectedPlatform = ProjectPlatform(rawValue: platform) ?? result?.selection.platform
         let input = WorkflowInput(project: ProjectInspectionInput(directory: directory,
             environment: ProcessInfo.processInfo.environment, app: app.isEmpty ? nil : app,
             platform: ProjectPlatform(rawValue: platform), entrypoint: entrypoint.isEmpty ? nil : entrypoint),
@@ -362,7 +364,7 @@ struct InspectionView: View {
             configuration: kind != .down && !configuration.isEmpty ? configuration : nil,
             module: kind != .down && !module.isEmpty ? module : nil,
             variant: kind != .down && !variant.isEmpty ? variant : nil,
-            port: kind == .up && !port.isEmpty ? Int(port) : nil)
+            port: flutterUp && !port.isEmpty ? Int(port) : nil)
         session.start {
             let output = await WorkflowExecution.run(kind, input: input) { event in
                 Task { @MainActor in

@@ -13,6 +13,9 @@ struct AndroidActiveRun: Codable, Sendable, Equatable {
         let applicationId: String
         let launcherActivity: String
         let avdSelector: String?
+        var framework: ProjectFramework? = nil
+        var entrypoint: String? = nil
+        var serverSocket: String? = nil
     }
 
     struct Device: Codable, Sendable, Equatable {
@@ -43,6 +46,23 @@ struct AndroidActiveRun: Codable, Sendable, Equatable {
         var pid: Int32?
     }
 
+    struct Forward: Codable, Sendable, Equatable {
+        enum State: String, Codable, Sendable { case pending, created }
+        var state: State
+        let serial: String
+        let avd: String
+        let applicationId: String
+        let module: String
+        let variant: String
+        let entrypoint: String
+        let appPID: Int32
+        let hostPort: Int
+        let devicePort: Int
+        let launchMarker: String
+        let operationID: String
+        let serverSocket: String
+    }
+
     let schemaVersion: Int
     let project: String
     let target: Target
@@ -50,25 +70,101 @@ struct AndroidActiveRun: Codable, Sendable, Equatable {
     var metro: Metro?
     var reverse: Reverse?
     var app: App?
+    var forward: Forward?
 
-    init(project: URL, product: AndroidBuiltProduct, avdSelector: String? = nil) {
-        schemaVersion = 1
+    init(project: URL, product: AndroidBuiltProduct, avdSelector: String? = nil,
+         flutterEntrypoint: URL? = nil, flutterServerSocket: String? = nil) {
+        schemaVersion = flutterEntrypoint == nil ? 1 : 2
         self.project = project.resolvingSymlinksInPath().path
         target = Target(
             module: product.module,
             variant: product.variant,
             applicationId: product.applicationId,
             launcherActivity: product.launcherActivity,
-            avdSelector: avdSelector
+            avdSelector: avdSelector,
+            framework: flutterEntrypoint == nil ? nil : .flutter,
+            entrypoint: flutterEntrypoint?.resolvingSymlinksInPath().path,
+            serverSocket: flutterServerSocket
         )
     }
 
+    private enum CodingKeys: String, CodingKey {
+        case schemaVersion, project, target, device, metro, reverse, app, forward
+    }
+
+    init(from decoder: any Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        schemaVersion = try values.decode(Int.self, forKey: .schemaVersion)
+        guard schemaVersion == 1 || schemaVersion == 2,
+              schemaVersion != 1 || !values.contains(.forward) else {
+            throw AndroidStateError("unsupported Android active-run schema or forward state")
+        }
+        project = try values.decode(String.self, forKey: .project)
+        target = try values.decode(Target.self, forKey: .target)
+        device = try values.decodeIfPresent(Device.self, forKey: .device)
+        metro = try values.decodeIfPresent(Metro.self, forKey: .metro)
+        reverse = try values.decodeIfPresent(Reverse.self, forKey: .reverse)
+        app = try values.decodeIfPresent(App.self, forKey: .app)
+        forward = try values.decodeIfPresent(Forward.self, forKey: .forward)
+        try validate()
+    }
+
+    func validate() throws {
+        guard schemaVersion == 1 || schemaVersion == 2 else {
+            throw AndroidStateError("unsupported Android active-run schema")
+        }
+        if schemaVersion == 1 {
+            guard target.framework == nil, target.entrypoint == nil, target.serverSocket == nil, forward == nil else {
+                throw AndroidStateError("legacy Android state contains Flutter ownership")
+            }
+            return
+        }
+        guard target.framework == .flutter, let entrypoint = target.entrypoint,
+              project.hasPrefix("/"), !target.module.isEmpty, !target.variant.isEmpty,
+              !target.applicationId.isEmpty, !target.launcherActivity.isEmpty,
+              entrypoint.hasPrefix(project + "/"), entrypoint.hasSuffix(".dart"),
+              URL(fileURLWithPath: entrypoint).standardizedFileURL.path == entrypoint,
+              let serverSocket = target.serverSocket, metro == nil, reverse == nil else {
+            throw AndroidStateError("incoherent Flutter Android target")
+        }
+        _ = try AndroidADBEndpoint(socket: serverSocket)
+        if let device {
+            guard !device.avd.isEmpty, target.avdSelector == nil || target.avdSelector == device.avd,
+                  device.serial == nil || device.serial?.isEmpty == false,
+                  device.launcherPID == nil || (device.launcherPID ?? 0) > 0 else {
+                throw AndroidStateError("incoherent Flutter device ownership")
+            }
+        }
+        if let app {
+            guard let device, device.serial == app.serial, !app.serial.isEmpty,
+                  app.applicationId == target.applicationId,
+                  app.pid == nil || (app.launched && (app.pid ?? 0) > 0) else {
+                throw AndroidStateError("incoherent Flutter app ownership")
+            }
+        }
+        guard let forward else { return }
+        guard let device, let app, app.launched, app.pid == forward.appPID,
+              !forward.serial.isEmpty, !forward.avd.isEmpty,
+              forward.appPID > 0, forward.serial == device.serial, forward.serial == app.serial,
+              forward.avd == device.avd, forward.applicationId == target.applicationId,
+              forward.applicationId == app.applicationId, forward.module == target.module,
+              forward.variant == target.variant, forward.entrypoint == entrypoint,
+              forward.serverSocket == serverSocket,
+              (1...65535).contains(forward.hostPort), (1...65535).contains(forward.devicePort),
+              UUID(uuidString: forward.operationID) != nil,
+              AndroidFlutterService.epoch(forward.launchMarker) != nil else {
+            throw AndroidStateError("incoherent Flutter forward ownership")
+        }
+        _ = try AndroidADBEndpoint(socket: forward.serverSocket)
+    }
+
     var isEmpty: Bool {
-        device == nil && metro == nil && reverse == nil && app == nil
+        device == nil && metro == nil && reverse == nil && app == nil && forward == nil
     }
 
     func matches(
-        project: URL, product: AndroidBuiltProduct, avdSelector: String? = nil
+        project: URL, product: AndroidBuiltProduct, avdSelector: String? = nil,
+        flutterEntrypoint: URL? = nil, flutterServerSocket: String? = nil
     ) -> Bool {
         self.project == project.resolvingSymlinksInPath().path
             && target == Target(
@@ -76,7 +172,10 @@ struct AndroidActiveRun: Codable, Sendable, Equatable {
                 variant: product.variant,
                 applicationId: product.applicationId,
                 launcherActivity: product.launcherActivity,
-                avdSelector: avdSelector
+                avdSelector: avdSelector,
+                framework: flutterEntrypoint == nil ? nil : .flutter,
+                entrypoint: flutterEntrypoint?.resolvingSymlinksInPath().path,
+                serverSocket: flutterServerSocket
             )
     }
 }
@@ -97,10 +196,10 @@ struct AndroidActiveRunStore: Sendable {
     var lockFile: URL { logs.url(Self.lockName) }
 
     func read() throws -> AndroidActiveRun? {
-        guard FileManager.default.fileExists(atPath: file.path) else { return nil }
+        guard try recordExists() else { return nil }
         do {
             let run = try JSONDecoder().decode(AndroidActiveRun.self, from: Data(contentsOf: file))
-            guard run.schemaVersion == 1, run.project == project.path else {
+            guard run.project == project.path else {
                 throw AndroidStateError("the Android active-run record does not belong to this project")
             }
             return run
@@ -115,6 +214,8 @@ struct AndroidActiveRunStore: Sendable {
         guard run.project == project.path else {
             throw AndroidStateError("refusing to write an Android active run for another project")
         }
+        try run.validate()
+        if try recordExists() { _ = try read() }
         try FileManager.default.createDirectory(
             at: logs.directory, withIntermediateDirectories: true
         )
@@ -124,13 +225,27 @@ struct AndroidActiveRunStore: Sendable {
     }
 
     func removeIfEmpty(_ run: AndroidActiveRun) throws {
+        try run.validate()
         if run.isEmpty {
-            if FileManager.default.fileExists(atPath: file.path) {
+            if try recordExists() {
+                _ = try read()
                 try FileManager.default.removeItem(at: file)
             }
         } else {
             try write(run)
         }
+    }
+
+    private func recordExists() throws -> Bool {
+        var info = stat()
+        guard lstat(file.path, &info) == 0 else {
+            if errno == ENOENT { return false }
+            throw AndroidStateError("the Android active-run record cannot be inspected")
+        }
+        guard info.st_mode & S_IFMT == S_IFREG, info.st_size <= 1_048_576 else {
+            throw AndroidStateError("the Android active-run record is not a bounded regular file")
+        }
+        return true
     }
 
     func acquire(operation: String) throws -> AndroidLifecycleLease {

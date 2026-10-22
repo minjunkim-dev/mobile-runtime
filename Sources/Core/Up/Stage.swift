@@ -89,6 +89,7 @@ public struct AndroidBuiltProduct: Sendable, Equatable, Encodable {
     public var device: AndroidDevice?
     public var reverse: AndroidReverse?
     public var appPid: Int32?
+    public var flutterConnection: AndroidFlutterConnection?
     public var rollback: [TeardownItem]?
 
     public init(
@@ -104,7 +105,8 @@ public struct AndroidBuiltProduct: Sendable, Equatable, Encodable {
         device: AndroidDevice? = nil,
         reverse: AndroidReverse? = nil,
         appPid: Int32? = nil,
-        rollback: [TeardownItem]? = nil
+        rollback: [TeardownItem]? = nil,
+        flutterConnection: AndroidFlutterConnection? = nil
     ) {
         self.apkPath = apkPath
         self.module = module
@@ -119,11 +121,23 @@ public struct AndroidBuiltProduct: Sendable, Equatable, Encodable {
         self.reverse = reverse
         self.appPid = appPid
         self.rollback = rollback
+        self.flutterConnection = flutterConnection
     }
 
     private enum CodingKeys: String, CodingKey {
         case module, variant, assembleTask, applicationId, minSdk, targetSdk, abis, launcherActivity
-        case device, reverse, appPid, rollback
+        case device, reverse, appPid, rollback, flutterConnection
+    }
+}
+
+/// Sanitized result. The authenticated VM-service URI never enters public JSON.
+public struct AndroidFlutterConnection: Sendable, Equatable, Encodable {
+    public let hostPort: Int
+    public let devicePort: Int
+
+    public init(hostPort: Int, devicePort: Int) {
+        self.hostPort = hostPort
+        self.devicePort = devicePort
     }
 }
 

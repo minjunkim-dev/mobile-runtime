@@ -23,6 +23,11 @@ public enum ProcessOutput: Sendable, Hashable {
     case streamed(to: URL)
 }
 
+public enum ProcessOutputChannel: Sendable {
+    case standardOutput
+    case standardError
+}
+
 /// A subprocess invocation. `environment` is applied on top of the inherited
 /// environment; the runner has no policy of its own (no `DEVELOPER_DIR` opinion).
 public struct ProcessCommand: Sendable, CustomStringConvertible {
@@ -157,8 +162,8 @@ public enum ProcessError: Error, CustomStringConvertible {
 }
 
 /// Process execution, with the output destination on the command and the line
-/// callback on the call. One requirement, so a fake implements one method
-/// (ADR-0002 and its note on #44/#56).
+/// callback on the call. Existing conformers keep their text implementation;
+/// the byte callback has a collected-result fallback.
 ///
 /// `spawnDetached` is a different question again: not where the output goes, but
 /// whether the child outlives us.
@@ -173,6 +178,13 @@ public protocol ProcessRunner: Sendable {
         onLine: (@Sendable (String) -> Void)?
     ) async throws -> ProcessResult
 
+    /// Original bytes in each stream's order. The two streams may call concurrently.
+    /// Conformers without byte streaming deliver their collected strings after exit.
+    func run(
+        _ command: ProcessCommand,
+        onBytes: @escaping @Sendable (ProcessOutputChannel, Data) -> Void
+    ) async throws -> ProcessResult
+
     /// Starts `command` and returns as soon as it is running: both its streams go to
     /// `logFile`, and its pid comes back so a caller can report or kill it. Metro has
     /// to survive the `up` that started it, which is the one thing `run` cannot do.
@@ -183,6 +195,16 @@ extension ProcessRunner {
     /// What almost every caller wants: run it, read the result. Nothing to watch.
     public func run(_ command: ProcessCommand) async throws -> ProcessResult {
         try await run(command, onLine: nil)
+    }
+
+    public func run(
+        _ command: ProcessCommand,
+        onBytes: @escaping @Sendable (ProcessOutputChannel, Data) -> Void
+    ) async throws -> ProcessResult {
+        let result = try await run(command, onLine: nil)
+        if !result.standardOutput.isEmpty { onBytes(.standardOutput, Data(result.standardOutput.utf8)) }
+        if !result.standardError.isEmpty { onBytes(.standardError, Data(result.standardError.utf8)) }
+        return result
     }
 }
 
@@ -204,6 +226,21 @@ public struct SystemProcessRunner: ProcessRunner {
         _ command: ProcessCommand,
         onLine: (@Sendable (String) -> Void)?
     ) async throws -> ProcessResult {
+        try await run(command, onLine: onLine, onBytes: nil)
+    }
+
+    public func run(
+        _ command: ProcessCommand,
+        onBytes: @escaping @Sendable (ProcessOutputChannel, Data) -> Void
+    ) async throws -> ProcessResult {
+        try await run(command, onLine: nil, onBytes: onBytes)
+    }
+
+    private func run(
+        _ command: ProcessCommand,
+        onLine: (@Sendable (String) -> Void)?,
+        onBytes: (@Sendable (ProcessOutputChannel, Data) -> Void)?
+    ) async throws -> ProcessResult {
         try Task.checkCancellation()
         var resolvedCommand = command
         if resolvedCommand.workingDirectory == nil { resolvedCommand.workingDirectory = workingDirectory }
@@ -221,7 +258,7 @@ public struct SystemProcessRunner: ProcessRunner {
             let executable: Subprocess.Executable = invocation.executable.hasPrefix("/")
                 ? .path(.init(invocation.executable)) : .name(invocation.executable)
             switch command.output {
-            case .collected:
+            case .collected where onBytes == nil:
                 let result = try await Subprocess.run(
                     executable,
                     arguments: Arguments(invocation.arguments),
@@ -233,6 +270,27 @@ public struct SystemProcessRunner: ProcessRunner {
                     terminationStatus: Self.translate(result.terminationStatus),
                     standardOutput: Self.collected(result.standardOutput),
                     standardError: Self.collected(result.standardError)
+                )
+
+            case .collected:
+                let result = try await Subprocess.run(
+                    executable,
+                    arguments: Arguments(invocation.arguments),
+                    environment: environment,
+                    input: .none,
+                    output: .sequence,
+                    error: .sequence
+                ) { execution in
+                    async let output = Self.collect(execution.standardOutput, channel: .standardOutput,
+                        limit: Self.outputLimit, onBytes: onBytes)
+                    async let error = Self.collect(execution.standardError, channel: .standardError,
+                        limit: Self.errorLimit, onBytes: onBytes)
+                    return try await (output, error)
+                }
+                return ProcessResult(
+                    terminationStatus: Self.translate(result.terminationStatus),
+                    standardOutput: result.closureResult.0,
+                    standardError: result.closureResult.1
                 )
 
             case .streamed(let file):
@@ -247,8 +305,8 @@ public struct SystemProcessRunner: ProcessRunner {
                     error: .sequence
                 ) { execution in
                     try await withThrowingTaskGroup(of: Void.self) { group in
-                        group.addTask { try await Self.pump(execution.standardOutput, into: sink) }
-                        group.addTask { try await Self.pump(execution.standardError, into: sink) }
+                        group.addTask { try await Self.pump(execution.standardOutput, channel: .standardOutput, into: sink, onBytes: onBytes) }
+                        group.addTask { try await Self.pump(execution.standardError, channel: .standardError, into: sink, onBytes: onBytes) }
                         try await group.waitForAll()
                     }
                 }
@@ -388,13 +446,27 @@ public struct SystemProcessRunner: ProcessRunner {
     /// the implicit promotion makes one signature serve both.
     private static func collected(_ output: String?) -> String { output ?? "" }
 
+    private static func collect(_ stream: SubprocessOutputSequence, channel: ProcessOutputChannel,
+                                limit: Int, onBytes: (@Sendable (ProcessOutputChannel, Data) -> Void)?) async throws -> String {
+        var output = Data()
+        for try await buffer in stream {
+            let bytes = buffer.withUnsafeBytes { Data($0) }
+            guard bytes.count <= limit - output.count else { throw CocoaError(.fileReadTooLarge) }
+            output.append(bytes)
+            onBytes?(channel, bytes)
+        }
+        return String(decoding: output, as: UTF8.self)
+    }
+
     /// Drains one of the child's streams: the bytes as they came to the file, the
     /// complete lines to the callback.
-    private static func pump(_ stream: SubprocessOutputSequence, into sink: LogWriter) async throws {
+    private static func pump(_ stream: SubprocessOutputSequence, channel: ProcessOutputChannel,
+                             into sink: LogWriter, onBytes: (@Sendable (ProcessOutputChannel, Data) -> Void)?) async throws {
         var splitter = LineSplitter()
         for try await buffer in stream {
             let bytes = buffer.withUnsafeBytes { Array($0) }
             sink.write(bytes, lines: splitter.take(bytes))
+            onBytes?(channel, Data(bytes))
         }
         sink.write([], lines: splitter.flush())
     }

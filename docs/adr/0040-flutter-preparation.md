@@ -124,6 +124,22 @@ SDK wrapper나 snapshot을 실행해 기존 SDK를 갱신하는 우회는 하지
 기존 `.ios`·`.android` generated module host도 자동으로 app host에 재연결하지 않는다.
 해당 경로와 module 준비의 수동 경계를 표시한다. 기존 파일을 보존한다.
 
+## 준비된 Flutter Android 실행
+
+Android 실행은 검증한 SDK capability의 private copy와 stock Gradle settings를 사용한다.
+Gradle의 첫 model 조회부터 원본 SDK·source·lockfile과 private 실행 입력의 쓰기를 차단한다.
+tool activation과 mise를 구성한 뒤 최종 host 경계에서 parent sandbox를 한 번 적용한다.
+macOS는 제한된 sandbox 안에서 새 sandbox 적용을 거부한다.
+따라서 Gradle launcher는 같은 Runstir 실행 파일의 private child client를 호출한다.
+Runstir owner는 Dart를 Gradle의 sibling으로 시작하고 child sandbox를 한 번 적용한다.
+실행 파일·snapshot·cwd·환경·정책은 owner가 고정한다. client는 크기를 제한한 argv만 전달한다.
+private root의 Unix socket은 같은 UID와 실행별 인증값을 검사한다.
+인증값은 private 환경으로 전달한다. argv·공개 로그·계획에 기록하지 않는다.
+stdout·stderr·종료 상태를 전달한다. 연결 해제와 owner 취소는 해당 SDK 작업을 취소한다.
+child는 network와 승인 범위 밖 쓰기를 계속 거부한다.
+실행한 private view는 후손 종료를 별도로 입증하기 전까지 보존한다.
+이 실행 구조의 테스트는 실제 앱 Build·Up·Down·첫 화면 검증을 대신하지 않는다.
+
 ## 검증 경계
 
 행동 검사는 작업 소유 fixture와 정상 ZIP을 사용한다.

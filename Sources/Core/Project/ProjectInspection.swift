@@ -120,8 +120,8 @@ public struct ProjectInspectionInput: Sendable {
                     || url.pathExtension == "xcodeproj" || url.pathExtension == "xcworkspace" else { continue }
                 let folder = url.deletingLastPathComponent().standardizedFileURL.resolvingSymlinksInPath()
                 let relative = String(folder.path.dropFirst(root.path.count + 1))
-                let included = patterns.filter { !$0.hasPrefix("!") }.contains { matches(relative, $0) }
-                let excluded = patterns.filter { $0.hasPrefix("!") }.contains { matches(relative, String($0.dropFirst())) }
+                let included = patterns.filter { !$0.hasPrefix("!") }.contains { Self.matches(relative, $0) }
+                let excluded = patterns.filter { $0.hasPrefix("!") }.contains { Self.matches(relative, String($0.dropFirst())) }
                 guard included, !excluded else { continue }
                 anchors += ProjectAnchor.candidates(from: folder).filter {
                     $0.directory.standardizedFileURL.resolvingSymlinksInPath().path == folder.path
@@ -173,7 +173,7 @@ public struct ProjectInspectionInput: Sendable {
                                 platform: effectivePlatform, requiredInput: required, error: error)
     }
 
-    private func matches(_ path: String, _ pattern: String) -> Bool {
+    static func matches(_ path: String, _ pattern: String) -> Bool {
         let expression = NSRegularExpression.escapedPattern(for: pattern)
             .replacingOccurrences(of: "\\*\\*", with: ".*")
             .replacingOccurrences(of: "\\*", with: "[^/]*")

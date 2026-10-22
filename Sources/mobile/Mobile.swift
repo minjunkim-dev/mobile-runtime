@@ -13,6 +13,13 @@ enum Tool {
 }
 
 @main
+enum MobileEntryPoint {
+    static func main() async {
+        FlutterAndroidChildClient.runIfRequested()
+        await Mobile.main()
+    }
+}
+
 struct Mobile: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "mobile",

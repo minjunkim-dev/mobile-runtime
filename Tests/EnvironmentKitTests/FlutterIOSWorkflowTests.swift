@@ -144,6 +144,19 @@ struct FlutterIOSWorkflowTests {
         #expect(!events.value.joined().contains("/auth/"))
         #expect(!runner.commands.map(\.description).joined().contains("/auth/"))
         try FileManager.default.removeItem(at: f.repo.url("sdk"))
+        if workspace {
+            let key = ResourceKey.folder(try FolderIdentity(directory: f.repo.root))
+            let owner = LeaseOwner(operationId: "workspace-setup", command: "setup", project: f.repo.root.path)
+            let held = try f.leases.acquire([key], owner: owner)
+            let beforeDown = runner.commands.count
+            let blocked = await WorkflowExecution.run(.down, input: f.input(), runner: runner, leases: f.leases)
+            #expect(blocked.exitCode == 1)
+            #expect(blocked.operation.conflict?.key == key)
+            #expect(blocked.operation.conflict?.owner == owner)
+            #expect(runner.commands.count == beforeDown)
+            #expect(InstallRecord.read(from: RunLogs(project: f.app))?.bundleId == "dev.test.flutter")
+            held.release()
+        }
         let down = await WorkflowExecution.run(.down, input: f.input(), runner: runner, leases: f.leases)
         #expect(down.exitCode == 0)
         #expect(down.down?.items.map(\.id) == ["app"])
