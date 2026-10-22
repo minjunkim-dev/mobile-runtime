@@ -13,6 +13,7 @@ struct IPAArchiveTests {
             .directory("Payload/"), .directory("Payload/X.app/", mode: 0o755),
             .file("Payload/X.app/Info.plist", "plist bytes", deflate: true),
             .file("Payload/X.app/X", "executable", mode: 0o755),
+            { var tool = TestZip.Entry.file("Payload/X.app/Tool", "macOS-made", mode: 0o750); tool.madeBy = 0x1314; return tool }(),
             .file("Payload/X.app/Frameworks/F.framework/F", "framework", deflate: true),
             .link("Payload/X.app/Current", "Frameworks/F.framework/F"),
             .file("Symbols/X.symbols", "outside payload"),
@@ -26,6 +27,8 @@ struct IPAArchiveTests {
         #expect(try FileManager.default.destinationOfSymbolicLink(atPath: app.appendingPathComponent("Current").path) == "Frameworks/F.framework/F")
         let mode = try FileManager.default.attributesOfItem(atPath: app.appendingPathComponent("X").path)[.posixPermissions] as? Int
         #expect(mode == 0o755)
+        let macOSMode = try FileManager.default.attributesOfItem(atPath: app.appendingPathComponent("Tool").path)[.posixPermissions] as? Int
+        #expect(macOSMode == 0o750)
         let root = try FileManager.default.attributesOfItem(atPath: repo.url("out").path)[.posixPermissions] as? Int
         #expect(root == 0o700)
         #expect(!FileManager.default.fileExists(atPath: repo.url("out/Symbols").path))
@@ -36,6 +39,7 @@ struct IPAArchiveTests {
         "traversal", "absolute", "backslash", "escaping-link", "absolute-link", "chained-escape", "duplicate", "case-collision",
         "below-link", "below-file", "two-apps", "no-app", "payload-extra", "app-is-link", "special-file", "encrypted",
         "lying-size", "oversized", "overlap", "crc", "not-zip", "zip64", "name-mismatch", "unsupported-method",
+        "control-character", "colon", "payload-case", "local-size",
     ])
     func rejected(_ defect: String) throws {
         let repo = try FixtureRepo()
@@ -71,11 +75,29 @@ struct IPAArchiveTests {
         case "zip64": layout.entryCount = 0xFFFF
         case "name-mismatch": entries[0].localName = app + "Other.plist"
         case "unsupported-method": entries[0].method = 12
+        case "control-character": entries.append(.file(app + "\u{1b}[2J", "x"))
+        case "colon": entries.append(.file(app + "a:b", "x"))
+        case "payload-case": entries.append(.file("payload/Y.app/Info.plist", "plist"))
+        case "local-size": entries[0].localSize = 1
         default: Issue.record("unknown defect \(defect)")
         }
         let ipa = try repo.ipa(entries, layout: layout)
         let before = try Data(contentsOf: ipa)
-        #expect(throws: DomainError.self) { try IPAArchive.extract(ipa, into: repo.url("out")) }
+        let error = #expect(throws: DomainError.self) { try IPAArchive.extract(ipa, into: repo.url("out")) }
+        let reason = [
+            "traversal": "absolute, escaping or malformed", "absolute": "absolute, escaping or malformed",
+            "backslash": "absolute, escaping or malformed", "control-character": "absolute, escaping or malformed",
+            "colon": "absolute, escaping or malformed", "escaping-link": "escaping symbolic link",
+            "absolute-link": "escaping symbolic link", "chained-escape": "escaping or dangling symbolic link",
+            "duplicate": "colliding", "case-collision": "colliding", "below-link": "below a file or link",
+            "below-file": "below a file or link", "two-apps": "exactly one .app", "no-app": "no Payload",
+            "payload-extra": "exactly one .app", "app-is-link": "not a directory", "special-file": "special",
+            "encrypted": "encrypted", "lying-size": "past its declared size", "oversized": "extraction limit",
+            "overlap": "overlap", "crc": "CRC", "not-zip": "not a complete zip", "zip64": "ZIP64",
+            "name-mismatch": "local header", "unsupported-method": "unsupported compression",
+            "payload-case": "ambiguous payload", "local-size": "local header",
+        ][defect]
+        #expect(reason != nil && error?.message.contains(reason!) == true, "\(defect): \(error?.message ?? "no error")")
         #expect(!FileManager.default.fileExists(atPath: repo.url("escaped").path))
         #expect(!FileManager.default.fileExists(atPath: "/tmp/escaped"))
         #expect(try Data(contentsOf: ipa) == before)
@@ -95,6 +117,8 @@ enum TestZip {
         var declaredCompressed: UInt32?
         var crc: UInt32?
         var localName: String?
+        var localSize: UInt32?
+        var madeBy: UInt16 = 0x0314
 
         static func file(_ name: String, _ text: String, mode: UInt32 = 0o100_644, deflate: Bool = false) -> Entry {
             Entry(name: name, data: Data(text.utf8), mode: mode & 0o170_000 == 0 ? mode | 0o100_000 : mode, deflate: deflate)
@@ -124,9 +148,9 @@ enum TestZip {
             let localName = Data((entry.localName ?? entry.name).utf8)
             let offset = UInt32(body.count)
             body.le(UInt32(0x0403_4b50)); body.le(UInt16(20)); body.le(entry.flags); body.le(method)
-            body.le(UInt32(0)); body.le(checksum); body.le(compressed); body.le(size)
+            body.le(UInt32(0)); body.le(checksum); body.le(compressed); body.le(entry.localSize ?? size)
             body.le(UInt16(localName.count)); body.le(UInt16(0)); body.append(localName); body.append(payload)
-            directory.le(UInt32(0x0201_4b50)); directory.le(UInt16(0x0314)); directory.le(UInt16(20)); directory.le(entry.flags)
+            directory.le(UInt32(0x0201_4b50)); directory.le(entry.madeBy); directory.le(UInt16(20)); directory.le(entry.flags)
             directory.le(method); directory.le(UInt32(0)); directory.le(checksum); directory.le(compressed); directory.le(size)
             directory.le(UInt16(name.count)); directory.le(UInt16(0)); directory.le(UInt16(0)); directory.le(UInt16(0)); directory.le(UInt16(0))
             directory.le(entry.mode << 16); directory.le(offset); directory.append(name)

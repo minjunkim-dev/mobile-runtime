@@ -260,6 +260,27 @@ struct IOSDeviceAppFileTests {
         #expect(!fixture.runner.commands.contains(where: mutation))
     }
 
+    @Test("an IPA replaced while it is copied is never extracted or installed, and the stage is removed")
+    func ipaSwappedDuringCopy() async throws {
+        let fixture = try DeviceFixture(ipa: true)
+        let plan = try #require(await fixture.run(planOnly: true).operation.plan)
+        let original = try Data(contentsOf: fixture.file)
+        try fixture.writeIPA(build: "3")
+        let swapped = try Data(contentsOf: fixture.file)
+        try original.write(to: fixture.file)
+        let file = fixture.file
+        let result = await AppFileExecution.run(input: AppFileInput(file: file, environment: [:], device: DeviceFixture.udid),
+            approvedPlanID: plan.approval, runner: fixture.runner, leases: fixture.leases) { event in
+                if event.stageId == "snapshot", event.state == "running" { try? swapped.write(to: file) }
+            }
+        #expect(result.exitCode == 1)
+        #expect(result.operation.error == "The copied app bytes or metadata differ from the approved file.")
+        #expect(result.operation.installation == "not-requested")
+        #expect(!fixture.runner.commands.contains(where: mutation))
+        let stage = FileManager.default.temporaryDirectory.appendingPathComponent("dev.runstir-app-file-" + result.operation.id)
+        #expect(!FileManager.default.fileExists(atPath: stage.path))
+    }
+
     @Test("an unsafe IPA stops before any device tool or installation")
     func unsafeIPA() async throws {
         let fixture = try DeviceFixture(ipa: true)

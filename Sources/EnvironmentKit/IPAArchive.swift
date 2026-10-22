@@ -29,7 +29,7 @@ enum IPAArchive {
         var key: String { Self.key(components) }
         static func key(_ components: [String]) -> String {
             // APFS and HFS+ are usually case- and normalization-insensitive.
-            components.joined(separator: "/").precomposedStringWithCanonicalMapping.lowercased()
+            components.joined(separator: "/").precomposedStringWithCanonicalMapping.folding(options: .caseInsensitive, locale: nil)
         }
     }
 
@@ -53,7 +53,8 @@ enum IPAArchive {
             attributes: [.posixPermissions: 0o700])
         if let available = try root.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey])
             .volumeAvailableCapacityForImportantUsage, available < Int64(clamping: expanded) {
-            throw failure("The IPA needs \(expanded) bytes but the temporary volume has \(available) available.")
+            throw DomainError(summary: "The IPA needs \(expanded) bytes but the temporary volume has \(available) available.",
+                remediation: Remediation(summary: "Free space on the temporary volume, then inspect the same IPA again. Runstir did not change the original file."))
         }
         let appRoot = root.appendingPathComponent("Payload").appendingPathComponent(app)
         try FileManager.default.createDirectory(at: appRoot, withIntermediateDirectories: true,
@@ -70,7 +71,7 @@ enum IPAArchive {
                 continue
             }
             try FileManager.default.createDirectory(at: path.deletingLastPathComponent(), withIntermediateDirectories: true,
-                attributes: [.posixPermissions: 0o700])
+                attributes: [.posixPermissions: 0o755])
             let descriptor = open(path.path, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW, 0o600)
             guard descriptor >= 0 else { throw failure("The IPA entry cannot be created: \(entry.components.joined(separator: "/"))") }
             let output = FileHandle(fileDescriptor: descriptor, closeOnDealloc: true)
@@ -88,7 +89,7 @@ enum IPAArchive {
             }
             let path = root.appendingPathComponent(entry.components.joined(separator: "/"))
             try FileManager.default.createDirectory(at: path.deletingLastPathComponent(), withIntermediateDirectories: true,
-                attributes: [.posixPermissions: 0o700])
+                attributes: [.posixPermissions: 0o755])
             try FileManager.default.createSymbolicLink(atPath: path.path, withDestinationPath: destination)
         }
         // The extracted bundle must pass the same link and special-file checks as a chosen .app.
@@ -144,11 +145,13 @@ enum IPAArchive {
             }
             let directoryName = text.hasSuffix("/")
             let components = (directoryName ? String(text.dropLast()) : text).split(separator: "/", omittingEmptySubsequences: false).map(String.init)
-            guard !text.isEmpty, !text.hasPrefix("/"), !text.contains("\\"), !text.contains("\0"), text.utf8.count <= 1_024,
+            guard !text.isEmpty, !text.hasPrefix("/"), !text.contains("\\"), !text.contains(":"), text.utf8.count <= 1_024,
+                  !text.unicodeScalars.contains(where: { $0.value < 32 || $0.value == 127 }),
                   components.allSatisfy({ !$0.isEmpty && $0 != "." && $0 != ".." && $0.utf8.count <= 255 }) else {
                 throw failure("The IPA entry path is absolute, escaping or malformed: \(shown)")
             }
-            let unixMode = directory.u8(cursor + 5) == 3 ? mode_t(directory.u32(cursor + 38) >> 16) : 0
+            // Unix (3) and macOS (19) hosts store the mode in the high attribute bits.
+            let unixMode = [3, 19].contains(directory.u8(cursor + 5)) ? mode_t(directory.u32(cursor + 38) >> 16) : 0
             let kind: Kind
             switch unixMode & S_IFMT {
             case 0: kind = directoryName ? .directory : .file
@@ -183,6 +186,10 @@ enum IPAArchive {
     /// Exactly one `Payload/<name>.app` directory and nothing else directly in `Payload`.
     private static func payloadApp(_ entries: [Entry]) throws -> String {
         let payload = entries.filter { $0.components[0] == "Payload" }
+        // A differently cased top folder would be a second, silently skipped payload.
+        if let other = entries.first(where: { $0.components[0] != "Payload" && $0.components[0].lowercased() == "payload" }) {
+            throw failure("The IPA has an ambiguous payload folder: \(other.components.joined(separator: "/"))")
+        }
         let children = Set(payload.compactMap { $0.components.count > 1 ? $0.components[1] : nil })
         guard let app = children.first, children.count == 1, app.hasSuffix(".app"), app.count > 4 else {
             throw failure(children.isEmpty
@@ -201,7 +208,11 @@ enum IPAArchive {
             let entry = entries[index]
             let header = try read(input, at: entry.localOffset, count: 30)
             let nameLength = Int(header.u16(26))
+            // Without a data descriptor the local CRC and sizes must agree, so no other reader sees other contents.
+            let described = header.u16(6) & 0x8 != 0
             guard header.u32(0) == 0x0403_4b50, header.u16(8) == entry.method, header.u16(6) & 0x2041 == 0,
+                  described || (header.u32(14) == entry.crc && UInt64(header.u32(18)) == entry.compressedSize
+                      && UInt64(header.u32(22)) == entry.size),
                   try read(input, at: entry.localOffset + 30, count: nameLength) == entry.name else {
                 throw failure("The IPA local header disagrees with its central directory: \(entry.components.joined(separator: "/"))")
             }
