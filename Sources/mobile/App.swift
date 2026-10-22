@@ -7,12 +7,12 @@ import Logging
 
 struct AppCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(commandName: "app",
-        abstract: "Inspect or directly install one Simulator .app or Emulator APK without source.",
+        abstract: "Inspect or directly install one Simulator .app, Development/Ad Hoc iOS device .app or Emulator APK without source.",
         subcommands: [AppInspect.self, AppRun.self])
 }
 
 struct AppInspect: AsyncParsableCommand {
-    static let configuration = CommandConfiguration(commandName: "inspect", abstract: "Inspect app bytes and virtual devices. Never installs or launches.")
+    static let configuration = CommandConfiguration(commandName: "inspect", abstract: "Inspect app bytes, devices and physical iOS conditions. Never installs or launches.")
     @OptionGroup var options: AppFileOptions
 
     func run() async throws { try await options.execute(inspectOnly: true) }
@@ -32,8 +32,8 @@ struct AppRun: AsyncParsableCommand {
 }
 
 struct AppFileOptions: ParsableArguments {
-    @Argument(help: "Path to an iOS Simulator .app directory or one Android .apk file.") var file: String
-    @Option(name: .long, help: "A current Simulator UDID or avd:<name>. The target never switches automatically.") var device: String?
+    @Argument(help: "Path to an iOS Simulator or Development/Ad Hoc device .app directory, or one Android .apk file.") var file: String
+    @Option(name: .long, help: "A current Simulator UDID, physical iOS device UDID or avd:<name>. The target never switches automatically.") var device: String?
     @Option(name: .long, help: "ios or android. Omit to use the inspected file's platform; an explicit mismatch is rejected.") var platform: MobilePlatform?
     @Flag(name: .long, help: "Never prompt. Installation requires exact --approve input.") var nonInteractive = false
     @Flag(name: .long, help: "Emit one versioned JSON document. Implies non-interactive input.") var json = false

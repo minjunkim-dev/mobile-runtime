@@ -11,7 +11,7 @@ enum AppFileSnapshot {
         let kind = attributes[.type] as? FileAttributeType
         guard root.pathExtension == "app" && kind == .typeDirectory
                 || root.pathExtension == "apk" && kind == .typeRegular else {
-            throw failure("Choose an iOS Simulator .app directory or one Android .apk file. IPA, AAB, split bundles and archives are excluded here.")
+            throw failure("Choose an iOS Simulator or Development/Ad Hoc device .app directory or one Android .apk file. IPA, AAB, split bundles and archives are excluded here.")
         }
         var hash = SHA256()
         var members = [root]

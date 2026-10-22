@@ -7,8 +7,9 @@
 ## 입력과 명령
 
 이 경로는 iOS Simulator `.app` 디렉터리와 Android Emulator의 단일 `.apk`를 받는다.
+iOS 실기기용 Development·Ad Hoc `.app`은 아래 [iOS 실기기 `.app`](#ios-실기기-app)의 같은 경로를 쓴다(#219).
 프로젝트 소스와 계정은 필요하지 않다. 소스 빌드와 환경 준비를 시작하지 않는다.
-iOS 실기기·IPA는 #219다. 목록·보유 버전·설치 이력은 #220이다. 앱 콘솔은 #221이다.
+IPA는 이 경로에서 받지 않는다. 목록·보유 버전·설치 이력은 #220이다. 앱 콘솔은 #221이다.
 해당 형식과 기능은 이 경로에 추가하지 않는다.
 
 ```sh
@@ -131,6 +132,54 @@ GUI도 두 경우에 위험 확인을 요구한다. 비교 불가를 안전한 u
 창 닫기는 작업 계속 또는 취소 후 닫기를 선택하게 한다.
 전체 종료는 진행 중인 작업을 표시한다. 새 작업을 막고 모든 취소 처리가 끝날 때까지 기다린다.
 완료한 모바일 앱과 가상 기기를 창 닫기와 GUI 종료로 중단하지 않는다.
+
+## iOS 실기기 `.app`
+
+관련 구현 티켓은 [#219](https://github.com/minjunkim-dev/mobile-runtime/issues/219)다.
+Info.plist의 `CFBundleSupportedPlatforms`가 `iPhoneOS`인 `.app`은 실기기 provider로 보낸다.
+명령·계획·승인·파일 lease·작업 전용 사본·교체/이전 빌드·충돌·결과 형식은 위 경로와 같다.
+
+```sh
+mobile app inspect /path/Device.app --device DEVICE-UDID --json
+mobile app run /path/Device.app --device DEVICE-UDID --plan --json
+mobile app run /path/Device.app --device DEVICE-UDID --approve EXACT-PLAN-ID --non-interactive --json
+```
+
+파일 검사는 Simulator와 같은 Info.plist·Mach-O 규칙을 쓴다. platform은 `iPhoneOS`와 Mach-O platform 2다.
+`embedded.mobileprovision`은 `security cms -D`로 읽는다. 서명은 `codesign --verify --deep --strict`로 확인한다.
+서명 leaf 인증서를 추출해 profile의 `DeveloperCertificates`에 있는지 SHA-256으로 비교한다.
+`get-task-allow`가 참이면 Development, 아니면 Ad Hoc이다.
+모든 기기를 허용하는 Enterprise profile, 기기 목록이 없는 App Store profile, profile 없는 `.app`은 검사에서 중단한다.
+profile의 UDID 목록은 JSON과 사람용 출력에 넣지 않는다. 개수와 선택 기기의 포함 여부만 보고한다.
+
+기기는 고정한 Xcode의 `devicectl list devices`에서 `reality: physical`, `platform: iOS`만 후보로 쓴다.
+`--device`는 UDID다. 선택한 기기만 `devicectl device info details`로 현재 상태를 읽는다.
+이 조회가 실패하면 연결 조건을 `unreachable`로 기록한다. 다른 기기로 바꾸지 않는다.
+architecture는 CoreDevice의 `supportedCPUTypes` capability다. 기기 CPU 측정이 아니다.
+
+선택 기기가 있으면 `operation.prerequisites`에 아래 조건을 `satisfied`·`unsatisfied`·`unknown`으로 기록한다.
+충족하지 않은 조건은 `observed`와 수동 `action`을 가진다. 하나라도 충족하지 않으면 계획을 만들지 않는다.
+조치 뒤 같은 `inspect` 명령이 다시 확인이다. 승인 뒤 설치 직전에도 같은 검사를 다시 한다.
+
+| id | 확인 |
+| --- | --- |
+| `signature` | strict 서명 검증, 서명 team과 profile team, 서명 인증서의 profile 포함 |
+| `profile-app-id` | profile의 application-identifier와 앱 ID |
+| `profile-expiration` | profile 만료 시각 |
+| `profile-device` | 선택 UDID의 profile 포함 |
+| `os` | 앱 최소 iOS와 기기 iOS |
+| `architecture` | 앱 slice와 기기 CPU capability |
+| `trust` | CoreDevice pairing |
+| `developer-mode` | Developer Mode |
+| `connection` | 선택 기기의 현재 연결 |
+
+Runstir는 기기 등록·profile 생성·재서명·계정 입력·pairing 변경·Developer Mode 변경을 하지 않는다.
+기기를 계정에 등록해도 기존 앱 파일은 바뀌지 않는다. 그 기기를 포함한 profile로 다시 서명·내보내야 한다.
+이 조건 검사는 사전 검사다. 최종 수락은 `devicectl device install app`의 결과다.
+설치 관측은 `devicectl device info apps --include-all-apps --bundle-id`의 build다.
+실행 요청은 `devicectl device process launch`다. 기존 실행 종료 옵션을 쓰지 않는다.
+실행 관측은 `devicectl device info processes`에서 설치 위치 바로 아래 실행 파일의 process다.
+실패·취소 뒤 설치 상태 재관측은 위 경로와 같다. 연결이 끊기면 확인 불가로 남긴다.
 
 ## 완료 판정에 필요한 실제 검증
 
