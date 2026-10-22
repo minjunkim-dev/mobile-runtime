@@ -116,6 +116,9 @@ struct FlutterAndroidHostGuard: ProcessRunner {
         } catch {
             let primary = error
             do { try check() }
+            catch is CancellationError {
+                // An interrupted check is no evidence that protected inputs changed.
+            }
             catch {
                 do { try recordFailure(primary, error) }
                 catch {
@@ -136,20 +139,29 @@ struct FlutterAndroidHostGuard: ProcessRunner {
 }
 
 extension FlutterAndroidHostGuard {
-    init(base: any ProcessRunner, execution: FlutterAndroidExecution) throws {
+    /// Outside the private root, which is removed when its owner is released.
+    static var receiptDirectory: URL {
+        FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library/Logs/dev.runstir/flutter-protection", isDirectory: true)
+    }
+
+    init(base: any ProcessRunner, execution: FlutterAndroidExecution,
+         receipts: URL = FlutterAndroidHostGuard.receiptDirectory) throws {
         try execution.check()
         let root = execution.root
-        let identity = try FlutterAndroidExecution.Identity(root)
         self.base = base
         policy = root.appendingPathComponent("parent.sb")
         check = { try execution.check() }
-        recordFailure = { primary, protection in
-            guard try FlutterAndroidExecution.Identity(root) == identity else { throw FlutterAndroidWorkflow.failure() }
-            let receipt = try JSONSerialization.data(withJSONObject: ["schema": 1,
-                "kind": "project-command-and-protection-failure",
-                "primary": String(describing: primary), "protection": String(describing: protection)], options: [.sortedKeys])
-            try FlutterAndroidExecution.write(receipt, to: root.appendingPathComponent("protection-failure-\(UUID().uuidString).json"))
-        }
+        recordFailure = { try Self.writeReceipt(primary: $0, protection: $1, root: root, to: receipts) }
+    }
+
+    static func writeReceipt(primary: any Error, protection: any Error, root: URL, to receipts: URL) throws {
+        try FileManager.default.createDirectory(at: receipts, withIntermediateDirectories: true,
+                                                attributes: [.posixPermissions: 0o700])
+        let receipt = try JSONSerialization.data(withJSONObject: ["schema": 1,
+            "kind": "project-command-and-protection-failure", "root": root.path,
+            "primary": String(describing: primary), "protection": String(describing: protection)], options: [.sortedKeys])
+        try FlutterAndroidExecution.write(receipt, to: receipts.appendingPathComponent("protection-failure-\(UUID().uuidString).json"))
     }
 }
 

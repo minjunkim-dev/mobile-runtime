@@ -140,6 +140,7 @@ child는 network와 승인 범위 밖 쓰기를 계속 거부한다.
 private view는 작업이 끝나거나 실패·취소되면 지운다. 남은 Gradle 후손은 지운 경로를 다시 만들 수 없다. 두 sandbox 정책이 root 자체의 쓰기를 거부한다.
 CLI는 SIGINT·SIGTERM·SIGHUP을 취소로 바꾼다. 취소한 작업이 아직 풀리지 않은 채 프로세스가 끝나면 남은 root를 종료 처리기에서 지운다. GUI 종료도 같다.
 SIGKILL과 강제 종료는 root를 남길 수 있다.
+명령이 실패한 뒤 보호 검사도 실패하면 그 기록은 root 밖 `~/Library/Logs/dev.runstir/flutter-protection`에 남긴다. root와 함께 지워지지 않게 하기 위해서다. 취소로 중단된 보호 검사는 입력이 바뀐 근거가 아니므로 기록하지 않는다.
 같은 APFS volume에서는 SDK 파일을 clone한다. 다른 volume에서는 검증한 byte copy를 사용한다.
 root는 `RUNSTIR_SCRATCH_DIR`, 연결된 `$DEVSSD_ROOT/scratch`, `TMPDIR` 순서로 고른다.
 후보는 이 사용자가 소유하고 group·other가 쓸 수 없는 기존 디렉터리여야 한다. 그래야 다른 사용자가 지운 root 경로를 다시 만들 수 없다.
