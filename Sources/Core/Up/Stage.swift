@@ -130,7 +130,7 @@ public struct AndroidBuiltProduct: Sendable, Equatable, Encodable {
     }
 }
 
-/// Ports only. Like iOS, the authenticated URI is reported once, in `operation.developmentServiceURI` (ADR-0044).
+/// Encodes ports only. Like iOS, the authenticated URI is reported once, in `operation.developmentServiceURI` (ADR-0044).
 public struct AndroidFlutterConnection: Sendable, Equatable, Encodable {
     public let hostPort: Int
     public let devicePort: Int
