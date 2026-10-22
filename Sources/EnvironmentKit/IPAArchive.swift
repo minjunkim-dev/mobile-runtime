@@ -166,7 +166,7 @@ enum IPAArchive {
             // macOS ditto writes UTF-8 names without the UTF-8 flag; only strict UTF-8 is accepted.
             // The round trip refuses a leading byte-order mark that decoding would silently drop.
             guard let text = String(data: name, encoding: .utf8), Data(text.utf8) == name else {
-                throw failure("The IPA entry name is not valid UTF-8: \(shown)")
+                throw failure("The IPA entry name is not exact UTF-8 (invalid bytes or a leading byte-order mark): \(shown)")
             }
             let directoryName = text.hasSuffix("/")
             let components = (directoryName ? String(text.dropLast()) : text).split(separator: "/", omittingEmptySubsequences: false).map(String.init)

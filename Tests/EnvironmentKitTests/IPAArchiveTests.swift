@@ -119,7 +119,7 @@ struct IPAArchiveTests {
             "encrypted": "encrypted", "lying-size": "past its declared size", "oversized": "extraction limit",
             "overlap": "overlap", "crc": "CRC", "not-zip": "not a complete zip", "zip64": "ZIP64",
             "name-mismatch": "local header", "unsupported-method": "unsupported compression",
-            "payload-case": "ambiguous payload", "local-size": "local header", "too-deep": "absolute, escaping or malformed", "byte-order-mark": "not valid UTF-8",
+            "payload-case": "ambiguous payload", "local-size": "local header", "too-deep": "absolute, escaping or malformed", "byte-order-mark": "not exact UTF-8",
         ][defect]
         #expect(reason != nil && error?.message.contains(reason!) == true, "\(defect): \(error?.message ?? "no error")")
         #expect(!FileManager.default.fileExists(atPath: repo.url("escaped").path))

@@ -197,7 +197,7 @@ mobile app run /path/Device.ipa --device DEVICE-UDID --approve EXACT-PLAN-ID --n
 압축을 풀기 전에 central directory의 모든 entry를 검사한다. 이 검사에서 부적합하면 아무것도 쓰지 않고 이유를 표시한다.
 크기·CRC 불일치는 추출 중에, 실제 link 해석의 탈출·dangling은 추출 직후에 발견한다. 그때도 작업 소유 위치 밖에는 쓰지 않고 그 위치를 지운다.
 
-- 절대경로, `..`·`.`·빈 경로 구성요소, 역슬래시, `:`, 제어문자, UTF-8이 아닌 이름, 1,024바이트·64단계를 넘는 경로
+- 절대경로, `..`·`.`·빈 경로 구성요소, 역슬래시, `:`, 제어문자, UTF-8이 아니거나 앞에 byte-order mark가 있는 이름, 1,024바이트·64단계를 넘는 경로
 - 대소문자만 다른 두 번째 `payload` 폴더
 - 같은 이름과 대소문자·Unicode 정규화만 다른 이름, 파일·링크 아래의 entry
 - 일반 파일·디렉터리·symlink가 아닌 entry, 암호화, stored·deflate 이외의 압축
