@@ -21,9 +21,29 @@ public struct InstallRecord: Codable, Sendable, Equatable {
     /// what a run leaves behind, and nothing written into the user's repo.
     public static let fileName = "install.json"
 
-    public static func read(from logs: RunLogs) -> InstallRecord? {
-        guard let data = try? Data(contentsOf: logs.url(fileName)) else { return nil }
-        return try? JSONDecoder().decode(InstallRecord.self, from: data)
+    public static func read(from logs: RunLogs, leases: ResourceLeases = .user,
+                            ownerProject: String? = nil) throws -> InstallRecord? {
+        if let current = try readRecord(at: logs.url(fileName)) { return current }
+        let legacy = logs.directory.appendingPathComponent(fileName)
+        guard let previous = try readRecord(at: legacy) else { return nil }
+        guard try leases.ownsClaim(device: .device(.ios, previous.udid),
+            project: ownerProject ?? logs.project.standardizedFileURL.resolvingSymlinksInPath().path,
+            appID: previous.bundleId) else {
+            throw DomainError(summary: "The legacy install record has no confirmed project owner.",
+                remediation: Remediation(summary: "Inspect the existing run's record and device claim. Existing apps and records were preserved."))
+        }
+        return previous
+    }
+
+    private static func readRecord(at file: URL) throws -> InstallRecord? {
+        let attributes: [FileAttributeKey: Any]
+        do { attributes = try FileManager.default.attributesOfItem(atPath: file.path) }
+        catch let error as CocoaError where error.code == .fileReadNoSuchFile { return nil }
+        guard attributes[.type] as? FileAttributeType == .typeRegular,
+              let size = attributes[.size] as? NSNumber, size.uint64Value <= 1_048_576 else {
+            throw CocoaError(.fileReadInvalidFileName)
+        }
+        return try JSONDecoder().decode(InstallRecord.self, from: Data(contentsOf: file))
     }
 
     /// Best effort, like every other thing written under the log directory: a record

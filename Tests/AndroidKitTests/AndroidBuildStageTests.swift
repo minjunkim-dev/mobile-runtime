@@ -74,7 +74,8 @@ private func buildScenario(
     assembleResponse: FakeProcessRunner.Response = .ok("BUILD SUCCESSFUL\n"),
     modelArtifacts: Bool = true,
     emitArtifacts: Bool = false,
-    native: Bool = false
+    native: Bool = false,
+    metroPort: Int? = nil
 ) throws -> BuildScenario {
     let repo = try FixtureRepo()
     if native {
@@ -88,6 +89,7 @@ private func buildScenario(
     try buildExecutable(repo, "gradle-home/wrapper/dists/gradle-8.13-bin/hash/gradle-8.13/bin/gradle")
     try repo.write("gradle-home/wrapper/dists/gradle-8.13-bin/hash/gradle-8.13-bin.zip.ok", "")
     if !native { try repo.directory("android") }
+    if !native { try repo.write("android/gradle.properties", "reactNativeDevServerPort=8097\n") }
     try buildExecutable(repo, path("gradlew"))
     try repo.write(path("gradle/wrapper/gradle-wrapper.jar"), "jar")
     try repo.write(
@@ -143,7 +145,9 @@ private func buildScenario(
         path("app/build/intermediates/merged_manifests/debug/processDebugManifest/AndroidManifest.xml")
     ).path
     let modelScript = try #require(AndroidGradleModelProbe.scriptURL)
-    let assemble = "./gradlew :app:assembleDebug --no-daemon --no-configuration-cache -Dorg.gradle.unsafe.isolated-projects=false --console=plain "
+    let assemble = "./gradlew :app:assembleDebug --no-daemon "
+        + (native ? "" : metroPort.map { "-PreactNativeDevServerPort=\($0) " } ?? "")
+        + "--no-configuration-cache -Dorg.gradle.unsafe.isolated-projects=false --console=plain "
         + "-Dorg.gradle.java.installations.auto-download=false -Pandroid.builder.sdkDownload=false -I \(modelScript.path)"
     let emittedArtifacts = AndroidGradleModelProbe.artifactMarker
         + "{\"variant\":\"debug\",\"apkDirectory\":\"\(apkDirectory)\","
@@ -170,7 +174,8 @@ private func buildScenario(
         hostRunner: answering,
         projectRunner: answering,
         environment: environment,
-        logs: try .temporary(project: repo.root)
+        logs: try .temporary(project: repo.root),
+        metroPort: metroPort
     )
     return BuildScenario(
         repo: repo,
@@ -184,6 +189,33 @@ private func buildScenario(
 
 @Suite("Android build stage")
 struct AndroidBuildStageTests {
+    @Test("a missing output folder identity blocks Android build before any tool")
+    func missingOutputIdentity() async throws {
+        let scenario = try buildScenario()
+        let logs = RunLogs(project: scenario.repo.url("missing-input"), temporaryDirectory: try scenario.repo.directory("outputs"))
+        let stage = AndroidBuildStage(anchor: scenario.anchor, config: scenario.config,
+            hostRunner: scenario.runner, projectRunner: scenario.runner,
+            environment: scenario.environment, logs: logs)
+        var context = UpContext()
+
+        await #expect(throws: (any Error).self) { try await stage.run(&context) }
+
+        #expect(scenario.runner.log.all.isEmpty)
+        #expect(!FileManager.default.fileExists(atPath: logs.directory.path))
+    }
+
+    @Test("every explicit Metro endpoint overrides the declared native app resource port", arguments: [8081, 8097])
+    func selectedDevelopmentPort(port: Int) async throws {
+        let scenario = try buildScenario(metroPort: port)
+        var context = UpContext()
+        let outcome = try await scenario.stage.run(&context)
+        #expect(outcome.status == .pass)
+        #expect(scenario.runner.log.all.contains {
+            $0.arguments.contains(":app:assembleDebug") && $0.arguments.contains("-PreactNativeDevServerPort=\(port)")
+        })
+        #expect(try String(contentsOf: scenario.repo.url("android/gradle.properties"), encoding: .utf8) == "reactNativeDevServerPort=8097\n")
+        #expect(context.androidProduct?.applicationId == "dev.mobile.fixture")
+    }
     @Test("native Android builds from its Gradle root without Node dependencies")
     func nativeBuildPipeline() async throws {
         let scenario = try buildScenario(native: true)
@@ -317,6 +349,8 @@ struct AndroidBuildStageTests {
         #expect(gradle[0].arguments.contains("--offline") == false)
         #expect(gradle[0].arguments.last == "help")
         #expect(gradle[1].arguments.first == ":app:assembleDebug")
+        #expect(!gradle[1].arguments.contains { $0.hasPrefix("-PreactNativeDevServerPort=") })
+        #expect(try String(contentsOf: scenario.repo.url("android/gradle.properties"), encoding: .utf8) == "reactNativeDevServerPort=8097\n")
         #expect(gradle[1].arguments.contains("clean") == false)
         #expect(gradle[1].arguments.contains("--offline") == false)
         #expect(gradle[1].arguments.contains("-I"))

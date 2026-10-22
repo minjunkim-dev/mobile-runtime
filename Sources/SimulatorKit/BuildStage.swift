@@ -25,6 +25,7 @@ public struct BuildStage: Stage {
     private let heartbeat: Duration
     private let configuration: String
     private let genericDestination: Bool
+    private let metroPort: Int?
 
     public init(
         config: ConfigContext,
@@ -34,6 +35,7 @@ public struct BuildStage: Stage {
         heartbeat: Duration = .seconds(15),
         configuration: String = "Debug",
         genericDestination: Bool = false,
+        metroPort: Int? = nil,
         note: @escaping @Sendable (String) -> Void
     ) {
         self.config = config
@@ -45,6 +47,7 @@ public struct BuildStage: Stage {
         self.heartbeat = heartbeat
         self.configuration = configuration
         self.genericDestination = genericDestination
+        self.metroPort = metroPort
         self.note = note
     }
 
@@ -77,6 +80,7 @@ public struct BuildStage: Stage {
                 "-derivedDataPath", derivedData.path,
             ] + (anchor.framework != .reactNative ? ["CODE_SIGNING_ALLOWED=NO"] : [])
                 + (anchor.framework == .flutter && !genericDestination ? ["ONLY_ACTIVE_ARCH=YES"] : [])
+                + (anchor.framework == .reactNative ? metroPort.map { ["RCT_METRO_PORT=\($0)"] } ?? [] : [])
 
         context.buildLog = try await build(arguments, environment).path
         context.product = try await product(arguments, scheme: scheme, environment: environment,
@@ -125,7 +129,7 @@ public struct BuildStage: Stage {
 
     /// - Returns: the log file the whole build was streamed to, kept on a success too.
     private func build(_ arguments: [String], _ environment: [String: String]) async throws -> URL {
-        let file = logs.url("build.log")
+        let file = try logs.url("build.log")
         // Build and product lookup receive the same input-owned output path.
         // Streamed rather than collected: a real app's first clean build runs to tens
         // of megabytes, and the 4 MiB collected limit killed a healthy one (#55).

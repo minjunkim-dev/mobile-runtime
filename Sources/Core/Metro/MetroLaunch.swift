@@ -21,10 +21,15 @@ public enum MetroLaunch {
         anchor: ProjectAnchor,
         runner: any ProcessRunner,
         logFile: URL,
-        afterReinstall: Bool
+        afterReinstall: Bool,
+        port: Int? = nil
     ) async throws -> (command: ProcessCommand, pid: Int32) {
         if afterReinstall { await dropWatchmanWatch(of: anchor.directory, runner: runner) }
         var command = anchor.startProcess
+        if let port {
+            command.arguments += (anchor.packageManagerName == "npm" ? ["--"] : []) + ["--port", String(port)]
+            command.environment["RCT_METRO_PORT"] = String(port)
+        }
         // Metro colors its completed BUNDLE label green and its failed label red.
         // Preserve that distinction when its output goes to our non-TTY log file.
         command.environment["FORCE_COLOR"] = "1"
@@ -34,22 +39,44 @@ public enum MetroLaunch {
     /// Polled rather than asked once: the start script has to boot Node before
     /// anything binds, and asking in the same breath as the spawn always answers
     /// "nobody". The pid that comes back from the spawn is the start script's, and
-    /// the bundler is two links below it — a `kill` there does not reach the port
-    /// (#61) — so the port is asked who holds it.
+    /// the bundler is two links below it (#61). Only that current process tree is
+    /// asked about the port; an unrelated listener is never a startup candidate.
     ///
     /// - Parameter accept: whether this listener is the Metro that was started. A
     ///   throw stops the wait with that error; `false` keeps waiting.
     public static func readiness(
         startPID: Int32,
+        anchor: URL,
         runner: any ProcessRunner,
         bindWait: Duration,
         poll: Duration = .milliseconds(250),
+        port: Int = MetroVerdict.port,
         accept: @Sendable (Int32) async throws -> Bool = { _ in true }
     ) async throws -> Readiness {
         let deadline = ContinuousClock.now + bindWait
+        var started: ProcessIdentity?
         while true {
-            if let pid = try await listeners(runner: runner).first, try await accept(pid) {
-                return .listening(pid)
+            try Task.checkCancellation()
+            guard let tree = try await processTree(startPID: startPID, runner: runner, deadline: deadline) else { return .exited }
+            if let started, started != tree[startPID] { throw uncertainStartup() }
+            if started == nil {
+                try await confirm(startPID: startPID, listener: startPID, tree: tree,
+                    anchor: anchor, runner: runner, deadline: deadline)
+            }
+            started = tree[startPID]
+            let candidates = try await startupListeners(pids: tree.keys.sorted(), runner: runner, port: port, deadline: deadline)
+            for pid in candidates {
+                try await confirm(startPID: startPID, listener: pid, tree: tree, anchor: anchor, runner: runner, deadline: deadline)
+                if try await accept(pid) {
+                    try Task.checkCancellation()
+                    if bindWait > .zero, ContinuousClock.now >= deadline { return .timedOut }
+                    try await confirm(startPID: startPID, listener: pid, tree: tree, anchor: anchor, runner: runner, deadline: deadline)
+                    guard try await startupListeners(pids: [pid], runner: runner, port: port, deadline: deadline) == [pid] else {
+                        throw uncertainStartup()
+                    }
+                    try Task.checkCancellation()
+                    return .listening(pid)
+                }
             }
             guard try await isRunning(startPID, runner: runner) else { return .exited }
             guard ContinuousClock.now < deadline else { return .timedOut }
@@ -57,12 +84,130 @@ public enum MetroLaunch {
         }
     }
 
+    private struct ProcessIdentity: Equatable {
+        let parent: Int32
+        let birth: String
+    }
+
+    /// `lstart` binds later observations to the same process, rather than a reused
+    /// numeric PID. Descendants must still have their original chain to the root.
+    private static func processTree(
+        startPID: Int32, runner: any ProcessRunner, deadline: ContinuousClock.Instant
+    ) async throws -> [Int32: ProcessIdentity]? {
+        guard startPID > 0 else { throw uncertainStartup() }
+        let result = try await runner.run(ProcessCommand(
+            "ps", ["-axo", "pid=,ppid=,lstart="], environment: ["LC_ALL": "C"], timeout: probeTimeout(deadline)
+        ))
+        guard result.terminationStatus.isSuccess, result.standardError.isEmpty else { throw uncertainStartup() }
+        var processes: [Int32: ProcessIdentity] = [:]
+        for line in result.standardOutput.split(separator: "\n") {
+            let parts = line.split(whereSeparator: \.isWhitespace)
+            guard parts.count == 7, let pid = decimalPID(parts[0]),
+                  let parent = decimalPID(parts[1], allowingZero: true), pid != parent,
+                  processes[pid] == nil else { throw uncertainStartup() }
+            processes[pid] = ProcessIdentity(parent: parent, birth: parts.dropFirst(2).joined(separator: " "))
+        }
+        guard let root = processes[startPID] else { return nil }
+        var tree = [startPID: root]
+        var pending = [startPID]
+        while let parent = pending.popLast() {
+            for (pid, identity) in processes where identity.parent == parent {
+                guard tree[pid] == nil else { throw uncertainStartup() }
+                tree[pid] = identity
+                pending.append(pid)
+            }
+        }
+        return tree
+    }
+
+    private static func startupListeners(
+        pids: [Int32], runner: any ProcessRunner, port: Int, deadline: ContinuousClock.Instant
+    ) async throws -> [Int32] {
+        guard !pids.isEmpty else { throw uncertainStartup() }
+        let result = try await runner.run(ProcessCommand(
+            "lsof", ["-a", "-p", pids.map(String.init).joined(separator: ",")]
+                + MetroVerdict.listenerArguments(port: port) + ["-t"], timeout: probeTimeout(deadline)
+        ))
+        guard result.standardError.isEmpty,
+              result.terminationStatus == .exited(0)
+                || (result.terminationStatus == .exited(1) && result.standardOutput.isEmpty)
+        else { throw uncertainStartup() }
+        var listeners: [Int32] = []
+        for line in result.standardOutput.split(separator: "\n") {
+            guard let pid = decimalPID(Substring(line.trimmingCharacters(in: .whitespaces))),
+                  pids.contains(pid), !listeners.contains(pid) else { throw uncertainStartup() }
+            listeners.append(pid)
+        }
+        return listeners.sorted()
+    }
+
+    private static func confirm(
+        startPID: Int32, listener: Int32, tree: [Int32: ProcessIdentity],
+        anchor: URL, runner: any ProcessRunner, deadline: ContinuousClock.Instant
+    ) async throws {
+        try Task.checkCancellation()
+        guard let current = try await processTree(startPID: startPID, runner: runner, deadline: deadline) else { throw uncertainStartup() }
+        var pid = listener
+        while true {
+            guard let previous = tree[pid], current[pid] == previous else { throw uncertainStartup() }
+            if pid == startPID { break }
+            pid = previous.parent
+        }
+        let pids = Array(Set([startPID, listener])).sorted()
+        let result = try await runner.run(ProcessCommand(
+            "lsof", ["-a", "-p", pids.map(String.init).joined(separator: ","), "-d", "cwd", "-Fpn"],
+            timeout: probeTimeout(deadline)
+        ))
+        guard result.terminationStatus.isSuccess, result.standardError.isEmpty else { throw uncertainStartup() }
+        var directories: [Int32: String] = [:]
+        var seen: Set<Int32> = []
+        var selected: Int32?
+        var sawCWD = false
+        for line in result.standardOutput.split(separator: "\n") {
+            if line.first == "p" {
+                if let selected, directories[selected] == nil { throw uncertainStartup() }
+                guard let pid = decimalPID(line.dropFirst()), pids.contains(pid), seen.insert(pid).inserted else {
+                    throw uncertainStartup()
+                }
+                selected = pid
+                sawCWD = false
+            } else if line == "fcwd" {
+                guard let pid = selected, !sawCWD, directories[pid] == nil else { throw uncertainStartup() }
+                sawCWD = true
+            } else if line.first == "n" {
+                guard let pid = selected, sawCWD, directories[pid] == nil, line.dropFirst().first == "/" else {
+                    throw uncertainStartup()
+                }
+                directories[pid] = URL(fileURLWithPath: String(line.dropFirst())).standardizedFileURL.resolvingSymlinksInPath().path
+            } else { throw uncertainStartup() }
+        }
+        let expected = anchor.standardizedFileURL.resolvingSymlinksInPath().path
+        guard directories.count == pids.count, directories.values.allSatisfy({ $0 == expected }) else {
+            throw uncertainStartup()
+        }
+    }
+
+    private static func probeTimeout(_ deadline: ContinuousClock.Instant) -> Duration {
+        min(.seconds(10), max(.milliseconds(1), ContinuousClock.now.duration(to: deadline)))
+    }
+
+    private static func decimalPID(_ value: Substring, allowingZero: Bool = false) -> Int32? {
+        guard !value.isEmpty, value.utf8.allSatisfy({ (48...57).contains($0) }),
+              let pid = Int32(value), pid > 0 || (allowingZero && pid == 0) else { return nil }
+        return pid
+    }
+
+    private static func uncertainStartup() -> DomainError {
+        DomainError(summary: "The started Metro process identity could not be confirmed.",
+            remediation: Remediation(summary: "Inspect this run's Metro log and current processes. Existing servers were preserved."))
+    }
+
     /// Asked at the moment it is needed rather than remembered from a run: a pid in a
     /// file goes stale silently, and a reused one points at a stranger. Non-zero from
     /// lsof is "found nothing", so the exit code carries nothing to interpret.
-    public static func listeners(runner: any ProcessRunner) async throws -> [Int32] {
+    public static func listeners(runner: any ProcessRunner, port: Int = MetroVerdict.port) async throws -> [Int32] {
         let result = try await runner.run(
-            ProcessCommand("lsof", MetroVerdict.listenerArguments + ["-t"], timeout: .seconds(10))
+            ProcessCommand("lsof", MetroVerdict.listenerArguments(port: port) + ["-t"], timeout: .seconds(10))
         )
         return result.standardOutput.split(separator: "\n")
             .compactMap { Int32($0.trimmingCharacters(in: .whitespaces)) }

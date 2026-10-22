@@ -20,12 +20,7 @@ private func anchor(_ repo: FixtureRepo, at relativePath: String? = nil) throws 
     return try #require(ProjectAnchor.detect(from: directory))
 }
 
-private func temporaryLogs() throws -> RunLogs {
-    let temporary = FileManager.default.temporaryDirectory
-        .appendingPathComponent("mobile-dependencies-\(UUID().uuidString)")
-    try FileManager.default.createDirectory(at: temporary, withIntermediateDirectories: true)
-    return RunLogs(project: URL(fileURLWithPath: "/a/MyApp"), temporaryDirectory: temporary)
-}
+private func temporaryLogs() throws -> RunLogs { try RunLogs.temporary() }
 
 @discardableResult
 private func run(
@@ -558,7 +553,7 @@ struct DependenciesStageTests {
             try await run(try anchor(repo), runner, context: &context, logs: logs)
         }
 
-        let file = logs.url("node_modules-install.log")
+        let file = try logs.url("node_modules-install.log")
         #expect(error?.remediation.summary.contains(file.path) == true)
         #expect(
             try #require(runner.log.first(matching: "yarn install --frozen-lockfile")).output
@@ -602,7 +597,7 @@ struct DependenciesStageTests {
             try await run(try anchor(repo), runner, context: &context, logs: logs)
         }
 
-        #expect(error?.remediation.summary.contains(logs.url("Pods-install.log").path) == true)
+        #expect(error?.remediation.summary.contains(try logs.url("Pods-install.log").path) == true)
         #expect(error?.remediation.summary.contains("node_modules-install.log") == false)
         #expect(error?.observed?.contains("could not find compatible versions") == true)
     }

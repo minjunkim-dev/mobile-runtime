@@ -35,7 +35,7 @@ struct AndroidCleanup: Sendable {
         self.projectRunner = projectRunner
         self.timeouts = timeouts
         self.environment = environment
-        self.store = AndroidActiveRunStore(project: anchor.directory, logs: logs)
+        self.store = AndroidActiveRunStore(project: anchor.directory, logs: logs, operation: .down)
         self.doctorContext = AndroidDoctorContext(
             anchor: anchor,
             config: config,
@@ -53,6 +53,7 @@ struct AndroidCleanup: Sendable {
         let ids = allIDs.filter { eligibleResources?.contains($0) ?? true }
         let original: AndroidActiveRun?
         do {
+            if anchor.framework == .reactNative { _ = try store.logs.metroPort(platform: .android) }
             original = try store.read()
         } catch {
             let message = "android.active-run: \(error)"
@@ -155,7 +156,7 @@ struct AndroidCleanup: Sendable {
                 failure: failure,
                 blockedIsFailure: true
             ),
-            hasRemainingRecord: FileManager.default.fileExists(atPath: store.file.path)
+            hasRemainingRecord: (try? store.file).map { FileManager.default.fileExists(atPath: $0.path) } ?? true
         )
     }
 
@@ -255,7 +256,7 @@ struct AndroidCleanup: Sendable {
         case .blocked(let item): return item
         case .verified: break
         }
-        let source = "tcp:\(MetroVerdict.port)"
+        let source = "tcp:\(try store.logs.metroPort(platform: .android) ?? MetroVerdict.port)"
         let mappings = try await doctorContext.reverseMappings(serial: reverse.serial, sdk: sdk, runner: runner)
         guard let current = mappings[source] else {
             return .skipped("android.adb.reverse", "mapping already absent")
@@ -305,7 +306,8 @@ struct AndroidCleanup: Sendable {
         } else {
             false
         }
-        let listener = try await MetroLaunch.listeners(runner: projectRunner).first
+        let port = try store.logs.metroPort(platform: .android) ?? MetroVerdict.port
+        let listener = try await MetroLaunch.listeners(runner: projectRunner, port: port).first
         if !startRunning && listener == nil {
             return .skipped("metro", "owned Metro already stopped")
         }
@@ -321,7 +323,7 @@ struct AndroidCleanup: Sendable {
                 )
             }
             guard try await MetroVerdict.ask(
-                anchor: anchor.directory, runner: projectRunner
+                anchor: anchor.directory, runner: projectRunner, port: port
             ) == .mine else {
                 return .blocked(
                     "metro",
@@ -334,7 +336,7 @@ struct AndroidCleanup: Sendable {
         } else if let listener {
             guard startRunning,
                 try await MetroVerdict.ask(
-                    anchor: anchor.directory, runner: projectRunner
+                    anchor: anchor.directory, runner: projectRunner, port: port
                 ) == .mine
             else {
                 return .blocked(
@@ -365,7 +367,7 @@ struct AndroidCleanup: Sendable {
             )
         }
         try await pause()
-        let listenerAfter = try await MetroLaunch.listeners(runner: projectRunner).first
+        let listenerAfter = try await MetroLaunch.listeners(runner: projectRunner, port: port).first
         let startAfter = if let pid = metro.startPID {
             try await processIsRunning(pid)
         } else {
@@ -607,14 +609,14 @@ struct AndroidCleanup: Sendable {
 
 /// Read while holding the project lease, before acquiring the device lease.
 public func androidTeardownDeviceKey(anchor: ProjectAnchor, logs: RunLogs? = nil) throws -> ResourceKey? {
-    try AndroidActiveRunStore(project: anchor.directory, logs: logs).read()?.device
+    try AndroidActiveRunStore(project: anchor.directory, logs: logs, operation: .down).read()?.device
         .map { .device(.android, "avd:\($0.avd)") }
 }
 
 /// Parent integration acquires these together under its existing folder lease.
 /// This adds the same general TCP namespace used by other development servers.
 public func androidTeardownResourceKeys(anchor: ProjectAnchor, logs: RunLogs? = nil) throws -> [ResourceKey] {
-    guard let active = try AndroidActiveRunStore(project: anchor.directory, logs: logs).read() else { return [] }
+    guard let active = try AndroidActiveRunStore(project: anchor.directory, logs: logs, operation: .down).read() else { return [] }
     var keys = active.device.map { [ResourceKey.device(.android, "avd:\($0.avd)")] } ?? []
     if let forward = active.forward { keys.append(.port(forward.hostPort)) }
     return keys
@@ -630,7 +632,7 @@ public func androidTeardown(
     timeouts: AndroidRuntimeTimeouts = AndroidRuntimeTimeouts()
 ) async -> TeardownReport {
     let logs = logs ?? RunLogs(project: anchor.directory)
-    let store = AndroidActiveRunStore(project: anchor.directory, logs: logs)
+    let store = AndroidActiveRunStore(project: anchor.directory, logs: logs, operation: .down)
     do {
         let lease = try store.acquire(operation: "down")
         defer { withExtendedLifetime(lease) {} }

@@ -24,6 +24,7 @@ public struct InstallStage: Stage {
 
     public func run(_ context: inout UpContext) async throws -> StageOutcome {
         let (device, product) = try context.built(for: id)
+        _ = try logs.url(InstallRecord.fileName)
 
         let command = ProcessCommand(
             "xcrun", ["simctl", "install", device.udid, product.path],

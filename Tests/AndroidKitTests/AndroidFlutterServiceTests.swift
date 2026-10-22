@@ -385,7 +385,7 @@ struct AndroidFlutterServiceTests {
         let initial = fixture.active()
         try fixture.store.write(initial)
         let runner = FlutterADB()
-        let file = fixture.store.file
+        let file = try fixture.store.file
         let backup = fixture.repo.url("pending.json")
         let foreign = fixture.repo.url("foreign.txt")
         try Data("foreign state".utf8).write(to: foreign)
@@ -401,7 +401,7 @@ struct AndroidFlutterServiceTests {
         #expect(runner.commands.filter { $0.arguments.contains("--remove") }.count == 1)
         #expect(try String(contentsOf: foreign, encoding: .utf8) == "foreign state")
         #expect(try JSONDecoder().decode(AndroidActiveRun.self, from: Data(contentsOf: backup)).forward?.state == .pending)
-        #expect(throws: AndroidStateError.self) { _ = try fixture.store.read() }
+        #expect(throws: DomainError.self) { _ = try fixture.store.read() }
     }
 
     @Test("an expired cleanup deadline preserves the confirmed mapping and foreign state without commands")
@@ -412,7 +412,7 @@ struct AndroidFlutterServiceTests {
         let runner = FlutterADB()
         let service = try fixture.service(runner, launch: AndroidRuntimeTimeouts().launch)
         let (created, _) = try await service.connect(initial, marker: flutterMarker, hostPort: 8097, store: fixture.store)
-        let file = fixture.store.file
+        let file = try fixture.store.file
         let backup = fixture.repo.url("confirmed.json")
         let foreign = fixture.repo.url("foreign.txt")
         try Data("foreign state".utf8).write(to: foreign)
@@ -426,7 +426,7 @@ struct AndroidFlutterServiceTests {
         #expect(runner.table == "\(flutterSerial) tcp:8097 tcp:38881\n")
         #expect(try String(contentsOf: foreign, encoding: .utf8) == "foreign state")
         #expect(try JSONDecoder().decode(AndroidActiveRun.self, from: Data(contentsOf: backup)) == created)
-        #expect(throws: AndroidStateError.self) { _ = try fixture.store.read() }
+        #expect(throws: DomainError.self) { _ = try fixture.store.read() }
     }
 
     @Test("down exports the recorded general port key and a different up port cannot overwrite the run")
@@ -630,7 +630,7 @@ struct AndroidFlutterServiceTests {
         let fixture = try FlutterRuntimeFixture()
         let active = fixture.active()
         try fixture.store.write(active)
-        let file = fixture.store.file
+        let file = try fixture.store.file
         let foreign = fixture.repo.url("untouched.txt")
         try Data("untouched".utf8).write(to: foreign)
         switch kind {
@@ -644,8 +644,14 @@ struct AndroidFlutterServiceTests {
         defer {
             if kind == "unreadable" { try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: file.path) }
         }
-        #expect(throws: AndroidStateError.self) { _ = try fixture.store.read() }
-        #expect(throws: AndroidStateError.self) { try fixture.store.write(active) }
+        // A redirected record path is rejected by the runtime output path guard before decoding.
+        if kind == "symlink" {
+            #expect(throws: DomainError.self) { _ = try fixture.store.read() }
+            #expect(throws: DomainError.self) { try fixture.store.write(active) }
+        } else {
+            #expect(throws: AndroidStateError.self) { _ = try fixture.store.read() }
+            #expect(throws: AndroidStateError.self) { try fixture.store.write(active) }
+        }
         #expect(try String(contentsOf: foreign, encoding: .utf8) == "untouched")
         if kind == "malformed" { #expect(try String(contentsOf: file, encoding: .utf8) == "not JSON") }
         if kind == "oversized" { #expect(try Data(contentsOf: file).count == 1_048_577) }

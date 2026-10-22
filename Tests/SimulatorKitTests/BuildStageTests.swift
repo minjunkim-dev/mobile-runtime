@@ -430,7 +430,7 @@ struct BuildStageTests {
             try await run(repo, runner, context: &context, logs: logs)
         }
 
-        let file = logs.url("build.log")
+        let file = try logs.url("build.log")
         #expect(error?.remediation.summary.contains(file.path) == true)
         let build = try #require(runner.log.first(matching: try buildCommand(repo, workspace: false, scheme: "MyApp")))
         #expect(build.output == .streamed(to: file))
@@ -528,7 +528,7 @@ struct BuildStageTests {
         #expect(notes.value.first == "File1.swift:1:1: error: boom 1")
         #expect(notes.value[19] == "File20.swift:1:1: error: boom 20")
         // 25 errors and the BUILD FAILED line are 26 notable lines; 6 went unshown.
-        #expect(notes.value.last == "…and 6 more — full log: \(logs.url("build.log").path)")
+        #expect(notes.value.last == "…and 6 more — full log: \(try logs.url("build.log").path)")
     }
 
     /// The log is worth keeping when the build worked too — a green build still prints
@@ -542,7 +542,7 @@ struct BuildStageTests {
 
         try await run(repo, runner, context: &context, logs: logs)
 
-        #expect(context.buildLog == logs.url("build.log").path)
+        #expect(context.buildLog == (try logs.url("build.log").path))
     }
 
     /// A failed build has no product to describe, and asking for one would only add

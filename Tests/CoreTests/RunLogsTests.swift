@@ -1,4 +1,5 @@
 import Foundation
+import TestSupport
 import Testing
 
 @testable import Core
@@ -10,28 +11,22 @@ private func temporaryDirectory() throws -> URL {
     return url
 }
 
+private func realLogs(_ temporary: URL) throws -> RunLogs {
+    let project = temporary.appendingPathComponent("source/MyApp")
+    try FileManager.default.createDirectory(at: project, withIntermediateDirectories: true)
+    return RunLogs(project: project, temporaryDirectory: temporary)
+}
+
+private func collidingProjects(_ temporary: URL) throws -> (URL, URL) {
+    try RunLogs.collidingProjects(temporary: temporary)
+}
+
 @Suite("run logs")
 struct RunLogsTests {
     @Test("distinct real inputs with a colliding legacy log namespace get separate DerivedData without writes")
     func derivedDataLegacyCollision() throws {
         let temporary = try temporaryDirectory()
-        let parent = temporary.appendingPathComponent("sources").resolvingSymlinksInPath()
-        var prefix: UInt32 = 2_166_136_261
-        for byte in (parent.path + "/").utf8 { prefix = (prefix ^ UInt32(byte)) &* 16_777_619 }
-        var seen: [UInt32: String] = [:]
-        var collision: (String, String)?
-        // Find names within this test's owned temporary root; never create the
-        // review-only paths or the thousands of candidate directories.
-        for index in 0..<1_000_000 {
-            let name = String(UInt64(index) &* 0x9e3779b97f4a7c15, radix: 16)
-            var digest = prefix
-            for byte in (name + "/MyApp").utf8 { digest = (digest ^ UInt32(byte)) &* 16_777_619 }
-            if let other = seen.updateValue(name, forKey: digest) { collision = (other, name); break }
-        }
-        let names = try #require(collision)
-        let first = parent.appendingPathComponent(names.0).appendingPathComponent("MyApp")
-        let second = parent.appendingPathComponent(names.1).appendingPathComponent("MyApp")
-        for input in [first, second] { try FileManager.default.createDirectory(at: input, withIntermediateDirectories: true) }
+        let (first, second) = try collidingProjects(temporary)
         let one = RunLogs(project: first, temporaryDirectory: temporary)
         let two = RunLogs(project: second, temporaryDirectory: temporary)
         try #require(one.directory == two.directory)
@@ -42,7 +37,7 @@ struct RunLogsTests {
         #expect(!FileManager.default.fileExists(atPath: one.directory.path))
     }
 
-    @Test("DerivedData needs a current real input directory while legacy logs remain available", arguments: ["missing", "file", "removed"])
+    @Test("DerivedData needs a current real input directory while legacy paths remain available", arguments: ["missing", "file", "removed"])
     func derivedDataRequiresInput(_ mode: String) throws {
         let temporary = try temporaryDirectory()
         let project = temporary.appendingPathComponent("source/MyApp")
@@ -57,7 +52,7 @@ struct RunLogsTests {
 
         #expect(throws: (any Error).self) { try logs.derivedDataDirectory }
 
-        #expect(logs.write("legacy log", to: "build.log") != nil)
+        #expect(logs.write("legacy log", to: "build.log") == nil)
         if mode == "file" { #expect(try String(contentsOf: project, encoding: .utf8) == "preserve") }
     }
 
@@ -123,6 +118,129 @@ struct RunLogsTests {
         #expect(try String(contentsOf: file, encoding: .utf8) == "preserve")
     }
 
+    @Test("an alias shares the selected port and an unreadable record is preserved")
+    func portAliasAndPermissions() throws {
+        let temporary = try temporaryDirectory()
+        let logs = try realLogs(temporary)
+        let project = temporary.appendingPathComponent("source/MyApp")
+        let alias = temporary.appendingPathComponent("alias")
+        try FileManager.default.createSymbolicLink(at: alias, withDestinationURL: project)
+        let other = RunLogs(project: alias, temporaryDirectory: temporary)
+        try logs.recordMetroPort(8097)
+        #expect(try other.metroPort() == 8097)
+        let file = try logs.url("metro-port-ios")
+        try FileManager.default.setAttributes([.posixPermissions: 0], ofItemAtPath: file.path)
+        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: file.path) }
+        #expect(throws: (any Error).self) { try other.metroPort() }
+        #expect(throws: (any Error).self) { try other.recordMetroPort(8098) }
+        try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: file.path)
+        #expect(try String(contentsOf: file, encoding: .utf8) == "8097\n")
+    }
+
+    @Test("colliding legacy roots keep distinct installed app records")
+    func installRecordCollision() throws {
+        let temporary = try temporaryDirectory()
+        let (first, second) = try collidingProjects(temporary)
+        let one = RunLogs(project: first, temporaryDirectory: temporary)
+        let two = RunLogs(project: second, temporaryDirectory: temporary)
+        let firstRecord = InstallRecord(udid: "A", bundleId: "first.app")
+        let secondRecord = InstallRecord(udid: "B", bundleId: "second.app")
+        #expect(firstRecord.write(to: one) != nil)
+        #expect(secondRecord.write(to: two) != nil)
+        #expect(try InstallRecord.read(from: one) == firstRecord)
+        #expect(try InstallRecord.read(from: two) == secondRecord)
+    }
+
+    @Test("new logs and state writes remain separate when legacy paths collide",
+        arguments: ["build.log", "metro.log", "install.json", "android-active-run.json", "android-lifecycle.lock"])
+    func logIdentityCollision(_ name: String) throws {
+        let temporary = try temporaryDirectory()
+        let (first, second) = try collidingProjects(temporary)
+        let one = RunLogs(project: first, temporaryDirectory: temporary)
+        let two = RunLogs(project: second, temporaryDirectory: temporary)
+        try #require(one.directory == two.directory)
+
+        let firstFile = try #require(one.write("first-owned", to: name))
+        let secondFile = try #require(two.write("second-owned", to: name))
+
+        #expect(firstFile != secondFile)
+        #expect(try String(contentsOf: firstFile, encoding: .utf8) == "first-owned")
+        #expect(try String(contentsOf: secondFile, encoding: .utf8) == "second-owned")
+        #expect(!FileManager.default.fileExists(atPath: one.directory.appendingPathComponent(name).path))
+    }
+
+    @Test("colliding legacy log paths do not share a new selected-port record", arguments: [ProjectPlatform.ios, .android])
+    func metroPortLegacyCollision(_ platform: ProjectPlatform) throws {
+        let temporary = try temporaryDirectory()
+        let (first, second) = try collidingProjects(temporary)
+        let one = RunLogs(project: first, temporaryDirectory: temporary)
+        let two = RunLogs(project: second, temporaryDirectory: temporary)
+        try #require(one.directory == two.directory)
+
+        try one.recordMetroPort(8097, platform: platform)
+        try two.recordMetroPort(8098, platform: platform)
+
+        #expect(try one.metroPort(platform: platform) == 8097)
+        #expect(try two.metroPort(platform: platform) == 8098)
+    }
+
+    @Test("an earlier development port record has no confirmed owner and cannot become a new endpoint",
+        arguments: ["8081\n", "8097\n", "unreadable", ""])
+    func legacyPortUnknownOwner(_ bytes: String) throws {
+        let temporary = try temporaryDirectory()
+        let project = temporary.appendingPathComponent("source/MyApp")
+        try FileManager.default.createDirectory(at: project, withIntermediateDirectories: true)
+        let logs = RunLogs(project: project, temporaryDirectory: temporary)
+        let legacy = logs.directory.appendingPathComponent("metro-port-ios")
+        try FileManager.default.createDirectory(at: legacy.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data(bytes.utf8).write(to: legacy)
+
+        #expect(throws: (any Error).self) { try logs.metroPort() }
+        #expect(throws: (any Error).self) { try logs.recordMetroPort(8098) }
+
+        #expect(try String(contentsOf: legacy, encoding: .utf8) == bytes)
+        #expect(!FileManager.default.fileExists(atPath: (try logs.derivedDataDirectory).deletingLastPathComponent().path))
+    }
+
+    @Test("only an absent Metro port record uses the legacy endpoint")
+    func metroPortRecord() throws {
+        let logs = try realLogs(temporaryDirectory())
+        #expect(try logs.metroPort() == nil)
+        try logs.recordMetroPort(8097)
+        #expect(try logs.metroPort() == 8097)
+        for invalid in ["", "unreadable", "0", "65536"] {
+            try Data(invalid.utf8).write(to: try logs.url("metro-port-ios"))
+            #expect(throws: (any Error).self) { try logs.metroPort() }
+            #expect(throws: (any Error).self) { try logs.recordMetroPort(8098) }
+            #expect(try String(contentsOf: try logs.url("metro-port-ios"), encoding: .utf8) == invalid)
+        }
+    }
+
+    @Test("a symlink port record is preserved and cannot redirect a write or teardown")
+    func metroPortSymlink() throws {
+        let temporary = try temporaryDirectory()
+        let logs = try realLogs(temporary)
+        try FileManager.default.createDirectory(at: (try logs.url("metro-port-ios")).deletingLastPathComponent(), withIntermediateDirectories: true)
+        let other = temporary.appendingPathComponent("other")
+        try Data("8097\n".utf8).write(to: other)
+        try FileManager.default.createSymbolicLink(at: try logs.url("metro-port-ios"), withDestinationURL: other)
+        #expect(throws: (any Error).self) { try logs.metroPort() }
+        #expect(throws: (any Error).self) { try logs.recordMetroPort(8098) }
+        #expect(try String(contentsOf: other, encoding: .utf8) == "8097\n")
+    }
+
+    @Test("one project preserves each platform's endpoint without retargeting the other's down")
+    func separatePlatformPorts() throws {
+        let logs = try realLogs(temporaryDirectory())
+        try logs.recordMetroPort(8097, platform: .ios)
+        #expect(try logs.metroPort(platform: .android) == nil)
+        try logs.recordMetroPort(8098, platform: .android)
+        #expect(try logs.metroPort(platform: .ios) == 8097)
+        #expect(try logs.metroPort(platform: .android) == 8098)
+        try Data("unconfirmed".utf8).write(to: try logs.url("metro-port-android"))
+        #expect(throws: (any Error).self) { try logs.metroPort(platform: .android) }
+        #expect(try logs.metroPort(platform: .ios) == 8097)
+    }
     /// The repo is somebody else's house. A tool that writes its logs there is a tool
     /// that asks for a `.gitignore` entry in return for being run once.
     @Test("logs live under the system temporary directory, not in the project")
@@ -167,11 +285,11 @@ struct RunLogsTests {
     @Test("writing creates the directory and returns the file it wrote")
     func writes() throws {
         let temporary = try temporaryDirectory()
-        let logs = RunLogs(project: URL(fileURLWithPath: "/a/MyApp"), temporaryDirectory: temporary)
+        let logs = try realLogs(temporary)
 
         let file = try #require(logs.write("the whole build log\n", to: "build.log"))
 
-        #expect(file == logs.directory.appendingPathComponent("build.log"))
+        #expect(file == (try logs.url("build.log")))
         #expect(try String(contentsOf: file, encoding: .utf8) == "the whole build log\n")
     }
 

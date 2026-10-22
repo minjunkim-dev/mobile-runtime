@@ -19,40 +19,43 @@ public struct MetroTeardown: Sendable {
     /// How long `SIGTERM` is given before the port is asked again. Injected so tests
     /// spend nothing on it, the way `launch`'s settle is.
     private let grace: Duration
+    private let port: Int
 
     public static let defaultGrace: Duration = .seconds(2)
 
-    public init(anchor: URL, runner: any ProcessRunner, grace: Duration = MetroTeardown.defaultGrace) {
+    public init(anchor: URL, runner: any ProcessRunner, grace: Duration = MetroTeardown.defaultGrace,
+                port: Int = MetroVerdict.port) {
         self.anchor = anchor
         self.runner = runner
         self.grace = grace
+        self.port = port
     }
 
     public func run() async throws -> TeardownItem {
-        let verdict = try await MetroVerdict.ask(anchor: anchor, runner: runner)
+        let verdict = try await MetroVerdict.ask(anchor: anchor, runner: runner, port: port)
 
         // The three answers that stop `up` are the three that block `down`, and they
         // arrive with the sentence already written — which project the port is
         // serving, and the line that names the process holding it. `blocked` rather
         // than `skipped`: something is there, and "nothing to stop" would report an
         // empty machine.
-        if let blocker = verdict.blocker { return .blocked(Self.id, blocker) }
+        if let blocker = verdict.blocker(port: port) { return .blocked(Self.id, blocker) }
 
         guard case .mine = verdict else {
-            return .skipped(Self.id, "nothing on \(MetroVerdict.port)")
+            return .skipped(Self.id, "nothing on \(port)")
         }
         return try await stop()
     }
 
     private func stop() async throws -> TeardownItem {
-        let pids = try await MetroLaunch.listeners(runner: runner)
+        let pids = try await MetroLaunch.listeners(runner: runner, port: port)
         guard !pids.isEmpty else {
             // The port answered as this project's Metro a moment ago and lsof finds
             // nobody holding it. Two of our own tools disagreeing is our problem, not
             // the project's — it must not land on the project's exit code.
             throw ToolsDisagree(
-                description: "\(MetroVerdict.port) answers as this project's Metro, but "
-                    + "`\(Self.listenerCommand)` found no process listening on it"
+                description: "\(port) answers as this project's Metro, but "
+                    + "`\(listenerCommand)` found no process listening on it"
             )
         }
 
@@ -69,7 +72,7 @@ public struct MetroTeardown: Sendable {
         // other answer means something is still on 8081 — reporting that as stopped
         // is the false negative #14 priced above a false positive, and it is the
         // exact shape of bug #45 was.
-        let after = (try? await MetroVerdict.ask(anchor: anchor, runner: runner)) ?? .unidentifiable(
+        let after = (try? await MetroVerdict.ask(anchor: anchor, runner: runner, port: port)) ?? .unidentifiable(
             observed: "the port could not be asked again after SIGTERM"
         )
         let listed = pids.map(String.init).joined(separator: ", ")
@@ -83,12 +86,12 @@ public struct MetroTeardown: Sendable {
             return .failed(
                 Self.id,
                 DomainError(
-                    summary: "this project's Metro is still on \(MetroVerdict.port) after SIGTERM",
+                    summary: "this project's Metro is still on \(port) after SIGTERM",
                     observed: "pid \(listed)",
                     remediation: Remediation(
                         summary: "It was asked to stop and did not. See what it is doing first, "
                             + "and `kill -9 <pid>` if it has to go.",
-                        command: Self.listenerCommand
+                        command: listenerCommand
                     )
                 )
             )
@@ -97,13 +100,13 @@ public struct MetroTeardown: Sendable {
             return .failed(
                 Self.id,
                 DomainError(
-                    summary: "\(MetroVerdict.port) still answers after SIGTERM, and it can no "
+                    summary: "\(port) still answers after SIGTERM, and it can no "
                         + "longer be confirmed stopped",
                     observed: "pid \(listed) was asked to stop",
                     remediation: Remediation(
                         summary: "Something is on the port and it is no longer answering as this "
                             + "project's Metro. This says what is there now.",
-                        command: Self.listenerCommand
+                        command: listenerCommand
                     )
                 )
             )
@@ -112,7 +115,7 @@ public struct MetroTeardown: Sendable {
 
     /// The judge's own spelling of the question, so the line a user is handed and the
     /// line `down` runs cannot drift apart.
-    private static let listenerCommand = MetroVerdict.listenerCommand
+    private var listenerCommand: String { MetroVerdict.listenerCommand(port: port) }
 }
 
 /// Two of mobile's own probes contradicting each other. Infrastructure, like
