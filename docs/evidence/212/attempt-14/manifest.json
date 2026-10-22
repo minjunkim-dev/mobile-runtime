@@ -1,0 +1,1115 @@
+{
+  "schema": 1,
+  "issue": 212,
+  "attempt": "attempt-14-frozen-selection-receipts",
+  "date": "2026-10-11",
+  "status": "PARTIAL_REQUIRED_CONSUMER_OBSERVATION_UNKNOWN",
+  "publicationReady": true,
+  "knownGoodComplete": false,
+  "acceptanceCriteriaComplete": false,
+  "runstirUsed": false,
+  "actualRunstir": "NOT_AUTHORIZED",
+  "policy": {
+    "mainSha": "9e121a5ae9bf5a099698805361856d54e9e4b409",
+    "ciRun": 38121517167,
+    "ciAllFourSucceeded": true,
+    "inputConditionsChanged": false,
+    "receiptIdProducerLine": 44,
+    "receiptIdReaderLine": 52,
+    "receiptId": "frozen-mise-effective-selection"
+  },
+  "lease": {
+    "leaseId": "rn-212-attempt14-frozen-receipts-20261011",
+    "initialGrantFile": "root-lease.json",
+    "initialGrantSha256": "aac05c320ca35edc8c18da39da232b56f742c98b297bf18c6c5de1dd954357b7",
+    "canonicalState": "RELEASED",
+    "actualAuthorityGranted": false,
+    "rootReleaseReceipt": "root-release-message-receipt.json",
+    "rootReleaseSha256": "f833f041c8d38d51238f554d06cb2fac00d0360539c881019cc904dea0efbcb2",
+    "confirmedAt": "2026-10-11T08:34:05.074419+00:00",
+    "initialGrantReadinessCleanupAndReturnPreserved": true
+  },
+  "rootReadOnlyDiagnosticHistory": {
+    "firstAssumedFilename": "required-helper-failure.json",
+    "actualFilename": "required-consumer-failure.json",
+    "firstError": "FileNotFoundError",
+    "freshResourceChecksRerunPassed": true,
+    "actualSourceConditionsUnchanged": true
+  },
+  "source": {
+    "minimal": {
+      "declaredSha": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+      "newIndependentClone": true,
+      "strictTrackedFiles": 55,
+      "originalThreeLocksUnchanged": true,
+      "indexFlagsKindsGitModeUnchanged": true,
+      "lockHashes": {
+        "package-lock.json": "3478830fc86d9d1ae7cd46ae129eec9c4915b0ec4e2df247e2cb62b136caeee0",
+        "Gemfile.lock": "3679d60340d049c31b74052580c64ab26b3e6fa611f332c1407121dfc3c791eb",
+        "ios/Podfile.lock": "cec099ee896ed83dd780bd8da0a03e840c3ba6a0803f90c0bbfcd04efaf17d56"
+      },
+      "checksumTargetExceptionsApplied": false,
+      "finalReceipt": "minimal-baseline-final-source.strict-minimal-audit.json"
+    },
+    "mattermost": {
+      "declaredSha": "c2fe3beda22befd2178dce431793c09111ed903e",
+      "newClone": "NOT_STARTED",
+      "preparedInput": "NOT_STARTED"
+    },
+    "fresh": {
+      "minimal": "NOT_STARTED",
+      "mattermost": "NOT_STARTED",
+      "baselineOutputCopied": false
+    }
+  },
+  "completed": {
+    "sourceCloneCheckoutNpm": "PASS",
+    "originalEarlyMetro": "PASS_ACTUAL_HTTP_OWNER_LIVENESS_SOURCE_FATAL_GUARDS",
+    "initialSelection": "EXIT_0_GUARD_PASS",
+    "rubyFactsAndOfficialArchiveSpec": "EXIT_0_OBSERVER_GUARD_PASS",
+    "correctedInstaller": "EXIT_0_OBSERVER_GUARD_PASS",
+    "bundlerActivation": "2.5.22_EXIT_0_OBSERVER_GUARD_PASS",
+    "bootstrapReceiptPassed": true,
+    "newFrozenSelection": "EXIT_0_GUARD_PASS_WITH_DISTINCT_RECEIPT_ID",
+    "selectedEnvironmentProbe": "EXIT_0_GUARD_PASS",
+    "frozenBundleInstall": "EXIT_0_OBSERVER_GUARD_PASS",
+    "gemActualCommandExitCode": 0,
+    "gemActualObserverPassed": false
+  },
+  "firstFailure": {
+    "classification": "REQUIRED_CONSUMER_OBSERVATION_UNKNOWN",
+    "stage": "minimal-baseline-gem-actual",
+    "outerHelper": "prepare_frozen_stage.py",
+    "outerHelperExitCode": 1,
+    "originalCommandExitCode": 0,
+    "preparationGuardPassed": false,
+    "observerPassed": false,
+    "actualObservationCount": 83,
+    "readOnlyObservationErrorCount": 1,
+    "readOnlyObservationErrors": [
+      {
+        "type": "RuntimeError",
+        "reason": "actual process identity/context observation incomplete",
+        "stage": "executable",
+        "errorCode": "EXECUTABLE_UNKNOWN"
+      }
+    ],
+    "originalResult": "minimal-baseline-gem-actual.result.json",
+    "originalResultSha256": "4f647866ca8ef89fa9aef54b664d72ff9e3e8acce065995f7ae88c87ace3b95e",
+    "originalLog": "minimal-baseline-gem-actual.log",
+    "originalLogSha256": "cfb61085431f9d92e73d98cb38c9cb31090ad54d3c253f77a0e61792e6f4a67c",
+    "toolVersionOutput": [
+      "1.15.2",
+      "1.25.1"
+    ],
+    "toolVersionOutputIsValidatedConsumerContext": false,
+    "runnerStarted": "2026-10-11T17:30:13.596472+09:00",
+    "runnerFinished": "2026-10-11T17:30:33.016841+09:00",
+    "runnerIntervalIncludesPostAudit": true,
+    "exactOuterFailureTimestamp": "NOT_RECORDED_IN_STAGE_WRAPPER",
+    "underlyingObserverCause": "UNKNOWN",
+    "originalToolFailed": false,
+    "sameAttemptRetried": false,
+    "helperCommandFlagObserverChanged": false
+  },
+  "derivedReportCountCorrection": {
+    "sidecar": "observer-count-correction.json",
+    "sha256": "2b346e2f4f2e614d45c88eea2574440fb95733c23ae871a46fae5ba9442b6a28",
+    "wrongLookup": "rubyConsumer.observations",
+    "correctLookup": "rubyConsumer.actualObservations",
+    "affectedHistoricalFiles": [
+      "required-consumer-failure.json",
+      "lease-return-request.json"
+    ],
+    "initialDerivedZeroCountPreserved": true,
+    "actualFailedConsumerCount": 83,
+    "allRubyConsumerActualObservationCount": 554,
+    "stopUnchanged": true,
+    "originalReceiptsUnmodified": true
+  },
+  "notStarted": [
+    "bundle exec internal environment",
+    "CocoaPods deployment",
+    "native iOS build",
+    "Simulator boot",
+    "app install/launch/first screen",
+    "Android build/install/launch/first screen",
+    "Mattermost source/dependencies/native",
+    "both independent fresh",
+    "Runstir"
+  ],
+  "postAudits": {
+    "strictSource": "PASS_55_THREE_LOCKS",
+    "metadataHostShared": "PASS_FINAL_UNCHANGED",
+    "sharedChangedPaths": 0,
+    "privateOutputScope": "PASS",
+    "originalPluginIdentity": "PASS",
+    "helperMap49Unchanged": true,
+    "helperIndex50Unchanged": true,
+    "temporarySharedWrites": "NOT_MEASURED",
+    "runtimeEnvPkgConfigPluginReshim": "NOT_MEASURED",
+    "trustAuthorizationEquivalence": "NOT_MEASURED"
+  },
+  "cleanup": {
+    "receipt": "cleanup.json",
+    "finalResource": "final-resource.json",
+    "passed": true,
+    "ownedEarlyMetroTerminated": true,
+    "otherOwnedResourcesStarted": false,
+    "initialSimulatorsAndGuiWatchmanPreserved": true,
+    "globalSelectionPermissionDaemonChangesPerformed": false,
+    "userAvdDataUntouched": true,
+    "rootReleaseConfirmed": true
+  },
+  "earlyMetro": {
+    "passed": true,
+    "httpStatus": 200,
+    "httpExecuted": true,
+    "httpBodySha256": "ed71e52f066b30c279378b7933ec895ee558e0899131124296dec5bec2995cef",
+    "ownProcessPortAndSourceGuardPassed": true,
+    "fatalLogCount": 0
+  },
+  "counts": {
+    "runnerResults": 12,
+    "runnerLogs": 12,
+    "totalLogs": 13,
+    "allOriginalRunnerCommandsExitZero": true,
+    "passedPreparationGuards": 11,
+    "failedPreparationGuards": 1,
+    "actualRubyObservations": 554,
+    "actualRubyObserverErrors": 1,
+    "failedConsumerActualObservations": 83,
+    "sourceOnlyMemoryTests": 1150,
+    "syntaxFiles": 26,
+    "sealedHelperArtifactMap": 49,
+    "sealedHelperIndexEntries": 50,
+    "basePacketFiles": 175,
+    "finalPacketFiles": 178,
+    "finalIndexEntries": 177,
+    "pythonBytecodeFiles": 10,
+    "png": 0,
+    "appZip": 0,
+    "apk": 0,
+    "rawGem": 1
+  },
+  "runnerResults": {
+    "minimal-baseline-selected-environment-probe.result.json": {
+      "step": "minimal-baseline-selected-environment-probe",
+      "exitCode": 0,
+      "guardPassed": true,
+      "consumerKind": "selection-probe",
+      "observerPassed": null,
+      "actualObservationCount": 0,
+      "readOnlyObservationErrors": [],
+      "started": "2026-10-11T17:28:49.181320+09:00",
+      "finished": "2026-10-11T17:29:09.252464+09:00",
+      "requestedArgvSha256": "386b9d25990eeaa45052d137b6b793bc11588fd68967607681cd748779501141"
+    },
+    "minimal-baseline-bundler-activation.result.json": {
+      "step": "minimal-baseline-bundler-activation",
+      "exitCode": 0,
+      "guardPassed": true,
+      "consumerKind": "ruby",
+      "observerPassed": true,
+      "actualObservationCount": 2,
+      "readOnlyObservationErrors": [],
+      "started": "2026-10-11T17:27:08.451762+09:00",
+      "finished": "2026-10-11T17:27:28.728995+09:00",
+      "requestedArgvSha256": "21a27922dd5a024df16dd2e60c20bfaaf818a93c258a213cf55b46849db5b610"
+    },
+    "minimal-baseline-clone.result.json": {
+      "step": "minimal-baseline-clone",
+      "exitCode": 0,
+      "guardPassed": true,
+      "consumerKind": "ordinary",
+      "observerPassed": null,
+      "actualObservationCount": 0,
+      "readOnlyObservationErrors": [],
+      "started": "2026-10-11T17:22:30.180558+09:00",
+      "finished": "2026-10-11T17:22:30.212755+09:00",
+      "requestedArgvSha256": "5ab9c4c69fb925f3db5d575bfbe74d169f3988a65c45d8a78eba0b45f18b56e9"
+    },
+    "minimal-baseline-gem-actual.result.json": {
+      "step": "minimal-baseline-gem-actual",
+      "exitCode": 0,
+      "guardPassed": false,
+      "consumerKind": "ruby",
+      "observerPassed": false,
+      "actualObservationCount": 83,
+      "readOnlyObservationErrors": [
+        {
+          "type": "RuntimeError",
+          "reason": "actual process identity/context observation incomplete",
+          "stage": "executable",
+          "errorCode": "EXECUTABLE_UNKNOWN"
+        }
+      ],
+      "started": "2026-10-11T17:30:13.596472+09:00",
+      "finished": "2026-10-11T17:30:33.016841+09:00",
+      "requestedArgvSha256": "e673dbf9b2a6e3ec981767f99e3ba9b9bbf435ff27f25a53897b76648845ab01"
+    },
+    "minimal-baseline-npm-ci.result.json": {
+      "step": "minimal-baseline-npm-ci",
+      "exitCode": 0,
+      "guardPassed": true,
+      "consumerKind": "ordinary",
+      "observerPassed": null,
+      "actualObservationCount": 0,
+      "readOnlyObservationErrors": [],
+      "started": "2026-10-11T17:22:30.587017+09:00",
+      "finished": "2026-10-11T17:22:36.673832+09:00",
+      "requestedArgvSha256": "1b45d4525165bd69c954be4a1aa560c76c3ecf372a733a7aa96740fa2c4e079c"
+    },
+    "minimal-baseline-bundler-bootstrap-install.result.json": {
+      "step": "minimal-baseline-bundler-bootstrap-install",
+      "exitCode": 0,
+      "guardPassed": true,
+      "consumerKind": "ruby",
+      "observerPassed": true,
+      "actualObservationCount": 16,
+      "readOnlyObservationErrors": [],
+      "started": "2026-10-11T17:26:29.811001+09:00",
+      "finished": "2026-10-11T17:26:48.659105+09:00",
+      "requestedArgvSha256": "77d50951fc3e8f5498b14face8c2af2e12f63ee02b2321ee085cc55634bf38f8"
+    },
+    "minimal-baseline-mise-effective-selection.result.json": {
+      "step": "minimal-baseline-mise-effective-selection",
+      "exitCode": 0,
+      "guardPassed": true,
+      "consumerKind": "selection-probe",
+      "observerPassed": null,
+      "actualObservationCount": 0,
+      "readOnlyObservationErrors": [],
+      "started": "2026-10-11T17:24:30.711065+09:00",
+      "finished": "2026-10-11T17:24:48.946910+09:00",
+      "requestedArgvSha256": "d14bd1b7479458c13510b7f05cb4a05fdb5ee8c88b808f0a3e414821419d146e"
+    },
+    "minimal-baseline-ruby-bootstrap-facts.result.json": {
+      "step": "minimal-baseline-ruby-bootstrap-facts",
+      "exitCode": 0,
+      "guardPassed": true,
+      "consumerKind": "ruby",
+      "observerPassed": true,
+      "actualObservationCount": 2,
+      "readOnlyObservationErrors": [],
+      "started": "2026-10-11T17:25:08.235216+09:00",
+      "finished": "2026-10-11T17:25:28.456908+09:00",
+      "requestedArgvSha256": "9957714f1156ee80325e7ca28da01ce4789657e82a86c1dd82c56e47e432fe99"
+    },
+    "minimal-baseline-raw-gem-spec.result.json": {
+      "step": "minimal-baseline-raw-gem-spec",
+      "exitCode": 0,
+      "guardPassed": true,
+      "consumerKind": "ruby",
+      "observerPassed": true,
+      "actualObservationCount": 7,
+      "readOnlyObservationErrors": [],
+      "started": "2026-10-11T17:25:48.789977+09:00",
+      "finished": "2026-10-11T17:26:08.595464+09:00",
+      "requestedArgvSha256": "7a1fc1264b4d638e9edaa4d673e28dc57ab143e4a43b4c4017fbf4b85dd3b637"
+    },
+    "minimal-baseline-frozen-mise-effective-selection.result.json": {
+      "step": "minimal-baseline-frozen-mise-effective-selection",
+      "exitCode": 0,
+      "guardPassed": true,
+      "consumerKind": "selection-probe",
+      "observerPassed": null,
+      "actualObservationCount": 0,
+      "readOnlyObservationErrors": [],
+      "started": "2026-10-11T17:28:08.833425+09:00",
+      "finished": "2026-10-11T17:28:29.197780+09:00",
+      "requestedArgvSha256": "d14bd1b7479458c13510b7f05cb4a05fdb5ee8c88b808f0a3e414821419d146e"
+    },
+    "minimal-baseline-bundle-install.result.json": {
+      "step": "minimal-baseline-bundle-install",
+      "exitCode": 0,
+      "guardPassed": true,
+      "consumerKind": "ruby",
+      "observerPassed": true,
+      "actualObservationCount": 444,
+      "readOnlyObservationErrors": [],
+      "started": "2026-10-11T17:29:30.256679+09:00",
+      "finished": "2026-10-11T17:29:54.905535+09:00",
+      "requestedArgvSha256": "aa2e2c394dab6691af286f9251a727249a5e76bb92184cb90168496ab62b33c8"
+    },
+    "minimal-baseline-checkout.result.json": {
+      "step": "minimal-baseline-checkout",
+      "exitCode": 0,
+      "guardPassed": true,
+      "consumerKind": "ordinary",
+      "observerPassed": null,
+      "actualObservationCount": 0,
+      "readOnlyObservationErrors": [],
+      "started": "2026-10-11T17:22:30.247657+09:00",
+      "finished": "2026-10-11T17:22:30.354650+09:00",
+      "requestedArgvSha256": "16cfc8433212c67a59c9e18a6b8bebd2f2622ef46842e1a74a9b8a6632ddfecd"
+    }
+  },
+  "limits": [
+    "New minimum frozen Bundle preparation passed; no new Pod/native/baseline/fresh PASS.",
+    "Original gem-actual tool exit0 and version output do not override required observer UNKNOWN STOP.",
+    "Underlying cause of EXECUTABLE_UNKNOWN remains unknown; no observer/tool retry or source condition change.",
+    "All original receipts and initial incorrect derived count fields remain immutable; separate count sidecar corrects the reporting lookup.",
+    "Recursive inventory includes all ten generated Python bytecode files; none were deleted.",
+    "Root release is a separate canonical receipt; original granted and false readiness/return fields are retained.",
+    "Previous attempt13/12 packet cores, helpers and indexes remain unchanged."
+  ],
+  "originalPacket": {
+    "files": {
+      "owned-emulator-memory-selfcheck.py": {
+        "sha256": "e9d4c21169000b8f1b429adcde31a72be71e9c18f79b6de377632bb0b7075753",
+        "bytes": 9425
+      },
+      "generated_pods.py": {
+        "sha256": "efc0f4615db5caf426d7365b0ece6fe2c54e03f9ff50de93c24d023e78f4a79a",
+        "bytes": 20799
+      },
+      "minimal-baseline-before-installer.strict-minimal-audit.json": {
+        "sha256": "52ba5b790ba2cd0bc792bf99dc54bd52cb39b77ed17a68d0a8f74977eede1083",
+        "bytes": 1219
+      },
+      "mise_state_metadata.py": {
+        "sha256": "b622dcfbcd4aa6c240e27cfa1bac64e6b00e1852c96c765e89c307609a1c8d53",
+        "bytes": 8134
+      },
+      "syntax-final.json": {
+        "sha256": "029b4b87938bb3ccffc1884f65dde74f382db7e6cb312b9df6af5c8b413a7828",
+        "bytes": 97
+      },
+      "ruby_preparation.py": {
+        "sha256": "549613ca5bd655acdd7a5ebed82be7819d05d07d15fad7eb9b2f1f2fe20397ba",
+        "bytes": 19801
+      },
+      "minimal-baseline-after-bundle.strict-minimal-audit.json": {
+        "sha256": "224316012ebd9422984fddb24c347f9df8a50a54714615f31f687f6860e016c1",
+        "bytes": 1215
+      },
+      "minimal-baseline-bundle-install-before-consumer-source.strict-minimal-audit.json": {
+        "sha256": "6fe42cd4b55580430e7a5dba759568781ac704b964a1821b61b1b3954d0f2ae1",
+        "bytes": 1240
+      },
+      "resource-preflight-memory-selfcheck.json": {
+        "sha256": "a838d4b8e87371366b9b091cca4726c377eb9e5712c8b592d96db79c379f9c87",
+        "bytes": 202
+      },
+      "minimal-baseline-bundler-activation-after-consumer-source.strict-minimal-audit.json": {
+        "sha256": "496ad554065017b08248d2fd1e2933a2cdc19256ad364b40aec6886cd6c20327",
+        "bytes": 1243
+      },
+      "final-bootstrap-memory-selfcheck.json": {
+        "sha256": "3dad5860b10d09c8acb0f55e9658b293821e7c128dceee60968392ab282c7360",
+        "bytes": 203
+      },
+      "minimal-baseline-ruby-prefix-proof.json": {
+        "sha256": "54b8ed180e2e56aa1e773cd719148e5ab14273b6352ba31d359992edff9a645f",
+        "bytes": 24817
+      },
+      "minimal-baseline-bundler-bootstrap-install-after-consumer-source.strict-minimal-audit.json": {
+        "sha256": "c779923f3644283344cc1aa2787e778b9708da3491b25dd4d1c0767735e18e23",
+        "bytes": 1250
+      },
+      "minimal-baseline-selected-environment-probe.result.json": {
+        "sha256": "c7b086346a770077a95eb00b41cb546ab27c679f931ea0433f39bd8d1f7ee4c2",
+        "bytes": 8985
+      },
+      "minimal-baseline-bundle-install-after-consumer.mise-shared-audit.json": {
+        "sha256": "67aedd1673269b43c371c65f444ad3a2c4cc651d57ed36b3f3bd1ccccac00fed",
+        "bytes": 36650
+      },
+      "minimal-baseline-selected-environment-probe-before-consumer-source.strict-minimal-audit.json": {
+        "sha256": "b246b7d65f61aa6048fc7a4ce7174a30d04b585803f00c8638e563c718b8ff8f",
+        "bytes": 1252
+      },
+      "runtime-memory-selfcheck.py": {
+        "sha256": "9a4a1c9bd03b04589d188c4c639867666e2e7c78d00e9613dcbb3f7bcb005757",
+        "bytes": 9671
+      },
+      "minimal-baseline-selected-environment-probe.log": {
+        "sha256": "5fc90ae7db26fb5534878e51217550b44cef17ffe7d5ed0f753e15560939b901",
+        "bytes": 26289
+      },
+      "minimal-baseline-before-bootstrap-install.path-space.json": {
+        "sha256": "ff312318dc7af4b6411229f056cbb3b556e9b083635be64e28b4e7ea7ac3e9ba",
+        "bytes": 528
+      },
+      "minimal-baseline-bootstrap-final.mise-shared-audit.json": {
+        "sha256": "67aedd1673269b43c371c65f444ad3a2c4cc651d57ed36b3f3bd1ccccac00fed",
+        "bytes": 36650
+      },
+      "readiness-initial.json": {
+        "sha256": "13937081a7bdf1eb6fe416ec6b85ac3988d210a90503eb4c1738c5cc0ae23eb0",
+        "bytes": 257
+      },
+      "minimal-baseline-initial-raw-snapshot.json": {
+        "sha256": "570081700c92fee13b646b8ba2e6db0d93e14bfa4db5ee82601621d91edb60ef",
+        "bytes": 12126
+      },
+      "minimal-baseline-clone.log": {
+        "sha256": "9541f4ef952b39f5c02ff0c312b62a8dad53f3a88d20e94a1a348ff4a4e9e32d",
+        "bytes": 107
+      },
+      "minimal-baseline-bundler-bootstrap-install-after-consumer.mise-shared-audit.json": {
+        "sha256": "67aedd1673269b43c371c65f444ad3a2c4cc651d57ed36b3f3bd1ccccac00fed",
+        "bytes": 36650
+      },
+      "minimal-baseline-before-bundle.strict-minimal-audit.json": {
+        "sha256": "418543a92c265ff8ff4619f01d2b63db827346e7238654576d2ebe071449e25d",
+        "bytes": 1216
+      },
+      "minimal-baseline-early.log": {
+        "sha256": "09a29f4b4da78d67a4eec52f5a9d8a931bec2ddce8767f58da4478025bf4f1ab",
+        "bytes": 1217
+      },
+      "resource_preflight.py": {
+        "sha256": "f95c415c3ba7de3ec787817d39af7498ce4bb1d7edff9e2b92b302e27532ce9d",
+        "bytes": 14703
+      },
+      "minimal-baseline-gem-actual-before-consumer.mise-shared-audit.json": {
+        "sha256": "67aedd1673269b43c371c65f444ad3a2c4cc651d57ed36b3f3bd1ccccac00fed",
+        "bytes": 36650
+      },
+      "minimal-baseline-bundler-activation.result.json": {
+        "sha256": "1e98bbb02816b376848efd0c4847952a4d0999d2c7b39dfc2db50754cd38230f",
+        "bytes": 18100
+      },
+      "minimal-baseline-final-shared.mise-shared-audit.json": {
+        "sha256": "67aedd1673269b43c371c65f444ad3a2c4cc651d57ed36b3f3bd1ccccac00fed",
+        "bytes": 36650
+      },
+      "minimal-baseline-selected-environment-probe-before-consumer.mise-shared-audit.json": {
+        "sha256": "67aedd1673269b43c371c65f444ad3a2c4cc651d57ed36b3f3bd1ccccac00fed",
+        "bytes": 36650
+      },
+      "minimal-baseline-before-bootstrap.strict-minimal-audit.json": {
+        "sha256": "b0e3923aadb50d487fcfdd094203bef40e4b84b8afd001436b8a2355b56ff110",
+        "bytes": 1219
+      },
+      "minimal-baseline-frozen-mise-effective-selection-before-consumer.mise-shared-audit.json": {
+        "sha256": "67aedd1673269b43c371c65f444ad3a2c4cc651d57ed36b3f3bd1ccccac00fed",
+        "bytes": 36650
+      },
+      "minimal-baseline-mise-effective-selection-before-consumer-source.strict-minimal-audit.json": {
+        "sha256": "028a9027cee0631779d40496c6494398247a79f4d75c169bbfd95250df2baba9",
+        "bytes": 1250
+      },
+      "minimal-baseline-gem-actual-after-consumer.mise-shared-audit.json": {
+        "sha256": "67aedd1673269b43c371c65f444ad3a2c4cc651d57ed36b3f3bd1ccccac00fed",
+        "bytes": 36650
+      },
+      "final-resource-preflight-memory-selfcheck.json": {
+        "sha256": "a838d4b8e87371366b9b091cca4726c377eb9e5712c8b592d96db79c379f9c87",
+        "bytes": 202
+      },
+      "minimal-baseline-gem-actual-after-consumer-source.strict-minimal-audit.json": {
+        "sha256": "1fdb263f65353b1c4b86a9b901b3ede9dba7095c0ef830615f7ef9975917132f",
+        "bytes": 1235
+      },
+      "ruby_consumer_observer.py": {
+        "sha256": "481b92b25aa697ed78f2aa12c0bbf540708346442e4e89256b024095774f9928",
+        "bytes": 14144
+      },
+      "minimal-baseline-shared-before.json": {
+        "sha256": "56c05dbc8a416acf6b191adfb9bd385945b6c984cafc07a63de26443b482dd7b",
+        "bytes": 501514
+      },
+      "independent-helper-review-v2.md": {
+        "sha256": "4e3b34c4004806432c56cc774a338cd408fb3aa7ccdcef94d8a0a97ed1de84c3",
+        "bytes": 2575
+      },
+      "minimal-baseline-bundle-install-shared-post.json": {
+        "sha256": "c0194af72c4c4d7d998edc7cdbc460aa41f77e1bf1c48355fa8847dd2128cccf",
+        "bytes": 522789
+      },
+      "minimal-baseline-original-inputs.json": {
+        "sha256": "f70f2d89efab7c641c24a5c7d9ab9074878df7d86cba9bd475304fbb98ac3b1c",
+        "bytes": 700
+      },
+      "resource-preflight-memory-selfcheck.py": {
+        "sha256": "324a4d6ad6f32858fe85fdda1bbc9cc9b450d3db9b871b68cf2d6ea99f326056",
+        "bytes": 2130
+      },
+      "minimal-baseline-clone.result.json": {
+        "sha256": "c63a77b49db675026d14682fb723091a44de510ae3a6570c9ea7719121190366",
+        "bytes": 851
+      },
+      "metadata-memory-selfcheck.json": {
+        "sha256": "a59d9e976d7a8444b43c2fa775433b60f277c5dc0ba18ddb09439ef6e782de56",
+        "bytes": 203
+      },
+      "minimal-baseline-bundler-activation-before-consumer.mise-shared-audit.json": {
+        "sha256": "67aedd1673269b43c371c65f444ad3a2c4cc651d57ed36b3f3bd1ccccac00fed",
+        "bytes": 36650
+      },
+      "minimal-baseline-after-npm-ci.strict-minimal-audit.json": {
+        "sha256": "5cf5e26351425d53ceec68a21975849673cefaf610ddda1053d7681b5a20c302",
+        "bytes": 1215
+      },
+      "minimal-baseline-mise-effective-selection-after-consumer.mise-shared-audit.json": {
+        "sha256": "dbaa99c5b617267a7f2e53685696b6945cd1f918ea7388445d34a08499c13a64",
+        "bytes": 10317
+      },
+      "minimal-baseline-metadata-inputs-before.json": {
+        "sha256": "c261a86f76a47056ab72c9f3f289f99ea8f1470d4009f380d3c3de5a843dce91",
+        "bytes": 3344
+      },
+      "minimal-baseline-frozen-mise-effective-selection.path-space.json": {
+        "sha256": "3c82f719631b9d7496b338bd9ac672dd61dcf7f464497c3f57bb94ace189ace0",
+        "bytes": 528
+      },
+      "metadata-memory-selfcheck.py": {
+        "sha256": "0b638d351722daa0f4fc0dc1d062cca785ea9f313ed2664e098fcebe4b554657",
+        "bytes": 7273
+      },
+      "run_step.py": {
+        "sha256": "0961ab7d408e549a183b125ae5122f179a8cca65e0089f1e37a394af1c91574e",
+        "bytes": 8049
+      },
+      "minimal-baseline-final-source.strict-minimal-audit.json": {
+        "sha256": "dde374fd2d6aaf61b5adc8e67e2e3bc186150802cc21eabd51e5b75663d3cece",
+        "bytes": 1215
+      },
+      "minimal-baseline-selected-environment-probe-shared-post.json": {
+        "sha256": "c0194af72c4c4d7d998edc7cdbc460aa41f77e1bf1c48355fa8847dd2128cccf",
+        "bytes": 522789
+      },
+      "minimal-baseline-before-source.path-space.json": {
+        "sha256": "3388616dc367a61aed602bd5f5bbee876eacc2dd9171b88c54f3c15773c54ca5",
+        "bytes": 515
+      },
+      "minimal-baseline-bundler-bootstrap-install-before-consumer.mise-shared-audit.json": {
+        "sha256": "dbaa99c5b617267a7f2e53685696b6945cd1f918ea7388445d34a08499c13a64",
+        "bytes": 10317
+      },
+      "minimal-baseline-ruby-bootstrap-facts-after-consumer.mise-shared-audit.json": {
+        "sha256": "dbaa99c5b617267a7f2e53685696b6945cd1f918ea7388445d34a08499c13a64",
+        "bytes": 10317
+      },
+      "prepare_source_stage.py": {
+        "sha256": "c1fe2743d119042febf60cb3e7e14646ee118dfd9febcb7e986433401434319b",
+        "bytes": 3255
+      },
+      "root-lease.json": {
+        "sha256": "aac05c320ca35edc8c18da39da232b56f742c98b297bf18c6c5de1dd954357b7",
+        "bytes": 10196
+      },
+      "prepare_hooks.py": {
+        "sha256": "f73298419910215f913a81da6dc20ca234ccd4afad379db646a1e1a9b0d834fc",
+        "bytes": 1714
+      },
+      "minimal-primary-inputs.json": {
+        "sha256": "c310689940fa7ab89228373bad7c82c9e23c61123a27392e7fc3c4a4c5edfd0d",
+        "bytes": 2622
+      },
+      "audit-v2.py": {
+        "sha256": "a0a030097bd67c85c3bed3f7436ad6a86f8f66229731dbed3078647b9bb2d528",
+        "bytes": 11996
+      },
+      "minimal-baseline-selected-environment-probe-after-consumer.mise-shared-audit.json": {
+        "sha256": "67aedd1673269b43c371c65f444ad3a2c4cc651d57ed36b3f3bd1ccccac00fed",
+        "bytes": 36650
+      },
+      "lease-return-request.json": {
+        "sha256": "33fb385acda2f96c35666d3e445023a7b29118647b68831ab36004c614498f0a",
+        "bytes": 885
+      },
+      "minimal-baseline-ruby-bootstrap-facts.log": {
+        "sha256": "0a9894ae100ca557a87c2358d30f2ef53fc4776c46b9daf72c20664494211ac3",
+        "bytes": 1339
+      },
+      "minimal-baseline-shared-after.json": {
+        "sha256": "56c05dbc8a416acf6b191adfb9bd385945b6c984cafc07a63de26443b482dd7b",
+        "bytes": 501514
+      },
+      "minimal-baseline-gem-actual.result.json": {
+        "sha256": "4f647866ca8ef89fa9aef54b664d72ff9e3e8acce065995f7ae88c87ace3b95e",
+        "bytes": 234893
+      },
+      "minimal-baseline-mise-effective-selection-before-consumer.mise-shared-audit.json": {
+        "sha256": "f0fb6a338aab8760e8120c01841034fcdaec7af94640778f279e56acbe1d0d40",
+        "bytes": 5498
+      },
+      "minimal-baseline-gem-actual.path-space.json": {
+        "sha256": "23f99c6e4e68419de1040b1f237b6fd49b338d3800e1723263e79e20f29acb7b",
+        "bytes": 528
+      },
+      "bootstrap-memory-selfcheck.py": {
+        "sha256": "7e361ba70131ce0b2efd1a2db6094a7a09e7c2c6ee39b2c9e37429c89f86b8d2",
+        "bytes": 11331
+      },
+      "owned-emulator-memory-selfcheck.json": {
+        "sha256": "3cf25cf17e40de22d689d67e09f6f9e4aa91f6a82d2dfcd80858c9b220b74775",
+        "bytes": 202
+      },
+      "minimal-baseline-npm-ci.result.json": {
+        "sha256": "833b6fc5d65f67ceca7102f5dc0d3270f405bb8b44f6afad89570a220a2371d5",
+        "bytes": 1979
+      },
+      "final-runtime-memory-selfcheck.json": {
+        "sha256": "62a6d13452efab0fd0a648b1a62b0fe4428c4bf83091d7155545309dce1f6ef2",
+        "bytes": 203
+      },
+      "minimal-baseline-bundle-install.path-space.json": {
+        "sha256": "25611a2397d1f509e9f1741877ea6e0c6ec6f665a5ad4fe2b5729cd685a601d3",
+        "bytes": 528
+      },
+      "minimal-baseline-bootstrap-receipt.json": {
+        "sha256": "8e5ac58925eb4f03a6d0f6781ba78ca584f65c975d2cbeaed563e29119419445",
+        "bytes": 109379
+      },
+      "minimal-baseline-raw-gem-spec-after-consumer-source.strict-minimal-audit.json": {
+        "sha256": "72c46aa9acedf72c2f4605d67313ce21e479b3b6bacbfe7b8151d790f853259c",
+        "bytes": 1237
+      },
+      "minimal-baseline-frozen-mise-effective-selection-after-consumer.mise-shared-audit.json": {
+        "sha256": "67aedd1673269b43c371c65f444ad3a2c4cc651d57ed36b3f3bd1ccccac00fed",
+        "bytes": 36650
+      },
+      "minimal-baseline-selected-environment-probe.path-space.json": {
+        "sha256": "4b35a8c7c31f4d6426ef605c41a62490557fa258e61c7509deb26c5702672f1d",
+        "bytes": 528
+      },
+      "minimal-baseline-installer-prerequisite.json": {
+        "sha256": "3ea5c1d2e5f48907cdcee1d446ebd9356306fb8cf348fe60cf871d8a3cfcb7aa",
+        "bytes": 36030
+      },
+      "minimal-baseline-bundler-activation-before-consumer-source.strict-minimal-audit.json": {
+        "sha256": "7304c171c2d6ca7d697ff861d04085924dead75345e906cec43476e09582fe84",
+        "bytes": 1244
+      },
+      "minimal-baseline-early.owned.json": {
+        "sha256": "cf3c3ae4790e5c0ee49a94c7d85fead12be62f1545e309058d7535e1316fd7c8",
+        "bytes": 1657
+      },
+      "runtime-memory-selfcheck.json": {
+        "sha256": "62a6d13452efab0fd0a648b1a62b0fe4428c4bf83091d7155545309dce1f6ef2",
+        "bytes": 203
+      },
+      "minimal-baseline-bundler-bootstrap-install.result.json": {
+        "sha256": "5db030ae000a9b9c088f71ee8682d6a92c153a42225189afcbbe2ea8b47ac53b",
+        "bytes": 55441
+      },
+      "ruby-preparation-memory-selfcheck.py": {
+        "sha256": "da22130e6228229318fc1202ea585734e42a94795110421469791564dd50da01",
+        "bytes": 18591
+      },
+      "final-resource.json": {
+        "sha256": "f3024d37c45a8bc463fef6ae0dd63903d49a455776b0fa0d0b012c015cf7d02d",
+        "bytes": 181820
+      },
+      "minimal-baseline-ruby-bootstrap-facts-before-consumer-source.strict-minimal-audit.json": {
+        "sha256": "07ff3c44100bd948aca4df6869ca3bf926eda91fa999439bcfc7d2b2daae62bc",
+        "bytes": 1246
+      },
+      "minimal-baseline-mise-effective-selection.result.json": {
+        "sha256": "df1aa6784a87eb430a73d291c1d4041a20382fceb3b90f0664398487a09b80da",
+        "bytes": 8485
+      },
+      "minimal-baseline-bundle-install-after-consumer-source.strict-minimal-audit.json": {
+        "sha256": "771fa71427856f5847bd5b7a54e04721f91225e6c9308e7d52f47fb9ad0ee09d",
+        "bytes": 1239
+      },
+      "source-only-validation.json": {
+        "sha256": "0f0ef82da964d50e80711fdef29184ce5f1140ce8296b5bd4d40b0fb81450bbb",
+        "bytes": 1384
+      },
+      "cleanup.json": {
+        "sha256": "63cabbb0c6d2dea6ec8aa4ec433bec7bb552dc26394772f417edf7ab33941af4",
+        "bytes": 1962
+      },
+      "minimal-baseline-early-stop.stop.json": {
+        "sha256": "f056a1f3c50abb3630d90c2d642529981873dc3144e91b2a9889f055b914e744",
+        "bytes": 192
+      },
+      "pre-lease-preflight.json": {
+        "sha256": "3fc54239353976ed1492420206139e65f69b6b91c0ca447826bd6129ae6dc8cd",
+        "bytes": 3086
+      },
+      "bootstrap-memory-selfcheck.json": {
+        "sha256": "3dad5860b10d09c8acb0f55e9658b293821e7c128dceee60968392ab282c7360",
+        "bytes": 203
+      },
+      "minimal-baseline-ruby-bootstrap-facts-before-consumer.mise-shared-audit.json": {
+        "sha256": "dbaa99c5b617267a7f2e53685696b6945cd1f918ea7388445d34a08499c13a64",
+        "bytes": 10317
+      },
+      "minimal-baseline-frozen-mise-effective-selection-after-consumer-source.strict-minimal-audit.json": {
+        "sha256": "620196e6f8887415c56cf1ba602bf605561515822e1236d499a6f5b5a98d2039",
+        "bytes": 1256
+      },
+      "final-metadata-memory-selfcheck.json": {
+        "sha256": "a59d9e976d7a8444b43c2fa775433b60f277c5dc0ba18ddb09439ef6e782de56",
+        "bytes": 203
+      },
+      "metro_guard.py": {
+        "sha256": "5cfa40c028b7f732176aad6b02222f28c8ce7459400407b6fdc1f42580d2fd9f",
+        "bytes": 15791
+      },
+      "required-consumer-failure.json": {
+        "sha256": "d3d505564dfc0e637ae261839534e9ef765365f183b99f2444ad22bc60fc2b77",
+        "bytes": 1579
+      },
+      "source_paths.py": {
+        "sha256": "6f35ca9de92f40e152c91b419124f340e2ca45d1943739e07e32aa7525899735",
+        "bytes": 1598
+      },
+      "minimal-baseline-frozen-mise-effective-selection.log": {
+        "sha256": "0ed296563ab6b58f16eedfac7979a472931ba3fca2d8b10f33c5dd29994f3f33",
+        "bytes": 1333
+      },
+      "minimal-baseline-frozen-mise-effective-selection-before-consumer-source.strict-minimal-audit.json": {
+        "sha256": "3291031c404d685a6229236b2789fef928d3af12032fa6bf7a1c9adb038f42b6",
+        "bytes": 1257
+      },
+      "minimal-baseline-early-ready.http-body": {
+        "sha256": "ed71e52f066b30c279378b7933ec895ee558e0899131124296dec5bec2995cef",
+        "bytes": 23
+      },
+      "minimal-baseline-after-bootstrap.strict-minimal-audit.json": {
+        "sha256": "001b4502c260d96ae5cc507c1003d5c8420a9d1a9fdfb56718a4e82d0ec1c1b8",
+        "bytes": 1218
+      },
+      "minimal-baseline-bundler-bootstrap-install-before-consumer-source.strict-minimal-audit.json": {
+        "sha256": "b6a77b697506f42fe1c28087acc33a7b2e8532b15f8cf36804cdd021a0faa601",
+        "bytes": 1251
+      },
+      "minimal-baseline-selected-environment-probe-after-consumer-source.strict-minimal-audit.json": {
+        "sha256": "1832ceace8e6aaae8bf90134d6b3b11e0b1e14803aa895ef395270849f3b9ff6",
+        "bytes": 1251
+      },
+      "strict_minimal_audit.py": {
+        "sha256": "f38d6c29c3608253bb015caee79a37c00bcdd601e1cea6f3aea693599fa1e067",
+        "bytes": 4343
+      },
+      "generated_post_audit.py": {
+        "sha256": "fff6e0d2f0fe69b87c9818159582ca203f6512aa953c7f30629c082a06a69cb4",
+        "bytes": 3989
+      },
+      "pre-early-metro.json": {
+        "sha256": "cdf6ca75172e160ea26c8826132238f90921834999eef6aa9cd59073868cdc62",
+        "bytes": 197043
+      },
+      "prepare_frozen_stage.py": {
+        "sha256": "453d0d47d640486d4681ef2df42138b0dc39fe2625dd895255d047046ece1884",
+        "bytes": 7794
+      },
+      "source-only-changes.diff": {
+        "sha256": "0df9cacf265a89c11dbd25240e0e3423454180bf041ec21d688c841d5bea9ce8",
+        "bytes": 1058
+      },
+      "minimal-baseline-bundler-bootstrap-install.log": {
+        "sha256": "c35c8dd05faf2e0b62ed7198870c8fb4879b185be8919d11e5ebc23b7839b47f",
+        "bytes": 54
+      },
+      "minimal-baseline-bundler-activation-after-consumer.mise-shared-audit.json": {
+        "sha256": "67aedd1673269b43c371c65f444ad3a2c4cc651d57ed36b3f3bd1ccccac00fed",
+        "bytes": 36650
+      },
+      "minimal-baseline-gem-actual-before-consumer-source.strict-minimal-audit.json": {
+        "sha256": "9efc301f7abd1e05eac4e46aab26abef711245081a25ebce3f7ebaa09756aa85",
+        "bytes": 1236
+      },
+      "minimal-baseline-checkout.log": {
+        "sha256": "12a49c2a0adfd3ac6eec7fab96a96ae2e77a1263e070e5e496de22847ec196ae",
+        "bytes": 89
+      },
+      "minimal-baseline-ruby-bootstrap-facts.result.json": {
+        "sha256": "6f547ff718b04f42b699246f1a7578a79ad35ac803fe465e100ee65314f6954d",
+        "bytes": 17776
+      },
+      "completion_gate.py": {
+        "sha256": "556e090a9b320965ecb3d4102b43b84ad9eaaeec14f7f1a1eb52dd9e9e4759e2",
+        "bytes": 1648
+      },
+      "SHA256SUMS.helpers": {
+        "sha256": "bee7ea0c425a12e5236cd54bbb11ba5c56b46e6f0e8ca5c0a5427f1a1172dd14",
+        "bytes": 4703
+      },
+      "minimal-baseline-mise-context.json": {
+        "sha256": "7c858bf78d660fe1178f0b46dfeb6a6252d972988efc8c8356973e7861585d52",
+        "bytes": 2770
+      },
+      "minimal-baseline-ruby-bootstrap-facts-after-consumer-source.strict-minimal-audit.json": {
+        "sha256": "23dfaab9ac5dafad549bb75c0fb23c90519f6efe9e5811e27fe02463d0392f7b",
+        "bytes": 1245
+      },
+      "minimal-baseline-raw-gem-spec-after-consumer.mise-shared-audit.json": {
+        "sha256": "dbaa99c5b617267a7f2e53685696b6945cd1f918ea7388445d34a08499c13a64",
+        "bytes": 10317
+      },
+      "PLAN.md": {
+        "sha256": "36cbd31b2b0b0689d1d1bc389c6ade3f3e4e3168e66658dad2056489e4b42464",
+        "bytes": 43538
+      },
+      "norc-observer-memory-selfcheck.py": {
+        "sha256": "eadceb1e364ffe8dc0805701f24e16eb7cb7924ac3076a98de8b9310ebe52d28",
+        "bytes": 4793
+      },
+      "minimal-baseline-gem-actual.log": {
+        "sha256": "cfb61085431f9d92e73d98cb38c9cb31090ad54d3c253f77a0e61792e6f4a67c",
+        "bytes": 14
+      },
+      "minimal-baseline-bundle-install.log": {
+        "sha256": "febd28ca737f5cc3bcbd172a0cb461ee1ee2f4bf89b4060df0b6366c593673c3",
+        "bytes": 3464
+      },
+      "minimal-baseline-raw-gem-spec.log": {
+        "sha256": "6114e34b2665aba9ca0e6969b84364b9ca3226d5661306e6dfa5de6c0df8d2ad",
+        "bytes": 143
+      },
+      "minimal-baseline-raw-gem-spec-before-consumer.mise-shared-audit.json": {
+        "sha256": "dbaa99c5b617267a7f2e53685696b6945cd1f918ea7388445d34a08499c13a64",
+        "bytes": 10317
+      },
+      "minimal-baseline-raw-gem-spec.result.json": {
+        "sha256": "06cb153f2591ba82abe3675a33a98b094c68d4645ddfdbc4b28943637f85cc16",
+        "bytes": 31544
+      },
+      "finished-preparation-v2-batch.json": {
+        "sha256": "9d7201d71c90d84b4662ee4bbe88b0341bc94833b17082b54b0caba8848fa01d",
+        "bytes": 6242
+      },
+      "start.path-space.json": {
+        "sha256": "a43d45e33e7cd969fcc3118313f161db404baa389344e02c53154077db37bbef",
+        "bytes": 515
+      },
+      "path_guard.py": {
+        "sha256": "86ca19fe86a001c969c5c6f70d0380c8e93d0481494cbdfc5c7286b8a63360a3",
+        "bytes": 2832
+      },
+      "frozen-receipt-memory-selfcheck.json": {
+        "sha256": "d3327db4fc5b3b7b80bc30d9bb1b1b70aae78d55c69448e3a3bff59125ad4684",
+        "bytes": 548
+      },
+      "norc-observer-memory-selfcheck.json": {
+        "sha256": "b7da5eb232eabd16d914765894b40ed910838de5f523069dcb13ff6d34494dbf",
+        "bytes": 202
+      },
+      "minimal-baseline-raw-gem-spec-before-consumer-source.strict-minimal-audit.json": {
+        "sha256": "f148a96b8f054b2f681f2d14ba333449628f6288f5d4a73445cd6787acc7bb04",
+        "bytes": 1238
+      },
+      "policy-seal.json": {
+        "sha256": "a8ec8edf220e1445221fcf08310364af61a8e9992540facf1d108d3b19f22a06",
+        "bytes": 716
+      },
+      "final-norc-observer-memory-selfcheck.json": {
+        "sha256": "b7da5eb232eabd16d914765894b40ed910838de5f523069dcb13ff6d34494dbf",
+        "bytes": 202
+      },
+      "bundler_bootstrap.py": {
+        "sha256": "09269a4a538465f3f7492c73ec0f761c182e2d6e50977488ea9567c3622510fd",
+        "bytes": 19842
+      },
+      "source-only-origin.json": {
+        "sha256": "ce43b0b472a1865aae166e082be82754148f6c48abf061aa01e03bfc0a67a1de",
+        "bytes": 10236
+      },
+      "minimal-baseline-mise-effective-selection.log": {
+        "sha256": "0ed296563ab6b58f16eedfac7979a472931ba3fca2d8b10f33c5dd29994f3f33",
+        "bytes": 1333
+      },
+      "final-ruby-preparation-memory-selfcheck.json": {
+        "sha256": "e7eaacc7426d8af3fa02b8f537eb56dd21596c7d27de502ac5aea11a199c6f6d",
+        "bytes": 203
+      },
+      "minimal-baseline-frozen-mise-effective-selection.result.json": {
+        "sha256": "acc5fb3b60e91ae52454a269f6f867f7af94ed1bf44b59e8fda55142d8bb1564",
+        "bytes": 8506
+      },
+      "minimal-baseline-gem-actual-shared-post.json": {
+        "sha256": "c0194af72c4c4d7d998edc7cdbc460aa41f77e1bf1c48355fa8847dd2128cccf",
+        "bytes": 522789
+      },
+      "minimal-baseline-bundle-install-before-consumer.mise-shared-audit.json": {
+        "sha256": "67aedd1673269b43c371c65f444ad3a2c4cc651d57ed36b3f3bd1ccccac00fed",
+        "bytes": 36650
+      },
+      "minimal-baseline-bundle-install.result.json": {
+        "sha256": "b2cd9720dda9bc256600249f5c388eafd7cb53137d192e03f705cfd474329596",
+        "bytes": 1201113
+      },
+      "minimal-baseline-mise-shared-before.json": {
+        "sha256": "b437ea57cabca847d68afc2a3df2f43a675c0566e31f14a0c42a865aad662fde",
+        "bytes": 48775124
+      },
+      "minimal-baseline-initial.strict-minimal-audit.json": {
+        "sha256": "fd6046bbbbfd39e4758a40f5ac038a8ab70b8959bcb9efbd01e6495247b1242f",
+        "bytes": 1211
+      },
+      "start-resource.json": {
+        "sha256": "db588d3ff532579221fa8da4e0bfb7ed0a5b82788e7d9628475b93d0c81aca9f",
+        "bytes": 191935
+      },
+      "minimal-baseline-bundler-activation.log": {
+        "sha256": "d1bbd175c286889aacef9762749f9012b43583c84d68a14a180596edc4749891",
+        "bytes": 1834
+      },
+      "ruby-preparation-memory-selfcheck.json": {
+        "sha256": "e7eaacc7426d8af3fa02b8f537eb56dd21596c7d27de502ac5aea11a199c6f6d",
+        "bytes": 203
+      },
+      "minimal-baseline-original-Podfile.lock": {
+        "sha256": "cec099ee896ed83dd780bd8da0a03e840c3ba6a0803f90c0bbfcd04efaf17d56",
+        "bytes": 63628
+      },
+      "minimal-baseline-npm-ci.log": {
+        "sha256": "b22831f0c1102ad27e65ebd728b2c5da46a9baf9766746ff70ed7172e7a2a156",
+        "bytes": 1349
+      },
+      "frozen-receipt-memory-selfcheck.py": {
+        "sha256": "65caa1f5de3e3bb877f13e82f49222b625b5214a4e38f6642cb85e0dc20ab371",
+        "bytes": 17792
+      },
+      "minimal-baseline-source-stage.json": {
+        "sha256": "3e8532e21123c8c5e7c341b828154ed741c2f22a874799230c2d2e3f38f48e80",
+        "bytes": 328
+      },
+      "final-owned-emulator-memory-selfcheck.json": {
+        "sha256": "3cf25cf17e40de22d689d67e09f6f9e4aa91f6a82d2dfcd80858c9b220b74775",
+        "bytes": 202
+      },
+      "minimal-baseline-early-ready.readiness.json": {
+        "sha256": "1a367bff5cd4678f2ecaee06c75bde8adcecb80b7403ad719551ba4e46e7b216",
+        "bytes": 373598
+      },
+      "post-early-resource.json": {
+        "sha256": "a201340bb980a9ce1bc61d5bec40fc7583364b801b4963f96985100d07873e83",
+        "bytes": 194128
+      },
+      "minimal-baseline-frozen-mise-effective-selection-shared-post.json": {
+        "sha256": "c0194af72c4c4d7d998edc7cdbc460aa41f77e1bf1c48355fa8847dd2128cccf",
+        "bytes": 522789
+      },
+      "minimal-baseline-mise-effective-selection-after-consumer-source.strict-minimal-audit.json": {
+        "sha256": "f094fd28ca5fa626c9a35073b846c8e70e02cd3876512f5cb1288e606e7a63bc",
+        "bytes": 1249
+      },
+      "root-release-message-receipt.json": {
+        "sha256": "f833f041c8d38d51238f554d06cb2fac00d0360539c881019cc904dea0efbcb2",
+        "bytes": 3157
+      },
+      "observer-count-correction.json": {
+        "sha256": "2b346e2f4f2e614d45c88eea2574440fb95733c23ae871a46fae5ba9442b6a28",
+        "bytes": 1179
+      },
+      "source-only-memory-suite.py": {
+        "sha256": "81092578f428f32a04ac3a80c7a6ac9f02815f1bc87e857e2541e58e2c52f96b",
+        "bytes": 2040
+      },
+      "minimal-baseline-checkout.result.json": {
+        "sha256": "0a15d1c750b779b0b7585d2f359ebe7bd6e4fd17b80393d08852fcb44deb5856",
+        "bytes": 703
+      },
+      "minimal-baseline-archive-use.json": {
+        "sha256": "a22a251b6d749499458acef23bbaef5031ad9332832c289827d86d93f4441442",
+        "bytes": 1233
+      },
+      "official-gem-cache/origin.json": {
+        "sha256": "68683030a7363bb44010aac212ab9e38fe063adda236944f076aa20a738248c8",
+        "bytes": 588
+      },
+      "official-gem-cache/bundler-2.5.22.gem": {
+        "sha256": "763f30d598ee58742eea29285875435ea722218d4df149de35bce37c02ce968e",
+        "bytes": 444416
+      },
+      "official-gem-cache/bundler-2.5.22.metadata.json": {
+        "sha256": "2628b9143ad1b60ef5a6832c11378ccf60e194d5c91ce8a7ec249300ff8e304c",
+        "bytes": 2007
+      },
+      "__pycache__/run_step.cpython-314.pyc": {
+        "sha256": "c702e494787eff4f76b7cd748f6f1375147854504e696419e4c2365be7377e8e",
+        "bytes": 17545
+      },
+      "__pycache__/completion_gate.cpython-314.pyc": {
+        "sha256": "501c03e8ec2befc0236eebd3caf338712b2a1bcb05ca874316524bf084c28409",
+        "bytes": 3538
+      },
+      "__pycache__/ruby_preparation.cpython-314.pyc": {
+        "sha256": "43ad4a30db682f46e584c021cf8656d7b0d82c740486d9c0d143c3a2aa2a425f",
+        "bytes": 40818
+      },
+      "__pycache__/bundler_bootstrap.cpython-314.pyc": {
+        "sha256": "20b0f03f690489967e6aa2a443cd7bceefcadbf6f276c7db7e53e8e93d4ece8a",
+        "bytes": 40387
+      },
+      "__pycache__/mise_state_metadata.cpython-314.pyc": {
+        "sha256": "4e37a3f70df3777bbd24bb98f7c633b5f969e1b3eac54ad0d1d01fade4bb7876",
+        "bytes": 16663
+      },
+      "__pycache__/metro_guard.cpython-314.pyc": {
+        "sha256": "e48feb2308b66791f6ccc740f8747f8a8fdb68dcc8884d4d7a5632badf0b3ba3",
+        "bytes": 32413
+      },
+      "__pycache__/strict_minimal_audit.cpython-314.pyc": {
+        "sha256": "9051fc958099d0e21e86e58832f356f5be9f292c4bb2d7fb8464fb604c115a06",
+        "bytes": 10834
+      },
+      "__pycache__/source_paths.cpython-314.pyc": {
+        "sha256": "a752b8fd19a33dbd8964b9170e5518dc14734286478cf7b2f7cfd33ca56d3ea5",
+        "bytes": 2792
+      },
+      "__pycache__/path_guard.cpython-314.pyc": {
+        "sha256": "6919cad1dc4f9900ae3806a0d862a0b5affe8b958f788f072984d456c43efc94",
+        "bytes": 5878
+      },
+      "__pycache__/ruby_consumer_observer.cpython-314.pyc": {
+        "sha256": "92dcda43ea27d6c978af6b13b75115b27391b5e6e4762ca1bba684fbf4270150",
+        "bytes": 26787
+      },
+      "REPORT.md": {
+        "sha256": "0e7f8ac72b327d90534adb059d76fea284be518327c40bc943418e0f9def57af",
+        "bytes": 7209
+      },
+      "manifest.json": {
+        "sha256": "90dede433143900d0bf9a09f51bdb8e90167c2d9480fe456b8aea712c33a375a",
+        "bytes": 43714
+      },
+      "SHA256SUMS": {
+        "sha256": "672a1c95a27d8e3f985305996932481fb9996f9d6c9f1b786c5682105c8c319b",
+        "bytes": 19752
+      }
+    },
+    "fileCount": 178,
+    "indexEntries": 177,
+    "core": {
+      "REPORT.md": {
+        "sha256": "0e7f8ac72b327d90534adb059d76fea284be518327c40bc943418e0f9def57af",
+        "bytes": 7209
+      },
+      "manifest.json": {
+        "sha256": "90dede433143900d0bf9a09f51bdb8e90167c2d9480fe456b8aea712c33a375a",
+        "bytes": 43714
+      },
+      "SHA256SUMS": {
+        "sha256": "672a1c95a27d8e3f985305996932481fb9996f9d6c9f1b786c5682105c8c319b",
+        "bytes": 19752
+      }
+    },
+    "rawHashesDescribeOriginalBytes": true,
+    "sanitizedPublicBytesHaveDifferentHashes": true,
+    "rawFileBodiesPublished": false
+  },
+  "review": {
+    "rawPacketIndependentReviews": 2,
+    "rawMaterialFindings": 0,
+    "publicIndependentReview": "PASS_TWO_INDEPENDENT_REVIEWS_MATERIAL_FINDINGS_0",
+    "publicationReady": true
+  },
+  "next": {
+    "attempt": "attempt-15",
+    "state": "SOURCE_ONLY_PREPARATION",
+    "policyMainSha": "9e121a5ae9bf5a099698805361856d54e9e4b409",
+    "diagnosticScope": "Existing ADR28 fixed deidentified diagnostics only",
+    "underlyingCauseFixed": false,
+    "successGuaranteed": false,
+    "actualAuthorityGranted": false,
+    "requires": [
+      "two final independent reviews",
+      "fresh resource preflight",
+      "new root lease"
+    ]
+  },
+  "issueCompleted": false,
+  "prMergeAuthorized": false,
+  "prState": "OPEN"
+}

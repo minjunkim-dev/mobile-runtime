@@ -1,0 +1,1097 @@
+{
+  "issue": 212,
+  "attempt": "attempt-10-clone-local-bundler",
+  "date": "2026-10-11",
+  "status": "PARTIAL_MANDATORY_PREINSTALL_GUARD_STOP",
+  "publicationReady": true,
+  "issueCompleted": false,
+  "runstirUsed": false,
+  "runstirSourceSha": null,
+  "policy": {
+    "mainSha": "5cd6ed8535cbdb76cba187ab9cc060c9812c109f",
+    "adr": "ADR-0025",
+    "immutableSource": "https://github.com/minjunkim-dev/mobile-runtime/blob/5cd6ed8535cbdb76cba187ab9cc060c9812c109f/docs/adr/0025-rn-clone-local-declared-bundler.md",
+    "pullRequest": 244,
+    "ciRun": 38072851577,
+    "ciRequiredJobs": "4 PASS",
+    "ciProofScope": "policy adoption; actual baseline results are separate"
+  },
+  "source": {
+    "minimum": {
+      "configuredSha": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+      "checkedOutSha": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+      "path": "<INTERNAL_ROOT>/minimal-baseline",
+      "tracked55StrictPostAuditPassed": true,
+      "trackedChanges": [],
+      "indexUnchanged": true,
+      "kindAndGitModePassed": true,
+      "hiddenFlags": [],
+      "originalLocks": {
+        "package-lock.json": "3478830fc86d9d1ae7cd46ae129eec9c4915b0ec4e2df247e2cb62b136caeee0",
+        "Gemfile.lock": "3679d60340d049c31b74052580c64ab26b3e6fa611f332c1407121dfc3c791eb",
+        "ios/Podfile.lock": "cec099ee896ed83dd780bd8da0a03e840c3ba6a0803f90c0bbfcd04efaf17d56"
+      },
+      "inputIndependentlyCloned": true
+    },
+    "mattermost": {
+      "configuredSha": "c2fe3beda22befd2178dce431793c09111ed903e",
+      "checkedOutSha": null,
+      "state": "NOT_CREATED"
+    },
+    "fresh": {
+      "minimum": {
+        "configuredSha": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+        "checkedOutSha": null,
+        "state": "NOT_CREATED"
+      },
+      "mattermost": {
+        "configuredSha": "c2fe3beda22befd2178dce431793c09111ed903e",
+        "checkedOutSha": null,
+        "state": "NOT_CREATED"
+      }
+    }
+  },
+  "toolBoundary": {
+    "actualRuby": {
+      "rubyVersion": "3.4.11",
+      "rubyGemsVersion": "3.6.9",
+      "rubyExecutable": "<RUBY_ROOT>/bin/ruby",
+      "defaultDir": "<RUBY_ROOT>/lib/ruby/gems/3.4.0",
+      "gemHome": "<INTERNAL_ROOT>/minimal-baseline/vendor/bundle/tool-bootstrap",
+      "gemPath": [
+        "<INTERNAL_ROOT>/minimal-baseline/vendor/bundle/tool-bootstrap",
+        "<RUBY_ROOT>/lib/ruby/gems/3.4.0"
+      ],
+      "activationAndBundlerVersionMeasured": false
+    },
+    "requestedNodeFromOriginalArgv": "22.23.2",
+    "nodeNpmIndependentVersionProbePerformed": false,
+    "bundlerActivationOrVersionMeasured": false,
+    "nativeSdkDeviceTupleMeasuredAfterStop": false,
+    "boundary": "Node22.23.2 selected in original mise npm-ci/start argv; independent Node/npm version probe not run in this stopped attempt. Ruby facts are actual. Native/SDK device measurements were not needed after stop. Requested tuple remains sealed PLAN; do not label old actual measurements as this attempt PASS.",
+    "globalToolSelectionOrPermissionChangePerformed": false,
+    "oldVendorOrPreparedOutputsCopied": false,
+    "fallbackPerformed": false
+  },
+  "pathPreflight": {
+    "passed": true,
+    "observedAt": "2026-10-11T03:11:25.756309+09:00",
+    "canonicalPathMatchesInternalDataVolume": true,
+    "freeBytes": 36961214464,
+    "protectedLocation": false,
+    "externalVolume": false,
+    "hasSymlinkAncestor": false,
+    "sourceRootInitiallyAbsent": true,
+    "rawFile": "pre-lease-preflight.json",
+    "rawSha256": "ba49877d5966f14cceaa9a4bd7a23e1fca3667751eac5815c8aaa456fa1e5775",
+    "permissionRootCause": "NOT_PROVEN"
+  },
+  "commandResults": [
+    {
+      "file": "minimal-baseline-clone.result.json",
+      "step": "minimal-baseline-clone",
+      "cwd": "<INTERNAL_ROOT>",
+      "argv": [
+        "git",
+        "clone",
+        "--no-checkout",
+        "<BASELINE_EVIDENCE_REPOSITORY>/docs/evidence/212/minimal-source.bundle",
+        "<INTERNAL_ROOT>/minimal-baseline"
+      ],
+      "started": "2026-10-11T03:13:00.255801+09:00",
+      "finished": "2026-10-11T03:13:00.287006+09:00",
+      "exitCode": 0,
+      "runnerSha256": "ec0dd7e13e56e2962375b9fae6626a3325fc3c200a8ac3d96c4bd5f547f26689"
+    },
+    {
+      "file": "minimal-baseline-checkout.result.json",
+      "step": "minimal-baseline-checkout",
+      "cwd": "<INTERNAL_ROOT>/minimal-baseline",
+      "argv": [
+        "git",
+        "checkout",
+        "--detach",
+        "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4"
+      ],
+      "started": "2026-10-11T03:13:00.343104+09:00",
+      "finished": "2026-10-11T03:13:00.448685+09:00",
+      "exitCode": 0,
+      "runnerSha256": "ec0dd7e13e56e2962375b9fae6626a3325fc3c200a8ac3d96c4bd5f547f26689"
+    },
+    {
+      "file": "minimal-baseline-npm-ci.result.json",
+      "step": "minimal-baseline-npm-ci",
+      "cwd": "<INTERNAL_ROOT>/minimal-baseline",
+      "argv": [
+        "mise",
+        "exec",
+        "node@22.23.2",
+        "--",
+        "npm",
+        "ci"
+      ],
+      "started": "2026-10-11T03:13:00.644200+09:00",
+      "finished": "2026-10-11T03:13:06.732773+09:00",
+      "exitCode": 0,
+      "runnerSha256": "ec0dd7e13e56e2962375b9fae6626a3325fc3c200a8ac3d96c4bd5f547f26689"
+    },
+    {
+      "file": "minimal-baseline-ruby-bootstrap-facts.result.json",
+      "step": "minimal-baseline-ruby-bootstrap-facts",
+      "cwd": "<INTERNAL_ROOT>/minimal-baseline",
+      "argv": [
+        "env",
+        "GEM_HOME=<INTERNAL_ROOT>/minimal-baseline/vendor/bundle/tool-bootstrap",
+        "GEM_PATH=<INTERNAL_ROOT>/minimal-baseline/vendor/bundle/tool-bootstrap:<RUBY_ROOT>/lib/ruby/gems/3.4.0",
+        "<RUBY_ROOT>/bin/ruby",
+        "-rjson",
+        "-rrubygems",
+        "-e",
+        "v={rubyVersion:RUBY_VERSION,rubygemsVersion:Gem::VERSION,rubyExecutable:RbConfig.ruby,defaultDir:Gem.default_dir,userDir:Gem.user_dir,gemHome:Gem.dir,gemPath:Gem.path,loadPath:$LOAD_PATH};puts JSON.generate(v)"
+      ],
+      "started": "2026-10-11T03:13:36.870705+09:00",
+      "finished": "2026-10-11T03:13:37.509601+09:00",
+      "exitCode": 0,
+      "runnerSha256": "ec0dd7e13e56e2962375b9fae6626a3325fc3c200a8ac3d96c4bd5f547f26689"
+    }
+  ],
+  "actualStageStatus": {
+    "minimumSourceClone": "PASS",
+    "minimumNpmCi": "PASS",
+    "minimumStrictInitialAndPostNpm": "PASS",
+    "minimumEarlyOriginalMetroReadiness": "PASS",
+    "minimumEarlyMetroOwnedStop": "PASS",
+    "rubyBootstrapFacts": "PASS",
+    "bootstrapLoadPathPluginGuard": "FAIL_STOP",
+    "officialMetadataArchiveDownload": "NOT_STARTED",
+    "officialRawGemSpec": "NOT_STARTED",
+    "cloneLocalGemInstaller": "NOT_STARTED",
+    "bundlerActivation": "NOT_STARTED",
+    "sharedRepositoryBeforeAfter": "NOT_STARTED",
+    "selectedFrozenEnvironmentProbe": "NOT_STARTED",
+    "frozenBundle": "NOT_STARTED",
+    "podDeployment": "NOT_STARTED",
+    "nativeIosBuild": "NOT_STARTED",
+    "iosInstallLaunchFirstScreen": "NOT_STARTED",
+    "androidBuildInstallLaunchFirstScreen": "NOT_STARTED",
+    "mattermostBaseline": "NOT_STARTED",
+    "mattermostFresh": "NOT_STARTED",
+    "minimumFresh": "NOT_STARTED",
+    "actualRunstir": "NOT_AUTHORIZED"
+  },
+  "earlyOriginalMetro": {
+    "actualObservation": true,
+    "hookRedirected": false,
+    "observedAt": "2026-10-11T03:13:26.058682+09:00",
+    "processAliveBeforeHttp": true,
+    "processAliveAfterHttp": true,
+    "processIdentityUnchanged": true,
+    "portOwnerDescendantOfOwnLauncher": true,
+    "resourceCommandsKnownSuccess": true,
+    "http": {
+      "executed": true,
+      "receiptExists": true,
+      "url": "http://127.0.0.1:8081/status",
+      "responseUrl": "http://127.0.0.1:8081/status",
+      "status": 200,
+      "bodyHex": "7061636b616765722d7374617475733a72756e6e696e67",
+      "bodySha256": "ed71e52f066b30c279378b7933ec895ee558e0899131124296dec5bec2995cef",
+      "bodyFileVerified": true,
+      "error": null
+    },
+    "currentSource": {
+      "sourcePath": "<INTERNAL_ROOT>/minimal-baseline",
+      "source": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+      "snapshotPath": "<ATTEMPT_10_RAW_ROOT>/minimal-baseline-initial-raw-snapshot.json",
+      "snapshotSha256": "9781b24154832b4f9a9578fcfda567299001b1c1255f97bb56277a463821b0d9",
+      "currentSnapshotSha256": "707c79ba1ab583cb9b9f4befdffe5052a00d93f9358dbe52ab98a61c2097e04f",
+      "hiddenFlags": [],
+      "indexEntriesSha256": "6c376752c62a66afc19ea9799cc798af85e1a02561519c677c48b8e6e4a71d8a"
+    },
+    "sourceBindingAtStart": {
+      "sourcePath": "<INTERNAL_ROOT>/minimal-baseline",
+      "source": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+      "snapshotPath": "<ATTEMPT_10_RAW_ROOT>/minimal-baseline-initial-raw-snapshot.json",
+      "snapshotSha256": "9781b24154832b4f9a9578fcfda567299001b1c1255f97bb56277a463821b0d9",
+      "currentSnapshotSha256": "707c79ba1ab583cb9b9f4befdffe5052a00d93f9358dbe52ab98a61c2097e04f",
+      "hiddenFlags": [],
+      "indexEntriesSha256": "6c376752c62a66afc19ea9799cc798af85e1a02561519c677c48b8e6e4a71d8a"
+    },
+    "fatalLogLines": [],
+    "logSha256": "09a29f4b4da78d67a4eec52f5a9d8a931bec2ddce8767f58da4478025bf4f1ab",
+    "ownRecordSha256": "db7a66fbc33c9dccde75f5f206be2cfbfd42dff2326cb061dc43d6fac42a0218",
+    "passed": true,
+    "source": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+    "argv": [
+      "env",
+      "-u",
+      "BASELINE_APP_ROOT",
+      "mise",
+      "exec",
+      "node@22.23.2",
+      "--",
+      "npm",
+      "start"
+    ],
+    "ownerIdentity": "verified own launcher PID and descendant port owner; raw identities retained privately",
+    "readinessRawFile": "minimal-baseline-early-ready.readiness.json",
+    "readinessRawSha256": "59bbfa46dfa6920c7339f97ff0c3c68c115b8e319445fc0b9cabf775467691d6",
+    "bodyRawFile": "minimal-baseline-early-ready.http-body",
+    "bodyRawSha256": "ed71e52f066b30c279378b7933ec895ee558e0899131124296dec5bec2995cef",
+    "ownStopRawFile": "minimal-baseline-early-stop.stop.json",
+    "ownStopRawSha256": "80a03deb9124c3e14ae38afd999dda6abe2f263178b5d477cfb4b552d528c0dc",
+    "afterStopResourcePassed": true,
+    "originalConfigAndWatchmanPreserved": true,
+    "firstScreenProof": false
+  },
+  "bootstrapInputGuard": {
+    "outerHelper": "prepare_frozen_stage.py minimal-baseline",
+    "exitCode": 1,
+    "firstFailureLine": "bundler_bootstrap.py:160",
+    "predicate": "input_environment_allowed(presence,plugin_files([*facts[loadPath],DEFAULT_DIR,bootstrap]))",
+    "presence": {
+      "RUBYOPT": false,
+      "RUBYLIB": false,
+      "RUBYGEMS_GEMDEPS": false
+    },
+    "firstPluginScanCount": 0,
+    "loadPathPluginScanCount": 1,
+    "pluginRelativeRubyPath": "lib/ruby/site_ruby/rubygems_plugin.rb",
+    "pluginRawCopy": "diagnostic-rubygems_plugin.rb",
+    "pluginBytes": 1553,
+    "pluginSha256": "6cedbcf33ae6de36e2569a3a181735031e05e1e5c52745d0d725d8b665f0ac5c",
+    "pluginExecutionDuringFacts": "NOT_MEASURED",
+    "installerHooks": "NOT_INVOKED_BY_INSTALLER; installer not started",
+    "classification": "known plugin-presence rejection under approved fail-closed policy; not missing Bundler/tool, not original frozen-command failure",
+    "mandatoryStopNoRetry": true,
+    "pluginRuntimeEffectProven": false,
+    "officialArchiveOrMetadataDownloaded": false,
+    "gemInstallerStarted": false,
+    "bundlerActivationStarted": false,
+    "sharedRepositorySnapshotStageReached": false,
+    "originalFrozenBundleStarted": false,
+    "readOnlySourceDeclares": [
+      "PKG_CONFIG_PATH prefix addition",
+      "mise reshim install/uninstall/Bundler install hooks"
+    ],
+    "hostWidePluginSearchPerformed": false,
+    "rawDiagnosticFile": "mandatory-stop-diagnostic.json",
+    "rawDiagnosticSha256": "18254f242033129bbb51533f654ace67ebd9c1c501f3ccf74b5bb53d0398a45d"
+  },
+  "sourceAudit": {
+    "sourcePath": "<INTERNAL_ROOT>/minimal-baseline",
+    "source": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+    "snapshotPath": "<ATTEMPT_10_RAW_ROOT>/minimal-baseline-initial-raw-snapshot.json",
+    "snapshotSha256": "9781b24154832b4f9a9578fcfda567299001b1c1255f97bb56277a463821b0d9",
+    "currentSnapshotSha256": "707c79ba1ab583cb9b9f4befdffe5052a00d93f9358dbe52ab98a61c2097e04f",
+    "hiddenFlags": [],
+    "indexEntriesSha256": "6c376752c62a66afc19ea9799cc798af85e1a02561519c677c48b8e6e4a71d8a",
+    "label": "minimal-baseline-after-mandatory-stop",
+    "passed": true,
+    "prepared": true,
+    "indexUnchanged": true,
+    "kindAndGitModePassed": true,
+    "originalLocksUnchanged": true,
+    "mattermostChecksumOrGeneratedTargetExceptionApplied": false,
+    "trackedChanges": [],
+    "lockHashes": {
+      "package-lock.json": "3478830fc86d9d1ae7cd46ae129eec9c4915b0ec4e2df247e2cb62b136caeee0",
+      "Gemfile.lock": "3679d60340d049c31b74052580c64ab26b3e6fa611f332c1407121dfc3c791eb",
+      "ios/Podfile.lock": "cec099ee896ed83dd780bd8da0a03e840c3ba6a0803f90c0bbfcd04efaf17d56"
+    },
+    "trackedFileCount": 55,
+    "rawFile": "minimal-baseline-after-mandatory-stop.strict-minimal-audit.json",
+    "rawSha256": "515ea5121a770993e3f68089e3881bc364cf5f30f4efbebcbeeeedebfc515a8d"
+  },
+  "selfchecks": {
+    "authorMemoryTotal": 432,
+    "pythonSyntaxCount": 21,
+    "allAuthorChecksPassed": true,
+    "independentV1BootstrapChecksPassed": 165,
+    "independentV2ResourceReviewer": {
+      "newOwned": 71,
+      "changedResource": 21,
+      "changedRuntime": 130,
+      "publicCliIntegrationProbes": 12,
+      "allPassed": true
+    },
+    "independentV2SecondReviewerNewOwnedChecksPassed": 71,
+    "independentHelperMaterialFindingsRemaining": 0,
+    "independentReviewRawFile": "independent-helper-review-v2.md",
+    "independentReviewRawSha256": "3dcc86e874c155df2ec7f1d7e7cc54729cdc8bf2655897f354d13759c1e0726f",
+    "actualExecutionProof": false,
+    "originalGrantHelperMapCount": 38,
+    "sourceOnlyIndexEntries": 40,
+    "originalGrantSealedIndexSha256": "e45d48c132702c454cd9917b4ef2411da64af42396870e9d81ade42252a63c6b",
+    "rawManifestFieldClarification": "initialGrantHelperHashes40Unchanged describes sealed index coverage. The literal root-lease.helperHashes dictionary has 38 entries; finished-preparation-batch.json and readiness-v2.json add the other two sealed targets."
+  },
+  "notStarted": [
+    "officialMetadataArchiveDownload",
+    "officialRawGemSpec",
+    "cloneLocalGemInstaller",
+    "bundlerActivation",
+    "sharedRepositoryBeforeAfter",
+    "selectedFrozenEnvironmentProbe",
+    "frozenBundle",
+    "podDeployment",
+    "nativeIosBuild",
+    "iosInstallLaunchFirstScreen",
+    "androidBuildInstallLaunchFirstScreen",
+    "mattermostBaseline",
+    "mattermostFresh",
+    "minimumFresh"
+  ],
+  "counts": {
+    "runnerLogs": 4,
+    "runnerResults": 4,
+    "runnerExit0": 4,
+    "runnerExitNonzero": 0,
+    "outerOrchestratorExit1": 1,
+    "earlyMetroLogs": 1,
+    "savedOuterConsoleLogs": 1,
+    "totalTopLevelLogs": 6,
+    "actualFirstScreens": 0,
+    "png": 0,
+    "apk": 0,
+    "appZip": 0,
+    "nativeBuildOrAppDeviceMutationCommands": 0,
+    "readOnlyResourceQueriesPerformed": true
+  },
+  "artifacts": {
+    "iosZip": [],
+    "apk": [],
+    "firstScreenPng": []
+  },
+  "cleanup": {
+    "rawFile": "cleanup.json",
+    "rawSha256": "f6c77477c410c1bf1f47787b6558197d710d24809208ad956e44299f8808a0ee",
+    "finalResourceRawFile": "final-resources.json",
+    "finalResourceRawSha256": "f17465cc1d8fb42567ed98b009903fc0b4c2f362143506f619294aae6ceee9e6",
+    "passed": true,
+    "initialSimulatorCount": 2,
+    "initialSimulatorStatesPreserved": true,
+    "dedicatedIos26State": "Shutdown",
+    "existingGuiPreserved": true,
+    "existingWatchmanPreserved": true,
+    "metroPort8081ListenerPresent": false,
+    "adbDevicesEmpty": true,
+    "actualNativeEmulatorProcessCount": 0,
+    "ownEarlyMetroGroupStoppedBeforeBootstrap": true,
+    "newAppsInstalled": false,
+    "newSimulatorsBooted": false,
+    "newEmulatorsStarted": false,
+    "gradleOrAdbReverseStarted": false,
+    "sharedRepositoryBeforeAfterInvariantMeasured": false,
+    "globalEnvironmentSelectionsPermissionsVersionsFlagsChanged": false,
+    "additionalCleanupActionsRequired": false
+  },
+  "leaseEvidence": {
+    "originalGrantFile": "root-lease.json",
+    "originalGrantRawSha256": "927605c2200c297968c04736efecdcd76b4ccea1f2c59ad5443739c20376f185",
+    "originalGrantState": "granted",
+    "leaseId": "rn-212-attempt10-adr0025-20261011",
+    "returnRequestFile": "lease-return-request.json",
+    "returnRequestRawSha256": "72668071532281144bc28bb583b85611aec36ec4bc04c044e8b8e9745e1faf88",
+    "canonicalRootReleaseFile": "root-release-message-receipt.json",
+    "canonicalRootReleaseRawSha256": "c47f3927ba09cee036027d26af80cd340bc07320b65bb4492445cd3992979883",
+    "canonicalRootState": "RELEASED",
+    "confirmedAt": "2026-10-10T18:16:09.000Z",
+    "furtherActualOperationsAuthorized": false,
+    "newConditionsRequireSeparateDecisionAndNewRun": true,
+    "initialCleanupRootReleaseConfirmedFalsePreservedAsHistory": true
+  },
+  "history": {
+    "sourceOnlyV1ArchiveCount": 36,
+    "sourceOnlyV1ArchiveIndexRawSha256": "68b385deb24857ccdf5b8a23057ae4caf428b5d6a20308b79fb21dd573f30cf2",
+    "sourceOnlyInitialReadinessFalsePreserved": true,
+    "v2CalibrationHistoryRawFile": "source-only-v2-calibration.json",
+    "v2CalibrationHistoryRawSha256": "4a68a9a0a754190b03756a97297f972560d8d72ecbe5851e12666d022f76b091",
+    "rootPreleaseObserverInitialErrorFile": "pre-lease-preflight-initial-error.json",
+    "rootPreleaseObserverInitialErrorRawSha256": "1f3962b59504c9d6e23ae68e0ead2355eb406162666361179e50b1dd161af9a4",
+    "rootObserverCorrection": "single exec namespace; helper and runtime conditions unchanged; one in-memory retry-code replacement failed before any tool/resource call",
+    "preRootReleaseCorePreserved": true,
+    "outerTracebackRawFile": "minimal-baseline-frozen-stage.console.log",
+    "outerTracebackRawSha256": "4087c5a9561d41634bd6ef6571375e9c3e68d4e7122099c2097863946a2cd644",
+    "outerOrchestrationResultRawFile": "minimal-baseline-frozen-stage.orchestrator-result.json",
+    "outerOrchestrationResultRawSha256": "05d31ed301c3611e6e5074806f25b8c8743954dfab6012850da845c1025d82f6",
+    "outerOrchestrationExitCode": 1,
+    "outerStdoutStderrSeparated": false,
+    "outerStartFinishTimestampsPreserved": false,
+    "runnerResultsCount": 4,
+    "runnerExitCodes": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "priorAttemptResultsInherited": false,
+    "priorOutputsCopied": false
+  },
+  "priorAttemptsPreserved": {
+    "08": {
+      "checksumIndexEntries": 129,
+      "checksumIndexSha256": "72b8e335c131ea342325b51d38b9b48a86ff3e52d7613ed5f4e785f71fc5ab1b"
+    },
+    "09": {
+      "checksumIndexEntries": 109,
+      "checksumIndexSha256": "56d361a65a5450b416e504a88100c096bd4f97ab8321ac427a0d7e974bbd4c83"
+    }
+  },
+  "rawArtifacts": {
+    "localRootPlaceholder": "<ATTEMPT_10_RAW_ROOT>",
+    "published": false,
+    "hashScope": "exact original raw bytes; relative paths only; no raw file content is published here",
+    "counts": {
+      "checksumIndexEntries": 122,
+      "inventoryIncludingChecksumIndex": 123
+    },
+    "files": [
+      {
+        "path": "PLAN.md",
+        "bytes": 26423,
+        "sha256": "39c4b421c9054c4f678d9d644b3a01f170befb8b67f4efc7658995e2a5da7c0d"
+      },
+      {
+        "path": "REPORT.md",
+        "bytes": 3617,
+        "sha256": "135d2b6e8961e53d755fabcb24f416c00be7109c5971538ac76b4b7813686d3a"
+      },
+      {
+        "path": "SHA256SUMS",
+        "bytes": 12524,
+        "sha256": "0499018278e3eadbef18e1fbe505d26654e93d3ba60c4e4ec5be706bd2421f92"
+      },
+      {
+        "path": "actual-start-resources.json",
+        "bytes": 186539,
+        "sha256": "2cdd3207f74f3275c36d57f383d9e67e6c044c0104a4ed2c79dda545aed6524a"
+      },
+      {
+        "path": "actual-start.json",
+        "bytes": 314,
+        "sha256": "d93a4887009cf57c41c135d674f8abd3c83022ef51719ee9d0b2dac1a8ae2199"
+      },
+      {
+        "path": "audit-v2.py",
+        "bytes": 11996,
+        "sha256": "a0a030097bd67c85c3bed3f7436ad6a86f8f66229731dbed3078647b9bb2d528"
+      },
+      {
+        "path": "bootstrap-memory-selfcheck.json",
+        "bytes": 13916,
+        "sha256": "cb6981155382da30e1857851bcac7225be87935ee5ad76f1b35881705ea98060"
+      },
+      {
+        "path": "bootstrap-memory-selfcheck.py",
+        "bytes": 9851,
+        "sha256": "1393a900502c161084f76e4e8fe860c379509c4c50a4ff6c19b6331caf9aed54"
+      },
+      {
+        "path": "bundler_bootstrap.py",
+        "bytes": 17044,
+        "sha256": "e0d22045b5772dc198842c1d28fdc5e785e5d139f9b73d4808ace21ba5bbf428"
+      },
+      {
+        "path": "cleanup.json",
+        "bytes": 1202,
+        "sha256": "f6c77477c410c1bf1f47787b6558197d710d24809208ad956e44299f8808a0ee"
+      },
+      {
+        "path": "completion_gate.py",
+        "bytes": 1648,
+        "sha256": "556e090a9b320965ecb3d4102b43b84ad9eaaeec14f7f1a1eb52dd9e9e4759e2"
+      },
+      {
+        "path": "diagnostic-rubygems_plugin.rb",
+        "bytes": 1553,
+        "sha256": "6cedbcf33ae6de36e2569a3a181735031e05e1e5c52745d0d725d8b665f0ac5c"
+      },
+      {
+        "path": "final-resources.json",
+        "bytes": 186518,
+        "sha256": "f17465cc1d8fb42567ed98b009903fc0b4c2f362143506f619294aae6ceee9e6"
+      },
+      {
+        "path": "finished-preparation-batch.json",
+        "bytes": 5419,
+        "sha256": "d5ca674b23b8c906715b2785d0278c05802cdbcc54b8c515674d3b073bbd6081"
+      },
+      {
+        "path": "generated-memory-proposed.diff",
+        "bytes": 4197,
+        "sha256": "0283f749ff7ff2bc5eef84832a269bd293e5604b6ad08ef10216f02e439a03ed"
+      },
+      {
+        "path": "generated-memory-selfcheck.json",
+        "bytes": 14608,
+        "sha256": "b90e976788ba0255a2c84ef13a5fec0eea7f9a80e79db8297a102aac574f6b76"
+      },
+      {
+        "path": "generated-memory-selfcheck.py",
+        "bytes": 7037,
+        "sha256": "c95ae63444b6f7f11f74961598731690b73186331bf1c3a01db0a73dc3f38cd1"
+      },
+      {
+        "path": "generated-post-memory-selfcheck.json",
+        "bytes": 667,
+        "sha256": "6d52f416756ba2a6323fe2b476eab9770163ef0aa1f8574d7fe453dd8e1f4ec6"
+      },
+      {
+        "path": "generated-post-memory-selfcheck.py",
+        "bytes": 3485,
+        "sha256": "18fae5471d6c620a6c5552d2e25c61d439e8194ae4fe3e8ca6ea7ff5fcfd4072"
+      },
+      {
+        "path": "generated_pods.py",
+        "bytes": 20282,
+        "sha256": "abc940a9e9b9daab7500bd9c01702be5a3191835e0e43dd2f1ea4a12a2bc9ec7"
+      },
+      {
+        "path": "generated_post_audit.py",
+        "bytes": 3989,
+        "sha256": "fff6e0d2f0fe69b87c9818159582ca203f6512aa953c7f30629c082a06a69cb4"
+      },
+      {
+        "path": "independent-flow-review-v1.md",
+        "bytes": 2844,
+        "sha256": "ce2e8df81aafce597c796abf6db88afb94c0ba7088be7414a8eb201294e07720"
+      },
+      {
+        "path": "independent-helper-review-v2.md",
+        "bytes": 3718,
+        "sha256": "3dcc86e874c155df2ec7f1d7e7cc54729cdc8bf2655897f354d13759c1e0726f"
+      },
+      {
+        "path": "lease-return-request.json",
+        "bytes": 471,
+        "sha256": "72668071532281144bc28bb583b85611aec36ec4bc04c044e8b8e9745e1faf88"
+      },
+      {
+        "path": "mandatory-stop-diagnostic.json",
+        "bytes": 1775,
+        "sha256": "18254f242033129bbb51533f654ace67ebd9c1c501f3ccf74b5bb53d0398a45d"
+      },
+      {
+        "path": "manifest.json",
+        "bytes": 12198,
+        "sha256": "aab9d0d26353c64807b3007b37f146920fa6ff8c2f846ee77d814178d355ea55"
+      },
+      {
+        "path": "metro_guard.py",
+        "bytes": 15791,
+        "sha256": "5cfa40c028b7f732176aad6b02222f28c8ce7459400407b6fdc1f42580d2fd9f"
+      },
+      {
+        "path": "minimal-baseline-after-early-stop.json",
+        "bytes": 188899,
+        "sha256": "97b09316368768a25f41e58439e35959d0b40c331a43757879b29151afe1d293"
+      },
+      {
+        "path": "minimal-baseline-after-mandatory-stop.strict-minimal-audit.json",
+        "bytes": 1217,
+        "sha256": "515ea5121a770993e3f68089e3881bc364cf5f30f4efbebcbeeeedebfc515a8d"
+      },
+      {
+        "path": "minimal-baseline-after-npm-ci.strict-minimal-audit.json",
+        "bytes": 1209,
+        "sha256": "c794275b92586243a6a6f3150c8c71d82aca91f3df04f31bd4a74a12dba306e1"
+      },
+      {
+        "path": "minimal-baseline-before-bootstrap.strict-minimal-audit.json",
+        "bytes": 1213,
+        "sha256": "e415d39a718ff5cd7039e13abe7c343ae9717083cbd9876c4575712e3c581d48"
+      },
+      {
+        "path": "minimal-baseline-before-early-metro.json",
+        "bytes": 188359,
+        "sha256": "46e5bd5592f22899d0d9ec00c13838d1a053db66725b241c21c5782e5b18c605"
+      },
+      {
+        "path": "minimal-baseline-before-source.path-space.json",
+        "bytes": 515,
+        "sha256": "5707c6562ec9eef1b77c3206da41425a7ef3d3b3de5590899241f752f928cfa9"
+      },
+      {
+        "path": "minimal-baseline-checkout.log",
+        "bytes": 89,
+        "sha256": "12a49c2a0adfd3ac6eec7fab96a96ae2e77a1263e070e5e496de22847ec196ae"
+      },
+      {
+        "path": "minimal-baseline-checkout.result.json",
+        "bytes": 1667,
+        "sha256": "de8cde460c5ae8488ef5aa92cbec63b1c56f7c190e26e4187b857d2ef78ce60c"
+      },
+      {
+        "path": "minimal-baseline-clone.log",
+        "bytes": 107,
+        "sha256": "7f727c76e3e2b6958da722a5c3d84b593c380630963ccd1fc06a23dfbd2beb67"
+      },
+      {
+        "path": "minimal-baseline-clone.result.json",
+        "bytes": 657,
+        "sha256": "00bfdcf42e8631f389490c7a8aa85727c168249c7ecfe6f4f615af300a36f8c1"
+      },
+      {
+        "path": "minimal-baseline-early-ready.http-body",
+        "bytes": 23,
+        "sha256": "ed71e52f066b30c279378b7933ec895ee558e0899131124296dec5bec2995cef"
+      },
+      {
+        "path": "minimal-baseline-early-ready.readiness.json",
+        "bytes": 363130,
+        "sha256": "59bbfa46dfa6920c7339f97ff0c3c68c115b8e319445fc0b9cabf775467691d6"
+      },
+      {
+        "path": "minimal-baseline-early-stop.stop.json",
+        "bytes": 192,
+        "sha256": "80a03deb9124c3e14ae38afd999dda6abe2f263178b5d477cfb4b552d528c0dc"
+      },
+      {
+        "path": "minimal-baseline-early.log",
+        "bytes": 1217,
+        "sha256": "09a29f4b4da78d67a4eec52f5a9d8a931bec2ddce8767f58da4478025bf4f1ab"
+      },
+      {
+        "path": "minimal-baseline-early.owned.json",
+        "bytes": 1639,
+        "sha256": "db7a66fbc33c9dccde75f5f206be2cfbfd42dff2326cb061dc43d6fac42a0218"
+      },
+      {
+        "path": "minimal-baseline-frozen-stage.console.log",
+        "bytes": 1721,
+        "sha256": "4087c5a9561d41634bd6ef6571375e9c3e68d4e7122099c2097863946a2cd644"
+      },
+      {
+        "path": "minimal-baseline-frozen-stage.orchestrator-result.json",
+        "bytes": 770,
+        "sha256": "05d31ed301c3611e6e5074806f25b8c8743954dfab6012850da845c1025d82f6"
+      },
+      {
+        "path": "minimal-baseline-initial-raw-snapshot.json",
+        "bytes": 12126,
+        "sha256": "9781b24154832b4f9a9578fcfda567299001b1c1255f97bb56277a463821b0d9"
+      },
+      {
+        "path": "minimal-baseline-initial.strict-minimal-audit.json",
+        "bytes": 1205,
+        "sha256": "4500409b9eb58f69dabc5c5b3bd296ac010346c7e9d63906d1455a12bcee2890"
+      },
+      {
+        "path": "minimal-baseline-npm-ci.log",
+        "bytes": 1349,
+        "sha256": "b22831f0c1102ad27e65ebd728b2c5da46a9baf9766746ff70ed7172e7a2a156"
+      },
+      {
+        "path": "minimal-baseline-npm-ci.result.json",
+        "bytes": 1773,
+        "sha256": "98202829e41152aef6ea2051780303a9e91b1d946fc144f5116488fe29e47748"
+      },
+      {
+        "path": "minimal-baseline-original-Podfile.lock",
+        "bytes": 63628,
+        "sha256": "cec099ee896ed83dd780bd8da0a03e840c3ba6a0803f90c0bbfcd04efaf17d56"
+      },
+      {
+        "path": "minimal-baseline-original-inputs.json",
+        "bytes": 700,
+        "sha256": "f70f2d89efab7c641c24a5c7d9ab9074878df7d86cba9bd475304fbb98ac3b1c"
+      },
+      {
+        "path": "minimal-baseline-ruby-bootstrap-facts.log",
+        "bytes": 1271,
+        "sha256": "70951d59843a615419147436f309fd506a8e79e9647dcc7148b8b130492fbd1f"
+      },
+      {
+        "path": "minimal-baseline-ruby-bootstrap-facts.result.json",
+        "bytes": 2392,
+        "sha256": "6b4b7b13d54efa6b33cc4e6cd00fa1f6a119f5176a85293556de63e41b0fc626"
+      },
+      {
+        "path": "minimal-baseline-source-stage.json",
+        "bytes": 328,
+        "sha256": "2b69d30ae96060754400371406b856d74a86cd7f289adad2421807ce70909513"
+      },
+      {
+        "path": "minimal-primary-inputs.json",
+        "bytes": 2621,
+        "sha256": "7fa37432fdafd4e8ded8700187c780039ac444f9dafcfea90b27006f2ac36bdb"
+      },
+      {
+        "path": "owned-emulator-memory-selfcheck.json",
+        "bytes": 6972,
+        "sha256": "273793419fde8f651441d794c2c7eed5d3f23a64fd076bd2bd999b2ddf692f2e"
+      },
+      {
+        "path": "owned-emulator-memory-selfcheck.py",
+        "bytes": 9528,
+        "sha256": "94e59fb360f2b9b408308402373168d37a3fe76dda00c16743108ce3712c21f9"
+      },
+      {
+        "path": "path_guard.py",
+        "bytes": 2832,
+        "sha256": "86ca19fe86a001c969c5c6f70d0380c8e93d0481494cbdfc5c7286b8a63360a3"
+      },
+      {
+        "path": "policy-seal.json",
+        "bytes": 475,
+        "sha256": "e429729268662c473864147d61b74de6c517a80c8b609b55a8a10486db4757fd"
+      },
+      {
+        "path": "pre-lease-preflight-initial-error.json",
+        "bytes": 2182,
+        "sha256": "1f3962b59504c9d6e23ae68e0ead2355eb406162666361179e50b1dd161af9a4"
+      },
+      {
+        "path": "pre-lease-preflight.json",
+        "bytes": 3095,
+        "sha256": "ba49877d5966f14cceaa9a4bd7a23e1fca3667751eac5815c8aaa456fa1e5775"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/ARCHIVE-INDEX.json",
+        "bytes": 3834,
+        "sha256": "68b385deb24857ccdf5b8a23057ae4caf428b5d6a20308b79fb21dd573f30cf2"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/PLAN.md",
+        "bytes": 22085,
+        "sha256": "46829ae8f204724fcf03689bf89c4fce8fb126be52d20963562afc43561a9ed8"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/SHA256SUMS",
+        "bytes": 3100,
+        "sha256": "9ad52b45ad06374a4541cd04aaafceb80ab6c9444ca3f6ca2cf88fe5a2b52a31"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/audit-v2.py",
+        "bytes": 11996,
+        "sha256": "a0a030097bd67c85c3bed3f7436ad6a86f8f66229731dbed3078647b9bb2d528"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/bootstrap-memory-selfcheck.json",
+        "bytes": 13916,
+        "sha256": "cb6981155382da30e1857851bcac7225be87935ee5ad76f1b35881705ea98060"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/bootstrap-memory-selfcheck.py",
+        "bytes": 9851,
+        "sha256": "1393a900502c161084f76e4e8fe860c379509c4c50a4ff6c19b6331caf9aed54"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/bundler_bootstrap.py",
+        "bytes": 17044,
+        "sha256": "e0d22045b5772dc198842c1d28fdc5e785e5d139f9b73d4808ace21ba5bbf428"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/completion_gate.py",
+        "bytes": 1648,
+        "sha256": "556e090a9b320965ecb3d4102b43b84ad9eaaeec14f7f1a1eb52dd9e9e4759e2"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/finished-preparation-batch.json",
+        "bytes": 4623,
+        "sha256": "f9d03af7fd4a52c0d2c2155391543ed22ca5ff84dd065225b7d64c6c478e25fe"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/generated-memory-proposed.diff",
+        "bytes": 4197,
+        "sha256": "0283f749ff7ff2bc5eef84832a269bd293e5604b6ad08ef10216f02e439a03ed"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/generated-memory-selfcheck.json",
+        "bytes": 14608,
+        "sha256": "b90e976788ba0255a2c84ef13a5fec0eea7f9a80e79db8297a102aac574f6b76"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/generated-memory-selfcheck.py",
+        "bytes": 7037,
+        "sha256": "c95ae63444b6f7f11f74961598731690b73186331bf1c3a01db0a73dc3f38cd1"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/generated-post-memory-selfcheck.json",
+        "bytes": 667,
+        "sha256": "6d52f416756ba2a6323fe2b476eab9770163ef0aa1f8574d7fe453dd8e1f4ec6"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/generated-post-memory-selfcheck.py",
+        "bytes": 3485,
+        "sha256": "18fae5471d6c620a6c5552d2e25c61d439e8194ae4fe3e8ca6ea7ff5fcfd4072"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/generated_pods.py",
+        "bytes": 20282,
+        "sha256": "abc940a9e9b9daab7500bd9c01702be5a3191835e0e43dd2f1ea4a12a2bc9ec7"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/generated_post_audit.py",
+        "bytes": 3989,
+        "sha256": "fff6e0d2f0fe69b87c9818159582ca203f6512aa953c7f30629c082a06a69cb4"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/independent-flow-review-v1.md",
+        "bytes": 2844,
+        "sha256": "ce2e8df81aafce597c796abf6db88afb94c0ba7088be7414a8eb201294e07720"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/metro_guard.py",
+        "bytes": 13336,
+        "sha256": "3ecb4df83da855467d43f524a4e66cc54d1db8031df22d89fe5f75a1cf118249"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/minimal-primary-inputs.json",
+        "bytes": 2621,
+        "sha256": "7fa37432fdafd4e8ded8700187c780039ac444f9dafcfea90b27006f2ac36bdb"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/path_guard.py",
+        "bytes": 2832,
+        "sha256": "86ca19fe86a001c969c5c6f70d0380c8e93d0481494cbdfc5c7286b8a63360a3"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/policy-seal.json",
+        "bytes": 475,
+        "sha256": "e429729268662c473864147d61b74de6c517a80c8b609b55a8a10486db4757fd"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/prepare_frozen_stage.py",
+        "bytes": 5857,
+        "sha256": "e34436817fc7e468745df7cf94bd5d2e61b5ceef08232ba28b969e45f7aaaa50"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/prepare_hooks.py",
+        "bytes": 1714,
+        "sha256": "f73298419910215f913a81da6dc20ca234ccd4afad379db646a1e1a9b0d834fc"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/prepare_source_stage.py",
+        "bytes": 3188,
+        "sha256": "69a79f7f7280cefdec4b45aadf22069852babdd40642f8901624706b24d238bc"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/prerequisite-memory-selfcheck.json",
+        "bytes": 1831,
+        "sha256": "97bc59cf6b4cfd9b5a21b06ab96d5775a60eff7432a52dd20f1ff3b02f8e86f2"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/prerequisite-memory-selfcheck.py",
+        "bytes": 6533,
+        "sha256": "0839c128377fd9c83b645c724d7f1c93605e9921dcbaa3659c2e7a02066442c6"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/readiness-initial.json",
+        "bytes": 292,
+        "sha256": "a3279849e43e102e31d87c00f96f7b5ecf3018fab7e1f168c87f641557f7afb5"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/resource-preflight-memory-selfcheck.json",
+        "bytes": 1056,
+        "sha256": "4ab41d4089f5775151eea2d0364c3eb6b8039ad6322038868afa3aa325f63429"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/resource-preflight-memory-selfcheck.py",
+        "bytes": 2283,
+        "sha256": "2976223ceb6f92c77eec4a882c489d940d5d5fbfb002741780211cfe33837317"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/resource_preflight.py",
+        "bytes": 4385,
+        "sha256": "9fe84c1e5dd16ea83284bbc4a34ce1ddb5cb51a4c851bcb0d42a3df5c5e6a6fe"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/reused09-origin.json",
+        "bytes": 2148,
+        "sha256": "e2950862cf7513b3e9726fb5f62855583b3250d66ecbe275aaa0af12e1a10234"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/run_step.py",
+        "bytes": 1452,
+        "sha256": "ec0dd7e13e56e2962375b9fae6626a3325fc3c200a8ac3d96c4bd5f547f26689"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/runtime-memory-selfcheck.json",
+        "bytes": 11619,
+        "sha256": "94bfe0e27343c3c2b70763a5cd04acf38080bd873c414c059f9e28a2ded0a55e"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/runtime-memory-selfcheck.py",
+        "bytes": 9787,
+        "sha256": "7b5d00bab0e12d3e15df78f92301323268fb6ddbfe423f3fb0fe8dc48e4ab2e6"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/source-only-helper-changes.diff",
+        "bytes": 5645,
+        "sha256": "d78486efd78a3229388618f34a604bf26d2f78942fb092ce9a373e19b4a10e2b"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/source_paths.py",
+        "bytes": 1598,
+        "sha256": "8ace0fba3ac6038ba7fefe15f7b7f7540565fcf4fa605c08a5bb08755abccd03"
+      },
+      {
+        "path": "pre-review-fix-v1-helper/strict_minimal_audit.py",
+        "bytes": 4343,
+        "sha256": "f38d6c29c3608253bb015caee79a37c00bcdd601e1cea6f3aea693599fa1e067"
+      },
+      {
+        "path": "pre-root-release-final-core/REPORT.md",
+        "bytes": 3414,
+        "sha256": "17d45a1f8fd7071b2f38e883cc4ce78cb102146b81f601f317d88977adeee495"
+      },
+      {
+        "path": "pre-root-release-final-core/SHA256SUMS",
+        "bytes": 156,
+        "sha256": "5c2274b40394762242abdb5cac304216e7bf3aaba568c4309745e0e42f45d6d8"
+      },
+      {
+        "path": "pre-root-release-final-core/manifest.json",
+        "bytes": 10065,
+        "sha256": "d7e5526ac28a13c9101f3884d79b01414eeccf68a9e1363db4153d63127c3a24"
+      },
+      {
+        "path": "prepare_frozen_stage.py",
+        "bytes": 5857,
+        "sha256": "e34436817fc7e468745df7cf94bd5d2e61b5ceef08232ba28b969e45f7aaaa50"
+      },
+      {
+        "path": "prepare_hooks.py",
+        "bytes": 1714,
+        "sha256": "f73298419910215f913a81da6dc20ca234ccd4afad379db646a1e1a9b0d834fc"
+      },
+      {
+        "path": "prepare_source_stage.py",
+        "bytes": 3188,
+        "sha256": "69a79f7f7280cefdec4b45aadf22069852babdd40642f8901624706b24d238bc"
+      },
+      {
+        "path": "prerequisite-memory-selfcheck.json",
+        "bytes": 1831,
+        "sha256": "97bc59cf6b4cfd9b5a21b06ab96d5775a60eff7432a52dd20f1ff3b02f8e86f2"
+      },
+      {
+        "path": "prerequisite-memory-selfcheck.py",
+        "bytes": 6533,
+        "sha256": "0839c128377fd9c83b645c724d7f1c93605e9921dcbaa3659c2e7a02066442c6"
+      },
+      {
+        "path": "readiness-initial.json",
+        "bytes": 292,
+        "sha256": "a3279849e43e102e31d87c00f96f7b5ecf3018fab7e1f168c87f641557f7afb5"
+      },
+      {
+        "path": "readiness-v2.json",
+        "bytes": 593,
+        "sha256": "48c58f018e58467c8993d9330da143fbab1761134d66763f469dfd3d872c73ca"
+      },
+      {
+        "path": "resource-preflight-memory-selfcheck.json",
+        "bytes": 1056,
+        "sha256": "4ee539a448a392bd5227c0d9893d0eaabb2aa6839354809eb500691e3e3a8fcf"
+      },
+      {
+        "path": "resource-preflight-memory-selfcheck.py",
+        "bytes": 2283,
+        "sha256": "2976223ceb6f92c77eec4a882c489d940d5d5fbfb002741780211cfe33837317"
+      },
+      {
+        "path": "resource_preflight.py",
+        "bytes": 14695,
+        "sha256": "ab3a740bc8573c026bc1894ce06a53c878f98032f1dc37aa8ab6cf7bc4f90058"
+      },
+      {
+        "path": "reused09-origin.json",
+        "bytes": 2148,
+        "sha256": "e2950862cf7513b3e9726fb5f62855583b3250d66ecbe275aaa0af12e1a10234"
+      },
+      {
+        "path": "root-lease.json",
+        "bytes": 8306,
+        "sha256": "927605c2200c297968c04736efecdcd76b4ccea1f2c59ad5443739c20376f185"
+      },
+      {
+        "path": "root-release-message-receipt.json",
+        "bytes": 1107,
+        "sha256": "c47f3927ba09cee036027d26af80cd340bc07320b65bb4492445cd3992979883"
+      },
+      {
+        "path": "run_step.py",
+        "bytes": 1452,
+        "sha256": "ec0dd7e13e56e2962375b9fae6626a3325fc3c200a8ac3d96c4bd5f547f26689"
+      },
+      {
+        "path": "runtime-memory-selfcheck.json",
+        "bytes": 11619,
+        "sha256": "94bfe0e27343c3c2b70763a5cd04acf38080bd873c414c059f9e28a2ded0a55e"
+      },
+      {
+        "path": "runtime-memory-selfcheck.py",
+        "bytes": 9787,
+        "sha256": "7b5d00bab0e12d3e15df78f92301323268fb6ddbfe423f3fb0fe8dc48e4ab2e6"
+      },
+      {
+        "path": "source-only-helper-changes.diff",
+        "bytes": 5645,
+        "sha256": "d78486efd78a3229388618f34a604bf26d2f78942fb092ce9a373e19b4a10e2b"
+      },
+      {
+        "path": "source-only-v2-calibration.json",
+        "bytes": 2577,
+        "sha256": "4a68a9a0a754190b03756a97297f972560d8d72ecbe5851e12666d022f76b091"
+      },
+      {
+        "path": "source-only-v2-owned-emulator.diff",
+        "bytes": 36072,
+        "sha256": "6f2bb50b1f85b860f8ff1881bf19949a2ee3266959387b85d37adccd293aaf76"
+      },
+      {
+        "path": "source-only-v2-sealed-index.txt",
+        "bytes": 3683,
+        "sha256": "e45d48c132702c454cd9917b4ef2411da64af42396870e9d81ade42252a63c6b"
+      },
+      {
+        "path": "source_paths.py",
+        "bytes": 1598,
+        "sha256": "8ace0fba3ac6038ba7fefe15f7b7f7540565fcf4fa605c08a5bb08755abccd03"
+      },
+      {
+        "path": "start.path-space.json",
+        "bytes": 515,
+        "sha256": "f052755ee8bcfdd9fec813be1b4de486edec6f865a260d000dd9ef7c57128ba2"
+      },
+      {
+        "path": "strict_minimal_audit.py",
+        "bytes": 4343,
+        "sha256": "f38d6c29c3608253bb015caee79a37c00bcdd601e1cea6f3aea693599fa1e067"
+      }
+    ]
+  },
+  "sourcePacketIntegrity": {
+    "verifiedChecksumIndexEntries": 122,
+    "checksumIndexMismatchCount": 0,
+    "checksumIndexOwnHashVerifiedSeparately": true,
+    "verifiedRunnerCommandResults": 4,
+    "files": {
+      "report": {
+        "path": "REPORT.md",
+        "bytes": 3617,
+        "sha256": "135d2b6e8961e53d755fabcb24f416c00be7109c5971538ac76b4b7813686d3a"
+      },
+      "manifest": {
+        "path": "manifest.json",
+        "bytes": 12198,
+        "sha256": "aab9d0d26353c64807b3007b37f146920fa6ff8c2f846ee77d814178d355ea55"
+      },
+      "checksumIndex": {
+        "path": "SHA256SUMS",
+        "bytes": 12524,
+        "sha256": "0499018278e3eadbef18e1fbe505d26654e93d3ba60c4e4ec5be706bd2421f92"
+      }
+    },
+    "publicManifestIsCuratedSummary": true,
+    "originalHashDoesNotIdentifyPublicSanitizedBytes": true
+  },
+  "remaining": [
+    "minimum and Mattermost new baseline native/build/install/launch/first screen on both platforms",
+    "both independently prepared fresh clones after all four new baseline first screens",
+    "actual Runstir CLI/GUI reproducer and preservation of Mattermost preparation",
+    "new plugin conditions require a separate decision and a new run"
+  ]
+}
