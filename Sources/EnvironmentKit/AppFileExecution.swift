@@ -305,10 +305,14 @@ public enum AppFileExecution {
                         detail: "Checking the device Runstir started booting. It is not stopped.")
                     let id = boot.device
                     let observation = Task { try await provider.devices(selected: id) }
-                    let live = try? await observation.value.first { $0.id == id }
-                    if let live, live.ready { boot.handle = live.handle }
-                    boot.detail += " Re-observed: " + (live.map { $0.ready ? "ready on \($0.handle)" : $0.boot == "required" ? "not running" : "running, not ready" }
-                        ?? "the device state could not be confirmed") + ". Runstir does not stop it; stop it yourself if it is not needed."
+                    let observed: String
+                    do {
+                        let live = try await observation.value.first { $0.id == id }
+                        if let live, live.ready { boot.handle = live.handle }
+                        observed = live.map { $0.ready ? "ready on \($0.handle)" : $0.boot == "required" ? "not running" : "running, not ready" }
+                            ?? "not identifiable yet; a starting Emulator cannot name its AVD"
+                    } catch { observed = "unknown (\(error))" }
+                    boot.detail += " Re-observed: \(observed). Runstir does not stop it; stop it yourself if it is not needed."
                 }
                 operation.deviceBoot = boot
             }
