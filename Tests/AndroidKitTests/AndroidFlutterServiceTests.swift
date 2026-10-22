@@ -189,7 +189,8 @@ struct AndroidFlutterServiceTests {
         let (created, result) = try await service.connect(initial, marker: flutterMarker, hostPort: 8097, store: fixture.store)
         #expect(created.forward?.state == .created)
         #expect(try fixture.store.read() == created)
-        #expect(result == AndroidFlutterConnection(hostPort: 8097, devicePort: 38881))
+        #expect(result == AndroidFlutterConnection(hostPort: 8097, devicePort: 38881,
+            serviceURI: URL(string: "http://127.0.0.1:8097/private-token=/")))
         var product = fixture.product
         product.flutterConnection = result
         let publicJSON = String(decoding: try JSONEncoder().encode(product), as: UTF8.self)
@@ -586,6 +587,7 @@ struct AndroidFlutterServiceTests {
         #expect(report.exitCode == (cancel ? 130 : 0))
         #expect(report.context.androidProduct?.appPid == flutterPID)
         #expect(report.context.androidProduct?.flutterConnection?.hostPort == (cancel ? nil : 8097))
+        #expect(report.context.developmentServiceURI == (cancel ? nil : "http://127.0.0.1:8097/private-token=/"))
         let markerIndex = try #require(runner.commands.firstIndex { $0.arguments.contains("-t") })
         let launchIndex = try #require(runner.commands.firstIndex { $0.arguments.contains("start") })
         #expect(markerIndex < launchIndex)

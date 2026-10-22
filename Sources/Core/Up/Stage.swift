@@ -130,15 +130,20 @@ public struct AndroidBuiltProduct: Sendable, Equatable, Encodable {
     }
 }
 
-/// Sanitized result. The authenticated VM-service URI never enters public JSON.
+/// Ports only. Like iOS, the authenticated URI is reported once, in `operation.developmentServiceURI` (ADR-0044).
 public struct AndroidFlutterConnection: Sendable, Equatable, Encodable {
     public let hostPort: Int
     public let devicePort: Int
+    /// The host-forwarded URI whose `getVM` answered as a Dart VM.
+    public let serviceURI: URL?
 
-    public init(hostPort: Int, devicePort: Int) {
+    public init(hostPort: Int, devicePort: Int, serviceURI: URL? = nil) {
         self.hostPort = hostPort
         self.devicePort = devicePort
+        self.serviceURI = serviceURI
     }
+
+    private enum CodingKeys: String, CodingKey { case hostPort, devicePort }
 }
 
 public struct AndroidDevice: Sendable, Equatable, Encodable {
