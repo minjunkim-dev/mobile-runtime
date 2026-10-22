@@ -369,7 +369,10 @@ struct FlutterAndroidWorkflowTests {
         let reportedTarget = try #require(result.operation.entrypoint)
         #expect(try Self.physical(URL(fileURLWithPath: reportedTarget)).path == Self.physical(URL(fileURLWithPath: target)).path)
         #expect(trace.count == 1)
-        #expect(try !result.encoded(toolVersion: "fixture").contains("sentinel-secret"))
+        // Like iOS, the authenticated URI is public exactly once, as the development service URI (ADR-0044).
+        #expect(result.operation.developmentServiceURI == "http://127.0.0.1:\(port)/sentinel-secret=/")
+        #expect(try result.encoded(toolVersion: "fixture").components(separatedBy: "sentinel-secret").count == 2)
+        #expect(!(result.up?.stages ?? []).contains { $0.detail?.contains("sentinel-secret") == true })
         try FileManager.default.removeItem(at: fixture.native.repo.url("flutter-sdk"))
         if workspace {
             let manifest = fixture.native.repo.url("pubspec.yaml")
