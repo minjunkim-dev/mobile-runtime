@@ -194,9 +194,10 @@ mobile app inspect /path/Device.ipa --device DEVICE-UDID --json
 mobile app run /path/Device.ipa --device DEVICE-UDID --approve EXACT-PLAN-ID --non-interactive --json
 ```
 
-압축을 풀기 전에 central directory의 모든 entry를 검사한다. 하나라도 부적합하면 아무것도 쓰지 않고 이유를 표시한다.
+압축을 풀기 전에 central directory의 모든 entry를 검사한다. 이 검사에서 부적합하면 아무것도 쓰지 않고 이유를 표시한다.
+크기·CRC 불일치는 추출 중에, 실제 link 해석의 탈출·dangling은 추출 직후에 발견한다. 그때도 작업 소유 위치 밖에는 쓰지 않고 그 위치를 지운다.
 
-- 절대경로, `..`·`.`·빈 경로 구성요소, 역슬래시, `:`, 제어문자, 1,024바이트 넘는 이름
+- 절대경로, `..`·`.`·빈 경로 구성요소, 역슬래시, `:`, 제어문자, UTF-8이 아닌 이름, 1,024바이트·64단계를 넘는 경로
 - 대소문자만 다른 두 번째 `payload` 폴더
 - 같은 이름과 대소문자·Unicode 정규화만 다른 이름, 파일·링크 아래의 entry
 - 일반 파일·디렉터리·symlink가 아닌 entry, 암호화, stored·deflate 이외의 압축
@@ -205,6 +206,7 @@ mobile app run /path/Device.ipa --device DEVICE-UDID --approve EXACT-PLAN-ID --n
 - 자원 한도: entry 100,000개, central directory 64 MiB, 풀린 크기 합계 8 GiB, 임시 volume 여유 공간
 
 추출은 작업 소유 임시 디렉터리(0700)에서 한다. `Payload/<이름>.app` 아래만 푼다. 그 밖의 entry는 검사만 하고 풀지 않는다.
+디렉터리는 한 단계씩 만들고 경로에 이미 파일·link가 있으면 중단한다. volume이 같게 보는 이름의 충돌도 이렇게 막는다.
 파일은 새로 만든다(`O_EXCL`·`O_NOFOLLOW`). 선언한 크기를 넘는 출력은 즉시 중단하고 크기와 CRC를 확인한다.
 권한은 Unix·macOS에서 만든 entry의 rwx 비트를 보존한다. 권한이 없는 entry는 파일 0644, 디렉터리 0755다. setuid·setgid·sticky는 제거한다. 읽기와 정리를 위해 파일에는 소유자 읽기·쓰기, 디렉터리에는 소유자 rwx를 더한다.
 symlink는 파일을 모두 쓴 뒤 만든다. 대상은 상대 경로이고 앱 안에 머물러야 한다.

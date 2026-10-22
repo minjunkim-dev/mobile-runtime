@@ -11,6 +11,7 @@ enum IPAArchive {
     static let expandedLimit: UInt64 = 8 << 30
     static let directoryLimit = 64 << 20
     static let linkLimit: UInt64 = 1_024
+    static let depthLimit = 64
 
     private enum Kind { case file, directory, link }
 
@@ -25,12 +26,11 @@ enum IPAArchive {
         let size: UInt64
         let localOffset: UInt64
         var dataOffset: UInt64 = 0
+        // APFS and HFS+ are usually case- and normalization-insensitive. This key gives early,
+        // readable errors; extraction itself refuses any on-disk collision with lstat.
+        let folded: [String]
 
-        var key: String { Self.key(components) }
-        static func key(_ components: [String]) -> String {
-            // APFS and HFS+ are usually case- and normalization-insensitive.
-            components.joined(separator: "/").precomposedStringWithCanonicalMapping.folding(options: .caseInsensitive, locale: nil)
-        }
+        func key(_ depth: Int? = nil) -> String { folded.prefix(depth ?? folded.count).joined(separator: "/") }
     }
 
     /// Creates `root` (mode 0700, must not exist) and returns the extracted `.app` inside it.
@@ -56,23 +56,19 @@ enum IPAArchive {
             throw DomainError(summary: "The IPA needs \(expanded) bytes but the temporary volume has \(available) available.",
                 remediation: Remediation(summary: "Free space on the temporary volume, then inspect the same IPA again. Runstir did not change the original file."))
         }
-        let appRoot = root.appendingPathComponent("Payload").appendingPathComponent(app)
-        try FileManager.default.createDirectory(at: appRoot, withIntermediateDirectories: true,
-            attributes: [.posixPermissions: 0o755])
+        let appMode = entries.first { $0.components == ["Payload", app] }?.mode ?? 0o755
+        let appRoot = URL(fileURLWithPath: try directory(root, ["Payload", app], mode: appMode), isDirectory: true)
         // Directories and files first, links last: no write can pass through an archive link.
         let ordered = extracted.sorted { entries[$0].components.count < entries[$1].components.count }
         for index in ordered where entries[index].kind != .link {
             try Task.checkCancellation()
             let entry = entries[index]
-            let path = root.appendingPathComponent(entry.components.joined(separator: "/"))
             if entry.kind == .directory {
-                try FileManager.default.createDirectory(at: path, withIntermediateDirectories: true,
-                    attributes: [.posixPermissions: Int(entry.mode | 0o700)])
+                _ = try directory(root, entry.components, mode: entry.mode)
                 continue
             }
-            try FileManager.default.createDirectory(at: path.deletingLastPathComponent(), withIntermediateDirectories: true,
-                attributes: [.posixPermissions: 0o755])
-            let descriptor = open(path.path, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW, 0o600)
+            let path = try directory(root, entry.components.dropLast()) + "/" + entry.components.last!
+            let descriptor = open(path, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW, 0o600)
             guard descriptor >= 0 else { throw failure("The IPA entry cannot be created: \(entry.components.joined(separator: "/"))") }
             let output = FileHandle(fileDescriptor: descriptor, closeOnDealloc: true)
             try inflate(input, entry) { try output.write(contentsOf: $0) }
@@ -87,14 +83,37 @@ enum IPAArchive {
                   linkStaysInside(entry.components, destination) else {
                 throw failure("The IPA contains an absolute or escaping symbolic link: \(entry.components.joined(separator: "/"))")
             }
-            let path = root.appendingPathComponent(entry.components.joined(separator: "/"))
-            try FileManager.default.createDirectory(at: path.deletingLastPathComponent(), withIntermediateDirectories: true,
-                attributes: [.posixPermissions: 0o755])
-            try FileManager.default.createSymbolicLink(atPath: path.path, withDestinationPath: destination)
+            let path = try directory(root, entry.components.dropLast()) + "/" + entry.components.last!
+            guard symlink(destination, path) == 0 else {
+                throw failure("The IPA symbolic link collides with an extracted entry: \(entry.components.joined(separator: "/"))")
+            }
         }
         // The extracted bundle must pass the same link and special-file checks as a chosen .app.
         _ = try AppFileSnapshot.read(appRoot)
         return appRoot
+    }
+
+    /// Creates missing directories one component at a time below `root`. An existing link or file
+    /// anywhere on the path is refused, so no later write can follow a colliding name.
+    private static func directory(_ root: URL, _ components: some Collection<String>, mode: mode_t = 0o755) throws -> String {
+        var path = root.path
+        for (offset, component) in components.enumerated() {
+            path += "/" + component
+            var status = stat()
+            if lstat(path, &status) == 0 {
+                guard status.st_mode & S_IFMT == S_IFDIR else {
+                    throw failure("The IPA entry collides with an extracted file or link: \(components.joined(separator: "/"))")
+                }
+            } else if errno != ENOENT || mkdir(path, 0o700) != 0 {
+                throw failure("The IPA directory cannot be created: \(components.joined(separator: "/"))")
+            }
+            if offset == components.count - 1 || status.st_mode == 0 {
+                guard chmod(path, (offset == components.count - 1 ? mode : 0o755) | 0o700) == 0 else {
+                    throw failure("The IPA directory mode cannot be applied: \(components.joined(separator: "/"))")
+                }
+            }
+        }
+        return path
     }
 
     private static func centralDirectory(_ input: FileHandle, size: UInt64) throws -> ([Entry], UInt64) {
@@ -124,6 +143,7 @@ enum IPAArchive {
         var entries: [Entry] = []
         var cursor = 0
         for _ in 0..<count {
+            try Task.checkCancellation()
             guard cursor + 46 <= directory.count, directory.u32(cursor) == 0x0201_4b50 else {
                 throw failure("The IPA central directory is malformed.")
             }
@@ -139,13 +159,13 @@ enum IPAArchive {
             let compressedSize = UInt64(directory.u32(cursor + 20))
             let size = UInt64(directory.u32(cursor + 24))
             guard method == 8 || compressedSize == size else { throw failure("The IPA stored entry sizes disagree: \(shown)") }
-            // Without the UTF-8 flag names are CP437; only ASCII is unambiguous.
-            guard let text = String(data: name, encoding: .utf8), flags & 0x800 != 0 || name.allSatisfy({ $0 < 0x80 }) else {
+            // macOS ditto writes UTF-8 names without the UTF-8 flag; only strict UTF-8 is accepted.
+            guard let text = String(data: name, encoding: .utf8) else {
                 throw failure("The IPA entry name is not valid UTF-8: \(shown)")
             }
             let directoryName = text.hasSuffix("/")
             let components = (directoryName ? String(text.dropLast()) : text).split(separator: "/", omittingEmptySubsequences: false).map(String.init)
-            guard !text.isEmpty, !text.hasPrefix("/"), !text.contains("\\"), !text.contains(":"), text.utf8.count <= 1_024,
+            guard !text.isEmpty, !text.hasPrefix("/"), !text.contains("\\"), !text.contains(":"), text.utf8.count <= 1_024, components.count <= depthLimit,
                   !text.unicodeScalars.contains(where: { $0.value < 32 || $0.value == 127 }),
                   components.allSatisfy({ !$0.isEmpty && $0 != "." && $0 != ".." && $0.utf8.count <= 255 }) else {
                 throw failure("The IPA entry path is absolute, escaping or malformed: \(shown)")
@@ -164,19 +184,21 @@ enum IPAArchive {
             let mode = unixMode == 0 ? (kind == .file ? 0o644 : 0o755) : unixMode & 0o777
             entries.append(Entry(name: name, components: components, kind: kind, mode: mode, method: method,
                 crc: directory.u32(cursor + 16), compressedSize: compressedSize, size: size,
-                localOffset: UInt64(directory.u32(cursor + 42))))
+                localOffset: UInt64(directory.u32(cursor + 42)),
+                folded: components.map { $0.precomposedStringWithCanonicalMapping.folding(options: .caseInsensitive, locale: nil) }))
             cursor = next
         }
         guard cursor == directory.count else { throw failure("The IPA central directory has trailing data.") }
 
         var kinds: [String: Kind] = [:]
         for entry in entries {
-            guard kinds.updateValue(entry.kind, forKey: entry.key) == nil else {
+            guard kinds.updateValue(entry.kind, forKey: entry.key()) == nil else {
                 throw failure("The IPA has duplicate or case/normalization-colliding entries: \(entry.components.joined(separator: "/"))")
             }
         }
         for entry in entries {
-            for length in 1..<max(entry.components.count, 1) where kinds[Entry.key(Array(entry.components.prefix(length))), default: .directory] != .directory {
+            try Task.checkCancellation()
+            for length in 1..<max(entry.components.count, 1) where kinds[entry.key(length), default: .directory] != .directory {
                 throw failure("The IPA places an entry below a file or link: \(entry.components.joined(separator: "/"))")
             }
         }

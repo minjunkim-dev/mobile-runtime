@@ -14,6 +14,8 @@ struct IPAArchiveTests {
             .file("Payload/X.app/Info.plist", "plist bytes", deflate: true),
             .file("Payload/X.app/X", "executable", mode: 0o755),
             { var tool = TestZip.Entry.file("Payload/X.app/Tool", "macOS-made", mode: 0o750); tool.madeBy = 0x1314; return tool }(),
+            // ditto stores UTF-8 names without the UTF-8 flag.
+            { var image = TestZip.Entry.file("Payload/X.app/이미지.png", "image"); image.flags = 0; return image }(),
             .file("Payload/X.app/Frameworks/F.framework/F", "framework", deflate: true),
             .link("Payload/X.app/Current", "Frameworks/F.framework/F"),
             .file("Symbols/X.symbols", "outside payload"),
@@ -31,15 +33,31 @@ struct IPAArchiveTests {
         #expect(macOSMode == 0o750)
         let root = try FileManager.default.attributesOfItem(atPath: repo.url("out").path)[.posixPermissions] as? Int
         #expect(root == 0o700)
+        #expect(try String(contentsOf: app.appendingPathComponent("이미지.png"), encoding: .utf8) == "image")
         #expect(!FileManager.default.fileExists(atPath: repo.url("out/Symbols").path))
         #expect(try Data(contentsOf: ipa) == before)
+    }
+
+    @Test("a name the volume merges with an extracted link is refused even when the collision key keeps them apart")
+    func volumeCollision() throws {
+        let repo = try FixtureRepo()
+        let probe = try repo.directory("probe")
+        try Data().write(to: probe.appendingPathComponent("\u{1C80}"))
+        // A case-sensitive volume keeps both names apart, so nothing collides there.
+        guard FileManager.default.fileExists(atPath: probe.appendingPathComponent("\u{0412}").path) else { return }
+        let app = "Payload/X.app/"
+        let ipa = try repo.ipa([.file(app + "Info.plist", "plist"), .directory(app + "t/"),
+                                .link(app + "\u{0412}", "t"), .link(app + "\u{1C80}/escape", "../t")])
+        let error = #expect(throws: DomainError.self) { try IPAArchive.extract(ipa, into: repo.url("out")) }
+        #expect(error?.message.contains("collid") == true, "\(error?.message ?? "no error")")
+        #expect(!FileManager.default.fileExists(atPath: repo.url("out/Payload/X.app/t/escape").path))
     }
 
     @Test("unsafe or ambiguous archives are rejected without writing outside the extraction root", arguments: [
         "traversal", "absolute", "backslash", "escaping-link", "absolute-link", "chained-escape", "duplicate", "case-collision",
         "below-link", "below-file", "two-apps", "no-app", "payload-extra", "app-is-link", "special-file", "encrypted",
         "lying-size", "oversized", "overlap", "crc", "not-zip", "zip64", "name-mismatch", "unsupported-method",
-        "control-character", "colon", "payload-case", "local-size",
+        "control-character", "colon", "payload-case", "local-size", "too-deep",
     ])
     func rejected(_ defect: String) throws {
         let repo = try FixtureRepo()
@@ -79,6 +97,7 @@ struct IPAArchiveTests {
         case "colon": entries.append(.file(app + "a:b", "x"))
         case "payload-case": entries.append(.file("payload/Y.app/Info.plist", "plist"))
         case "local-size": entries[0].localSize = 1
+        case "too-deep": entries.append(.file(app + Array(repeating: "d", count: 70).joined(separator: "/"), "x"))
         default: Issue.record("unknown defect \(defect)")
         }
         let ipa = try repo.ipa(entries, layout: layout)
@@ -95,7 +114,7 @@ struct IPAArchiveTests {
             "encrypted": "encrypted", "lying-size": "past its declared size", "oversized": "extraction limit",
             "overlap": "overlap", "crc": "CRC", "not-zip": "not a complete zip", "zip64": "ZIP64",
             "name-mismatch": "local header", "unsupported-method": "unsupported compression",
-            "payload-case": "ambiguous payload", "local-size": "local header",
+            "payload-case": "ambiguous payload", "local-size": "local header", "too-deep": "absolute, escaping or malformed",
         ][defect]
         #expect(reason != nil && error?.message.contains(reason!) == true, "\(defect): \(error?.message ?? "no error")")
         #expect(!FileManager.default.fileExists(atPath: repo.url("escaped").path))
