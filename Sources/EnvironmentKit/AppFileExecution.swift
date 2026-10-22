@@ -262,7 +262,10 @@ public enum AppFileExecution {
             if installationRequested {
                 if operation.installation != "installed" { operation.installation = "unconfirmed" }
                 if let provider, let selected, let artifact = operation.artifact {
-                    do { operation.installed = try await provider.installed(appID: artifact.metadata.appID, device: selected) }
+                    // Cancellation stops new steps, not the look at what the interrupted step left.
+                    // An unstructured task does not inherit this task's cancellation.
+                    let observation = Task { try await provider.installed(appID: artifact.metadata.appID, device: selected) }
+                    do { operation.installed = try await observation.value }
                     catch { operation.installed = AppFileInstalledState(state: "unknown", detail: "Re-observation failed: \(error)") }
                 }
             }
@@ -334,7 +337,7 @@ public enum AppFileExecution {
             AppFilePrerequisite(id: "signature",
                 satisfied: profile.signatureVerified && profile.signingTeamID == profile.teamID && profile.signingCertificateInProfile,
                 observed: "codesign strict verification \(profile.signatureVerified ? "passed" : "failed"); signing team \(profile.signingTeamID ?? "unknown"), profile team \(profile.teamID); signing certificate \(profile.signingCertificateInProfile ? "is" : "is not") in the profile",
-                action: "Use a certificate included in a \(profile.kind) profile of the same team. " + reexport),
+                action: "Sign with a certificate that this \(profile.kind) profile lists, from the same team. " + reexport),
             AppFilePrerequisite(id: "profile-app-id", satisfied: appIDMatches,
                 observed: "profile application identifier \(profile.applicationIdentifier); app ID \(metadata.appID)",
                 action: "Use a profile whose App ID matches \(metadata.appID). " + reexport),

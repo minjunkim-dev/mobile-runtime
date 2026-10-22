@@ -295,7 +295,9 @@ private final class DeviceRunner: ProcessRunner, @unchecked Sendable {
     init(installedBuild: String?) { self.installedBuild = installedBuild }
 
     func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
-        try lock.withLock {
+        // SystemProcessRunner refuses to start a child in a cancelled task.
+        try Task.checkCancellation()
+        return try lock.withLock {
             recorded.append(command)
             let args = command.arguments
             func ok(_ output: String = "", _ error: String = "") -> ProcessResult {
@@ -367,7 +369,7 @@ private final class DeviceRunner: ProcessRunner, @unchecked Sendable {
                 if args.prefix(5) == ["devicectl", "device", "install", "app", "--device"] {
                     if installRefused { return refused("Failed to install the app: A valid provisioning profile for this executable was not found.") }
                     if !installUnobserved { installedBuild = "2" }
-                    if cancelAfterInstall { throw CancellationError() }
+                    if cancelAfterInstall { withUnsafeCurrentTask { $0?.cancel() }; throw CancellationError() }
                     return try json(["installedApplications": []])
                 }
                 if args.prefix(6) == ["devicectl", "device", "process", "launch", "--device", DeviceFixture.udid] {
