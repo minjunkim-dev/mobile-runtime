@@ -430,7 +430,8 @@ final class FlutterAndroidExecution: Sendable {
         let url: URL
         let identity: Identity
         init(in parent: URL) throws {
-            // The child broker listens on `<root>/s`, which must fit sockaddr_un.
+            // The child broker listens on `<root>/s`, which must fit sockaddr_un once /tmp and /var become /private.
+            let parent = try preparedPath(parent)
             guard parent.appendingPathComponent("runstir-flutter-android-XXXXXX/s").path.utf8.count
                     < MemoryLayout.size(ofValue: sockaddr_un().sun_path) else {
                 throw failure("The private Flutter execution directory path is too long for its child socket. Choose a shorter RUNSTIR_SCRATCH_DIR.")
@@ -455,14 +456,78 @@ final class FlutterAndroidExecution: Sendable {
         }
 
         private static func remove(_ url: URL, _ identity: Identity) {
-            // A replaced root is not this owner's directory.
-            guard (try? Identity(url)) == identity else { return }
-            do { try FileManager.default.removeItem(at: url) }
+            do { try removeTree(url, identity: identity) }
             catch {
                 Logger(subsystem: "dev.runstir", category: "flutter-protection")
                     .error("Private Flutter execution root was not removed: \(url.path, privacy: .private)")
             }
         }
+    }
+
+    /// A surviving sandboxed descendant can still write inside the root and swap a subdirectory for a link to
+    /// protected inputs. Removal therefore resolves no path below the root: it descends only through descriptors
+    /// opened without following links, unlinks links and files themselves, and never enters another device.
+    /// A missing or replaced root is left alone.
+    static func removeTree(_ root: URL, identity: Identity) throws {
+        let parent = open(root.deletingLastPathComponent().path, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
+        guard parent >= 0 else { throw failure("The private Flutter execution directory's parent could not be opened for removal.") }
+        defer { close(parent) }
+        let name = root.lastPathComponent
+        let directory = openat(parent, name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
+        guard directory >= 0 else { return }
+        var opened = stat()
+        guard fstat(directory, &opened) == 0, opened.st_dev == identity.device, opened.st_ino == identity.inode else {
+            close(directory)
+            return
+        }
+        let emptied = removeContents(directory, device: identity.device)
+        var current = stat()
+        guard emptied, fstatat(parent, name, &current, AT_SYMLINK_NOFOLLOW) == 0,
+              current.st_dev == identity.device, current.st_ino == identity.inode,
+              unlinkat(parent, name, AT_REMOVEDIR) == 0 else {
+            throw failure("Some private Flutter execution entries could not be removed.")
+        }
+    }
+
+    /// Empties and closes `directory`; returns whether every entry was removed.
+    private static func removeContents(_ directory: Int32, device: dev_t) -> Bool {
+        defer { close(directory) }
+        let listing = dup(directory)
+        guard listing >= 0, let stream = fdopendir(listing) else {
+            if listing >= 0 { close(listing) }
+            return false
+        }
+        var names: [[CChar]] = []
+        while let entry = readdir(stream) {
+            let length = Int(entry.pointee.d_namlen)
+            var raw = entry.pointee.d_name
+            let name = withUnsafeBytes(of: &raw) { Array($0.prefix(length)).map { CChar(bitPattern: $0) } }
+            if name != [46] && name != [46, 46] { names.append(name + [0]) }
+        }
+        closedir(stream)
+        var emptied = true
+        for name in names {
+            let child = openat(directory, name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
+            if child >= 0 {
+                var info = stat()
+                // A mount point is never entered; its entry stays and the root is reported as not removed.
+                guard fstat(child, &info) == 0, info.st_dev == device else {
+                    close(child)
+                    emptied = false
+                    continue
+                }
+                // An SDK directory copied read-only must still be emptied.
+                _ = fchmod(child, 0o700)
+                if !removeContents(child, device: device) { emptied = false }
+                if unlinkat(directory, name, AT_REMOVEDIR) != 0, errno != ENOENT { emptied = false }
+            } else if errno == ENOTDIR || errno == ELOOP {
+                // A file or link, also one swapped in since the listing: only the entry itself is unlinked.
+                if unlinkat(directory, name, 0) != 0, errno != ENOENT { emptied = false }
+            } else if errno != ENOENT {
+                emptied = false
+            }
+        }
+        return emptied
     }
 
     /// `RUNSTIR_SCRATCH_DIR`, else an attached `$DEVSSD_ROOT/scratch`, else TMPDIR.
@@ -475,8 +540,9 @@ final class FlutterAndroidExecution: Sendable {
         }
         for case let candidate? in [absolute("RUNSTIR_SCRATCH_DIR"), absolute("DEVSSD_ROOT")?.appendingPathComponent("scratch", isDirectory: true)] {
             var info = stat()
+            // A symbolic ancestor would be refused later by preparedPath; fall through instead.
             if lstat(candidate.path, &info) == 0, info.st_mode & S_IFMT == S_IFDIR, info.st_uid == getuid(),
-               info.st_mode & 0o022 == 0 { return candidate }
+               info.st_mode & 0o022 == 0, (try? preparedPath(candidate)) != nil { return candidate }
         }
         return FileManager.default.temporaryDirectory
     }

@@ -236,7 +236,11 @@ struct FlutterAndroidExecutionTests {
         let ssd = try fixture.directory("ssd")
         let temporary = FileManager.default.temporaryDirectory.path
         #expect(FlutterAndroidExecution.scratchDirectory(["RUNSTIR_SCRATCH_DIR": chosen.path, "DEVSSD_ROOT": ssd.path]).path == chosen.path)
-        for unusable in [shared.path, fixture.root.appendingPathComponent("missing").path, "chosen", ""] {
+        // A real directory reached through a symbolic ancestor would be refused later by preparedPath.
+        let link = fixture.root.appendingPathComponent("link")
+        #expect(symlink(fixture.root.path, link.path) == 0)
+        for unusable in [shared.path, fixture.root.appendingPathComponent("missing").path, "chosen", "",
+                         link.appendingPathComponent("chosen").path] {
             #expect(FlutterAndroidExecution.scratchDirectory(["RUNSTIR_SCRATCH_DIR": unusable]).path == temporary)
         }
         #expect(FlutterAndroidExecution.scratchDirectory(["DEVSSD_ROOT": ssd.path]).path == temporary)
@@ -247,6 +251,60 @@ struct FlutterAndroidExecutionTests {
         let long = try fixture.directory(String(repeating: "d", count: 80))
         #expect(throws: DomainError.self) { try FlutterAndroidExecution.OwnedRoot(in: long) }
         #expect(try FileManager.default.contentsOfDirectory(atPath: long.path).isEmpty)
+        // The length is measured on the physical /private path the root will use, not its /tmp spelling.
+        let physical = try fixture.directory(String(repeating: "a", count: 30))
+        let alias = URL(fileURLWithPath: "/tmp/" + physical.path.dropFirst("/private/tmp/".count), isDirectory: true)
+        let suffix = "/runstir-flutter-android-XXXXXX/s".utf8.count
+        try #require(alias.path.utf8.count + suffix < 104 && physical.path.utf8.count + suffix >= 104)
+        #expect(throws: DomainError.self) { try FlutterAndroidExecution.OwnedRoot(in: alias) }
+        #expect(try FileManager.default.contentsOfDirectory(atPath: physical.path).isEmpty)
+    }
+
+    @Test("removal unlinks links inside the root, empties read-only directories and keeps link targets")
+    func removalKeepsLinkTargets() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let scratch = try fixture.directory("scratch")
+        try fixture.file("protected/input", "preserved")
+        let protected = fixture.root.appendingPathComponent("protected")
+        let owner = try FlutterAndroidExecution.OwnedRoot(in: scratch)
+        #expect(symlink(protected.path, owner.url.appendingPathComponent("directory-link").path) == 0)
+        #expect(symlink(protected.appendingPathComponent("input").path, owner.url.appendingPathComponent("file-link").path) == 0)
+        let locked = owner.url.appendingPathComponent("sdk/locked")
+        try FileManager.default.createDirectory(at: locked, withIntermediateDirectories: true)
+        try FlutterAndroidExecution.write(Data("copied".utf8), to: locked.appendingPathComponent("tool"))
+        #expect(chmod(locked.path, 0o555) == 0)
+        try FlutterAndroidExecution.removeTree(owner.url, identity: owner.identity)
+        #expect(!FileManager.default.fileExists(atPath: owner.url.path))
+        #expect(try String(contentsOf: protected.appendingPathComponent("input"), encoding: .utf8) == "preserved")
+    }
+
+    @Test("removal never follows a subdirectory a surviving descendant keeps swapping for a link outside the root")
+    func removalIgnoresSwappedLinks() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let scratch = try fixture.directory("scratch")
+        let protected = try fixture.directory("protected")
+        for index in 0..<20 { try fixture.file("protected/input-\(index)", "preserved") }
+        for _ in 0..<60 {
+            let owner = try FlutterAndroidExecution.OwnedRoot(in: scratch)
+            let build = owner.url.appendingPathComponent("app/android/build")
+            // The same names as the protected files: a path resolved through the swapped link would hit them.
+            try FileManager.default.createDirectory(at: build, withIntermediateDirectories: true)
+            for name in (0..<20).map({ "input-\($0)" }) + (0..<200).map({ "pad-\($0)" }) {
+                try FlutterAndroidExecution.write(Data("generated".utf8), to: build.appendingPathComponent(name))
+            }
+            let swapper = Swapper(directory: build, target: protected)
+            swapper.start()
+            try? FlutterAndroidExecution.removeTree(owner.url, identity: owner.identity)
+            swapper.stop()
+            // Whatever the swapper re-created is removed once it has stopped.
+            try FlutterAndroidExecution.removeTree(owner.url, identity: owner.identity)
+            #expect(!FileManager.default.fileExists(atPath: owner.url.path))
+            for index in 0..<20 {
+                #expect(FileManager.default.fileExists(atPath: protected.appendingPathComponent("input-\(index)").path))
+            }
+        }
     }
 
     @Test("canonical templates accept version and root name changes, preserving the original bytes", arguments: [false, true])
@@ -740,6 +798,32 @@ struct FlutterAndroidExecutionTests {
             // The fixture owns this exclusive root; no product SDK is ever read or removed.
             guard (try? FlutterAndroidExecution.Identity(root)) == identity else { return }
             try? FileManager.default.removeItem(at: root)
+        }
+    }
+
+    /// Repeatedly swaps `directory` for a link to `target` and back, like a surviving sandboxed descendant.
+    private final class Swapper: @unchecked Sendable {
+        let directory: URL
+        let target: URL
+        private let lock = NSLock()
+        private var stopped = false
+        private let done = DispatchSemaphore(value: 0)
+        init(directory: URL, target: URL) { self.directory = directory; self.target = target }
+        func start() {
+            Thread {
+                let real = self.directory.path + ".real"
+                while !self.lock.withLock({ self.stopped }) {
+                    guard rename(self.directory.path, real) == 0 else { continue }
+                    _ = symlink(self.target.path, self.directory.path)
+                    _ = unlink(self.directory.path)
+                    _ = rename(real, self.directory.path)
+                }
+                self.done.signal()
+            }.start()
+        }
+        func stop() {
+            lock.withLock { stopped = true }
+            done.wait()
         }
     }
 
