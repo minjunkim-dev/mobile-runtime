@@ -437,8 +437,11 @@ struct NativeIOSWorkflowTests {
         "xcodebuild -showBuildSettings -json \(target(repo)) -scheme App -configuration Debug -destination generic/platform=iOS Simulator -derivedDataPath \(try RunLogs(project: repo.root).derivedDataDirectory.path)"
     }
 
+    // Released with this test's suite instance, so no lease directory outlives the test.
+    private let scratch = try! FixtureRepo()
+
     private func temporaryLeases() -> ResourceLeases {
-        ResourceLeases(directory: FileManager.default.temporaryDirectory.appendingPathComponent("runstir-native-leases-\(UUID().uuidString)"))
+        ResourceLeases(directory: scratch.url("leases-\(UUID().uuidString)"))
     }
 
     private func addUpResponses(_ runner: inout FakeProcessRunner, _ repo: FixtureRepo) throws {
