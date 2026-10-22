@@ -47,10 +47,10 @@ struct IOSPreparationTests {
         try fixture.assertPreserved()
     }
 
-    @Test("origin write failure preserves the created Simulator and the unreadable record")
-    func originWriteFailure() async throws {
+    @Test("origin write failure preserves the created Simulator, record and source audit", arguments: [false, true])
+    func originWriteFailure(sourceChanged: Bool) async throws {
         let fixture = try IOSPreparationFixture()
-        let runner = IOSPreparationRunner(fixture)
+        let runner = IOSPreparationRunner(fixture, changeSourceOnCreate: sourceChanged)
         let store = DeviceOriginStore(leases: fixture.leases)
         try FileManager.default.createDirectory(at: fixture.leases.directory, withIntermediateDirectories: true)
         let bytes = Data("unreadable record".utf8)
@@ -58,7 +58,11 @@ struct IOSPreparationTests {
         let plan = await PreparationExecution.run(input: fixture.input, planOnly: true, runner: runner)
         let result = await PreparationExecution.run(input: fixture.input, approvedPlanID: try #require(plan.plan?.id),
             trustRepository: true, runner: runner, leases: fixture.leases)
-        #expect(result.exitCode == 1 && result.operation.state == "partial")
+        #expect(result.exitCode == 1)
+        if sourceChanged {
+            #expect(result.operation.changedFiles.contains { $0.hasSuffix("App.tsx") })
+            #expect(result.operation.error?.contains("Source changed") == true)
+        } else { #expect(result.operation.state == "partial") }
         #expect(result.operation.resources.contains { $0.kind == .simulator && $0.origin == .created })
         #expect(result.operation.completed.contains("ios.simulator.create"))
         #expect(try Data(contentsOf: store.file) == bytes)
@@ -571,6 +575,7 @@ private final class IOSPreparationRunner: ProcessRunner, @unchecked Sendable {
     let existingDeviceChange: ExistingDeviceChange?
     let lateExistingDeviceChange: Bool
     let lateSourceChange: String?
+    let changeSourceOnCreate: Bool
     let deviceTypeAfterRuntime: Bool
     var installations: Int { lock.withLock { installed } }
     var creations: Int { lock.withLock { created } }
@@ -578,12 +583,13 @@ private final class IOSPreparationRunner: ProcessRunner, @unchecked Sendable {
 
     init(_ fixture: IOSPreparationFixture, runtime: Bool = true, fault: Fault? = nil,
          existingDeviceID: String? = nil, deviceTypeAfterRuntime: Bool = false, existingDeviceChange: ExistingDeviceChange? = nil,
-         lateExistingDeviceChange: Bool = false, lateSourceChange: String? = nil) {
+         lateExistingDeviceChange: Bool = false, lateSourceChange: String? = nil, changeSourceOnCreate: Bool = false) {
         self.fixture = fixture; self.base = fixture.runner(); self.runtime = runtime; self.fault = fault
         self.existingDeviceID = existingDeviceID
         self.existingDeviceChange = existingDeviceChange
         self.lateExistingDeviceChange = lateExistingDeviceChange
         self.lateSourceChange = lateSourceChange
+        self.changeSourceOnCreate = changeSourceOnCreate
         self.deviceTypeAfterRuntime = deviceTypeAfterRuntime
     }
 
@@ -645,6 +651,7 @@ private final class IOSPreparationRunner: ProcessRunner, @unchecked Sendable {
             answer.responses[command.description] = .ok(String(decoding: data, as: UTF8.self))
         } else if command.arguments.contains("-downloadPlatform") || command.arguments.contains("create") {
             let installation = command.arguments.contains("-downloadPlatform")
+            if !installation && changeSourceOnCreate { try fixture.repo.write("App.tsx", "changed during creation") }
             lock.withLock {
                 if installation { installed += 1 } else { created += 1 }
                 if fault == nil || fault?.after == true {

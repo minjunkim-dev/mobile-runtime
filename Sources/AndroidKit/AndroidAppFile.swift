@@ -137,7 +137,8 @@ public struct AndroidAppFile: Sendable {
         }
         return devices.map { device in
             var device = device
-            let avd = environment.avds(names: [device.name], sdk: sdk).first
+            // ADB reports a name, not the running Emulator's AVD directory.
+            let avd = device.handle.hasPrefix("avd:") ? environment.avds(names: [device.name], sdk: sdk).first : nil
             device.avdDirectory = avd?.directory?.path
             device.origin = DeviceOriginStore.user.origin(platform: .android, id: device.name, directory: avd?.directory)
             return device
@@ -172,7 +173,12 @@ public struct AndroidAppFile: Sendable {
             case nil:
                 throw Self.failure("Whether the Emulator launcher Runstir started (pid \(pid)) is alive could not be confirmed.")
             case true?:
-                if let live, live.ready { return live }
+                if var live, live.ready {
+                    live.avdDirectory = device.avdDirectory
+                    live.origin = DeviceOriginStore.user.origin(platform: .android, id: live.name,
+                        directory: device.avdDirectory.map { URL(fileURLWithPath: $0) })
+                    return live
+                }
             }
             guard ContinuousClock.now < deadline else {
                 throw Self.failure("Android Emulator \(device.name) did not become ready within \(timeouts.boot). Runstir left it running and did not replace or recreate it.")
