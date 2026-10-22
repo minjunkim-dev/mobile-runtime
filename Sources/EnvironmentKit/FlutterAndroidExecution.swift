@@ -441,7 +441,8 @@ final class FlutterAndroidExecution: Sendable {
             _ = Self.exitCleanup
             Self.lock.withLock { Self.live[url] = identity }
         }
-        deinit { Self.lock.withLock { Self.live[url] = nil; Self.remove(url, identity) } }
+        // A removal that fails (a descendant still writing) stays live, so the exit cleanup tries again.
+        deinit { Self.lock.withLock { if Self.remove(url, identity) { Self.live[url] = nil } } }
 
         // A cancelled check that has not unwound can still own a root when the CLI or GUI exits.
         private static let lock = NSLock()
@@ -449,17 +450,16 @@ final class FlutterAndroidExecution: Sendable {
         private static let exitCleanup: Void = { atexit { FlutterAndroidExecution.OwnedRoot.removeLive() } }()
 
         static func removeLive() {
-            lock.withLock {
-                for (url, identity) in live { remove(url, identity) }
-                live = [:]
-            }
+            lock.withLock { live = live.filter { !remove($0.key, $0.value) } }
         }
 
-        private static func remove(_ url: URL, _ identity: Identity) {
-            do { try removeTree(url, identity: identity) }
+        /// Returns whether the root is gone.
+        private static func remove(_ url: URL, _ identity: Identity) -> Bool {
+            do { try removeTree(url, identity: identity); return true }
             catch {
                 Logger(subsystem: "dev.runstir", category: "flutter-protection")
                     .error("Private Flutter execution root was not removed: \(url.path, privacy: .private)")
+                return false
             }
         }
     }
@@ -467,47 +467,59 @@ final class FlutterAndroidExecution: Sendable {
     /// A surviving sandboxed descendant can still write inside the root and swap a subdirectory for a link to
     /// protected inputs. Removal therefore resolves no path below the root: it descends only through descriptors
     /// opened without following links, unlinks links and files themselves, and never enters another device.
-    /// A missing or replaced root is left alone.
+    /// The root is identified by device and inode only; its owner and mode are not rechecked here.
+    /// A missing or replaced root is left alone. A directory still being written is retried a few passes.
     static func removeTree(_ root: URL, identity: Identity) throws {
         let parent = open(root.deletingLastPathComponent().path, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
-        guard parent >= 0 else { throw failure("The private Flutter execution directory's parent could not be opened for removal.") }
+        guard parent >= 0 else {
+            if errno == ENOENT { return }
+            throw failure("The private Flutter execution directory's parent could not be opened for removal.")
+        }
         defer { close(parent) }
         let name = root.lastPathComponent
         let directory = openat(parent, name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
-        guard directory >= 0 else { return }
+        guard directory >= 0 else {
+            if errno == ENOENT { return }
+            throw failure("The private Flutter execution directory could not be opened for removal.")
+        }
+        defer { close(directory) }
         var opened = stat()
-        guard fstat(directory, &opened) == 0, opened.st_dev == identity.device, opened.st_ino == identity.inode else {
-            close(directory)
-            return
+        guard fstat(directory, &opened) == 0 else { throw failure("The private Flutter execution directory could not be identified for removal.") }
+        guard opened.st_dev == identity.device, opened.st_ino == identity.inode else { return }
+        for _ in 0..<3 where empty(directory, device: identity.device) {
+            var current = stat()
+            guard fstatat(parent, name, &current, AT_SYMLINK_NOFOLLOW) == 0,
+                  current.st_dev == identity.device, current.st_ino == identity.inode else { break }
+            if unlinkat(parent, name, AT_REMOVEDIR) == 0 { return }
         }
-        let emptied = removeContents(directory, device: identity.device)
-        var current = stat()
-        guard emptied, fstatat(parent, name, &current, AT_SYMLINK_NOFOLLOW) == 0,
-              current.st_dev == identity.device, current.st_ino == identity.inode,
-              unlinkat(parent, name, AT_REMOVEDIR) == 0 else {
-            throw failure("Some private Flutter execution entries could not be removed.")
-        }
+        throw failure("Some private Flutter execution entries could not be removed.")
     }
 
-    /// Empties and closes `directory`; returns whether every entry was removed.
-    private static func removeContents(_ directory: Int32, device: dev_t) -> Bool {
-        defer { close(directory) }
-        let listing = dup(directory)
-        guard listing >= 0, let stream = fdopendir(listing) else {
-            if listing >= 0 { close(listing) }
-            return false
-        }
-        var names: [[CChar]] = []
-        while let entry = readdir(stream) {
-            let length = Int(entry.pointee.d_namlen)
-            var raw = entry.pointee.d_name
-            let name = withUnsafeBytes(of: &raw) { Array($0.prefix(length)).map { CChar(bitPattern: $0) } }
-            if name != [46] && name != [46, 46] { names.append(name + [0]) }
-        }
-        closedir(stream)
+    /// Empties `root` (left open for the caller) with an explicit stack, so a descendant's deep tree cannot overflow
+    /// a worker thread's stack. Each level holds one descriptor: beyond the descriptor limit that subtree stays.
+    /// Returns whether every entry was removed.
+    private static func empty(_ root: Int32, device: dev_t) -> Bool {
+        struct Level { let descriptor: Int32; let name: [CChar]?; var entries: [[CChar]] }
+        guard let entries = names(in: root) else { return false }
+        var levels = [Level(descriptor: root, name: nil, entries: entries)]
         var emptied = true
-        for name in names {
-            let child = openat(directory, name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
+        while !levels.isEmpty {
+            // Indexed access: a copied Level would make every popLast copy its remaining entries.
+            let top = levels.count - 1
+            let directory = levels[top].descriptor
+            guard let name = levels[top].entries.popLast() else {
+                let finished = levels.removeLast()
+                if let name = finished.name, let parent = levels.last?.descriptor {
+                    close(finished.descriptor)
+                    if unlinkat(parent, name, AT_REMOVEDIR) != 0, errno != ENOENT { emptied = false }
+                }
+                continue
+            }
+            var child = openat(directory, name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
+            // A directory a descendant made unreadable (0000, 0300) is reopened after its own mode is fixed.
+            if child < 0, errno == EACCES, fchmodat(directory, name, 0o700, AT_SYMLINK_NOFOLLOW) == 0 {
+                child = openat(directory, name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
+            }
             if child >= 0 {
                 var info = stat()
                 // A mount point is never entered; its entry stays and the root is reported as not removed.
@@ -516,18 +528,44 @@ final class FlutterAndroidExecution: Sendable {
                     emptied = false
                     continue
                 }
-                // An SDK directory copied read-only must still be emptied.
-                _ = fchmod(child, 0o700)
-                if !removeContents(child, device: device) { emptied = false }
-                if unlinkat(directory, name, AT_REMOVEDIR) != 0, errno != ENOENT { emptied = false }
+                // An SDK directory copied read-only must still be emptied; a writable one is left as is.
+                if info.st_mode & 0o700 != 0o700 { _ = fchmod(child, 0o700) }
+                guard let entries = names(in: child) else {
+                    close(child)
+                    emptied = false
+                    continue
+                }
+                levels.append(Level(descriptor: child, name: name, entries: entries))
             } else if errno == ENOTDIR || errno == ELOOP {
                 // A file or link, also one swapped in since the listing: only the entry itself is unlinked.
                 if unlinkat(directory, name, 0) != 0, errno != ENOENT { emptied = false }
             } else if errno != ENOENT {
+                // EMFILE past the descriptor limit included: the subtree stays and the root is preserved.
                 emptied = false
             }
         }
         return emptied
+    }
+
+    /// Names in an open directory, read in place from each `dirent` without copying it.
+    private static func names(in directory: Int32) -> [[CChar]]? {
+        let listing = dup(directory)
+        guard listing >= 0, let stream = fdopendir(listing) else {
+            if listing >= 0 { close(listing) }
+            return nil
+        }
+        defer { closedir(stream) }
+        // The duplicate shares the offset; a retry pass must list from the start again.
+        rewinddir(stream)
+        var names: [[CChar]] = []
+        while let entry = readdir(stream) {
+            let length = Int(entry.pointee.d_namlen)
+            let name = withUnsafePointer(to: &entry.pointee.d_name) {
+                $0.withMemoryRebound(to: CChar.self, capacity: length) { Array(UnsafeBufferPointer(start: $0, count: length)) }
+            }
+            if name != [46] && name != [46, 46] { names.append(name + [0]) }
+        }
+        return names
     }
 
     /// `RUNSTIR_SCRATCH_DIR`, else an attached `$DEVSSD_ROOT/scratch`, else TMPDIR.

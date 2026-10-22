@@ -140,8 +140,10 @@ child는 network와 승인 범위 밖 쓰기를 계속 거부한다.
 private view는 작업이 끝나거나 실패·취소되면 지운다. 남은 Gradle 후손은 지운 경로를 다시 만들 수 없다. 두 sandbox 정책이 root 자체의 쓰기를 거부한다.
 그러나 남은 후손은 root 안의 쓰기 예외 경로에는 계속 쓸 수 있다. 그래서 하위 폴더를 보호 입력이나 `$HOME`을 가리키는 링크로 바꿔치기할 수 있다. sandbox 밖의 Runstir가 경로로 지우면 root 밖 파일을 지울 수 있다.
 따라서 root 아래 경로를 다시 풀지 않는다. 링크를 따르지 않고 연 directory descriptor로만 내려간다(`openat` `O_NOFOLLOW`, `unlinkat`). 링크와 파일은 항목 자체만 지운다. 다른 device로는 들어가지 않는다. root는 device·inode가 기록과 같을 때만 지운다.
+재귀하지 않고 명시적 stack으로 내려간다. 후손이 만든 깊은 트리가 작업 스레드의 stack을 넘기지 않게 하기 위해서다. 단계마다 descriptor 하나를 쓰므로, descriptor 한도를 넘는 깊이는 지우지 못하고 root를 남긴 채 로그를 남긴다.
 CLI는 SIGINT·SIGTERM·SIGHUP을 취소로 바꾼다. 취소한 작업이 아직 풀리지 않은 채 프로세스가 끝나면 남은 root를 종료 처리기에서 지운다. GUI 종료도 같다.
 SIGKILL과 강제 종료는 root를 남길 수 있다.
+후손이 아직 쓰고 있으면 삭제는 몇 번 다시 시도한다. 그래도 실패한 root는 종료 처리기가 한 번 더 지운다. 프로세스가 끝난 뒤에도 후손이 쓰고 있으면 root가 남을 수 있다.
 명령이 실패한 뒤 보호 검사도 실패하면 그 기록은 root 밖 `~/Library/Logs/dev.runstir/flutter-protection`에 남긴다. root와 함께 지워지지 않게 하기 위해서다. 취소로 중단된 보호 검사는 입력이 바뀐 근거가 아니므로 기록하지 않는다. 취소 중에는 SDK 비교의 첫 취소 확인에서 검사가 멈추므로, 그 전에 확인하는 root identity 변경만 기록될 수 있다.
 같은 APFS volume에서는 SDK 파일을 clone한다. 다른 volume에서는 검증한 byte copy를 사용한다.
 root는 `RUNSTIR_SCRATCH_DIR`, 연결된 `$DEVSSD_ROOT/scratch`, `TMPDIR` 순서로 고른다.

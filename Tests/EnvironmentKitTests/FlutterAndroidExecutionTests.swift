@@ -58,20 +58,7 @@ struct FlutterAndroidExecutionTests {
         let childMarker = "RUNSTIR_FLUTTER_FILE_BUFFER_CHILD"
         if ProcessInfo.processInfo.environment[childMarker] != "1" {
             // A serialized suite does not isolate process-wide memory from other suites.
-            var path = [CChar](repeating: 0, count: 4 * Int(PATH_MAX))
-            let length = path.withUnsafeMutableBytes { proc_pidpath(getpid(), $0.baseAddress, UInt32($0.count)) }
-            try #require(length > 0)
-            let executable = String(decoding: path.prefix { $0 != 0 }.map { UInt8(bitPattern: $0) }, as: UTF8.self)
-            var arguments = ["--testing-library", "swift-testing", "--no-parallel",
-                "--filter", "FlutterAndroidExecutionTests/boundedFileBuffers"]
-            if URL(fileURLWithPath: executable).lastPathComponent == "swiftpm-testing-helper" {
-                let index = try #require(CommandLine.arguments.firstIndex(of: "--test-bundle-path"))
-                try #require(index + 1 < CommandLine.arguments.count)
-                let bundle = CommandLine.arguments[index + 1]
-                arguments.insert(contentsOf: ["--test-bundle-path", bundle, bundle], at: 0)
-            }
-            let result = try await SystemProcessRunner().run(ProcessCommand(executable, arguments,
-                environment: [childMarker: "1"], timeout: .seconds(30)))
+            let result = try await Self.rerunAlone("FlutterAndroidExecutionTests/boundedFileBuffers", marker: childMarker)
             print(result.combinedOutput)
             #expect(result.terminationStatus.isSuccess)
             for copying in [false, true] {
@@ -274,9 +261,86 @@ struct FlutterAndroidExecutionTests {
         try FileManager.default.createDirectory(at: locked, withIntermediateDirectories: true)
         try FlutterAndroidExecution.write(Data("copied".utf8), to: locked.appendingPathComponent("tool"))
         #expect(chmod(locked.path, 0o555) == 0)
+        // A descendant can also leave directories it cannot be opened through.
+        for (name, mode) in [("closed", 0o000), ("write-only", 0o300)] {
+            let directory = owner.url.appendingPathComponent("app/android/build/\(name)")
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            try FlutterAndroidExecution.write(Data("generated".utf8), to: directory.appendingPathComponent("output"))
+            #expect(chmod(directory.path, mode_t(mode)) == 0)
+        }
         try FlutterAndroidExecution.removeTree(owner.url, identity: owner.identity)
         #expect(!FileManager.default.fileExists(atPath: owner.url.path))
         #expect(try String(contentsOf: protected.appendingPathComponent("input"), encoding: .utf8) == "preserved")
+    }
+
+    @Test("a missing root is quietly done, while a root that cannot be opened is reported and kept")
+    func removalReportsUnopenableRoot() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let scratch = try fixture.directory("scratch")
+        let owner = try FlutterAndroidExecution.OwnedRoot(in: scratch)
+        try FileManager.default.moveItem(at: owner.url, to: scratch.appendingPathComponent("moved"))
+        try FlutterAndroidExecution.removeTree(owner.url, identity: owner.identity)
+        try FlutterAndroidExecution.write(Data("not a directory".utf8), to: owner.url)
+        #expect(throws: DomainError.self) { try FlutterAndroidExecution.removeTree(owner.url, identity: owner.identity) }
+        #expect(FileManager.default.fileExists(atPath: owner.url.path))
+        try FileManager.default.removeItem(at: owner.url)
+    }
+
+    @Test("a root that cannot be removed when released stays live for the exit cleanup's retry")
+    func failedReleaseRetriedAtExit() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let scratch = try fixture.directory("scratch")
+        var owner: FlutterAndroidExecution.OwnedRoot? = try FlutterAndroidExecution.OwnedRoot(in: scratch)
+        let root = try #require(owner?.url)
+        let pinned = root.appendingPathComponent("pinned")
+        try FlutterAndroidExecution.write(Data("still in use".utf8), to: pinned)
+        #expect(chflags(pinned.path, UInt32(UF_IMMUTABLE)) == 0)
+        owner = nil
+        #expect(FileManager.default.fileExists(atPath: pinned.path))
+        #expect(chflags(pinned.path, 0) == 0)
+        FlutterAndroidExecution.OwnedRoot.removeLive()
+        #expect(!FileManager.default.fileExists(atPath: root.path))
+    }
+
+    @Test("a very deep tree is removed on a 512 KB worker stack; past the descriptor limit it is kept without a crash")
+    func deepTreeRemoval() async throws {
+        let marker = "RUNSTIR_FLUTTER_DEEP_TREE_CHILD"
+        if ProcessInfo.processInfo.environment[marker] != "1" {
+            // Descriptor limits are process-wide, so they change only in a child test process.
+            let result = try await Self.rerunAlone("FlutterAndroidExecutionTests/deepTreeRemoval", marker: marker)
+            print(result.combinedOutput)
+            #expect(result.terminationStatus.isSuccess)
+            #expect(result.standardOutput.contains("FlutterAndroidExecutionTests.deepTreeRemoval removed=true kept=true"))
+            return
+        }
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let scratch = try fixture.directory("scratch")
+        func remove(_ owner: FlutterAndroidExecution.OwnedRoot, descriptors: rlim_t) throws -> Bool {
+            var limit = rlimit()
+            try #require(getrlimit(RLIMIT_NOFILE, &limit) == 0 && limit.rlim_max >= descriptors)
+            limit.rlim_cur = descriptors
+            try #require(setrlimit(RLIMIT_NOFILE, &limit) == 0)
+            // Swift concurrency and Dispatch worker threads, where deinit can run, have 512 KB stacks.
+            return Self.onSmallStack { try FlutterAndroidExecution.removeTree(owner.url, identity: owner.identity) } == nil
+        }
+        // Recursive removal overflowed a 512 KB stack from about 600 levels. Deeper trees only cost kernel time:
+        // each operation slows with depth (2,000 levels take about 30 s to make and remove).
+        let deep = try FlutterAndroidExecution.OwnedRoot(in: scratch)
+        try Self.deepTree(under: deep.url, levels: 1_000)
+        let removed = try remove(deep, descriptors: 4_096)
+        #expect(removed)
+        #expect(!FileManager.default.fileExists(atPath: deep.url.path))
+        let limited = try FlutterAndroidExecution.OwnedRoot(in: scratch)
+        // Deeper than the descriptor limit, but shallow enough not to slow the suites running beside it.
+        try Self.deepTree(under: limited.url, levels: 400)
+        let kept = try !remove(limited, descriptors: 256)
+        #expect(kept)
+        #expect(FileManager.default.fileExists(atPath: limited.url.path))
+        #expect(try remove(limited, descriptors: 4_096))
+        print("FlutterAndroidExecutionTests.deepTreeRemoval removed=\(removed) kept=\(kept)")
     }
 
     @Test("removal never follows a subdirectory a surviving descendant keeps swapping for a link outside the root")
@@ -298,7 +362,7 @@ struct FlutterAndroidExecutionTests {
             swapper.start()
             try? FlutterAndroidExecution.removeTree(owner.url, identity: owner.identity)
             swapper.stop()
-            // Whatever the swapper re-created is removed once it has stopped.
+            // Whatever the swapper re-created is removed once it has stopped, as the exit cleanup's retry does.
             try FlutterAndroidExecution.removeTree(owner.url, identity: owner.identity)
             #expect(!FileManager.default.fileExists(atPath: owner.url.path))
             for index in 0..<20 {
@@ -799,6 +863,54 @@ struct FlutterAndroidExecutionTests {
             guard (try? FlutterAndroidExecution.Identity(root)) == identity else { return }
             try? FileManager.default.removeItem(at: root)
         }
+    }
+
+    /// Re-runs one test alone in a child test process, marked by `marker`.
+    private static func rerunAlone(_ test: String, marker: String) async throws -> ProcessResult {
+        var path = [CChar](repeating: 0, count: 4 * Int(PATH_MAX))
+        let length = path.withUnsafeMutableBytes { proc_pidpath(getpid(), $0.baseAddress, UInt32($0.count)) }
+        try #require(length > 0)
+        let executable = String(decoding: path.prefix { $0 != 0 }.map { UInt8(bitPattern: $0) }, as: UTF8.self)
+        var arguments = ["--testing-library", "swift-testing", "--no-parallel", "--filter", test]
+        if URL(fileURLWithPath: executable).lastPathComponent == "swiftpm-testing-helper" {
+            let index = try #require(CommandLine.arguments.firstIndex(of: "--test-bundle-path"))
+            try #require(index + 1 < CommandLine.arguments.count)
+            let bundle = CommandLine.arguments[index + 1]
+            arguments.insert(contentsOf: ["--test-bundle-path", bundle, bundle], at: 0)
+        }
+        return try await SystemProcessRunner().run(ProcessCommand(executable, arguments,
+            environment: [marker: "1"], timeout: .seconds(60)))
+    }
+
+    /// `levels` nested directories, made through descriptors since the path outgrows PATH_MAX.
+    private static func deepTree(under root: URL, levels: Int) throws {
+        var directory = open(root.path, O_RDONLY | O_DIRECTORY)
+        try #require(directory >= 0)
+        for _ in 0..<levels {
+            let made = mkdirat(directory, "d", 0o700) == 0
+            let next = made ? openat(directory, "d", O_RDONLY | O_DIRECTORY | O_NOFOLLOW) : -1
+            close(directory)
+            try #require(next >= 0)
+            directory = next
+        }
+        let leaf = openat(directory, "leaf", O_WRONLY | O_CREAT | O_EXCL, 0o600)
+        close(directory)
+        try #require(leaf >= 0)
+        close(leaf)
+    }
+
+    private static func onSmallStack(_ body: @escaping @Sendable () throws -> Void) -> (any Error)? {
+        final class Outcome: @unchecked Sendable { var error: (any Error)? }
+        let outcome = Outcome()
+        let done = DispatchSemaphore(value: 0)
+        let thread = Thread {
+            do { try body() } catch { outcome.error = error }
+            done.signal()
+        }
+        thread.stackSize = 512 * 1024
+        thread.start()
+        done.wait()
+        return outcome.error
     }
 
     /// Repeatedly swaps `directory` for a link to `target` and back, like a surviving sandboxed descendant.
