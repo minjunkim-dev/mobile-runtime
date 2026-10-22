@@ -616,7 +616,7 @@ public func androidTeardownDeviceKey(anchor: ProjectAnchor, logs: RunLogs? = nil
 /// Parent integration acquires these together under its existing folder lease.
 /// This adds the same general TCP namespace used by other development servers.
 public func androidTeardownResourceKeys(anchor: ProjectAnchor, logs: RunLogs? = nil) throws -> [ResourceKey] {
-    guard let active = try AndroidActiveRunStore(project: anchor.directory, logs: logs).read() else { return [] }
+    guard let active = try AndroidActiveRunStore(project: anchor.directory, logs: logs, operation: .down).read() else { return [] }
     var keys = active.device.map { [ResourceKey.device(.android, "avd:\($0.avd)")] } ?? []
     if let forward = active.forward { keys.append(.port(forward.hostPort)) }
     return keys

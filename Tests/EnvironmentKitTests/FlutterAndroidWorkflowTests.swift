@@ -388,6 +388,44 @@ struct FlutterAndroidWorkflowTests {
         #expect(fixture.runner.base.log.spawned.isEmpty)
     }
 
+    @Test("a record left at the pre-folder location blocks up but down leases its forward port and cleans it")
+    func legacyRecordDown() async throws {
+        let fixture = try RuntimeFixture(workspace: false)
+        let sdk = try fixture.native.repo.directory("owned-sdk-view")
+        let factory: FlutterAndroidWorkflow.Factory = { _, _, _ in View(sdk: sdk) }
+        let first = await WorkflowExecution.run(.up, input: WorkflowInput(project: fixture.input),
+            runner: fixture.runner, leases: fixture.leases, flutterFactory: factory)
+        #expect(first.exitCode == 0, Comment(rawValue: first.up?.failure?.message ?? first.operation.nextAction ?? ""))
+        let port = try #require(first.operation.port)
+        let current = try AndroidActiveRunStore(project: fixture.app).file
+        let legacy = RunLogs(project: fixture.app).directory.appendingPathComponent(AndroidActiveRunStore.fileName)
+        try FileManager.default.moveItem(at: current, to: legacy)
+        let record = try Data(contentsOf: legacy)
+        let downStore = AndroidActiveRunStore(project: fixture.app, operation: .down)
+
+        let beforeUp = fixture.runner.base.log.all.count
+        let up = await WorkflowExecution.run(.up, input: WorkflowInput(project: fixture.input),
+            runner: fixture.runner, leases: fixture.leases, flutterFactory: factory)
+        #expect(up.exitCode != 0)
+        #expect(!fixture.runner.base.log.all.dropFirst(beforeUp).contains { $0.arguments.contains("install") })
+        #expect(try Data(contentsOf: legacy) == record)
+
+        let occupied = try fixture.leases.acquire([.port(port)], owner: LeaseOwner(
+            operationId: "other-server", command: "fixture", project: "/other-app"))
+        let blocked = await WorkflowExecution.run(.down, input: WorkflowInput(project: fixture.input),
+            runner: fixture.runner, leases: fixture.leases)
+        #expect(blocked.exitCode == 1)
+        #expect(blocked.operation.conflict?.key == .port(port))
+        #expect(try Data(contentsOf: legacy) == record)
+        occupied.release()
+
+        let down = await WorkflowExecution.run(.down, input: WorkflowInput(project: fixture.input),
+            runner: fixture.runner, leases: fixture.leases)
+        #expect(down.exitCode == 0, Comment(rawValue: down.down?.toolFailures.joined(separator: "; ") ?? ""))
+        #expect(try downStore.read() == nil)
+        #expect(!FileManager.default.fileExists(atPath: legacy.path))
+    }
+
     @Test("physical and system-alias inventory roots retain the same protected inputs and refuse source links")
     func inventoryRootIdentity() async throws {
         let fixture = try CallerFixture()

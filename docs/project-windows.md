@@ -17,7 +17,7 @@ iOS 앱의 `RCT_jsLocation` 값이 있어도 8081을 start·build·launch에 전
 port를 생략한 경우만 기존 native 인자를 유지한다. 명시적 8081에도 전달 지원 검사를 적용한다.
 포트가 이미 사용 중이면 소유 작업과 이유를 표시한다. 자동 전환이나 종료는 없다.
 native iOS·native Android는 이 개발 서버 입력을 소비하지 않는다. 명시하면 중단한다.
-Flutter iOS up도 같은 `WorkflowInput.port`를 소비한다. Flutter의 VM service와
+Flutter iOS·Android up도 같은 `WorkflowInput.port`를 소비한다. Flutter의 VM service와
 RN의 Metro는 다른 개발 연결이다. Flutter는 생략 시 사용 가능한 포트를 선택한다.
 Flutter build/down은 명시적 port를 거부한다. GUI Flutter build/down은 port를 전달하지 않는다.
 두 port 필드나 별도 parser를 만들지 않는다.
