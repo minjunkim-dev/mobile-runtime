@@ -171,6 +171,9 @@ extension GUIOperationSession {
     }
 }
 
+/// A cancelled operation is not labeled as a failure.
+func outcomeLabel(_ state: String) -> String { state == "cancelled" ? "취소됨" : "실패" }
+
 /// VoiceOver hears results and state changes without moving the keyboard focus.
 @MainActor func announce(_ text: String) {
     AccessibilityNotification.Announcement(text).post()
@@ -281,7 +284,7 @@ struct InspectionView: View {
                         }.frame(height: 150)
                         Text(plan.platforms.map { "\($0.platform.rawValue): \($0.state)" }.joined(separator: " / "))
                     }
-                    if let error = preparation.operation.error { Text("실패: \(error)").foregroundStyle(.red) }
+                    if let error = preparation.operation.error { Text("\(outcomeLabel(preparation.operation.state)): \(error)").foregroundStyle(.red) }
                     if !preparation.operation.completed.isEmpty { Text("완료한 변경: \(preparation.operation.completed.joined(separator: ", "))") }
                     if !preparation.operation.remaining.isEmpty { Text("남은 작업: \(preparation.operation.remaining.joined(separator: ", "))") }
                     ForEach(preparation.operation.changedFiles, id: \.self) { Text("변경 파일: \($0)") }
@@ -305,7 +308,7 @@ struct InspectionView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("\(workflow.operation.kind.rawValue): \(workflow.operation.state) / exit \(workflow.exitCode)").font(.headline)
                         .accessibilityAddTraits(.isHeader).accessibilityFocused($resultFocus, equals: .workflow)
-                    if let message = workflow.up?.failure?.message ?? workflow.down?.failure?.message { Text("실패: \(message)").foregroundStyle(.red) }
+                    if let message = workflow.up?.failure?.message ?? workflow.down?.failure?.message { Text("\(outcomeLabel(workflow.operation.state)): \(message)").foregroundStyle(.red) }
                     ForEach(workflow.down?.toolFailures ?? [], id: \.self) { Text($0).foregroundStyle(.red) }
                     ForEach(workflow.down?.items ?? [], id: \.id) { item in
                         Text("\(item.id): \(item.status.rawValue)\(item.detail.map { " — \($0)" } ?? "")")

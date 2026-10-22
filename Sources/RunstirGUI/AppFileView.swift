@@ -83,7 +83,7 @@ struct AppFileView: View {
                             Text("현재 설치 재관측: \(installed.state) · 빌드 \(installed.build ?? "확인 불가")")
                             if let detail = installed.detail { Text(detail) }
                         }
-                        if let error = operation.error { Text("실패: \(error)").foregroundStyle(.red) }
+                        if let error = operation.error { Text("\(outcomeLabel(operation.state)): \(error)").foregroundStyle(.red) }
                         if let conflict = operation.conflict {
                             Text("충돌: \(conflict.key.rawValue)")
                             if let owner = conflict.owner { Text("소유 작업: \(owner.command) / \(owner.project)") }
