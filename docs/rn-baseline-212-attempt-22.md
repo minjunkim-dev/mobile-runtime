@@ -32,6 +32,12 @@
 
 설치·실행 run `eea38b09d6274cb3a0af03432d74f60c`, 화면·process run `6817fb5f4f8040caa8cc3dff920cc0f8`다. 이후에도 process가 생존함을 확인하고 앱과 소유 Simulator를 정상 종료했다(run `27267efa44594051833e77997ab7468c`). 소유 Metro도 종료했다. XcodeBuildMCP의 AX 도구는 private device set을 찾지 못했으며, 이를 앱 실패로 분류하지 않았다. 실제 `simctl --set` 화면과 process가 첫 화면 근거다.
 
+## baseline 실행 뒤 입력 감사
+
+첫 화면·정상 종료 뒤 원본 사본에 읽기 전용 전체 사후 감사를 수행했다(run `807d10afedc14803a75594cc9d40cd9b`, exit0). 최소55개와 Mattermost4,216개 tracked 파일의 실제 checkout byte·파일 유형·실행 bit·index를 대조했다. 최소는 변경이 없고, Mattermost는 승인된 Hermes checksum 한 줄 외 같다. 사본의 생성 Pods project는 Debug12값을 역치환하면 전체 parsed object와 raw text가 준비 전과 같다. Release·나머지 설정도 같다.
+
+이 사후 receipt는 실제 성공한 Mattermost 실행 파일 `c05a01edcfef27dd709b1be591ae692042433cb4440987cf080d066c56181c90`의 재해시와 연결했다. 로컬 `logs/baseline-postflight.json` 및 공개 manifest에 결과를 보존한다. fresh 사본 감사와 구분하며, 최종 상태의 비교가 실행 중 일시적 쓰기의 부재까지 증명하지는 않는다.
+
 ## 독립 fresh 준비와 인계
 
 양플랫폼 첫 화면 뒤 새 `fresh/minimal`·`fresh/mattermost`를 준비했다. 최소 RN은 source Git object만 `git clone --no-hardlinks`로 복제하고 고정 SHA를 checkout했다. Mattermost는 공식 HTTPS origin에서 고정 SHA를 새 fetch했다. 시작 시 node_modules·vendor·Pods·Android build가 없었고 세 원본 lock이 일치했다. baseline의 dependency·Pods·빌드 산출물·앱 데이터는 복사하지 않았다. 시작 시 Data 여유는 29,987,393,536 bytes였다.

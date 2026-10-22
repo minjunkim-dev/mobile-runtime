@@ -146,7 +146,8 @@
     "mattermostXcodeBuild": "db6dfcc8155b449793e558fed50b7ce1",
     "mattermostInstallLaunch": "eea38b09d6274cb3a0af03432d74f60c",
     "mattermostScreenAndProcess": "6817fb5f4f8040caa8cc3dff920cc0f8",
-    "ownedAppSimulatorStop": "27267efa44594051833e77997ab7468c"
+    "ownedAppSimulatorStop": "27267efa44594051833e77997ab7468c",
+    "baselinePostflight": "807d10afedc14803a75594cc9d40cd9b"
   },
   "publicScreens": {
     "mattermost-ios-first.png": "97a942386082e41278e5c1b042ab57f3a2709a506a61273471b13a4baff0b299",
@@ -158,5 +159,35 @@
     "server login",
     "physical-device matrix",
     "signing notarization distribution"
-  ]
+  ],
+  "baselinePostflight": {
+    "minimal": {
+      "source": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+      "trackedFilesVerified": 55,
+      "indexDiff": "none",
+      "trackedDiff": [],
+      "locks": {
+        "package-lock.json": "3478830fc86d9d1ae7cd46ae129eec9c4915b0ec4e2df247e2cb62b136caeee0",
+        "Gemfile.lock": "3679d60340d049c31b74052580c64ab26b3e6fa611f332c1407121dfc3c791eb",
+        "ios/Podfile.lock": "cec099ee896ed83dd780bd8da0a03e840c3ba6a0803f90c0bbfcd04efaf17d56"
+      }
+    },
+    "mattermost": {
+      "source": "c2fe3beda22befd2178dce431793c09111ed903e",
+      "trackedFilesVerified": 4216,
+      "indexDiff": "none",
+      "trackedDiff": [
+        "ios/Podfile.lock"
+      ],
+      "locks": {
+        "package-lock.json": "c0ff8ca81bcf9f89abdfa4fc8980e81aae86ca161d25590a8af1b9360733bcb8",
+        "Gemfile.lock": "aacdfd202b0bbb5f2268a0b4af6ea5054d13af98b9b250796c8088ea7fa4e38c",
+        "ios/Podfile.lock": "9e715396c00379cdde657c5b9ac32a2e4f05185d5d6d64e205e6e66e43cd5fed"
+      },
+      "artifactSha256": "c05a01edcfef27dd709b1be591ae692042433cb4440987cf080d066c56181c90",
+      "generatedDebugChangeCount": 12,
+      "parsedProjectReverse": "PASS",
+      "rawProjectReverse": "PASS"
+    }
+  }
 }
