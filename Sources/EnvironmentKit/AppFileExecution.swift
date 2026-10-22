@@ -457,7 +457,10 @@ public enum AppFileExecution {
             let buildOrderUnknown: Bool
             let warnings: [String]
         }
-        let id = try AppFileSnapshot.digest(Identity(artifact: artifact, device: device, installed: installed,
+        // Origin is display-only (ADR-0045); a record written meanwhile must not void the approval.
+        var target = device
+        target.origin = nil
+        let id = try AppFileSnapshot.digest(Identity(artifact: artifact, device: target, installed: installed,
             downgrade: downgrade, buildOrderUnknown: buildOrderUnknown, warnings: warnings))
         return AppFilePlan(id: id, artifact: artifact, device: device, installed: installed,
             replacement: replacement, downgrade: downgrade, buildOrderUnknown: buildOrderUnknown, warnings: warnings)

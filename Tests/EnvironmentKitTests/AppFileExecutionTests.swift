@@ -898,6 +898,17 @@ struct AppFileExecutionTests {
         #expect(AppFileHumanOutput.lines(created).output.contains { $0.hasPrefix("device: \(fixture.device)") && $0.contains("Runstir-created") })
     }
 
+    @Test("an origin recorded between plan and approval does not change the approved plan", arguments: [ProjectPlatform.ios, .android])
+    func originOutsidePlanIdentity(_ platform: ProjectPlatform) async throws {
+        let fixture = try AppFileFixture(platform: platform)
+        let plan = try #require(await fixture.run(planOnly: true).operation.plan)
+        try DeviceOriginRecord(environment: fixture.environment).record(.simulator(fixture.device))
+        try Data("damaged".utf8).write(to: DeviceOriginRecord(environment: fixture.environment).file)
+        let approved = await fixture.run(approval: plan.approval)
+        #expect(approved.exitCode == 0, Comment(rawValue: approved.operation.error ?? ""))
+        #expect(approved.operation.devices.first?.origin == .unknown)
+    }
+
     @Test("an unreadable AVD inventory keeps running Emulators and only drops boot candidates")
     func unlistableAVDs() async throws {
         let fixture = try AppFileFixture(platform: .android, shutDown: true)

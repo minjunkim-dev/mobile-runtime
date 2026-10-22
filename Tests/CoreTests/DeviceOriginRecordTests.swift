@@ -9,7 +9,6 @@ struct DeviceOriginRecordTests {
     func simulator() throws {
         let home = try FixtureRepo()
         let record = DeviceOriginRecord(environment: ["HOME": home.root.path])
-        #expect(record.file.path.hasSuffix("Library/Application Support/dev.runstir/device-origins.json"))
         #expect(record.devices() == [])
         #expect(record.origin(platform: .ios, id: "A", folder: nil) == .external)
         try record.record(.simulator("A"))

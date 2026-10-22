@@ -244,10 +244,11 @@ public enum PreparationExecution {
                         + installed.androidResources.filter { $0.origin == .created }
                             .map { ($0.directory.path, .avd(name: $0.name, folder: $0.directory)) }
                     for (device, entry) in created {
-                        do {
-                            guard let entry else { throw CocoaError(.fileReadNoSuchFile, userInfo: [NSFilePathErrorKey: device]) }
-                            try origins.record(entry)
-                        } catch {
+                        guard let entry else {
+                            originFailures.append("\(device) was created but its folder creation time could not be read, so its device origin was not recorded")
+                            continue
+                        }
+                        do { try origins.record(entry) } catch {
                             originFailures.append("\(device) was created but its device origin could not be recorded in \(origins.file.path): \(error.localizedDescription)")
                         }
                     }

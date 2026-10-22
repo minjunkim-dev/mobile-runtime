@@ -33,12 +33,16 @@ public struct DeviceOriginRecord: Sendable {
 
         /// nil when the folder's birth time cannot be read.
         public static func avd(name: String, folder: URL) -> Device? {
+            #if canImport(Darwin)
             let path = folder.resolvingSymlinksInPath().standardizedFileURL.path
             var info = stat()
             guard stat(path, &info) == 0, info.st_mode & S_IFMT == S_IFDIR else { return nil }
             let birth = info.st_birthtimespec
             return Device(platform: .android, id: name, folder: path,
                           folderCreated: "\(birth.tv_sec).\(String(format: "%09ld", birth.tv_nsec))")
+            #else
+            return nil  // No birth time to compare, so the origin stays unknown.
+            #endif
         }
     }
 
@@ -98,7 +102,7 @@ public struct DeviceOriginRecord: Sendable {
         let directory = file.deletingLastPathComponent()
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true,
                                                 attributes: [.posixPermissions: 0o700])
-        let lock = open(directory.appendingPathComponent("device-origins.lock").path, O_CREAT | O_RDWR | O_CLOEXEC, 0o600)
+        let lock = open(directory.appendingPathComponent("device-origins.lock").path, O_CREAT | O_RDWR | O_CLOEXEC | O_NOFOLLOW, 0o600)
         guard lock >= 0 else { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
         defer { close(lock) }
         guard flock(lock, LOCK_EX) == 0 else { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
