@@ -135,7 +135,13 @@ public struct AndroidAppFile: Sendable {
         guard Set(devices.map(\.id)).count == devices.count else {
             throw Self.failure("More than one Emulator reports the same AVD identity. Resolve the ambiguity before choosing a target.")
         }
-        return devices.sorted { $0.id < $1.id }
+        return devices.map { device in
+            var device = device
+            let avd = environment.avds(names: [device.name], sdk: sdk).first
+            device.avdDirectory = avd?.directory?.path
+            device.origin = DeviceOriginStore.user.origin(platform: .android, id: device.name, directory: avd?.directory)
+            return device
+        }.sorted { $0.id < $1.id }
     }
 
     /// Starts the approved AVD the way `up` does: `emulator -avd <name>`, detached so it

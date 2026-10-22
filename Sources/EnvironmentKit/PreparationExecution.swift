@@ -236,6 +236,24 @@ public enum PreparationExecution {
                     if !installed.androidResources.isEmpty {
                         result.operation.androidResources = (result.operation.androidResources ?? []) + installed.androidResources
                     }
+                    do {
+                        try Task.checkCancellation()
+                        let origins = DeviceOriginStore(leases: leases)
+                        for resource in installed.resources where resource.kind == .simulator && resource.origin == .created {
+                            if let id = resource.identifier { try origins.record(platform: .ios, id: id) }
+                        }
+                        for resource in installed.androidResources where resource.origin == .created {
+                            try origins.record(platform: .android, id: resource.name, directory: resource.directory)
+                        }
+                    } catch is CancellationError { throw CancellationError() }
+                    catch {
+                        result.operation.completed.append(step.id)
+                        result.operation.state = "partial"
+                        result.operation.error = "The device was created, but its origin could not be recorded: \(error)"
+                        result.operation.nextAction = "Preserve the created device and origin record. Inspect the record manually; Runstir did not delete the device or repair the record."
+                        result.exitCode = 1
+                        return finish(result, events)
+                    }
                 } catch let failure as InstallationActionFailure {
                     result.operation.resources += failure.result.resources
                     if !failure.result.androidResources.isEmpty {

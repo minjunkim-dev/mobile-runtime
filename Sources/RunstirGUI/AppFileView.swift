@@ -30,7 +30,7 @@ struct AppFileView: View {
                 Picker("실행 기기", selection: $device) {
                     Text("기기를 선택하세요").tag("")
                     ForEach(result?.operation.devices ?? [], id: \.id) { candidate in
-                        Text("\(candidate.name) / OS \(candidate.os) / \(candidate.ready ? "준비됨" : candidate.boot == "required" ? "꺼짐 · 승인 후 Runstir가 부팅" : "수동 준비 필요")").tag(candidate.id)
+                        Text("\(candidate.name) / OS \(candidate.os) / \(candidate.ready ? "준비됨" : candidate.boot == "required" ? "꺼짐 · 승인 후 Runstir가 부팅" : "수동 준비 필요")\(candidate.origin.map { " / " + $0.displayName } ?? "")\(candidate.avdDirectory.map { " / " + $0 } ?? "")").tag(candidate.id)
                     }
                 }.focused($focus, equals: .device)
                 Button("변경 계획 확인") { execute(planOnly: true) }.disabled(device.isEmpty)

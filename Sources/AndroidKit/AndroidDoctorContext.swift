@@ -49,6 +49,7 @@ public struct AndroidEnvironment: Sendable {
                 apiLevel: api,
                 abi: abi,
                 config: FileManager.default.fileExists(atPath: config.path) ? config : nil,
+                directory: directory.standardizedFileURL.resolvingSymlinksInPath(),
                 systemImagePresent: !image.isEmpty
                     && FileManager.default.fileExists(atPath: imageDirectory.path),
                 systemImageDirectory: image.isEmpty ? nil : imageDirectory
@@ -198,6 +199,7 @@ struct AndroidAVD: Sendable, Equatable {
     let apiLevel: Int?
     let abi: String?
     let config: URL?
+    var directory: URL? = nil
     let systemImagePresent: Bool
     let systemImageDirectory: URL?
 }
