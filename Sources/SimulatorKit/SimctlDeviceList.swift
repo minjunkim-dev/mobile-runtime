@@ -34,6 +34,8 @@ struct SimctlDeviceList: Decodable {
         let runtimeIdentifier: String
         let isAvailable: Bool
         let isBooted: Bool
+        /// Only this state may be booted; `Booting`, `Creating` and `Shutting Down` are left alone.
+        let isShutdown: Bool
     }
 
     /// The runtime a `simctl create` line should name. simctl lists a runtime even
@@ -85,7 +87,8 @@ struct SimctlDeviceList: Decodable {
                     runtimeText: text,
                     runtimeIdentifier: identifier,
                     isAvailable: $0.isAvailable,
-                    isBooted: $0.state.caseInsensitiveCompare("Booted") == .orderedSame
+                    isBooted: $0.state.caseInsensitiveCompare("Booted") == .orderedSame,
+                    isShutdown: $0.state.caseInsensitiveCompare("Shutdown") == .orderedSame
                 )
             }
         }

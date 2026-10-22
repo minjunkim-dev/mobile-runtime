@@ -42,7 +42,7 @@ struct FlutterIOSWorkflowTests {
             #expect(command.arguments[index + 1] == output)
         }
         #expect(!runner.commands.contains { $0.arguments.contains("bootstatus") || $0.arguments.contains("boot") || $0.arguments.contains("install") || $0.arguments.contains("launch") })
-        #expect(InstallRecord.read(from: RunLogs(project: f.repo.root)) == nil)
+        #expect(try InstallRecord.read(from: RunLogs(project: f.repo.root)) == nil)
     }
 
     @Test("Flutter build requires an unambiguous compatible Simulator", arguments: ["two-devices", "no-devices", "old-device", "unavailable-device", "invalid-device"])
@@ -123,20 +123,25 @@ struct FlutterIOSWorkflowTests {
         #expect(runner.commands.filter { $0.arguments == ["simctl", "list", "runtimes", "-j"] }.count == 1)
     }
 
-    @Test("up observes its own authenticated VM URI and down needs no SDK", arguments: [false, true])
-    func upAndDown(_ workspace: Bool) async throws {
+    @Test("up observes its own authenticated VM URI and down needs no SDK", arguments: [false, true], [false, true])
+    func upAndDown(workspace: Bool, explicitPort: Bool) async throws {
         let f = try FlutterIOSFixture(workspace: workspace)
         let runner = FlutterIOSRunner(fixture: f)
         let events = Mutable<[String]>([])
-        let result = await WorkflowExecution.run(.up, input: f.input(), runner: runner, leases: f.leases) { event in
+        let requestedPort = explicitPort ? try FlutterIOSWorkflow.availablePort(nil) : nil
+        let result = await WorkflowExecution.run(.up, input: f.input(port: requestedPort), runner: runner, leases: f.leases) { event in
             if let line = try? event.encoded() { events.mutate { $0.append(line) } }
         }
         #expect(result.exitCode == 0, Comment(rawValue: result.up?.failure?.message ?? ""))
         let port = try #require(result.operation.port)
+        if let requestedPort { #expect(port == requestedPort) }
         #expect(result.operation.developmentServiceURI == "http://127.0.0.1:\(port)/auth/")
         #expect(result.up?.stages.map(\.id) == ["validate", "device", "build", "install", "launch"])
         let launch = try #require(runner.commands.first { $0.arguments.contains("launch") })
         #expect(launch.arguments.contains("--vm-service-port=\(port)"))
+        #expect(!launch.arguments.contains("-RCT_jsLocation"))
+        #expect(!runner.commands.contains { $0.arguments.contains { $0.hasPrefix("RCT_METRO_PORT=") } })
+        #expect(try RunLogs(project: f.app).metroPort() == nil)
         #expect(launch.arguments.contains("A"))
         #expect(runner.commands.contains { $0.arguments.last == "http://127.0.0.1:\(port)/auth/getVM" })
         #expect(runner.commands.contains { $0.arguments.contains("show") })
@@ -144,6 +149,19 @@ struct FlutterIOSWorkflowTests {
         #expect(!events.value.joined().contains("/auth/"))
         #expect(!runner.commands.map(\.description).joined().contains("/auth/"))
         try FileManager.default.removeItem(at: f.repo.url("sdk"))
+        if workspace {
+            let key = ResourceKey.folder(try FolderIdentity(directory: f.repo.root))
+            let owner = LeaseOwner(operationId: "workspace-setup", command: "setup", project: f.repo.root.path)
+            let held = try f.leases.acquire([key], owner: owner)
+            let beforeDown = runner.commands.count
+            let blocked = await WorkflowExecution.run(.down, input: f.input(), runner: runner, leases: f.leases)
+            #expect(blocked.exitCode == 1)
+            #expect(blocked.operation.conflict?.key == key)
+            #expect(blocked.operation.conflict?.owner == owner)
+            #expect(runner.commands.count == beforeDown)
+            #expect(try InstallRecord.read(from: RunLogs(project: f.app))?.bundleId == "dev.test.flutter")
+            held.release()
+        }
         let down = await WorkflowExecution.run(.down, input: f.input(), runner: runner, leases: f.leases)
         #expect(down.exitCode == 0)
         #expect(down.down?.items.map(\.id) == ["app"])
@@ -162,7 +180,7 @@ struct FlutterIOSWorkflowTests {
         let port = try #require(result.operation.port)
         #expect(result.operation.developmentServiceURI == "http://127.0.0.1:\(port)/synthetic-auth/")
         #expect(result.up?.context.appPid == 3538)
-        #expect(InstallRecord.read(from: RunLogs(project: f.repo.root))?.bundleId == "dev.test.flutter")
+        #expect(try InstallRecord.read(from: RunLogs(project: f.repo.root))?.bundleId == "dev.test.flutter")
         #expect(try Data(contentsOf: f.repo.url("lib/main.dart")) == source)
         #expect(try Data(contentsOf: f.repo.url("pubspec.lock")) == lock)
         try FileManager.default.removeItem(at: f.repo.url("sdk"))
@@ -183,7 +201,7 @@ struct FlutterIOSWorkflowTests {
         #expect(result.up?.failure != nil)
         #expect(result.operation.remaining.contains { $0.contains("lib/main.dart") })
         #expect(try String(contentsOf: f.repo.url("lib/main.dart"), encoding: .utf8) == "changed by query fixture\n")
-        #expect(InstallRecord.read(from: RunLogs(project: f.repo.root))?.bundleId == "dev.test.flutter")
+        #expect(try InstallRecord.read(from: RunLogs(project: f.repo.root))?.bundleId == "dev.test.flutter")
         let down = await WorkflowExecution.run(.down, input: f.input(), runner: runner, leases: f.leases)
         #expect(down.exitCode == 0)
     }
@@ -331,6 +349,28 @@ struct FlutterIOSWorkflowTests {
         let result = await WorkflowExecution.run(.build, input: f.input(port: 12345), runner: runner, leases: f.leases)
         #expect(result.exitCode == 1)
         #expect(runner.commands.isEmpty)
+    }
+
+    @Test("a workspace app's confirmed legacy install keeps its app owner through SDK-less down")
+    func workspaceLegacyInstallOwner() async throws {
+        let f = try FlutterIOSFixture(workspace: true)
+        let runner = FlutterIOSRunner(fixture: f)
+        let up = await WorkflowExecution.run(.up, input: f.input(), runner: runner, leases: f.leases)
+        try #require(up.exitCode == 0)
+        let logs = RunLogs(project: f.app)
+        let current = try logs.url(InstallRecord.fileName)
+        let legacy = logs.directory.appendingPathComponent(InstallRecord.fileName)
+        let bytes = try Data(contentsOf: current)
+        try FileManager.default.moveItem(at: current, to: legacy)
+        try FileManager.default.removeItem(at: f.repo.url("sdk"))
+
+        let down = await WorkflowExecution.run(.down, input: f.input(), runner: runner, leases: f.leases)
+
+        #expect(down.exitCode == 0)
+        #expect(down.down?.items.first?.status == .stopped)
+        #expect(try Data(contentsOf: legacy) == bytes)
+        #expect(!FileManager.default.fileExists(atPath: current.path))
+        #expect(try InstallRecord.read(from: logs, leases: f.leases, ownerProject: f.app.path)?.bundleId == "dev.test.flutter")
     }
 
     @Test("Dart resolver workspace and selected app identity remain distinct in doctor and workflow")

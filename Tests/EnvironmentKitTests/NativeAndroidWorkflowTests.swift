@@ -317,7 +317,7 @@ private actor OwnedEmulatorCleanupRunner: ProcessRunner {
     }
 }
 
-private final class NativeAndroidFixture {
+final class NativeAndroidFixture {
     static let appID = "dev.fixture.native"
     let repo: FixtureRepo
     let modelScript: URL

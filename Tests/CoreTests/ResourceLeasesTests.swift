@@ -5,13 +5,49 @@ import Testing
 
 @Suite("shared resource leases")
 struct ResourceLeasesTests {
+    // Released with this test's suite instance, so no lease directory outlives the test.
+    private let scratch = try! FixtureRepo()
+
     private func store() -> ResourceLeases {
-        ResourceLeases(directory: FileManager.default.temporaryDirectory
-            .appendingPathComponent("runstir-leases-\(UUID().uuidString)"))
+        ResourceLeases(directory: scratch.url("leases-\(UUID().uuidString)"))
     }
 
     private func owner(_ id: String, project: String = "/work/a") -> LeaseOwner {
         LeaseOwner(operationId: id, command: "up", project: project)
+    }
+
+    @Test("legacy ownership confirmation is exact and never changes the reservation book",
+        arguments: ["owned", "foreign", "wrong-app", "reserved", "absent"])
+    func readOnlyOwnership(_ mode: String) throws {
+        let leases = store()
+        let device = ResourceKey.device(.ios, "A")
+        let savedOwner = owner("old", project: mode == "foreign" ? "/other" : "/mine")
+        if mode == "reserved" { try leases.reserve(device: device, owner: savedOwner) }
+        else if mode != "absent" {
+            try leases.record(ResourceClaim(device: device, platform: .ios, handle: "A",
+                appID: mode == "wrong-app" ? "other.app" : "mine.app", owner: savedOwner))
+        }
+        let file = leases.file(device, "claim")
+        let before = try? Data(contentsOf: file)
+        #expect(try leases.ownsClaim(device: device, project: "/mine", appID: "mine.app") == (mode == "owned"))
+        #expect((try? Data(contentsOf: file)) == before)
+        if mode == "absent" { #expect(!FileManager.default.fileExists(atPath: leases.directory.path)) }
+    }
+
+    @Test("a redirected or oversized legacy claim cannot confirm ownership", arguments: ["symlink", "oversized", "malformed"])
+    func unconfirmedLegacyClaim(_ mode: String) throws {
+        let leases = store()
+        let device = ResourceKey.device(.ios, "A")
+        try FileManager.default.createDirectory(at: leases.directory, withIntermediateDirectories: true)
+        let file = leases.file(device, "claim")
+        if mode == "symlink" {
+            let target = leases.directory.appendingPathComponent("preserved")
+            try Data("keep".utf8).write(to: target)
+            try FileManager.default.createSymbolicLink(at: file, withDestinationURL: target)
+        } else { try Data(repeating: 32, count: mode == "oversized" ? 1_048_577 : 1).write(to: file) }
+        let before = try Data(contentsOf: file)
+        #expect(throws: (any Error).self) { try leases.ownsClaim(device: device, project: "/mine", appID: "mine.app") }
+        #expect(try Data(contentsOf: file) == before)
     }
 
     @Test("a held key reports its owning operation and releases only the keys this operation took")

@@ -309,7 +309,7 @@ struct FlutterIOSRuntimeTests {
         #expect(context.developmentServiceURI == "http://127.0.0.1:12345/synthetic-auth/")
         let launch = try #require(runner.commands.first { $0.arguments.contains("launch") })
         #expect(!launch.arguments.contains { $0.hasPrefix("--stdout=") || $0.hasPrefix("--stderr=") })
-        let directory = RunLogs(project: f.repo.root).directory.path
+        let directory = try RunLogs(project: f.repo.root).derivedDataDirectory.deletingLastPathComponent().path
         let files = FileManager.default.fileExists(atPath: directory)
             ? try FileManager.default.contentsOfDirectory(atPath: directory) : []
         #expect(!files.contains { $0.hasPrefix("flutter-launch-") })
@@ -508,7 +508,7 @@ struct FlutterIOSRuntimeTests {
         #expect(result.operation.developmentServiceURI == nil)
         #expect(result.up?.context.appPid == 3538)
         #expect(result.operation.remaining.contains { $0.contains("down") })
-        #expect(InstallRecord.read(from: RunLogs(project: f.repo.root))?.bundleId == "dev.test.flutter")
+        #expect(try InstallRecord.read(from: RunLogs(project: f.repo.root))?.bundleId == "dev.test.flutter")
         let port = try #require(result.operation.port)
         let lease = try f.leases.acquire([.folder(FolderIdentity(directory: f.repo.root)), .device(.ios, "A"), .port(port)],
             owner: LeaseOwner(operationId: "after-cancel", command: "down", project: f.repo.root.path))

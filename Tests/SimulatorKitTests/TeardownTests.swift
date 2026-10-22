@@ -27,6 +27,64 @@ private func teardown(_ runner: FakeProcessRunner, _ logs: RunLogs) -> AppTeardo
 
 @Suite("app teardown")
 struct AppTeardownTests {
+    @Test("base-main legacy install cleanup needs an exact confirmed project device and app claim",
+        arguments: ["owned", "owned-direct", "owned-workspace", "wrong-project", "wrong-app", "reserved", "absent"])
+    func legacyInstallClaim(_ mode: String) async throws {
+        let repo = try FixtureRepo()
+        let project = mode == "owned-workspace" ? try repo.directory("apps/MyApp") : repo.root
+        let logs = RunLogs(project: project, temporaryDirectory: try repo.directory("outputs"))
+        let legacy = logs.directory.appendingPathComponent(InstallRecord.fileName)
+        try FileManager.default.createDirectory(at: legacy.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let bytes = try JSONEncoder().encode(InstallRecord(udid: udid, bundleId: bundleID))
+        try bytes.write(to: legacy)
+        let leases = ResourceLeases(directory: try repo.directory("claims"))
+        let projectOwner = repo.root.standardizedFileURL.resolvingSymlinksInPath().path
+        let owner = LeaseOwner(operationId: "old-main", command: "up",
+            project: mode == "wrong-project" ? "/another/project" : projectOwner)
+        let device = ResourceKey.device(.ios, udid)
+        if mode == "reserved" { try leases.reserve(device: device, owner: owner) }
+        else if mode != "absent" {
+            let claim = ResourceClaim(device: device, platform: .ios, handle: udid,
+                appID: mode == "wrong-app" ? "another.app" : bundleID, owner: owner)
+            try leases.record(claim)
+            if mode == "owned-direct" {
+                let file = try #require(FileManager.default.contentsOfDirectory(at: leases.directory,
+                    includingPropertiesForKeys: nil).first { $0.pathExtension == "claim" })
+                try JSONEncoder().encode(claim).write(to: file)
+            }
+        }
+        let runner = runner([terminateCommand: .ok("")])
+
+        let item = await AppTeardown(logs: logs, runner: runner,
+            locator: XcodeLocator(runner: runner, developerDirOverride: nil),
+            leases: leases, ownerProject: projectOwner).run()
+
+        let owned = mode.hasPrefix("owned")
+        #expect(item.status == (owned ? .stopped : .blocked))
+        #expect(runner.log.all.contains { $0.description == terminateCommand } == owned)
+        if !owned { #expect(runner.log.all.isEmpty) }
+        #expect(try Data(contentsOf: legacy) == bytes)
+        #expect(!FileManager.default.fileExists(atPath: (try logs.url(InstallRecord.fileName)).path))
+    }
+
+    @Test("an unowned legacy install record cannot authorize an app termination")
+    func legacyUnownedInstall() async throws {
+        let repo = try FixtureRepo()
+        let logs = RunLogs(project: repo.root, temporaryDirectory: try repo.directory("outputs"))
+        let legacy = logs.directory.appendingPathComponent(InstallRecord.fileName)
+        try FileManager.default.createDirectory(at: legacy.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let device = UUID().uuidString
+        let bytes = try JSONEncoder().encode(InstallRecord(udid: device, bundleId: bundleID))
+        try bytes.write(to: legacy)
+        let runner = runner(["xcrun simctl terminate \(device) \(bundleID)": .ok("")])
+
+        let item = await teardown(runner, logs).run()
+
+        #expect(item.status == .blocked)
+        #expect(runner.log.all.isEmpty)
+        #expect(try Data(contentsOf: legacy) == bytes)
+    }
+
     /// The record is the only path to "which app, on which device" — a simulator
     /// does not say which app is ours, and recomputing needs a scheme (ADR-0007).
     @Test("the app named by the install record is terminated on the device it names")
@@ -44,7 +102,7 @@ struct AppTeardownTests {
         // down stops the app; it does not remove it, and the record still describes
         // what is installed.
         #expect(sent.contains { $0.contains("uninstall") } == false)
-        #expect(InstallRecord.read(from: logs) != nil)
+        #expect(try InstallRecord.read(from: logs) != nil)
     }
 
     /// A record, not a cache: when it is missing the app is skipped and said to be

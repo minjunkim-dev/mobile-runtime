@@ -62,7 +62,7 @@ let package = Package(
         // targets share a single copy of it rather than drifting apart.
         .target(name: "TestSupport", dependencies: ["Core"], path: "Tests/TestSupport"),
         .testTarget(name: "CoreTests", dependencies: ["Core", "TestSupport"]),
-        .testTarget(name: "EnvironmentKitTests", dependencies: ["EnvironmentKit", "Core", "TestSupport"]),
+        .testTarget(name: "EnvironmentKitTests", dependencies: ["EnvironmentKit", "Core", "TestSupport", .product(name: "Logging", package: "swift-log")]),
         .testTarget(
             name: "SimulatorKitTests",
             dependencies: ["SimulatorKit", "Core", "TestSupport"],

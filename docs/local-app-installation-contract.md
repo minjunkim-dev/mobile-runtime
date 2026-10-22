@@ -21,13 +21,15 @@ iOS 실기기의 첫 직접 설치는 Development·Ad Hoc으로 서명한 조건
 
 Development·Ad Hoc IPA는 대상 기기의 UDID가 provisioning profile에 포함돼야 한다. 개발자 계정에 기기를 등록해도 기존 IPA가 바뀌지는 않는다. 필요한 경우 해당 기기를 포함한 profile로 앱을 다시 서명·내보내야 한다. 신뢰·Developer Mode 등 해당 설치 경로의 조건도 충족해야 한다. Runstir는 기기 등록을 대행하거나 앱을 자동 재서명하지 않는다. 설치 조건을 갖추는 수동 단계에는 필요한 행동과 다시 확인을 제공한다.
 
-로컬 `devicectl` 도움말의 앱 설치 입력은 `.app`다. IPA 내부 `.app`의 추출·설치 경로는 후속 명세·구현·실제 검증에서 확인한다. 공식 플랫폼 설치 가능성이 Runstir 구현 완료의 증거는 아니다.
+로컬 `devicectl` 도움말의 앱 설치 입력은 `.app`다. IPA는 내부 `.app`을 안전하게 추출해 설치한다([앱 파일 직접 설치](./app-file-direct-install.md#ipa)). 실제 Development·Ad Hoc IPA 설치는 실제 검증에서 확인한다. 공식 플랫폼 설치 가능성이 Runstir 구현 완료의 증거는 아니다.
 
 ## 3. CLI·GUI와 소스 없는 흐름
 
 CLI와 GUI 모두 `파일 확인 → 실행 기기 선택 → 변경 내용 확인·승인 → 설치 → 실행`을 공통 Swift Core에서 처리한다. GUI 전용 판정·설치 로직을 만들거나 터미널 문장을 파싱하지 않는다. 기존 Adapter/provider와 ProcessRunner를 재사용한다. 구체 CLI 명령 이름·옵션·Core API·JSON/progress 표현은 후속 명세에서 정한다. 기존 공개 CLI·JSON 호환 계약을 유지한다.
 
 프로젝트 소스와 계정을 필수로 요구하지 않는다. 파일이나 기기를 고른 것만으로 설치를 시작하지 않는다. 소스 빌드와 환경 준비를 자동으로 시작하지 않는다. 외부 개발 서버가 필요한 앱 파일은 그 조건과 실행 결과를 표시한다. 서버나 소스 연결을 임의로 만들지 않는다. 서버 조건을 충족하지 못한 상태를 앱 정상 동작으로 표시하지 않는다.
+
+Simulator·Emulator 직접 파일 경로의 명령·승인·파일 식별·결과 경계는 [#218 구현 안내](./app-file-direct-install.md)에 기록한다. 사용자가 고른 꺼진 Simulator·AVD의 승인 뒤 부팅은 [ADR-0043](./adr/0043-app-file-boots-selected-virtual-device.md)이 정한다. 이 안내는 아래 실제 검증 기준이나 iOS 실기기 후속 범위를 대체하지 않는다.
 
 ## 4. 파일 정보·설치 전 검사와 승인
 

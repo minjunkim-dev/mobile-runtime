@@ -5,21 +5,23 @@ import TestSupport
 
 @testable import Core
 
-// Only the two things a fake cannot verify: real timeout behaviour and the
-// non-zero-exit-is-data contract. Everything else is tested through the fake seam.
+// Exercise output delivery, process termination and privacy against real children.
 @Suite("SystemProcessRunner against real subprocesses")
 struct SystemProcessRunnerTests {
     let runner = SystemProcessRunner()
 
-    @Test("argument redaction preserves actual argv, environment and cwd while hiding debug arguments", arguments: [false, true])
-    func privateArguments(_ redacted: Bool) async throws {
+    @Test("argument redaction preserves actual argv, environment and cwd while hiding debug arguments", arguments: [false, true], [false, true])
+    func privateArguments(_ redacted: Bool, _ bytes: Bool) async throws {
         let messages = Mutable<[String]>([])
         let logger = Logger(label: "process-privacy") { _ in ProcessLogCapture(messages: messages) }
         let directory = try temporaryDirectory()
         let command = ProcessCommand("/bin/sh", ["-c", "printf '%s\\n' \"$1\" \"$MOBILE_TEST_VAR\" \"$PWD\"", "_", "synthetic-auth"],
             environment: ["MOBILE_TEST_VAR": "kept"], workingDirectory: directory,
             timeout: .seconds(10), redactArguments: redacted)
-        let result = try await SystemProcessRunner(logger: logger, environment: ["PATH": "/usr/bin:/bin"]).run(command)
+        let runner = SystemProcessRunner(logger: logger, environment: ["PATH": "/usr/bin:/bin"])
+        let result: ProcessResult
+        if bytes { result = try await runner.run(command, onBytes: { _, _ in }) }
+        else { result = try await runner.run(command) }
         let lines = result.standardOutput.split(whereSeparator: \.isNewline)
         #expect(result.terminationStatus.isSuccess)
         #expect(lines.count == 3)
@@ -114,6 +116,101 @@ struct SystemProcessRunnerTests {
         #expect(result.terminationStatus.isSuccess == false)
         #expect(result.standardOutput == "out\n")
         #expect(result.standardError == "err\n")
+    }
+
+    @Test("raw callbacks deliver both binary streams before the child exits and keep collected results")
+    func bytesBeforeExit() async throws {
+        let directory = try temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let release = directory.appendingPathComponent("release")
+        defer { try? Data().write(to: release) }
+        let observed = Mutable<[Data]>([Data(), Data()])
+        let completed = Mutable(false)
+        let output = Data([1, 255]) + Data("out".utf8)
+        let error = Data([0, 254]) + Data("err".utf8)
+        let (events, continuation) = AsyncStream<Void>.makeStream()
+        let command = ProcessCommand("/bin/sh", ["-c",
+            "printf '\\001\\377out'; printf '\\000\\376err' >&2; while [ ! -f \"$1\" ]; do /bin/sleep 0.01; done; printf tail; exit 7",
+            "_", release.path], timeout: .seconds(5))
+        let task = Task {
+            defer { continuation.finish() }
+            let result = try await runner.run(command, onBytes: { channel, bytes in
+                let index = switch channel { case .standardOutput: 0; case .standardError: 1 }
+                observed.mutate { $0[index].append(bytes) }
+                continuation.yield(())
+            })
+            completed.mutate { $0 = true }
+            return result
+        }
+        defer { task.cancel() }
+        for await _ in events {
+            let bytes = observed.value
+            if bytes[0].count >= output.count, bytes[1].count >= error.count { break }
+        }
+        #expect(observed.value == [output, error])
+        #expect(!completed.value)
+        try Data().write(to: release)
+        let result = try await task.value
+        #expect(result.terminationStatus == .exited(7))
+        #expect(result.standardOutput == String(decoding: output + Data("tail".utf8), as: UTF8.self))
+        #expect(result.standardError == String(decoding: error, as: UTF8.self))
+        #expect(observed.value == [output + Data("tail".utf8), error])
+    }
+
+    @Test("existing conformers deliver collected output through the default byte callback")
+    func defaultBytes() async throws {
+        let command = ProcessCommand("fixture")
+        let fake: any ProcessRunner = FakeProcessRunner(responses: ["fixture": .init(
+            status: .exited(3), standardOutput: "out", standardError: "err")])
+        let observed = Mutable<[Data]>([Data(), Data()])
+        let result = try await fake.run(command, onBytes: { channel, bytes in
+            let index = switch channel { case .standardOutput: 0; case .standardError: 1 }
+            observed.mutate { $0[index].append(bytes) }
+        })
+        #expect(result.terminationStatus == .exited(3))
+        #expect(observed.value == [Data("out".utf8), Data("err".utf8)])
+    }
+
+    @Test("byte callbacks preserve cancellation and timeout after delivering both streams", arguments: [false, true])
+    func byteInterruption(_ timeout: Bool) async throws {
+        let observed = Mutable<[Data]>([Data(), Data()])
+        let command = ProcessCommand("/bin/sh", ["-c", "printf out; printf err >&2; exec /bin/sleep 30"],
+            timeout: timeout ? .milliseconds(300) : .seconds(5), redactArguments: true)
+        let task = Task {
+            try await runner.run(command, onBytes: { channel, bytes in
+                let index = switch channel { case .standardOutput: 0; case .standardError: 1 }
+                observed.mutate { $0[index].append(bytes) }
+            })
+        }
+        defer { task.cancel() }
+        if !timeout {
+            let deadline = ContinuousClock.now + .seconds(3)
+            while observed.value.contains(where: \.isEmpty), ContinuousClock.now < deadline {
+                try await Task.sleep(for: .milliseconds(10))
+            }
+            task.cancel()
+        }
+        do {
+            _ = try await task.value
+            Issue.record("the interrupted byte command must not succeed")
+        } catch is CancellationError {
+            #expect(!timeout)
+        } catch let error as ProcessError {
+            guard case .timedOut(let description, let duration) = error else { throw error }
+            #expect(timeout)
+            #expect(duration == .milliseconds(300))
+            #expect(description == "/bin/sh [arguments redacted]")
+        }
+        #expect(observed.value == [Data("out".utf8), Data("err".utf8)])
+    }
+
+    @Test("byte callbacks keep the separate collected output limits", arguments: [false, true])
+    func byteLimits(_ standardError: Bool) async throws {
+        let limit = (standardError ? 1 : 4) * 1024 * 1024
+        let script = "/usr/bin/head -c \(limit + 1) /dev/zero" + (standardError ? " >&2" : "")
+        await #expect(throws: ProcessError.self) {
+            try await runner.run(ProcessCommand("/bin/sh", ["-c", script]), onBytes: { _, _ in })
+        }
     }
 
     @Test("successful exit reports status zero")

@@ -82,7 +82,7 @@ struct NativeIOSWorkflowTests {
         #expect(result.up?.context.product?.bundleIdentifier == "com.test.App")
         #expect(try Data(contentsOf: repo.url("App.xcodeproj/project.pbxproj")) == original)
         #expect(!runner.log.all.contains { ["node", "npm", "yarn", "pnpm", "pod", "bundle"].contains($0.executable) })
-        #expect(!runner.log.all.contains { $0.executable == "xcrun" && ($0.arguments.contains("install") || $0.arguments.contains("launch") || $0.arguments.contains("boot")) })
+        #expect(!runner.log.all.contains { $0.executable == "xcrun" && ($0.arguments.contains("install") || $0.arguments.contains("launch") || $0.arguments.contains("boot") || $0.arguments.contains("bootstatus")) })
         #expect(runner.log.spawned.isEmpty)
     }
 
@@ -92,6 +92,7 @@ struct NativeIOSWorkflowTests {
         var runner = try runner(repo)
         try addUpResponses(&runner, repo)
         runner.responses["xcrun simctl list devices -j"] = .ok(#"{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-27-0":[{"name":"iPhone A","udid":"A","state":"Shutdown","isAvailable":true}]}}"#)
+        runner.responses["xcrun simctl bootstatus A -b"] = .ok("")
         let leases = temporaryLeases()
         let device = try leases.acquire([.device(.ios, "A")], owner: LeaseOwner(
             operationId: "other-app", command: "up", project: "/other-app"))
@@ -280,7 +281,7 @@ struct NativeIOSWorkflowTests {
         #expect(result.down?.items.map(\.id) == ["app"])
         #expect(runner.log.all.filter { $0.executable == "xcrun" }.map(\.description) == ["xcrun simctl terminate A com.test.App"])
         #expect(!runner.log.all.contains { $0.executable == "kill" || $0.executable == "curl" })
-        #expect(InstallRecord.read(from: logs)?.bundleId == "com.test.App")
+        #expect(try InstallRecord.read(from: logs)?.bundleId == "com.test.App")
     }
 
     @Test("a native device lease conflict stops before build or installation")
@@ -436,8 +437,11 @@ struct NativeIOSWorkflowTests {
         "xcodebuild -showBuildSettings -json \(target(repo)) -scheme App -configuration Debug -destination generic/platform=iOS Simulator -derivedDataPath \(try RunLogs(project: repo.root).derivedDataDirectory.path)"
     }
 
+    // Released with this test's suite instance, so no lease directory outlives the test.
+    private let scratch = try! FixtureRepo()
+
     private func temporaryLeases() -> ResourceLeases {
-        ResourceLeases(directory: FileManager.default.temporaryDirectory.appendingPathComponent("runstir-native-leases-\(UUID().uuidString)"))
+        ResourceLeases(directory: scratch.url("leases-\(UUID().uuidString)"))
     }
 
     private func addUpResponses(_ runner: inout FakeProcessRunner, _ repo: FixtureRepo) throws {

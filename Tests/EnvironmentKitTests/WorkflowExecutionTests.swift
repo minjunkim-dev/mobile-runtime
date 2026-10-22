@@ -63,6 +63,7 @@ struct WorkflowExecutionTests {
         let repo = try iosProject()
         var runner = try iosUpRunner(repo)
         runner.responses["xcrun simctl list devices -j"] = .ok(#"{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-27-0":[{"name":"iPhone A","udid":"A","state":"Shutdown","isAvailable":true}]}}"#)
+        runner.responses["xcrun simctl bootstatus A -b"] = .ok("")
         let leases = temporaryLeases()
         let device = try leases.acquire([.device(.ios, "A")], owner: LeaseOwner(
             operationId: "other-app", command: "up", project: "/other-app"))
@@ -132,6 +133,101 @@ struct WorkflowExecutionTests {
         #expect(unused.log.all.isEmpty)
     }
 
+    @Test("invalid and unsupported port inputs stop before any subprocess")
+    func unsupportedPort() async throws {
+        let repo = try iosProject()
+        for port in [-1, 0, 65536, 8081, 8097] {
+            let runner = FakeProcessRunner()
+            let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: ProjectInspectionInput(
+                directory: repo.root, environment: [:]), port: port), runner: runner, leases: temporaryLeases())
+            #expect(result.exitCode == 1)
+            #expect(result.operation.nextAction?.contains("port") == true)
+            #expect(runner.log.all.isEmpty)
+        }
+    }
+
+    @Test("omitting the port preserves legacy native inputs without requiring explicit forwarding support")
+    func omittedPort() async throws {
+        let repo = try iosProject()
+        let runner = try iosUpRunner(repo)
+        let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: ProjectInspectionInput(
+            directory: repo.root, environment: ["RCT_METRO_PORT": "8097"])), runner: runner, leases: temporaryLeases())
+        #expect(result.exitCode == 0)
+        #expect(result.operation.port == 8081)
+        #expect(!runner.log.all.contains { $0.arguments.contains(where: { $0.hasPrefix("RCT_METRO_PORT=") }) })
+        #expect(runner.log.all.contains { $0.description == "xcrun simctl launch A com.test.MyApp" })
+        #expect(!runner.log.all.contains { $0.arguments.contains("-RCT_jsLocation") })
+    }
+
+    @Test("the shared input forwards every explicit RN endpoint and preserves it after build failure", arguments: [false, true], [8081, 8097])
+    func selectedPort(buildFails: Bool, port: Int) async throws {
+        let repo = try iosProject()
+        try repo.write("package.json", #"{"dependencies":{"react-native":"0.81.0"},"scripts":{"start":"react-native start"}}"#)
+        try repo.write("node_modules/react-native/React-Core.podspec", "RCT_METRO_PORT=${RCT_METRO_PORT}")
+        try repo.write("node_modules/react-native/React/Base/RCTBundleURLProvider.mm", "RCT_jsLocation stringForKey:kRCTJsLocationKey")
+        let base = try iosUpRunner(repo)
+        let settings = "-project \(repo.url("ios/MyApp.xcodeproj").path) -scheme MyApp -configuration Debug -destination platform=iOS Simulator,id=A -derivedDataPath \(try RunLogs(project: repo.root).derivedDataDirectory.path)"
+        var runner = base
+        runner.responses["xcodebuild \(settings) RCT_METRO_PORT=\(port) build"] = buildFails
+            ? .failed(1, "error: controlled build failure") : base.responses["xcodebuild \(settings) build"]
+        runner.responses["xcodebuild -showBuildSettings -json \(settings) RCT_METRO_PORT=\(port)"] = base.responses["xcodebuild -showBuildSettings -json \(settings)"]
+        runner.responses["curl -s -i -m 2 http://localhost:\(port)/status"] = .ok(MetroStatus.running(projectRoot: repo.root))
+        runner.responses["xcrun simctl launch A com.test.MyApp -RCT_jsLocation localhost:\(port)"] = .ok("com.test.MyApp: 3538")
+        let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: ProjectInspectionInput(
+            directory: repo.root, environment: ["RCT_METRO_PORT": "8097"]), port: port), runner: runner, leases: temporaryLeases())
+        #expect(result.exitCode == (buildFails ? 1 : 0), Comment(rawValue: result.up?.failure?.message ?? ""))
+        #expect(result.operation.port == port)
+        #expect(result.up?.context.metro?.port == port)
+        #expect(try RunLogs(project: repo.root).metroPort() == port)
+        #expect(runner.log.all.contains { $0.arguments.contains("RCT_METRO_PORT=\(port)") && $0.arguments.last == "build" })
+        #expect(runner.log.all.filter { $0.executable == "curl" }.allSatisfy { $0.arguments.last == "http://localhost:\(port)/status" })
+        #expect(runner.log.all.contains { $0.arguments.suffix(2) == ["-RCT_jsLocation", "localhost:\(port)"] } == !buildFails)
+        let json = try #require(JSONSerialization.jsonObject(with: Data(result.encoded(toolVersion: "test").utf8)) as? [String: Any])
+        #expect((json["operation"] as? [String: Any])?["port"] as? Int == port)
+        if buildFails {
+            let downRunner = FakeProcessRunner(responses: [
+                "curl -s -i -m 2 http://localhost:\(port)/status": .ok(MetroStatus.running(projectRoot: URL(fileURLWithPath: "/another-project"))),
+            ])
+            let down = await WorkflowExecution.run(.down, input: WorkflowInput(project: ProjectInspectionInput(
+                directory: repo.root, environment: [:])), runner: downRunner, leases: temporaryLeases())
+            #expect(down.exitCode == 0) // ADR-0007 keeps another project's server as a non-error blocked item.
+            #expect(down.down?.items.first(where: { $0.id == "metro" })?.status == .blocked)
+            #expect(down.operation.port == port)
+            #expect(downRunner.log.all.map(\.description) == ["curl -s -i -m 2 http://localhost:\(port)/status"])
+            #expect(try RunLogs(project: repo.root).metroPort() == port)
+        }
+    }
+
+    @Test("down acquires the recorded selected endpoint and preserves another client's lease")
+    func recordedPortConflict() async throws {
+        let repo = try iosProject()
+        try RunLogs(project: repo.root).recordMetroPort(8097)
+        let leases = temporaryLeases()
+        let other = LeaseOwner(operationId: "other-window", command: "up", project: "/other")
+        let held = try leases.acquire([.port(8097)], owner: other)
+        defer { held.release() }
+        let runner = FakeProcessRunner()
+        let result = await WorkflowExecution.run(.down, input: WorkflowInput(project: ProjectInspectionInput(
+            directory: repo.root, environment: [:])), runner: runner, leases: leases)
+        #expect(result.exitCode == 1)
+        #expect(result.operation.conflict?.key == .port(8097))
+        #expect(result.operation.conflict?.owner == other)
+        #expect(runner.log.all.isEmpty)
+    }
+
+    @Test("an invalid recorded endpoint blocks down without falling back to the legacy server")
+    func unreadablePortPreservesResources() async throws {
+        let repo = try iosProject()
+        let logs = RunLogs(project: repo.root)
+        _ = logs.write("not a port", to: "metro-port-ios")
+        let runner = FakeProcessRunner()
+        let result = await WorkflowExecution.run(.down, input: WorkflowInput(project: ProjectInspectionInput(
+            directory: repo.root, environment: [:])), runner: runner, leases: temporaryLeases())
+        #expect(result.exitCode != 0)
+        #expect(runner.log.all.isEmpty)
+        #expect(try String(contentsOf: try logs.url("metro-port-ios"), encoding: .utf8) == "not a port")
+    }
+
     @Test("a project without Debug requires configuration before dependency changes")
     func missingDebugConfiguration() async throws {
         let repo = try iosProject()
@@ -196,6 +292,50 @@ struct WorkflowExecutionTests {
         _ = try leases.acquire([.folder(try FolderIdentity(directory: repo.root))], owner: gui)
     }
 
+    @Test("separate working folders build concurrently while their aliases share one mutation lease")
+    func independentWorkingFolders() async throws {
+        let first = try iosProject()
+        let second = try iosProject()
+        // Both worktree markers refer to the same repository; identity remains the working folder.
+        let common = first.url("common.git")
+        try FileManager.default.moveItem(at: first.url(".git"), to: common)
+        try FileManager.default.moveItem(at: second.url(".git"), to: second.url("original.git"))
+        try first.write(".git", "gitdir: \(common.path)/worktrees/first\n")
+        try second.write(".git", "gitdir: \(common.path)/worktrees/second\n")
+        let alias = first.root.deletingLastPathComponent().appendingPathComponent("alias-\(UUID().uuidString)")
+        try FileManager.default.createSymbolicLink(at: alias, withDestinationURL: first.root)
+        defer { try? FileManager.default.removeItem(at: alias) }
+        let leases = temporaryLeases()
+        let firstEvents = EventLog()
+        let secondEvents = EventLog()
+        let gate = BuildGate()
+        let firstRunner = PausedBuildRunner(base: try iosRunner(first), gate: gate)
+        let firstInput = WorkflowInput(project: ProjectInspectionInput(directory: first.root, environment: [:]))
+        let running = Task {
+            await WorkflowExecution.run(.build, input: firstInput, runner: firstRunner, leases: leases,
+                onEvent: { firstEvents.append($0) })
+        }
+        await gate.waitForEntry()
+        let aliasRunner = try iosRunner(first)
+        let duplicate = await WorkflowExecution.run(.build, input: WorkflowInput(project: ProjectInspectionInput(
+            directory: alias, environment: [:])), runner: aliasRunner, leases: leases)
+        #expect(duplicate.operation.conflict?.key == .folder(try FolderIdentity(directory: first.root)))
+        #expect(!aliasRunner.log.all.contains { $0.arguments.contains("build") || $0.arguments.contains("install") })
+        let independent = await WorkflowExecution.run(.build, input: WorkflowInput(project: ProjectInspectionInput(
+            directory: second.root, environment: [:])), runner: try iosRunner(second), leases: leases,
+            onEvent: { secondEvents.append($0) })
+        #expect(independent.exitCode == 0)
+        #expect(await !gate.timedOut)
+        await gate.release()
+        let completed = await running.value
+        #expect(completed.exitCode == 0)
+        #expect(completed.operation.id != independent.operation.id)
+        #expect(Set(firstEvents.all.map(\.operationId)) == [completed.operation.id])
+        #expect(Set(secondEvents.all.map(\.operationId)) == [independent.operation.id])
+        #expect(completed.up?.context.buildLog != independent.up?.context.buildLog)
+        #expect(completed.operation.selection?.selected?.app != independent.operation.selection?.selected?.app)
+    }
+
     @Test("an app another project left running blocks up on that device; no automatic switch")
     func liveAppConflict() async throws {
         let repo = try iosProject()
@@ -236,6 +376,8 @@ struct WorkflowExecutionTests {
         let result = await WorkflowExecution.run(.up, input: WorkflowInput(project: ProjectInspectionInput(
             directory: repo.root, environment: [:], platform: .ios), device: "A"), runner: runner, leases: leases)
         #expect(result.exitCode == 0, Comment(rawValue: result.up?.failure?.message ?? ""))
+        #expect(result.operation.port == 8081)
+        #expect(runner.log.all.contains { $0.description == MetroStatus.command })
         // The lease ended with the command; the app it launched still holds the device.
         let other = LeaseOwner(operationId: "other-up", command: "up", project: "/work/other")
         let lease = try leases.acquire([.device(.ios, "A"), .port(8081)], owner: other)
@@ -343,8 +485,11 @@ struct WorkflowExecutionTests {
         #expect(conflict.owner?.operationId == result.operation.id)
     }
 
+    // Released with this test's suite instance, so no lease directory outlives the test.
+    private let scratch = try! FixtureRepo()
+
     private func temporaryLeases() -> ResourceLeases {
-        ResourceLeases(directory: FileManager.default.temporaryDirectory.appendingPathComponent("runstir-leases-\(UUID().uuidString)"))
+        ResourceLeases(directory: scratch.url("leases-\(UUID().uuidString)"))
     }
 
     private func iosProject(workspaceOnly: Bool = false) throws -> FixtureRepo {
@@ -396,4 +541,43 @@ private final class EventLog: @unchecked Sendable {
     private var events: [WorkflowEvent] = []
     func append(_ event: WorkflowEvent) { lock.withLock { events.append(event) } }
     var all: [WorkflowEvent] { lock.withLock { events } }
+}
+
+private actor BuildGate {
+    private var entered = false
+    private var released = false
+    private(set) var timedOut = false
+
+    func pause() async throws {
+        entered = true
+        let deadline = ContinuousClock.now + .seconds(30)
+        while !released {
+            guard ContinuousClock.now < deadline else {
+                timedOut = true
+                throw CocoaError(.userCancelled)
+            }
+            try await Task.sleep(for: .milliseconds(10))
+        }
+    }
+
+    func waitForEntry() async {
+        let deadline = ContinuousClock.now + .seconds(30)
+        while !entered && ContinuousClock.now < deadline { try? await Task.sleep(for: .milliseconds(10)) }
+    }
+
+    func release() { released = true }
+}
+
+private struct PausedBuildRunner: ProcessRunner {
+    let base: FakeProcessRunner
+    let gate: BuildGate
+
+    func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+        if command.executable == "xcodebuild", command.arguments.last == "build" { try await gate.pause() }
+        return try await base.run(command, onLine: onLine)
+    }
+
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+        try await base.spawnDetached(command, logFile: logFile)
+    }
 }

@@ -12,16 +12,29 @@ public struct AppTeardown: Sendable {
     private let logs: RunLogs
     private let runner: any ProcessRunner
     private let locator: XcodeLocator
+    private let leases: ResourceLeases
+    private let ownerProject: String?
 
-    public init(logs: RunLogs, runner: any ProcessRunner, locator: XcodeLocator) {
+    public init(logs: RunLogs, runner: any ProcessRunner, locator: XcodeLocator,
+                leases: ResourceLeases = .user, ownerProject: String? = nil) {
         self.logs = logs
         self.runner = runner
         self.locator = locator
+        self.leases = leases
+        self.ownerProject = ownerProject
     }
 
     public func run() async -> TeardownItem {
-        guard let record = InstallRecord.read(from: logs) else {
-            return .skipped(Self.id, "no install record — nothing to stop")
+        let record: InstallRecord
+        do {
+            guard let saved = try InstallRecord.read(from: logs, leases: leases, ownerProject: ownerProject) else {
+                return .skipped(Self.id, "no install record — nothing to stop")
+            }
+            record = saved
+        } catch {
+            return .blocked(Self.id, error as? DomainError ?? DomainError(
+                summary: "The install record could not be confirmed.",
+                remediation: Remediation(summary: "Inspect the existing record. Existing apps were preserved.")))
         }
 
         let result = try? await runner.run(

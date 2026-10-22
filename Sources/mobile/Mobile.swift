@@ -13,12 +13,19 @@ enum Tool {
 }
 
 @main
+enum MobileEntryPoint {
+    static func main() async {
+        FlutterAndroidChildClient.runIfRequested()
+        await Mobile.main()
+    }
+}
+
 struct Mobile: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "mobile",
         abstract: "Reproducible mobile development runtime.",
         version: Tool.version,
-        subcommands: [Doctor.self, Setup.self, Build.self, Up.self, Down.self]
+        subcommands: [Doctor.self, Setup.self, Build.self, Up.self, Down.self, AppCommand.self]
     )
 
     // Bare `mobile` is exploration, not an error: help on stdout, exit 0.
@@ -69,7 +76,12 @@ struct Doctor: AsyncParsableCommand {
         )
         let result: EnvironmentInspection
         do {
-            result = try await EnvironmentInspection.run(input: input, scheme: scheme, configuration: configuration)
+            result = try await cancellingOnSignals { [scheme, configuration] in
+                try await EnvironmentInspection.run(input: input, scheme: scheme, configuration: configuration)
+            }
+        } catch is CancellationError {
+            // Same exit as a cancelled build/up/down/setup.
+            throw ExitCode(130)
         } catch {
             throw ValidationError("Cannot inspect project folder: \(error.localizedDescription)")
         }

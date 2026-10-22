@@ -31,7 +31,7 @@ struct Setup: AsyncParsableCommand {
         var approved = approve
         var trusted = trustRepository
         if !plan, approved == nil, !nonInteractive, !json, !progressJson, isatty(FileHandle.standardInput.fileDescriptor) == 1 {
-            let proposed = await PreparationExecution.run(input: input, planOnly: true)
+            let proposed = try await cancellingOnSignals { await PreparationExecution.run(input: input, planOnly: true) }
             writeError(try proposed.encoded(toolVersion: Tool.version))
             if let id = proposed.plan?.id {
                 writeError("Type this exact plan-id to approve, or press Return to stop: \(id)")
@@ -47,7 +47,7 @@ struct Setup: AsyncParsableCommand {
         let approvedID = approved
         let trust = trusted
         let structured = progressJson
-        let task = Task {
+        let result = try await cancellingOnSignals {
             await PreparationExecution.run(input: input, planOnly: plan, approvedPlanID: approvedID, trustRepository: trust) { event in
                 if structured {
                     if let line = try? event.encoded() { writeError(line) }
@@ -56,20 +56,6 @@ struct Setup: AsyncParsableCommand {
                 }
             }
         }
-        let previousInterrupt = signal(SIGINT, SIG_IGN)
-        let previousTerminate = signal(SIGTERM, SIG_IGN)
-        let signals = [SIGINT, SIGTERM].map { number in
-            let source = DispatchSource.makeSignalSource(signal: number, queue: .global())
-            source.setEventHandler { task.cancel() }
-            source.resume()
-            return source
-        }
-        defer {
-            signals.forEach { $0.cancel() }
-            signal(SIGINT, previousInterrupt)
-            signal(SIGTERM, previousTerminate)
-        }
-        let result = await task.value
         if json { print(try result.encoded(toolVersion: Tool.version)) }
         else {
             print("setup: \(result.operation.state)")

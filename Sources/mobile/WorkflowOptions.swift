@@ -17,7 +17,7 @@ struct WorkflowOptions: ParsableArguments {
     @Option(name: .long, help: "Android application module. Defaults to mobile.yml or the only module.") var module: String?
     @Option(name: .long, help: "Android debuggable variant. Defaults to mobile.yml, debug, or the only variant.") var variant: String?
     @Option(name: .long, help: "Flutter Dart entrypoint inside the selected app. Defaults to lib/main.dart.") var entrypoint: String?
-    @Option(name: .long, help: "Flutter iOS up VM service port. Omit to select an available port; other workflows reject it.") var port: Int?
+    @Option(name: .long, help: "React Native build/up Metro port (default 8081), or Flutter up VM service port (automatic when omitted). Unsupported workflows stop before changes.") var port: Int?
     @Flag(name: .long, help: "Do not ask questions. Missing selections return candidates without starting changes.") var nonInteractive = false
 
     func run(_ kind: WorkflowKind) async throws {
@@ -28,7 +28,7 @@ struct WorkflowOptions: ParsableArguments {
             platform: platform.flatMap { ProjectPlatform(rawValue: $0.rawValue) }, entrypoint: entrypoint),
             device: device, scheme: scheme, configuration: configuration, module: module, variant: variant, port: port)
         let structured = progressJson
-        let task = Task {
+        let result = try await cancellingOnSignals {
             await WorkflowExecution.run(kind, input: input) { event in
                 if structured {
                     if let line = try? event.encoded() { writeError(line) }
@@ -39,20 +39,6 @@ struct WorkflowOptions: ParsableArguments {
                 }
             }
         }
-        let oldInterrupt = signal(SIGINT, SIG_IGN)
-        let oldTerminate = signal(SIGTERM, SIG_IGN)
-        let signals = [SIGINT, SIGTERM].map { number in
-            let source = DispatchSource.makeSignalSource(signal: number, queue: .global())
-            source.setEventHandler { task.cancel() }
-            source.resume()
-            return source
-        }
-        defer {
-            for source in signals { source.cancel() }
-            signal(SIGINT, oldInterrupt)
-            signal(SIGTERM, oldTerminate)
-        }
-        let result = await task.value
         if json {
             print(try result.encoded(toolVersion: Tool.version))
         } else if progressJson {
