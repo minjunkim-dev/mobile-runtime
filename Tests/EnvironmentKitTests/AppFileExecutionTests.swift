@@ -853,7 +853,7 @@ struct AppFileExecutionTests {
         #expect(!fixture.runner.commands.contains(where: mutation))
     }
 
-    @Test("a launcher that exits is not mistaken for the AVD another Emulator holds")
+    @Test("a ready AVD that another Emulator holds is not taken as Runstir's once its launcher exits")
     func exitedLauncher() async throws {
         let fixture = try AppFileFixture(platform: .android, shutDown: true)
         let plan = try #require(await fixture.run(planOnly: true).operation.plan)
@@ -866,16 +866,17 @@ struct AppFileExecutionTests {
         #expect(!fixture.runner.commands.contains(where: forbiddenAfterBoot))
     }
 
-    @Test("a Simulator booted by someone else after the final recheck is not booted or claimed by Runstir")
-    func simulatorBootedElsewhere() async throws {
-        let fixture = try AppFileFixture(platform: .ios, shutDown: true)
+    @Test("a device booted by someone else after the final recheck is neither booted nor claimed by Runstir", arguments: [ProjectPlatform.ios, .android])
+    func bootedElsewhere(_ platform: ProjectPlatform) async throws {
+        let fixture = try AppFileFixture(platform: platform, shutDown: true)
         let plan = try #require(await fixture.run(planOnly: true).operation.plan)
-        // Lists: plan, approval inventory, final recheck; the fourth is the one right before boot.
+        // Inventories: plan, approval, final recheck; the fourth is the read right before boot.
         fixture.runner.bootedElsewhereAtList = 4
         let result = await fixture.run(approval: plan.approval)
         #expect(result.exitCode == 1)
-        #expect(result.operation.deviceBoot?.state == "unconfirmed")
-        #expect(!fixture.runner.commands.contains(where: boots))
+        #expect(result.operation.deviceBoot == nil)
+        #expect(result.operation.error?.contains("Nothing was booted") == true)
+        #expect(!fixture.runner.commands.contains(where: boots) && fixture.runner.spawned.isEmpty)
         #expect(result.operation.installation == "not-requested")
     }
 
@@ -923,7 +924,7 @@ struct AppFileExecutionTests {
     /// Booting one approved device never stops, erases or switches any device.
     private func forbiddenAfterBoot(_ command: ProcessCommand) -> Bool {
         ["shutdown", "erase", "kill", "delete", "create", "uninstall", "clear", "-wipe-data"].contains(where: command.arguments.contains)
-            || command.executable == "kill" && command.arguments.first != "-0" || command.arguments.contains("sdkmanager") || command.executable.hasSuffix("avdmanager")
+            || command.executable == "kill" || command.arguments.contains("sdkmanager") || command.executable.hasSuffix("avdmanager")
     }
 
     private func mutation(_ command: ProcessCommand) -> Bool {
@@ -1022,6 +1023,7 @@ private final class AppFileRunner: ProcessRunner, @unchecked Sendable {
     private var recorded: [ProcessCommand] = []
     private var installedBuild: String?
     private var deviceLists = 0
+    private var adbLists = 0
     private var runtimeLists = 0
     var mutateOriginalDuringStagedInspection = false
     var disconnectOnFinalRecheck = false
@@ -1128,6 +1130,8 @@ private final class AppFileRunner: ProcessRunner, @unchecked Sendable {
             }
             if command.executable.hasSuffix("/adb") {
                 if args == ["devices", "-l"] {
+                    adbLists += 1
+                    if let list = bootedElsewhereAtList, adbLists >= list { booted = true }
                     let unnamed = unnamedEmulator ? "emulator-5556 offline\n" : ""
                     if shutDown && !booted {
                         if interruptBoot && !detached.isEmpty {
@@ -1179,7 +1183,8 @@ private final class AppFileRunner: ProcessRunner, @unchecked Sendable {
                 throw FixtureMiss(command: "unexpected detached child: " + command.description)
             }
             detached.append(command)
-            if !interruptBoot && !launcherExits && !failReobservation { booted = true }
+            // With launcherExits the AVD still comes up ready: it is another Emulator's, not Runstir's.
+            if !interruptBoot && !failReobservation { booted = true }
             return 4242
         }
     }

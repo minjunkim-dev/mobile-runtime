@@ -24,7 +24,9 @@
 2. 계획은 부팅을 승인 대상에 넣는다. 기존 앱은 `unobserved`다. 꺼진 기기에서는 설치 상태를 읽을 수 없기 때문이다.
    `BOOT:` 경고로 부팅·계속 실행·부팅 뒤 재관측을 알린다. `--plan`·`inspect`·승인 없는 실행은 부팅하지 않는다.
 3. 승인 뒤 기기 lease를 잡고 파일 사본·기기 상태를 다시 확인한다. 같은 계획이면 그 기기만 부팅한다.
-   - iOS: 부팅 직전 `Shutdown`을 한 번 더 읽는다. 그 뒤 `up`의 `simctl bootstatus <UDID> -b`를 같은 함수로 호출한다. headless이며 Simulator.app을 열지 않는다.
+   - 두 플랫폼 모두 부팅 직전 기기를 한 번 더 읽는다. 더는 꺼져 있지 않으면 부팅하지 않고 `deviceBoot`도 기록하지 않는다.
+     이 읽기와 부팅 사이에 다른 도구가 같은 기기를 켜는 짧은 경합은 남는다.
+   - iOS: `up`의 `simctl bootstatus <UDID> -b`를 같은 함수로 호출한다. headless이며 Simulator.app을 열지 않는다.
    - Android: `up`과 같은 `emulator -avd <name>`을 분리 실행한다. 준비 판정(`sys.boot_completed`, API, ABI, `pm path android`)은 `up`과 같은 함수다. 대기 한도와 간격도 `up`의 값이다.
      준비된 AVD는 Runstir가 시작한 launcher가 살아 있을 때만 인정한다. launcher가 끝나면 즉시 실패한다. 같은 AVD를 다른 Emulator가 잡은 경우를 Runstir가 시작했다고 기록하지 않기 위해서다. launcher 확인은 `down`과 같은 `ps -p` 관측이다.
    - Android 후보의 AVD config·system image 경로는 계획 identity에 들어간다. 승인 뒤 AVD가 다른 image를 가리키면 다시 승인한다.

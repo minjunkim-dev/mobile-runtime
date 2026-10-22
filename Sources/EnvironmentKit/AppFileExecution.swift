@@ -232,6 +232,10 @@ public enum AppFileExecution {
             if currentDevice.boot == "required" {
                 // The approved plan named this shut-down device. It is booted under the device lease,
                 // like `up`, and left running; no other device is booted, switched or stopped.
+                // One more read right before booting: a device someone else started is never recorded as Runstir's.
+                guard try await tools.devices(selected: deviceID).first(where: { $0.id == deviceID })?.boot == "required" else {
+                    throw AppFileSnapshot.failure("The approved device is no longer shut down. Nothing was booted; inspect and approve again.")
+                }
                 operation.deviceBoot = AppFileDeviceBoot(state: "requested", device: currentDevice.id,
                     detail: "Runstir is booting the approved shut-down device and will leave it running.")
                 events.send("stage", stage: "boot", state: "running", detail: "Booting \(currentDevice.name). Other devices are not booted or stopped.")
