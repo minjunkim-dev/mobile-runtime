@@ -474,13 +474,7 @@ struct AndroidCleanup: Sendable {
     }
 
     private func ownedLauncherPresence(_ pid: Int32) async throws -> Bool? {
-        let result = try await runner.run(
-            ProcessCommand("ps", ["-p", "\(pid)", "-o", "pid="], timeout: .seconds(10))
-        )
-        guard result.standardError.isEmpty else { return nil }
-        let pids = result.standardOutput.split(whereSeparator: \.isWhitespace).map(String.init)
-        if case .exited(1) = result.terminationStatus, pids.isEmpty { return false }
-        return result.terminationStatus.isSuccess && pids == [String(pid)] ? true : nil
+        try await androidLauncherPresence(pid, runner: runner)
     }
 
     private func adb(

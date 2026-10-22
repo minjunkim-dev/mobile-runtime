@@ -127,6 +127,18 @@ func androidAVDName(from output: String) -> String? {
     return name.isEmpty ? nil : name
 }
 
+/// Whether a recorded Emulator launcher PID is still alive; nil when `ps` cannot say.
+/// Shared by `down` and the app-file boot wait.
+func androidLauncherPresence(_ pid: Int32, runner: any ProcessRunner) async throws -> Bool? {
+    let result = try await runner.run(
+        ProcessCommand("ps", ["-p", "\(pid)", "-o", "pid="], timeout: .seconds(10))
+    )
+    guard result.standardError.isEmpty else { return nil }
+    let pids = result.standardOutput.split(whereSeparator: \.isWhitespace).map(String.init)
+    if case .exited(1) = result.terminationStatus, pids.isEmpty { return false }
+    return result.terminationStatus.isSuccess && pids == [String(pid)] ? true : nil
+}
+
 /// `up` and the app-file path agree on when an Emulator is ready: boot completed, a readable
 /// API level and ABI list, and a package manager that answers. nil means not ready yet.
 func androidEmulatorReadiness(

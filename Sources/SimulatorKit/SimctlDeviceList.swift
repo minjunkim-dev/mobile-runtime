@@ -35,7 +35,7 @@ struct SimctlDeviceList: Decodable {
         let isAvailable: Bool
         let isBooted: Bool
         /// Only this state may be booted; `Booting`, `Creating` and `Shutting Down` are left alone.
-        var isShutdown = false
+        let isShutdown: Bool
     }
 
     /// The runtime a `simctl create` line should name. simctl lists a runtime even

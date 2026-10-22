@@ -24,8 +24,10 @@
 2. 계획은 부팅을 승인 대상에 넣는다. 기존 앱은 `unobserved`다. 꺼진 기기에서는 설치 상태를 읽을 수 없기 때문이다.
    `BOOT:` 경고로 부팅·계속 실행·부팅 뒤 재관측을 알린다. `--plan`·`inspect`·승인 없는 실행은 부팅하지 않는다.
 3. 승인 뒤 기기 lease를 잡고 파일 사본·기기 상태를 다시 확인한다. 같은 계획이면 그 기기만 부팅한다.
-   - iOS: `up`의 `simctl bootstatus <UDID> -b`를 같은 함수로 호출한다. headless이며 Simulator.app을 열지 않는다.
-   - Android: `up`과 같은 `emulator -avd <name>`을 분리 실행한다. 준비 판정(`sys.boot_completed`, API, ABI, `pm path android`)은 `up`과 같은 함수다. 대기 한도도 `up`의 300초다.
+   - iOS: 부팅 직전 `Shutdown`을 한 번 더 읽는다. 그 뒤 `up`의 `simctl bootstatus <UDID> -b`를 같은 함수로 호출한다. headless이며 Simulator.app을 열지 않는다.
+   - Android: `up`과 같은 `emulator -avd <name>`을 분리 실행한다. 준비 판정(`sys.boot_completed`, API, ABI, `pm path android`)은 `up`과 같은 함수다. 대기 한도와 간격도 `up`의 값이다.
+     준비된 AVD는 Runstir가 시작한 launcher가 살아 있을 때만 인정한다. launcher가 끝나면 즉시 실패한다. 같은 AVD를 다른 Emulator가 잡은 경우를 Runstir가 시작했다고 기록하지 않기 위해서다. launcher 확인은 `down`과 같은 `ps -p` 관측이다.
+   - Android 후보의 AVD config·system image 경로는 계획 identity에 들어간다. 승인 뒤 AVD가 다른 image를 가리키면 다시 승인한다.
 4. 부팅 뒤 기기 이름·OS·runtime identity와 호환성을 다시 확인한다. 기존 앱이 없을 때만 승인한 새 설치를 계속한다.
    앱이 있거나 확인 불가면 설치하지 않는다. 부팅한 기기로 새 교체 계획을 만들고 다시 승인받는다.
 5. 결과의 `deviceBoot`에 Runstir가 시작한 기기를 기록한다. 상태는 `requested`·`started`·`unconfirmed`다.

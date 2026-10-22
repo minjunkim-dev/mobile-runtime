@@ -58,7 +58,11 @@ public struct SimulatorAppFile: Sendable {
 
     /// Boots the approved Simulator with `up`'s headless `simctl bootstatus -b`. Simulator.app is not opened.
     public func startBoot(_ device: AppFileDevice) async throws -> AppFileDeviceBoot {
-        guard device.boot == "required" else { throw Self.failure("The selected Simulator cannot be booted by Runstir.") }
+        // Read the state once more right before booting, so an already-booted device is never recorded as started by Runstir.
+        guard device.boot == "required",
+              try await devices().first(where: { $0.id == device.id })?.boot == "required" else {
+            throw Self.failure("The selected Simulator is no longer shut down. Inspect and approve again.")
+        }
         try await bootSimulator(udid: device.handle, name: device.name, runner: runner,
             environment: await locator.pinnedEnvironment())
         return AppFileDeviceBoot(state: "requested", device: device.id, handle: device.handle,

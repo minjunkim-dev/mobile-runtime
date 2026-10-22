@@ -115,19 +115,21 @@ public struct AndroidAppFile: Sendable {
         let (running, names) = try await runningDevices()
         var devices = running
         let emulator = sdk.appendingPathComponent("emulator/emulator")
-        if let names, FileManager.default.isExecutableFile(atPath: emulator.path) {
-            let listed = try await runner.run(ProcessCommand(emulator.path, ["-list-avds"]))
-            guard listed.terminationStatus.isSuccess else {
-                throw Self.failure("emulator -list-avds could not list the installed AVDs.")
-            }
+        // An unlistable AVD inventory only removes boot candidates; running Emulators stay usable.
+        if let names, FileManager.default.isExecutableFile(atPath: emulator.path),
+           case let listed = try await runner.run(ProcessCommand(emulator.path, ["-list-avds"])),
+           listed.terminationStatus.isSuccess {
             let installed = listed.standardOutput.split(whereSeparator: \.isNewline)
                 .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-                .filter { $0.range(of: #"^[A-Za-z0-9_.-]+$"#, options: .regularExpression) != nil && !names.contains($0) }
+                .filter { $0.range(of: #"^[A-Za-z0-9_][A-Za-z0-9_.-]*$"#, options: .regularExpression) != nil && !names.contains($0) }
             for avd in environment.avds(names: installed, sdk: sdk) {
                 let bootable = avd.config != nil && avd.systemImagePresent && avd.apiLevel != nil && avd.abi != nil
+                // The config and image paths join the plan identity, so a re-pointed AVD needs a new approval.
                 devices.append(AppFileDevice(id: "avd:" + avd.name, handle: "avd:" + avd.name, name: avd.name,
                     os: avd.apiLevel.map(String.init) ?? "unknown", architectures: avd.abi.map { [$0] } ?? [],
-                    ready: false, toolIdentity: toolIdentity, boot: bootable ? "required" : nil))
+                    ready: false, toolIdentity: toolIdentity,
+                    architectureSource: "AVD \(avd.config?.path ?? "config missing") abi.type; system image \(avd.systemImageDirectory?.path ?? "missing"); not measured device CPU",
+                    boot: bootable ? "required" : nil))
             }
         }
         guard Set(devices.map(\.id)).count == devices.count else {
@@ -150,16 +152,26 @@ public struct AndroidAppFile: Sendable {
             detail: "Runstir started this Emulator and leaves it running. Stop it yourself when finished.")
     }
 
-    /// Waits as long as `up` does for the started AVD to become ready.
-    public func awaitBooted(_ device: AppFileDevice, timeout: Duration = AndroidRuntimeTimeouts().boot,
-                            poll: Duration = .seconds(1)) async throws -> AppFileDevice {
-        let deadline = ContinuousClock.now + timeout
+    /// Waits as long as `up` does for the started AVD to become ready. A ready AVD counts only
+    /// while Runstir's launcher lives: otherwise another Emulator holds that AVD, not the one Runstir started.
+    public func awaitBooted(_ device: AppFileDevice, boot: AppFileDeviceBoot) async throws -> AppFileDevice {
+        guard let pid = boot.launcherPID else { throw Self.failure("The started Emulator launcher is unknown.") }
+        let timeouts = AndroidRuntimeTimeouts()
+        let deadline = ContinuousClock.now + timeouts.boot
         while true {
-            if let live = try await runningDevices().devices.first(where: { $0.id == device.id }), live.ready { return live }
-            guard ContinuousClock.now < deadline else {
-                throw Self.failure("Android Emulator \(device.name) did not become ready within \(timeout). Runstir left it running and did not replace or recreate it.")
+            let live = try await runningDevices().devices.first { $0.id == device.id }
+            switch try await androidLauncherPresence(pid, runner: runner) {
+            case false?:
+                throw Self.failure("The Emulator launcher Runstir started (pid \(pid)) exited before \(device.name) became ready. See \(boot.log ?? "its log"). Another Emulator may hold this AVD; Runstir did not stop or replace it.")
+            case nil:
+                throw Self.failure("Whether the Emulator launcher Runstir started (pid \(pid)) is alive could not be confirmed.")
+            case true?:
+                if let live, live.ready { return live }
             }
-            try await Task.sleep(for: poll)
+            guard ContinuousClock.now < deadline else {
+                throw Self.failure("Android Emulator \(device.name) did not become ready within \(timeouts.boot). Runstir left it running and did not replace or recreate it.")
+            }
+            try await Task.sleep(for: timeouts.poll)
         }
     }
 

@@ -834,11 +834,73 @@ struct AppFileExecutionTests {
         #expect(result.operation.state == (platform == .ios ? "failed" : "cancelled"))
         let boot = try #require(result.operation.deviceBoot)
         #expect(boot.state == "unconfirmed")
-        #expect(boot.detail.contains("Re-observed:"))
+        #expect(boot.detail.contains("Re-observed: not running."), Comment(rawValue: boot.detail))
         if platform == .android { #expect(boot.launcherPID == 4242) }
         #expect(result.operation.installation == "not-requested")
         #expect(!fixture.runner.commands.contains(where: mutation))
         #expect(!fixture.runner.commands.contains(where: forbiddenAfterBoot))
+    }
+
+    @Test("a re-observation failure after an interrupted boot is reported as unknown, not as stopped")
+    func failedBootReobservation() async throws {
+        let fixture = try AppFileFixture(platform: .android, shutDown: true)
+        let plan = try #require(await fixture.run(planOnly: true).operation.plan)
+        fixture.runner.interruptBoot = true
+        fixture.runner.failReobservation = true
+        let result = await fixture.run(approval: plan.approval)
+        #expect(result.exitCode == 130)
+        #expect(result.operation.deviceBoot?.detail.contains("Re-observed: unknown (") == true)
+        #expect(!fixture.runner.commands.contains(where: mutation))
+    }
+
+    @Test("a launcher that exits is not mistaken for the AVD another Emulator holds")
+    func exitedLauncher() async throws {
+        let fixture = try AppFileFixture(platform: .android, shutDown: true)
+        let plan = try #require(await fixture.run(planOnly: true).operation.plan)
+        fixture.runner.launcherExits = true
+        let result = await fixture.run(approval: plan.approval)
+        #expect(result.exitCode == 1)
+        #expect(result.operation.deviceBoot?.state == "unconfirmed")
+        #expect(result.operation.error?.contains("exited before") == true)
+        #expect(result.operation.installation == "not-requested")
+        #expect(!fixture.runner.commands.contains(where: forbiddenAfterBoot))
+    }
+
+    @Test("a Simulator booted by someone else after the final recheck is not booted or claimed by Runstir")
+    func simulatorBootedElsewhere() async throws {
+        let fixture = try AppFileFixture(platform: .ios, shutDown: true)
+        let plan = try #require(await fixture.run(planOnly: true).operation.plan)
+        // Lists: plan, approval inventory, final recheck; the fourth is the one right before boot.
+        fixture.runner.bootedElsewhereAtList = 4
+        let result = await fixture.run(approval: plan.approval)
+        #expect(result.exitCode == 1)
+        #expect(result.operation.deviceBoot?.state == "unconfirmed")
+        #expect(!fixture.runner.commands.contains(where: boots))
+        #expect(result.operation.installation == "not-requested")
+    }
+
+    @Test("an unreadable AVD inventory keeps running Emulators and only drops boot candidates")
+    func unlistableAVDs() async throws {
+        let fixture = try AppFileFixture(platform: .android, shutDown: true)
+        fixture.runner.shutDown = false
+        fixture.runner.avdListFails = true
+        let result = await fixture.run(planOnly: true)
+        #expect(result.exitCode == 0, Comment(rawValue: result.operation.error ?? ""))
+        #expect(result.operation.devices.map(\.id) == [fixture.device])
+        #expect(result.operation.devices.first?.ready == true)
+        #expect(fixture.runner.commands.contains { $0.arguments == ["-list-avds"] })
+    }
+
+    @Test("an Emulator whose AVD cannot be named blocks every boot candidate")
+    func unnamedEmulatorBlocksBoot() async throws {
+        let fixture = try AppFileFixture(platform: .android, shutDown: true)
+        fixture.runner.unnamedEmulator = true
+        let result = await fixture.run(planOnly: true)
+        #expect(result.exitCode == 1)
+        #expect(result.operation.plan == nil)
+        #expect(!result.operation.devices.contains { $0.boot == "required" })
+        #expect(!fixture.runner.commands.contains { $0.arguments == ["-list-avds"] })
+        #expect(fixture.runner.spawned.isEmpty)
     }
 
     @Test("an AVD without its system image stays manual preparation and is never booted")
@@ -861,7 +923,7 @@ struct AppFileExecutionTests {
     /// Booting one approved device never stops, erases or switches any device.
     private func forbiddenAfterBoot(_ command: ProcessCommand) -> Bool {
         ["shutdown", "erase", "kill", "delete", "create", "uninstall", "clear", "-wipe-data"].contains(where: command.arguments.contains)
-            || command.executable == "kill" || command.arguments.contains("sdkmanager") || command.executable.hasSuffix("avdmanager")
+            || command.executable == "kill" && command.arguments.first != "-0" || command.arguments.contains("sdkmanager") || command.executable.hasSuffix("avdmanager")
     }
 
     private func mutation(_ command: ProcessCommand) -> Bool {
@@ -979,6 +1041,11 @@ private final class AppFileRunner: ProcessRunner, @unchecked Sendable {
     /// The selected device starts shut down and comes up only through Runstir's boot.
     var shutDown = false
     var interruptBoot = false
+    var failReobservation = false
+    var launcherExits = false
+    var bootedElsewhereAtList: Int?
+    var avdListFails = false
+    var unnamedEmulator = false
     private var booted = false
     private var detached: [ProcessCommand] = []
     var commands: [ProcessCommand] { lock.withLock { recorded } }
@@ -1014,6 +1081,7 @@ private final class AppFileRunner: ProcessRunner, @unchecked Sendable {
             if command.description == "xcodebuild -version" { return ok("Xcode 27.0\nBuild version 27A000\n") }
             if command.executable == "xcrun", args.prefix(3) == ["simctl", "list", "devices"] {
                 deviceLists += 1
+                if let list = bootedElsewhereAtList, deviceLists >= list { booted = true }
                 if disconnectOnFinalRecheck && deviceLists >= 3 { return ok(#"{"devices":{}}"#) }
                 if deviceLists >= 3, let value = deviceInventoryAfterRecheck { return ok(value) }
                 let state = shutDown && !booted ? "Shutdown" : "Booted"
@@ -1060,11 +1128,23 @@ private final class AppFileRunner: ProcessRunner, @unchecked Sendable {
             }
             if command.executable.hasSuffix("/adb") {
                 if args == ["devices", "-l"] {
+                    let unnamed = unnamedEmulator ? "emulator-5556 offline\n" : ""
                     if shutDown && !booted {
-                        if interruptBoot && !detached.isEmpty { withUnsafeCurrentTask { $0?.cancel() }; throw CancellationError() }
-                        return ok("List of devices attached\n")
+                        if interruptBoot && !detached.isEmpty {
+                            // One cancellation during the boot wait; the re-observation that follows is not cancelled.
+                            interruptBoot = false
+                            withUnsafeCurrentTask { $0?.cancel() }
+                            throw CancellationError()
+                        }
+                        if failReobservation && !detached.isEmpty {
+                            return ProcessResult(terminationStatus: .exited(1), standardOutput: "", standardError: "fixture adb server gone")
+                        }
+                        return ok("List of devices attached\n" + unnamed)
                     }
-                    return ok("List of devices attached\nemulator-5554 device product:fixture\n")
+                    return ok("List of devices attached\nemulator-5554 device product:fixture\n" + unnamed)
+                }
+                if args == ["-s", "emulator-5556", "emu", "avd", "name"] {
+                    return ProcessResult(terminationStatus: .exited(1), standardOutput: "", standardError: "fixture console unavailable")
                 }
                 if args == ["-s", "emulator-5554", "emu", "avd", "name"] { return ok("Fixture\nOK\n") }
                 let prefix = ["-s", "emulator-5554", "shell"]
@@ -1083,7 +1163,12 @@ private final class AppFileRunner: ProcessRunner, @unchecked Sendable {
                 }
                 if args == prefix + ["pidof", AppFileFixture.appID] { return ok("42\n") }
             }
-            if command.executable.hasSuffix("/emulator/emulator"), args == ["-list-avds"] { return ok("Fixture\n") }
+            if command.executable.hasSuffix("/emulator/emulator"), args == ["-list-avds"] {
+                return avdListFails ? ProcessResult(terminationStatus: .exited(1), standardOutput: "", standardError: "fixture emulator package broken") : ok("Fixture\n")
+            }
+            if command.executable == "ps", args == ["-p", "4242", "-o", "pid="] {
+                return launcherExits ? ProcessResult(terminationStatus: .exited(1), standardOutput: "", standardError: "") : ok("4242\n")
+            }
             throw FixtureMiss(command: command.description)
         }
     }
@@ -1094,7 +1179,7 @@ private final class AppFileRunner: ProcessRunner, @unchecked Sendable {
                 throw FixtureMiss(command: "unexpected detached child: " + command.description)
             }
             detached.append(command)
-            if !interruptBoot { booted = true }
+            if !interruptBoot && !launcherExits && !failReobservation { booted = true }
             return 4242
         }
     }

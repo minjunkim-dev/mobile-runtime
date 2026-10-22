@@ -100,8 +100,10 @@ Android는 `emulator -list-avds`의 AVD 중 실행 중인 Emulator가 없고 `co
 
 계획의 기존 앱은 `unobserved`다. `BOOT:` 경고가 부팅과 계속 실행을 알린다. `inspect`·`--plan`·승인 없는 실행은 부팅하지 않는다.
 승인 뒤 기기 lease 안에서 파일 사본과 기기 상태를 다시 확인하고 그 기기만 부팅한다.
-iOS는 `up`과 같은 headless `simctl bootstatus <UDID> -b`다. Simulator.app을 열지 않는다.
+iOS는 부팅 직전 `Shutdown`을 다시 읽고 `up`과 같은 headless `simctl bootstatus <UDID> -b`를 실행한다. Simulator.app을 열지 않는다.
 Android는 `up`과 같은 `emulator -avd <name>`을 분리 실행하고 같은 준비 판정으로 최대 300초 기다린다.
+준비된 AVD는 Runstir가 시작한 launcher가 살아 있을 때만 인정한다. launcher가 끝나면 즉시 실패한다.
+AVD 목록을 읽지 못하면 부팅 후보만 빠지고 실행 중인 Emulator는 그대로 쓸 수 있다.
 부팅 뒤 이름·OS·runtime identity와 호환성을 다시 확인한다. 기존 앱이 없을 때만 승인한 설치를 계속한다.
 앱이 있거나 확인 불가면 설치하지 않는다. 부팅한 기기로 만든 교체 계획을 다시 승인받는다.
 

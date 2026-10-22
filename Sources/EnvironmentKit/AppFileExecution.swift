@@ -234,9 +234,10 @@ public enum AppFileExecution {
                 // like `up`, and left running; no other device is booted, switched or stopped.
                 operation.deviceBoot = AppFileDeviceBoot(state: "requested", device: currentDevice.id,
                     detail: "Runstir is booting the approved shut-down device and will leave it running.")
-                events.send("stage", stage: "boot", state: "running", detail: "Booting \(currentDevice.name) headlessly. Other devices are not booted or stopped.")
-                operation.deviceBoot = try await tools.startBoot(currentDevice, operation: operation.id)
-                let live = try await tools.awaitBooted(currentDevice)
+                events.send("stage", stage: "boot", state: "running", detail: "Booting \(currentDevice.name). Other devices are not booted or stopped.")
+                let started = try await tools.startBoot(currentDevice, operation: operation.id)
+                operation.deviceBoot = started
+                let live = try await tools.awaitBooted(currentDevice, boot: started)
                 guard live.name == currentDevice.name, live.os == currentDevice.os,
                       live.runtimeIdentifier == currentDevice.runtimeIdentifier, live.runtimeBuild == currentDevice.runtimeBuild else {
                     throw AppFileSnapshot.failure("The booted device's identity differs from the approved plan. Inspect and approve again.")
@@ -543,11 +544,11 @@ private enum AppFileProvider: Sendable {
         }
     }
 
-    func awaitBooted(_ device: AppFileDevice) async throws -> AppFileDevice {
+    func awaitBooted(_ device: AppFileDevice, boot: AppFileDeviceBoot) async throws -> AppFileDevice {
         switch self {
         case .ios(let tools): try await tools.awaitBooted(device)
         case .iosDevice: throw AppFileSnapshot.failure("Runstir does not boot physical devices.")
-        case .android(let tools): try await tools.awaitBooted(device)
+        case .android(let tools): try await tools.awaitBooted(device, boot: boot)
         }
     }
 
