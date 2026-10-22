@@ -155,7 +155,8 @@ profile의 UDID 목록은 JSON과 사람용 출력에 넣지 않는다. 개수�
 기기는 고정한 Xcode의 `devicectl list devices`에서 `reality: physical`, `platform: iOS`만 후보로 쓴다.
 `--device`는 UDID다. 선택한 기기만 `devicectl device info details`로 현재 상태를 읽는다.
 이 조회가 실패하면 연결 조건을 `unreachable`로 기록한다. 다른 기기로 바꾸지 않는다.
-선택하지 않은 기기는 연락하지 않는다. 목록의 유휴 연결은 준비 여부 판정에 쓰지 않는다.
+선택하지 않은 기기와 페어링되지 않은 기기는 연락하지 않는다. pairing 요청을 만들지 않기 위해서다.
+목록의 유휴 연결은 준비 여부 판정에 쓰지 않는다.
 architecture는 CoreDevice의 `supportedCPUTypes` capability다. 기기 CPU 측정이 아니다.
 
 선택 기기가 있으면 `operation.prerequisites`에 아래 조건을 `satisfied`·`unsatisfied`·`unknown`으로 기록한다.
@@ -180,6 +181,7 @@ Runstir는 기기 등록·profile 생성·재서명·계정 입력·pairing 변�
 설치 관측은 `devicectl device info apps --include-all-apps --bundle-id`의 build다.
 실행 요청은 `devicectl device process launch`다. 기존 실행 종료 옵션을 쓰지 않는다.
 실행 관측은 `devicectl device info processes`에서 설치 위치 바로 아래 실행 파일의 process다.
+`/private/var`와 `/var` 표기를 같은 위치로 비교한다. 비교할 수 없는 위치는 중지가 아니라 확인 불가다.
 실패·취소 뒤 설치 상태 재관측은 위 경로와 같다. 연결이 끊기면 확인 불가로 남긴다.
 
 ## 완료 판정에 필요한 실제 검증

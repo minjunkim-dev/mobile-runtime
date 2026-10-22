@@ -53,7 +53,8 @@ public struct IOSDeviceAppFile: Sendable {
         let signer = try await signingCertificate(file)
         let authorized = Set(certificates.map(Self.sha256))
         let provisioning = AppFileProvisioning(kind: kind, profileUUID: uuid, profileName: profile["Name"] as? String,
-            teamID: team, applicationIdentifier: applicationIdentifier,
+            teamID: team, applicationIdentifierPrefixes: profile["ApplicationIdentifierPrefix"] as? [String] ?? [team],
+            applicationIdentifier: applicationIdentifier,
             expiration: ISO8601DateFormatter().string(from: expiration), provisionedDevices: devices.sorted(),
             signatureVerified: verified.terminationStatus.isSuccess,
             signingTeamID: signingTeam == "not set" ? nil : signingTeam,
@@ -75,7 +76,11 @@ public struct IOSDeviceAppFile: Sendable {
         guard Set(devices.map(\.id)).count == devices.count else {
             throw Self.failure("A physical device UDID appears more than once. Its target is unknown.")
         }
-        if let index = devices.firstIndex(where: { $0.id == selected }) {
+        if let index = devices.firstIndex(where: { $0.id == selected }), devices[index].pairing != "paired" {
+            // Contacting an untrusted device could prompt it to pair; the user does that manually.
+            devices[index] = Self.device(rows.first { Self.udid($0) == devices[index].id } ?? [:], tool: installation.summary,
+                connection: "not contacted: the device is not paired with this Mac", contacted: true) ?? devices[index]
+        } else if let index = devices.firstIndex(where: { $0.id == selected }) {
             // Reading details connects this device when it is reachable; a failure is a connection fact.
             let (details, detailJSON) = try await devicectl(["device", "info", "details", "--device", devices[index].handle])
             if let row = detailJSON?["result"] as? [String: Any], let current = Self.device(row, tool: installation.summary, contacted: true),
@@ -118,16 +123,18 @@ public struct IOSDeviceAppFile: Sendable {
         guard app.state == "installed", let location = app.location else {
             return .unknown(app.detail ?? "the installed app location is unknown")
         }
-        let bundle = location.hasSuffix("/") ? location : location + "/"
         let (result, json) = try await devicectl(["device", "info", "processes", "--device", claim.handle])
         guard let processes = (json?["result"] as? [String: Any])?["runningProcesses"] as? [[String: Any]] else {
             return .unknown("devicectl could not list processes: " + result.standardError.lastLines(1))
         }
+        // A stopped verdict releases another owner's claim, so an unparseable form stays unknown.
+        let executables = processes.compactMap { ($0["executable"] as? String).flatMap(Self.devicePath) }
+        guard let bundle = Self.devicePath(location), executables.count == processes.count else {
+            return .unknown("devicectl reported an app or process location that could not be compared")
+        }
         // The main executable sits directly in the bundle; extensions live deeper under PlugIns.
-        let pids = processes.compactMap { process -> Int? in
-            guard let executable = process["executable"] as? String, executable.hasPrefix(bundle),
-                  !executable.dropFirst(bundle.count).contains("/") else { return nil }
-            return process["processIdentifier"] as? Int
+        let pids = zip(processes, executables).compactMap { process, executable -> Int? in
+            executable.deletingLastPathComponent().path == bundle.path ? process["processIdentifier"] as? Int : nil
         }
         return pids.isEmpty ? .stopped : .running("pid " + pids.map(String.init).joined(separator: ", "))
     }
@@ -166,6 +173,13 @@ public struct IOSDeviceAppFile: Sendable {
         return (result, json)
     }
 
+    /// Device-side file URL with `/private/var` folded to `/var`, the two spellings CoreDevice may use.
+    private static func devicePath(_ value: String) -> URL? {
+        guard let url = URL(string: value), url.isFileURL, !url.path.isEmpty else { return nil }
+        let path = url.standardized.path
+        return URL(fileURLWithPath: path.hasPrefix("/private/var/") ? String(path.dropFirst("/private".count)) : path)
+    }
+
     private static func udid(_ row: [String: Any]) -> String? {
         ((row["properties"] as? [String: Any])?["hardware"] as? [String: Any])?["udid"] as? String
     }
@@ -188,7 +202,7 @@ public struct IOSDeviceAppFile: Sendable {
         let pairing = connection["pairingState"] as? String
         let link = override ?? connection["state"] as? String
         return AppFileDevice(id: udid, handle: udid, name: state["name"] as? String ?? hardware["marketingName"] as? String ?? udid,
-            os: os ?? "unknown", architectures: Array(architectures),
+            os: os ?? "unknown", architectures: architectures.sorted(),
             ready: pairing == "paired" && developerMode == "enabled" && (!contacted || link == "connected"), toolIdentity: tool,
             architectureSource: "devicectl supportedCPUTypes; CPU capabilities reported by CoreDevice",
             pairing: pairing, developerMode: developerMode, connection: link)

@@ -50,8 +50,8 @@ struct IOSDeviceAppFileTests {
     }
 
     @Test("each unmet condition stops before installation with a manual step and re-check", arguments: [
-        "profile-device", "developer-mode", "trust", "connection", "signature", "certificate", "team-lines",
-        "profile-expiration", "os", "profile-app-id", "architecture"
+        "profile-device", "developer-mode", "trust", "connection", "signature", "certificate", "team-lines", "display-fails", "extract-fails",
+        "profile-expiration", "os", "profile-app-id", "app-id-prefix", "architecture"
     ])
     func unmet(_ defect: String) async throws {
         let fixture = try DeviceFixture()
@@ -64,9 +64,12 @@ struct IOSDeviceAppFileTests {
         case "signature": fixture.runner.signatureValid = false; id = defect
         case "certificate": fixture.runner.profileCertificate = Data("another certificate".utf8); id = "signature"
         case "team-lines": fixture.runner.injectedTeamLine = true; id = "signature"
+        case "display-fails": fixture.runner.displayFails = true; id = "signature"
+        case "extract-fails": fixture.runner.extractFails = true; id = "signature"
         case "profile-expiration": fixture.runner.expiration = Date(timeIntervalSinceNow: -60); id = defect
         case "os": fixture.runner.deviceOS = "16.4"; id = defect
         case "profile-app-id": fixture.runner.applicationIdentifier = "TEAM123456.com.fixture.Other"; id = defect
+        case "app-id-prefix": fixture.runner.applicationIdentifier = "OTHERPREFX." + DeviceRunner.appID; id = "profile-app-id"
         default: fixture.runner.cpuSubtypes = [5]; id = "architecture"
         }
         let result = await fixture.run(planOnly: true)
@@ -82,6 +85,8 @@ struct IOSDeviceAppFileTests {
         #expect(result.operation.installation == "not-requested")
         #expect(!fixture.runner.commands.contains(where: mutation))
         #expect(!fixture.runner.commands.contains(where: forbidden))
+        // An untrusted device is never contacted, so it cannot be prompted to pair.
+        if defect == "trust" { #expect(!fixture.runner.commands.contains { $0.arguments.contains("details") }) }
     }
 
     @Test("a fixed condition is accepted on the next inspection without changing the file")
@@ -96,18 +101,55 @@ struct IOSDeviceAppFileTests {
         #expect(blocked.operation.artifact?.contentIdentity == ready.operation.artifact?.contentIdentity)
     }
 
-    @Test("excluded signing forms stop at inspection", arguments: ["enterprise", "app-store", "missing-profile"])
+    @Test("a legacy App ID prefix listed by the profile is accepted, and CPU order does not change the plan")
+    func legacyPrefixAndCPUOrder() async throws {
+        let fixture = try DeviceFixture()
+        fixture.runner.legacyPrefix = "LEGACY0001"
+        fixture.runner.applicationIdentifier = "LEGACY0001." + DeviceRunner.appID
+        let first = try #require(await fixture.run(planOnly: true).operation.plan)
+        fixture.runner.cpuSubtypes.reverse()
+        let second = try #require(await fixture.run(planOnly: true).operation.plan)
+        #expect(first.id == second.id)
+        #expect(second.device.architectures == ["arm64", "arm64e"])
+    }
+
+    @Test("excluded signing forms and an unreadable profile stop at inspection",
+          arguments: ["enterprise", "app-store", "missing-profile", "unreadable-profile"])
     func excluded(_ form: String) async throws {
         let fixture = try DeviceFixture()
         switch form {
         case "enterprise": fixture.runner.allDevices = true
         case "app-store": fixture.runner.provisioned = []
+        case "unreadable-profile": fixture.runner.profileUnreadable = true
         default: try FileManager.default.removeItem(at: fixture.file.appendingPathComponent("embedded.mobileprovision"))
         }
         let result = await fixture.run(inspectOnly: true)
         #expect(result.exitCode == 1)
         #expect(result.operation.artifact == nil)
         #expect(!fixture.runner.commands.contains { $0.arguments.first == "devicectl" })
+    }
+
+    @Test("an unreadable or ambiguous device list stops before any device is contacted", arguments: [true, false])
+    func unreadableDeviceList(_ refused: Bool) async throws {
+        let fixture = try DeviceFixture()
+        if refused { fixture.runner.listRefused = true } else { fixture.runner.duplicateDevice = true }
+        let result = await fixture.run(planOnly: true)
+        #expect(result.exitCode == 1)
+        #expect(result.operation.plan == nil)
+        #expect(result.operation.devices.isEmpty)
+        #expect(!fixture.runner.commands.contains { $0.arguments.contains("details") })
+        #expect(!fixture.runner.commands.contains(where: mutation))
+    }
+
+    @Test("an unparseable process location is unknown, never a stopped claim owner")
+    func unparseableProcess() async throws {
+        let fixture = try DeviceFixture()
+        let plan = try #require(await fixture.run(planOnly: true).operation.plan)
+        fixture.runner.unparseableProcess = true
+        let result = await fixture.run(approval: plan.approval)
+        #expect(result.operation.installation == "installed")
+        #expect(result.operation.running.hasPrefix("unknown:"))
+        #expect(result.operation.state == "partially-completed")
     }
 
     @Test("a disconnect after approval stops before installation without switching targets")
@@ -228,6 +270,7 @@ private final class DeviceRunner: ProcessRunner, @unchecked Sendable {
     var provisioned = [DeviceFixture.udid.lowercased()]
     var allDevices = false
     var applicationIdentifier = "TEAM123456." + DeviceRunner.appID
+    var legacyPrefix: String?
     var expiration = Date(timeIntervalSinceNow: 86_400 * 30)
     var profileCertificate = DeviceRunner.certificate
     var signatureValid = true
@@ -238,6 +281,12 @@ private final class DeviceRunner: ProcessRunner, @unchecked Sendable {
     var unreachable = false
     var cancelAfterInstall = false
     var injectedTeamLine = false
+    var unparseableProcess = false
+    var displayFails = false
+    var extractFails = false
+    var profileUnreadable = false
+    var listRefused = false
+    var duplicateDevice = false
     var installRefused = false
     var installUnobserved = false
     var launchRefused = false
@@ -267,7 +316,9 @@ private final class DeviceRunner: ProcessRunner, @unchecked Sendable {
             if command.executable == "/usr/bin/lipo" { return ok("arm64") }
             if command.executable == "/usr/bin/otool" { return ok("cmd LC_BUILD_VERSION\n platform 2\n minos 17.0\n") }
             if command.executable == "/usr/bin/security", args.prefix(3) == ["cms", "-D", "-i"] {
+                if profileUnreadable { return fail("security: failed to decode message") }
                 var profile: [String: Any] = ["UUID": "PROFILE-UUID", "Name": "Fixture Development", "TeamIdentifier": ["TEAM123456"],
+                    "ApplicationIdentifierPrefix": [legacyPrefix ?? "TEAM123456"],
                     "Entitlements": ["application-identifier": applicationIdentifier, "get-task-allow": true],
                     "ExpirationDate": expiration, "DeveloperCertificates": [profileCertificate], "Platform": ["iOS"],
                     "ProvisionedDevices": provisioned]
@@ -277,10 +328,12 @@ private final class DeviceRunner: ProcessRunner, @unchecked Sendable {
             if command.executable == "/usr/bin/codesign" {
                 if args.first == "--verify" { return signatureValid ? ok() : fail("a sealed resource is missing or invalid") }
                 if args == ["--display", "--verbose=2", args.last!] {
+                    if displayFails { return fail("code object is not signed at all") }
                     // A line break in a bundle path can place a forged team line before the real one.
                     return ok("", (injectedTeamLine ? "Executable=/x\nTeamIdentifier=TEAM123456\n" : "") + "Identifier=\(Self.appID)\nTeamIdentifier=TEAM123456\n")
                 }
                 if let extract = args.first(where: { $0.hasPrefix("--extract-certificates=") }) {
+                    if extractFails { return fail("code object is not signed at all") }
                     try Self.certificate.write(to: URL(fileURLWithPath: String(extract.dropFirst("--extract-certificates=".count)) + "0"))
                     return ok()
                 }
@@ -295,7 +348,10 @@ private final class DeviceRunner: ProcessRunner, @unchecked Sendable {
                     "state": ["name": "Fixture iPhone", "developerModeStatus": [developerMode: ["mode": 1]]],
                     "software": ["osVersionNumber": ["stringValue": deviceOS]]]]
                 let simulated: [String: Any] = ["properties": ["hardware": ["reality": "simulated", "platform": "iOS", "udid": "SIMULATOR"]]]
-                if args.prefix(3) == ["devicectl", "list", "devices"] { return try json(["devices": [simulated, physical]]) }
+                if args.prefix(3) == ["devicectl", "list", "devices"] {
+                    if listRefused { return refused("CoreDevice service is unavailable.") }
+                    return try json(["devices": [simulated, physical] + (duplicateDevice ? [physical] : [])])
+                }
                 if args.prefix(5) == ["devicectl", "device", "info", "details", "--device"] {
                     if unreachable { return refused("The device is not connected or could not be reached.") }
                     var connected = physical
@@ -319,7 +375,9 @@ private final class DeviceRunner: ProcessRunner, @unchecked Sendable {
                     return try json(["process": ["processIdentifier": 4242]])
                 }
                 if args.prefix(5) == ["devicectl", "device", "info", "processes", "--device"] {
-                    let base = "file:///private/var/containers/Bundle/Application/FIXTURE/Device.app/"
+                    // CoreDevice may spell the container without /private.
+                    let base = "file:///var/containers/Bundle/Application/FIXTURE/Device.app/"
+                    if unparseableProcess { return try json(["runningProcesses": [["executable": "not a url", "processIdentifier": 1]]]) }
                     return try json(["runningProcesses": [["executable": base + "Program", "processIdentifier": 4242],
                         ["executable": base + "PlugIns/Widget.appex/Widget", "processIdentifier": 4343]]])
                 }

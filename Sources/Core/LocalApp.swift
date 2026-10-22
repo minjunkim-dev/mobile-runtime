@@ -68,10 +68,13 @@ public struct AppFileProvisioning: Codable, Sendable, Equatable {
     public let profileUUID: String
     public let profileName: String?
     public let teamID: String
+    /// Usually the team ID; older App IDs can carry a different prefix.
+    public let applicationIdentifierPrefixes: [String]
     public let applicationIdentifier: String
     /// ISO 8601.
     public let expiration: String
     /// Kept out of JSON and evidence: only the count and the selected device's membership are reported.
+    /// A decoded value therefore has an empty list and never equals a freshly inspected one.
     public private(set) var provisionedDevices: [String] = []
     public let provisionedDeviceCount: Int
     public let signatureVerified: Bool
@@ -79,17 +82,18 @@ public struct AppFileProvisioning: Codable, Sendable, Equatable {
     public let signingCertificateInProfile: Bool
 
     private enum CodingKeys: String, CodingKey {
-        case kind, profileUUID, profileName, teamID, applicationIdentifier, expiration, provisionedDeviceCount,
+        case kind, profileUUID, profileName, teamID, applicationIdentifierPrefixes, applicationIdentifier, expiration, provisionedDeviceCount,
              signatureVerified, signingTeamID, signingCertificateInProfile
     }
 
     public init(kind: String, profileUUID: String, profileName: String?, teamID: String,
-                applicationIdentifier: String, expiration: String, provisionedDevices: [String],
+                applicationIdentifierPrefixes: [String], applicationIdentifier: String, expiration: String, provisionedDevices: [String],
                 signatureVerified: Bool, signingTeamID: String?, signingCertificateInProfile: Bool) {
         self.kind = kind
         self.profileUUID = profileUUID
         self.profileName = profileName
         self.teamID = teamID
+        self.applicationIdentifierPrefixes = applicationIdentifierPrefixes
         self.applicationIdentifier = applicationIdentifier
         self.expiration = expiration
         self.provisionedDevices = provisionedDevices

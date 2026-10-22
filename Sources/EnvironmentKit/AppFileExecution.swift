@@ -322,9 +322,9 @@ public enum AppFileExecution {
                               now: Date = Date()) -> [AppFilePrerequisite]? {
         guard let profile = metadata.provisioning else { return nil }
         let reexport = "Sign and export the app again yourself in Xcode or your build system. Runstir does not re-sign."
-        let team = profile.applicationIdentifier.prefix { $0 != "." }
+        let prefix = profile.applicationIdentifier.prefix { $0 != "." }
         let pattern = profile.applicationIdentifier.drop { $0 != "." }.dropFirst()
-        let appIDMatches = team == profile.teamID && (pattern == "*" || pattern == metadata.appID
+        let appIDMatches = profile.applicationIdentifierPrefixes.contains(String(prefix)) && (pattern == "*" || pattern == metadata.appID
             || pattern.hasSuffix(".*") && metadata.appID.hasPrefix(pattern.dropLast()))
         let expiration = ISO8601DateFormatter().date(from: profile.expiration)
         let listed = profile.provisionedDevices.contains { $0.caseInsensitiveCompare(device.id) == .orderedSame }
