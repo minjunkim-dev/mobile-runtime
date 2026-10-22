@@ -42,6 +42,19 @@ native iOS의 공유 CLI·GUI 실행 경계는 ADR-0036과 `docs/native-ios.md`�
 **실행 기기 (Execution device)**:
 앱을 설치하고 실행할 Simulator·Emulator 또는 연결된 실기기다. 실행 기기는 특정 플랫폼에 속한다.
 
+**기기 출처 (Device origin)**:
+가상 실행 기기를 누가 만들었는지에 대한 Runstir의 판단이다. **Runstir가 만듦**, **외부 기기**, **출처 불명** 중 하나다. 실기기에는 쓰지 않는다. 표시용이며 기기 선택이나 정리 동작을 바꾸지 않는다.
+_Avoid_: 소유 기기(활성 실행의 소유 자원과 섞인다), 확인 불가(Metro 판정 용어다)
+
+**Runstir가 만듦 (Runstir-created)**:
+승인된 환경 준비가 새로 만들었고, 지금 기기가 그때 만든 바로 그 기기임을 Runstir가 다시 확인할 수 있는 가상 기기다. Runstir가 설치한 runtime·system image 위에 다른 도구가 만든 기기는 포함하지 않는다.
+
+**외부 기기 (External device)**:
+Runstir가 만든 기록이 없는 가상 기기다. Xcode·Android Studio·직접 명령으로 만든 기기, 그리고 기기 출처를 기록하기 전에 만든 기기를 포함한다.
+
+**출처 불명 (Origin unknown)**:
+Runstir가 만든 기록은 있지만 지금 기기가 그 기기와 같은지 다시 확인할 수 없는 가상 기기다. 외부 기기로 단정하지 않는다.
+
 **환경 준비 (Environment preparation)**:
 프로젝트가 요구하는 도구·프로젝트 의존성과 가상 기기·실기기의 실행 조건을 갖추는 일이다. 특정 실행 기기에 앱을 설치하고 실행하는 일과 구분한다.
 
@@ -162,7 +175,7 @@ Stage의 결과. `pass` / `skipped`(이미 되어 있어 할 일이 없었다) /
 Stage가 다음 Stage에 넘기는 값의 명시적 타입. 앞 Stage가 실제로 넣은 것만 뒤가 읽는다 — 전역 가변 상태 없음.
 
 **기기 선택 (Device selection)**:
-어느 시뮬레이터를 쓸지 정하는 순서 — `mobile.yml`의 `ios.device` → 이미 booted된 기기 → 사용 가능한 최신 runtime의 최신 iPhone(세대가 높은 쪽, 같으면 이름이 가장 단순한 모델). doctor의 `config.values`와 up의 `device` Stage가 **같은 셀렉터**를 쓴다 — 판정과 실행이 갈리면 doctor가 쓸 수 있다고 한 기기를 up이 안 쓰는 일이 생긴다. 후보가 없으면 `simctl create` 명령을 주고 멈춘다. 시뮬레이터를 만들어 주지는 않는다.
+어느 시뮬레이터를 쓸지 정하는 순서 — `mobile.yml`의 `ios.device` → 이미 booted된 기기 → 사용 가능한 최신 runtime의 최신 iPhone(세대가 높은 쪽, 같으면 이름이 가장 단순한 모델). doctor의 `config.values`와 up의 `device` Stage가 **같은 셀렉터**를 쓴다 — 판정과 실행이 갈리면 doctor가 쓸 수 있다고 한 기기를 up이 안 쓰는 일이 생긴다. 후보가 없으면 `simctl create` 명령을 주고 멈춘다. 기기 선택은 기기를 만들지 않는다. 기기 생성은 승인된 환경 준비에서만 한다.
 
 **scheme 결정 (Scheme selection)**:
 어느 scheme을 빌드할지 정하는 순서 — `mobile.yml`의 `ios.scheme` → 프로젝트에 하나뿐이면 그것. 여럿인데 선언이 없으면 고르지 않는다. doctor의 `config.values`와 up의 `build` Stage가 **같은 셀렉터**를 쓰고, 등급만 다르다 — doctor는 warning(아직 아무도 고르지 않았을 뿐 머신은 멀쩡하다, ADR-0004), up은 error(고르지 않으면 빌드할 수 없다). scheme 목록은 언제나 `.xcodeproj`에서 읽는다 — workspace를 읽으면 Pod scheme이 쏟아진다.
