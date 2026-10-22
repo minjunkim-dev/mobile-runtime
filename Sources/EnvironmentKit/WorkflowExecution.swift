@@ -84,8 +84,13 @@ public enum WorkflowExecution {
             if input.project.entrypoint != nil && anchor.framework != .flutter {
                 throw selectionFailure("An explicit entrypoint requires a Flutter app.")
             }
-            if let port = input.port, (anchor.framework != .flutter || kind != .up || !(1...65535).contains(port)) {
-                throw selectionFailure("--port requires Flutter up and a port from 1 through 65535. This workflow cannot forward it; no project file was changed.")
+            if let port = input.port {
+                let supported = (anchor.framework == .reactNative && kind != .down)
+                    || (anchor.framework == .flutter && kind == .up)
+                guard supported, (1...65535).contains(port) else {
+                    throw selectionFailure("--port requires React Native build/up or Flutter up and a port from 1 through 65535. This workflow cannot forward it; no project file was changed.")
+                }
+                if anchor.framework == .reactNative { try validatePortForwarding(anchor: anchor, platform: platform) }
             }
             if anchor.framework == .flutter && kind != .down {
                 guard let project = try? FlutterProject(directory: anchor.directory, entrypoint: input.project.entrypoint), project.entrypoint != nil else {
@@ -228,13 +233,17 @@ public enum WorkflowExecution {
             let owner = LeaseOwner(operationId: operation.id, command: kind.rawValue, project: ownerProject)
             let folderLease = try leases.acquire([.folder(folder)], owner: owner)
             defer { folderLease.release() }
+            let logs = RunLogs(project: anchor.directory)
+            let recordedPort = try anchor.framework == .reactNative ? logs.metroPort(platform: platform) : nil
+            let metroPort = anchor.framework == .reactNative
+                ? (kind == .down ? recordedPort ?? MetroVerdict.port : input.port ?? MetroVerdict.port) : nil
             let device: ResourceKey?
             switch kind {
             case .up: device = operation.device.map { .device(platform, $0) }
             case .down:
                 switch platform {
                 case .ios:
-                    device = InstallRecord.read(from: RunLogs(project: anchor.directory)).map { .device(.ios, $0.udid) }
+                    device = try InstallRecord.read(from: RunLogs(project: anchor.directory), leases: leases, ownerProject: owner.project).map { .device(.ios, $0.udid) }
                 case .android:
                     device = try androidTeardownDeviceKey(anchor: anchor)
                 }
@@ -247,13 +256,18 @@ public enum WorkflowExecution {
                 if input.port == nil, let flutterReentry { flutterPort = flutterReentry.hostPort }
                 else { flutterPort = try FlutterIOSWorkflow.availablePort(input.port) }
             } else { flutterPort = nil }
-            operation.port = flutterPort
+            operation.port = flutterPort ?? metroPort
             let recordedAndroid = kind == .down && platform == .android
                 ? try androidTeardownResourceKeys(anchor: anchor) : []
             let resources = (device.map { [$0] } ?? []) + recordedAndroid + (flutterReentry?.resourceKeys ?? [])
-                + (kind == .build || anchor.framework != .reactNative ? [] : [.port(MetroVerdict.port)])
+                + (kind == .build ? [] : [metroPort, recordedPort].compactMap { $0 }.map(ResourceKey.port))
             let resourceLease = try leases.acquire(resources + (flutterPort.map { [.port($0)] } ?? []), owner: owner)
             defer { resourceLease.release() }
+            if kind == .up, let recordedPort, let metroPort, recordedPort != metroPort {
+                guard try await MetroVerdict.ask(anchor: anchor.directory, runner: wiring.projectRunner, port: recordedPort) == .empty else {
+                    throw selectionFailure("The previously selected Metro port \(recordedPort) remains occupied or unconfirmed. Run mobile down for this project before selecting a different port.")
+                }
+            }
             if let flutterReentry {
                 guard flutterPort == flutterReentry.hostPort,
                       try androidFlutterReentry(anchor: anchor) == flutterReentry else {
@@ -280,7 +294,8 @@ public enum WorkflowExecution {
             switch (kind, platform) {
             case (.down, .ios):
                 started("down")
-                down = await iOSTeardown(anchor: anchor, runner: runner, locator: wiring.locator).run()
+                down = await iOSTeardown(anchor: anchor, runner: runner, locator: wiring.locator,
+                    leases: leases, ownerProject: owner.project).run()
             case (.down, .android):
                 started("down")
                 down = await androidTeardown(anchor: anchor, config: config, runner: runner, projectRunner: runner,
@@ -301,13 +316,14 @@ public enum WorkflowExecution {
                 up = await runAndroidUp(anchor: anchor, doctor: wiring.engine, config: config,
                     hostRunner: runner, projectRunner: wiring.projectRunner,
                     environment: AndroidEnvironment(values: input.project.environment),
+                    metroPort: anchor.framework == .reactNative ? input.port : nil,
                     port: flutterPort, flutterEntrypoint: androidFlutter?.entrypoint,
                     reentry: flutterReentry, note: note,
                     onStageFinished: finished, onStageStarted: started)
             case (.build, .android):
                 up = await UpPipeline(stages: androidBuildStages(anchor: anchor, doctor: wiring.engine, config: config,
                     hostRunner: runner, projectRunner: wiring.projectRunner,
-                    environment: AndroidEnvironment(values: input.project.environment), note: note))
+                    environment: AndroidEnvironment(values: input.project.environment), metroPort: input.port, note: note))
                     .run(onStageFinished: finished, onStageStarted: started)
             case (.build, .ios), (.up, .ios):
                 let flutter = try anchor.framework == .flutter
@@ -317,7 +333,7 @@ public enum WorkflowExecution {
                     hostRunner: runner, projectRunner: flutter?.buildRunner ?? wiring.projectRunner, locator: wiring.locator,
                     deviceID: operation.device, configuration: operation.configuration ?? "Debug",
                     buildWithoutDevice: kind == .build && operation.device == nil,
-                    flutterPort: flutterPort, note: note)
+                    metroPort: input.port, flutterPort: flutterPort, note: note)
                 up = await UpPipeline(stages: flutter?.guarding(stages) ?? stages)
                     .run(onStageFinished: finished, onStageStarted: started)
                 if let flutter, !flutter.changedFiles.isEmpty {
@@ -407,6 +423,28 @@ public enum WorkflowExecution {
 
     private static func selectionFailure(_ summary: String) -> DomainError {
         DomainError(summary: summary, remediation: Remediation(summary: summary))
+    }
+
+    private static func validatePortForwarding(anchor: ProjectAnchor, platform: ProjectPlatform) throws {
+        let root = anchor.directory
+        let manifest = try? JSONSerialization.jsonObject(with: Data(contentsOf: root.appendingPathComponent("package.json"))) as? [String: Any]
+        guard (manifest?["scripts"] as? [String: String])?["start"]?.trimmingCharacters(in: .whitespacesAndNewlines) == "react-native start" else {
+            throw selectionFailure("This start script has no confirmed --port forwarding path. Use the standard react-native start script or the default port; no project file was changed.")
+        }
+        let dependency = (anchor.workspaceRoot?.directory ?? root).appendingPathComponent("node_modules")
+        let relative = platform == .ios ? "react-native/React-Core.podspec"
+            : "@react-native/gradle-plugin/react-native-gradle-plugin/src/main/kotlin/com/facebook/react/utils/AgpConfiguratorUtils.kt"
+        let required = platform == .ios ? "RCT_METRO_PORT=${RCT_METRO_PORT}" : "reactNativeDevServerPort"
+        guard let text = try? String(contentsOf: dependency.appendingPathComponent(relative), encoding: .utf8), text.contains(required) else {
+            throw selectionFailure("The installed React Native native build has no confirmed selected-port input. Prepare a supported local dependency tree; no tool was installed and no source was changed.")
+        }
+        if platform == .ios {
+            let provider = dependency.appendingPathComponent("react-native/React/Base/RCTBundleURLProvider.mm")
+            guard let text = try? String(contentsOf: provider, encoding: .utf8),
+                text.contains("RCT_jsLocation"), text.contains("stringForKey:kRCTJsLocationKey") else {
+                throw selectionFailure("The installed iOS React Native bundle provider has no confirmed launch port argument. Existing source and app preferences were preserved.")
+            }
+        }
     }
 }
 

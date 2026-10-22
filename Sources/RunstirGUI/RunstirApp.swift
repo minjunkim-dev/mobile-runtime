@@ -204,7 +204,9 @@ struct InspectionView: View {
                     TextField("Configuration (Debug)", text: $configuration)
                 }
             }.disabled(checking || running != nil)
-            if result?.selection.selected?.framework == .flutter {
+            if result?.selection.selected?.framework == .reactNative {
+                TextField("Metro port (8081)", text: $port).disabled(checking || running != nil)
+            } else if result?.selection.selected?.framework == .flutter {
                 HStack {
                     TextField("Entrypoint (lib/main.dart)", text: $entrypoint)
                     TextField("VM service port (자동 선택)", text: $port)
@@ -316,6 +318,7 @@ struct InspectionView: View {
             .onChange(of: platform) { _, _ in
                 device = ""; devices = []; workflow = nil
                 scheme = ""; configuration = ""; module = ""; variant = ""
+                port = ""
             }
             .onChange(of: app) { _, _ in
                 device = ""; devices = []; workflow = nil
@@ -345,8 +348,8 @@ struct InspectionView: View {
     @MainActor private func execute(_ kind: WorkflowKind) {
         guard !checking, running == nil else { return }
         let selectedPlatform = ProjectPlatform(rawValue: platform) ?? result?.selection.platform
-        let flutterUp = kind == .up && result?.selection.selected?.framework == .flutter
-        if flutterUp, !port.isEmpty, Int(port).map({ (1...65535).contains($0) }) != true {
+        let usesPort = kind == .up || (kind == .build && result?.selection.selected?.framework == .reactNative)
+        if usesPort, !port.isEmpty, Int(port).map({ (1...65535).contains($0) }) != true {
             error = "포트는 1부터 65535까지의 정수로 입력하세요."
             return
         }
@@ -364,7 +367,7 @@ struct InspectionView: View {
             configuration: kind != .down && !configuration.isEmpty ? configuration : nil,
             module: kind != .down && !module.isEmpty ? module : nil,
             variant: kind != .down && !variant.isEmpty ? variant : nil,
-            port: flutterUp && !port.isEmpty ? Int(port) : nil)
+            port: usesPort && !port.isEmpty ? Int(port) : nil)
         session.start {
             let output = await WorkflowExecution.run(kind, input: input) { event in
                 Task { @MainActor in

@@ -35,6 +35,7 @@ public func androidBuildStages(
     projectRunner: any ProcessRunner,
     environment: AndroidEnvironment = AndroidEnvironment(),
     validationCheckIDs: Set<String> = AndroidWorkflowValidation.checkIDs,
+    metroPort: Int? = nil,
     note: @escaping @Sendable (String) -> Void
 ) -> [any Stage] {
     var stages: [any Stage] = [ValidateStage(engine: doctor, checkIDs: validationCheckIDs)]
@@ -48,6 +49,7 @@ public func androidBuildStages(
             hostRunner: hostRunner,
             projectRunner: projectRunner,
             environment: environment,
+            metroPort: metroPort,
             note: note
         )
     )
@@ -64,6 +66,7 @@ public struct AndroidBuildStage: Stage {
     private let environment: AndroidEnvironment
     private let logs: RunLogs
     private let note: @Sendable (String) -> Void
+    private let metroPort: Int?
 
     public init(
         anchor: ProjectAnchor,
@@ -72,6 +75,7 @@ public struct AndroidBuildStage: Stage {
         projectRunner: any ProcessRunner,
         environment: AndroidEnvironment = AndroidEnvironment(),
         logs: RunLogs? = nil,
+        metroPort: Int? = nil,
         note: @escaping @Sendable (String) -> Void = { _ in }
     ) {
         self.anchor = anchor
@@ -81,9 +85,11 @@ public struct AndroidBuildStage: Stage {
         self.environment = environment
         self.logs = logs ?? RunLogs(project: anchor.directory)
         self.note = note
+        self.metroPort = metroPort
     }
 
     public func run(_ pipeline: inout UpContext) async throws -> StageOutcome {
+        let log = try logs.url("android-build.log")
         let context = AndroidDoctorContext(
             anchor: anchor,
             config: config,
@@ -150,14 +156,14 @@ public struct AndroidBuildStage: Stage {
             )
         }
 
-        let log = logs.url("android-build.log")
         pipeline.buildLog = log.path
         let command = ProcessCommand(
             "./gradlew",
             [
                 assembleTask,
                 "--no-daemon",
-            ] + AndroidGradleModelProbe.configurationArguments + [
+            ] + (anchor.framework == .reactNative ? metroPort.map { ["-PreactNativeDevServerPort=\($0)"] } ?? [] : [])
+              + AndroidGradleModelProbe.configurationArguments + [
                 "--console=plain",
                 "-Dorg.gradle.java.installations.auto-download=false", "-Pandroid.builder.sdkDownload=false",
                 "-I",

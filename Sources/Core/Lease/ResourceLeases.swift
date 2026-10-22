@@ -192,6 +192,23 @@ public enum ClaimObservation: Sendable, Equatable {
 }
 
 extension ResourceLeases {
+    /// A legacy install record may name a device but cannot prove its folder owner.
+    /// Read the existing reservation book without creating or changing a claim.
+    public func ownsClaim(device: ResourceKey, project: String, appID: String) throws -> Bool {
+        let location = file(device, "claim")
+        do {
+            let root = try FileManager.default.attributesOfItem(atPath: directory.path)
+            let attributes = try FileManager.default.attributesOfItem(atPath: location.path)
+            guard root[.type] as? FileAttributeType == .typeDirectory,
+                  attributes[.type] as? FileAttributeType == .typeRegular,
+                  let size = attributes[.size] as? NSNumber, size.uint64Value <= 1_048_576 else {
+                throw ResourceConflict(key: device, owner: nil, reason: "the previous app claim is redirected or unreadable")
+            }
+        } catch let error as CocoaError where error.code == .fileReadNoSuchFile { return false }
+        guard let saved = try reservation(device: device), let claim = saved.claim else { return false }
+        return saved.owner.project == project && claim.device == device && claim.appID == appID
+    }
+
     /// Call while holding `device`, before changes. A failed final record leaves this
     /// owner's unconfirmed reservation in place so another project cannot take over.
     public func reserve(device: ResourceKey, owner: LeaseOwner) throws {

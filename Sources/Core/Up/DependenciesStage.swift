@@ -179,7 +179,7 @@ public struct DependenciesStage: Stage {
         _ command: ProcessCommand, what: String, byHand: String, chosenBy: String = ""
     ) async throws {
         var streamed = command
-        let file = logs.url("\(what)-install.log")
+        let file = try logs.url("\(what)-install.log")
         streamed.output = .streamed(to: file)
 
         let excerpt = LineExcerpt(limit: 10, notable: Self.isNotableInstallFailure)

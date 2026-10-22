@@ -20,6 +20,7 @@ public struct LaunchStage: Stage {
     /// Injected so tests do not wait, while a first bundle gets enough time on a cold
     /// machine to finish honestly.
     private let readinessWait: Duration
+    private let metroPort: Int?
     private let flutterPort: Int?
 
     public static let defaultReadinessWait: Duration = .seconds(120)
@@ -30,6 +31,7 @@ public struct LaunchStage: Stage {
         metroRunner: (any ProcessRunner)? = nil,
         locator: XcodeLocator,
         readinessWait: Duration = LaunchStage.defaultReadinessWait,
+        metroPort: Int? = nil,
         flutterPort: Int? = nil
     ) {
         self.project = project
@@ -37,6 +39,7 @@ public struct LaunchStage: Stage {
         self.metroRunner = metroRunner ?? runner
         self.locator = locator
         self.readinessWait = readinessWait
+        self.metroPort = metroPort
         self.flutterPort = flutterPort
     }
 
@@ -69,7 +72,8 @@ public struct LaunchStage: Stage {
             ["--enable-dart-profiling", "--enable-checked-mode", "--verify-entry-points", "--vm-service-port=\($0)"]
         } ?? []
         let command = ProcessCommand(
-            "xcrun", ["simctl", "launch", device.udid, product.bundleIdentifier] + launchArguments,
+            "xcrun", ["simctl", "launch", device.udid, product.bundleIdentifier] + launchArguments
+                + (context.metro != nil ? metroPort.map { ["-RCT_jsLocation", "localhost:\($0)"] } ?? [] : []),
             environment: environment,
             timeout: .seconds(60)
         )
@@ -106,12 +110,12 @@ public struct LaunchStage: Stage {
         let detail = "\(product.bundleIdentifier) — pid \(pid)"
         guard let metro = context.metro else { return .pass(detail) }
         let ready = await MetroReadiness(
-            project: project, runner: metroRunner, timeout: readinessWait
+            project: project, runner: metroRunner, timeout: readinessWait, port: metroPort ?? MetroVerdict.port
         ).wait(for: metro)
         if ready { return .pass(detail) }
 
         let hint = metro.logPath.map { " — Metro still bundling; log at \($0)" }
-            ?? " — Metro still bundling; check the Metro process on port 8081"
+            ?? " — Metro still bundling; check the Metro process on port \(metroPort ?? MetroVerdict.port)"
         return .pass(detail + hint)
     }
 
@@ -313,11 +317,13 @@ private struct MetroReadiness: Sendable {
     private let project: URL
     private let runner: any ProcessRunner
     private let timeout: Duration
+    private let port: Int
 
-    init(project: URL, runner: any ProcessRunner, timeout: Duration) {
+    init(project: URL, runner: any ProcessRunner, timeout: Duration, port: Int) {
         self.project = project
         self.runner = runner
         self.timeout = timeout
+        self.port = port
     }
 
     func wait(for metro: MetroProcess) async -> Bool {
@@ -353,7 +359,7 @@ private struct MetroReadiness: Sendable {
                 return completedBundle || connectedApp
             }
         case .reused:
-            guard let verdict = try? await MetroVerdict.ask(anchor: project, runner: runner)
+            guard let verdict = try? await MetroVerdict.ask(anchor: project, runner: runner, port: port)
             else { return false }
             if case .mine = verdict { return true }
             return false
