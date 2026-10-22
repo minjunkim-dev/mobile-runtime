@@ -171,8 +171,16 @@ extension GUIOperationSession {
     }
 }
 
-/// A cancelled operation is not labeled as a failure.
-func outcomeLabel(_ state: String) -> String { state == "cancelled" ? "취소됨" : "실패" }
+/// Cancellation and missing input are not labeled as failures.
+func outcomeLabel(_ state: String) -> String {
+    switch state {
+    case "cancelled": "취소됨"
+    case "needs-selection": "선택 필요"
+    case "needs-approval": "승인 필요"
+    case "waiting-manual": "수동 대기"
+    default: "실패"
+    }
+}
 
 /// VoiceOver hears results and state changes without moving the keyboard focus.
 @MainActor func announce(_ text: String) {
