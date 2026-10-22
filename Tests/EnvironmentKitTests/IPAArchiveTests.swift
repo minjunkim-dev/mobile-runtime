@@ -10,7 +10,7 @@ struct IPAArchiveTests {
     func extractsPayloadApp() throws {
         let repo = try FixtureRepo()
         let ipa = try repo.ipa([
-            .directory("Payload/"), .directory("Payload/X.app/", mode: 0o755),
+            .directory("Payload/"), .directory("Payload/X.app/", mode: 0o750), .directory("Payload/X.app/Frameworks/", mode: 0o750),
             .file("Payload/X.app/Info.plist", "plist bytes", deflate: true),
             .file("Payload/X.app/X", "executable", mode: 0o755),
             { var tool = TestZip.Entry.file("Payload/X.app/Tool", "macOS-made", mode: 0o750); tool.madeBy = 0x1314; return tool }(),
@@ -29,6 +29,10 @@ struct IPAArchiveTests {
         #expect(try FileManager.default.destinationOfSymbolicLink(atPath: app.appendingPathComponent("Current").path) == "Frameworks/F.framework/F")
         let mode = try FileManager.default.attributesOfItem(atPath: app.appendingPathComponent("X").path)[.posixPermissions] as? Int
         #expect(mode == 0o755)
+        // Writing into a directory keeps its archived mode.
+        for directory in [app, app.appendingPathComponent("Frameworks")] {
+            #expect(try FileManager.default.attributesOfItem(atPath: directory.path)[.posixPermissions] as? Int == 0o750)
+        }
         let macOSMode = try FileManager.default.attributesOfItem(atPath: app.appendingPathComponent("Tool").path)[.posixPermissions] as? Int
         #expect(macOSMode == 0o750)
         let root = try FileManager.default.attributesOfItem(atPath: repo.url("out").path)[.posixPermissions] as? Int

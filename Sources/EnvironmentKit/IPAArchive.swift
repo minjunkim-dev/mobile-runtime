@@ -95,20 +95,24 @@ enum IPAArchive {
 
     /// Creates missing directories one component at a time below `root`. An existing link or file
     /// anywhere on the path is refused, so no later write can follow a colliding name.
-    private static func directory(_ root: URL, _ components: some Collection<String>, mode: mode_t = 0o755) throws -> String {
+    /// `mode` is the archived mode of the last component; parents created implicitly get 0755.
+    private static func directory(_ root: URL, _ components: some Collection<String>, mode: mode_t? = nil) throws -> String {
         var path = root.path
         for (offset, component) in components.enumerated() {
             path += "/" + component
+            let last = offset == components.count - 1
             var status = stat()
-            if lstat(path, &status) == 0 {
+            let exists = lstat(path, &status) == 0
+            if exists {
                 guard status.st_mode & S_IFMT == S_IFDIR else {
                     throw failure("The IPA entry collides with an extracted file or link: \(components.joined(separator: "/"))")
                 }
             } else if errno != ENOENT || mkdir(path, 0o700) != 0 {
                 throw failure("The IPA directory cannot be created: \(components.joined(separator: "/"))")
             }
-            if offset == components.count - 1 || status.st_mode == 0 {
-                guard chmod(path, (offset == components.count - 1 ? mode : 0o755) | 0o700) == 0 else {
+            let applied = last ? mode : nil
+            if !exists || applied != nil {
+                guard chmod(path, (applied ?? 0o755) | 0o700) == 0 else {
                     throw failure("The IPA directory mode cannot be applied: \(components.joined(separator: "/"))")
                 }
             }
