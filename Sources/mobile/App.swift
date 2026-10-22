@@ -12,16 +12,16 @@ struct AppCommand: AsyncParsableCommand {
 }
 
 struct AppInspect: AsyncParsableCommand {
-    static let configuration = CommandConfiguration(commandName: "inspect", abstract: "Inspect app bytes, devices and physical iOS conditions. Never installs or launches.")
+    static let configuration = CommandConfiguration(commandName: "inspect", abstract: "Inspect app bytes, devices and physical iOS conditions. Never boots, installs or launches.")
     @OptionGroup var options: AppFileOptions
 
     func run() async throws { try await options.execute(inspectOnly: true) }
 }
 
 struct AppRun: AsyncParsableCommand {
-    static let configuration = CommandConfiguration(commandName: "run", abstract: "Approve the current file/device/replacement plan, install preserving data, and request launch.")
+    static let configuration = CommandConfiguration(commandName: "run", abstract: "Approve the current file/device/replacement plan, boot a selected shut-down Simulator or AVD, install preserving data, and request launch.")
     @OptionGroup var options: AppFileOptions
-    @Flag(name: .long, help: "Return the exact change plan without installing.") var plan = false
+    @Flag(name: .long, help: "Return the exact change plan without booting or installing.") var plan = false
     @Option(name: .long, help: "Approve exactly the current plan-id. Older or unorderable builds require the displayed DOWNGRADE risk acknowledgement.") var approve: String?
 
     mutating func validate() throws {
@@ -33,7 +33,7 @@ struct AppRun: AsyncParsableCommand {
 
 struct AppFileOptions: ParsableArguments {
     @Argument(help: "Path to an iOS Simulator or Development/Ad Hoc device .app directory, a Development/Ad Hoc .ipa, or one Android .apk file.") var file: String
-    @Option(name: .long, help: "A current Simulator UDID, physical iOS device UDID or avd:<name>. The target never switches automatically.") var device: String?
+    @Option(name: .long, help: "A current Simulator UDID, physical iOS device UDID or avd:<name>. A shut-down Simulator or installed AVD is booted only after approval and left running. The target never switches automatically.") var device: String?
     @Option(name: .long, help: "ios or android. Omit to use the inspected file's platform; an explicit mismatch is rejected.") var platform: MobilePlatform?
     @Flag(name: .long, help: "Never prompt. Installation requires exact --approve input.") var nonInteractive = false
     @Flag(name: .long, help: "Emit one versioned JSON document. Implies non-interactive input.") var json = false

@@ -54,7 +54,8 @@ public enum AppFileHumanOutput {
             }
         }
         for device in operation.devices {
-            output.append("device: \(device.id) — \(device.name), OS \(device.os), \(device.architectures.joined(separator: ", ")), \(device.ready ? "ready" : "manual preparation required")")
+            let state = device.ready ? "ready" : device.boot == "required" ? "shut down; Runstir boots it after approval" : "manual preparation required"
+            output.append("device: \(device.id) — \(device.name), OS \(device.os), \(device.architectures.joined(separator: ", ")), \(state)")
             if let pairing = device.pairing {
                 output.append("device state: pairing \(pairing), Developer Mode \(device.developerMode ?? "unknown"), connection \(device.connection ?? "unknown")")
             }
@@ -65,6 +66,10 @@ public enum AppFileHumanOutput {
         for check in operation.prerequisites ?? [] {
             output.append("condition \(check.id): \(check.state) — \(check.observed)")
             if let action = check.action { output.append("  manual step: \(action)") }
+        }
+        if let boot = operation.deviceBoot {
+            output.append("device boot: \(boot.state) \(boot.device)\(boot.handle.map { " on \($0)" } ?? "")\(boot.launcherPID.map { ", launcher pid \($0)" } ?? "") — \(boot.detail)")
+            if let log = boot.log { output.append("emulator log: \(log)") }
         }
         if let plan = operation.plan {
             output += ["plan-id: \(plan.id)",
@@ -141,7 +146,7 @@ public enum AppFileExecution {
             guard let deviceID = input.device else {
                 operation.state = inspectOnly ? "succeeded" : "needs-selection"
                 if !inspectOnly { operation.requiredInput = ["--device"] }
-                operation.nextAction = "Select a listed, prepared device: a booted virtual device, or a connected, trusted iOS device with Developer Mode. No installation was requested."
+                operation.nextAction = "Select a listed device: a booted virtual device, a shut-down Simulator or installed AVD that Runstir boots after approval, or a connected, trusted iOS device with Developer Mode. No device was booted and no installation was requested."
                 return finish(operation, code: inspectOnly ? 0 : 1, events: events)
             }
             guard let device = operation.devices.first(where: { $0.id == deviceID }) else {
@@ -202,7 +207,7 @@ public enum AppFileExecution {
             }
             let current = try await inspect(file: file, first: AppFileSnapshot.read(file), provider: tools, platform: input.platform)
             let currentDevices = try await tools.devices(selected: deviceID)
-            guard let currentDevice = currentDevices.first(where: { $0.id == deviceID }) else {
+            guard var currentDevice = currentDevices.first(where: { $0.id == deviceID }) else {
                 throw AppFileSnapshot.failure("The approved device disconnected before installation.")
             }
             operation.prerequisites = prerequisites(current.metadata, device: currentDevice)
@@ -224,6 +229,37 @@ public enum AppFileExecution {
                 try await tools.observe(claim)
             }
             try Task.checkCancellation()
+            if currentDevice.boot == "required" {
+                // The approved plan named this shut-down device. It is booted under the device lease,
+                // like `up`, and left running; no other device is booted, switched or stopped.
+                operation.deviceBoot = AppFileDeviceBoot(state: "requested", device: currentDevice.id,
+                    detail: "Runstir is booting the approved shut-down device and will leave it running.")
+                events.send("stage", stage: "boot", state: "running", detail: "Booting \(currentDevice.name) headlessly. Other devices are not booted or stopped.")
+                operation.deviceBoot = try await tools.startBoot(currentDevice, operation: operation.id)
+                let live = try await tools.awaitBooted(currentDevice)
+                guard live.name == currentDevice.name, live.os == currentDevice.os,
+                      live.runtimeIdentifier == currentDevice.runtimeIdentifier, live.runtimeBuild == currentDevice.runtimeBuild else {
+                    throw AppFileSnapshot.failure("The booted device's identity differs from the approved plan. Inspect and approve again.")
+                }
+                try compatible(current.metadata, device: live)
+                operation.deviceBoot?.state = "started"
+                operation.deviceBoot?.handle = live.handle
+                operation.devices = operation.devices.map { $0.id == live.id ? live : $0 }
+                operation.completed.append("boot")
+                events.send("stage", stage: "boot", state: "succeeded", detail: "\(live.name) is ready on \(live.handle). Runstir started it and leaves it running.")
+                currentDevice = live
+                selected = live
+                let observed = try await tools.installed(appID: current.metadata.appID, device: live)
+                operation.installed = observed
+                // The approval covered a fresh install. Anything already there needs its own replacement approval.
+                guard observed.state == "absent" else {
+                    operation.plan = try makePlan(artifact: current, device: live, installed: observed)
+                    operation.state = "needs-approval"
+                    operation.requiredInput = ["--approve"]
+                    operation.nextAction = "Runstir booted \(live.name) and left it running. The app is already installed there; review the replacement plan and approve it."
+                    return finish(operation, code: 1, events: events)
+                }
+            }
             try leases.reserve(device: deviceKey, owner: owner)
             installationRequested = true
             operation.installation = "requested"
@@ -262,6 +298,20 @@ public enum AppFileExecution {
             operation.error = domain?.message ?? String(describing: error)
             operation.nextAction = domain?.remediation.summary
                 ?? "Inspect the current file and selected device before retrying. Completed installation and existing data remain."
+            if var boot = operation.deviceBoot, boot.state == "requested" {
+                boot.state = "unconfirmed"
+                if let provider {
+                    events.send("stage", stage: "reobserve", state: "running",
+                        detail: "Checking the device Runstir started booting. It is not stopped.")
+                    let id = boot.device
+                    let observation = Task { try await provider.devices(selected: id) }
+                    let live = try? await observation.value.first { $0.id == id }
+                    if let live, live.ready { boot.handle = live.handle }
+                    boot.detail += " Re-observed: " + (live.map { $0.ready ? "ready on \($0.handle)" : $0.boot == "required" ? "not running" : "running, not ready" }
+                        ?? "the device state could not be confirmed") + ". Runstir does not stop it; stop it yourself if it is not needed."
+                }
+                operation.deviceBoot = boot
+            }
             if installationRequested {
                 if operation.installation != "installed" { operation.installation = "unconfirmed" }
                 if let provider, let selected, let artifact = operation.artifact {
@@ -304,8 +354,8 @@ public enum AppFileExecution {
             }
             return
         }
-        guard device.ready else {
-            throw AppFileSnapshot.failure("The selected virtual device is not ready. Boot and prepare that device manually, then inspect again. No environment preparation was started.")
+        guard device.ready || device.boot == "required" else {
+            throw AppFileSnapshot.failure("The selected virtual device is not ready and Runstir cannot boot it. Runstir boots only a shut-down Simulator on an installed runtime or an installed AVD with its system image that no Emulator runs. Prepare it manually, then inspect again. No runtime, image or device was created or downloaded.")
         }
         if metadata.platform == .ios {
             guard host.architecture == "arm64", device.runtimeAvailable == true,
@@ -373,7 +423,8 @@ public enum AppFileExecution {
 
     private static func makePlan(artifact: AppFileArtifact, device: AppFileDevice,
                                  installed: AppFileInstalledState) throws -> AppFilePlan {
-        guard ["installed", "absent"].contains(installed.state), installed.state != "installed" || installed.build != nil else {
+        let unobserved = device.boot == "required" && installed.state == "unobserved"
+        guard unobserved || ["installed", "absent"].contains(installed.state), installed.state != "installed" || installed.build != nil else {
             throw AppFileSnapshot.failure("The current installed app or its build is unknown. Confirm the device state before approval.")
         }
         let replacement = installed.state == "installed"
@@ -383,6 +434,7 @@ public enum AppFileExecution {
         let buildOrderUnknown = replacement && (old == nil || new == nil)
         var warnings = ["File identity does not prove the producer is trusted or the app is safe.",
             "Installation, launch request, running state and first-screen evidence are separate observations."]
+        if unobserved { warnings.append("BOOT: Runstir boots \(device.name) (\(device.id)) after approval and leaves it running. The installed app is observed after boot; an existing or unknown installation requires a new approval.") }
         if replacement { warnings.append("Replace the same app ID using the platform's data-preserving install. No uninstall, reset or delete-and-retry is allowed.") }
         if downgrade { warnings.append("OLDER BUILD: the new build is older than the installed build. The platform may refuse it. Data preservation and automatic rollback are not guaranteed.") }
         else if buildOrderUnknown { warnings.append("UNKNOWN BUILD ORDER: the build labels cannot be ordered. The new build may be older. Separate DOWNGRADE risk acknowledgement is required; installation and data preservation are not guaranteed.") }
@@ -468,10 +520,30 @@ private enum AppFileProvider: Sendable {
     }
 
     func installed(appID: String, device: AppFileDevice) async throws -> AppFileInstalledState {
-        switch self {
+        // A shut-down device cannot answer until Runstir boots it after approval.
+        if device.boot == "required" {
+            return AppFileInstalledState(state: "unobserved", detail: "The device is shut down. Runstir observes the installed app after booting it.")
+        }
+        return switch self {
         case .ios(let tools): try await tools.installed(appID: appID, device: device)
         case .iosDevice(let tools): try await tools.installed(appID: appID, device: device)
         case .android(let tools): try await tools.installed(appID: appID, device: device)
+        }
+    }
+
+    func startBoot(_ device: AppFileDevice, operation: String) async throws -> AppFileDeviceBoot {
+        switch self {
+        case .ios(let tools): try await tools.startBoot(device)
+        case .iosDevice: throw AppFileSnapshot.failure("Runstir does not boot physical devices.")
+        case .android(let tools): try await tools.startBoot(device, operation: operation)
+        }
+    }
+
+    func awaitBooted(_ device: AppFileDevice) async throws -> AppFileDevice {
+        switch self {
+        case .ios(let tools): try await tools.awaitBooted(device)
+        case .iosDevice: throw AppFileSnapshot.failure("Runstir does not boot physical devices.")
+        case .android(let tools): try await tools.awaitBooted(device)
         }
     }
 

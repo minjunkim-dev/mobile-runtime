@@ -7,9 +7,11 @@ public struct AndroidAppFile: Sendable {
     private let sdk: URL
     private let buildTools: URL
     private let javaHome: URL
+    private let environment: AndroidEnvironment
 
     public init(runner: any ProcessRunner, environment: [String: String]) throws {
         self.runner = runner
+        self.environment = AndroidEnvironment(values: environment)
         guard let home = environment["ANDROID_HOME"], home.hasPrefix("/"), !home.isEmpty else {
             throw Self.failure("ANDROID_HOME must identify the installed SDK for source-free APK inspection.")
         }
@@ -107,37 +109,92 @@ public struct AndroidAppFile: Sendable {
             signingIdentity: signers.joined(separator: ","))
     }
 
+    /// Running Emulators, then installed AVDs that no Emulator runs. Runstir boots one of
+    /// those only after approval; it never creates an AVD or downloads a system image.
     public func devices() async throws -> [AppFileDevice] {
-        let result = try await adb(["devices", "-l"])
-        guard result.terminationStatus.isSuccess, result.standardOutput.contains("List of devices attached") else {
-            throw Self.failure("adb could not list connected Emulator identities.")
-        }
-        var devices: [AppFileDevice] = []
-        for line in result.standardOutput.split(whereSeparator: \.isNewline) {
-            let fields = line.split(whereSeparator: \.isWhitespace).map(String.init)
-            guard fields.count >= 2, fields[0].range(of: #"^emulator-[0-9]+$"#, options: .regularExpression) != nil,
-                  fields[1] == "device" else { continue }
-            let serial = fields[0]
-            let nameResult = try await adb(["-s", serial, "emu", "avd", "name"])
-            guard nameResult.terminationStatus.isSuccess, let name = androidAVDName(from: nameResult.standardOutput),
-                  name.range(of: #"^[A-Za-z0-9_.-]+$"#, options: .regularExpression) != nil else { continue }
-            let sdkResult = try await adb(["-s", serial, "shell", "getprop", "ro.build.version.sdk"])
-            let abiResult = try await adb(["-s", serial, "shell", "getprop", "ro.product.cpu.abilist"])
-            let boot = try await adb(["-s", serial, "shell", "getprop", "sys.boot_completed"])
-            let os = sdkResult.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines)
-            let abis = abiResult.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines)
-                .split(separator: ",").map(String.init)
-            let ready = sdkResult.terminationStatus.isSuccess && Int(os) != nil
-                && abiResult.terminationStatus.isSuccess && !abis.isEmpty
-                && abis.allSatisfy({ ["arm64-v8a", "armeabi-v7a", "armeabi", "x86", "x86_64"].contains($0) })
-                && boot.terminationStatus.isSuccess && boot.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines) == "1"
-            devices.append(AppFileDevice(id: "avd:" + name, handle: serial, name: name, os: os,
-                architectures: abis, ready: ready, toolIdentity: "\(sdk.path); build-tools \(buildTools.lastPathComponent); JAVA_HOME \(javaHome.path)"))
+        let (running, names) = try await runningDevices()
+        var devices = running
+        let emulator = sdk.appendingPathComponent("emulator/emulator")
+        if let names, FileManager.default.isExecutableFile(atPath: emulator.path) {
+            let listed = try await runner.run(ProcessCommand(emulator.path, ["-list-avds"]))
+            guard listed.terminationStatus.isSuccess else {
+                throw Self.failure("emulator -list-avds could not list the installed AVDs.")
+            }
+            let installed = listed.standardOutput.split(whereSeparator: \.isNewline)
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                .filter { $0.range(of: #"^[A-Za-z0-9_.-]+$"#, options: .regularExpression) != nil && !names.contains($0) }
+            for avd in environment.avds(names: installed, sdk: sdk) {
+                let bootable = avd.config != nil && avd.systemImagePresent && avd.apiLevel != nil && avd.abi != nil
+                devices.append(AppFileDevice(id: "avd:" + avd.name, handle: "avd:" + avd.name, name: avd.name,
+                    os: avd.apiLevel.map(String.init) ?? "unknown", architectures: avd.abi.map { [$0] } ?? [],
+                    ready: false, toolIdentity: toolIdentity, boot: bootable ? "required" : nil))
+            }
         }
         guard Set(devices.map(\.id)).count == devices.count else {
             throw Self.failure("More than one Emulator reports the same AVD identity. Resolve the ambiguity before choosing a target.")
         }
         return devices.sorted { $0.id < $1.id }
+    }
+
+    /// Starts the approved AVD the way `up` does: `emulator -avd <name>`, detached so it
+    /// outlives this operation. The record lets the caller report what Runstir started.
+    public func startBoot(_ device: AppFileDevice, operation: String) async throws -> AppFileDeviceBoot {
+        let emulator = sdk.appendingPathComponent("emulator/emulator")
+        guard device.boot == "required", device.id.hasPrefix("avd:"),
+              FileManager.default.isExecutableFile(atPath: emulator.path) else {
+            throw Self.failure("The selected AVD cannot be booted by Runstir.")
+        }
+        let log = FileManager.default.temporaryDirectory.appendingPathComponent("dev.runstir-app-file-\(operation)-emulator.log")
+        let pid = try await runner.spawnDetached(ProcessCommand(emulator.path, ["-avd", device.name]), logFile: log)
+        return AppFileDeviceBoot(state: "requested", device: device.id, launcherPID: pid, log: log.path,
+            detail: "Runstir started this Emulator and leaves it running. Stop it yourself when finished.")
+    }
+
+    /// Waits as long as `up` does for the started AVD to become ready.
+    public func awaitBooted(_ device: AppFileDevice, timeout: Duration = AndroidRuntimeTimeouts().boot,
+                            poll: Duration = .seconds(1)) async throws -> AppFileDevice {
+        let deadline = ContinuousClock.now + timeout
+        while true {
+            if let live = try await runningDevices().devices.first(where: { $0.id == device.id }), live.ready { return live }
+            guard ContinuousClock.now < deadline else {
+                throw Self.failure("Android Emulator \(device.name) did not become ready within \(timeout). Runstir left it running and did not replace or recreate it.")
+            }
+            try await Task.sleep(for: poll)
+        }
+    }
+
+    /// nil names: an Emulator's AVD could not be read, so no installed AVD is offered for boot.
+    private func runningDevices() async throws -> (devices: [AppFileDevice], names: Set<String>?) {
+        let result = try await adb(["devices", "-l"])
+        guard result.terminationStatus.isSuccess, result.standardOutput.contains("List of devices attached") else {
+            throw Self.failure("adb could not list connected Emulator identities.")
+        }
+        var devices: [AppFileDevice] = []
+        var names: Set<String>? = []
+        for line in result.standardOutput.split(whereSeparator: \.isNewline) {
+            let fields = line.split(whereSeparator: \.isWhitespace).map(String.init)
+            guard fields.count >= 2, fields[0].range(of: #"^emulator-[0-9]+$"#, options: .regularExpression) != nil else { continue }
+            let serial = fields[0]
+            let nameResult = try await adb(["-s", serial, "emu", "avd", "name"])
+            guard nameResult.terminationStatus.isSuccess, let name = androidAVDName(from: nameResult.standardOutput),
+                  name.range(of: #"^[A-Za-z0-9_.-]+$"#, options: .regularExpression) != nil else {
+                names = nil
+                continue
+            }
+            names?.insert(name)
+            guard fields[1] == "device" else { continue }
+            let ready = try await androidEmulatorReadiness(serial: serial) { try await adb($0) }
+            let abis = ready?.abis ?? []
+            devices.append(AppFileDevice(id: "avd:" + name, handle: serial, name: name, os: ready.map { String($0.api) } ?? "unknown",
+                architectures: abis,
+                ready: ready != nil && abis.allSatisfy({ ["arm64-v8a", "armeabi-v7a", "armeabi", "x86", "x86_64"].contains($0) }),
+                toolIdentity: toolIdentity))
+        }
+        return (devices, names)
+    }
+
+    private var toolIdentity: String {
+        "\(sdk.path); build-tools \(buildTools.lastPathComponent); JAVA_HOME \(javaHome.path)"
     }
 
     public func installed(appID: String, device: AppFileDevice) async throws -> AppFileInstalledState {
@@ -225,6 +282,6 @@ public struct AndroidAppFile: Sendable {
     }
 
     private static func failure(_ summary: String) -> DomainError {
-        DomainError(summary: summary, remediation: Remediation(summary: "Use one complete APK and a prepared, booted Android Emulator. Inspect again after fixing the reported condition. No SDK install, app deletion or data reset was attempted."))
+        DomainError(summary: summary, remediation: Remediation(summary: "Use one complete APK and a booted Android Emulator, or an installed AVD that Runstir boots after approval. Inspect again after fixing the reported condition. No SDK install, AVD creation, app deletion or data reset was attempted."))
     }
 }

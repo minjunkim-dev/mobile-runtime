@@ -18,15 +18,15 @@ mobile app run /path/Local.app --platform ios --device SIMULATOR-UDID --plan --j
 mobile app run /path/Local.app --device SIMULATOR-UDID --approve EXACT-PLAN-ID --non-interactive --json --progress-json
 
 mobile app inspect /path/Local.apk --json
-mobile app run /path/Local.apk --platform android --device avd:EXISTING-AVD --plan --json
+mobile app run /path/Local.apk --platform android --device avd:EXISTING-AVD --plan --json  # 꺼진 AVD는 승인 뒤 부팅
 mobile app run /path/Local.apk --device avd:EXISTING-AVD --approve EXACT-PLAN-ID --non-interactive --json
 ```
 
 `inspect`와 `run`의 `--platform ios|android`는 선택 사항이다. 생략하면 검사한 파일의 플랫폼을 사용한다.
 명시한 플랫폼이 검사한 파일과 다르면 계획·설치·실행 전에 중단한다. 기존 승인은 불일치를 허용하지 않는다.
 `--device`에는 현재 후보의 고정 ID를 사용한다. 기기를 자동 선택하거나 전환하지 않는다.
-가상 기기는 먼저 부팅하고 준비한다. 종료된 Simulator는 수동 준비 필요로 표시한다.
-Android 후보는 현재 연결된 Emulator다. 실제 기기와 새 AVD 생성은 이 경로에 포함하지 않는다.
+꺼진 Simulator와 실행하지 않은 AVD도 고를 수 있다. 아래 [꺼진 가상 기기 부팅](#꺼진-가상-기기-부팅)을 따른다([ADR-0043](./adr/0043-app-file-boots-selected-virtual-device.md)).
+Android 후보는 현재 연결된 Emulator와 설치된 AVD다. 실제 기기와 새 AVD 생성은 이 경로에 포함하지 않는다.
 기기 준비 상태·OS·architecture 호환 조건을 확인하지 못하면 설치하지 않는다.
 
 iOS는 기존 Xcode 선택과 `DEVELOPER_DIR` 계약을 따른다.
@@ -90,6 +90,27 @@ symlink와 hardlink 별칭은 같은 창과 실제 파일 lease를 사용한다.
 기기·앱 lease와 실행 claim은 프로젝트 흐름과 같은 `ResourceLeases`를 사용한다.
 다른 작업의 실행 중·확인 불가 claim은 소유 작업과 이유를 표시하고 보존한다.
 
+## 꺼진 가상 기기 부팅
+
+후보는 `boot: required`로 "꺼짐 · 승인 후 Runstir가 부팅"을 표시한다.
+iOS는 `Shutdown`·사용 가능이고 runtime capability를 읽을 수 있는 Simulator다.
+Android는 `emulator -list-avds`의 AVD 중 실행 중인 Emulator가 없고 `config.ini`·system image·API·ABI가 있는 것이다.
+실행 중인 Emulator의 AVD 이름을 하나라도 읽지 못하면 부팅 후보를 내지 않는다.
+`Booting` 같은 다른 상태와 runtime·image가 없는 기기는 수동 준비 필요다. runtime·AVD 생성과 image 다운로드는 하지 않는다.
+
+계획의 기존 앱은 `unobserved`다. `BOOT:` 경고가 부팅과 계속 실행을 알린다. `inspect`·`--plan`·승인 없는 실행은 부팅하지 않는다.
+승인 뒤 기기 lease 안에서 파일 사본과 기기 상태를 다시 확인하고 그 기기만 부팅한다.
+iOS는 `up`과 같은 headless `simctl bootstatus <UDID> -b`다. Simulator.app을 열지 않는다.
+Android는 `up`과 같은 `emulator -avd <name>`을 분리 실행하고 같은 준비 판정으로 최대 300초 기다린다.
+부팅 뒤 이름·OS·runtime identity와 호환성을 다시 확인한다. 기존 앱이 없을 때만 승인한 설치를 계속한다.
+앱이 있거나 확인 불가면 설치하지 않는다. 부팅한 기기로 만든 교체 계획을 다시 승인받는다.
+
+결과의 `deviceBoot`는 Runstir가 시작한 기기의 `requested`·`started`·`unconfirmed`와 UDID 또는 serial·launcher PID·Emulator log를 기록한다.
+Runstir는 부팅한 기기를 계속 실행 상태로 둔다. 나중에 종료하지 않는다. 필요 없으면 사용자가 직접 종료한다.
+iOS `down`도 Simulator를 끄지 않는다(ADR-0007). Android `down`은 프로젝트 active run의 Emulator만 끈다(ADR-0013).
+이미 실행 중인 기기는 부팅하지 않고 쓴다. 다른 기기를 부팅·전환·종료하지 않는다.
+부팅 중 실패·취소하면 `unconfirmed`로 기록하고 기기 상태를 별도 작업에서 다시 관측한다. 설치하지 않고 기기를 끄지 않는다.
+
 ## 설치와 결과
 
 iOS는 `simctl install`을 사용한다. Android는 `adb install -r`을 사용한다.
@@ -131,7 +152,7 @@ GUI도 두 경우에 위험 확인을 요구한다. 비교 불가를 안전한 u
 한 창을 취소해도 다른 창의 작업을 취소하지 않는다.
 창 닫기는 작업 계속 또는 취소 후 닫기를 선택하게 한다.
 전체 종료는 진행 중인 작업을 표시한다. 새 작업을 막고 모든 취소 처리가 끝날 때까지 기다린다.
-완료한 모바일 앱과 가상 기기를 창 닫기와 GUI 종료로 중단하지 않는다.
+완료한 모바일 앱과 가상 기기를 창 닫기와 GUI 종료로 중단하지 않는다. Runstir가 부팅한 기기도 같다.
 
 ## iOS 실기기 `.app`
 

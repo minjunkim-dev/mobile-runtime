@@ -18,6 +18,43 @@ public struct AndroidEnvironment: Sendable {
             ?? values["ANDROID_USER_HOME"].map { URL(fileURLWithPath: $0).appendingPathComponent("avd") }
             ?? home?.appendingPathComponent(".android/avd")
     }
+
+    /// Project workflows and the source-free app-file path read installed AVDs the same way.
+    func avds(names: [String], sdk: URL) -> [AndroidAVD] {
+        guard let avdHome else {
+            return names.map {
+                AndroidAVD(name: $0, apiLevel: nil, abi: nil, config: nil, systemImagePresent: false, systemImageDirectory: nil)
+            }
+        }
+        return names.map { name in
+            let pointer = avdHome.appendingPathComponent("\(name).ini")
+            let pointerValues = FileManager.default.contents(atPath: pointer.path).map {
+                AndroidDoctorContext.properties(String(decoding: $0, as: UTF8.self))
+            } ?? [:]
+            let directory = pointerValues["path"].map(URL.init(fileURLWithPath:))
+                ?? avdHome.appendingPathComponent("\(name).avd")
+            let config = directory.appendingPathComponent("config.ini")
+            let values = FileManager.default.contents(atPath: config.path).map {
+                AndroidDoctorContext.properties(String(decoding: $0, as: UTF8.self))
+            } ?? [:]
+            let image = values["image.sysdir.1"] ?? ""
+            let imageDirectory = image.hasPrefix("/")
+                ? URL(fileURLWithPath: image)
+                : sdk.appendingPathComponent(image)
+            let api = image.firstMatch(#"android-([0-9]+)"#).flatMap { Int($0[1]) }
+                ?? values["target"].flatMap { $0.firstMatch(#"android-([0-9]+)"#) }.flatMap { Int($0[1]) }
+            let abi = values["abi.type"] ?? image.firstMatch(#"/(arm64-v8a|x86_64|x86|armeabi-v7a)/?"#)?[1]
+            return AndroidAVD(
+                name: name,
+                apiLevel: api,
+                abi: abi,
+                config: FileManager.default.fileExists(atPath: config.path) ? config : nil,
+                systemImagePresent: !image.isEmpty
+                    && FileManager.default.fileExists(atPath: imageDirectory.path),
+                systemImageDirectory: image.isEmpty ? nil : imageDirectory
+            )
+        }
+    }
 }
 
 struct AndroidPackageVersion: Sendable, Equatable {
@@ -88,6 +125,31 @@ func androidAVDName(from output: String) -> String? {
     guard let line = output.split(whereSeparator: \.isNewline).first else { return nil }
     let name = String(line).trimmingCharacters(in: .whitespacesAndNewlines)
     return name.isEmpty ? nil : name
+}
+
+/// `up` and the app-file path agree on when an Emulator is ready: boot completed, a readable
+/// API level and ABI list, and a package manager that answers. nil means not ready yet.
+func androidEmulatorReadiness(
+    serial: String, adb: @Sendable ([String]) async throws -> ProcessResult
+) async throws -> (api: Int, abis: [String])? {
+    let shell = ["-s", serial, "shell"]
+    let booted = try await adb(shell + ["getprop", "sys.boot_completed"])
+    guard booted.terminationStatus.isSuccess,
+        booted.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines) == "1"
+    else { return nil }
+    let apiResult = try await adb(shell + ["getprop", "ro.build.version.sdk"])
+    let abiResult = try await adb(shell + ["getprop", "ro.product.cpu.abilist"])
+    let packages = try await adb(shell + ["pm", "path", "android"])
+    guard apiResult.terminationStatus.isSuccess,
+        abiResult.terminationStatus.isSuccess,
+        packages.terminationStatus.isSuccess,
+        packages.standardOutput.contains("package:"),
+        let api = Int(apiResult.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines))
+    else { return nil }
+    let abis = abiResult.standardOutput
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+        .split(separator: ",").map(String.init)
+    return abis.isEmpty ? nil : (api, abis)
 }
 
 public struct AndroidJavaObservation: Sendable, Equatable {
@@ -468,39 +530,7 @@ public actor AndroidDoctorContext {
     }
 
     nonisolated func avds(names: [String], sdk: URL) -> [AndroidAVD] {
-        guard let avdHome = environment.avdHome else {
-            return names.map {
-                AndroidAVD(name: $0, apiLevel: nil, abi: nil, config: nil, systemImagePresent: false, systemImageDirectory: nil)
-            }
-        }
-        return names.map { name in
-            let pointer = avdHome.appendingPathComponent("\(name).ini")
-            let pointerValues = FileManager.default.contents(atPath: pointer.path).map {
-                Self.properties(String(decoding: $0, as: UTF8.self))
-            } ?? [:]
-            let directory = pointerValues["path"].map(URL.init(fileURLWithPath:))
-                ?? avdHome.appendingPathComponent("\(name).avd")
-            let config = directory.appendingPathComponent("config.ini")
-            let values = FileManager.default.contents(atPath: config.path).map {
-                Self.properties(String(decoding: $0, as: UTF8.self))
-            } ?? [:]
-            let image = values["image.sysdir.1"] ?? ""
-            let imageDirectory = image.hasPrefix("/")
-                ? URL(fileURLWithPath: image)
-                : sdk.appendingPathComponent(image)
-            let api = image.firstMatch(#"android-([0-9]+)"#).flatMap { Int($0[1]) }
-                ?? values["target"].flatMap { $0.firstMatch(#"android-([0-9]+)"#) }.flatMap { Int($0[1]) }
-            let abi = values["abi.type"] ?? image.firstMatch(#"/(arm64-v8a|x86_64|x86|armeabi-v7a)/?"#)?[1]
-            return AndroidAVD(
-                name: name,
-                apiLevel: api,
-                abi: abi,
-                config: FileManager.default.fileExists(atPath: config.path) ? config : nil,
-                systemImagePresent: !image.isEmpty
-                    && FileManager.default.fileExists(atPath: imageDirectory.path),
-                systemImageDirectory: image.isEmpty ? nil : imageDirectory
-            )
-        }
+        environment.avds(names: names, sdk: sdk)
     }
 
     private static func packageVersion(_ package: String, anchor: ProjectAnchor) -> AndroidPackageVersion? {

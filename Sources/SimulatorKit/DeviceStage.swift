@@ -82,7 +82,7 @@ public struct DeviceStage: Stage {
         // that it had nothing to do, and `skipped` is the word for that.
         guard !simulator.isBooted else { return .skipped("\(name) is already booted") }
 
-        try await boot(simulator, environment)
+        try await bootSimulator(udid: simulator.udid, name: simulator.name, runner: runner, environment: environment)
         return .pass(name)
     }
 
@@ -98,35 +98,6 @@ public struct DeviceStage: Stage {
         return list
     }
 
-    /// `bootstatus -b` boots and then waits for the device to finish booting, which is
-    /// the state the next stage needs — `boot` alone returns while it is still coming
-    /// up. Already-booted devices never reach here, so its idempotency is a safety net
-    /// rather than the design.
-    private func boot(_ simulator: SimctlDeviceList.Simulator, _ environment: [String: String]) async throws {
-        let command = ProcessCommand(
-            "xcrun", ["simctl", "bootstatus", simulator.udid, "-b"],
-            environment: environment,
-            timeout: .seconds(120)
-        )
-        let result = try await runner.run(command)
-        let migrationFailure = (result.standardError + "\n" + result.standardOutput)
-            .split(whereSeparator: \.isNewline)
-            .first { $0.contains("Data Migration Failed") }
-            .map { String($0).trimmingCharacters(in: .whitespaces) }
-        guard result.terminationStatus.isSuccess, migrationFailure == nil else {
-            throw DomainError(
-                summary: "\(simulator.name) did not boot",
-                observed: migrationFailure ?? result.standardError.firstLine ?? result.standardOutput.firstLine
-                    ?? "`\(command.description)` failed",
-                remediation: Remediation(
-                    summary: "Boot it by hand to see what the Simulator says. A device wedged in "
-                        + "`Creating` or `Booting` is erased with `xcrun simctl erase \(simulator.udid)`.",
-                    command: "xcrun simctl boot \(simulator.udid)"
-                )
-            )
-        }
-    }
-
     /// Measured, never assumed: the runtime is one simctl just printed — the key is
     /// there even when it holds no devices — and the device type is one this Xcode
     /// ships. If either cannot be read the caller gets no command at all.
@@ -138,5 +109,34 @@ public struct DeviceStage: Stage {
                 .newestPhone(runningOn: runtime.version)
         else { return nil }
         return "xcrun simctl create \"\(type.name)\" \(type.identifier) \(runtime.identifier)"
+    }
+}
+
+/// `bootstatus -b` boots and then waits for the device to finish booting, which is
+/// the state the next stage needs — `boot` alone returns while it is still coming
+/// up. Already-booted devices never reach here, so its idempotency is a safety net
+/// rather than the design. `up` and the app-file path share it.
+func bootSimulator(udid: String, name: String, runner: any ProcessRunner, environment: [String: String]) async throws {
+    let command = ProcessCommand(
+        "xcrun", ["simctl", "bootstatus", udid, "-b"],
+        environment: environment,
+        timeout: .seconds(120)
+    )
+    let result = try await runner.run(command)
+    let migrationFailure = (result.standardError + "\n" + result.standardOutput)
+        .split(whereSeparator: \.isNewline)
+        .first { $0.contains("Data Migration Failed") }
+        .map { String($0).trimmingCharacters(in: .whitespaces) }
+    guard result.terminationStatus.isSuccess, migrationFailure == nil else {
+        throw DomainError(
+            summary: "\(name) did not boot",
+            observed: migrationFailure ?? result.standardError.firstLine ?? result.standardOutput.firstLine
+                ?? "`\(command.description)` failed",
+            remediation: Remediation(
+                summary: "Boot it by hand to see what the Simulator says. A device wedged in "
+                    + "`Creating` or `Booting` is erased with `xcrun simctl erase \(udid)`.",
+                command: "xcrun simctl boot \(udid)"
+            )
+        )
     }
 }

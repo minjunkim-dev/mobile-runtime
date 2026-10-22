@@ -801,35 +801,15 @@ actor AndroidRuntime {
     private func readyIdentity(
         serial: String, sdk: URL, product: AndroidBuiltProduct
     ) async throws -> (api: Int, abi: String)? {
-        let booted = try await hostRunner.run(adb(
-            ["-s", serial, "shell", "getprop", "sys.boot_completed"], sdk: sdk
-        ))
-        guard booted.terminationStatus.isSuccess,
-            booted.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines) == "1"
+        guard let ready = try await androidEmulatorReadiness(serial: serial, adb: { [hostRunner] in
+                try await hostRunner.run(await self.adb($0, sdk: sdk))
+            }),
+            let minSDK = Int(product.minSdk), ready.api >= minSDK
         else { return nil }
-        let apiResult = try await hostRunner.run(adb(
-            ["-s", serial, "shell", "getprop", "ro.build.version.sdk"], sdk: sdk
-        ))
-        let abiResult = try await hostRunner.run(adb(
-            ["-s", serial, "shell", "getprop", "ro.product.cpu.abilist"], sdk: sdk
-        ))
-        let packages = try await hostRunner.run(adb(
-            ["-s", serial, "shell", "pm", "path", "android"], sdk: sdk
-        ))
-        guard apiResult.terminationStatus.isSuccess,
-            abiResult.terminationStatus.isSuccess,
-            packages.terminationStatus.isSuccess,
-            packages.standardOutput.contains("package:"),
-            let api = Int(apiResult.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines)),
-            let minSDK = Int(product.minSdk), api >= minSDK
-        else { return nil }
-        let abis = abiResult.standardOutput
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .split(separator: ",").map(String.init)
-        guard let abi = abis.first(where: {
+        guard let abi = ready.abis.first(where: {
             (anchor.framework == .nativeAndroid && product.abis.isEmpty) || product.abis.contains($0)
         }) else { return nil }
-        return (api, abi)
+        return (ready.api, abi)
     }
 
     private func requireResolvedLauncher(

@@ -30,7 +30,7 @@ struct AppFileView: View {
                 Picker("실행 기기", selection: $device) {
                     Text("기기를 선택하세요").tag("")
                     ForEach(result?.operation.devices ?? [], id: \.id) { candidate in
-                        Text("\(candidate.name) / OS \(candidate.os) / \(candidate.ready ? "준비됨" : "수동 준비 필요")").tag(candidate.id)
+                        Text("\(candidate.name) / OS \(candidate.os) / \(candidate.ready ? "준비됨" : candidate.boot == "required" ? "꺼짐 · 승인 후 Runstir가 부팅" : "수동 준비 필요")").tag(candidate.id)
                     }
                 }.focused($focus, equals: .device)
                 Button("변경 계획 확인") { execute(planOnly: true) }.disabled(device.isEmpty)
@@ -71,15 +71,21 @@ struct AppFileView: View {
                                     .disabled(session.task != nil).focused($focus, equals: .risk)
                             }
                             Text("plan-id: \(plan.id)").font(.caption)
-                            Button("현재 계획 승인·설치·실행 요청") { execute(approval: plan.approval) }
+                            Button(plan.device.boot == "required" ? "현재 계획 승인·부팅·설치·실행 요청" : "현재 계획 승인·설치·실행 요청") { execute(approval: plan.approval) }
                                 .disabled(busy || (plan.requiresRiskApproval && !downgradeAcknowledged))
                                 .focused($focus, equals: .approve)
                                 .accessibilityHint("plan-id \(plan.id)만 승인합니다. 기존 앱 데이터를 지우지 않습니다.")
-                            Text("실행 직전에 파일·기기·기존 앱 상태를 다시 확인합니다.").font(.caption)
+                            Text(plan.device.boot == "required"
+                                ? "실행 직전에 파일·기기를 다시 확인하고 이 기기만 부팅합니다. 부팅 뒤 기존 앱이 있으면 다시 승인받습니다."
+                                : "실행 직전에 파일·기기·기존 앱 상태를 다시 확인합니다.").font(.caption)
                         }
                         Divider()
                         Text("작업 상태: \(operation.state)").font(.headline)
                             .accessibilityAddTraits(.isHeader).accessibilityFocused($stateFocused)
+                        if let boot = operation.deviceBoot {
+                            Text("기기 부팅: \(boot.state) · \(boot.device)\(boot.handle.map { " · \($0)" } ?? "")")
+                            Text("Runstir가 부팅한 기기는 끄지 않고 그대로 둡니다. 필요 없으면 직접 종료하세요. \(boot.detail)")
+                        }
                         Text("설치 관측: \(operation.installation)")
                         Text("실행 요청: \(operation.launch)")
                         Text("앱 실행 상태: \(operation.running)")
