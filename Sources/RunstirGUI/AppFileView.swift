@@ -141,10 +141,11 @@ struct AppFileView: View {
             result = output
             let plan = output.operation.plan.flatMap { $0.device.id == device ? $0 : nil }
             switch output.operation.state {
-            case "failed", "cancelled": nextFocus = .recheck
-            case _ where plan != nil: nextFocus = plan?.requiresRiskApproval == true ? .risk : .approve
+            // Only an unexecuted plan earns approval focus; a finished run must not be one key from a repeat.
+            case "planned" where plan != nil, "needs-approval" where plan != nil: nextFocus = plan?.requiresRiskApproval == true ? .risk : .approve
             case _ where device.isEmpty && !output.operation.devices.isEmpty: nextFocus = .device
-            default: break
+            case "succeeded", "partially-completed": break
+            default: nextFocus = .recheck
             }
             stateFocused = true
             announce("앱 파일 작업: \(output.operation.state), 설치 \(output.operation.installation), 실행 요청 \(output.operation.launch)")

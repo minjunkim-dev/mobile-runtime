@@ -43,9 +43,7 @@ public final class GUIOperationSession {
     public func stopAcceptingNewOperations() { acceptsNewOperations = false }
 
     /// Event lines use the CLI progress format; the GUI does not reword Core details.
-    public func record(_ event: WorkflowEvent) {
-        progress = "\(event.stageId ?? event.kind): \(event.state)\(event.detail.map { " — \($0)" } ?? "")"
-    }
+    public func record(_ event: WorkflowEvent) { progress = AppFileHumanOutput.progress(event) }
 
     public func cancelAndWait() async {
         await withCheckedContinuation { continuation in

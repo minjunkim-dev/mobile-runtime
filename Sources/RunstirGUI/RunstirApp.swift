@@ -29,6 +29,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         let appMenu = NSMenu()
         appMenu.addItem(withTitle: "프로젝트 열기…", action: #selector(openProject), keyEquivalent: "o").target = self
         appMenu.addItem(withTitle: "앱 파일 열기…", action: #selector(openAppFile), keyEquivalent: "O").target = self
+        // The key window receives performClose, so Cmd-W reaches the same close sheet as the title bar.
+        appMenu.addItem(withTitle: "창 닫기", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
         appMenu.addItem(.separator())
         appMenu.addItem(withTitle: "Runstir 종료", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         let item = NSMenuItem()
@@ -101,12 +103,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     func windowShouldClose(_ sender: NSWindow) -> Bool {
         guard let session = sessions[ObjectIdentifier(sender)], session.task != nil else { return true }
         guard sender.attachedSheet == nil else { return false }
+        // A requested cancellation cannot be withdrawn, so a second close only waits for it.
+        if session.cancelling {
+            session.cancel { sender.close() }
+            announce("취소가 끝나면 창을 닫습니다. \(session.statusText)")
+            return false
+        }
         let alert = NSAlert()
         alert.messageText = "이 창에서 작업이 진행 중입니다."
         alert.informativeText = """
             현재 상태: \(session.statusText)
             작업 계속은 창과 작업을 그대로 둡니다. 취소 후 닫기는 새 단계를 막고 실행 중인 도구가 반환된 뒤 창을 닫습니다.
-            완료한 설치, 실행한 모바일 앱과 기기는 창을 닫아도 종료하지 않습니다. 앱을 종료하려면 이 창의 종료(down)를 사용하세요.
+            완료한 설치, 실행한 모바일 앱과 기기는 창을 닫아도 종료하지 않습니다. 프로젝트 앱은 프로젝트 창의 종료(down)로만 종료합니다.
             """
         alert.addButton(withTitle: "작업 계속")
         alert.addButton(withTitle: "취소 후 닫기")
@@ -169,7 +177,7 @@ extension GUIOperationSession {
 }
 
 struct InspectionView: View {
-    private enum Field: Hashable { case app, platform, device, scheme, configuration, module, variant, port, trust, recheck, approve }
+    private enum Field: Hashable { case app, platform, device, scheme, configuration, module, variant, port, trust, recheck, plan, approve }
     private enum Region: Hashable { case inspection, preparation, workflow }
     let directory: URL
     let session: GUIOperationSession
@@ -242,7 +250,7 @@ struct InspectionView: View {
                 }.disabled(busy)
             }
             HStack {
-                Button("준비 계획 확인") { prepare() }.disabled(busy)
+                Button("준비 계획 확인") { prepare() }.disabled(busy).focused($focus, equals: .plan)
                 Toggle("저장소 스크립트 신뢰", isOn: $repositoryTrusted)
                     .help("준비 승인과 별개입니다. 라이선스 동의와 관리자 권한을 대신하지 않습니다.")
                     .disabled(busy).focused($focus, equals: .trust)
@@ -392,6 +400,10 @@ struct InspectionView: View {
                 nextFocus = field(for: inspection.selection.requiredInput) ?? .recheck
                 resultFocus = .inspection
                 announce(inspectionSummary(inspection))
+            } catch is CancellationError {
+                self.error = nil
+                nextFocus = .recheck
+                announce("환경 확인 취소됨. 변경하지 않았습니다.")
             } catch {
                 self.error = error.localizedDescription
                 nextFocus = .recheck
@@ -486,7 +498,7 @@ struct InspectionView: View {
             switch output.operation.state {
             case "needs-approval": nextFocus = output.plan == nil ? .recheck : .approve
             case "needs-selection": nextFocus = field(for: output.operation.requiredInput) ?? .recheck
-            case "waiting-manual": nextFocus = field(for: output.operation.requiredInput) ?? .recheck
+            case "waiting-manual": nextFocus = field(for: output.operation.requiredInput) ?? .plan
             case "succeeded": break
             default: nextFocus = .recheck
             }

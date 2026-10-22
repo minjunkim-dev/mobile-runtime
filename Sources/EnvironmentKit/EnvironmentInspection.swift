@@ -57,6 +57,7 @@ public struct EnvironmentInspection: Sendable {
             do {
                 let flutter = try await FlutterAndroidWorkflow.make(input: input, anchor: anchor, runner: runner,
                     factory: flutterFactory)
+                note("The protected Flutter Android SDK view is ready. Running Android checks.")
                 let context = await WorkflowContext.make(input: input, platform: .android, anchor: anchor, runner: runner,
                     projectEnvironmentOverride: flutter.projectEnvironment, projectRunnerOverride: flutter.projectRunner,
                     selectedConfig: config)
