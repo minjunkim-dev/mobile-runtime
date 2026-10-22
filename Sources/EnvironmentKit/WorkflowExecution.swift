@@ -112,7 +112,7 @@ public enum WorkflowExecution {
             let androidFlutter: FlutterAndroidWorkflow?
             if anchor.framework == .flutter && platform == .android && kind != .down {
                 // Copying and checking the SDK view can take minutes before validate reports.
-                events.send("detail", state: "running", detail: "Preparing the protected Flutter Android SDK view")
+                events.send("detail", state: "running", detail: FlutterAndroidWorkflow.preparingViewDetail)
                 androidFlutter = try await FlutterAndroidWorkflow.make(input: input.project, anchor: anchor,
                     runner: runner, factory: flutterFactory)
             } else {

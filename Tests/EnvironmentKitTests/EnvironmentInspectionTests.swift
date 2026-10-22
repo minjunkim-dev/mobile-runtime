@@ -44,6 +44,21 @@ struct EnvironmentInspectionTests {
         #expect(result.report.checks.contains { $0.id == "project.detected" && $0.status == .unknown })
     }
 
+    @Test("a cancelled inspection throws instead of returning unknown checks as a result")
+    func cancelledInspection() async throws {
+        let repo = try FixtureRepo()
+        try repo.write("package.json", #"{"dependencies":{"react-native":"0.76.5"}}"#)
+        try repo.directory("ios")
+        let runner = FakeProcessRunner(responses: ["xcodebuild -version": .failed(1, "unavailable test Xcode"),
+            "npm config get cache": .ok(repo.root.path), "node --version": .ok("v22.11.0")])
+        let input = ProjectInspectionInput(directory: repo.root, environment: ["DEVELOPER_DIR": "/test/Xcode"], platform: .ios)
+        let task = Task {
+            withUnsafeCurrentTask { $0?.cancel() }
+            return try await EnvironmentInspection.run(input: input, runner: runner)
+        }
+        await #expect(throws: CancellationError.self) { _ = try await task.value }
+    }
+
     @Test("missing platform returns candidates without project subprocesses")
     func missingPlatform() async throws {
         let repo = try FixtureRepo()
