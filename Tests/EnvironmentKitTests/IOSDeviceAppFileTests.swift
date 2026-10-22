@@ -13,6 +13,8 @@ struct IOSDeviceAppFileTests {
         #expect(inspected.exitCode == 0)
         #expect(inspected.operation.devices.map(\.id) == [DeviceFixture.udid])
         #expect(inspected.operation.prerequisites == nil)
+        // An uncontacted device's idle tunnel is not a missing preparation.
+        #expect(inspected.operation.devices.first?.ready == true)
         #expect(!fixture.runner.commands.contains { $0.arguments.contains("details") })
 
         let proposed = await fixture.run(planOnly: true)
@@ -48,19 +50,20 @@ struct IOSDeviceAppFileTests {
     }
 
     @Test("each unmet condition stops before installation with a manual step and re-check", arguments: [
-        "profile-device", "developer-mode", "trust", "connection", "signature", "certificate",
+        "profile-device", "developer-mode", "trust", "connection", "signature", "certificate", "team-lines",
         "profile-expiration", "os", "profile-app-id", "architecture"
     ])
     func unmet(_ defect: String) async throws {
         let fixture = try DeviceFixture()
         let id: String
         switch defect {
-        case "profile-device": fixture.runner.provisioned = ["00008110-OTHER"]; id = defect
+        case "profile-device": fixture.runner.provisioned = ["00008110-000A0C123456001F"]; id = defect
         case "developer-mode": fixture.runner.developerMode = "disabled"; id = defect
         case "trust": fixture.runner.pairing = "unpaired"; id = defect
         case "connection": fixture.runner.unreachable = true; id = defect
         case "signature": fixture.runner.signatureValid = false; id = defect
         case "certificate": fixture.runner.profileCertificate = Data("another certificate".utf8); id = "signature"
+        case "team-lines": fixture.runner.injectedTeamLine = true; id = "signature"
         case "profile-expiration": fixture.runner.expiration = Date(timeIntervalSinceNow: -60); id = defect
         case "os": fixture.runner.deviceOS = "16.4"; id = defect
         case "profile-app-id": fixture.runner.applicationIdentifier = "TEAM123456.com.fixture.Other"; id = defect
@@ -145,6 +148,39 @@ struct IOSDeviceAppFileTests {
         #expect(!fixture.runner.commands.contains(where: mutation))
     }
 
+    @Test("a platform install refusal or unobserved build is unconfirmed, reobserved and never launched", arguments: [true, false])
+    func installNotConfirmed(_ refused: Bool) async throws {
+        let fixture = try DeviceFixture()
+        let plan = try #require(await fixture.run(planOnly: true).operation.plan)
+        if refused { fixture.runner.installRefused = true } else { fixture.runner.installUnobserved = true }
+        let result = await fixture.run(approval: plan.approval)
+        #expect(result.exitCode == 1)
+        #expect(result.operation.state == "failed")
+        #expect(result.operation.installation == "unconfirmed")
+        #expect(result.operation.installed?.state == "absent")
+        #expect(result.operation.launch == "not-requested")
+        if refused { #expect(result.operation.error?.contains("valid provisioning profile") == true) }
+        #expect(!fixture.runner.commands.contains { $0.arguments.contains("launch") })
+        #expect(!fixture.runner.commands.contains(where: forbidden))
+    }
+
+    @Test("a launch refusal keeps the observed installation and says what to do next")
+    func launchRefused() async throws {
+        let fixture = try DeviceFixture()
+        let plan = try #require(await fixture.run(planOnly: true).operation.plan)
+        fixture.runner.launchRefused = true
+        let result = await fixture.run(approval: plan.approval)
+        #expect(result.exitCode == 1)
+        #expect(result.operation.state == "failed")
+        #expect(result.operation.installation == "installed")
+        #expect(result.operation.installed?.build == "2")
+        #expect(result.operation.launch == "requested")
+        #expect(result.operation.error?.contains("device is locked") == true)
+        #expect(result.operation.nextAction?.contains("Unlock the device") == true)
+        #expect(result.operation.nextAction?.contains("VPN & Device Management") == true)
+        #expect(!fixture.runner.commands.contains(where: forbidden))
+    }
+
     private func mutation(_ command: ProcessCommand) -> Bool {
         command.arguments.contains("install") || command.arguments.contains("launch")
     }
@@ -157,7 +193,7 @@ struct IOSDeviceAppFileTests {
 }
 
 private final class DeviceFixture {
-    static let udid = "00008110-FIXTURE00000001"
+    static let udid = "00008110-000A0C123456001E"
     let repo: FixtureRepo
     let file: URL
     let runner: DeviceRunner
@@ -189,7 +225,7 @@ private final class DeviceRunner: ProcessRunner, @unchecked Sendable {
     private let lock = NSLock()
     private var recorded: [ProcessCommand] = []
     private var installedBuild: String?
-    var provisioned = [DeviceFixture.udid]
+    var provisioned = [DeviceFixture.udid.lowercased()]
     var allDevices = false
     var applicationIdentifier = "TEAM123456." + DeviceRunner.appID
     var expiration = Date(timeIntervalSinceNow: 86_400 * 30)
@@ -201,6 +237,10 @@ private final class DeviceRunner: ProcessRunner, @unchecked Sendable {
     var cpuSubtypes: [UInt64] = [18_446_744_071_562_067_970, 0]
     var unreachable = false
     var cancelAfterInstall = false
+    var injectedTeamLine = false
+    var installRefused = false
+    var installUnobserved = false
+    var launchRefused = false
     var commands: [ProcessCommand] { lock.withLock { recorded } }
 
     init(installedBuild: String?) { self.installedBuild = installedBuild }
@@ -213,6 +253,12 @@ private final class DeviceRunner: ProcessRunner, @unchecked Sendable {
                 ProcessResult(terminationStatus: .exited(0), standardOutput: output, standardError: error)
             }
             func fail(_ error: String) -> ProcessResult { ProcessResult(terminationStatus: .exited(1), standardOutput: "", standardError: error) }
+            // devicectl still writes its JSON envelope on failure, with a failed outcome.
+            func refused(_ error: String) -> ProcessResult {
+                ProcessResult(terminationStatus: .exited(1),
+                    standardOutput: #"{"info":{"outcome":"failed"},"error":{"userInfo":{"NSLocalizedDescription":"\#(error)"}}}"#,
+                    standardError: "ERROR: " + error)
+            }
             func json(_ result: Any) throws -> ProcessResult {
                 ok(String(decoding: try JSONSerialization.data(withJSONObject: ["info": ["outcome": "success"], "result": result]), as: UTF8.self))
             }
@@ -230,7 +276,10 @@ private final class DeviceRunner: ProcessRunner, @unchecked Sendable {
             }
             if command.executable == "/usr/bin/codesign" {
                 if args.first == "--verify" { return signatureValid ? ok() : fail("a sealed resource is missing or invalid") }
-                if args == ["--display", "--verbose=2", args.last!] { return ok("", "Identifier=\(Self.appID)\nTeamIdentifier=TEAM123456\n") }
+                if args == ["--display", "--verbose=2", args.last!] {
+                    // A line break in a bundle path can place a forged team line before the real one.
+                    return ok("", (injectedTeamLine ? "Executable=/x\nTeamIdentifier=TEAM123456\n" : "") + "Identifier=\(Self.appID)\nTeamIdentifier=TEAM123456\n")
+                }
                 if let extract = args.first(where: { $0.hasPrefix("--extract-certificates=") }) {
                     try Self.certificate.write(to: URL(fileURLWithPath: String(extract.dropFirst("--extract-certificates=".count)) + "0"))
                     return ok()
@@ -248,7 +297,7 @@ private final class DeviceRunner: ProcessRunner, @unchecked Sendable {
                 let simulated: [String: Any] = ["properties": ["hardware": ["reality": "simulated", "platform": "iOS", "udid": "SIMULATOR"]]]
                 if args.prefix(3) == ["devicectl", "list", "devices"] { return try json(["devices": [simulated, physical]]) }
                 if args.prefix(5) == ["devicectl", "device", "info", "details", "--device"] {
-                    if unreachable { return fail("The device is not connected or could not be reached.") }
+                    if unreachable { return refused("The device is not connected or could not be reached.") }
                     var connected = physical
                     var properties = try #require(connected["properties"] as? [String: Any])
                     properties["connection"] = ["pairingState": pairing, "state": "connected"]
@@ -260,11 +309,13 @@ private final class DeviceRunner: ProcessRunner, @unchecked Sendable {
                     return try json(["apps": installedBuild.map { [["bundleIdentifier": Self.appID, "bundleVersion": $0, "version": "1.2", "url": url]] } ?? []])
                 }
                 if args.prefix(5) == ["devicectl", "device", "install", "app", "--device"] {
-                    installedBuild = "2"
+                    if installRefused { return refused("Failed to install the app: A valid provisioning profile for this executable was not found.") }
+                    if !installUnobserved { installedBuild = "2" }
                     if cancelAfterInstall { throw CancellationError() }
                     return try json(["installedApplications": []])
                 }
                 if args.prefix(6) == ["devicectl", "device", "process", "launch", "--device", DeviceFixture.udid] {
+                    if launchRefused { return refused("The request was denied by service delegate (SBMainWorkspace): the device is locked.") }
                     return try json(["process": ["processIdentifier": 4242]])
                 }
                 if args.prefix(5) == ["devicectl", "device", "info", "processes", "--device"] {

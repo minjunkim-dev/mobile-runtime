@@ -43,11 +43,13 @@ public struct IOSDeviceAppFile: Sendable {
             throw Self.failure("The profile lists no devices. App Store distribution builds are excluded; use a Development or Ad Hoc build.")
         }
         let kind = entitlements["get-task-allow"] as? Bool == true ? "development" : "ad-hoc"
-        let verified = try await runner.run(ProcessCommand("/usr/bin/codesign", ["--verify", "--deep", "--strict", file.path],
+        let verified = try await runner.run(ProcessCommand("/usr/bin/codesign", ["--verify", "--deep", "--strict", "-R=anchor apple generic", file.path],
             timeout: .seconds(120)))
         let display = try await runner.run(ProcessCommand("/usr/bin/codesign", ["--display", "--verbose=2", file.path]))
-        let signingTeam = display.combinedOutput.split(whereSeparator: \.isNewline)
-            .first { $0.hasPrefix("TeamIdentifier=") }.map { String($0.dropFirst("TeamIdentifier=".count)) }
+        // A bundle path or executable name can contain a line break; more than one team line is unknown.
+        let teamLines = display.combinedOutput.split(whereSeparator: \.isNewline).filter { $0.hasPrefix("TeamIdentifier=") }
+        let signingTeam = display.terminationStatus.isSuccess && teamLines.count == 1
+            ? String(teamLines[0].dropFirst("TeamIdentifier=".count)) : nil
         let signer = try await signingCertificate(file)
         let authorized = Set(certificates.map(Self.sha256))
         let provisioning = AppFileProvisioning(kind: kind, profileUUID: uuid, profileName: profile["Name"] as? String,
@@ -76,12 +78,12 @@ public struct IOSDeviceAppFile: Sendable {
         if let index = devices.firstIndex(where: { $0.id == selected }) {
             // Reading details connects this device when it is reachable; a failure is a connection fact.
             let (details, detailJSON) = try await devicectl(["device", "info", "details", "--device", devices[index].handle])
-            if let row = detailJSON?["result"] as? [String: Any], let current = Self.device(row, tool: installation.summary),
+            if let row = detailJSON?["result"] as? [String: Any], let current = Self.device(row, tool: installation.summary, contacted: true),
                current.id == devices[index].id {
                 devices[index] = current
             } else {
                 devices[index] = Self.device(rows.first { Self.udid($0) == devices[index].id } ?? [:], tool: installation.summary,
-                    connection: "unreachable: " + details.standardError.lastLines(1)) ?? devices[index]
+                    connection: "unreachable: " + details.standardError.lastLines(1), contacted: true) ?? devices[index]
             }
         }
         return devices.sorted { $0.id < $1.id }
@@ -94,14 +96,16 @@ public struct IOSDeviceAppFile: Sendable {
     public func install(file: URL, device: AppFileDevice) async throws {
         let (result, json) = try await devicectl(["device", "install", "app", "--device", device.handle, file.path], timeout: 300)
         guard json != nil else {
-            throw Self.failure("devicectl refused the app installation: " + result.standardError.lastLines(8))
+            throw DomainError(summary: "devicectl refused the app installation: " + result.standardError.lastLines(8),
+                remediation: Remediation(summary: "Fix the reported signing, profile or device condition manually, then inspect again. Runstir did not delete the existing app or its data, register a device or re-sign the app."))
         }
     }
 
     public func launch(appID: String, device: AppFileDevice) async throws {
         let (result, json) = try await devicectl(["device", "process", "launch", "--device", device.handle, appID], timeout: 60)
         guard json != nil else {
-            throw Self.failure("devicectl refused the launch request: " + result.standardError.lastLines(8))
+            throw DomainError(summary: "devicectl refused the launch request: " + result.standardError.lastLines(8),
+                remediation: Remediation(summary: "The installed app remains. Unlock the device. For a Development build signed by a developer this device does not yet trust, trust that developer in Settings > General > VPN & Device Management. Then open the app on the device or run again after inspecting. Runstir did not terminate or delete any app."))
         }
     }
 
@@ -166,11 +170,15 @@ public struct IOSDeviceAppFile: Sendable {
         ((row["properties"] as? [String: Any])?["hardware"] as? [String: Any])?["udid"] as? String
     }
 
-    static func device(_ row: [String: Any], tool: String, connection override: String? = nil) -> AppFileDevice? {
+    /// A listed device that was not contacted reports an idle tunnel as disconnected, so only a
+    /// contacted device's connection counts toward readiness.
+    static func device(_ row: [String: Any], tool: String, connection override: String? = nil,
+                       contacted: Bool = false) -> AppFileDevice? {
         let properties = row["properties"] as? [String: Any] ?? [:]
         let hardware = properties["hardware"] as? [String: Any] ?? [:]
         guard hardware["reality"] as? String == "physical", hardware["platform"] as? String == "iOS",
-              let udid = hardware["udid"] as? String, !udid.isEmpty else { return nil }
+              let udid = hardware["udid"] as? String,
+              udid.range(of: #"^[0-9A-Fa-f][0-9A-Fa-f-]*$"#, options: .regularExpression) != nil else { return nil }
         let connection = properties["connection"] as? [String: Any] ?? [:]
         let state = properties["state"] as? [String: Any] ?? [:]
         let os = ((properties["software"] as? [String: Any])?["osVersionNumber"] as? [String: Any])?["stringValue"] as? String
@@ -181,7 +189,7 @@ public struct IOSDeviceAppFile: Sendable {
         let link = override ?? connection["state"] as? String
         return AppFileDevice(id: udid, handle: udid, name: state["name"] as? String ?? hardware["marketingName"] as? String ?? udid,
             os: os ?? "unknown", architectures: Array(architectures),
-            ready: pairing == "paired" && developerMode == "enabled" && link == "connected", toolIdentity: tool,
+            ready: pairing == "paired" && developerMode == "enabled" && (!contacted || link == "connected"), toolIdentity: tool,
             architectureSource: "devicectl supportedCPUTypes; CPU capabilities reported by CoreDevice",
             pairing: pairing, developerMode: developerMode, connection: link)
     }

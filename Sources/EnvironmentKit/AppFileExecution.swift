@@ -327,7 +327,7 @@ public enum AppFileExecution {
         let appIDMatches = team == profile.teamID && (pattern == "*" || pattern == metadata.appID
             || pattern.hasSuffix(".*") && metadata.appID.hasPrefix(pattern.dropLast()))
         let expiration = ISO8601DateFormatter().date(from: profile.expiration)
-        let listed = profile.provisionedDevices.contains(device.id)
+        let listed = profile.provisionedDevices.contains { $0.caseInsensitiveCompare(device.id) == .orderedSame }
         let minimum = SemanticVersion(metadata.minimumOS)
         let os = SemanticVersion(device.os)
         return [
@@ -356,7 +356,7 @@ public enum AppFileExecution {
                 action: "Connect and unlock the device, then tap Trust This Computer, or pair it in Xcode's Devices and Simulators window."),
             AppFilePrerequisite(id: "developer-mode", satisfied: device.developerMode.map { $0 == "enabled" },
                 observed: "Developer Mode \(device.developerMode ?? "unknown")",
-                action: "On the device, turn on Settings > Privacy & Security > Developer Mode and restart when asked."),
+                action: "On the device, turn on Settings > Privacy & Security > Developer Mode and restart when asked. A device whose iOS has no Developer Mode setting is not supported by this devicectl path."),
             AppFilePrerequisite(id: "connection", satisfied: device.connection.map { $0 == "connected" },
                 observed: "connection \(device.connection ?? "unknown")",
                 action: "Connect the device by USB or the same network and unlock it."),

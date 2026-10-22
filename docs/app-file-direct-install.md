@@ -9,7 +9,7 @@
 이 경로는 iOS Simulator `.app` 디렉터리와 Android Emulator의 단일 `.apk`를 받는다.
 iOS 실기기용 Development·Ad Hoc `.app`은 아래 [iOS 실기기 `.app`](#ios-실기기-app)의 같은 경로를 쓴다(#219).
 프로젝트 소스와 계정은 필요하지 않다. 소스 빌드와 환경 준비를 시작하지 않는다.
-IPA는 이 경로에서 받지 않는다. 목록·보유 버전·설치 이력은 #220이다. 앱 콘솔은 #221이다.
+IPA는 이 경로에서 받지 않는다. #199 AC12의 실기기 `.ipa` 압축 검사·추출은 별도 구현 범위다. 목록·보유 버전·설치 이력은 #220이다. 앱 콘솔은 #221이다.
 해당 형식과 기능은 이 경로에 추가하지 않는다.
 
 ```sh
@@ -146,7 +146,7 @@ mobile app run /path/Device.app --device DEVICE-UDID --approve EXACT-PLAN-ID --n
 ```
 
 파일 검사는 Simulator와 같은 Info.plist·Mach-O 규칙을 쓴다. platform은 `iPhoneOS`와 Mach-O platform 2다.
-`embedded.mobileprovision`은 `security cms -D`로 읽는다. 서명은 `codesign --verify --deep --strict`로 확인한다.
+`embedded.mobileprovision`은 `security cms -D`로 읽는다. 서명은 `codesign --verify --deep --strict -R=anchor apple generic`로 확인한다. profile CMS 서명 자체의 최종 확인은 설치 결과다.
 서명 leaf 인증서를 추출해 profile의 `DeveloperCertificates`에 있는지 SHA-256으로 비교한다.
 `get-task-allow`가 참이면 Development, 아니면 Ad Hoc이다.
 모든 기기를 허용하는 Enterprise profile, 기기 목록이 없는 App Store profile, profile 없는 `.app`은 검사에서 중단한다.
@@ -155,6 +155,7 @@ profile의 UDID 목록은 JSON과 사람용 출력에 넣지 않는다. 개수�
 기기는 고정한 Xcode의 `devicectl list devices`에서 `reality: physical`, `platform: iOS`만 후보로 쓴다.
 `--device`는 UDID다. 선택한 기기만 `devicectl device info details`로 현재 상태를 읽는다.
 이 조회가 실패하면 연결 조건을 `unreachable`로 기록한다. 다른 기기로 바꾸지 않는다.
+선택하지 않은 기기는 연락하지 않는다. 목록의 유휴 연결은 준비 여부 판정에 쓰지 않는다.
 architecture는 CoreDevice의 `supportedCPUTypes` capability다. 기기 CPU 측정이 아니다.
 
 선택 기기가 있으면 `operation.prerequisites`에 아래 조건을 `satisfied`·`unsatisfied`·`unknown`으로 기록한다.
@@ -189,6 +190,8 @@ fixture 테스트는 parser·승인·충돌·실패 경계만 확인한다.
 
 1. 같은 파일과 기기 입력으로 CLI와 GUI의 파일 확인·계획·승인·설치·실행 요청·첫 화면을 확인한다.
 2. 실제 Simulator `.app`와 Emulator APK를 각각 확인한다. 파일·내용 식별·기기·OS·architecture·도구를 고정한다.
+   #219는 대표 iOS 실기기의 Development 또는 Ad Hoc `.app`을 같은 기준으로 확인한다. 미충족 조건의 거부와 다시 확인,
+   선택 기기 조회가 미신뢰 기기에 pairing을 요청하는지도 기록한다. 전체 framework 실기기 행렬은 추가하지 않는다.
 3. 같은 앱의 표본 데이터를 넣고 교체·이전 버전 거부·재시도 뒤 데이터 보존을 관측한다.
 4. 부적합·필수 정보 불명·파일 변경·설치 실패·취소·연결 해제 뒤 상태와 재승인을 확인한다.
 5. 파일과 프로젝트의 독립 실행과 기기 충돌을 확인한다. 기존 자원과 다른 작업의 보존을 확인한다.
