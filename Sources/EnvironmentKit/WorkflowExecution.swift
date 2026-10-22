@@ -341,6 +341,9 @@ public enum WorkflowExecution {
                     operation.remaining += flutter.changedFiles.map { "Unexpected changed source: \($0). No file was restored." }
                 }
             }
+            if let report = up, anchor.framework == .flutter, platform == .android {
+                operation.developmentServiceURI = report.context.developmentServiceURI
+            }
             if let report = up, anchor.framework == .flutter, platform == .ios {
                 operation.entrypoint = wiring.flutter?.entrypoint?.path
                 operation.developmentServiceURI = report.context.developmentServiceURI
