@@ -190,7 +190,10 @@ public enum AppFileExecution {
             try FileManager.default.copyItem(at: file, to: staged)
             let stagedSnapshot = try AppFileSnapshot.read(staged)
             let digestMatches = stagedSnapshot.digest == artifact.contentIdentity
-            let stagedMetadata: AppFileMetadata? = digestMatches ? try await tools.metadata(staged) : nil
+            // An approved IPA is extracted only from the private copy whose bytes were just verified.
+            let installInput = digestMatches && staged.pathExtension == "ipa"
+                ? try IPAArchive.extract(staged, into: directory.appendingPathComponent("extracted", isDirectory: true)) : staged
+            let stagedMetadata: AppFileMetadata? = digestMatches ? try await tools.metadata(installInput) : nil
             guard digestMatches, stagedMetadata == artifact.metadata else {
                 Logger(label: "mobile.app-file.snapshot").debug("App file snapshot mismatch", metadata: [
                     "expectedDigest": .string(artifact.contentIdentity), "stagedDigest": .string(stagedSnapshot.digest),
@@ -225,7 +228,7 @@ public enum AppFileExecution {
             installationRequested = true
             operation.installation = "requested"
             events.send("stage", stage: "install", state: "running")
-            try await tools.install(file: staged, device: currentDevice)
+            try await tools.install(file: installInput, device: currentDevice)
             let observed = try await tools.installed(appID: artifact.metadata.appID, device: currentDevice)
             operation.installed = observed
             guard observed.state == "installed", observed.build == artifact.metadata.build else {
@@ -432,7 +435,9 @@ private enum AppFileProvider: Sendable {
     case android(AndroidAppFile)
 
     init(file: URL, runner: any ProcessRunner, environment: [String: String]) throws {
-        if file.pathExtension == "app" {
+        if file.pathExtension == "ipa" {
+            self = .iosDevice(IOSDeviceAppFile(runner: runner, environment: environment))
+        } else if file.pathExtension == "app" {
             self = IOSDeviceAppFile.declaresDevice(file)
                 ? .iosDevice(IOSDeviceAppFile(runner: runner, environment: environment))
                 : .ios(SimulatorAppFile(runner: runner, environment: environment))
@@ -440,7 +445,14 @@ private enum AppFileProvider: Sendable {
     }
 
     func metadata(_ file: URL) async throws -> AppFileMetadata {
-        switch self {
+        if file.pathExtension == "ipa" {
+            // Inspection reads the app from a private extraction it removes; installation re-extracts its verified copy.
+            let directory = FileManager.default.temporaryDirectory
+                .appendingPathComponent("dev.runstir-ipa-inspect-\(UUID().uuidString)", isDirectory: true)
+            defer { try? FileManager.default.removeItem(at: directory) }
+            return try await metadata(IPAArchive.extract(file, into: directory))
+        }
+        return switch self {
         case .ios(let tools): try await tools.metadata(file)
         case .iosDevice(let tools): try await tools.metadata(file)
         case .android(let tools): try await tools.metadata(file)

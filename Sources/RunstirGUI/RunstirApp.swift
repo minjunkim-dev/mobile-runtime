@@ -79,7 +79,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         panel.canChooseDirectories = false
         panel.treatsFilePackagesAsDirectories = false
         panel.allowsMultipleSelection = false
-        panel.message = "Simulator .app 또는 단일 APK를 선택하세요. 파일 선택으로 설치하지 않습니다."
+        panel.message = "Simulator .app, 실기기 Development·Ad Hoc .app·.ipa 또는 단일 APK를 선택하세요. 파일 선택으로 설치하지 않습니다."
         guard panel.runModal() == .OK, let file = panel.url else { return }
         do {
             let identity = try AppFileIdentity(url: file)

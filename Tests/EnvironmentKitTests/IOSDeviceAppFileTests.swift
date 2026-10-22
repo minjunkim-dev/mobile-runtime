@@ -1,4 +1,5 @@
 import Core
+import CryptoKit
 @testable import EnvironmentKit
 import Foundation
 import TestSupport
@@ -223,6 +224,74 @@ struct IOSDeviceAppFileTests {
         #expect(!fixture.runner.commands.contains(where: forbidden))
     }
 
+    @Test("an IPA is checked from a removed private extraction and installs only the app re-extracted from its verified copy")
+    func ipa() async throws {
+        let fixture = try DeviceFixture(ipa: true)
+        let original = try Data(contentsOf: fixture.file)
+        let proposed = await fixture.run(planOnly: true)
+        let plan = try #require(proposed.operation.plan)
+        #expect(plan.artifact.contentIdentityAlgorithm == "sha256")
+        #expect(plan.artifact.contentIdentity == SHA256.hash(data: original).map { String(format: "%02x", $0) }.joined())
+        #expect(proposed.operation.prerequisites?.count == 9)
+        #expect(proposed.operation.prerequisites?.allSatisfy { $0.state == "satisfied" } == true)
+
+        let installed = await fixture.run(approval: plan.approval)
+        #expect(installed.exitCode == 0)
+        #expect(installed.operation.installed?.build == "2")
+        let install = try #require(fixture.runner.commands.first { $0.arguments.prefix(3) == ["devicectl", "device", "install"] })
+        let app = install.arguments[6]
+        #expect(app.contains("dev.runstir-app-file-") && app.hasSuffix("/extracted/Payload/Device.app"))
+        // Every extraction, inspected or installed, belongs to its operation and is gone afterwards.
+        let checked = fixture.runner.commands.filter { $0.arguments.first == "--verify" }.compactMap(\.arguments.last)
+        #expect(checked.contains(app))
+        #expect(checked.allSatisfy { !FileManager.default.fileExists(atPath: $0) })
+        #expect(try Data(contentsOf: fixture.file) == original)
+        #expect(!fixture.runner.commands.contains(where: forbidden))
+    }
+
+    @Test("an IPA replaced after approval needs a new approval and installs nothing")
+    func ipaChanged() async throws {
+        let fixture = try DeviceFixture(ipa: true)
+        let plan = try #require(await fixture.run(planOnly: true).operation.plan)
+        try fixture.writeIPA(build: "3")
+        let result = await fixture.run(approval: plan.approval)
+        #expect(result.operation.state == "needs-approval")
+        #expect(result.operation.installation == "not-requested")
+        #expect(!fixture.runner.commands.contains(where: mutation))
+    }
+
+    @Test("an IPA replaced while it is copied is never extracted or installed, and the stage is removed")
+    func ipaSwappedDuringCopy() async throws {
+        let fixture = try DeviceFixture(ipa: true)
+        let plan = try #require(await fixture.run(planOnly: true).operation.plan)
+        let original = try Data(contentsOf: fixture.file)
+        try fixture.writeIPA(build: "3")
+        let swapped = try Data(contentsOf: fixture.file)
+        try original.write(to: fixture.file)
+        let file = fixture.file
+        let result = await AppFileExecution.run(input: AppFileInput(file: file, environment: [:], device: DeviceFixture.udid),
+            approvedPlanID: plan.approval, runner: fixture.runner, leases: fixture.leases) { event in
+                if event.stageId == "snapshot", event.state == "running" { try? swapped.write(to: file) }
+            }
+        #expect(result.exitCode == 1)
+        #expect(result.operation.error == "The copied app bytes or metadata differ from the approved file.")
+        #expect(result.operation.installation == "not-requested")
+        #expect(!fixture.runner.commands.contains(where: mutation))
+        let stage = FileManager.default.temporaryDirectory.appendingPathComponent("dev.runstir-app-file-" + result.operation.id)
+        #expect(!FileManager.default.fileExists(atPath: stage.path))
+    }
+
+    @Test("an unsafe IPA stops before any device tool or installation")
+    func unsafeIPA() async throws {
+        let fixture = try DeviceFixture(ipa: true)
+        _ = try fixture.repo.ipa([.file("Payload/Device.app/Info.plist", "plist"), .file("Payload/Device.app/../../escaped", "x")], name: "Device.ipa")
+        let result = await fixture.run(planOnly: true)
+        #expect(result.exitCode == 1)
+        #expect(result.operation.error?.contains("absolute, escaping or malformed") == true)
+        #expect(result.operation.plan == nil)
+        #expect(fixture.runner.commands.isEmpty)
+    }
+
     private func mutation(_ command: ProcessCommand) -> Bool {
         command.arguments.contains("install") || command.arguments.contains("launch")
     }
@@ -241,17 +310,33 @@ private final class DeviceFixture {
     let runner: DeviceRunner
     let leases: ResourceLeases
 
-    init(installedBuild: String? = nil) throws {
+    init(installedBuild: String? = nil, ipa: Bool = false) throws {
         repo = try FixtureRepo()
         leases = ResourceLeases(directory: repo.url("leases"))
+        runner = DeviceRunner(installedBuild: installedBuild)
+        if ipa {
+            file = repo.url("Device.ipa")
+            try writeIPA(build: "2")
+            return
+        }
         file = try repo.directory("Device.app")
         _ = try repo.write("Device.app/Program", "approved bytes")
         _ = try repo.write("Device.app/embedded.mobileprovision", "CMS envelope; decoded only by the fixture")
+        try Self.plist(build: "2").write(to: file.appendingPathComponent("Info.plist"))
+    }
+
+    func writeIPA(build: String) throws {
+        let app = "Payload/Device.app/"
+        _ = try repo.ipa([.directory("Payload/"), .directory(app), .file(app + "Program", "approved bytes", mode: 0o755),
+            .file(app + "embedded.mobileprovision", "CMS envelope; decoded only by the fixture", deflate: true),
+            TestZip.Entry(name: app + "Info.plist", data: try Self.plist(build: build), mode: 0o100_644, deflate: true)], name: "Device.ipa")
+    }
+
+    private static func plist(build: String) throws -> Data {
         let plist: [String: Any] = ["CFBundlePackageType": "APPL", "CFBundleIdentifier": DeviceRunner.appID,
-            "CFBundleExecutable": "Program", "CFBundleVersion": "2", "CFBundleShortVersionString": "1.2",
+            "CFBundleExecutable": "Program", "CFBundleVersion": build, "CFBundleShortVersionString": "1.2",
             "MinimumOSVersion": "17.0", "CFBundleSupportedPlatforms": ["iPhoneOS"]]
-        try PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0).write(to: file.appendingPathComponent("Info.plist"))
-        runner = DeviceRunner(installedBuild: installedBuild)
+        return try PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0)
     }
 
     func run(inspectOnly: Bool = false, planOnly: Bool = false, approval: String? = nil, selected: Bool = true) async -> AppFileResult {

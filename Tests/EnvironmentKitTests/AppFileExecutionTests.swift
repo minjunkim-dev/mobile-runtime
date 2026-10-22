@@ -7,7 +7,7 @@ import Testing
 
 @Suite("source-free app inspection and exact approved installation")
 struct AppFileExecutionTests {
-    @Test("excluded formats stop before any tool call or installation", arguments: ["ipa", "aab", "apks", "zip"])
+    @Test("excluded formats stop before any tool call or installation", arguments: ["aab", "apks", "zip"])
     func excluded(_ ext: String) async throws {
         let repo = try FixtureRepo()
         let file = try repo.write("input." + ext, "original")
