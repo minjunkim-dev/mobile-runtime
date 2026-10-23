@@ -53,11 +53,11 @@ private struct AfterMetro: Stage {
 }
 
 private func startupReport(
-    _ repo: FixtureRepo, _ runner: any ProcessRunner, port: Int = 8097
+    _ repo: FixtureRepo, _ runner: any ProcessRunner, port: Int = 8097, bindWait: Duration = .zero
 ) async throws -> UpReport {
     let anchor = try #require(ProjectAnchor.detect(from: repo.root))
     return await UpPipeline(stages: [
-        MetroStage(anchor: anchor, runner: runner, logs: try .temporary(project: repo.root), bindWait: .zero, port: port),
+        MetroStage(anchor: anchor, runner: runner, logs: try .temporary(project: repo.root), bindWait: bindWait, port: port),
         AfterMetro(),
     ]).run()
 }
@@ -90,6 +90,69 @@ struct MetroLaunchTests {
         #expect(runner.log.all.filter { $0.executable == "ps" || $0.executable == "lsof" }.allSatisfy {
             ($0.timeout ?? .seconds(99)) <= .seconds(10)
         })
+    }
+
+    @Test("partial lsof output waits for a fresh complete tree before confirming the listener")
+    func partialListenerThenComplete() async throws {
+        let repo = try startupProject()
+        let tree = try #require(MetroStatus.startupResponses(projectRoot: repo.root)[MetroStatus.processTableCommand]).standardOutput
+        let transientTree = tree + "80000 4242 Mon Oct 19 17:00:03 2026\n"
+        let partial = "lsof -a -p 4242,4243,70947,80000 -nP -iTCP:8097 -sTCP:LISTEN -t"
+        let complete = "lsof -a -p 4242,4243,70947 -nP -iTCP:8097 -sTCP:LISTEN -t"
+        let cwd = "lsof -a -p 4242,70947 -d cwd -Fpn"
+        let runner = StartupReplies(root: repo.root, sequences: [
+            MetroStatus.processTableCommand: [.ok(transientTree), .ok(transientTree), .ok(tree)],
+            partial: [.init(status: .exited(1), standardOutput: "70947\n")],
+        ])
+        let report = try await startupReport(repo, runner, bindWait: .seconds(5))
+        #expect(report.exitCode == 0)
+        #expect(report.context.metro?.listenerPid == 70947)
+        #expect(report.stages.map(\.id) == ["metro", "after-metro"])
+        let commands = runner.log.all.map(\.description)
+        let partialIndex = try #require(commands.firstIndex(of: partial))
+        let completeIndex = try #require(commands.firstIndex(of: complete))
+        try #require(partialIndex < completeIndex)
+        #expect(commands[(partialIndex + 1)..<completeIndex].contains(MetroStatus.processTableCommand))
+        #expect(!commands[(partialIndex + 1)..<completeIndex].contains(cwd))
+        #expect(!commands[(partialIndex + 1)..<completeIndex].contains { $0.hasPrefix("curl ") })
+        #expect(commands[(completeIndex + 1)...].filter { $0 == cwd }.count == 2)
+        #expect(commands.last == "lsof -a -p 70947 -nP -iTCP:8097 -sTCP:LISTEN -t")
+    }
+
+    @Test("persistently partial lsof output times out without accepting a listener or running later stages")
+    func partialListenerTimesOut() async throws {
+        let repo = try startupProject()
+        let command = "lsof -a -p 4242,4243,70947 -nP -iTCP:8097 -sTCP:LISTEN -t"
+        let runner = StartupReplies(root: repo.root, sequences: [
+            command: [.init(status: .exited(1), standardOutput: "70947\n")],
+        ])
+        let report = try await startupReport(repo, runner, bindWait: .milliseconds(300))
+        #expect(report.exitCode == 1)
+        #expect(report.failure?.message.contains("nothing listened on 8097 within") == true)
+        #expect(report.context.metro?.pid == 4242)
+        #expect(report.context.metro?.listenerPid == nil)
+        #expect(report.stages.map(\.id) == ["metro"])
+        #expect(runner.log.all.filter { $0.executable == "curl" }.count == 1)
+        #expect(!runner.log.all.contains { $0.description == "lsof -a -p 4242,70947 -d cwd -Fpn" })
+        #expect(!runner.log.all.contains { $0.executable == "kill" && $0.arguments != ["-0", "4242"] })
+    }
+
+    @Test("partial lsof rejects invalid PIDs duplicates foreign PIDs and stderr instead of retrying", arguments: [
+        "not-a-pid\n", "70947\n70947\n", "99999\n", "0\n", "-1\n", "70947\n",
+    ])
+    func invalidPartialListener(output: String) async throws {
+        let repo = try startupProject()
+        let command = "lsof -a -p 4242,4243,70947 -nP -iTCP:8097 -sTCP:LISTEN -t"
+        let runner = StartupReplies(root: repo.root, sequences: [
+            command: [.init(status: .exited(1), standardOutput: output,
+                standardError: output == "70947\n" ? "lsof: incomplete observation\n" : ""), .ok("70947\n")],
+        ])
+        let report = try await startupReport(repo, runner, bindWait: .seconds(2))
+        #expect(report.exitCode == 1)
+        #expect(report.context.metro?.listenerPid == nil)
+        #expect(report.stages.map(\.id) == ["metro"])
+        #expect(runner.log.all.filter { $0.description == command }.count == 1)
+        #expect(runner.log.all.filter { $0.executable == "curl" }.count == 1)
     }
 
     @Test("a foreign or unidentified Metro that wins the startup race is preserved", arguments: [true, false])
