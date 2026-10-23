@@ -101,7 +101,7 @@ struct PreparationExecutionTests {
     }
 
     @Test("approved RN materialization may change provenance but not resolved requirements or tools", arguments: [
-        "same", "version", "requirement", "executable", "tool-version",
+        "same", "same-tier1", "same-tier3", "version", "requirement", "executable", "tool-version",
     ])
     func rnOwnMaterialization(_ change: String) async throws {
         let repo = try project()
@@ -110,6 +110,8 @@ struct PreparationExecutionTests {
         try repo.write("package-lock.json", #"{"lockfileVersion":3,"packages":{"node_modules/react-native":{"version":"0.87.1"}}}"#)
         try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
         try repo.write("ios/Podfile.lock", "locked pods\n")
+        if change == "same-tier1" { try repo.write(".xcode-version", "27.0\n") }
+        if change == "same-tier3" { try repo.write("mobile.yml", "overrides:\n  xcode: '27.0'\n") }
         let alternateNode = try repo.write(".mobile/tool-fixtures/alternate-node", "another fixture node")
         try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: alternateNode.path)
         var base = try tools(repo)
@@ -127,6 +129,13 @@ struct PreparationExecutionTests {
         let before = try #require(beforeChecks.first { $0.id == "ios.xcode.version" })
         let beforeNodePath = try #require(beforeChecks.first { $0.id == "ios.tool.node.path" })
         let beforeNodeVersion = try #require(beforeChecks.first { $0.id == "ios.node.version" })
+        let expectedTier = change == "same-tier1" ? 1 : change == "same-tier3" ? 3 : 2
+        try #require(before.source.tier == expectedTier)
+        if change == "same-tier1" || change == "same-tier3" {
+            #expect(before.required == "Xcode 27.0 or newer")
+            #expect(before.source.origin.hasPrefix(change == "same-tier1" ? ".xcode-version" : "mobile.yml overrides.xcode"))
+            #expect(before.source.origin.contains("says 26.0"))
+        }
         #expect(before.source.origin.contains("package-lock.json"))
         try #require(approved.steps.filter { $0.kind == "align" }.map(\.id) == ["dependencies.node", "dependencies.pods"])
         #expect(!FileManager.default.fileExists(atPath: repo.url("node_modules/react-native/package.json").path))
@@ -143,8 +152,10 @@ struct PreparationExecutionTests {
         let afterNodePath = try #require(afterChecks.first { $0.id == "ios.tool.node.path" })
         let afterNodeVersion = try #require(afterChecks.first { $0.id == "ios.node.version" })
         #expect(after.source.origin.contains("node_modules/react-native"))
+        #expect(after.source.origin != before.source.origin)
+        #expect(after.source.tier == before.source.tier)
         #expect(try Data(contentsOf: repo.url("package-lock.json")) == lock)
-        if change == "same" {
+        if change.hasPrefix("same") {
             #expect(installed.value == "0.87.1")
             #expect(after.required == before.required)
             #expect(after.observed == before.observed)
