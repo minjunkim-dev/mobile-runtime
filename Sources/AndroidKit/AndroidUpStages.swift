@@ -371,10 +371,7 @@ actor AndroidRuntime {
             startPID: startPID, anchor: anchorDirectory, runner: projectRunner,
             bindWait: timeouts.metroBind, poll: timeouts.poll, port: port
         ) { _ in
-            let observed = try await MetroVerdict.ask(anchor: anchorDirectory, runner: projectRunner, port: port)
-            if case .mine = observed { return true }
-            if let blocker = observed.blocker(port: port) { throw blocker }
-            return false
+            try await MetroVerdict.startupReady(anchor: anchorDirectory, runner: projectRunner, port: port)
         }
         switch readiness {
         case .listening(let listener):
