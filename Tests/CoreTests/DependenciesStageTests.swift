@@ -22,6 +22,22 @@ private func anchor(_ repo: FixtureRepo, at relativePath: String? = nil) throws 
 
 private func temporaryLogs() throws -> RunLogs { try RunLogs.temporary() }
 
+private struct CancellingDependencyRunner: ProcessRunner {
+    let lockfile: URL
+    let base = FakeProcessRunner(failures: ["yarn install --frozen-lockfile": CancellationError()])
+
+    func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+        if command.description == "yarn install --frozen-lockfile" {
+            try Data("changed before cancellation\n".utf8).write(to: lockfile)
+        }
+        return try await base.run(command, onLine: onLine)
+    }
+
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+        try await base.spawnDetached(command, logFile: logFile)
+    }
+}
+
 @discardableResult
 private func run(
     _ anchor: ProjectAnchor,
@@ -123,6 +139,52 @@ struct DependenciesStageTests {
             #expect(try String(contentsOf: repo.url("package.json"), encoding: .utf8) == manifest)
             #expect(try String(contentsOf: repo.url(lockfile), encoding: .utf8) == lock)
         }
+    }
+
+    @Test("a dependency hook that rewrites the Pod lock stops before the next installer", arguments: [0, 7])
+    func hookChangesPodLock(_ exitCode: Int) async throws {
+        let repo = try app()
+        try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
+        try repo.write("ios/Podfile.lock", "original lock\n")
+        let tools = try repo.directory("tools")
+        let yarn = try repo.write("tools/yarn", """
+            #!/bin/sh
+            printf 'changed by lifecycle\\n' > ios/Podfile.lock
+            exit \(exitCode)
+            """)
+        let pod = try repo.write("tools/pod", "#!/bin/sh\nprintf touched > pod-ran\n")
+        for executable in [yarn, pod] {
+            try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: executable.path)
+        }
+        let runner = SystemProcessRunner(environment: ["PATH": "\(tools.path):/usr/bin:/bin"])
+        var context = UpContext()
+
+        let error = await #expect(throws: DomainError.self) {
+            try await DependenciesStage(anchor: try anchor(repo), runner: runner).run(&context)
+        }
+
+        #expect(error?.summary.contains("lockfiles changed") == true)
+        #expect(error?.observed?.contains("Podfile.lock") == true)
+        #expect(try String(contentsOf: repo.url("ios/Podfile.lock"), encoding: .utf8) == "changed by lifecycle\n")
+        #expect(!FileManager.default.fileExists(atPath: repo.url("ios/pod-ran").path))
+        #expect(FileManager.default.fileExists(atPath: repo.url("node_modules/.mobile-install.incomplete").path))
+    }
+
+    @Test("cancellation after a dependency hook changes a lock keeps exit 130 and the changed file")
+    func cancelledHookPreservesCancellation() async throws {
+        let repo = try app()
+        try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
+        let lockfile = try repo.write("ios/Podfile.lock", "original lock\n")
+        let runner = CancellingDependencyRunner(lockfile: lockfile)
+        let report = await UpPipeline(stages: [
+            DependenciesStage(anchor: try anchor(repo), runner: runner, logs: try temporaryLogs())
+        ]).run()
+
+        #expect(report.exitCode == 130)
+        #expect(report.stages.last?.detail == "cancelled")
+        #expect(runner.base.log.all.map(\.description) == ["yarn install --frozen-lockfile"])
+        #expect(try String(contentsOf: lockfile, encoding: .utf8) == "changed before cancellation\n")
+        #expect(FileManager.default.fileExists(atPath: repo.url("node_modules/.mobile-install.incomplete").path))
     }
 
     @Test("without a lockfile an existing install keeps the presence fast path")

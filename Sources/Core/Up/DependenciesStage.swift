@@ -183,7 +183,17 @@ public struct DependenciesStage: Stage {
         streamed.output = .streamed(to: file)
 
         let excerpt = LineExcerpt(limit: 10, notable: Self.isNotableInstallFailure)
-        let result = try await runner.run(streamed, onLine: { excerpt.append($0) })
+        let inputs = try dependencyInputs()
+        let result: ProcessResult
+        do {
+            result = try await runner.run(streamed, onLine: { excerpt.append($0) })
+        } catch {
+            // Cancellation already stops the pipeline; a changed input must not replace it.
+            if error is CancellationError { throw error }
+            try verifyDependencyInputs(inputs)
+            throw error
+        }
+        try verifyDependencyInputs(inputs)
         guard !result.terminationStatus.isSuccess else { return }
         throw DomainError(
             summary: "installing \(what) failed",
@@ -195,6 +205,44 @@ public struct DependenciesStage: Stage {
                 command: byHand
             )
         )
+    }
+
+    private func dependencyInputs() throws -> [URL: Data] {
+        let roots = Set([
+            anchor.directory,
+            anchor.installProcess.workingDirectory ?? anchor.directory,
+            anchor.gemInstallProcess?.workingDirectory ?? anchor.directory,
+            anchor.directory.appendingPathComponent("ios"),
+        ])
+        let names = [
+            "package.json", "package-lock.json", "npm-shrinkwrap.json", "yarn.lock",
+            "pnpm-lock.yaml", "pnpm-workspace.yaml", "bun.lock", "bun.lockb",
+            "Gemfile", "Gemfile.lock", Self.podfile, Self.podfileLock,
+        ]
+        var inputs: [URL: Data] = [:]
+        for root in roots {
+            for name in names {
+                let file = root.appendingPathComponent(name)
+                if FileManager.default.fileExists(atPath: file.path) {
+                    inputs[file] = try Data(contentsOf: file)
+                }
+            }
+        }
+        return inputs
+    }
+
+    private func verifyDependencyInputs(_ inputs: [URL: Data]) throws {
+        let changed = inputs.compactMap { file, data in
+            (try? Data(contentsOf: file)) == data ? nil : file.path
+        }.sorted()
+        guard changed.isEmpty else {
+            throw DomainError(
+                summary: "Dependency declarations or lockfiles changed during installation",
+                observed: changed.joined(separator: ", "),
+                remediation: Remediation(summary: "Preserve the changed files and inspect the dependency scripts. "
+                    + "No files were restored. Prepare the declared dependencies manually before retrying.")
+            )
+        }
     }
 
     private static func isNotableInstallFailure(_ line: String) -> Bool {
