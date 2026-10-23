@@ -24,8 +24,12 @@ struct PreparedDependenciesStage: Stage {
             }
             let workspaces = try files.contentsOfDirectory(at: ios, includingPropertiesForKeys: nil)
                 .filter { $0.pathExtension == "xcworkspace" }
-            guard workspaces.count == 1, let workspace = workspaces.first, isDirectory(workspace),
-                files.isReadableFile(atPath: workspace.appendingPathComponent("contents.xcworkspacedata").path) else {
+            guard workspaces.count == 1, let workspace = workspaces.first, isDirectory(workspace) else {
+                throw missing("읽을 수 있는 CocoaPods workspace 한 개")
+            }
+            let contents = workspace.appendingPathComponent("contents.xcworkspacedata")
+            guard (try? contents.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) == true,
+                files.isReadableFile(atPath: contents.path) else {
                 throw missing("읽을 수 있는 CocoaPods workspace 한 개")
             }
         }
