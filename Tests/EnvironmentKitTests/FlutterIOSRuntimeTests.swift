@@ -6,7 +6,8 @@ import Foundation
 import TestSupport
 import Testing
 
-@Suite("Flutter native child boundaries")
+// Subprocess fixtures must not compete with one another for their wall-clock budgets.
+@Suite("Flutter native child boundaries", .serialized)
 struct FlutterIOSRuntimeTests {
     @Test("the native build wrapper preserves argument privacy and command controls")
     func buildCommandPrivacy() async throws {

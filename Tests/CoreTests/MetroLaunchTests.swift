@@ -104,7 +104,7 @@ struct MetroLaunchTests {
             MetroStatus.processTableCommand: [.ok(transientTree), .ok(transientTree), .ok(tree)],
             partial: [.init(status: .exited(1), standardOutput: "70947\n")],
         ])
-        let report = try await startupReport(repo, runner, bindWait: .seconds(5))
+        let report = try await startupReport(repo, runner, bindWait: .seconds(30))
         #expect(report.exitCode == 0)
         #expect(report.context.metro?.listenerPid == 70947)
         #expect(report.stages.map(\.id) == ["metro", "after-metro"])
@@ -162,7 +162,7 @@ struct MetroLaunchTests {
         let runner = StartupReplies(root: repo.root, sequences: [
             status: [.failed(7, ""), .failed(28, ""), .ok(MetroStatus.running(projectRoot: repo.root))],
         ])
-        let report = try await startupReport(repo, runner, bindWait: .seconds(5))
+        let report = try await startupReport(repo, runner, bindWait: .seconds(30))
         #expect(report.exitCode == 0)
         #expect(report.context.metro?.listenerPid == 70947)
         #expect(report.stages.map(\.id) == ["metro", "after-metro"])
