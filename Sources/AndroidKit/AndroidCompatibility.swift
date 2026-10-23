@@ -132,8 +132,11 @@ public enum AndroidCompatibility {
         // https://android.googlesource.com/platform/tools/base/+/refs/tags/studio-2025.1.1/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/cxx/configure/CmakeLocator.kt
         // https://android.googlesource.com/platform/tools/base/+/refs/tags/studio-2025.1.2/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/cxx/configure/CmakeLocator.kt
         // https://android.googlesource.com/platform/tools/base/+/refs/tags/studio-2025.1.3/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/cxx/configure/CmakeLocator.kt
+        // AGP 9.2.1 CmakeLocator.kt keeps the same default in its official sources:
+        // https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/9.2.1/gradle-9.2.1-sources.jar
         let table: [Int: [Int: String]] = [
             8: [11: "3.22.1", 12: "3.22.1", 13: "3.22.1"],
+            9: [2: "3.22.1"],
         ]
         return table[agp.major]?[agp.minor]
     }

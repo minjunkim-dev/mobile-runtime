@@ -574,10 +574,12 @@ struct AndroidDoctorTests {
         #expect(sdk.outcome.reason?.contains("exact NDK version") == true)
     }
 
-    @Test("unspecified CMake uses the bundled AGP default without provisioning", arguments: [false, true])
-    func defaultCMakePackage(installed: Bool) async throws {
-        let scenario = try scenario(modelResponse: .ok(AndroidGradleModelProbe.marker + nativeModelJSON() + "\n"))
+    @Test("unspecified CMake uses the bundled AGP default without provisioning", arguments: [false, true], ["8.12.0", "9.2.1"])
+    func defaultCMakePackage(installed: Bool, agp: String) async throws {
+        let scenario = try scenario(modelResponse: .ok(AndroidGradleModelProbe.marker + nativeModelJSON(agp: agp) + "\n"))
         try sdkPackage(scenario.repo, "sdk/ndk/27.1.12297006")
+        try sdkPackage(scenario.repo, "sdk/build-tools/36.0.0")
+        try executable(scenario.repo, "sdk/build-tools/36.0.0/aapt2")
         try executable(scenario.repo, "sdk/cmdline-tools/latest/bin/sdkmanager")
         if installed {
             try sdkPackage(scenario.repo, "sdk/cmake/3.22.1")
@@ -590,7 +592,7 @@ struct AndroidDoctorTests {
         #expect(sdk.status == (installed ? .pass : .error))
         #expect(sdk.outcome.observed?.contains("CMake 3.22.1") == true)
         #expect(sdk.outcome.source.tier == 2)
-        #expect(sdk.outcome.source.origin.contains("AGP 8.12.0 → CMake 3.22.1"))
+        #expect(sdk.outcome.source.origin.contains("AGP \(agp) → CMake 3.22.1"))
         if !installed {
             #expect(sdk.outcome.remediation?.command?.contains("cmake;3.22.1") == true)
             #expect(!FileManager.default.fileExists(atPath: scenario.repo.url("sdk/cmake/3.22.1").path))
@@ -612,7 +614,7 @@ struct AndroidDoctorTests {
         #expect(sdk.outcome.source.tier == 1)
     }
 
-    @Test("unspecified CMake with an unbundled or unavailable AGP stays unknown", arguments: ["8.10.0", "99.0.0", "invalid", nil] as [String?])
+    @Test("unspecified CMake with an unbundled or unavailable AGP stays unknown", arguments: ["8.10.0", "9.1.0", "9.3.0", "99.0.0", "invalid", nil] as [String?])
     func unknownDefaultCMake(agp: String?) async throws {
         let scenario = try scenario(modelResponse: .ok(AndroidGradleModelProbe.marker + nativeModelJSON(agp: agp) + "\n"))
         try sdkPackage(scenario.repo, "sdk/ndk/27.1.12297006")
