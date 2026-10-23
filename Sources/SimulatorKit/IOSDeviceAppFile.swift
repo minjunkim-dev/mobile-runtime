@@ -2,6 +2,11 @@ import Core
 import CryptoKit
 import Foundation
 
+/// The observed mismatched-identifier upgrade rejection.
+public struct IOSDeviceInstallRejection: Error, Sendable {
+    public let failure: DomainError
+}
+
 /// The physical iOS path reads the embedded profile and signature with platform tools
 /// and installs with devicectl. It never registers devices, re-signs apps or reads
 /// account credentials; unmet conditions are reported for the user to fix manually.
@@ -101,9 +106,29 @@ public struct IOSDeviceAppFile: Sendable {
     public func install(file: URL, device: AppFileDevice) async throws {
         let (result, json) = try await devicectl(["device", "install", "app", "--device", device.handle, file.path], timeout: 300)
         guard json != nil else {
-            throw DomainError(summary: "devicectl refused the app installation: " + result.standardError.lastLines(8),
+            let failure = DomainError(summary: "devicectl refused the app installation: " + result.standardError.lastLines(8),
                 remediation: Remediation(summary: "If the connection was lost, reconnect and unlock the selected device. Inspect again to check its connection and installed app state before approving a new plan. If the error reports a signing or profile problem, correct that condition manually first. Runstir did not delete the existing app or its data, register a device or re-sign the app."))
+            if Self.rejectedWithoutChange(result) { throw IOSDeviceInstallRejection(failure: failure) }
+            throw failure
         }
+    }
+
+    private static func rejectedWithoutChange(_ result: ProcessResult) -> Bool {
+        // Only this observed rejected-upgrade chain permits reservation recovery. Unknown SDK shapes stay reserved.
+        guard result.terminationStatus == .exited(1),
+              let json = try? JSONSerialization.jsonObject(with: Data(result.standardOutput.utf8)) as? [String: Any],
+              (json["info"] as? [String: Any])?["outcome"] as? String == "failed",
+              let error = json["error"] as? [String: Any],
+              error["domain"] as? String == "com.apple.dt.CoreDeviceError", error["code"] as? Int == 3002,
+              let underlying = (error["userInfo"] as? [String: Any])?["NSUnderlyingError"] as? [String: Any],
+              let presentation = underlying["error"] as? [String: Any],
+              presentation["domain"] as? String == "IXUserPresentableErrorDomain", presentation["code"] as? Int == 1,
+              let nested = (presentation["userInfo"] as? [String: Any])?["NSUnderlyingError"] as? [String: Any],
+              let installer = nested["error"] as? [String: Any],
+              installer["domain"] as? String == "MIInstallerErrorDomain", installer["code"] as? Int == 64,
+              let legacy = (installer["userInfo"] as? [String: Any])?["LegacyErrorString"] as? [String: Any],
+              legacy["string"] as? String == "MismatchedApplicationIdentifierEntitlement" else { return false }
+        return true
     }
 
     public func launch(appID: String, device: AppFileDevice) async throws {

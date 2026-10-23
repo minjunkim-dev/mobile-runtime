@@ -177,6 +177,13 @@ struct IOSDeviceAppFileTests {
         #expect(result.operation.installed?.build == "2")
         #expect(result.operation.launch == "not-requested")
         #expect(!fixture.runner.commands.contains(where: forbidden))
+        let conflict = try await #require(throws: ResourceConflict.self) {
+            try await fixture.leases.check(device: .device(.ios, DeviceFixture.udid), project: "/another-path") { _ in
+                Issue.record("A cancelled installation must preserve its unconfirmed reservation")
+                return .stopped
+            }
+        }
+        #expect(conflict.owner?.operationId == result.operation.id)
     }
 
     @Test("an older installed build reuses the separate DOWNGRADE acknowledgement")
@@ -207,6 +214,139 @@ struct IOSDeviceAppFileTests {
         #expect(!fixture.runner.commands.contains(where: forbidden))
     }
 
+    @Test("a verified no-change install rejection permits a newly approved file path")
+    func rejectedInstallAllowsNewPath() async throws {
+        let fixture = try DeviceFixture(installedBuild: "1")
+        fixture.runner.installFailure = DeviceRunner.mismatchedIdentifier
+        let first = try #require(await fixture.run(planOnly: true).operation.plan)
+        let rejected = await fixture.run(approval: first.approval)
+        #expect(rejected.exitCode == 1)
+        #expect(rejected.operation.installed?.build == "1")
+        #expect(rejected.operation.launch == "not-requested")
+
+        let alias = fixture.repo.url("Another.app")
+        try FileManager.default.copyItem(at: fixture.file, to: alias)
+        let input = AppFileInput(file: alias, environment: [:], device: DeviceFixture.udid)
+        let proposed = await AppFileExecution.run(input: input, planOnly: true, runner: fixture.runner, leases: fixture.leases)
+        let next = try #require(proposed.operation.plan)
+        let retried = await AppFileExecution.run(input: input, approvedPlanID: next.approval, runner: fixture.runner, leases: fixture.leases)
+        #expect(retried.operation.conflict == nil)
+        #expect(fixture.runner.commands.filter { $0.arguments.prefix(3) == ["devicectl", "device", "install"] }.count == 2)
+        #expect(!fixture.runner.commands.contains(where: forbidden))
+    }
+
+    @Test("a rejected replacement restores prior running or unconfirmed ownership", arguments: [false, true])
+    func rejectedReplacementPreservesOwner(_ unconfirmed: Bool) async throws {
+        let fixture = try DeviceFixture(installedBuild: "1")
+        let plan = try #require(await fixture.run(planOnly: true).operation.plan)
+        let device = ResourceKey.device(.ios, DeviceFixture.udid)
+        let project = ResourceKey.appFile(plan.artifact.file).rawValue + ":app:" + DeviceRunner.appID
+        let owner = LeaseOwner(operationId: "previous", command: "app run", project: project)
+        if unconfirmed { try fixture.leases.reserve(device: device, owner: owner) }
+        else {
+            try fixture.leases.record(ResourceClaim(device: device, platform: .ios, handle: DeviceFixture.udid,
+                appID: DeviceRunner.appID, owner: owner))
+        }
+        fixture.runner.installFailure = DeviceRunner.mismatchedIdentifier
+        let result = await fixture.run(approval: plan.approval)
+        #expect(result.exitCode == 1)
+        let conflict = try await #require(throws: ResourceConflict.self) {
+            try await fixture.leases.check(device: device, project: "/another-path") { _ in
+                #expect(!unconfirmed)
+                return .running("pid 4242")
+            }
+        }
+        #expect(conflict.owner == owner)
+        #expect(conflict.key == (unconfirmed ? device : .app(.ios, device: DeviceFixture.udid, appID: DeviceRunner.appID)))
+    }
+
+    @Test("similar errors, unknown observations and interruption do not release a reservation", arguments: [
+        "outcome", "root", "presentation", "installer", "legacy", "text-only", "json", "signal", "exit", "zero-exit", "unknown", "changed"
+    ])
+    func uncertainFailureStaysReserved(_ mode: String) async throws {
+        let fixture = try DeviceFixture(installedBuild: "1")
+        let plan = try #require(await fixture.run(planOnly: true).operation.plan)
+        var text = DeviceRunner.mismatchedIdentifier.standardOutput
+        var status = TerminationStatus.exited(1)
+        switch mode {
+        case "outcome": text = text.replacingOccurrences(of: "failed", with: "success")
+        case "root": text = text.replacingOccurrences(of: "com.apple.dt.CoreDeviceError", with: "other")
+        case "presentation": text = text.replacingOccurrences(of: "IXUserPresentableErrorDomain", with: "other")
+        case "installer": text = text.replacingOccurrences(of: "\"code\":64", with: "\"code\":65")
+        case "legacy": text = text.replacingOccurrences(of: "MismatchedApplicationIdentifierEntitlement", with: "OtherError")
+        case "text-only": text = ""
+        case "json": text = "not JSON"
+        case "signal": status = .signaled(15)
+        case "exit": status = .exited(2)
+        case "zero-exit": status = .exited(0)
+        case "unknown": fixture.runner.unknownAfterFailure = true
+        default: fixture.runner.changedAfterFailure = true
+        }
+        fixture.runner.installFailure = ProcessResult(terminationStatus: status, standardOutput: text,
+            standardError: DeviceRunner.mismatchedIdentifier.standardError)
+        let result = await fixture.run(approval: plan.approval)
+        #expect(result.exitCode == 1)
+        #expect(result.operation.installation == "unconfirmed")
+        #expect(result.operation.launch == "not-requested")
+        let conflict = try await #require(throws: ResourceConflict.self) {
+            try await fixture.leases.check(device: .device(.ios, DeviceFixture.udid), project: "/another-path") { _ in
+                Issue.record("An unconfirmed installation must not be treated as a stopped app")
+                return .stopped
+            }
+        }
+        #expect(conflict.owner?.operationId == result.operation.id)
+    }
+
+    @Test("reobservation holds the device lease and a late cancellation preserves its reservation", arguments: [false, true])
+    func rejectionReobservationLease(_ cancel: Bool) async throws {
+        let fixture = try DeviceFixture(installedBuild: "1")
+        let plan = try #require(await fixture.run(planOnly: true).operation.plan)
+        fixture.runner.installFailure = DeviceRunner.mismatchedIdentifier
+        let device = ResourceKey.device(.ios, DeviceFixture.udid)
+        let other = LeaseOwner(operationId: "other", command: "up", project: "/another-path")
+        let result = await AppFileExecution.run(input: AppFileInput(file: fixture.file, environment: [:], device: DeviceFixture.udid),
+            approvedPlanID: plan.approval, runner: fixture.runner, leases: fixture.leases) { event in
+                if event.stageId == "reobserve" {
+                    #expect(throws: ResourceConflict.self) { try fixture.leases.acquire([device], owner: other) }
+                    if cancel { withUnsafeCurrentTask { $0?.cancel() } }
+                }
+            }
+        #expect(result.exitCode == (cancel ? 130 : 1))
+        let released = try fixture.leases.acquire([device], owner: other)
+        released.release()
+        if cancel {
+            #expect(result.operation.installed?.build == "1")
+            #expect(result.operation.state == "cancelled")
+            #expect(try await #require(throws: ResourceConflict.self) {
+                try await fixture.leases.check(device: device, project: other.project) { _ in .stopped }
+            }.owner?.operationId == result.operation.id)
+        }
+    }
+
+    @Test("a failed reservation restoration is reported without replacing the original rejection")
+    func failedRestorationIsReported() async throws {
+        let fixture = try DeviceFixture(installedBuild: "1")
+        let plan = try #require(await fixture.run(planOnly: true).operation.plan)
+        fixture.runner.installFailure = DeviceRunner.mismatchedIdentifier
+        let result = await AppFileExecution.run(input: AppFileInput(file: fixture.file, environment: [:], device: DeviceFixture.udid),
+            approvedPlanID: plan.approval, runner: fixture.runner, leases: fixture.leases) { event in
+                if event.stageId == "reobserve" {
+                    do {
+                        let claims = try FileManager.default.contentsOfDirectory(at: fixture.leases.directory, includingPropertiesForKeys: nil)
+                            .filter { $0.pathExtension == "claim" }
+                        #expect(claims.count == 1)
+                        if let claim = claims.first { try Data("unreadable reservation".utf8).write(to: claim) }
+                    } catch { Issue.record("Could not arrange the restoration failure: \(error)") }
+                }
+            }
+        #expect(result.exitCode == 1)
+        #expect(result.operation.error?.contains("rejecting upgrade") == true)
+        #expect(result.operation.nextAction?.contains("could not be restored") == true)
+        #expect(throws: ResourceConflict.self) {
+            try fixture.leases.ownsClaim(device: .device(.ios, DeviceFixture.udid), project: "/another-path", appID: DeviceRunner.appID)
+        }
+    }
+
     @Test("a launch refusal keeps the observed installation and says what to do next")
     func launchRefused() async throws {
         let fixture = try DeviceFixture()
@@ -222,6 +362,9 @@ struct IOSDeviceAppFileTests {
         #expect(result.operation.nextAction?.contains("Unlock the device") == true)
         #expect(result.operation.nextAction?.contains("VPN & Device Management") == true)
         #expect(!fixture.runner.commands.contains(where: forbidden))
+        let artifact = try #require(result.operation.artifact)
+        #expect(try fixture.leases.ownsClaim(device: .device(.ios, DeviceFixture.udid),
+            project: ResourceKey.appFile(artifact.file).rawValue + ":app:" + DeviceRunner.appID, appID: DeviceRunner.appID))
     }
 
     @Test("an IPA is checked from a removed private extraction and installs only the app re-extracted from its verified copy")
@@ -303,7 +446,7 @@ struct IOSDeviceAppFileTests {
     }
 }
 
-private final class DeviceFixture {
+private final class DeviceFixture: @unchecked Sendable {
     static let udid = "00008110-000A0C123456001E"
     let repo: FixtureRepo
     let file: URL
@@ -349,6 +492,10 @@ private final class DeviceFixture {
 private final class DeviceRunner: ProcessRunner, @unchecked Sendable {
     static let appID = "com.fixture.Device"
     static let certificate = Data("leaf certificate".utf8)
+    // Redacted structure observed from the actual devicectl installation rejection.
+    static let mismatchedIdentifier = ProcessResult(terminationStatus: .exited(1), standardOutput:
+        #"{"info":{"outcome":"failed"},"error":{"domain":"com.apple.dt.CoreDeviceError","code":3002,"userInfo":{"NSUnderlyingError":{"error":{"domain":"IXUserPresentableErrorDomain","code":1,"userInfo":{"NSUnderlyingError":{"error":{"domain":"MIInstallerErrorDomain","code":64,"userInfo":{"LegacyErrorString":{"string":"MismatchedApplicationIdentifierEntitlement"}}}}}}}}}}"#,
+        standardError: "The signing application identifier does not match the installed app; rejecting upgrade.")
     private let lock = NSLock()
     private var recorded: [ProcessCommand] = []
     private var installedBuild: String?
@@ -373,6 +520,10 @@ private final class DeviceRunner: ProcessRunner, @unchecked Sendable {
     var listRefused = false
     var duplicateDevice = false
     var installRefused = false
+    var installFailure: ProcessResult?
+    var unknownAfterFailure = false
+    var changedAfterFailure = false
+    private var failedInstall = false
     var installUnobserved = false
     var launchRefused = false
     var commands: [ProcessCommand] { lock.withLock { recorded } }
@@ -448,10 +599,13 @@ private final class DeviceRunner: ProcessRunner, @unchecked Sendable {
                     return try json(connected)
                 }
                 if args.prefix(6) == ["devicectl", "device", "info", "apps", "--device", DeviceFixture.udid] {
+                    if failedInstall, unknownAfterFailure { return refused("The device disconnected during reobservation.") }
+                    if failedInstall, changedAfterFailure { installedBuild = "7" }
                     let url = "file:///private/var/containers/Bundle/Application/FIXTURE/Device.app/"
                     return try json(["apps": installedBuild.map { [["bundleIdentifier": Self.appID, "bundleVersion": $0, "version": "1.2", "url": url]] } ?? []])
                 }
                 if args.prefix(5) == ["devicectl", "device", "install", "app", "--device"] {
+                    if let installFailure { failedInstall = true; return installFailure }
                     if installRefused { return refused("Failed to install the app: A valid provisioning profile for this executable was not found.") }
                     if !installUnobserved { installedBuild = "2" }
                     if cancelAfterInstall { withUnsafeCurrentTask { $0?.cancel() }; throw CancellationError() }

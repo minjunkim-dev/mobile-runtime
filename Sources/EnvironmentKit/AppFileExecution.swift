@@ -129,7 +129,11 @@ public enum AppFileExecution {
         var selected: AppFileDevice?
         var installationRequested = false
         var stageDirectory: URL?
+        var lease: ResourceLease?
+        var reservation: InstallationReservation?
+        var installedBeforeRequest: AppFileInstalledState?
         defer {
+            lease?.release()
             if let stageDirectory { try? FileManager.default.removeItem(at: stageDirectory) }
         }
         do {
@@ -174,9 +178,8 @@ public enum AppFileExecution {
             let owner = LeaseOwner(operationId: operation.id, command: "app run \(artifact.file.path)",
                 project: ResourceKey.appFile(artifact.file).rawValue + ":app:" + artifact.metadata.appID)
             let deviceKey = ResourceKey.device(artifact.metadata.platform, device.id)
-            let lease = try leases.acquire([.appFile(artifact.file), .appFileObject(artifact.file), deviceKey,
+            lease = try leases.acquire([.appFile(artifact.file), .appFileObject(artifact.file), deviceKey,
                 .app(artifact.metadata.platform, device: device.handle, appID: artifact.metadata.appID)], owner: owner)
-            defer { lease.release() }
             try await leases.check(device: deviceKey, project: owner.project) { claim in
                 try await tools.observe(claim)
             }
@@ -265,7 +268,8 @@ public enum AppFileExecution {
                     return finish(operation, code: 1, events: events)
                 }
             }
-            try leases.reserve(device: deviceKey, owner: owner)
+            reservation = try leases.reserveForInstallation(device: deviceKey, owner: owner)
+            installedBeforeRequest = operation.installed
             installationRequested = true
             operation.installation = "requested"
             events.send("stage", stage: "install", state: "running")
@@ -299,7 +303,7 @@ public enum AppFileExecution {
             let cancelled = error is CancellationError || Task.isCancelled
             let conflict = error as? ResourceConflict
             operation.conflict = conflict
-            let domain = (error as? DomainError) ?? conflict?.domainError
+            let domain = (error as? DomainError) ?? (error as? IOSDeviceInstallRejection)?.failure ?? conflict?.domainError
             operation.error = domain?.message ?? String(describing: error)
             operation.nextAction = domain?.remediation.summary
                 ?? "Inspect the current file and selected device before retrying. Completed installation and existing data remain."
@@ -333,8 +337,17 @@ public enum AppFileExecution {
                     catch { operation.installed = AppFileInstalledState(state: "unknown", detail: "Re-observation failed: \(error)") }
                 }
             }
-            operation.state = cancelled ? "cancelled" : "failed"
-            return finish(operation, code: cancelled ? 130 : domain != nil ? 1 : 2, events: events)
+            if error is IOSDeviceInstallRejection, let reservation,
+               !cancelled, !Task.isCancelled, operation.installation != "installed",
+               let installed = operation.installed, ["absent", "installed"].contains(installed.state),
+               installed == installedBeforeRequest {
+                do { try leases.restoreAfterRejectedInstallation(reservation) }
+                catch { operation.nextAction = (operation.nextAction ?? "Inspect again.")
+                    + " The previous device reservation could not be restored: \(error). Its current record was preserved." }
+            }
+            let wasCancelled = cancelled || Task.isCancelled
+            operation.state = wasCancelled ? "cancelled" : "failed"
+            return finish(operation, code: wasCancelled ? 130 : domain != nil ? 1 : 2, events: events)
         }
     }
 
