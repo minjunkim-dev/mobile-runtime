@@ -100,6 +100,83 @@ struct PreparationExecutionTests {
         #expect(try Data(contentsOf: repo.url("yarn.lock")) == Data())
     }
 
+    @Test("approved RN materialization may change provenance but not resolved requirements or tools", arguments: [
+        "same", "version", "requirement", "executable", "tool-version",
+    ])
+    func rnOwnMaterialization(_ change: String) async throws {
+        let repo = try project()
+        try FileManager.default.removeItem(at: repo.url("yarn.lock"))
+        try repo.write("package.json", #"{"dependencies":{"react-native":"0.87.1"}}"#)
+        try repo.write("package-lock.json", #"{"lockfileVersion":3,"packages":{"node_modules/react-native":{"version":"0.87.1"}}}"#)
+        try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
+        try repo.write("ios/Podfile.lock", "locked pods\n")
+        let alternateNode = try repo.write(".mobile/tool-fixtures/alternate-node", "another fixture node")
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: alternateNode.path)
+        var base = try tools(repo)
+        base.responses["/usr/bin/which npm"] = .ok("/test/bin/npm")
+        base.responses["npm --version"] = .ok("10.9.8")
+        base.responses["npm ci"] = .ok("")
+        base.responses["pod --version"] = .ok("1.16.1")
+        base.responses["pod install --deployment"] = .ok("")
+        base.responses["\(alternateNode.path) --version"] = .ok("v22.14.0")
+        let runner = RNMaterializingRunner(base: base, repo: repo, change: change, alternateNode: alternateNode)
+        let input = ProjectInspectionInput(directory: repo.root, environment: [:])
+        let planned = await PreparationExecution.run(input: input, planOnly: true, runner: runner)
+        let approved = try #require(planned.plan)
+        let beforeChecks = try #require(approved.platforms.first { $0.platform == .ios }?.checks)
+        let before = try #require(beforeChecks.first { $0.id == "ios.xcode.version" })
+        let beforeNodePath = try #require(beforeChecks.first { $0.id == "ios.tool.node.path" })
+        let beforeNodeVersion = try #require(beforeChecks.first { $0.id == "ios.node.version" })
+        #expect(before.source.origin.contains("package-lock.json"))
+        try #require(approved.steps.filter { $0.kind == "align" }.map(\.id) == ["dependencies.node", "dependencies.pods"])
+        #expect(!FileManager.default.fileExists(atPath: repo.url("node_modules/react-native/package.json").path))
+        let lock = try Data(contentsOf: repo.url("package-lock.json"))
+
+        let prepared = await PreparationExecution.run(input: input, approvedPlanID: approved.id,
+            trustRepository: true, runner: runner, leases: ResourceLeases(directory: repo.url(".mobile/leases")))
+        #expect(runner.base.log.all.filter { $0.description == "npm ci" }.count == 1)
+        let installed = try #require(ProjectAnchor.detect(from: repo.root)?.reactNativeVersion)
+        #expect(installed.origin == "node_modules/react-native")
+        let fresh = await PreparationExecution.run(input: input, planOnly: true, runner: runner)
+        let afterChecks = try #require(fresh.plan?.platforms.first { $0.platform == .ios }?.checks)
+        let after = try #require(afterChecks.first { $0.id == "ios.xcode.version" })
+        let afterNodePath = try #require(afterChecks.first { $0.id == "ios.tool.node.path" })
+        let afterNodeVersion = try #require(afterChecks.first { $0.id == "ios.node.version" })
+        #expect(after.source.origin.contains("node_modules/react-native"))
+        #expect(try Data(contentsOf: repo.url("package-lock.json")) == lock)
+        if change == "same" {
+            #expect(installed.value == "0.87.1")
+            #expect(after.required == before.required)
+            #expect(after.observed == before.observed)
+            #expect(after.kind == before.kind)
+            #expect(afterNodePath.target == beforeNodePath.target)
+            #expect(afterNodeVersion.observed == beforeNodeVersion.observed)
+            #expect(prepared.operation.error == nil, Comment(rawValue: prepared.operation.error ?? ""))
+            #expect(prepared.operation.completed == ["dependencies.node", "dependencies.pods"])
+            #expect(runner.base.log.all.contains { $0.description == "pod install --deployment" })
+        } else {
+            #expect(prepared.operation.state == "failed")
+            #expect(prepared.operation.completed == ["dependencies.node"])
+            #expect(prepared.operation.error?.contains("conditions changed") == true)
+            #expect(!runner.base.log.all.contains { $0.description == "pod install --deployment" })
+            if change == "version" {
+                #expect(installed.value == "0.87.2")
+                #expect(after.required == before.required)
+            }
+            if change == "requirement" {
+                #expect(installed.value == "0.80.0")
+                #expect(after.required != before.required)
+            }
+            if change == "executable" {
+                #expect(afterNodePath.target == alternateNode.path)
+                #expect(afterNodePath.target != beforeNodePath.target)
+            }
+            if change == "tool-version" {
+                #expect(afterNodeVersion.observed != beforeNodeVersion.observed)
+            }
+        }
+    }
+
     @Test("tool-only approval preserves newly available dependency alignment for a new approval", arguments: [false, true])
     func newlyAvailableAlignment(trustRepository: Bool) async throws {
         let fixture = try await ToolPreparationTests().fixture()
@@ -450,6 +527,35 @@ private struct ChangedNodeVersionRunner: ProcessRunner {
         }
         return result
     }
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+        try await base.spawnDetached(command, logFile: logFile)
+    }
+}
+
+private struct RNMaterializingRunner: ProcessRunner {
+    let base: FakeProcessRunner
+    let repo: FixtureRepo
+    let change: String
+    let alternateNode: URL
+
+    func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+        var selected = base
+        let installed = FileManager.default.fileExists(atPath: repo.url("node_modules/react-native/package.json").path)
+        if installed, change == "executable", command.description == "/usr/bin/which node" {
+            selected.responses[command.description] = .ok(alternateNode.path)
+        }
+        if installed, change == "tool-version", command.arguments == ["--version"],
+            command.executable == "node" || command.executable.hasSuffix("/tool-fixtures/node") {
+            selected.responses[command.description] = .ok("v22.15.0")
+        }
+        let result = try await selected.run(command, onLine: onLine)
+        if command.description == "npm ci" {
+            let version = change == "version" ? "0.87.2" : change == "requirement" ? "0.80.0" : "0.87.1"
+            try repo.write("node_modules/react-native/package.json", "{\"name\":\"react-native\",\"version\":\"\(version)\"}\n")
+        }
+        return result
+    }
+
     func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
         try await base.spawnDetached(command, logFile: logFile)
     }
