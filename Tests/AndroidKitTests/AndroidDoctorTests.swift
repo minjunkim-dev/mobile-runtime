@@ -516,9 +516,9 @@ struct AndroidDoctorTests {
         #expect(avd.outcome.observed?.contains("arm64-v8a") == true)
     }
 
-    @Test("selected variant compileSdk outranks the module default")
-    func variantCompileSDK() async throws {
-        let variant = #"[{"name":"debug","debuggable":true,"assembleTask":":app:assembleDebug","installTask":":app:installDebug","compileSdk":"37","minSdk":"24","targetSdk":"37","applicationId":"dev.mobile.fixture","abiFilters":["arm64-v8a"]}]"#
+    @Test("selected variant compileSdk retains its minor and outranks the module default", arguments: ["37", "37.0"])
+    func variantCompileSDK(api: String) async throws {
+        let variant = #"[{"name":"debug","debuggable":true,"assembleTask":":app:assembleDebug","installTask":":app:installDebug","compileSdk":"\#(api)","minSdk":"24","targetSdk":"37","applicationId":"dev.mobile.fixture","abiFilters":["arm64-v8a"]}]"#
         let response = FakeProcessRunner.Response.ok(
             AndroidGradleModelProbe.marker + modelJSON(variants: variant) + "\n"
         )
@@ -528,7 +528,14 @@ struct AndroidDoctorTests {
         let sdk = try #require(report.checks.first { $0.id == "android.sdk" })
 
         #expect(sdk.status == .error)
-        #expect(sdk.outcome.observed?.contains("SDK Platform android-37") == true)
+        #expect(sdk.outcome.observed?.contains("SDK Platform android-\(api)") == true)
+        let context = AndroidDoctorContext(anchor: scenario.anchor, config: scenario.config,
+            hostRunner: scenario.runner, projectRunner: scenario.runner, environment: scenario.environment)
+        let requirements = try await context.sdkRequirements()
+        #expect(requirements.packages.contains { $0.packagePath == "platforms;android-\(api)" })
+        if api == "37.0" {
+            #expect(!requirements.packages.contains { $0.packagePath == "platforms;android-37" })
+        }
     }
 
     @Test("selected variant minSdk outranks the module default for AVD selection")

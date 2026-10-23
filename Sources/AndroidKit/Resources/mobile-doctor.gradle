@@ -18,10 +18,12 @@ def valueOf = { object, String name ->
 }
 
 def textOf = { value -> value == null ? null : value.toString() }
-def apiOf = { value ->
+def apiOf = { value, boolean includeMinor = false ->
     if (value == null) return null
     def api = valueOf(value, "apiLevel")
-    return textOf(api ?: value).replaceFirst(/^android-/, "")
+    def text = textOf(api ?: value).replaceFirst(/^android-/, "")
+    def minor = includeMinor ? valueOf(value, "minorApiLevel") : null
+    return minor == null ? text : "${text}.${minor}"
 }
 def artifactPath = { variant, String name ->
     try {
@@ -62,7 +64,7 @@ gradle.beforeProject { project ->
                     variants << [
                         name: name,
                         debuggable: debuggable == true,
-                        compileSdk: apiOf(valueOf(variant, "compileSdk")),
+                        compileSdk: apiOf(valueOf(variant, "compileSdk"), true),
                         minSdk: apiOf(valueOf(variant, "minSdk") ?: valueOf(variant, "minSdkVersion")),
                         targetSdk: apiOf(valueOf(variant, "targetSdkVersion")),
                         applicationId: textOf(valueOf(variant, "applicationId")),
@@ -100,7 +102,7 @@ gradle.projectsEvaluated {
                     variants << [
                         name: variant.name.toString(),
                         debuggable: valueOf(valueOf(variant, "buildType"), "debuggable") == true,
-                        compileSdk: apiOf(valueOf(android, "compileSdk") ?: valueOf(android, "compileSdkVersion")),
+                        compileSdk: apiOf(valueOf(android, "compileSdkVersion") ?: valueOf(android, "compileSdk"), true),
                         minSdk: apiOf(valueOf(merged, "minSdk") ?: valueOf(merged, "minSdkVersion")),
                         targetSdk: apiOf(valueOf(merged, "targetSdk") ?: valueOf(merged, "targetSdkVersion")),
                         applicationId: textOf(valueOf(variant, "applicationId")),
@@ -162,7 +164,7 @@ gradle.projectsEvaluated {
         mobileModules << [
             path: project.path,
             agpVersion: textOf(agpVersion),
-            compileSdk: apiOf(valueOf(android, "compileSdk") ?: valueOf(android, "compileSdkVersion")),
+            compileSdk: apiOf(valueOf(android, "compileSdkVersion") ?: valueOf(android, "compileSdk"), true),
             buildToolsVersion: buildTools,
             minSdk: apiOf(valueOf(defaultConfig, "minSdk") ?: valueOf(defaultConfig, "minSdkVersion")),
             targetSdk: apiOf(valueOf(defaultConfig, "targetSdk") ?: valueOf(defaultConfig, "targetSdkVersion")),
