@@ -226,16 +226,26 @@ public enum MetroLaunch {
     /// modules that are on disk (#149). Dropping the project's watch makes Metro's own
     /// `watch-project` start a fresh one, which watchman answers only after its full
     /// crawl. Without watchman there is nothing to drop, so every failure is ignored.
-    public static func dropWatchmanWatch(of directory: URL, runner: any ProcessRunner) async {
+    public static func dropWatchmanWatch(
+        of directory: URL,
+        runner: any ProcessRunner,
+        socketPath: String? = ProcessInfo.processInfo.environment["WATCHMAN_SOCK"]
+    ) async {
+        // fb-watchman uses WATCHMAN_SOCK directly; the Watchman CLI ignores it.
+        let options = if let socketPath, !socketPath.isEmpty {
+            ["--sockname=\(socketPath)", "--no-spawn", "--no-local"]
+        } else {
+            [String]()
+        }
         let probe = ProcessCommand(
-            "watchman", ["watch-project", directory.path], workingDirectory: directory, timeout: .seconds(15)
+            "watchman", options + ["watch-project", directory.path], workingDirectory: directory, timeout: .seconds(15)
         )
         guard let result = try? await runner.run(probe), result.terminationStatus.isSuccess,
             let reply = try? JSONSerialization.jsonObject(with: Data(result.standardOutput.utf8)) as? [String: Any],
             let root = reply["watch"] as? String
         else { return }
         _ = try? await runner.run(
-            ProcessCommand("watchman", ["watch-del", root], workingDirectory: directory, timeout: .seconds(15))
+            ProcessCommand("watchman", options + ["watch-del", root], workingDirectory: directory, timeout: .seconds(15))
         )
     }
 }

@@ -120,13 +120,13 @@ struct MetroStageTests {
         #expect(runner.log.spawned.isEmpty)
         #expect(try String(contentsOf: blocked, encoding: .utf8) == "preserve")
     }
-    @Test("after a reinstall the project's watchman watch is dropped so Metro crawls fresh")
-    func dropsWatchmanWatch() async throws {
+    @Test("without an explicit socket the project's default Watchman watch is dropped", arguments: [nil, ""] as [String?])
+    func dropsWatchmanWatch(socketPath: String?) async throws {
         let repo = try app()
         let probe = "watchman watch-project \(repo.root.path)"
         let runner = FakeProcessRunner(responses: [probe: .ok(#"{"watch": "/watched/root"}"#)])
 
-        await MetroLaunch.dropWatchmanWatch(of: repo.root, runner: runner)
+        await MetroLaunch.dropWatchmanWatch(of: repo.root, runner: runner, socketPath: socketPath)
 
         #expect(runner.log.first(matching: "watchman watch-del /watched/root") != nil)
     }
@@ -136,9 +136,38 @@ struct MetroStageTests {
         let repo = try app()
         let runner = FakeProcessRunner()
 
-        await MetroLaunch.dropWatchmanWatch(of: repo.root, runner: runner)
+        await MetroLaunch.dropWatchmanWatch(of: repo.root, runner: runner, socketPath: nil)
 
         #expect(!runner.log.all.contains { $0.arguments.first == "watch-del" })
+    }
+
+    @Test("an explicit Metro Watchman socket is used for both fresh-crawl commands")
+    func dropsConfiguredWatchmanWatch() async throws {
+        let repo = try app()
+        let socket = "/tmp/runstir watchman.sock"
+        let options = ["--sockname=\(socket)", "--no-spawn", "--no-local"]
+        let probe = ProcessCommand("watchman", options + ["watch-project", repo.root.path])
+        let runner = FakeProcessRunner(responses: [probe.description: .ok(#"{"watch": "/watched/root"}"#)])
+
+        await MetroLaunch.dropWatchmanWatch(of: repo.root, runner: runner, socketPath: socket)
+
+        #expect(runner.log.all.map(\.arguments) == [
+            options + ["watch-project", repo.root.path],
+            options + ["watch-del", "/watched/root"],
+        ])
+    }
+
+    @Test("an unavailable explicit Watchman socket never falls back to the default server")
+    func missingConfiguredWatchmanPreservesDefault() async throws {
+        let repo = try app()
+        let socket = "/tmp/missing-runstir-watchman.sock"
+        let runner = FakeProcessRunner()
+
+        await MetroLaunch.dropWatchmanWatch(of: repo.root, runner: runner, socketPath: socket)
+
+        #expect(runner.log.all.map(\.arguments) == [
+            ["--sockname=\(socket)", "--no-spawn", "--no-local", "watch-project", repo.root.path],
+        ])
     }
 
     /// Metro publishes this on `/status`, and two bundlers on one port is the thing
