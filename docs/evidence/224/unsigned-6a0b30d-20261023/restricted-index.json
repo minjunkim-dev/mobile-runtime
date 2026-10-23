@@ -1,0 +1,898 @@
+{
+  "schemaVersion": 1,
+  "storage": {
+    "id": "runstir224-2ce1-20261023",
+    "custodian": "minjunkim-dev",
+    "access": "local-owner-managed"
+  },
+  "files": [
+    {
+      "id": "candidate",
+      "path": "candidate/CANDIDATE.json",
+      "bytes": 806,
+      "sha256": "6a07f1a33bbb2772075c1f7c7ccd6e1654f6aec82c00ff3d9840244c1c361da0"
+    },
+    {
+      "id": "cli",
+      "path": "candidate/runstir-0.1.0-alpha.8-macos-arm64.tar.gz",
+      "bytes": 4564962,
+      "sha256": "c0103a4858686acbd64c73969b3c16da92a465c55b55c782f9321b4465133df8"
+    },
+    {
+      "id": "gui",
+      "path": "candidate/Runstir-0.1.0-alpha.8-macos-arm64.dmg",
+      "bytes": 4745702,
+      "sha256": "2edd27ebd481aefaf3ad2df312e2ccd27a425cca516a0798c5d4cb6a52bec35d"
+    },
+    {
+      "id": "homebrew",
+      "path": "candidate/runstir-candidate.rb",
+      "bytes": 728,
+      "sha256": "73b4abf6564ce79f1e58b6969eafc42f89dedaa9d2ef6097e6c149c3e66dbd43"
+    },
+    {
+      "id": "package-check",
+      "path": "receipts/224-package-verification.json",
+      "bytes": 1350,
+      "sha256": "407245c4e7ebef3110311059fc10c359745547bdaeef6c4d0500f84be56966be"
+    },
+    {
+      "id": "package-recipe",
+      "path": "receipts/224-package-unsigned.sh",
+      "bytes": 7502,
+      "sha256": "8c4743bb47a08ae3f585ea43fed879287a1649a9d864b89417db16a1cf89e789"
+    },
+    {
+      "id": "package-build-log",
+      "path": "receipts/224-package-build.log",
+      "bytes": 3254,
+      "sha256": "e948f5f82ecc9da8dd18a4adcaf322ad4b0148ec67cb375a73d35e08e10263ca"
+    },
+    {
+      "id": "prepared-sources",
+      "path": "receipts/224-prepared-inputs.private.json",
+      "bytes": 16877,
+      "sha256": "d11b080b3a578850d137f80c3641a5df962f1828cc78eb41dcc97bb7531e0f63"
+    },
+    {
+      "id": "tools",
+      "path": "receipts/224-tools.private.json",
+      "bytes": 9799,
+      "sha256": "604f573fad38c7b16ec8d60daf9f264f1c2d5b77ff91f585f1ce2842a98f9fe8"
+    },
+    {
+      "id": "runtime-identities",
+      "path": "receipts/224-runtime-identity.private.json",
+      "bytes": 2133,
+      "sha256": "6ccb4e4ce346cee9d480602df96b0e23636a903b6a738e8777dd8cb7e87be3a5"
+    },
+    {
+      "id": "virtual-inputs",
+      "path": "receipts/224-virtual-inputs.private.json",
+      "bytes": 8223,
+      "sha256": "8cbb616f0d7758320eb908e6d0c645e67237689ede3d2cbb900d5a0de68cd035"
+    },
+    {
+      "id": "fixed-inputs",
+      "path": "receipts/224-fixed-inputs.private.json",
+      "bytes": 45464,
+      "sha256": "192b557978237091a0955e60fe21e23fc701e95b2a71429e282f3f34087abea9"
+    },
+    {
+      "id": "rn-current-preparation",
+      "path": "receipts/224-rn-current-preparation.private.json",
+      "bytes": 2551,
+      "sha256": "9c1486af3fd2d3dbccc263c0d47eb9826b14dfb2efd2c16439d4f3d4ceac31a3"
+    },
+    {
+      "id": "source-ci",
+      "path": "receipts/224-source-ci.json",
+      "bytes": 972,
+      "sha256": "97d3453c05d4c20e07324a15332a883823c60f51f6ad25b4e200f0120ee8fe1a"
+    },
+    {
+      "id": "source-codeql",
+      "path": "receipts/224-source-codeql.json",
+      "bytes": 1026,
+      "sha256": "eeeb838dd34ce213754f9b94ef7f6405d7fe6f185ef9eef6b40f936acc69ca53"
+    },
+    {
+      "id": "preparation-report",
+      "path": "receipts/224-ACTUAL.md",
+      "bytes": 4861,
+      "sha256": "7751622eb60eb5abf079ca9eecd1d2043c90a6d688228ed9a430a6ddec5d5626"
+    },
+    {
+      "id": "baseline-rn-android",
+      "path": "receipts/baseline/baseline-rn-android.md",
+      "bytes": 6727,
+      "sha256": "b19baecf7fc2ef2d4265599957846c1120106c32abf01358bfb1b183536436a4"
+    },
+    {
+      "id": "baseline-rn-ios",
+      "path": "receipts/baseline/baseline-rn-ios.md",
+      "bytes": 11769,
+      "sha256": "445afc0ecf51dce6782c5fd003d26560444993ea20c14838955b4b030fe7ee9d"
+    },
+    {
+      "id": "baseline-rn-inputs",
+      "path": "receipts/baseline/baseline-rn-inputs.json",
+      "bytes": 7128,
+      "sha256": "65ea1f0dc4c7c18177661c382dd773f5437a9da5b5292f67bc59b486e1f0f4d6"
+    },
+    {
+      "id": "baseline-flutter",
+      "path": "receipts/baseline/baseline-flutter.json",
+      "bytes": 52862,
+      "sha256": "644403556672477e6758b80ab87c1bd42a6dce9f05097e123dae4e5e50c3eca0"
+    },
+    {
+      "id": "baseline-flutter-results",
+      "path": "receipts/baseline/baseline-flutter-results.json",
+      "bytes": 6802,
+      "sha256": "6ec95f4fb69be76fb8954acae67ac236e45809a7d9fd76c39237a38211534cb1"
+    },
+    {
+      "id": "baseline-flutter-fresh",
+      "path": "receipts/baseline/baseline-flutter-fresh.json",
+      "bytes": 2675,
+      "sha256": "a0f03b69e3907797bf504239d3be66c041f1e8c2bc1a3458913f6bdbf150499d"
+    },
+    {
+      "id": "baseline-native-android",
+      "path": "receipts/baseline/baseline-native-android.json",
+      "bytes": 24669,
+      "sha256": "80f6ff9b248a29d607dc1f534dd7f3c0ac6668cf0fdbfc3d66a1d093fa9cfb61"
+    },
+    {
+      "id": "baseline-native-android-inputs",
+      "path": "receipts/baseline/baseline-native-android-inputs.json",
+      "bytes": 21711,
+      "sha256": "2a80ff8bfa13146689f67bb3e9fa2e311c3ee94864457b3bc098b72be714c3db"
+    },
+    {
+      "id": "baseline-native-android-fresh",
+      "path": "receipts/baseline/baseline-native-android-fresh.json",
+      "bytes": 4277,
+      "sha256": "5af3dc5d34439caa716718c6455f2dc5fee8a16caa04412f2dd5392f455a3f93"
+    },
+    {
+      "id": "native-ios-proof-0",
+      "path": "receipts/native-ios/boot-owned.json",
+      "bytes": 214,
+      "sha256": "21eef61bbfc64adefb82565b9a3ab8e5d43c829c64f0101418d25b29eaee2e73"
+    },
+    {
+      "id": "native-ios-proof-1",
+      "path": "receipts/native-ios/boot-owned.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-2",
+      "path": "receipts/native-ios/boot-owned.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-3",
+      "path": "receipts/native-ios/bootstatus-owned.json",
+      "bytes": 229,
+      "sha256": "1d586e6f4b035affdc9015469b8cdad83ddf0f9d331b472ce9d8f4700a4ca215"
+    },
+    {
+      "id": "native-ios-proof-4",
+      "path": "receipts/native-ios/bootstatus-owned.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-5",
+      "path": "receipts/native-ios/bootstatus-owned.stdout",
+      "bytes": 4984,
+      "sha256": "32a70c68830acdcb93f21b3c14ac5754aab522f2dad965a27367dc3d9e94f705"
+    },
+    {
+      "id": "native-ios-proof-6",
+      "path": "receipts/native-ios/create-owned-simulator.json",
+      "bytes": 315,
+      "sha256": "c827df0ea52189e701d14136398804f0f43e8a6901c4409ac3722693860dcc0d"
+    },
+    {
+      "id": "native-ios-proof-7",
+      "path": "receipts/native-ios/create-owned-simulator.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-8",
+      "path": "receipts/native-ios/create-owned-simulator.stdout",
+      "bytes": 37,
+      "sha256": "ebc78b8f4c2eb16951a6a3a59f1e7d419f98c64476643d73891a9bebb830b26c"
+    },
+    {
+      "id": "native-ios-proof-9",
+      "path": "receipts/native-ios/default-devices-after.json",
+      "bytes": 198,
+      "sha256": "d9367bb6784746072c23612cc89fb8eef34accb054102d30e85aaf1bd818b14a"
+    },
+    {
+      "id": "native-ios-proof-10",
+      "path": "receipts/native-ios/default-devices-after.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-11",
+      "path": "receipts/native-ios/default-devices-after.stdout",
+      "bytes": 5135,
+      "sha256": "1a39b95f98ae65f2bd392a48cbc41ea1773e6332ca808acf6a3734f425344a02"
+    },
+    {
+      "id": "native-ios-proof-12",
+      "path": "receipts/native-ios/default-devices-before.json",
+      "bytes": 199,
+      "sha256": "ce9300defa7d951c23739b058bcd825cb34df88cef8254edcef1145d570ac921"
+    },
+    {
+      "id": "native-ios-proof-13",
+      "path": "receipts/native-ios/default-devices-before.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-14",
+      "path": "receipts/native-ios/default-devices-before.stdout",
+      "bytes": 4517,
+      "sha256": "ace4bf3e8b927ac30330ea6395e6d01b4f2e58ed6fca4e47dea84cba29e81afa"
+    },
+    {
+      "id": "native-ios-proof-15",
+      "path": "receipts/native-ios/food-truck-build.json",
+      "bytes": 1162,
+      "sha256": "61b46cf5476cc9a8154e7317bd2a21ff360622ab7e823a30ed5ef69b936fa79c"
+    },
+    {
+      "id": "native-ios-proof-16",
+      "path": "receipts/native-ios/food-truck-build.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-17",
+      "path": "receipts/native-ios/food-truck-build.stdout",
+      "bytes": 315073,
+      "sha256": "a70b3508213fba8890bb116c7123cef086999869c032deb59bf626e290e5a0c9"
+    },
+    {
+      "id": "native-ios-proof-18",
+      "path": "receipts/native-ios/food-truck-first.png",
+      "bytes": 1693415,
+      "sha256": "5ca91979d76f1d81e21f1cae3075edcfd533faa7981dcf7418bb0a74624fc471"
+    },
+    {
+      "id": "native-ios-proof-19",
+      "path": "receipts/native-ios/fresh-food-truck-checkout.json",
+      "bytes": 333,
+      "sha256": "869ea6231816d7bb203c1baf2da3b8eb1339c12f5a24160613170bedc2fc99b6"
+    },
+    {
+      "id": "native-ios-proof-20",
+      "path": "receipts/native-ios/fresh-food-truck-checkout.stderr",
+      "bytes": 69,
+      "sha256": "b855e850b18c58f0e90ad4343bca49c8947653bbf290a2dbd47172d4c5901447"
+    },
+    {
+      "id": "native-ios-proof-21",
+      "path": "receipts/native-ios/fresh-food-truck-checkout.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-22",
+      "path": "receipts/native-ios/fresh-food-truck-clone.json",
+      "bytes": 424,
+      "sha256": "bc336c936a984019833054931474ab45f4383a9962c8ec8b9df8b32bc0a8582a"
+    },
+    {
+      "id": "native-ios-proof-23",
+      "path": "receipts/native-ios/fresh-food-truck-clone.stderr",
+      "bytes": 119,
+      "sha256": "97d9dbeef18a6b6f7730b5cad16fc9528a2e7ece2211b05ca35eb95ca9245d4e"
+    },
+    {
+      "id": "native-ios-proof-24",
+      "path": "receipts/native-ios/fresh-food-truck-clone.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-25",
+      "path": "receipts/native-ios/fresh-netnewswire-checkout.json",
+      "bytes": 334,
+      "sha256": "3c3279315684eed23b2dd5e43dbd103f0552b75b8917e55f21d0383c38cd26c2"
+    },
+    {
+      "id": "native-ios-proof-26",
+      "path": "receipts/native-ios/fresh-netnewswire-checkout.stderr",
+      "bytes": 158,
+      "sha256": "0ecab8d3c58b53fb640e126b4dd379c58d635263752c892b43cc08b2059d4747"
+    },
+    {
+      "id": "native-ios-proof-27",
+      "path": "receipts/native-ios/fresh-netnewswire-checkout.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-28",
+      "path": "receipts/native-ios/fresh-netnewswire-clone.json",
+      "bytes": 426,
+      "sha256": "1c03972c47b94a66920671e7ce4b81ac9ea9974bbb255ee84f2e604714c12c00"
+    },
+    {
+      "id": "native-ios-proof-29",
+      "path": "receipts/native-ios/fresh-netnewswire-clone.stderr",
+      "bytes": 120,
+      "sha256": "33053bfd33c221200515b24f8ae259db120d42e75afd219c79fb2bdba15371ea"
+    },
+    {
+      "id": "native-ios-proof-30",
+      "path": "receipts/native-ios/fresh-netnewswire-clone.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-31",
+      "path": "receipts/native-ios/host.json",
+      "bytes": 146,
+      "sha256": "d6311c652d7d97e1364f5d28f775e56bc3dd8186a306cc7c8d12fd93864df14a"
+    },
+    {
+      "id": "native-ios-proof-32",
+      "path": "receipts/native-ios/host.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-33",
+      "path": "receipts/native-ios/host.stdout",
+      "bytes": 66,
+      "sha256": "4ef10a0fc370704ea84699cf3851e51488598c5f1ab35cb572eb6b96278a8e5c"
+    },
+    {
+      "id": "native-ios-proof-34",
+      "path": "receipts/native-ios/netnewswire-first.png",
+      "bytes": 301503,
+      "sha256": "7df8f090214873636b5770e2957015259d819d42058cbbad1937781f885f3f51"
+    },
+    {
+      "id": "native-ios-proof-35",
+      "path": "receipts/native-ios/nnw-manual-original.json",
+      "bytes": 378,
+      "sha256": "e98e6be7f1733b8f127931061b5945b1ebf7ef8348269c5406bd60b12b93e57e"
+    },
+    {
+      "id": "native-ios-proof-36",
+      "path": "receipts/native-ios/nnw-manual-original.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-37",
+      "path": "receipts/native-ios/nnw-manual-original.stdout",
+      "bytes": 157,
+      "sha256": "88bab4efbf6ef7b6c00cbdfcbf4539dc30bf761f93e641613ce1dce6a8cf8fbc"
+    },
+    {
+      "id": "native-ios-proof-38",
+      "path": "receipts/native-ios/nnw-original-argv-artifact.json",
+      "bytes": 142,
+      "sha256": "da6e1dd9fabb8e8f46da371d53e5c3a12eec7ae9ac148d481553557c276b7941"
+    },
+    {
+      "id": "native-ios-proof-39",
+      "path": "receipts/native-ios/nnw-original-argv-boot.json",
+      "bytes": 215,
+      "sha256": "a027f44ba69bd1038fabfbd5ca7c5f26c9df53c22577d897237cf52bc26ab751"
+    },
+    {
+      "id": "native-ios-proof-40",
+      "path": "receipts/native-ios/nnw-original-argv-boot.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-41",
+      "path": "receipts/native-ios/nnw-original-argv-boot.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-42",
+      "path": "receipts/native-ios/nnw-original-argv-bootstatus.json",
+      "bytes": 228,
+      "sha256": "ee89cc502485d200514c436d9077a84bd774f0157abd7af03e8f6336dcd75d5c"
+    },
+    {
+      "id": "native-ios-proof-43",
+      "path": "receipts/native-ios/nnw-original-argv-bootstatus.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-44",
+      "path": "receipts/native-ios/nnw-original-argv-bootstatus.stdout",
+      "bytes": 421,
+      "sha256": "120979974976b402eab9e2b09a70d6ffaca9999b8a0c461a661a9aac2dd70051"
+    },
+    {
+      "id": "native-ios-proof-45",
+      "path": "receipts/native-ios/nnw-original-argv-build.json",
+      "bytes": 1217,
+      "sha256": "d101c1dacdee06536bcd25970c8eb8cdb2cf101c7d0ffa384bd6f1e16e30d6e1"
+    },
+    {
+      "id": "native-ios-proof-46",
+      "path": "receipts/native-ios/nnw-original-argv-build.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-47",
+      "path": "receipts/native-ios/nnw-original-argv-build.stdout",
+      "bytes": 2069993,
+      "sha256": "69caf29c141a05e7aac4aefb7b16fe1023a1fcc727c6c2a42b87df4554e8d526"
+    },
+    {
+      "id": "native-ios-proof-48",
+      "path": "receipts/native-ios/nnw-original-argv-install.json",
+      "bytes": 392,
+      "sha256": "1065d0f38c52b380c546ce79f15a4b9659558bb89543d59c037a2e6b3862a13b"
+    },
+    {
+      "id": "native-ios-proof-49",
+      "path": "receipts/native-ios/nnw-original-argv-install.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-50",
+      "path": "receipts/native-ios/nnw-original-argv-install.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-51",
+      "path": "receipts/native-ios/nnw-original-argv-launch.json",
+      "bytes": 257,
+      "sha256": "45de10663d974737f6ab523d2dee5460019a190866c0e63f1e79ddfe152c2ab4"
+    },
+    {
+      "id": "native-ios-proof-52",
+      "path": "receipts/native-ios/nnw-original-argv-launch.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-53",
+      "path": "receipts/native-ios/nnw-original-argv-launch.stdout",
+      "bytes": 42,
+      "sha256": "390877f907a0a328362fe030b65b2811ae8180dd1939774957c725e4b1d61106"
+    },
+    {
+      "id": "native-ios-proof-54",
+      "path": "receipts/native-ios/nnw-original-argv-screen.json",
+      "bytes": 343,
+      "sha256": "5dc8bd5421c538cfb24fa3e0e3a316d4bf7b7f1263411a9a8c95a6c79a4821f7"
+    },
+    {
+      "id": "native-ios-proof-55",
+      "path": "receipts/native-ios/nnw-original-argv-screen.stderr",
+      "bytes": 280,
+      "sha256": "f126955583453b1a350703ded2a1c84fff5c691ebe8a67351ce7a8df675bdab8"
+    },
+    {
+      "id": "native-ios-proof-56",
+      "path": "receipts/native-ios/nnw-original-argv-screen.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-57",
+      "path": "receipts/native-ios/nnw-original-argv-shutdown.json",
+      "bytes": 217,
+      "sha256": "62cd73f9d01f80c4a6fb9777b968675af7a07178b3ddc31d366998a0ae9e76b9"
+    },
+    {
+      "id": "native-ios-proof-58",
+      "path": "receipts/native-ios/nnw-original-argv-shutdown.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-59",
+      "path": "receipts/native-ios/nnw-original-argv-shutdown.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-60",
+      "path": "receipts/native-ios/nnw-original-argv-source-after.json",
+      "bytes": 272412,
+      "sha256": "ed5e7483596e8449ab0e085cd3e648baab5ba097bf96ad61b888f7021945981c"
+    },
+    {
+      "id": "native-ios-proof-61",
+      "path": "receipts/native-ios/nnw-original-argv-terminate.json",
+      "bytes": 261,
+      "sha256": "465028f820933dbae52880ed6183070a0ce3cd90df79ca06b1faa8698a631e51"
+    },
+    {
+      "id": "native-ios-proof-62",
+      "path": "receipts/native-ios/nnw-original-argv-terminate.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-63",
+      "path": "receipts/native-ios/nnw-original-argv-terminate.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-64",
+      "path": "receipts/native-ios/nnw-owned-artifact-path.json",
+      "bytes": 282,
+      "sha256": "64510d82702dc404e487085e698455402eab7eb4746d56a0b134d5c58b685c49"
+    },
+    {
+      "id": "native-ios-proof-65",
+      "path": "receipts/native-ios/owned-simulator.json",
+      "bytes": 185,
+      "sha256": "2361b0303646767bcaf8b8e068f8d49608525af978994080dc5ee4eedaafc337"
+    },
+    {
+      "id": "native-ios-proof-66",
+      "path": "receipts/native-ios/package-pins.json",
+      "bytes": 949,
+      "sha256": "37600aa9e50462898fc5007defd1c61a57e2aa5d52be5be96f7330a2b0c3c8c0"
+    },
+    {
+      "id": "native-ios-proof-67",
+      "path": "receipts/native-ios/resume-boot.json",
+      "bytes": 214,
+      "sha256": "f8dcfb898768a24809f1fabfd8e8190c5701109eb678ad9c9474412260322565"
+    },
+    {
+      "id": "native-ios-proof-68",
+      "path": "receipts/native-ios/resume-boot.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-69",
+      "path": "receipts/native-ios/resume-boot.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-70",
+      "path": "receipts/native-ios/resume-bootstatus.json",
+      "bytes": 229,
+      "sha256": "bf444f83d657bf838198443e86b7f8de4c97105b392e9b920ca155d83bafc524"
+    },
+    {
+      "id": "native-ios-proof-71",
+      "path": "receipts/native-ios/resume-bootstatus.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-72",
+      "path": "receipts/native-ios/resume-bootstatus.stdout",
+      "bytes": 421,
+      "sha256": "d595e58798a9c381c0a47c7c7e7cae76f28fbf7464703e754629222107b7483d"
+    },
+    {
+      "id": "native-ios-proof-73",
+      "path": "receipts/native-ios/resume-default-devices-after.json",
+      "bytes": 200,
+      "sha256": "852ae252b6f0fa8988534420b552b4b8806222c9d4b6e1b54cffa5591acc6af8"
+    },
+    {
+      "id": "native-ios-proof-74",
+      "path": "receipts/native-ios/resume-default-devices-after.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-75",
+      "path": "receipts/native-ios/resume-default-devices-after.stdout",
+      "bytes": 5136,
+      "sha256": "af8a42305b40194154b122d7cf701c9e527c1414c7479bb2588fce5fdd226c66"
+    },
+    {
+      "id": "native-ios-proof-76",
+      "path": "receipts/native-ios/resume-food-truck-artifact.json",
+      "bytes": 147,
+      "sha256": "71fa87b0847cd5823645545d216d10440d5006a2f5fa663708cde8627aa56027"
+    },
+    {
+      "id": "native-ios-proof-77",
+      "path": "receipts/native-ios/resume-food-truck-install.json",
+      "bytes": 377,
+      "sha256": "aa7f7b5300b2e90d1ade1664bb424e8d614364df258def81b8d112290f66f32c"
+    },
+    {
+      "id": "native-ios-proof-78",
+      "path": "receipts/native-ios/resume-food-truck-install.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-79",
+      "path": "receipts/native-ios/resume-food-truck-install.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-80",
+      "path": "receipts/native-ios/resume-food-truck-launch.json",
+      "bytes": 261,
+      "sha256": "11b24f821675f34718bed418308fc31d450049f27399b3b46775dd12ee7be620"
+    },
+    {
+      "id": "native-ios-proof-81",
+      "path": "receipts/native-ios/resume-food-truck-launch.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-82",
+      "path": "receipts/native-ios/resume-food-truck-launch.stdout",
+      "bytes": 47,
+      "sha256": "0aa48f305a30bfbe52a103e0ec5123c4afaad1f3bce97cc8760157cbf535460e"
+    },
+    {
+      "id": "native-ios-proof-83",
+      "path": "receipts/native-ios/resume-food-truck-screen.json",
+      "bytes": 343,
+      "sha256": "b888f98d93ed1ebf4d058b5fe1fc9baff8610b3f9153ea233067a6ff1b506eb9"
+    },
+    {
+      "id": "native-ios-proof-84",
+      "path": "receipts/native-ios/resume-food-truck-screen.stderr",
+      "bytes": 279,
+      "sha256": "59f8f5d8715bcffe24ba0abcbba76d0023dc2557131698179c332577e90b11fe"
+    },
+    {
+      "id": "native-ios-proof-85",
+      "path": "receipts/native-ios/resume-food-truck-screen.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-86",
+      "path": "receipts/native-ios/resume-food-truck-source-after.json",
+      "bytes": 125831,
+      "sha256": "e39d4bfc9b83b7e4b5e4e50120698d57265154fd457ba78d97131156d7e51e29"
+    },
+    {
+      "id": "native-ios-proof-87",
+      "path": "receipts/native-ios/resume-food-truck-terminate.json",
+      "bytes": 266,
+      "sha256": "560976b1b8f3a5da0cd9f9ad4af23ac8697cbc6629793edfc9bc92d26dfcbafd"
+    },
+    {
+      "id": "native-ios-proof-88",
+      "path": "receipts/native-ios/resume-food-truck-terminate.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-89",
+      "path": "receipts/native-ios/resume-food-truck-terminate.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-90",
+      "path": "receipts/native-ios/resume-netnewswire-build.json",
+      "bytes": 1173,
+      "sha256": "5997a7c935f491ad6e1869e0badadebcedcd149cf6652e46115e06a2aa1f18b9"
+    },
+    {
+      "id": "native-ios-proof-91",
+      "path": "receipts/native-ios/resume-netnewswire-build.stderr",
+      "bytes": 152,
+      "sha256": "f398128f55b73565562021f9ede7879538f0bf5d9e3c4a7797db0edc4cfb41dd"
+    },
+    {
+      "id": "native-ios-proof-92",
+      "path": "receipts/native-ios/resume-netnewswire-build.stdout",
+      "bytes": 187032,
+      "sha256": "ad43eea45be12eddb055f337eaf9fdfbff3b9513f9d0db7e00dbe9443e8ee24c"
+    },
+    {
+      "id": "native-ios-proof-93",
+      "path": "receipts/native-ios/resume-shutdown.json",
+      "bytes": 217,
+      "sha256": "14bae8841158d11d7a39d73345b0ebd89a30db6ed8ee3bd6867f8e6e960e3a11"
+    },
+    {
+      "id": "native-ios-proof-94",
+      "path": "receipts/native-ios/resume-shutdown.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-95",
+      "path": "receipts/native-ios/resume-shutdown.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-96",
+      "path": "receipts/native-ios/runtimes.json",
+      "bytes": 199,
+      "sha256": "b12ac2b795e034745f4c4f8062797883e87728840c75ebae455c1c2d1ac47d02"
+    },
+    {
+      "id": "native-ios-proof-97",
+      "path": "receipts/native-ios/runtimes.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-98",
+      "path": "receipts/native-ios/runtimes.stdout",
+      "bytes": 41178,
+      "sha256": "1a00c677c404e45211bcef6a511bcba503bf40bf2704b6923ed9de237e828dcb"
+    },
+    {
+      "id": "native-ios-proof-99",
+      "path": "receipts/native-ios/shutdown-owned.json",
+      "bytes": 218,
+      "sha256": "714ea13841c15689a33a7d2620e852f427a074071de6b5b7fa6a7b58b593c2e3"
+    },
+    {
+      "id": "native-ios-proof-100",
+      "path": "receipts/native-ios/shutdown-owned.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-101",
+      "path": "receipts/native-ios/shutdown-owned.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-102",
+      "path": "receipts/native-ios/sources-before.json",
+      "bytes": 417363,
+      "sha256": "33aaa1da2460f7525f502c37ce9635e1d65175abf065df57444ff3e41a2a2b3c"
+    },
+    {
+      "id": "native-ios-proof-103",
+      "path": "receipts/native-ios/sources-food-truck-checkout.json",
+      "bytes": 335,
+      "sha256": "b5b8bf14b3f54a6b13c6b8afa71d3f3f205cb4cefb34ea991ce9586ccbaecdfe"
+    },
+    {
+      "id": "native-ios-proof-104",
+      "path": "receipts/native-ios/sources-food-truck-checkout.stderr",
+      "bytes": 69,
+      "sha256": "b855e850b18c58f0e90ad4343bca49c8947653bbf290a2dbd47172d4c5901447"
+    },
+    {
+      "id": "native-ios-proof-105",
+      "path": "receipts/native-ios/sources-food-truck-checkout.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-106",
+      "path": "receipts/native-ios/sources-food-truck-clone.json",
+      "bytes": 426,
+      "sha256": "6c148d559f4e20f9f47786fd8640298efe5b57eba5b4033ef95c6122f8c51c3a"
+    },
+    {
+      "id": "native-ios-proof-107",
+      "path": "receipts/native-ios/sources-food-truck-clone.stderr",
+      "bytes": 121,
+      "sha256": "6b529c58fd73debbba5468396448093e7014afa7d5fca4e4e462fc9662c2c9aa"
+    },
+    {
+      "id": "native-ios-proof-108",
+      "path": "receipts/native-ios/sources-food-truck-clone.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-109",
+      "path": "receipts/native-ios/sources-netnewswire-checkout.json",
+      "bytes": 335,
+      "sha256": "d75dfbb1a14c311b3e793e2e7632270850137f108c3092ccddff84e21608799d"
+    },
+    {
+      "id": "native-ios-proof-110",
+      "path": "receipts/native-ios/sources-netnewswire-checkout.stderr",
+      "bytes": 158,
+      "sha256": "0ecab8d3c58b53fb640e126b4dd379c58d635263752c892b43cc08b2059d4747"
+    },
+    {
+      "id": "native-ios-proof-111",
+      "path": "receipts/native-ios/sources-netnewswire-checkout.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-112",
+      "path": "receipts/native-ios/sources-netnewswire-clone.json",
+      "bytes": 425,
+      "sha256": "772e8a2b25a67a6f02b296b0663b3e282dfe32d6c81271bf1ee0cab23f71b265"
+    },
+    {
+      "id": "native-ios-proof-113",
+      "path": "receipts/native-ios/sources-netnewswire-clone.stderr",
+      "bytes": 122,
+      "sha256": "94fa2afdab0888e06c4611f67e380141eb6609570e5f5a9733702dbc20366993"
+    },
+    {
+      "id": "native-ios-proof-114",
+      "path": "receipts/native-ios/sources-netnewswire-clone.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-115",
+      "path": "receipts/native-ios/spm-owned-clone.json",
+      "bytes": 361,
+      "sha256": "e3c820e2911eb84a7d7770ccfcd70c4127640c8296a5269877c4af7afa8e6b1b"
+    },
+    {
+      "id": "native-ios-proof-116",
+      "path": "receipts/native-ios/spm-owned-clone.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-117",
+      "path": "receipts/native-ios/spm-owned-clone.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-118",
+      "path": "receipts/native-ios/xcode.json",
+      "bytes": 164,
+      "sha256": "1de2a51b453413339f556504e97d78b75f44ff0dba25963d478926e6461c62e9"
+    },
+    {
+      "id": "native-ios-proof-119",
+      "path": "receipts/native-ios/xcode.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-ios-proof-120",
+      "path": "receipts/native-ios/xcode.stdout",
+      "bytes": 33,
+      "sha256": "ee3fe26035862d2b9653c1a570be3eca4ee5be2815f0ce99ff2d8ffa3399e4c8"
+    },
+    {
+      "id": "baseline-native-ios-refresh",
+      "path": "receipts/native-ios-refresh.md",
+      "bytes": 4861,
+      "sha256": "7751622eb60eb5abf079ca9eecd1d2043c90a6d688228ed9a430a6ddec5d5626"
+    },
+    {
+      "id": "origin-index",
+      "path": "ORIGIN-INDEX.json",
+      "bytes": 27769,
+      "sha256": "f5d183aa279f571e7f3cc88c363c465846eb7b02edaf107c2cb9cdff9e61d6ac"
+    }
+  ]
+}
