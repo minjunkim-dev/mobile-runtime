@@ -125,6 +125,35 @@ struct DependenciesStageTests {
         }
     }
 
+    @Test("a dependency hook that rewrites the Pod lock stops before the next installer", arguments: [0, 7])
+    func hookChangesPodLock(_ exitCode: Int) async throws {
+        let repo = try app()
+        try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
+        try repo.write("ios/Podfile.lock", "original lock\n")
+        let tools = try repo.directory("tools")
+        let yarn = try repo.write("tools/yarn", """
+            #!/bin/sh
+            printf 'changed by lifecycle\\n' > ios/Podfile.lock
+            exit \(exitCode)
+            """)
+        let pod = try repo.write("tools/pod", "#!/bin/sh\nprintf touched > pod-ran\n")
+        for executable in [yarn, pod] {
+            try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: executable.path)
+        }
+        let runner = SystemProcessRunner(environment: ["PATH": "\(tools.path):/usr/bin:/bin"])
+        var context = UpContext()
+
+        let error = await #expect(throws: DomainError.self) {
+            try await DependenciesStage(anchor: try anchor(repo), runner: runner).run(&context)
+        }
+
+        #expect(error?.summary.contains("lockfiles changed") == true)
+        #expect(error?.observed?.contains("Podfile.lock") == true)
+        #expect(try String(contentsOf: repo.url("ios/Podfile.lock"), encoding: .utf8) == "changed by lifecycle\n")
+        #expect(!FileManager.default.fileExists(atPath: repo.url("ios/pod-ran").path))
+        #expect(FileManager.default.fileExists(atPath: repo.url("node_modules/.mobile-install.incomplete").path))
+    }
+
     @Test("without a lockfile an existing install keeps the presence fast path")
     func noLockfileKeepsPresenceFastPath() async throws {
         let repo = try FixtureRepo()
