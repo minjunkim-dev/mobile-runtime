@@ -188,6 +188,8 @@ public struct DependenciesStage: Stage {
         do {
             result = try await runner.run(streamed, onLine: { excerpt.append($0) })
         } catch {
+            // Cancellation already stops the pipeline; a changed input must not replace it.
+            if error is CancellationError { throw error }
             try verifyDependencyInputs(inputs)
             throw error
         }
