@@ -33,6 +33,7 @@ public enum MetroLaunch {
         // Metro colors its completed BUNDLE label green and its failed label red.
         // Preserve that distinction when its output goes to our non-TTY log file.
         command.environment["FORCE_COLOR"] = "1"
+        try Task.checkCancellation()
         return (command, try await runner.spawnDetached(command, logFile: logFile))
     }
 
