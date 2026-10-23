@@ -213,6 +213,12 @@ up의 종합 결과. envelope의 `status`는 doctor와 같은 어휘를 쓴다 �
 **프로젝트 의존성 정렬 (Project dependency alignment)**:
 lockfile을 읽기 전용 정본으로 두고 node_modules·Bundle gems·Pods 같은 설치 산출물을 그 상태에 맞추는 일. 소스 선언이나 lockfile을 바꾸는 마이그레이션과 다르다.
 
+**직접 준비한 의존성 (Manually prepared dependencies)**:
+사용자가 의존성 정합성을 확인하고 RN build/up에서 명시적으로 재사용하도록 선택한 설치 산출물이다.
+ADR-0047의 `--prepared-dependencies`와 GUI 선택은 재설치·lock 정렬 재검증을 생략하며 기본값은 꺼짐이다.
+필수 산출물의 존재·미완료 표식·Pods lock 일치 검사는 유지한다. 정렬 검증 PASS나 준비 완료의 증거로 취급하지 않는다.
+_Avoid_: 정렬 검증된 의존성, 설치 성공 기록
+
 **도구체인 활성화 (Toolchain activation)**:
 프로젝트가 선언한 이미 설치된 Node·Ruby·JDK 등을 이번 실행이 사용하도록 고르는 비파괴적 Resolve 단계. 커밋된 도구 관리자 설정이 있으면 그것이 정본이며, 없을 때만 현재 셸의 도구를 쓴다.
 

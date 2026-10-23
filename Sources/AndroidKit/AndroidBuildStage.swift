@@ -34,13 +34,15 @@ public func androidBuildStages(
     hostRunner: any ProcessRunner,
     projectRunner: any ProcessRunner,
     environment: AndroidEnvironment = AndroidEnvironment(),
+    preparedDependencies: Bool = false,
     validationCheckIDs: Set<String> = AndroidWorkflowValidation.checkIDs,
     metroPort: Int? = nil,
     note: @escaping @Sendable (String) -> Void
 ) -> [any Stage] {
     var stages: [any Stage] = [ValidateStage(engine: doctor, checkIDs: validationCheckIDs)]
     if anchor.framework == .reactNative {
-        stages.append(DependenciesStage(anchor: anchor, runner: projectRunner, includePods: false))
+        stages.append(DependenciesStage(anchor: anchor, runner: projectRunner, includePods: false,
+            preparedDependencies: preparedDependencies))
     }
     stages.append(
         AndroidBuildStage(

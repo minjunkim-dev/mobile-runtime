@@ -877,6 +877,7 @@ public func androidUpStages(
     hostRunner: any ProcessRunner,
     projectRunner: any ProcessRunner,
     environment: AndroidEnvironment = AndroidEnvironment(),
+    preparedDependencies: Bool = false,
     logs: RunLogs? = nil,
     timeouts: AndroidRuntimeTimeouts = AndroidRuntimeTimeouts(),
     metroPort: Int? = nil,
@@ -901,6 +902,7 @@ public func androidUpStages(
         hostRunner: hostRunner,
         projectRunner: projectRunner,
         environment: environment,
+        preparedDependencies: preparedDependencies,
         validationCheckIDs: AndroidUpValidation.checkIDs,
         metroPort: metroPort,
         note: note
@@ -977,6 +979,7 @@ public func runAndroidUp(
     hostRunner: any ProcessRunner,
     projectRunner: any ProcessRunner,
     environment: AndroidEnvironment = AndroidEnvironment(),
+    preparedDependencies: Bool = false,
     logs: RunLogs? = nil,
     timeouts: AndroidRuntimeTimeouts = AndroidRuntimeTimeouts(),
     metroPort: Int? = nil,
@@ -1017,6 +1020,7 @@ public func runAndroidUp(
             hostRunner: hostRunner,
             projectRunner: projectRunner,
             environment: environment,
+            preparedDependencies: preparedDependencies,
             validationCheckIDs: AndroidUpValidation.checkIDs,
             metroPort: metroPort,
             note: note

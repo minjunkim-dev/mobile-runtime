@@ -188,7 +188,7 @@ func outcomeLabel(_ state: String) -> String {
 }
 
 struct InspectionView: View {
-    private enum Field: Hashable { case app, platform, device, scheme, configuration, module, variant, port, trust, recheck, plan, approve }
+    private enum Field: Hashable { case app, platform, device, scheme, configuration, module, variant, port, trust, recheck, plan, approve, preparedDependencies }
     private enum Region: Hashable { case inspection, preparation, workflow }
     let directory: URL
     let session: GUIOperationSession
@@ -204,6 +204,7 @@ struct InspectionView: View {
     @State private var variant = ""
     @State private var entrypoint = ""
     @State private var port = ""
+    @State private var preparedDependencies = false
     @State private var workflow: WorkflowResult?
     private var running: Task<Void, Never>? { session.task }
     @State private var events: [WorkflowEvent] = []
@@ -254,6 +255,12 @@ struct InspectionView: View {
             }.disabled(busy)
             if result?.selection.selected?.framework == .reactNative {
                 TextField("Metro port (8081)", text: $port).disabled(busy).focused($focus, equals: .port)
+                Toggle("직접 준비한 의존성 사용", isOn: $preparedDependencies)
+                    .disabled(busy).focused($focus, equals: .preparedDependencies)
+                    .accessibilityIdentifier("project.prepared-dependencies")
+                    .accessibilityHint("RN 빌드와 실행에만 적용합니다. 의존성 재설치와 lock 정렬 재검증을 생략합니다.")
+                Text("의존성 재설치·lock 정렬 재검증을 생략합니다. 준비한 의존성의 정합성은 사용자가 확인해야 합니다.")
+                    .font(.caption).foregroundStyle(.secondary)
             } else if result?.selection.selected?.framework == .flutter {
                 HStack {
                     TextField("Entrypoint (lib/main.dart)", text: $entrypoint)
@@ -330,6 +337,7 @@ struct InspectionView: View {
                     if let next = workflow.operation.nextAction { Text("다음 행동: \(next)") }
                     ForEach(workflow.operation.remaining, id: \.self) { Text("남은 작업: \($0)") }
                     if let uri = workflow.operation.developmentServiceURI { Text("Flutter VM service: \(uri)") }
+                    if workflow.operation.preparedDependencies == true { Text("직접 준비한 의존성 사용 선택: 재설치·lock 정렬 재검증 생략") }
                     if let log = workflow.up?.context.buildLog { Text("빌드 로그: \(log)") }
                 }.textSelection(.enabled)
             }
@@ -377,12 +385,14 @@ struct InspectionView: View {
                 device = ""; devices = []; workflow = nil
                 scheme = ""; configuration = ""; module = ""; variant = ""
                 port = ""
+                preparedDependencies = false
             }
             .onChange(of: app) { _, _ in
                 device = ""; devices = []; workflow = nil
                 preparation = nil; repositoryTrusted = false
                 scheme = ""; configuration = ""; module = ""; variant = ""
                 entrypoint = ""; port = ""
+                preparedDependencies = false
             }
             .onChange(of: busy) { _, busy in
                 if !busy, let nextFocus { focus = nextFocus; self.nextFocus = nil }
@@ -464,7 +474,8 @@ struct InspectionView: View {
             configuration: kind != .down && !configuration.isEmpty ? configuration : nil,
             module: kind != .down && !module.isEmpty ? module : nil,
             variant: kind != .down && !variant.isEmpty ? variant : nil,
-            port: usesPort && !port.isEmpty ? Int(port) : nil)
+            port: usesPort && !port.isEmpty ? Int(port) : nil,
+            preparedDependencies: kind != .down && result?.selection.selected?.framework == .reactNative && preparedDependencies)
         session.start {
             let output = await WorkflowExecution.run(kind, input: input) { event in
                 Task { @MainActor in

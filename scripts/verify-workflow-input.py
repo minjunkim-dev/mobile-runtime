@@ -10,6 +10,10 @@ import tempfile
 import time
 
 binary = str(Path(sys.argv[1]).resolve())
+for command in ("build", "up"):
+    help_text = subprocess.run([binary, command, "--help"], capture_output=True, text=True, check=True).stdout
+    assert "--prepared-dependencies" in help_text, command
+
 with tempfile.TemporaryDirectory(prefix="runstir-app-parser-") as temporary:
     for command in ("inspect", "run"):
         help_text = subprocess.run([binary, "app", command, "--help"], capture_output=True, text=True, check=True).stdout
@@ -65,6 +69,14 @@ with tempfile.TemporaryDirectory(prefix="runstir-workflow-") as temporary:
     assert before == {str(p.relative_to(root)): p.read_bytes() for p in root.rglob("*") if p.is_file()}, "selection changed project files"
     invalid = subprocess.run([binary, "up", "--platform", "invalid"], capture_output=True, text=True)
     assert invalid.returncode == 64
+
+    unsupported = subprocess.run([binary, "down", "--project", str(root), "--platform", "ios",
+                                  "--prepared-dependencies", "--json", "--non-interactive"],
+                                 capture_output=True, text=True, timeout=10)
+    assert unsupported.returncode == 1, unsupported
+    unsupported_document = json.loads(unsupported.stdout)
+    assert "--prepared-dependencies는 React Native build/up에서만 사용할 수 있습니다" in unsupported_document["error"]["message"]
+    assert unsupported_document["operation"]["preparedDependencies"] is True
 
     tools = root / "tools"
     tools.mkdir()
