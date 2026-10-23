@@ -50,6 +50,69 @@ struct AppFileExecutionTests {
         #expect(operation["externalServer"] as? String == "unverified; Runstir did not start or connect a development server")
     }
 
+    @Test("verified APK signer labels from old and current build tools retain their identity", arguments: [
+        "Signer #1", "V1 Signer:", "V2 Signer:", "V2 Signer #1:", "V3.0 Signer:",
+        "V3.0 Signer: (minSdkVersion=28, maxSdkVersion=32)",
+        "V3.1 Signer: (minSdkVersion=33 (dev release=true), maxSdkVersion=36)",
+        "V3.2 Hybrid Classical Signer: (minSdkVersion=37, maxSdkVersion=2147483647)",
+        "V3.2 Hybrid PQC Signer: (minSdkVersion=37, maxSdkVersion=2147483647)"
+    ])
+    func signerLabels(_ label: String) async throws {
+        let fixture = try AppFileFixture(platform: .android)
+        let digest = String(repeating: "a", count: 64)
+        fixture.runner.signatureOverride = "Verifies\n\(label) certificate SHA-256 digest: \(digest.uppercased())\n"
+        let result = await fixture.run(inspectOnly: true)
+        #expect(result.exitCode == 0)
+        #expect(result.operation.artifact?.metadata.signingIdentity == digest)
+        #expect(!fixture.runner.commands.contains(where: mutation))
+    }
+
+    @Test("multiple APK certificates are canonical and exclude source stamp and public key digests")
+    func signerCertificateSet() async throws {
+        let fixture = try AppFileFixture(platform: .android)
+        let first = String(repeating: "a", count: 64)
+        let second = String(repeating: "b", count: 64)
+        let unrelated = String(repeating: "c", count: 64)
+        fixture.runner.signatureOverride = """
+        Verifies
+        V3.1 Signer: (minSdkVersion=33, maxSdkVersion=2147483647) certificate SHA-256 digest: \(second)
+        V3.0 Signer: (minSdkVersion=28, maxSdkVersion=32) certificate SHA-256 digest: \(first.uppercased())
+        V2 Signer: certificate SHA-256 digest: \(first)
+        V2 Signer: public key SHA-256 digest: \(unrelated)
+        Source Stamp Signer: certificate SHA-256 digest: \(unrelated)
+        """
+        let result = await fixture.run(inspectOnly: true)
+        #expect(result.exitCode == 0)
+        #expect(result.operation.artifact?.metadata.signingIdentity == first + "," + second)
+        #expect(!fixture.runner.commands.contains(where: mutation))
+    }
+
+    @Test("a digest cannot replace successful APK verification or an APK signer label", arguments: [
+        "nonzero", "truncated", "unknown", "stamp", "key", "warning"
+    ])
+    func signerVerificationBoundary(_ mode: String) async throws {
+        let fixture = try AppFileFixture(platform: .android)
+        let bytes = try Data(contentsOf: fixture.payload)
+        let digest = String(repeating: "a", count: mode == "truncated" ? 63 : 64)
+        let label = switch mode {
+        case "unknown": "V9 Signer: certificate"
+        case "stamp": "Source Stamp Signer: certificate"
+        case "key": "V2 Signer: public key"
+        case "warning": "WARNING: V2 Signer: certificate"
+        default: "V2 Signer: certificate"
+        }
+        fixture.runner.signatureOverride = "\(label) SHA-256 digest: \(digest)\n"
+        fixture.runner.invalidSignature = mode == "nonzero"
+        let result = await fixture.run(planOnly: true)
+        #expect(result.exitCode == 1)
+        #expect(result.operation.plan == nil)
+        #expect(result.operation.installation == "not-requested")
+        #expect(result.operation.launch == "not-requested")
+        #expect(!FileManager.default.fileExists(atPath: fixture.leases.directory.path))
+        #expect(!fixture.runner.commands.contains(where: mutation))
+        #expect(try Data(contentsOf: fixture.payload) == bytes)
+    }
+
     @Test("a missing device remains a selection and cannot start changes")
     func missingDevice() async throws {
         let fixture = try AppFileFixture(platform: .ios)
@@ -1055,6 +1118,7 @@ private final class AppFileRunner: ProcessRunner, @unchecked Sendable {
     var badgingOverride: String?
     var installedInventoryOverride: String?
     var invalidSignature = false
+    var signatureOverride: String?
     var requiresSplits = false
     /// The selected device starts shut down and comes up only through Runstir's boot.
     var shutDown = false
@@ -1141,8 +1205,8 @@ private final class AppFileRunner: ProcessRunner, @unchecked Sendable {
                 return ok("E: manifest\n A: package=\"com.fixture.Local\"\n" + (requiresSplits ? " A: android:isSplitRequired(0x01010591)=(type 0x12)0xffffffff\n" : ""))
             }
             if command.executable.hasSuffix("/apksigner"), args.prefix(3) == ["verify", "--verbose", "--print-certs"] {
-                if invalidSignature { return ProcessResult(terminationStatus: .exited(1), standardOutput: "", standardError: "fixture unsigned APK") }
-                return ok("Verifies\nSigner #1 certificate SHA-256 digest: " + String(repeating: "a", count: 64) + "\n")
+                if invalidSignature { return ProcessResult(terminationStatus: .exited(1), standardOutput: signatureOverride ?? "", standardError: "fixture unsigned APK") }
+                return ok(signatureOverride ?? "Verifies\nSigner #1 certificate SHA-256 digest: " + String(repeating: "a", count: 64) + "\n")
             }
             if command.executable.hasSuffix("/adb") {
                 if args == ["devices", "-l"] {
