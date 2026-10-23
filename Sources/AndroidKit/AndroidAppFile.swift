@@ -94,11 +94,15 @@ public struct AndroidAppFile: Sendable {
             environment: ["JAVA_HOME": javaHome.path, "PATH": javaHome.appendingPathComponent("bin").path + ":/usr/bin:/bin",
                 "JAVA_TOOL_OPTIONS": "", "_JAVA_OPTIONS": "", "JDK_JAVA_OPTIONS": "", "JAVA_OPTS": "-Djava.awt.headless=true"],
             workingDirectory: sdk))
-        let expression = try NSRegularExpression(pattern: #"(?m)^Signer #[0-9]+ certificate SHA-256 digest: ([A-Fa-f0-9]{64})\s*$"#)
-        let signers = expression.matches(in: signature.standardOutput,
+        // Build Tools 37 adds scheme/range labels; source stamps are not APK signing identities.
+        let schemeSigner = #"V(?:[12]|3\.[01]|3\.2 Hybrid (?:Classical|PQC)) Signer(?: #[0-9]+)?:"#
+            + #"(?: \(minSdkVersion=[0-9]+(?: \(dev release=true\))?, maxSdkVersion=[0-9]+\))?"#
+        let expression = try NSRegularExpression(pattern: #"(?m)^(?:Signer #[0-9]+|"# + schemeSigner
+            + #") certificate SHA-256 digest: ([A-Fa-f0-9]{64})[ \t]*\r?$"#)
+        let signers = Set(expression.matches(in: signature.standardOutput,
             range: NSRange(signature.standardOutput.startIndex..., in: signature.standardOutput)).compactMap {
                 Range($0.range(at: 1), in: signature.standardOutput).map { String(signature.standardOutput[$0]).lowercased() }
-            }.sorted()
+            }).sorted()
         guard signature.terminationStatus.isSuccess, !signers.isEmpty else {
             throw Self.failure("The APK signature or signer identity could not be verified. Configure the installed SDK's Java requirements manually if needed; no tool installation or re-signing was attempted.")
         }
