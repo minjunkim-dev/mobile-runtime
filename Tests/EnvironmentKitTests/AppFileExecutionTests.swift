@@ -815,6 +815,78 @@ struct AppFileExecutionTests {
         #expect(!fixture.runner.commands.contains(where: forbidden))
     }
 
+    @Test("a native APK signer rejection preserves the app and permits another approved file path", arguments: [false, true])
+    func rejectedAPKAllowsNewPath(_ installed: Bool) async throws {
+        let fixture = try AppFileFixture(platform: .android, installedBuild: installed ? "1" : nil)
+        fixture.runner.installFailure = "signer"
+        let first = try #require(await fixture.run(planOnly: true).operation.plan)
+        let rejected = await fixture.run(approval: first.approval)
+        #expect(rejected.exitCode == 1)
+        #expect(rejected.operation.error?.contains("INSTALL_FAILED_UPDATE_INCOMPATIBLE") == true)
+        #expect(rejected.operation.installed?.build == (installed ? "1" : nil))
+        #expect(rejected.operation.launch == "not-requested")
+
+        let alias = fixture.repo.url("Another.apk")
+        try FileManager.default.copyItem(at: fixture.file, to: alias)
+        let input = AppFileInput(file: alias, environment: fixture.environment, device: fixture.device)
+        let next = try #require(await AppFileExecution.run(input: input, planOnly: true,
+            runner: fixture.runner, leases: fixture.leases).operation.plan)
+        let retried = await AppFileExecution.run(input: input, approvedPlanID: next.approval,
+            runner: fixture.runner, leases: fixture.leases)
+        #expect(retried.exitCode == 1)
+        #expect(retried.operation.conflict == nil)
+        #expect(retried.operation.error?.contains("INSTALL_FAILED_UPDATE_INCOMPATIBLE") == true)
+        #expect(fixture.runner.commands.filter { $0.arguments.contains("install") }.count == 2)
+        #expect(!fixture.runner.commands.contains(where: forbidden))
+        #expect(!fixture.runner.commands.contains { $0.arguments.contains("start") })
+        #expect(try Data(contentsOf: alias) == Data(contentsOf: fixture.file))
+    }
+
+    @Test("a rejected APK replacement restores prior confirmed or unconfirmed ownership", arguments: [false, true])
+    func rejectedAPKPreservesOwner(_ unconfirmed: Bool) async throws {
+        let fixture = try AppFileFixture(platform: .android, installedBuild: "1")
+        let plan = try #require(await fixture.run(planOnly: true).operation.plan)
+        let device = ResourceKey.device(.android, fixture.device)
+        let project = ResourceKey.appFile(plan.artifact.file).rawValue + ":app:" + AppFileFixture.appID
+        let owner = LeaseOwner(operationId: "previous", command: "app run", project: project)
+        if unconfirmed { try fixture.leases.reserve(device: device, owner: owner) }
+        else {
+            try fixture.leases.record(ResourceClaim(device: device, platform: .android, handle: "emulator-5554",
+                appID: AppFileFixture.appID, owner: owner))
+        }
+        fixture.runner.installFailure = "signer"
+        let result = await fixture.run(approval: plan.approval)
+        #expect(result.exitCode == 1)
+        let conflict = try await #require(throws: ResourceConflict.self) {
+            try await fixture.leases.check(device: device, project: "/another-path") { _ in
+                #expect(!unconfirmed)
+                return .running("pid 4242")
+            }
+        }
+        #expect(conflict.owner == owner)
+    }
+
+    @Test("unknown APK failures, changed observations and cancellation retain their reservation", arguments: [
+        "code", "reason", "package", "path", "stdout", "stdout-extra", "extra", "transport", "signal", "exit", "unknown", "changed", "cancel"
+    ])
+    func uncertainAPKFailureStaysReserved(_ mode: String) async throws {
+        let fixture = try AppFileFixture(platform: .android, installedBuild: "1")
+        let plan = try #require(await fixture.run(planOnly: true).operation.plan)
+        fixture.runner.installFailure = mode
+        let result = await fixture.run(approval: plan.approval)
+        #expect(result.exitCode == (mode == "cancel" ? 130 : 1))
+        #expect(result.operation.installation == "unconfirmed")
+        #expect(result.operation.launch == "not-requested")
+        let conflict = try await #require(throws: ResourceConflict.self) {
+            try await fixture.leases.check(device: .device(.android, fixture.device), project: "/another-path") { _ in
+                Issue.record("An uncertain APK install must preserve its reservation")
+                return .stopped
+            }
+        }
+        #expect(conflict.owner?.operationId == result.operation.id)
+        #expect(!fixture.runner.commands.contains(where: forbidden))
+    }
+
     @Test("launch failure preserves a confirmed installation and has no delete-and-retry")
     func failedLaunch() async throws {
         let fixture = try AppFileFixture(platform: .android)
@@ -1119,6 +1191,7 @@ private final class AppFileRunner: ProcessRunner, @unchecked Sendable {
     var installedInventoryOverride: String?
     var invalidSignature = false
     var signatureOverride: String?
+    var installFailure: String?
     var requiresSplits = false
     /// The selected device starts shut down and comes up only through Runstir's boot.
     var shutDown = false
@@ -1240,7 +1313,26 @@ private final class AppFileRunner: ProcessRunner, @unchecked Sendable {
                     return ok(installedInventoryOverride ?? installedBuild.map { "package:\(AppFileFixture.appID) versionCode:\($0)\n" } ?? "")
                 }
                 if args == prefix + ["dumpsys", "package", AppFileFixture.appID] { return ok("  versionName=1.2\n  codePath=/fixture/installed.apk\n") }
-                if args.prefix(4) == ["-s", "emulator-5554", "install", "-r"] { installedBuild = "2"; return ok("Success\n") }
+                if args.prefix(4) == ["-s", "emulator-5554", "install", "-r"] {
+                    if let mode = installFailure {
+                        if mode == "cancel" { throw CancellationError() }
+                        if mode == "unknown" { installedInventoryOverride = "unreadable" }
+                        if mode == "changed" { installedBuild = "3" }
+                        guard let input = args.last else { throw FixtureMiss(command: command.description) }
+                        let file = mode == "path" ? "/another.apk" : input
+                        var diagnostic = "adb: failed to install \(file): Failure [INSTALL_FAILED_UPDATE_INCOMPATIBLE: Existing package \(AppFileFixture.appID) signatures do not match newer version; ignoring!]\n"
+                        if mode == "code" { diagnostic = diagnostic.replacingOccurrences(of: "UPDATE_INCOMPATIBLE", with: "VERSION_DOWNGRADE") }
+                        if mode == "reason" { diagnostic = diagnostic.replacingOccurrences(of: "signatures do not match newer version; ignoring!", with: "unknown outcome") }
+                        if mode == "package" { diagnostic = diagnostic.replacingOccurrences(of: AppFileFixture.appID, with: "com.other.App") }
+                        if mode == "extra" { diagnostic += "adb: device disconnected\n" }
+                        if mode == "transport" { diagnostic = "adb: device offline\n" }
+                        return ProcessResult(terminationStatus: mode == "signal" ? .signaled(15) : .exited(mode == "exit" ? 2 : 1),
+                            standardOutput: mode == "stdout" ? diagnostic : "Performing Streamed Install\n" + (mode == "stdout-extra" ? "unknown\n" : ""),
+                            standardError: mode == "stdout" ? "" : diagnostic)
+                    }
+                    installedBuild = "2"
+                    return ok("Success\n")
+                }
                 if args.prefix(7) == prefix + ["am", "start", "-W", "-n"], args.count == 8 {
                     if failLaunch { return ProcessResult(terminationStatus: .exited(1), standardOutput: "", standardError: "fixture launch failure") }
                     return ok("Status: ok\n")
