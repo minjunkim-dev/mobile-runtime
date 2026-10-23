@@ -1,5 +1,5 @@
 import Core
-import EnvironmentKit
+@testable import EnvironmentKit
 import Foundation
 import TestSupport
 import Testing
@@ -101,7 +101,7 @@ struct PreparationExecutionTests {
     }
 
     @Test("approved RN materialization may change provenance but not resolved requirements or tools", arguments: [
-        "same", "same-tier1", "same-tier3", "version", "requirement", "executable", "tool-version",
+        "same", "same-tier1", "same-tier3", "version", "requirement", "executable", "tool-version", "symlink-declaration",
     ])
     func rnOwnMaterialization(_ change: String) async throws {
         let repo = try project()
@@ -112,6 +112,11 @@ struct PreparationExecutionTests {
         try repo.write("ios/Podfile.lock", "locked pods\n")
         if change == "same-tier1" { try repo.write(".xcode-version", "27.0\n") }
         if change == "same-tier3" { try repo.write("mobile.yml", "overrides:\n  xcode: '27.0'\n") }
+        if change == "symlink-declaration" {
+            try repo.write(".mobile/xcode-version-target", "14.0\n")
+            try FileManager.default.createSymbolicLink(atPath: repo.url(".xcode-version").path,
+                withDestinationPath: ".mobile/xcode-version-target")
+        }
         let alternateNode = try repo.write(".mobile/tool-fixtures/alternate-node", "another fixture node")
         try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: alternateNode.path)
         var base = try tools(repo)
@@ -137,9 +142,13 @@ struct PreparationExecutionTests {
             #expect(before.source.origin.contains("says 26.0"))
         }
         #expect(before.source.origin.contains("package-lock.json"))
+        if change == "symlink-declaration" {
+            #expect(before.source.origin.contains(".xcode-version declares 14.0"))
+        }
         try #require(approved.steps.filter { $0.kind == "align" }.map(\.id) == ["dependencies.node", "dependencies.pods"])
         #expect(!FileManager.default.fileExists(atPath: repo.url("node_modules/react-native/package.json").path))
         let lock = try Data(contentsOf: repo.url("package-lock.json"))
+        let sourceFiles = try PreparationExecution.sourceFiles(repo.root)
 
         let prepared = await PreparationExecution.run(input: input, approvedPlanID: approved.id,
             trustRepository: true, runner: runner, leases: ResourceLeases(directory: repo.url(".mobile/leases")))
@@ -184,6 +193,18 @@ struct PreparationExecutionTests {
             }
             if change == "tool-version" {
                 #expect(afterNodeVersion.observed != beforeNodeVersion.observed)
+            }
+            if change == "symlink-declaration" {
+                #expect(installed.value == "0.87.1")
+                #expect(after.required == before.required)
+                #expect(after.observed == before.observed)
+                #expect(after.kind == before.kind)
+                #expect(after.source.origin.contains(".xcode-version declares 15.0"))
+                #expect(try FileManager.default.destinationOfSymbolicLink(atPath: repo.url(".xcode-version").path)
+                    == ".mobile/xcode-version-target")
+                #expect(try String(contentsOf: repo.url(".mobile/xcode-version-target"), encoding: .utf8) == "15.0\n")
+                #expect(try PreparationExecution.sourceFiles(repo.root) == sourceFiles)
+                #expect(fresh.plan?.files == approved.files)
             }
         }
     }
@@ -563,6 +584,7 @@ private struct RNMaterializingRunner: ProcessRunner {
         if command.description == "npm ci" {
             let version = change == "version" ? "0.87.2" : change == "requirement" ? "0.80.0" : "0.87.1"
             try repo.write("node_modules/react-native/package.json", "{\"name\":\"react-native\",\"version\":\"\(version)\"}\n")
+            if change == "symlink-declaration" { try repo.write(".mobile/xcode-version-target", "15.0\n") }
         }
         return result
     }
