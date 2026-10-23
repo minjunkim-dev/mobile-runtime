@@ -945,9 +945,13 @@ private final class PreparationRunner: ProcessRunner, @unchecked Sendable {
             materialized = false
         }
         var sourceTransition: (from: CheckSource, to: CheckSource)?
-        if materialized, case .requirement(let before, let source)? = xcode,
+        if materialized, let beforeRN = reactNativeVersion, let afterRN = inspection.reactNativeVersion,
+           case .requirement(let before, let source)? = xcode,
            case .requirement(let after, let currentSource)? = inspection.xcode,
-           before == after, let tier = source.tier, (1...3).contains(tier), currentSource.tier == tier {
+           before == after, let tier = source.tier, (1...3).contains(tier), currentSource.tier == tier,
+           // A declaration may also contain this text; only one matrix provenance token may change.
+           source.origin.components(separatedBy: beforeRN.described).count == 2,
+           source.origin.replacingOccurrences(of: beforeRN.described, with: afterRN.described) == currentSource.origin {
             sourceTransition = (currentSource, source)
         }
         guard let current = inspection.plan,
