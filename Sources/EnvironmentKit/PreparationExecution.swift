@@ -947,7 +947,7 @@ private final class PreparationRunner: ProcessRunner, @unchecked Sendable {
         var sourceTransition: (from: CheckSource, to: CheckSource)?
         if materialized, case .requirement(let before, let source)? = xcode,
            case .requirement(let after, let currentSource)? = inspection.xcode,
-           before == after, source.tier == 2, currentSource.tier == 2 {
+           before == after, let tier = source.tier, (1...3).contains(tier), currentSource.tier == tier {
             sourceTransition = (currentSource, source)
         }
         guard let current = inspection.plan,
