@@ -22,6 +22,22 @@ private func anchor(_ repo: FixtureRepo, at relativePath: String? = nil) throws 
 
 private func temporaryLogs() throws -> RunLogs { try RunLogs.temporary() }
 
+private struct CancellingDependencyRunner: ProcessRunner {
+    let lockfile: URL
+    let base = FakeProcessRunner(failures: ["yarn install --frozen-lockfile": CancellationError()])
+
+    func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+        if command.description == "yarn install --frozen-lockfile" {
+            try Data("changed before cancellation\n".utf8).write(to: lockfile)
+        }
+        return try await base.run(command, onLine: onLine)
+    }
+
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+        try await base.spawnDetached(command, logFile: logFile)
+    }
+}
+
 @discardableResult
 private func run(
     _ anchor: ProjectAnchor,
@@ -151,6 +167,23 @@ struct DependenciesStageTests {
         #expect(error?.observed?.contains("Podfile.lock") == true)
         #expect(try String(contentsOf: repo.url("ios/Podfile.lock"), encoding: .utf8) == "changed by lifecycle\n")
         #expect(!FileManager.default.fileExists(atPath: repo.url("ios/pod-ran").path))
+        #expect(FileManager.default.fileExists(atPath: repo.url("node_modules/.mobile-install.incomplete").path))
+    }
+
+    @Test("cancellation after a dependency hook changes a lock keeps exit 130 and the changed file")
+    func cancelledHookPreservesCancellation() async throws {
+        let repo = try app()
+        try repo.write("ios/Podfile", "platform :ios, '15.1'\n")
+        let lockfile = try repo.write("ios/Podfile.lock", "original lock\n")
+        let runner = CancellingDependencyRunner(lockfile: lockfile)
+        let report = await UpPipeline(stages: [
+            DependenciesStage(anchor: try anchor(repo), runner: runner, logs: try temporaryLogs())
+        ]).run()
+
+        #expect(report.exitCode == 130)
+        #expect(report.stages.last?.detail == "cancelled")
+        #expect(runner.base.log.all.map(\.description) == ["yarn install --frozen-lockfile"])
+        #expect(try String(contentsOf: lockfile, encoding: .utf8) == "changed before cancellation\n")
         #expect(FileManager.default.fileExists(atPath: repo.url("node_modules/.mobile-install.incomplete").path))
     }
 
