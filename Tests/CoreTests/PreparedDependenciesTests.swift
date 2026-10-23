@@ -22,7 +22,7 @@ struct PreparedDependenciesTests {
 
     @Test("missing or incomplete prepared inputs stop without running installers", arguments: [
         "node-dir", "node-file", "incomplete", "dangling-marker", "pods-dir", "pods-file",
-        "lock", "manifest", "stale", "workspace", "workspace-contents",
+        "lock", "manifest", "stale", "workspace", "workspace-contents", "workspace-contents-directory",
     ])
     func invalidPreparedInputs(_ fault: String) async throws {
         let repo = try fixture()
@@ -41,6 +41,9 @@ struct PreparedDependenciesTests {
         case "manifest": try FileManager.default.removeItem(at: repo.url("ios/Pods/Manifest.lock"))
         case "stale": try repo.write("ios/Pods/Manifest.lock", "other lock\n")
         case "workspace": try FileManager.default.removeItem(at: repo.url("ios/App.xcworkspace"))
+        case "workspace-contents-directory":
+            try FileManager.default.removeItem(at: repo.url("ios/App.xcworkspace/contents.xcworkspacedata"))
+            try repo.directory("ios/App.xcworkspace/contents.xcworkspacedata")
         default: try FileManager.default.removeItem(at: repo.url("ios/App.xcworkspace/contents.xcworkspacedata"))
         }
         let runner = FakeProcessRunner()
