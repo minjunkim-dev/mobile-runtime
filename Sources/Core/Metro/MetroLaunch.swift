@@ -130,7 +130,7 @@ public enum MetroLaunch {
         ))
         guard result.standardError.isEmpty,
               result.terminationStatus == .exited(0)
-                || (result.terminationStatus == .exited(1) && result.standardOutput.isEmpty)
+                || result.terminationStatus == .exited(1)
         else { throw uncertainStartup() }
         var listeners: [Int32] = []
         for line in result.standardOutput.split(separator: "\n") {
@@ -138,7 +138,9 @@ public enum MetroLaunch {
                   pids.contains(pid), !listeners.contains(pid) else { throw uncertainStartup() }
             listeners.append(pid)
         }
-        return listeners.sorted()
+        // A disappearing descendant can leave partial output with exit 1.
+        // Validate it, but only a fresh complete observation may confirm readiness.
+        return result.terminationStatus == .exited(0) ? listeners.sorted() : []
     }
 
     private static func confirm(

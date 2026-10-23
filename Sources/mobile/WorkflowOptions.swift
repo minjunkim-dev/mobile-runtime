@@ -19,6 +19,7 @@ struct WorkflowOptions: ParsableArguments {
     @Option(name: .long, help: "Flutter Dart entrypoint inside the selected app. Defaults to lib/main.dart.") var entrypoint: String?
     @Option(name: .long, help: "React Native build/up Metro port (default 8081), or Flutter up VM service port (automatic when omitted). Unsupported workflows stop before changes.") var port: Int?
     @Flag(name: .long, help: "Do not ask questions. Missing selections return candidates without starting changes.") var nonInteractive = false
+    @Flag(name: .long, help: "React Native build/up에서 직접 준비한 의존성을 사용합니다. 재설치·lock 정렬 재검증을 생략하며 의존성 정합성은 사용자가 확인해야 합니다.") var preparedDependencies = false
 
     func run(_ kind: WorkflowKind) async throws {
         bootstrapLogging(verbose: verbose, silent: progressJson)
@@ -26,7 +27,8 @@ struct WorkflowOptions: ParsableArguments {
             directory: URL(fileURLWithPath: project ?? FileManager.default.currentDirectoryPath),
             environment: ProcessInfo.processInfo.environment, app: app,
             platform: platform.flatMap { ProjectPlatform(rawValue: $0.rawValue) }, entrypoint: entrypoint),
-            device: device, scheme: scheme, configuration: configuration, module: module, variant: variant, port: port)
+            device: device, scheme: scheme, configuration: configuration, module: module, variant: variant, port: port,
+            preparedDependencies: preparedDependencies)
         let structured = progressJson
         let result = try await cancellingOnSignals {
             await WorkflowExecution.run(kind, input: input) { event in

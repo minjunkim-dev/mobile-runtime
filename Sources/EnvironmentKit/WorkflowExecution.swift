@@ -11,9 +11,11 @@ public struct WorkflowInput: Sendable {
     public let module: String?
     public let variant: String?
     public let port: Int?
+    public let preparedDependencies: Bool
 
     public init(project: ProjectInspectionInput, device: String? = nil, scheme: String? = nil,
-                configuration: String? = nil, module: String? = nil, variant: String? = nil, port: Int? = nil) {
+                configuration: String? = nil, module: String? = nil, variant: String? = nil, port: Int? = nil,
+                preparedDependencies: Bool = false) {
         self.project = project
         self.device = device
         self.scheme = scheme
@@ -21,6 +23,7 @@ public struct WorkflowInput: Sendable {
         self.module = module
         self.variant = variant
         self.port = port
+        self.preparedDependencies = preparedDependencies
     }
 }
 
@@ -57,6 +60,7 @@ public enum WorkflowExecution {
                     flutterFactory: FlutterAndroidWorkflow.Factory,
                     onEvent: @escaping @Sendable (WorkflowEvent) -> Void = { _ in }) async -> WorkflowResult {
         var operation = WorkflowOperation(id: UUID().uuidString, kind: kind, state: "running")
+        operation.preparedDependencies = input.preparedDependencies ? true : nil
         let events = WorkflowEvents(id: operation.id, callback: onEvent)
         events.send("started", state: "running")
         var up: UpReport?
@@ -83,6 +87,9 @@ public enum WorkflowExecution {
             }
             if input.project.entrypoint != nil && anchor.framework != .flutter {
                 throw selectionFailure("An explicit entrypoint requires a Flutter app.")
+            }
+            if input.preparedDependencies && (anchor.framework != .reactNative || kind == .down) {
+                throw selectionFailure("--prepared-dependencies는 React Native build/up에서만 사용할 수 있습니다.")
             }
             if let port = input.port {
                 let supported = (anchor.framework == .reactNative && kind != .down)
@@ -316,6 +323,7 @@ public enum WorkflowExecution {
                 up = await runAndroidUp(anchor: anchor, doctor: wiring.engine, config: config,
                     hostRunner: runner, projectRunner: wiring.projectRunner,
                     environment: AndroidEnvironment(values: input.project.environment),
+                    preparedDependencies: input.preparedDependencies,
                     metroPort: anchor.framework == .reactNative ? input.port : nil,
                     port: flutterPort, flutterEntrypoint: androidFlutter?.entrypoint,
                     reentry: flutterReentry, note: note,
@@ -323,7 +331,8 @@ public enum WorkflowExecution {
             case (.build, .android):
                 up = await UpPipeline(stages: androidBuildStages(anchor: anchor, doctor: wiring.engine, config: config,
                     hostRunner: runner, projectRunner: wiring.projectRunner,
-                    environment: AndroidEnvironment(values: input.project.environment), metroPort: input.port, note: note))
+                    environment: AndroidEnvironment(values: input.project.environment),
+                    preparedDependencies: input.preparedDependencies, metroPort: input.port, note: note))
                     .run(onStageFinished: finished, onStageStarted: started)
             case (.build, .ios), (.up, .ios):
                 let flutter = try anchor.framework == .flutter
@@ -333,6 +342,7 @@ public enum WorkflowExecution {
                     hostRunner: runner, projectRunner: flutter?.buildRunner ?? wiring.projectRunner, locator: wiring.locator,
                     deviceID: operation.device, configuration: operation.configuration ?? "Debug",
                     buildWithoutDevice: kind == .build && operation.device == nil,
+                    preparedDependencies: input.preparedDependencies,
                     metroPort: input.port, flutterPort: flutterPort, note: note)
                 up = await UpPipeline(stages: flutter?.guarding(stages) ?? stages)
                     .run(onStageFinished: finished, onStageStarted: started)

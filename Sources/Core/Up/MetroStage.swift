@@ -67,9 +67,7 @@ public struct MetroStage: Stage {
         let readiness = try await MetroLaunch.readiness(
             startPID: pid, anchor: anchorDirectory, runner: runner, bindWait: bindWait, port: port
         ) { _ in
-            let observed = try await MetroVerdict.ask(anchor: anchorDirectory, runner: runner, port: port)
-            if let blocker = observed.blocker(port: port) { throw blocker }
-            return observed == .mine
+            try await MetroVerdict.startupReady(anchor: anchorDirectory, runner: runner, port: port)
         }
         switch readiness {
         case .listening(let pid):

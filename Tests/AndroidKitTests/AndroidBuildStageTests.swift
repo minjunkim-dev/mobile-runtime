@@ -232,6 +232,27 @@ struct AndroidBuildStageTests {
         #expect(!FileManager.default.fileExists(atPath: scenario.repo.url("package.json").path))
     }
 
+    @Test("Android build and up pass manual dependencies into the shared stage", arguments: [false, true])
+    func manualDependenciesPipeline(_ up: Bool) async throws {
+        let scenario = try buildScenario()
+        try scenario.repo.write("package-lock.json", "{}")
+        let runner = AAPTAnsweringRunner(base: scenario.runner, badging: healthyBadging)
+        let result: UpReport
+        if up {
+            result = await runAndroidUp(anchor: scenario.anchor, doctor: DoctorEngine(checks: []),
+                config: scenario.config, hostRunner: runner, projectRunner: runner,
+                environment: scenario.environment, preparedDependencies: true, note: { _ in })
+        } else {
+            let stages = androidBuildStages(anchor: scenario.anchor, doctor: DoctorEngine(checks: []),
+                config: scenario.config, hostRunner: runner, projectRunner: runner,
+                environment: scenario.environment, preparedDependencies: true, note: { _ in })
+            result = await UpPipeline(stages: stages).run()
+        }
+        #expect(result.stages.first { $0.id == "dependencies" }?.status == .skipped)
+        #expect(result.stages.first { $0.id == "android.build" }?.status == .pass)
+        #expect(!scenario.runner.log.all.contains { ["npm", "yarn", "pnpm", "bundle", "pod"].contains($0.executable) })
+    }
+
     @Test("only native Java or Kotlin APKs may omit native library ABI metadata", arguments: [false, true])
     func nativeUniversalAPK(native: Bool) async throws {
         let scenario = try buildScenario(badging: healthyBadging.replacingOccurrences(of: "native-code: 'arm64-v8a'", with: ""), native: native)

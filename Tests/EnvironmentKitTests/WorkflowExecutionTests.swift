@@ -6,6 +6,45 @@ import Testing
 
 @Suite("shared CLI and GUI RN workflows")
 struct WorkflowExecutionTests {
+    @Test("RN manual build/up preserves selection and execution while skipping installers", arguments: [WorkflowKind.build, .up])
+    func manuallyPreparedDependencies(_ kind: WorkflowKind) async throws {
+        let repo = try iosProject()
+        var runner = kind == .build ? try iosRunner(repo) : try iosUpRunner(repo)
+        runner.responses.removeValue(forKey: "yarn install --frozen-lockfile")
+        let result = await WorkflowExecution.run(kind, input: WorkflowInput(project: ProjectInspectionInput(
+            directory: repo.root, environment: [:]), preparedDependencies: true), runner: runner, leases: temporaryLeases())
+        #expect(result.exitCode == 0, Comment(rawValue: result.up?.failure?.message ?? ""))
+        #expect(result.up?.stages.first { $0.id == "dependencies" }?.status == .skipped)
+        #expect(result.operation.preparedDependencies == true)
+        #expect(!runner.log.all.contains { $0.description == "yarn install --frozen-lockfile" })
+        let document = try #require(JSONSerialization.jsonObject(with: Data(try result.encoded(toolVersion: "test").utf8)) as? [String: Any])
+        #expect((document["operation"] as? [String: Any])?["preparedDependencies"] as? Bool == true)
+    }
+
+    @Test("manual dependencies never apply to down or another framework", arguments: ["down", "flutter", "native-ios", "native-android"])
+    func manualModeScope(_ target: String) async throws {
+        let repo = try FixtureRepo()
+        if target == "flutter" {
+            try repo.write("pubspec.yaml", "name: fixture\ndependencies:\n  flutter:\n    sdk: flutter\n")
+            try repo.directory("ios")
+        } else if target == "native-ios" {
+            try repo.write("App.xcodeproj/project.pbxproj", "// native project fixture")
+        } else if target == "native-android" {
+            try repo.write("settings.gradle.kts", "include(\":app\")")
+            try repo.write("gradlew", "#!/bin/sh\n")
+        } else {
+            try repo.write("package.json", #"{"dependencies":{"react-native":"0.81.0"}}"#)
+            try repo.directory("ios")
+        }
+        let runner = FakeProcessRunner()
+        let result = await WorkflowExecution.run(target == "down" ? .down : .build,
+            input: WorkflowInput(project: ProjectInspectionInput(directory: repo.root, environment: [:]),
+                preparedDependencies: true), runner: runner, leases: temporaryLeases())
+        #expect(result.exitCode == 1)
+        #expect((result.up?.failure?.message ?? result.down?.failure?.message)?.contains("--prepared-dependencies는 React Native build/up에서만 사용할 수 있습니다") == true)
+        #expect(runner.log.all.isEmpty)
+    }
+
     @Test("an unmet exact tool declaration blocks build and up before dependency or build changes", arguments: [WorkflowKind.build, .up])
     func unmetToolDeclaration(_ kind: WorkflowKind) async throws {
         let repo = try iosProject()

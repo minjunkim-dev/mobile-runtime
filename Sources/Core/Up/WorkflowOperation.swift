@@ -33,6 +33,8 @@ public struct WorkflowOperation: Codable, Sendable {
     public var entrypoint: String?
     public var port: Int?
     public var developmentServiceURI: String?
+    /// An explicit manual choice, never a claim that dependency alignment passed.
+    public var preparedDependencies: Bool?
     public var requiredInput: [String] = []
     public var devices: [RuntimeDeviceCandidate] = []
     public var schemes: [String] = []

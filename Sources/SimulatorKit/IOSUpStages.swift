@@ -23,6 +23,7 @@ public func iOSStages(
     deviceID: String? = nil,
     configuration: String = "Debug",
     buildWithoutDevice: Bool = false,
+    preparedDependencies: Bool = false,
     metroPort: Int? = nil,
     flutterPort: Int? = nil,
     note: @escaping @Sendable (String) -> Void
@@ -35,7 +36,7 @@ public func iOSStages(
         ),
     ]
     if anchor.framework == .reactNative {
-        stages.append(DependenciesStage(anchor: anchor, runner: projectRunner))
+        stages.append(DependenciesStage(anchor: anchor, runner: projectRunner, preparedDependencies: preparedDependencies))
     }
     if !buildWithoutDevice {
         stages.append(DeviceStage(

@@ -290,7 +290,7 @@ struct AndroidRuntimeTests {
         #expect(AndroidUpValidation.checkIDs.contains("android.avd"))
     }
 
-    @Test("records selected Metro endpoint and ownership for reused and newly started bundlers", arguments: [8081, 8097], [false, true])
+    @Test("records reused Metro or retries an owned startup status timeout before recording readiness", arguments: [8081, 8097], [false, true])
     func runsAndroidRuntimeStages(port: Int, startMetro: Bool) async throws {
         let scenario = try runtimeScenario()
         let reverseSource = "tcp:\(port)"
@@ -333,8 +333,9 @@ struct AndroidRuntimeTests {
         ]
         if startMetro {
             responses["curl -s -i -m 2 http://localhost:\(port)/status"] = [
-                .failed(7, ""), .ok(MetroStatus.running(projectRoot: scenario.repo.root)),
+                .failed(7, ""), .failed(28, ""), .ok(MetroStatus.running(projectRoot: scenario.repo.root)),
             ]
+            responses["kill -0 7001"] = [.ok("")]
             for (command, response) in MetroStatus.startupResponses(
                 projectRoot: scenario.repo.root, startPID: 7001, listenerPID: 7003, port: port
             ) { responses[command] = [response] }
@@ -355,6 +356,7 @@ struct AndroidRuntimeTests {
         let device = try await runtime.device(for: scenario.product)
         try await runtime.install(scenario.product, on: device)
         let metro = try await runtime.metro()
+        if startMetro { #expect(state.all.filter { $0.executable == "curl" }.count == 3) }
         let reverse = try await runtime.reverse(on: device)
         let pid = try await runtime.launch(scenario.product, on: device)
 

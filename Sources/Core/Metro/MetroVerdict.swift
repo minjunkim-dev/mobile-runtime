@@ -45,12 +45,31 @@ public enum MetroVerdict: Sendable, Equatable {
     /// which is exactly the blank screen this verdict exists to replace with a
     /// sentence.
     public static func ask(anchor: URL, runner: any ProcessRunner, port: Int = Self.port) async throws -> MetroVerdict {
-        let result = try await runner.run(
+        let result = try await probe(runner: runner, port: port)
+        return verdict(result, anchor: anchor)
+    }
+
+    /// Only for a newly spawned listener whose process identity and cwd were
+    /// confirmed by MetroLaunch. A status timeout waits for its next fresh poll.
+    public static func startupReady(anchor: URL, runner: any ProcessRunner, port: Int = Self.port) async throws -> Bool {
+        let result = try await probe(runner: runner, port: port)
+        try Task.checkCancellation()
+        if result.terminationStatus == .exited(28) { return false }
+        let observed = verdict(result, anchor: anchor)
+        if let blocker = observed.blocker(port: port) { throw blocker }
+        return observed == .mine
+    }
+
+    private static func probe(runner: any ProcessRunner, port: Int) async throws -> ProcessResult {
+        try await runner.run(
             ProcessCommand(
                 "curl", ["-s", "-i", "-m", "2", "http://localhost:\(port)/status"],
                 timeout: .seconds(10)
             )
         )
+    }
+
+    private static func verdict(_ result: ProcessResult, anchor: URL) -> MetroVerdict {
         switch result.terminationStatus {
         case .exited(0): return read(result.standardOutput, anchor: anchor)
         case .exited(Self.couldNotConnect): return .empty

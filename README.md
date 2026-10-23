@@ -50,6 +50,13 @@ swift test
 .build/debug/mobile down --platform android --json
 ```
 
+React Native에서 의존성을 직접 준비했다면 `mobile build/up --prepared-dependencies` 또는
+GUI의 **직접 준비한 의존성 사용**을 명시적으로 선택할 수 있습니다. 기본값은 꺼짐입니다.
+이 모드는 Node·Bundle·Pods 재설치와 lock 정렬 재검증을 생략하며 의존성 정합성은 사용자가 확인해야 합니다.
+필수 node_modules·미완료 표식·iOS Pods와 workspace를 검사한 뒤 기존 빌드·실행을 수행합니다.
+[ADR-0047](docs/adr/0047-explicit-manually-prepared-rn-dependencies.md)의 경계를 따르며 setup·Flutter·native에는 적용하지 않습니다.
+
+
 원시 로그와 오류 JSON에는 프로젝트 도구 출력이 그대로 남을 수 있다. 원시
 로그는 민감정보로 보고, 공유하거나 이슈에 붙이기 전에 확인한다.
 
