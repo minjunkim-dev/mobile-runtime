@@ -58,6 +58,23 @@ private actor NextProbeListenerRunner: ProcessRunner {
     }
 }
 
+private struct SocketProbeCancellingRunner: ProcessRunner {
+    let base = FakeProcessRunner(responses: ["/usr/bin/printenv WATCHMAN_SOCK": .ok("")])
+
+    func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+        let result = try await base.run(command, onLine: onLine)
+        if command.executable == "/usr/bin/printenv", command.arguments == ["WATCHMAN_SOCK"] {
+            withUnsafeCurrentTask { $0?.cancel() }
+            try Task.checkCancellation()
+        }
+        return result
+    }
+
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+        try await base.spawnDetached(command, logFile: logFile)
+    }
+}
+
 @Suite("metro stage")
 struct MetroStageTests {
     @Test("omitting the start port preserves the legacy script arguments and inherited native input")
@@ -203,6 +220,26 @@ struct MetroStageTests {
         await MetroLaunch.dropWatchmanWatch(of: repo.root, runner: runner)
 
         #expect(runner.log.all.map(\.description) == [probe])
+    }
+
+    @Test("cancelling the actual task during its socket probe prevents detached Metro startup")
+    func cancelledSocketProbePreventsStartup() async throws {
+        let repo = try app()
+        let anchor = try #require(ProjectAnchor.detect(from: repo.root))
+        let runner = SocketProbeCancellingRunner()
+        let task = Task {
+            try await MetroLaunch.start(anchor: anchor, runner: runner,
+                logFile: repo.url("metro.log"), afterReinstall: true)
+        }
+
+        do {
+            _ = try await task.value
+            Issue.record("cancelled socket probe still started Metro")
+        } catch is CancellationError {}
+
+        #expect(task.isCancelled)
+        #expect(runner.base.log.all.map(\.description) == ["/usr/bin/printenv WATCHMAN_SOCK"])
+        #expect(runner.base.log.spawned.isEmpty)
     }
 
     @Test("reinstalled Metro resets only the socket inherited by its actual project child", arguments: [false, true])
