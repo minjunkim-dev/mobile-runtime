@@ -228,11 +228,23 @@ public enum MetroLaunch {
     /// crawl. Without watchman there is nothing to drop, so every failure is ignored.
     public static func dropWatchmanWatch(
         of directory: URL,
-        runner: any ProcessRunner,
-        socketPath: String? = ProcessInfo.processInfo.environment["WATCHMAN_SOCK"]
+        runner: any ProcessRunner
     ) async {
+        // Read through Metro's runner so project activation can override the parent environment.
+        guard let environment = try? await runner.run(ProcessCommand(
+            "/usr/bin/printenv", ["WATCHMAN_SOCK"], workingDirectory: directory, timeout: .seconds(15)
+        )), environment.standardError.isEmpty else { return }
+        let socketPath: String
+        switch environment.terminationStatus {
+        case .exited(0) where environment.standardOutput.utf8.last == 10:
+            socketPath = String(decoding: environment.standardOutput.utf8.dropLast(), as: UTF8.self)
+        case .exited(1) where environment.standardOutput.isEmpty:
+            socketPath = ""
+        default:
+            return
+        }
         // fb-watchman uses WATCHMAN_SOCK directly; the Watchman CLI ignores it.
-        let options = if let socketPath, !socketPath.isEmpty {
+        let options = if !socketPath.isEmpty {
             ["--sockname=\(socketPath)", "--no-spawn", "--no-local"]
         } else {
             [String]()
