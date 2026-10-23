@@ -265,7 +265,7 @@ public struct AndroidAppFile: Sendable {
             let failure = Self.failure("adb refused the data-preserving installation: " + result.combinedOutput.lastLines(8))
             // Only the observed terminal refusal qualifies; transport or unfamiliar output stays reserved.
             let refusal = #"\Aadb: failed to install "# + NSRegularExpression.escapedPattern(for: file.path)
-                + #": Failure \[INSTALL_FAILED_UPDATE_INCOMPATIBLE: Existing package ([A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)+) signatures do not match newer version; ignoring!\]\r?\n?\z"#
+                + #": Failure \[INSTALL_FAILED_UPDATE_INCOMPATIBLE: Existing package ([A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)+) signatures do not match newer version; ignoring!\](?:\r?\n){1,2}\z"#
             if result.terminationStatus == .exited(1),
                result.standardOutput == "Performing Streamed Install\n",
                let appID = Self.capture(refusal, result.standardError) {

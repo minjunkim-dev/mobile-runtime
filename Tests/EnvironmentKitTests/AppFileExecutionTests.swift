@@ -815,10 +815,12 @@ struct AppFileExecutionTests {
         #expect(!fixture.runner.commands.contains(where: forbidden))
     }
 
-    @Test("a native APK signer rejection preserves the app and permits another approved file path", arguments: [false, true])
-    func rejectedAPKAllowsNewPath(_ installed: Bool) async throws {
+    @Test("a native APK signer rejection preserves the app and permits another approved file path",
+          arguments: [(false, 1), (true, 1), (false, 2), (true, 2)])
+    func rejectedAPKAllowsNewPath(_ example: (Bool, Int)) async throws {
+        let (installed, lineEndings) = example
         let fixture = try AppFileFixture(platform: .android, installedBuild: installed ? "1" : nil)
-        fixture.runner.installFailure = "signer"
+        fixture.runner.installFailure = lineEndings == 1 ? "single-line-ending" : "signer"
         let first = try #require(await fixture.run(planOnly: true).operation.plan)
         let rejected = await fixture.run(approval: first.approval)
         #expect(rejected.exitCode == 1)
@@ -867,7 +869,7 @@ struct AppFileExecutionTests {
     }
 
     @Test("unknown APK failures, changed observations and cancellation retain their reservation", arguments: [
-        "code", "reason", "package", "path", "stdout", "stdout-extra", "extra", "transport", "signal", "exit", "unknown", "changed", "cancel"
+        "code", "reason", "package", "path", "stdout", "stdout-extra", "extra", "line-endings", "transport", "signal", "exit", "unknown", "changed", "cancel"
     ])
     func uncertainAPKFailureStaysReserved(_ mode: String) async throws {
         let fixture = try AppFileFixture(platform: .android, installedBuild: "1")
@@ -1320,7 +1322,9 @@ private final class AppFileRunner: ProcessRunner, @unchecked Sendable {
                         if mode == "changed" { installedBuild = "3" }
                         guard let input = args.last else { throw FixtureMiss(command: command.description) }
                         let file = mode == "path" ? "/another.apk" : input
-                        var diagnostic = "adb: failed to install \(file): Failure [INSTALL_FAILED_UPDATE_INCOMPATIBLE: Existing package \(AppFileFixture.appID) signatures do not match newer version; ignoring!]\n"
+                        var diagnostic = "adb: failed to install \(file): Failure [INSTALL_FAILED_UPDATE_INCOMPATIBLE: Existing package \(AppFileFixture.appID) signatures do not match newer version; ignoring!]\n\n"
+                        if mode == "single-line-ending" { diagnostic.removeLast() }
+                        if mode == "line-endings" { diagnostic += "\n" }
                         if mode == "code" { diagnostic = diagnostic.replacingOccurrences(of: "UPDATE_INCOMPATIBLE", with: "VERSION_DOWNGRADE") }
                         if mode == "reason" { diagnostic = diagnostic.replacingOccurrences(of: "signatures do not match newer version; ignoring!", with: "unknown outcome") }
                         if mode == "package" { diagnostic = diagnostic.replacingOccurrences(of: AppFileFixture.appID, with: "com.other.App") }
