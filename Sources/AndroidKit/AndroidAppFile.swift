@@ -1,6 +1,12 @@
 import Core
 import Foundation
 
+/// The native signer-mismatch rejection, with no accepted installation.
+public struct AndroidInstallRejection: Error, Sendable {
+    public let failure: DomainError
+    public let appID: String
+}
+
 /// An installed SDK inspects a single APK. No Gradle, source project or SDK setup is involved.
 public struct AndroidAppFile: Sendable {
     private let runner: any ProcessRunner
@@ -256,7 +262,16 @@ public struct AndroidAppFile: Sendable {
         try await requireIdentity(device)
         let result = try await adb(["-s", device.handle, "install", "-r", file.path], timeout: .seconds(120))
         guard result.terminationStatus.isSuccess else {
-            throw Self.failure("adb refused the data-preserving installation: " + result.combinedOutput.lastLines(8))
+            let failure = Self.failure("adb refused the data-preserving installation: " + result.combinedOutput.lastLines(8))
+            // Only the observed terminal refusal qualifies; transport or unfamiliar output stays reserved.
+            let refusal = #"\Aadb: failed to install "# + NSRegularExpression.escapedPattern(for: file.path)
+                + #": Failure \[INSTALL_FAILED_UPDATE_INCOMPATIBLE: Existing package ([A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)+) signatures do not match newer version; ignoring!\](?:\r?\n){1,2}\z"#
+            if result.terminationStatus == .exited(1),
+               result.standardOutput == "Performing Streamed Install\n",
+               let appID = Self.capture(refusal, result.standardError) {
+                throw AndroidInstallRejection(failure: failure, appID: appID)
+            }
+            throw failure
         }
     }
 

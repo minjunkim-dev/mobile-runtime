@@ -303,7 +303,8 @@ public enum AppFileExecution {
             let cancelled = error is CancellationError || Task.isCancelled
             let conflict = error as? ResourceConflict
             operation.conflict = conflict
-            let domain = (error as? DomainError) ?? (error as? IOSDeviceInstallRejection)?.failure ?? conflict?.domainError
+            let domain = (error as? DomainError) ?? (error as? IOSDeviceInstallRejection)?.failure
+                ?? (error as? AndroidInstallRejection)?.failure ?? conflict?.domainError
             operation.error = domain?.message ?? String(describing: error)
             operation.nextAction = domain?.remediation.summary
                 ?? "Inspect the current file and selected device before retrying. Completed installation and existing data remain."
@@ -337,7 +338,8 @@ public enum AppFileExecution {
                     catch { operation.installed = AppFileInstalledState(state: "unknown", detail: "Re-observation failed: \(error)") }
                 }
             }
-            if error is IOSDeviceInstallRejection, let reservation,
+            let rejectedAPK = (error as? AndroidInstallRejection).map { $0.appID == operation.artifact?.metadata.appID } ?? false
+            if error is IOSDeviceInstallRejection || rejectedAPK, let reservation,
                !cancelled, !Task.isCancelled, operation.installation != "installed",
                let installed = operation.installed, ["absent", "installed"].contains(installed.state),
                installed == installedBeforeRequest {
