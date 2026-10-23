@@ -33,6 +33,7 @@ public enum MetroLaunch {
         // Metro colors its completed BUNDLE label green and its failed label red.
         // Preserve that distinction when its output goes to our non-TTY log file.
         command.environment["FORCE_COLOR"] = "1"
+        try Task.checkCancellation()
         return (command, try await runner.spawnDetached(command, logFile: logFile))
     }
 
@@ -226,16 +227,38 @@ public enum MetroLaunch {
     /// modules that are on disk (#149). Dropping the project's watch makes Metro's own
     /// `watch-project` start a fresh one, which watchman answers only after its full
     /// crawl. Without watchman there is nothing to drop, so every failure is ignored.
-    public static func dropWatchmanWatch(of directory: URL, runner: any ProcessRunner) async {
+    public static func dropWatchmanWatch(
+        of directory: URL,
+        runner: any ProcessRunner
+    ) async {
+        // Read through Metro's runner so project activation can override the parent environment.
+        guard let environment = try? await runner.run(ProcessCommand(
+            "/usr/bin/printenv", ["WATCHMAN_SOCK"], workingDirectory: directory, timeout: .seconds(15)
+        )), environment.standardError.isEmpty else { return }
+        let socketPath: String
+        switch environment.terminationStatus {
+        case .exited(0) where environment.standardOutput.utf8.last == 10:
+            socketPath = String(decoding: environment.standardOutput.utf8.dropLast(), as: UTF8.self)
+        case .exited(1) where environment.standardOutput.isEmpty:
+            socketPath = ""
+        default:
+            return
+        }
+        // fb-watchman uses WATCHMAN_SOCK directly; the Watchman CLI ignores it.
+        let options = if !socketPath.isEmpty {
+            ["--sockname=\(socketPath)", "--no-spawn", "--no-local"]
+        } else {
+            [String]()
+        }
         let probe = ProcessCommand(
-            "watchman", ["watch-project", directory.path], workingDirectory: directory, timeout: .seconds(15)
+            "watchman", options + ["watch-project", directory.path], workingDirectory: directory, timeout: .seconds(15)
         )
         guard let result = try? await runner.run(probe), result.terminationStatus.isSuccess,
             let reply = try? JSONSerialization.jsonObject(with: Data(result.standardOutput.utf8)) as? [String: Any],
             let root = reply["watch"] as? String
         else { return }
         _ = try? await runner.run(
-            ProcessCommand("watchman", ["watch-del", root], workingDirectory: directory, timeout: .seconds(15))
+            ProcessCommand("watchman", options + ["watch-del", root], workingDirectory: directory, timeout: .seconds(15))
         )
     }
 }

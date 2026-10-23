@@ -58,6 +58,23 @@ private actor NextProbeListenerRunner: ProcessRunner {
     }
 }
 
+private struct SocketProbeCancellingRunner: ProcessRunner {
+    let base = FakeProcessRunner(responses: ["/usr/bin/printenv WATCHMAN_SOCK": .ok("")])
+
+    func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+        let result = try await base.run(command, onLine: onLine)
+        if command.executable == "/usr/bin/printenv", command.arguments == ["WATCHMAN_SOCK"] {
+            withUnsafeCurrentTask { $0?.cancel() }
+            try Task.checkCancellation()
+        }
+        return result
+    }
+
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+        try await base.spawnDetached(command, logFile: logFile)
+    }
+}
+
 @Suite("metro stage")
 struct MetroStageTests {
     @Test("omitting the start port preserves the legacy script arguments and inherited native input")
@@ -120,11 +137,14 @@ struct MetroStageTests {
         #expect(runner.log.spawned.isEmpty)
         #expect(try String(contentsOf: blocked, encoding: .utf8) == "preserve")
     }
-    @Test("after a reinstall the project's watchman watch is dropped so Metro crawls fresh")
-    func dropsWatchmanWatch() async throws {
+    @Test("without an explicit socket the project's default Watchman watch is dropped", arguments: [nil, ""] as [String?])
+    func dropsWatchmanWatch(socketPath: String?) async throws {
         let repo = try app()
         let probe = "watchman watch-project \(repo.root.path)"
-        let runner = FakeProcessRunner(responses: [probe: .ok(#"{"watch": "/watched/root"}"#)])
+        let runner = FakeProcessRunner(responses: [
+            "/usr/bin/printenv WATCHMAN_SOCK": socketPath.map { .ok($0 + "\n") } ?? .failed(1, ""),
+            probe: .ok(#"{"watch": "/watched/root"}"#),
+        ])
 
         await MetroLaunch.dropWatchmanWatch(of: repo.root, runner: runner)
 
@@ -134,11 +154,151 @@ struct MetroStageTests {
     @Test("without an answer from watchman there is no watch to drop")
     func noWatchmanNoDrop() async throws {
         let repo = try app()
-        let runner = FakeProcessRunner()
+        let runner = FakeProcessRunner(responses: ["/usr/bin/printenv WATCHMAN_SOCK": .failed(1, "")])
 
         await MetroLaunch.dropWatchmanWatch(of: repo.root, runner: runner)
 
         #expect(!runner.log.all.contains { $0.arguments.first == "watch-del" })
+        #expect(runner.log.all.map(\.executable) == ["/usr/bin/printenv", "watchman"])
+    }
+
+    @Test("an explicit Metro Watchman socket is used for both fresh-crawl commands")
+    func dropsConfiguredWatchmanWatch() async throws {
+        let repo = try app()
+        let socket = "/tmp/runstir watchman.sock"
+        let options = ["--sockname=\(socket)", "--no-spawn", "--no-local"]
+        let probe = ProcessCommand("watchman", options + ["watch-project", repo.root.path])
+        let runner = FakeProcessRunner(responses: [
+            "/usr/bin/printenv WATCHMAN_SOCK": .ok(socket + "\n"),
+            probe.description: .ok(#"{"watch": "/watched/root"}"#),
+        ])
+
+        await MetroLaunch.dropWatchmanWatch(of: repo.root, runner: runner)
+
+        #expect(runner.log.all.map(\.arguments) == [
+            ["WATCHMAN_SOCK"],
+            options + ["watch-project", repo.root.path],
+            options + ["watch-del", "/watched/root"],
+        ])
+    }
+
+    @Test("an unavailable explicit Watchman socket never falls back to the default server")
+    func missingConfiguredWatchmanPreservesDefault() async throws {
+        let repo = try app()
+        let socket = "/tmp/missing-runstir-watchman.sock"
+        let runner = FakeProcessRunner(responses: ["/usr/bin/printenv WATCHMAN_SOCK": .ok(socket + "\n")])
+
+        await MetroLaunch.dropWatchmanWatch(of: repo.root, runner: runner)
+
+        #expect(runner.log.all.map(\.arguments) == [
+            ["WATCHMAN_SOCK"],
+            ["--sockname=\(socket)", "--no-spawn", "--no-local", "watch-project", repo.root.path],
+        ])
+    }
+
+    @Test("an uncertain project socket observation never reaches any Watchman server", arguments: [
+        "exit2", "exit127", "signal", "stderr", "unterminated", "empty", "unset-output", "timeout", "cancel",
+    ])
+    func uncertainProjectSocketPreservesServers(_ fault: String) async throws {
+        let repo = try app()
+        let probe = "/usr/bin/printenv WATCHMAN_SOCK"
+        let response: FakeProcessRunner.Response
+        switch fault {
+        case "exit2": response = .failed(2, "")
+        case "exit127": response = .failed(127, "")
+        case "signal": response = .init(status: .signaled(15))
+        case "stderr": response = .init(standardOutput: "/tmp/private.sock\n", standardError: "unconfirmed environment\n")
+        case "unterminated": response = .ok("/tmp/private.sock")
+        case "unset-output": response = .init(status: .exited(1), standardOutput: "/tmp/private.sock\n")
+        default: response = .ok("")
+        }
+        var failures: [String: any Error] = [:]
+        if fault == "timeout" { failures[probe] = ProcessError.timedOut(command: probe, timeout: .seconds(15)) }
+        if fault == "cancel" { failures[probe] = CancellationError() }
+        let runner = FakeProcessRunner(responses: [probe: response], failures: failures)
+
+        await MetroLaunch.dropWatchmanWatch(of: repo.root, runner: runner)
+
+        #expect(runner.log.all.map(\.description) == [probe])
+    }
+
+    @Test("cancelling the actual task during its socket probe prevents detached Metro startup")
+    func cancelledSocketProbePreventsStartup() async throws {
+        let repo = try app()
+        let anchor = try #require(ProjectAnchor.detect(from: repo.root))
+        let runner = SocketProbeCancellingRunner()
+        let task = Task {
+            try await MetroLaunch.start(anchor: anchor, runner: runner,
+                logFile: repo.url("metro.log"), afterReinstall: true)
+        }
+
+        do {
+            _ = try await task.value
+            Issue.record("cancelled socket probe still started Metro")
+        } catch is CancellationError {}
+
+        #expect(task.isCancelled)
+        #expect(runner.base.log.all.map(\.description) == ["/usr/bin/printenv WATCHMAN_SOCK"])
+        #expect(runner.base.log.spawned.isEmpty)
+    }
+
+    @Test("reinstalled Metro resets only the socket inherited by its actual project child", arguments: [false, true])
+    func reinstalledMetroUsesProjectSocket(_ useMise: Bool) async throws {
+        let repo = try app()
+        let socket = repo.url("project watchman.sock").path
+        let calls = repo.url("watchman-calls")
+        let deleted = repo.url("deleted-socket")
+        let metroSocket = repo.url("metro-socket")
+        let watchman = try repo.write("bin/watchman", #"""
+            #!/bin/sh
+            printf '%s\n' "$@" >> "$RUNSTIR_WATCHMAN_CALLS"
+            selected=default
+            case "$1" in
+                --sockname=*) selected=${1#--sockname=}; shift 3 ;;
+            esac
+            case "$1" in
+                watch-project) printf '{"watch":"/watched/root"}\n' ;;
+                watch-del) printf '%s\n' "$selected" >> "$RUNSTIR_DELETED_SOCKET" ;;
+            esac
+            """#)
+        let yarn = try repo.write("bin/yarn", #"""
+            #!/bin/sh
+            printf '%s\n' "$WATCHMAN_SOCK" > "$RUNSTIR_METRO_SOCKET"
+            """#)
+        let mise = try repo.write("bin/mise", #"""
+            #!/bin/sh
+            export WATCHMAN_SOCK="$RUNSTIR_MISE_SOCKET"
+            shift 2
+            exec "$@"
+            """#)
+        for file in [watchman, yarn, mise] {
+            try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: file.path)
+        }
+        let host = SystemProcessRunner(environment: [
+            "PATH": repo.url("bin").path + ":/usr/bin:/bin",
+            "WATCHMAN_SOCK": useMise ? repo.url("host watchman.sock").path : socket,
+            "RUNSTIR_MISE_SOCKET": socket,
+            "RUNSTIR_WATCHMAN_CALLS": calls.path,
+            "RUNSTIR_DELETED_SOCKET": deleted.path,
+            "RUNSTIR_METRO_SOCKET": metroSocket.path,
+        ])
+        let runner: any ProcessRunner = useMise
+            ? MiseProcessRunner(base: host, configDirectory: repo.root, executable: mise.path) : host
+        _ = try await MetroLaunch.start(anchor: try #require(ProjectAnchor.detect(from: repo.root)),
+            runner: runner, logFile: repo.url("metro.log"), afterReinstall: true)
+
+        let deadline = ContinuousClock.now + .seconds(5)
+        while !FileManager.default.fileExists(atPath: metroSocket.path), ContinuousClock.now < deadline {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        let actualMetroSocket = try String(contentsOf: metroSocket, encoding: .utf8)
+        let actualCalls = try String(contentsOf: calls, encoding: .utf8)
+        let actualDeletedSocket = try String(contentsOf: deleted, encoding: .utf8)
+        #expect(actualMetroSocket == socket + "\n")
+        let options = ["--sockname=\(socket)", "--no-spawn", "--no-local"]
+        let expected = options + ["watch-project", repo.root.path] + options + ["watch-del", "/watched/root"]
+        #expect(actualCalls == expected.joined(separator: "\n") + "\n")
+        #expect(actualDeletedSocket == socket + "\n")
     }
 
     /// Metro publishes this on `/status`, and two bundlers on one port is the thing
