@@ -155,6 +155,87 @@ struct MetroLaunchTests {
         #expect(runner.log.all.filter { $0.executable == "curl" }.count == 1)
     }
 
+    @Test("an owned new listener retries a status timeout and confirms a fresh response")
+    func ownedStatusTimeoutThenReady() async throws {
+        let repo = try startupProject()
+        let status = "curl -s -i -m 2 http://localhost:8097/status"
+        let runner = StartupReplies(root: repo.root, sequences: [
+            status: [.failed(7, ""), .failed(28, ""), .ok(MetroStatus.running(projectRoot: repo.root))],
+        ])
+        let report = try await startupReport(repo, runner, bindWait: .seconds(5))
+        #expect(report.exitCode == 0)
+        #expect(report.context.metro?.listenerPid == 70947)
+        #expect(report.stages.map(\.id) == ["metro", "after-metro"])
+        let commands = runner.log.all.map(\.description)
+        let probes = commands.indices.filter { commands[$0] == status }
+        try #require(probes.count == 3)
+        let retried = commands[(probes[1] + 1)..<probes[2]]
+        #expect(retried.contains(MetroStatus.processTableCommand))
+        #expect(retried.contains("lsof -a -p 4242,70947 -d cwd -Fpn"))
+        #expect(commands.last == "lsof -a -p 70947 -nP -iTCP:8097 -sTCP:LISTEN -t")
+    }
+
+    @Test("persistent owned status timeouts reach the deadline without publishing readiness")
+    func ownedStatusTimeoutDeadline() async throws {
+        let repo = try startupProject()
+        let runner = StartupReplies(root: repo.root, sequences: [
+            "curl -s -i -m 2 http://localhost:8097/status": [.failed(7, ""), .failed(28, "")],
+        ])
+        let report = try await startupReport(repo, runner, bindWait: .milliseconds(300))
+        #expect(report.exitCode == 1)
+        #expect(report.failure?.message.contains("nothing listened on 8097 within") == true)
+        #expect(report.context.metro?.pid == 4242)
+        #expect(report.context.metro?.listenerPid == nil)
+        #expect(report.stages.map(\.id) == ["metro"])
+        #expect(!runner.log.all.contains { $0.executable == "kill" && $0.arguments != ["-0", "4242"] })
+    }
+
+    @Test("a status timeout never excuses a subsequent foreign unknown non-Metro or signaled reply", arguments: [
+        "foreign", "unknown", "non-Metro", "signal", "empty-reply",
+    ])
+    func ownedStatusTimeoutThenRejected(reply: String) async throws {
+        let repo = try startupProject()
+        let rejected: FakeProcessRunner.Response
+        switch reply {
+        case "foreign": rejected = .ok(MetroStatus.running(projectRoot: URL(fileURLWithPath: "/another-project")))
+        case "unknown": rejected = .ok(MetroStatus.reply(body: "packager-status:running"))
+        case "non-Metro": rejected = .ok(MetroStatus.reply(body: "<html>another server</html>"))
+        case "signal": rejected = .init(status: .signaled(15))
+        default: rejected = .failed(52, "")
+        }
+        let status = "curl -s -i -m 2 http://localhost:8097/status"
+        let runner = StartupReplies(root: repo.root, sequences: [
+            status: [.failed(7, ""), .failed(28, ""), rejected, .ok(MetroStatus.running(projectRoot: repo.root))],
+        ])
+        let report = try await startupReport(repo, runner, bindWait: .seconds(5))
+        #expect(report.exitCode == 1)
+        #expect(report.context.metro?.listenerPid == nil)
+        #expect(report.stages.map(\.id) == ["metro"])
+        #expect(runner.log.all.filter { $0.description == status }.count == 3)
+        #expect(!runner.log.all.contains { $0.executable == "kill" && $0.arguments != ["-0", "4242"] })
+    }
+
+    @Test("status timeout retries retain cancellation and root identity checks", arguments: ["cancel", "identity"])
+    func ownedStatusTimeoutInterrupted(boundary: String) async throws {
+        let repo = try startupProject()
+        let status = "curl -s -i -m 2 http://localhost:8097/status"
+        var sequences: [String: [FakeProcessRunner.Response]] = [
+            status: [.failed(7, ""), .failed(28, ""), .ok(MetroStatus.running(projectRoot: repo.root))],
+        ]
+        if boundary == "identity" {
+            let tree = try #require(MetroStatus.startupResponses(projectRoot: repo.root)[MetroStatus.processTableCommand]).standardOutput
+            let changed = tree.replacingOccurrences(of: "4242 1 Mon Oct 19 17:00:00", with: "4242 1 Mon Oct 19 17:01:00")
+            sequences[MetroStatus.processTableCommand] = [.ok(tree), .ok(tree), .ok(tree), .ok(changed)]
+        }
+        let runner = StartupReplies(root: repo.root, sequences: sequences,
+            cancelCommand: boundary == "cancel" ? status : nil, cancelOccurrence: 3)
+        let report = try await startupReport(repo, runner, bindWait: .seconds(5))
+        #expect(report.exitCode == (boundary == "cancel" ? 130 : 1))
+        #expect(report.context.metro?.listenerPid == nil)
+        #expect(report.stages.map(\.id) == ["metro"])
+        #expect(runner.log.all.filter { $0.description == MetroStatus.processTableCommand }.count >= 4)
+    }
+
     @Test("a foreign or unidentified Metro that wins the startup race is preserved", arguments: [true, false])
     func foreignAfterSpawn(identifiable: Bool) async throws {
         let repo = try startupProject()
