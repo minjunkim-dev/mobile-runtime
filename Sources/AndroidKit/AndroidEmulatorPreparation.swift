@@ -92,7 +92,10 @@ public struct AndroidEmulatorEnvironment: Sendable {
             let values = AndroidDoctorContext.properties(String(decoding: data, as: UTF8.self))
             guard let properties = bounded(image.appendingPathComponent("source.properties")) else { return nil }
             let imageValues = AndroidDoctorContext.properties(String(decoding: properties, as: UTF8.self))
-            guard imageValues["AndroidVersion.ApiLevel"].flatMap(Int.init) == api, imageValues["SystemImage.Abi"] == abi else { return nil }
+            guard let imageAPI = imageValues["AndroidVersion.ApiLevel"],
+                  imageAPI.range(of: #"^[0-9]+(?:\.[0-9]+)?$"#, options: .regularExpression) != nil,
+                  imageAPI.split(separator: ".").first.flatMap({ Int($0) }) == api,
+                  imageValues["SystemImage.Abi"] == abi else { return nil }
             return AndroidPreparationResource(name: avd.name, directory: config.deletingLastPathComponent(), imageDirectory: image,
                 imageRevision: revision, abi: abi, deviceProfile: values["hw.device.name"], state: "available", origin: .reused,
                 metadataSHA256: digest(data + Data(imageDigest.utf8)))

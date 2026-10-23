@@ -144,22 +144,29 @@ struct AndroidEmulatorSetupTests {
         #expect(fixture.runner.creator.commands.filter { $0.arguments.contains("create") }.isEmpty)
     }
 
-    @Test("a compatible existing API 36 AVD is reused instead of forcing the API 35 candidate")
-    func reuseOtherImage() async throws {
+    @Test("a compatible existing AVD retains its full image API instead of forcing API 35", arguments: ["36", "37.0"])
+    func reuseOtherImage(api: String) async throws {
         let fixture = try await EmulatorSetupFixture()
         fixture.runner.minimumSDK = 36
-        let directory = try fixture.sdk.repo.directory("avds/Existing_API_36.avd")
-        try fixture.sdk.repo.write("avds/Existing_API_36.ini", "path=\(directory.path)\ntarget=android-36\n")
-        try fixture.sdk.repo.write("avds/Existing_API_36.avd/config.ini", "AvdId=Existing_API_36\nabi.type=arm64-v8a\nimage.sysdir.1=system-images/android-36/google_apis/arm64-v8a/\nhw.device.name=pixel_7\n")
-        let image = "sdk/system-images/android-36/google_apis/arm64-v8a"
-        try fixture.sdk.repo.write("\(image)/source.properties", "Pkg.Revision=1\nAndroidVersion.ApiLevel=36\nSystemImage.Abi=arm64-v8a\nSystemImage.TagId=google_apis\n")
-        try fixture.sdk.repo.write("\(image)/system.img", "existing API 36 image")
+        let name = "Existing_API_" + api.replacingOccurrences(of: ".", with: "_")
+        let directory = try fixture.sdk.repo.directory("avds/\(name).avd")
+        try fixture.sdk.repo.write("avds/\(name).ini", "path=\(directory.path)\ntarget=android-\(api)\n")
+        try fixture.sdk.repo.write("avds/\(name).avd/config.ini", "AvdId=\(name)\nabi.type=arm64-v8a\nimage.sysdir.1=system-images/android-\(api)/google_apis/arm64-v8a/\nhw.device.name=pixel_7\n")
+        let image = "sdk/system-images/android-\(api)/google_apis/arm64-v8a"
+        try fixture.sdk.repo.write("\(image)/source.properties", "Pkg.Revision=1\nAndroidVersion.ApiLevel=\(api)\nSystemImage.Abi=arm64-v8a\nSystemImage.TagId=google_apis\n")
+        try fixture.sdk.repo.write("\(image)/system.img", "existing image")
         try fixture.sdk.repo.write("\(image)/package.xml", "<repository><license id=\"fixture-license\">\(SDKFixture.licenseText)</license><localPackage><uses-license ref=\"fixture-license\"/></localPackage></repository>")
         let plan = await PreparationExecution.run(input: fixture.sdk.input, planOnly: true, runner: fixture.runner)
-        #expect(plan.plan?.androidResources?.first?.name == "Existing_API_36")
+        #expect(plan.plan?.androidResources?.first?.name == name)
         #expect(plan.plan?.steps.allSatisfy { $0.kind != "install" } == true)
         #expect(fixture.runner.creator.commands.isEmpty)
-        #expect(try String(contentsOf: fixture.sdk.repo.url("\(image)/system.img"), encoding: .utf8) == "existing API 36 image")
+        #expect(try String(contentsOf: fixture.sdk.repo.url("\(image)/system.img"), encoding: .utf8) == "existing image")
+        for invalid in ["99.0", "\(api).invalid"] {
+            try fixture.sdk.repo.write("\(image)/source.properties", "Pkg.Revision=1\nAndroidVersion.ApiLevel=\(invalid)\nSystemImage.Abi=arm64-v8a\n")
+            let rejected = await PreparationExecution.run(input: fixture.sdk.input, planOnly: true, runner: fixture.runner)
+            #expect(rejected.plan?.androidResources?.isEmpty != false)
+            #expect(fixture.runner.creator.commands.isEmpty)
+        }
     }
 
     @Test("an AVD whose image content disappeared is preserved and never reported reusable")
