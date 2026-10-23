@@ -278,9 +278,11 @@ public enum PreparationExecution {
             if !actions.isEmpty {
                 result.operation.state = "running"
                 let guarded = PreparationRunner(base: dependencyRunner, plan: plan,
+                    reactNativeVersion: anchor.reactNativeVersion, xcode: prepared.context?.lookup?.xcode,
                     root: prepared.root, files: try sourceFiles(prepared.root, excluding: actions.filter { $0.id == "dependencies.flutter" }.map { URL(fileURLWithPath: $0.target) }),
                     excluded: actions.filter { $0.id == "dependencies.flutter" }.map { URL(fileURLWithPath: $0.target) }, actions: actions, events: events) {
-                        try await inspect(input, runner: host, flutterFactory: flutterFactory, note: note).plan
+                        let current = try await inspect(input, runner: host, flutterFactory: flutterFactory, note: note)
+                        return (current.plan, current.anchor?.reactNativeVersion, current.context?.lookup?.xcode)
                     }
                 let includePods = actions.contains { $0.id == "dependencies.pods" }
                 var stageContext = UpContext()
@@ -873,14 +875,17 @@ private final class PreparationEvents: @unchecked Sendable {
 }
 
 private final class PreparationRunner: ProcessRunner, @unchecked Sendable {
+    typealias Inspection = (plan: PreparationPlan?, reactNativeVersion: ReactNativeVersion?, xcode: RequirementLookup?)
     let base: any ProcessRunner
     let plan: PreparationPlan
+    let reactNativeVersion: ReactNativeVersion?
+    let xcode: RequirementLookup?
     let root: URL
     let files: [String: String]
     let excluded: [URL]
     let actions: [PreparationStep]
     let events: PreparationEvents
-    let freshPlan: @Sendable () async throws -> PreparationPlan?
+    let freshPlan: @Sendable () async throws -> Inspection
     private let lock = NSLock()
     private var finished: [String] = []
     private var changed: [String] = []
@@ -888,9 +893,11 @@ private final class PreparationRunner: ProcessRunner, @unchecked Sendable {
     var completed: [String] { lock.withLock { finished } }
     var changedFiles: [String] { lock.withLock { changed } }
     var log: String? { lock.withLock { logPath } }
-    init(base: any ProcessRunner, plan: PreparationPlan, root: URL, files: [String: String], excluded: [URL], actions: [PreparationStep], events: PreparationEvents,
-         freshPlan: @escaping @Sendable () async throws -> PreparationPlan?) {
+    init(base: any ProcessRunner, plan: PreparationPlan, reactNativeVersion: ReactNativeVersion?, xcode: RequirementLookup?,
+         root: URL, files: [String: String], excluded: [URL], actions: [PreparationStep], events: PreparationEvents,
+         freshPlan: @escaping @Sendable () async throws -> Inspection) {
         self.base = base; self.plan = plan; self.root = root; self.files = files; self.excluded = excluded; self.actions = actions; self.events = events
+        self.reactNativeVersion = reactNativeVersion; self.xcode = xcode
         self.freshPlan = freshPlan
     }
     func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
@@ -927,15 +934,39 @@ private final class PreparationRunner: ProcessRunner, @unchecked Sendable {
         throw DomainError(summary: "Setup cannot spawn runtime processes", remediation: Remediation(summary: "Run build/up separately after preparation."))
     }
     private func verifyConditions(_ completed: [String]) async throws {
-        guard let current = try await freshPlan(),
+        let inspection = try await freshPlan()
+        let materialized: Bool
+        if completed.contains("dependencies.node"), let before = reactNativeVersion, let after = inspection.reactNativeVersion,
+           before.value == after.value, before.disagreement == nil, after.disagreement == nil,
+           ["package-lock.json", "yarn.lock", DeclarationOrigin.anchor("dependencies.react-native")].contains(before.origin),
+           after.origin == "node_modules/react-native" {
+            materialized = true
+        } else {
+            materialized = false
+        }
+        var sourceTransition: (from: CheckSource, to: CheckSource)?
+        if materialized, let beforeRN = reactNativeVersion, let afterRN = inspection.reactNativeVersion,
+           case .requirement(let before, let source)? = xcode,
+           case .requirement(let after, let currentSource)? = inspection.xcode,
+           before == after, let tier = source.tier, (1...3).contains(tier), currentSource.tier == tier,
+           // A declaration may also contain this text; only one matrix provenance token may change.
+           source.origin.components(separatedBy: beforeRN.described).count == 2,
+           source.origin.replacingOccurrences(of: beforeRN.described, with: afterRN.described) == currentSource.origin {
+            sourceTransition = (currentSource, source)
+        }
+        guard let current = inspection.plan,
               current.project == plan.project, current.app == plan.app, current.files == plan.files,
-              try Self.executionConditions(current, completed: completed) == Self.executionConditions(plan, completed: completed)
+              reactNativeVersion == inspection.reactNativeVersion || materialized,
+              try Self.executionConditions(current, completed: completed, sourceTransition: sourceTransition)
+                == Self.executionConditions(plan, completed: completed)
         else {
             throw DomainError(summary: "Preparation conditions changed before a dependency command",
                 remediation: Remediation(summary: "Preserve completed resources. Inspect the current tools and approve a new plan."))
         }
     }
-    private static func executionConditions(_ plan: PreparationPlan, completed: [String]) throws -> Data {
+    private static func executionConditions(
+        _ plan: PreparationPlan, completed: [String], sourceTransition: (from: CheckSource, to: CheckSource)? = nil
+    ) throws -> Data {
         // Installed resources change through this operation. Tool selection and destinations do not.
         struct Conditions: Encodable {
             let checks: [PreparationStep]
@@ -947,6 +978,16 @@ private final class PreparationRunner: ProcessRunner, @unchecked Sendable {
                 || $0.id.hasSuffix(".xcode.ready") || $0.id.hasSuffix(".project.execution-environment")
                 || $0.id.hasPrefix("flutter.") || $0.id.hasSuffix(".flutter.generated"))
                 && !($0.id.hasSuffix(".cocoapods.version") && completed.contains("dependencies.gems"))
+        }.map { check in
+            guard let sourceTransition, check.id == "ios.xcode.version", check.source == sourceTransition.from,
+                  check.target == sourceTransition.from.origin else { return check }
+            // This operation materialized the same resolved framework; keep every other approval condition.
+            var normalized = PreparationStep(id: check.id, platform: check.platform, kind: check.kind,
+                target: sourceTransition.to.origin, observed: check.observed, required: check.required,
+                source: sourceTransition.to, command: check.command, remediation: check.remediation)
+            normalized.environment = check.environment
+            normalized.installation = check.installation
+            return normalized
         }
         let destinations = Dictionary(uniqueKeysWithValues: plan.steps.filter { $0.id.hasPrefix("dependencies.") }.map {
             ($0.id, $0.environment.merging(["kind": $0.kind, "target": $0.target, "command": $0.command ?? ""]) { _, last in last })
