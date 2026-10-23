@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "actual",
+  "candidate": {
+    "schemaVersion": 1,
+    "productVersion": "0.1.0",
+    "sourceSHA": "2c8e1f8300f6b5b5c072d82d94cc59bcf037c634",
+    "coreBuildIdentity": "11358911b3b20f0e1f025ce66f6eda1c6979297c513418dee1ce5be5ceaebaea",
+    "ciRun": "40011249834",
+    "signing": "unsigned",
+    "notarization": "not-requested",
+    "distributionReady": false,
+    "artifacts": {
+      "cli": {
+        "file": "runstir-0.1.0-alpha.10-macos-arm64.tar.gz",
+        "sha256": "29e01b1b587acc6f3553957481f30bfab95406b800643c93bc50406d13418923"
+      },
+      "gui": {
+        "file": "Runstir-0.1.0-alpha.10-macos-arm64.dmg",
+        "sha256": "ba1d97a4ca9c051e1ac04e1db91a27ea31a30151f3d16488d268ea68ec92a05b"
+      },
+      "homebrew": {
+        "file": "runstir-candidate.rb",
+        "sha256": "661bf38809793ecb412f255f9390907e4b8d1077591f36033ff19097442f21c7"
+      }
+    }
+  },
+  "candidateRef": "candidate",
+  "originIndexes": [
+    "origin-index",
+    "collector-r2-origin-index",
+    "input-r2-collector-r3-origin-index",
+    "actual10-origin-index"
+  ],
+  "documents": {
+    "tuples": {
+      "path": "tuples.json",
+      "sha256": "7304edebe7b4b1ab937c9b8ec65b3e2b4969d5ab7a92ee458ff0be22765ecddd"
+    },
+    "results": {
+      "path": "results.json",
+      "sha256": "330cd78ba97f39da95c75e151526c61b25d839866de218e06a66d3e8f9217c66"
+    },
+    "restrictedIndex": {
+      "path": "restricted-index.json",
+      "sha256": "563ddbbf014fc03e88542e5623b59274147e8b71910407b4724cb7ed9bdc0678"
+    },
+    "report": {
+      "path": "report.md",
+      "sha256": "1c723e714769253c6f6ccd65336464738b341d00f3634f07793341a9153afd8f"
+    }
+  },
+  "sourceCI": {
+    "evidence": "source-ci",
+    "runID": 40011249834
+  },
+  "priorResults": [
+    {
+      "path": "results-initial.json",
+      "sha256": "24a4d47fc498c5294c9f4601b0f851db832fb2334cb8e49c9c580737033d6686"
+    }
+  ],
+  "publicReview": {
+    "reviewer": "codex-2ce1",
+    "status": "reviewed",
+    "scope": "text-only"
+  }
+}
