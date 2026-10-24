@@ -6,6 +6,24 @@ import Testing
 
 @Suite("Flutter plugin preparation evidence")
 struct FlutterPluginMetadataTests {
+    @Test("an empty Flutter section is not a plugin declaration", arguments: ["empty", "null", "tilde", "string", "boolean", "list"], [false, true])
+    func emptyFlutterSection(_ mode: String, _ manual: Bool) async throws {
+        let f = try FlutterFixture()
+        try configure(f, plugins: ["foo"])
+        let value = switch mode {
+        case "empty": ""
+        case "null": "null"
+        case "tilde": "~"
+        case "string": "invalid"
+        case "boolean": "false"
+        default: "[]"
+        }
+        try f.repo.write("packages/foo/pubspec.yaml", "name: foo\nflutter: \(value)\n")
+        try metadata(f, plugins: [])
+        let plan = try await f.inspect(f.runner(), preparedDependencies: manual)
+        expectGenerated(plan, reuse: ["empty", "null", "tilde"].contains(mode))
+    }
+
     @Test("an app with no reachable plugins accepts the official absence of plugin metadata")
     func noPlugins() async throws {
         let f = try FlutterFixture()

@@ -336,7 +336,7 @@ struct FlutterPreparation {
                 guard let dev = names(document["dev_dependencies"]), let resolvedDev = devEdges[name], dev == Set(resolvedDev) else { return unknown }
                 pending += resolvedDev
             }
-            guard let flutterValue = document["flutter"] else { continue }
+            guard let flutterValue = document["flutter"], !(flutterValue is NSNull) else { continue }
             guard let flutter = flutterValue as? [String: Any] else { return unknown }
             guard let pluginValue = flutter["plugin"] else { continue }
             guard let plugin = pluginValue as? [String: Any] else { return unknown }
