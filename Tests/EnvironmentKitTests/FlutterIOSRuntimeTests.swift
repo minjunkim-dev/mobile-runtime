@@ -292,20 +292,30 @@ struct FlutterIOSRuntimeTests {
         let leases = f.leases
         let task = Task { await WorkflowExecution.run(.up, input: input, runner: runner, leases: leases) }
         let marker = f.repo.url("build/child.pid")
-        let deadline = ContinuousClock.now.advanced(by: .seconds(30))
-        while !FileManager.default.fileExists(atPath: marker.path), ContinuousClock.now < deadline {
-            try await Task.sleep(for: .milliseconds(10))
-        }
+        let observedPID = await waitForCompletePID(at: marker)
         task.cancel()
         let result = await task.value
         #expect(result.exitCode == 130, Comment(rawValue: result.up?.failure?.message ?? ""))
-        let pid = try #require(Int32(try String(contentsOf: marker, encoding: .utf8).trimmingCharacters(in: .whitespacesAndNewlines)))
+        let pid = try #require(observedPID, "The finite child did not publish a complete positive PID within 30 seconds.")
         #expect(kill(pid, 0) == -1)
         #expect(errno == ESRCH)
         #expect(!runner.commands.contains { $0.arguments.contains("install") || $0.arguments.contains("launch") })
         let owner = LeaseOwner(operationId: "next", command: "build", project: f.repo.root.path)
         let lease = try f.leases.acquire([.folder(FolderIdentity(directory: f.repo.root)), .device(.ios, "A")], owner: owner)
         lease.release()
+    }
+
+    private func waitForCompletePID(at marker: URL) async -> Int32? {
+        let deadline = ContinuousClock.now.advanced(by: .seconds(30))
+        while ContinuousClock.now < deadline, !Task.isCancelled {
+            // Shell redirection creates the file before echo publishes the PID.
+            if let text = try? String(contentsOf: marker, encoding: .utf8), text.hasSuffix("\n"),
+               let pid = Int32(text.trimmingCharacters(in: .whitespacesAndNewlines)), pid > 0 {
+                return pid
+            }
+            try? await Task.sleep(for: .milliseconds(10))
+        }
+        return nil
     }
 
     @Test("a successful app PID without a service URI is not development readiness")
@@ -526,14 +536,11 @@ struct FlutterIOSRuntimeTests {
         let leases = f.leases
         let task = Task { await WorkflowExecution.run(.up, input: input, runner: runner, leases: leases) }
         let marker = f.repo.url("build/query.pid")
-        let deadline = ContinuousClock.now.advanced(by: .seconds(30))
-        while !FileManager.default.fileExists(atPath: marker.path), ContinuousClock.now < deadline {
-            try await Task.sleep(for: .milliseconds(10))
-        }
+        let observedPID = await waitForCompletePID(at: marker)
         task.cancel()
         let result = await task.value
         #expect(result.exitCode == 130, Comment(rawValue: result.up?.failure?.message ?? ""))
-        let pid = try #require(Int32(try String(contentsOf: marker, encoding: .utf8).trimmingCharacters(in: .whitespacesAndNewlines)))
+        let pid = try #require(observedPID, "The finite child did not publish a complete positive PID within 30 seconds.")
         #expect(kill(pid, 0) == -1)
         #expect(errno == ESRCH)
         #expect(result.operation.developmentServiceURI == nil)

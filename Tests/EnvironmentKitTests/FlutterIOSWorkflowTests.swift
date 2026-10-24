@@ -533,11 +533,12 @@ final class FlutterIOSRunner: ProcessRunner, @unchecked Sendable {
             }
             if command.arguments.last == "build" {
                 if fault == "real-child" {
+                    // Expose the real create-before-write window to the cancellation test.
                     try FileManager.default.createDirectory(at: fixture.repo.url("build"), withIntermediateDirectories: true)
                     let selected = try #require(commands.last)
                     let profile = try #require(selected.arguments.dropFirst().first)
                     return try await SystemProcessRunner(environment: ["PATH": "/usr/bin:/bin", "HOME": fixture.repo.url("home").path], workingDirectory: fixture.repo.root)
-                        .run(ProcessCommand("/usr/bin/sandbox-exec", ["-f", profile, "/bin/sh", "-c", "echo $$ > \"$1\"; exec /bin/sleep 30", "_", fixture.repo.url("build/child.pid").path], timeout: .seconds(40)))
+                        .run(ProcessCommand("/usr/bin/sandbox-exec", ["-f", profile, "/bin/sh", "-c", ": > \"$1\"; /bin/sleep 0.2; echo $$ > \"$1\"; exec /bin/sleep 30", "_", fixture.repo.url("build/child.pid").path], timeout: .seconds(40)))
                 }
                 if fault == "source" { try fixture.repo.write("pubspec.lock", "changed\n") }
                 if fault == "sdk-write" { try fixture.repo.write("sdk/bin/cache/flutter_tools.snapshot", "changed\n") }
@@ -688,9 +689,10 @@ final class FlutterIOSRunner: ProcessRunner, @unchecked Sendable {
     }
     func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 { throw FixtureMiss(command: command.description) }
     private func finiteQuery(_ command: ProcessCommand) async throws -> ProcessResult {
+        // Expose the real create-before-write window to the cancellation test.
         try FileManager.default.createDirectory(at: fixture.repo.url("build"), withIntermediateDirectories: true)
         return try await SystemProcessRunner(environment: ["PATH": "/usr/bin:/bin", "HOME": fixture.repo.url("home").path])
-            .run(ProcessCommand("/bin/sh", ["-c", "echo $$ > \"$1\"; exec /bin/sleep 30", "_", fixture.repo.url("build/query.pid").path], timeout: command.timeout))
+            .run(ProcessCommand("/bin/sh", ["-c", ": > \"$1\"; /bin/sleep 0.2; echo $$ > \"$1\"; exec /bin/sleep 30", "_", fixture.repo.url("build/query.pid").path], timeout: command.timeout))
     }
     private func ok(_ text: String) -> ProcessResult { ProcessResult(terminationStatus: .exited(0), standardOutput: text, standardError: "") }
 }
