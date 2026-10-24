@@ -7,6 +7,65 @@ import Testing
 
 @Suite("explicit Flutter source file links")
 struct FlutterSourceLinksTests {
+    @Test("Git tracking stays bound to the workspace despite inherited index or repository redirects",
+          arguments: ["index", "repository"])
+    func redirectedGitTracking(_ mode: String) async throws {
+        let repo = try FixtureRepo(), other = try FixtureRepo()
+        for fixture in [repo, other] {
+            try fixture.write("assets/notes.md", "preserved notes\n")
+            try FileManager.default.createSymbolicLink(atPath: fixture.url("NOTES.md").path, withDestinationPath: "assets/notes.md")
+            try await git(fixture, ["init", "-q"])
+        }
+        try await git(other, ["add", "--", "NOTES.md"])
+        var environment = ["PATH": "/usr/bin:/bin:/usr/sbin:/sbin"]
+        if mode == "index" { environment["GIT_INDEX_FILE"] = other.url(".git/index").path }
+        else {
+            environment["GIT_DIR"] = other.url(".git").path
+            environment["GIT_WORK_TREE"] = repo.root.path
+        }
+        let redirected = SystemProcessRunner(environment: environment)
+        let capture = {
+            try await FlutterSourceLinks.capture(root: repo.root,
+                sources: [repo.url("NOTES.md").path, repo.url("assets/notes.md").path], links: [repo.url("NOTES.md").path],
+                forbidden: [], runner: redirected)
+        }
+        await #expect(throws: DomainError.self) { try await capture() }
+        try await git(repo, ["add", "--", "NOTES.md"])
+        let snapshot = try await capture()
+        try await snapshot.checkTracking()
+        try await git(repo, ["update-index", "--force-remove", "--", "NOTES.md"])
+        await #expect(throws: DomainError.self) { try await snapshot.checkTracking() }
+        #expect(try FileManager.default.destinationOfSymbolicLink(atPath: repo.url("NOTES.md").path) == "assets/notes.md")
+        #expect(try String(contentsOf: repo.url("assets/notes.md"), encoding: .utf8) == "preserved notes\n")
+    }
+
+    @Test("Git tracking ignores inherited configuration and never runs the repository fsmonitor hook",
+          arguments: ["system", "global", "environment", "fsmonitor"])
+    func isolatedGitConfiguration(_ mode: String) async throws {
+        let repo = try FixtureRepo()
+        try repo.write("assets/notes.md", "preserved notes\n")
+        try FileManager.default.createSymbolicLink(atPath: repo.url("NOTES.md").path, withDestinationPath: "assets/notes.md")
+        try await git(repo, ["init", "-q"])
+        try await git(repo, ["add", "--", "NOTES.md"])
+        let hook = try repo.write("fsmonitor", "#!/bin/sh\nprintf invoked > \"$0.called\"\nexit 1\n")
+        try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: hook.path)
+        try await git(repo, ["config", "core.fsmonitor", hook.path])
+        let malformed = try repo.write("invalid.config", "[broken\n")
+        var environment = ["PATH": "/usr/bin:/bin:/usr/sbin:/sbin"]
+        if mode == "system" { environment["GIT_CONFIG_SYSTEM"] = malformed.path }
+        if mode == "global" { environment["GIT_CONFIG_GLOBAL"] = malformed.path }
+        if mode == "environment" {
+            environment["GIT_CONFIG_COUNT"] = "1"
+            environment["GIT_CONFIG_KEY_0"] = "core.bare"
+            environment["GIT_CONFIG_VALUE_0"] = "invalid"
+        }
+        let snapshot = try await FlutterSourceLinks.capture(root: repo.root,
+            sources: [repo.url("NOTES.md").path, repo.url("assets/notes.md").path], links: [repo.url("NOTES.md").path],
+            forbidden: [], runner: SystemProcessRunner(environment: environment))
+        try await snapshot.checkTracking()
+        #expect(!FileManager.default.fileExists(atPath: hook.path + ".called"))
+    }
+
     @Test("raw target components must resolve through ordinary source directories", arguments: [
         "missing/../assets/notes.md", "assets/notes.md/../notes.md", "assets/notes.md/",
         "build/jump/../../assets/notes.md", ".git/jump/../../assets/notes.md"

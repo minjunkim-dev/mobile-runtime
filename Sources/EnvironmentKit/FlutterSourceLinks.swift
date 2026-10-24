@@ -45,7 +45,11 @@ struct FlutterSourceLinks: Sendable {
         guard selected.allSatisfy({ eligibility.source($0) }) else { throw refused("source 링크 범위") }
         var tracking: (ProcessCommand, String, any ProcessRunner)?
         if !selected.isEmpty {
-            let command = ProcessCommand("/usr/bin/git", ["--literal-pathspecs", "-C", root.path, "ls-files", "--stage", "-z", "--"] + selected,
+            // Bind the query to this workspace, without inherited Git redirects, user configuration or hooks.
+            let command = ProcessCommand("/usr/bin/env", ["-i", "PATH=/usr/bin:/bin:/usr/sbin:/sbin",
+                "GIT_CONFIG_NOSYSTEM=1", "GIT_CONFIG_GLOBAL=/dev/null", "GIT_OPTIONAL_LOCKS=0",
+                "/usr/bin/git", "-c", "core.fsmonitor=false", "--literal-pathspecs", "-C", root.path,
+                "ls-files", "--stage", "-z", "--"] + selected,
                 timeout: .seconds(15))
             let result = try await runner.run(command)
             guard result.terminationStatus.isSuccess else { throw refused("Git 추적 조회") }

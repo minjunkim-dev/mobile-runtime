@@ -593,7 +593,8 @@ struct FlutterIOSRuntimeTests {
 struct FlutterSourceLinkGitRunner: ProcessRunner {
     let base: any ProcessRunner
     func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
-        if command.executable == "git" || command.executable == "/usr/bin/git" {
+        if command.executable == "git" || command.executable == "/usr/bin/git"
+            || (command.executable == "/usr/bin/env" && command.arguments.first == "-i" && command.arguments.contains("/usr/bin/git")) {
             return try await SystemProcessRunner(environment: ["PATH": "/usr/bin:/bin:/usr/sbin:/sbin"]).run(command, onLine: onLine)
         }
         return try await base.run(command, onLine: onLine)
