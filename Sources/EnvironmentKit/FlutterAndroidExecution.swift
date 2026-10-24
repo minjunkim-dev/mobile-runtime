@@ -283,7 +283,11 @@ final class FlutterAndroidExecution: Sendable {
                 }
             } catch {
                 await broker?.finish()
-                if !Task.isCancelled { try execution.sourceLinks?.check() }
+                await FlutterSourceLinks.observeFailure(error, links: execution.sourceLinks,
+                    check: { try execution.sourceLinks?.check() }, record: { primary, protection in
+                        try FlutterAndroidHostGuard.writeReceipt(primary: primary, protection: protection,
+                            root: execution.root, to: FlutterAndroidHostGuard.receiptDirectory)
+                    })
                 throw error
             }
             await broker?.finish()

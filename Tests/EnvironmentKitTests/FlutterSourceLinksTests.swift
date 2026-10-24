@@ -7,6 +7,23 @@ import Testing
 
 @Suite("explicit Flutter source file links")
 struct FlutterSourceLinksTests {
+    @Test("dependency lock and workspace config aliases remain outside source exceptions",
+          arguments: ["package-lock.json", "npm-shrinkwrap.json", "pnpm-lock.yaml", "pnpm-workspace.yaml", "bun.lockb"], [false, true])
+    func dependencyMetadata(_ name: String, _ pointsToMetadata: Bool) async throws {
+        let repo = try FixtureRepo()
+        let link = repo.url(pointsToMetadata ? "NOTES.md" : name)
+        let target = repo.url(pointsToMetadata ? name : "notes.md")
+        try repo.write(target.lastPathComponent, "preserved input\n")
+        try FileManager.default.createSymbolicLink(atPath: link.path, withDestinationPath: target.lastPathComponent)
+        try await git(repo, ["init", "-q"])
+        try await git(repo, ["add", "--", link.lastPathComponent])
+        await #expect(throws: DomainError.self) {
+            try await FlutterSourceLinks.capture(root: repo.root, sources: [link.path, target.path], links: [link.path],
+                forbidden: [], runner: system)
+        }
+        #expect(try String(contentsOf: target, encoding: .utf8) == "preserved input\n")
+    }
+
     @Test("Git tracking stays bound to the workspace despite inherited index or repository redirects",
           arguments: ["index", "repository"])
     func redirectedGitTracking(_ mode: String) async throws {

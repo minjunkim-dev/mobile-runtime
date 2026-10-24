@@ -38,6 +38,8 @@ legacy·federated plugin resolver 수동 경계에서 멈춘다. 원래 빌드 �
   `openat/O_NOFOLLOW`로 열어 대상 내용 읽기가 외부 alias를 따라가지 않게 한다. native child 전후에
   해당 Git index 항목과 양쪽 snapshot을 재검사하고, sandbox가 양쪽 파일과 부모 교체를 거부한다.
   바뀌면 중단하며 원본을 자동 복원하지 않는다. 일반 경로 검증과 기본 실행의 source symlink 거부는 유지한다.
+  비취소 도구 실패 뒤에도 index와 snapshot을 관측하되 원래 timeout/error 분류를 유지하고 보호 실패를
+  기존 private receipt에 함께 기록한다. 취소된 작업은 새 Git child를 시작하지 않고 취소 분류를 보존한다.
 - CLI 도움말과 GUI에 생략 범위와 사용자의 정합성 책임을 표시한다.
   `dependencies`는 설명을 포함한 `skipped`, JSON은 `operation.preparedDependencies: true`다.
   기본 실행은 optional 필드를 생략하며 기존 검증을 유지한다.

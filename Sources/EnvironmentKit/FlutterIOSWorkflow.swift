@@ -115,13 +115,14 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
     private let pluginMetadata: FlutterPreparation.IOSPluginMetadata
     private let original: [String: String]
     private let sourceLinks: FlutterSourceLinks?
+    private let failureReceipts: URL
     private let sdk: FlutterSDK
     private let lock = NSLock()
     private var changed: [String] = []
     var changedFiles: [String] { lock.withLock { changed } }
 
     init(anchor: ProjectAnchor, input: ProjectInspectionInput, preparation: FlutterPreparation?, runner: any ProcessRunner,
-         trackingRunner: (any ProcessRunner)? = nil) async throws {
+         trackingRunner: (any ProcessRunner)? = nil, receipts: URL = FlutterAndroidHostGuard.receiptDirectory) async throws {
         guard let preparation, let sdk = preparation.sdk, preparation.entrypoint != nil,
             let workspace = preparation.workspace, let pluginMetadata = preparation.iosPluginMetadata else {
             throw Self.failure("Flutter iOS preparation is incomplete. Inspect mobile setup with the same entrypoint.")
@@ -134,6 +135,7 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
         application = anchor.directory
         excludedSDK = sdk.root
         self.sdk = sdk
+        failureReceipts = receipts
         self.pluginMetadata = pluginMetadata
         try Self.checkPluginMetadata(pluginMetadata, application: anchor.directory)
         let sdkPath = try Self.physical(sdk.root.path)
@@ -210,6 +212,14 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
 
     func guarding(_ stages: [any Stage]) -> [any Stage] {
         stages.map { FlutterIOSGuardedStage(base: $0, workflow: self) }
+    }
+
+    func observeFailure(_ primary: any Error) async {
+        await FlutterSourceLinks.observeFailure(primary, links: sourceLinks, check: { try self.check() },
+            record: { primary, protection in
+                try FlutterAndroidHostGuard.writeReceipt(primary: primary, protection: protection,
+                    root: self.root, to: self.failureReceipts)
+            })
     }
 
     func check() throws {
@@ -344,15 +354,10 @@ private struct FlutterIOSBuildRunner: ProcessRunner {
                 environment: command.environment, workingDirectory: command.workingDirectory,
                 timeout: command.timeout, output: command.output, redactArguments: command.redactArguments)
         }
-        do {
-            let result = try await base.run(command, onLine: onLine)
-            try await sourceLinks?.checkTracking()
-            try sourceLinks?.check()
-            return result
-        } catch {
-            if !Task.isCancelled { try sourceLinks?.check() }
-            throw error
-        }
+        let result = try await base.run(command, onLine: onLine)
+        try await sourceLinks?.checkTracking()
+        try sourceLinks?.check()
+        return result
     }
     func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
         throw FlutterIOSWorkflow.failure("Flutter iOS execution cannot start an untracked detached tool.")
@@ -370,10 +375,8 @@ private struct FlutterIOSGuardedStage: Stage {
             try workflow.check()
             return result
         } catch {
-            let original = error
-            do { try workflow.check() }
-            catch { if !Task.isCancelled { throw error } }
-            throw original
+            await workflow.observeFailure(error)
+            throw error
         }
     }
 }

@@ -9,6 +9,60 @@ import Testing
 // Subprocess fixtures must not compete with one another for their wall-clock budgets.
 @Suite("Flutter native child boundaries", .serialized)
 struct FlutterIOSRuntimeTests {
+    @Test("a finite native failure preserves its primary error and observes index and file protection",
+          arguments: ["source", "index", "receipt-failure", "cancel"])
+    func sourceLinkFailureObservation(_ mode: String) async throws {
+        let f = try FlutterIOSFixture()
+        let evidence = try FixtureRepo()
+        let receipts = evidence.url("receipts")
+        if mode == "receipt-failure" { try evidence.write("receipts", "preserved receipt path") }
+        try f.repo.write("assets/notes.md", "preserved notes\n")
+        try FileManager.default.createSymbolicLink(atPath: f.repo.url("NOTES.md").path, withDestinationPath: "assets/notes.md")
+        let git = SystemProcessRunner(environment: ["PATH": "/usr/bin:/bin:/usr/sbin:/sbin"])
+        for arguments in [["init", "-q"], ["add", "--", "NOTES.md"]] {
+            let result = try await git.run(ProcessCommand("/usr/bin/git", ["-C", f.repo.root.path] + arguments))
+            try #require(result.terminationStatus.isSuccess)
+        }
+        let runner = FlutterSourceFailureRunner(base: FlutterIOSRunner(fixture: f), root: f.repo.root, mode: mode)
+        let preparation = try await FlutterPreparation.inspect(directory: f.app, environment: f.flutter.environment,
+            runner: runner, preparedDependencies: true)
+        let candidate = try #require(f.input().project.selection().selected)
+        let anchor = try #require(ProjectAnchor.detect(candidate: candidate))
+        let workflow = try await FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation,
+            runner: runner, receipts: receipts)
+        let stage = try #require(workflow.guarding([SourceFailureStage(runner: workflow.buildRunner)]).first)
+        var context = UpContext()
+        do {
+            _ = try await stage.run(&context)
+            Issue.record("The finite native failure must escape")
+        } catch {
+            if mode == "cancel" { #expect(error is CancellationError) }
+            else {
+                guard let process = error as? ProcessError, case .timedOut(let command, _) = process else {
+                    Issue.record("The primary timeout must remain: \(error)")
+                    return
+                }
+                #expect(command == "fixture native build")
+            }
+        }
+        if mode == "cancel" {
+            #expect(!runner.observedAfterFailure)
+            #expect(!FileManager.default.fileExists(atPath: receipts.path))
+            return
+        }
+        #expect(runner.observedAfterFailure)
+        if mode == "receipt-failure" {
+            #expect(try String(contentsOf: receipts, encoding: .utf8) == "preserved receipt path")
+            return
+        }
+        let files = try FileManager.default.contentsOfDirectory(at: receipts, includingPropertiesForKeys: nil)
+        let file = try #require(files.only)
+        let receipt = try #require(JSONSerialization.jsonObject(with: Data(contentsOf: file)) as? [String: Any])
+        #expect((receipt["primary"] as? String)?.contains("fixture native build") == true)
+        #expect((receipt["protection"] as? String)?.isEmpty == false)
+        if mode == "source" { #expect(try String(contentsOf: f.repo.url("assets/notes.md"), encoding: .utf8) == "external change") }
+    }
+
     @Test("explicit prepared Flutter source file links preserve the link and its target", arguments: [false, true])
     func preparedSourceFileLink(_ manual: Bool) async throws {
         let f = try FlutterIOSFixture()
@@ -597,12 +651,53 @@ struct FlutterIOSRuntimeTests {
     }
 }
 
+private struct SourceFailureStage: Stage {
+    let id = "fixture.native"
+    let runner: any ProcessRunner
+    func run(_ context: inout UpContext) async throws -> StageOutcome {
+        _ = try await runner.run(ProcessCommand("xcodebuild", ["build"]))
+        return .pass("fixture")
+    }
+}
+
 struct FlutterSourceLinkGitRunner: ProcessRunner {
     let base: any ProcessRunner
     func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
         if command.executable == "git" || command.executable == "/usr/bin/git"
             || (command.executable == "/usr/bin/env" && command.arguments.first == "-i" && command.arguments.contains("/usr/bin/git")) {
             return try await SystemProcessRunner(environment: ["PATH": "/usr/bin:/bin:/usr/sbin:/sbin"]).run(command, onLine: onLine)
+        }
+        return try await base.run(command, onLine: onLine)
+    }
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+        try await base.spawnDetached(command, logFile: logFile)
+    }
+}
+
+private final class FlutterSourceFailureRunner: ProcessRunner, @unchecked Sendable {
+    let base: any ProcessRunner
+    let root: URL
+    let mode: String
+    private let lock = NSLock()
+    private var failed = false
+    private var observed = false
+    var observedAfterFailure: Bool { lock.withLock { observed } }
+    init(base: any ProcessRunner, root: URL, mode: String) { self.base = base; self.root = root; self.mode = mode }
+    func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+        let system = SystemProcessRunner(environment: ["PATH": "/usr/bin:/bin:/usr/sbin:/sbin"])
+        if command.executable == "/usr/bin/env", command.arguments.contains("/usr/bin/git") {
+            lock.withLock { if failed { observed = true } }
+            return try await system.run(command, onLine: onLine)
+        }
+        if command.executable == "/usr/bin/sandbox-exec", command.arguments.last == "build" {
+            if mode == "source" { try "external change".write(to: root.appendingPathComponent("assets/notes.md"), atomically: false, encoding: .utf8) }
+            else {
+                let result = try await system.run(ProcessCommand("/usr/bin/git", ["-C", root.path, "update-index", "--force-remove", "--", "NOTES.md"]))
+                try #require(result.terminationStatus.isSuccess)
+            }
+            lock.withLock { failed = true }
+            if mode == "cancel" { throw CancellationError() }
+            throw ProcessError.timedOut(command: "fixture native build", timeout: .seconds(1))
         }
         return try await base.run(command, onLine: onLine)
     }

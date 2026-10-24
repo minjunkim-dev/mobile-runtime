@@ -2,6 +2,7 @@ import Core
 import CryptoKit
 import Darwin
 import Foundation
+import OSLog
 
 /// Explicit manual execution may bind a Git-tracked source leaf and its internal regular-file target.
 struct FlutterSourceLinks: Sendable {
@@ -87,6 +88,26 @@ struct FlutterSourceLinks: Sendable {
         guard result.terminationStatus.isSuccess, result.standardOutput == expected else { throw Self.refused("Git 링크 추적 정보 변경") }
     }
 
+    static func observeFailure(_ primary: any Error, links: Self?, check: @Sendable () throws -> Void,
+                               record: @Sendable (any Error, any Error) throws -> Void) async {
+        guard !Task.isCancelled, !(primary is CancellationError) else { return }
+        var failures: [String] = []
+        do { try await links?.checkTracking() }
+        catch is CancellationError {}
+        catch { failures.append(String(describing: error)) }
+        do { try check() }
+        catch is CancellationError {}
+        catch { failures.append(String(describing: error)) }
+        guard !Task.isCancelled, !failures.isEmpty else { return }
+        let protection = DomainError(summary: "Flutter 실행 실패 뒤 보호 입력의 상태가 변경됐습니다.", observed: failures.joined(separator: "\n"),
+            remediation: Remediation(summary: "원래 도구 오류와 보호 후검사 기록을 확인하세요. source·대상·lockfile을 자동 복원하지 않았습니다."))
+        do { try record(primary, protection) }
+        catch {
+            Logger(subsystem: "dev.runstir", category: "flutter-protection").fault(
+                "Flutter 보호 후검사 기록을 저장할 수 없습니다. 원래 실행 오류는 유지합니다.")
+        }
+    }
+
     func protection() -> String {
         func quoted(_ value: String) -> String { "\"" + value.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"") + "\"" }
         var files = paths
@@ -111,7 +132,8 @@ struct FlutterSourceLinks: Sendable {
             "AndroidManifest.xml", "Info.plist", "project.pbxproj", "gradlew", "gradlew.bat", "Podfile", "Gemfile", "Package.swift",
             "settings.gradle", "settings.gradle.kts", "build.gradle", "build.gradle.kts", "gradle.properties", "gradle-wrapper.properties", "CMakeLists.txt",
             "mobile.yml", "mobile.yaml", ".metadata", ".fvmrc", ".flutter-version", ".xcode-version", ".tool-versions",
-            "mise.toml", ".mise.toml", ".ruby-version", ".node-version", ".nvmrc", ".java-version", "package.json"]
+            "mise.toml", ".mise.toml", ".ruby-version", ".node-version", ".nvmrc", ".java-version", "package.json",
+            "package-lock.json", "npm-shrinkwrap.json", "pnpm-lock.yaml", "pnpm-workspace.yaml", "bun.lockb"]
         let metadataExtensions: Set<String> = ["toml", "xcconfig", "pbxproj", "xcscheme", "xcworkspacedata", "plist", "properties", "gradle", "kts", "lock"]
         let absolute = root.appendingPathComponent(relative).path
         return sources.contains(relative) && !components.isEmpty && !components.contains(where: excluded.contains)
