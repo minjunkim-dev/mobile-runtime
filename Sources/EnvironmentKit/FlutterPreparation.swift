@@ -378,6 +378,9 @@ struct FlutterPreparation {
             guard let name = plugin["name"] as? String, seen.insert(name).inserted,
                   let path = plugin["path"] as? String, path.hasPrefix("/"), let root = roots[name],
                   URL(fileURLWithPath: path).standardizedFileURL.resolvingSymlinksInPath().path == root.path,
+                  let document = manifest(root), document["name"] as? String == name,
+                  let dependencies = names(document["dependencies"]), let resolved = edges[name],
+                  dependencies == Set(resolved),
                   let native = jsonBoolean(plugin["native_build"]),
                   let shared = jsonBoolean(plugin["shared_darwin_source"], missing: false) else { return unknown }
             if !preparedDependencies {

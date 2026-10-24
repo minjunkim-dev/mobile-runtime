@@ -135,6 +135,37 @@ struct FlutterPluginMetadataTests {
         #expect(manual.iosPluginDirectories == ["foo": f.repo.url("packages/foo")])
     }
 
+    @Test("manual selected implementations retain package identity without requiring app reachability",
+          arguments: ["valid", "missing-graph", "manifest-name", "dependency-mismatch"])
+    func manualSelectedPackageIdentity(_ mode: String) async throws {
+        let f = try FlutterFixture()
+        try configure(f, plugins: ["foo", "bar"])
+        try f.repo.write("pubspec.yaml", manifest(dependencies: ["flutter", "foo"]))
+        try f.repo.write("packages/bar/pubspec.yaml", "name: \(mode == "manifest-name" ? "other" : "bar")\nflutter:\n  plugin:\n    implements: foo\n    platforms:\n      ios:\n        pluginClass: BarPlugin\n")
+        let graphFile = f.repo.url(".dart_tool/package_graph.json")
+        var graph = try #require(JSONSerialization.jsonObject(with: Data(contentsOf: graphFile)) as? [String: Any])
+        var packages = try #require(graph["packages"] as? [[String: Any]])
+        for index in packages.indices {
+            if packages[index]["name"] as? String == "example" { packages[index]["dependencies"] = ["flutter", "foo"] }
+            if packages[index]["name"] as? String == "bar", mode == "dependency-mismatch" {
+                packages[index]["dependencies"] = ["foo"]
+            }
+        }
+        if mode == "missing-graph" { packages.removeAll { $0["name"] as? String == "bar" } }
+        graph["packages"] = packages
+        try JSONSerialization.data(withJSONObject: graph).write(to: graphFile)
+        try metadata(f, plugins: ["bar"])
+        let plan = try await f.inspect(f.runner(), preparedDependencies: true)
+        expectGenerated(plan, reuse: mode == "valid")
+        if mode == "valid" {
+            #expect(plan.iosPluginDirectories == ["bar": f.repo.url("packages/bar")])
+            #expect(plan.iosPluginMetadata == .bytes(try Data(contentsOf: f.repo.url(".flutter-plugins-dependencies"))))
+        } else {
+            #expect(plan.iosPluginDirectories.isEmpty)
+            #expect(plan.iosPluginMetadata == nil)
+        }
+    }
+
     @Test("plugin rows preserve exact identity and native build evidence", arguments: ["native", "path", "duplicate"])
     func staleRows(_ mode: String) async throws {
         let f = try FlutterFixture()
