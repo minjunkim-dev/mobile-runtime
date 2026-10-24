@@ -88,6 +88,9 @@ struct FlutterSourceLinks: Sendable {
         var files = paths
         for record in records.values { files.insert(root.appendingPathComponent(record.target).path) }
         var parents = Set<String>()
+        for record in records.values {
+            for path in record.parents.keys { parents.insert(root.appendingPathComponent(path).path) }
+        }
         for path in files {
             var parent = URL(fileURLWithPath: path).deletingLastPathComponent()
             while parent.path != "/" { parents.insert(parent.path); parent.deleteLastPathComponent() }
@@ -122,19 +125,8 @@ struct FlutterSourceLinks: Sendable {
                 try Self.linkEntry($0, $1)
             }
             guard !text.hasPrefix("/"), !text.unicodeScalars.contains(where: { CharacterSet.controlCharacters.contains($0) }) else { throw Self.refused() }
-            var target = relative.split(separator: "/").dropLast().map(String.init)
-            for component in text.split(separator: "/") {
-                if component == "." { continue }
-                if component == ".." { guard !target.isEmpty else { throw Self.refused() }; target.removeLast() }
-                else { target.append(String(component)) }
-            }
-            let destination = target.joined(separator: "/")
-            guard source(destination), destination != relative else { throw Self.refused("source 대상 범위") }
-            let file = try Self.withParent(descriptor, relative: destination, parents: &parents, expected: expected?.parents) { targetParent, targetName in
-                let fd = openat(targetParent, targetName, O_RDONLY | O_NOFOLLOW | O_NONBLOCK)
-                guard fd >= 0 else { throw Self.refused() }; defer { close(fd) }
-                return try Self.fileEntry(fd)
-            }
+            let (destination, file) = try targetEntry(descriptor, link: relative, text: text,
+                parents: &parents, expected: expected?.parents)
             let (after, currentText) = try Self.withParent(descriptor, relative: relative, parents: &parents, expected: expected?.parents) {
                 try Self.linkEntry($0, $1)
             }
@@ -143,6 +135,37 @@ struct FlutterSourceLinks: Sendable {
                 target: text, nodeIdentity: Self.node(before))
             return Record(link: link, target: destination, file: file, parents: parents)
         }
+    }
+
+    private func targetEntry(_ descriptor: Int32, link: String, text: String, parents: inout [String: Entry],
+                             expected: [String: Entry]?) throws -> (String, Entry) {
+        let components = link.split(separator: "/").dropLast().map(String.init)
+            + text.split(separator: "/", omittingEmptySubsequences: false).map(String.init)
+        guard let leaf = components.last, !leaf.isEmpty, leaf != ".", leaf != ".." else { throw Self.refused() }
+        var opened: [Int32] = []; defer { for fd in opened.reversed() { close(fd) } }
+        var stack = [descriptor], path: [String] = []
+        // Keep every visited descriptor and identity, even when a later '..' removes its spelling.
+        for name in components.dropLast() {
+            if name.isEmpty || name == "." { continue }
+            if name == ".." {
+                guard stack.count > 1 else { throw Self.refused() }
+                stack.removeLast(); path.removeLast(); continue
+            }
+            path.append(name)
+            let relative = path.joined(separator: "/"), absolute = root.appendingPathComponent(relative).path
+            guard name != ".git", !forbidden.contains(where: { absolute == $0 || absolute.hasPrefix($0 + "/") }) else { throw Self.refused("source 중간 경로") }
+            let fd = openat(stack[stack.count - 1], name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW)
+            guard fd >= 0 else { throw Self.refused("source 중간 경로") }; opened.append(fd)
+            let entry = try Self.directoryEntry(fd)
+            if let previous = parents[relative] { guard previous == entry else { throw Self.refused() } }
+            if let expected { guard expected[relative] == entry else { throw Self.refused() } }
+            parents[relative] = entry; stack.append(fd)
+        }
+        let destination = (path + [leaf]).joined(separator: "/")
+        guard source(destination), destination != link else { throw Self.refused("source 대상 범위") }
+        let fd = openat(stack[stack.count - 1], leaf, O_RDONLY | O_NOFOLLOW | O_NONBLOCK)
+        guard fd >= 0 else { throw Self.refused() }; defer { close(fd) }
+        return (destination, try Self.fileEntry(fd))
     }
 
     private static func linkEntry(_ parent: Int32, _ name: String) throws -> (stat, String) {

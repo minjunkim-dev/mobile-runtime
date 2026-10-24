@@ -7,6 +7,55 @@ import Testing
 
 @Suite("explicit Flutter source file links")
 struct FlutterSourceLinksTests {
+    @Test("raw target components must resolve through ordinary source directories", arguments: [
+        "missing/../assets/notes.md", "assets/notes.md/../notes.md", "assets/notes.md/",
+        "build/jump/../../assets/notes.md", ".git/jump/../../assets/notes.md"
+    ])
+    func rawTargetComponents(_ target: String) async throws {
+        let repo = try FixtureRepo(), outside = try FixtureRepo()
+        try repo.write("assets/notes.md", "preserved notes\n")
+        try await git(repo, ["init", "-q"])
+        try FileManager.default.createDirectory(at: repo.url("build"), withIntermediateDirectories: true)
+        for directory in ["build", ".git"] {
+            try FileManager.default.createSymbolicLink(at: repo.url(directory + "/jump"), withDestinationURL: outside.root)
+        }
+        try FileManager.default.createSymbolicLink(atPath: repo.url("NOTES.md").path, withDestinationPath: target)
+        try await git(repo, ["add", "--", "NOTES.md"])
+        await #expect(throws: DomainError.self) {
+            try await FlutterSourceLinks.capture(root: repo.root,
+                sources: [repo.url("NOTES.md").path, repo.url("assets/notes.md").path], links: [repo.url("NOTES.md").path],
+                forbidden: [], runner: system)
+        }
+        #expect(try FileManager.default.destinationOfSymbolicLink(atPath: repo.url("NOTES.md").path) == target)
+    }
+
+    @Test("leading parent traversal works and cancelled intermediate directories remain protected")
+    func traversedParent() async throws {
+        let repo = try FixtureRepo()
+        try repo.write("assets/notes.md", "preserved notes\n")
+        try FileManager.default.createDirectory(at: repo.url("docs"), withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: repo.url("transit"), withIntermediateDirectories: true)
+        try FileManager.default.createSymbolicLink(atPath: repo.url("docs/NOTES.md").path,
+            withDestinationPath: "../transit/../assets/notes.md")
+        try await git(repo, ["init", "-q"])
+        try await git(repo, ["add", "--", "docs/NOTES.md"])
+        let snapshot = try await FlutterSourceLinks.capture(root: repo.root,
+            sources: [repo.url("docs/NOTES.md").path, repo.url("assets/notes.md").path], links: [repo.url("docs/NOTES.md").path],
+            forbidden: [], runner: system)
+        try snapshot.check()
+        #expect(try String(contentsOf: repo.url("docs/NOTES.md"), encoding: .utf8) == "preserved notes\n")
+        let moved = try await system.run(ProcessCommand("/usr/bin/sandbox-exec",
+            ["-p", "(version 1)(allow default)" + snapshot.protection(), "/bin/mv", repo.url("transit").path, repo.url("moved").path]))
+        #expect(!moved.terminationStatus.isSuccess)
+        // Preserve the external mutation, including the RED case where the child already moved it.
+        if FileManager.default.fileExists(atPath: repo.url("transit").path) {
+            try FileManager.default.moveItem(at: repo.url("transit"), to: repo.url("moved"))
+        }
+        try FileManager.default.createDirectory(at: repo.url("transit"), withIntermediateDirectories: true)
+        #expect(throws: DomainError.self) { try snapshot.check() }
+        #expect(FileManager.default.fileExists(atPath: repo.url("moved").path))
+    }
+
     @Test("only tracked internal ordinary source file leaves are eligible", arguments: [
         "valid", "source-build-name", "untracked", "regular-index", "absolute", "outside", "dangling", "directory", "chain", "cycle",
         "parent-alias", "lock-link", "lock-target", "metadata-link", "metadata-target", "native-metadata", "tool-metadata", "project-metadata", "entrypoint", "cache", "sdk", "executable", "hardlink"
