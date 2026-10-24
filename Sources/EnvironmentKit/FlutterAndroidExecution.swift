@@ -94,6 +94,7 @@ final class FlutterAndroidExecution: Sendable {
         }
         var absent = prepared.absent
         inputs[source] = try entry(source, bindIdentity: true)
+        let outputs = try prepared.checkedOutputs(protecting: inputs)
         let before = try tree(source, bindIdentity: true)
         for (relative, hash) in capability {
             guard before["packages/flutter_tools/gradle/src/main/" + relative]?.digest == hash else {
@@ -130,13 +131,6 @@ final class FlutterAndroidExecution: Sendable {
         let shadowMetadata = shadow.appendingPathComponent(".flutter-plugins-dependencies")
         if prepared.metadata == nil { absent.insert(shadowMetadata) }
         for child in ["home", "tmp"] { try directory(root.appendingPathComponent(child)) }
-        let outputs = [app.appendingPathComponent("build"), app.appendingPathComponent(".dart_tool/flutter_build")]
-        for output in outputs {
-            _ = try canonical(output, mayBeAbsent: true)
-            guard !inputs.keys.contains(where: { inside(output, $0) || inside($0, output) }) else {
-                throw failure("A Flutter generated output overlaps a protected source input.")
-            }
-        }
         let policy = root.appendingPathComponent("child.sb")
         let launcher = root.appendingPathComponent("flutter-child")
         let initScript = root.appendingPathComponent("binding.gradle")
@@ -307,6 +301,17 @@ final class FlutterAndroidExecution: Sendable {
         let files: [URL: Entry]
         let absent: Set<URL>
         let sourceLinks: FlutterSourceLinks?
+        let outputs: [URL]
+
+        func checkedOutputs(protecting inputs: [URL: Entry]) throws -> [URL] {
+            for output in outputs {
+                _ = try FlutterAndroidExecution.canonical(output, mayBeAbsent: true)
+                guard !inputs.keys.contains(where: { FlutterAndroidExecution.inside(output, $0) || FlutterAndroidExecution.inside($0, output) }) else {
+                    throw FlutterAndroidExecution.failure("A Flutter generated output overlaps a protected source input.")
+                }
+            }
+            return outputs
+        }
 
         func check() throws {
             try sourceLinks?.check()
@@ -386,8 +391,10 @@ final class FlutterAndroidExecution: Sendable {
         guard currentPreparation.pluginMetadataIssue(project: currentProject, sdk: sdk, platform: .android) == nil else {
             throw failure("Flutter Android plugin metadata does not match the current resolved package graph and manifests.")
         }
+        let outputs = [app.appendingPathComponent("build"), app.appendingPathComponent(".dart_tool/flutter_build"),
+                       workspaceRoot.appendingPathComponent(".dart_tool/hooks_runner")]
         let prepared = PreparedInputs(sdk: sdk, entrypoint: try canonical(entrypoint), metadata: hasMetadata ? metadata : nil,
-                                      files: files, absent: absent, sourceLinks: sourceLinks)
+                                      files: files, absent: absent, sourceLinks: sourceLinks, outputs: outputs)
         try prepared.check()
         return prepared
     }

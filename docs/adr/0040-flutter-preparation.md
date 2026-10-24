@@ -137,6 +137,9 @@ private root의 Unix socket은 같은 UID와 실행별 인증값을 검사한다
 인증값은 private 환경으로 전달한다. argv·공개 로그·계획에 기록하지 않는다.
 stdout·stderr·종료 상태를 전달한다. 연결 해제와 owner 취소는 해당 SDK 작업을 취소한다.
 child는 network와 승인 범위 밖 쓰기를 계속 거부한다.
+선택한 앱의 `build`, `.dart_tool/flutter_build`와 검증한 dependency workspace의
+`.dart_tool/hooks_runner`만 native build 산출물·Dart hook cache 쓰기 경로로 사용한다.
+각 경로의 alias·보호 입력과의 겹침을 private view 생성 전에 거부한다. lock·package config/graph·source·SDK의 쓰기 거부는 유지한다.
 private view는 작업이 끝나거나 실패·취소되면 지운다. 남은 Gradle 후손은 지운 경로를 다시 만들 수 없다. 두 sandbox 정책이 root 자체의 쓰기를 거부한다.
 그러나 남은 후손은 root 안의 쓰기 예외 경로에는 계속 쓸 수 있다. 그래서 하위 폴더를 보호 입력이나 `$HOME`을 가리키는 링크로 바꿔치기할 수 있다. sandbox 밖의 Runstir가 경로로 지우면 root 밖 파일을 지울 수 있다.
 따라서 root 아래 경로를 다시 풀지 않는다. 링크를 따르지 않고 연 directory descriptor로만 내려간다(`openat` `O_NOFOLLOW`, `unlinkat`). 링크와 파일은 항목 자체만 지운다. 다른 device로는 들어가지 않는다. root는 device·inode가 기록과 같을 때만 지운다.
