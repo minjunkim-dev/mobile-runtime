@@ -30,6 +30,14 @@ legacy·federated plugin resolver 수동 경계에서 멈춘다. 원래 빌드 �
   Android는 같은 준비 입력 검증과 보호된 SDK private view를 유지한다.
   entrypoint·workspace·도구·target·lease·취소·source/lock snapshot·SDK 보호를 완화하지 않는다.
   Podfile이 있으면 기존 Pods 디렉터리·두 lock의 byte 일치·읽을 수 있는 workspace 한 개가 필요하다.
+- 2026-10-24 추가 승인: 이 명시적 수동 모드에서만 Git index의 정확한 경로·mode `120000`·stage `0`으로
+  확인한 내부 source leaf-file 링크를 허용한다. 하나의 상대 링크와 직접 일반 파일 대상이 모두 검증한
+  workspace의 보호 source 목록 안에 있어야 한다. 외부·절대·끊어진·순환·다중·directory 링크,
+  lock·manifest·생성 metadata·entrypoint·SDK·tool·generated/cache 경로는 계속 거부한다.
+  링크와 대상의 bytes/type/mode/identity 및 부모 identity를 고정한다. workspace descriptor부터 각 부모를
+  `openat/O_NOFOLLOW`로 열어 대상 내용 읽기가 외부 alias를 따라가지 않게 한다. native child 전후에
+  해당 Git index 항목과 양쪽 snapshot을 재검사하고, sandbox가 양쪽 파일과 부모 교체를 거부한다.
+  바뀌면 중단하며 원본을 자동 복원하지 않는다. 일반 경로 검증과 기본 실행의 source symlink 거부는 유지한다.
 - CLI 도움말과 GUI에 생략 범위와 사용자의 정합성 책임을 표시한다.
   `dependencies`는 설명을 포함한 `skipped`, JSON은 `operation.preparedDependencies: true`다.
   기본 실행은 optional 필드를 생략하며 기존 검증을 유지한다.

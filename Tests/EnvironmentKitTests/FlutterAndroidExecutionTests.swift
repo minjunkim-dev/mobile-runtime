@@ -7,6 +7,36 @@ import Testing
 
 @Suite("Flutter Android private execution boundaries", .serialized)
 struct FlutterAndroidExecutionTests {
+    @Test("Android prepared inputs admit bound source leaves only in explicit manual mode", arguments: [false, true])
+    func preparedSourceLinks(_ manual: Bool) async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let (app, initial) = try await fixture.preparation()
+        var preparation = initial
+        preparation.preparedDependencies = manual
+        try fixture.file("workspace/assets/notes.md", "preserved notes\n")
+        let link = app.appendingPathComponent("NOTES.md"), target = app.appendingPathComponent("assets/notes.md")
+        try FileManager.default.createSymbolicLink(atPath: link.path, withDestinationPath: "assets/notes.md")
+        let runner = SystemProcessRunner(environment: ["PATH": "/usr/bin:/bin:/usr/sbin:/sbin"])
+        for arguments in [["init", "-q"], ["add", "--", "NOTES.md"]] {
+            let result = try await runner.run(ProcessCommand("/usr/bin/git", ["-C", app.path] + arguments))
+            try #require(result.terminationStatus.isSuccess)
+        }
+        preparation.sourceLinks = try await FlutterSourceLinks.capture(root: app, sources: [link.path, target.path],
+            links: [link.path], forbidden: [app.appendingPathComponent("lib/main.dart")], runner: runner)
+        if !manual {
+            #expect(throws: DomainError.self) {
+                try FlutterAndroidExecution.preparedInputs(app: app, preparation: preparation, trackedFiles: [link, target])
+            }
+            return
+        }
+        let inputs = try FlutterAndroidExecution.preparedInputs(app: app, preparation: preparation, trackedFiles: [link, target])
+        try inputs.check()
+        try "external change\n".write(to: target, atomically: false, encoding: .utf8)
+        #expect(throws: DomainError.self) { try inputs.check() }
+        #expect(try String(contentsOf: target, encoding: .utf8) == "external change\n")
+    }
+
     @Test("factory rejects unverified SDK capability before creating a private execution view")
     func unverifiedFactoryInput() async throws {
         let fixture = try Fixture()

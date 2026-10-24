@@ -22,6 +22,7 @@ struct FlutterPreparation {
     var iosPluginDirectories: [String: URL] = [:]
     var iosPluginMetadata: IOSPluginMetadata?
     var preparedDependencies = false
+    var sourceLinks: FlutterSourceLinks?
 
     static func inspect(directory: URL, entrypoint: String? = nil, environment: [String: String],
                         runner: any ProcessRunner, installationRoot: URL? = nil,

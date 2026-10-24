@@ -337,8 +337,11 @@ public enum WorkflowExecution {
                     preparedDependencies: input.preparedDependencies, metroPort: input.port, note: note))
                     .run(onStageFinished: finished, onStageStarted: started)
             case (.build, .ios), (.up, .ios):
-                let flutter = try anchor.framework == .flutter
-                    ? FlutterIOSWorkflow(anchor: anchor, input: input.project, preparation: wiring.flutter, runner: wiring.projectRunner) : nil
+                let flutter: FlutterIOSWorkflow?
+                if anchor.framework == .flutter {
+                    flutter = try await FlutterIOSWorkflow(anchor: anchor, input: input.project, preparation: wiring.flutter,
+                        runner: wiring.projectRunner, trackingRunner: runner)
+                } else { flutter = nil }
                 let stages = iOSStages(workflow: kind == .build ? .build : .up,
                     anchor: anchor, doctor: wiring.engine, config: config, lookup: wiring.lookup,
                     hostRunner: runner, projectRunner: flutter?.buildRunner ?? wiring.projectRunner, locator: wiring.locator,

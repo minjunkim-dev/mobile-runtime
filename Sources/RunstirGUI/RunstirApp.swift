@@ -265,8 +265,8 @@ struct InspectionView: View {
                 Toggle("직접 준비한 의존성 사용", isOn: $preparedDependencies)
                     .disabled(busy).focused($focus, equals: .preparedDependencies)
                     .accessibilityIdentifier("project.prepared-dependencies")
-                    .accessibilityHint("RN·Flutter 빌드와 실행에 적용합니다. 의존성 재설치·lock 정렬·Flutter plugin resolver 재검증을 생략합니다.")
-                Text("의존성 재설치·lock 정렬·Flutter plugin resolver 재검증을 생략합니다. 준비한 의존성의 정합성은 사용자가 확인해야 합니다.")
+                    .accessibilityHint("RN·Flutter 빌드와 실행에 적용합니다. 의존성 재설치·lock 정렬·Flutter plugin resolver 재검증을 생략합니다. Flutter의 추적된 내부 source 파일 링크만 검증 후 허용합니다.")
+                Text("의존성 재설치·lock 정렬·Flutter plugin resolver 재검증을 생략합니다. 준비한 의존성의 정합성은 사용자가 확인해야 합니다. Flutter의 추적된 내부 source 파일 링크만 검증 후 허용합니다.")
                     .font(.caption).foregroundStyle(.secondary)
             }
             HStack {

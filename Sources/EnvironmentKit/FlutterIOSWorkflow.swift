@@ -114,12 +114,14 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
     private let generatedDirectories: Set<String>
     private let pluginMetadata: FlutterPreparation.IOSPluginMetadata
     private let original: [String: String]
+    private let sourceLinks: FlutterSourceLinks?
     private let sdk: FlutterSDK
     private let lock = NSLock()
     private var changed: [String] = []
     var changedFiles: [String] { lock.withLock { changed } }
 
-    init(anchor: ProjectAnchor, input: ProjectInspectionInput, preparation: FlutterPreparation?, runner: any ProcessRunner) throws {
+    init(anchor: ProjectAnchor, input: ProjectInspectionInput, preparation: FlutterPreparation?, runner: any ProcessRunner,
+         trackingRunner: (any ProcessRunner)? = nil) async throws {
         guard let preparation, let sdk = preparation.sdk, preparation.entrypoint != nil,
             let workspace = preparation.workspace, let pluginMetadata = preparation.iosPluginMetadata else {
             throw Self.failure("Flutter iOS preparation is incomplete. Inspect mobile setup with the same entrypoint.")
@@ -164,7 +166,13 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
             }
         }
         directoryAliases = aliases
-        original = try Self.files(root, excluding: sdk.root, aliases: aliases, generated: generatedDirectories)
+        original = try Self.files(root, excluding: sdk.root, aliases: aliases, generated: generatedDirectories,
+            allowSourceLinks: preparation.preparedDependencies)
+        if preparation.preparedDependencies, let entrypoint = preparation.entrypoint {
+            sourceLinks = try await FlutterSourceLinks.capture(root: root, sources: Set(original.keys),
+                links: Set(original.filter { $0.value.hasPrefix("link:") && aliases[$0.key] == nil }.keys),
+                forbidden: [sdk.root, entrypoint], packageRoots: workspace.packages, runner: trackingRunner ?? runner)
+        } else { sourceLinks = nil }
         try Self.checkPluginMetadata(pluginMetadata, application: anchor.directory)
         let logs = RunLogs(project: anchor.directory)
         let protected = original.filter { !$0.value.hasPrefix("link:") }.map(\.key) + [
@@ -192,11 +200,12 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
         }
         let rules = filters.joined(separator: " ")
         let profile = "(version 1)\n(allow default)\n(deny network-outbound (remote ip \"*:*\"))\n(deny file-write* (require-any " + rules + "))\n"
+            + (sourceLinks?.protection() ?? "")
         guard let file = logs.write(profile, to: "flutter-build-\(UUID().uuidString).sb") else {
             throw Self.failure("Could not save the Flutter native child protection profile.")
         }
         childProfile = file
-        buildRunner = FlutterIOSBuildRunner(base: runner, profile: file)
+        buildRunner = FlutterIOSBuildRunner(base: runner, profile: file, sourceLinks: sourceLinks)
     }
 
     func guarding(_ stages: [any Stage]) -> [any Stage] {
@@ -204,8 +213,10 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
     }
 
     func check() throws {
+        try sourceLinks?.check()
         try Self.checkPluginMetadata(pluginMetadata, application: application)
-        let now = try Self.files(root, excluding: excludedSDK, aliases: directoryAliases, generated: generatedDirectories)
+        let now = try Self.files(root, excluding: excludedSDK, aliases: directoryAliases, generated: generatedDirectories,
+            allowSourceLinks: sourceLinks != nil)
         let differences = Set(original.keys).union(now.keys).filter { original[$0] != now[$0] }.sorted()
         if !differences.isEmpty {
             lock.withLock { changed = differences }
@@ -216,7 +227,8 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
         }
     }
 
-    private static func files(_ root: URL, excluding sdk: URL, aliases: [String: String], generated: Set<String>) throws -> [String: String] {
+    private static func files(_ root: URL, excluding sdk: URL, aliases: [String: String], generated: Set<String>,
+                              allowSourceLinks: Bool = false) throws -> [String: String] {
         var failure: (any Error)?
         let physicalRoot = try physical(root.path)
         guard let entries = FileManager.default.enumerator(at: URL(fileURLWithPath: physicalRoot),
@@ -231,9 +243,13 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
             let attributes = try file.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
             if attributes.isSymbolicLink == true {
                 entries.skipDescendants()
+                let source = try? aliasPath(file)
+                if allowSourceLinks, let source, aliases[source] == nil {
+                    result[file.path] = "link:" + (try FileManager.default.destinationOfSymbolicLink(atPath: file.path))
+                    continue
+                }
                 var target = file.resolvingSymlinksInPath()
                 target.removeAllCachedResourceValues()
-                let source = try? aliasPath(file)
                 guard let source, let expected = aliases[source], (try? physical(target.path)) == expected,
                       (try? target.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true else {
                     let relative = source.map { String($0.dropFirst(physicalRoot.count + 1)) } ?? file.lastPathComponent
@@ -318,14 +334,25 @@ final class FlutterIOSWorkflow: @unchecked Sendable {
 private struct FlutterIOSBuildRunner: ProcessRunner {
     let base: any ProcessRunner
     let profile: URL
+    let sourceLinks: FlutterSourceLinks?
     func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+        try await sourceLinks?.checkTracking()
+        try sourceLinks?.check()
         var command = command
         if command.executable == "xcodebuild", command.arguments.last == "build" {
             command = ProcessCommand("/usr/bin/sandbox-exec", ["-f", profile.path, "/usr/bin/xcodebuild"] + command.arguments,
                 environment: command.environment, workingDirectory: command.workingDirectory,
                 timeout: command.timeout, output: command.output, redactArguments: command.redactArguments)
         }
-        return try await base.run(command, onLine: onLine)
+        do {
+            let result = try await base.run(command, onLine: onLine)
+            try await sourceLinks?.checkTracking()
+            try sourceLinks?.check()
+            return result
+        } catch {
+            if !Task.isCancelled { try sourceLinks?.check() }
+            throw error
+        }
     }
     func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
         throw FlutterIOSWorkflow.failure("Flutter iOS execution cannot start an untracked detached tool.")
