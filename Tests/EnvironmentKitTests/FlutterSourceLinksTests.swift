@@ -7,6 +7,31 @@ import Testing
 
 @Suite("explicit Flutter source file links")
 struct FlutterSourceLinksTests {
+    @Test("cancelling an in-flight post-failure Git observation starts no snapshot or receipt", arguments: [false, true])
+    func cancelledFailureObservation(_ returnsCompletedResult: Bool) async throws {
+        let repo = try FixtureRepo()
+        try repo.write("assets/notes.md", "preserved notes\n")
+        try FileManager.default.createSymbolicLink(atPath: repo.url("NOTES.md").path, withDestinationPath: "assets/notes.md")
+        try await git(repo, ["init", "-q"])
+        try await git(repo, ["add", "--", "NOTES.md"])
+        let runner = WaitingTrackingRunner(base: system, returnsCompletedResult: returnsCompletedResult)
+        let snapshot = try await FlutterSourceLinks.capture(root: repo.root,
+            sources: [repo.url("NOTES.md").path, repo.url("assets/notes.md").path], links: [repo.url("NOTES.md").path],
+            forbidden: [], runner: runner)
+        let trace = FailureObservationTrace()
+        let task = Task {
+            await FlutterSourceLinks.observeFailure(ProcessError.timedOut(command: "fixture", timeout: .seconds(1)), links: snapshot,
+                check: { trace.checked() }, record: { _, _ in trace.recorded() })
+        }
+        let deadline = ContinuousClock.now + .seconds(5)
+        while !runner.waiting && ContinuousClock.now < deadline { try await Task.sleep(for: .milliseconds(10)) }
+        task.cancel()
+        await task.value
+        #expect(runner.waiting)
+        #expect(!trace.didCheck)
+        #expect(!trace.didRecord)
+    }
+
     @Test("dependency lock and workspace config aliases remain outside source exceptions",
           arguments: ["package-lock.json", "npm-shrinkwrap.json", "pnpm-lock.yaml", "pnpm-workspace.yaml", "bun.lockb"], [false, true])
     func dependencyMetadata(_ name: String, _ pointsToMetadata: Bool) async throws {
@@ -259,5 +284,41 @@ struct FlutterSourceLinksTests {
     private func git(_ repo: FixtureRepo, _ arguments: [String]) async throws {
         let result = try await system.run(ProcessCommand("/usr/bin/git", ["-C", repo.root.path] + arguments))
         try #require(result.terminationStatus.isSuccess, Comment(rawValue: result.combinedOutput))
+    }
+}
+
+private final class FailureObservationTrace: @unchecked Sendable {
+    private let lock = NSLock()
+    private var check = false
+    private var record = false
+    var didCheck: Bool { lock.withLock { check } }
+    var didRecord: Bool { lock.withLock { record } }
+    func checked() { lock.withLock { check = true } }
+    func recorded() { lock.withLock { record = true } }
+}
+
+private final class WaitingTrackingRunner: ProcessRunner, @unchecked Sendable {
+    let base: any ProcessRunner
+    let returnsCompletedResult: Bool
+    private let lock = NSLock()
+    private var count = 0
+    private var initial: ProcessResult?
+    var waiting: Bool { lock.withLock { count > 1 } }
+    init(base: any ProcessRunner, returnsCompletedResult: Bool) { self.base = base; self.returnsCompletedResult = returnsCompletedResult }
+    func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+        let current = lock.withLock { count += 1; return count }
+        if current > 1 {
+            do { try await Task.sleep(for: .seconds(30)) }
+            catch {
+                if returnsCompletedResult, let result = lock.withLock({ initial }) { return result }
+                throw error
+            }
+        }
+        let result = try await base.run(command, onLine: onLine)
+        lock.withLock { initial = result }
+        return result
+    }
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+        throw CancellationError()
     }
 }

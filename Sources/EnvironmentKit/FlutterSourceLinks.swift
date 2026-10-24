@@ -93,10 +93,11 @@ struct FlutterSourceLinks: Sendable {
         guard !Task.isCancelled, !(primary is CancellationError) else { return }
         var failures: [String] = []
         do { try await links?.checkTracking() }
-        catch is CancellationError {}
+        catch is CancellationError { return }
         catch { failures.append(String(describing: error)) }
+        guard !Task.isCancelled else { return }
         do { try check() }
-        catch is CancellationError {}
+        catch is CancellationError { return }
         catch { failures.append(String(describing: error)) }
         guard !Task.isCancelled, !failures.isEmpty else { return }
         let protection = DomainError(summary: "Flutter 실행 실패 뒤 보호 입력의 상태가 변경됐습니다.", observed: failures.joined(separator: "\n"),
