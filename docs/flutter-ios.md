@@ -16,6 +16,9 @@ mobile down --project /path/to/app --platform ios --json
 
 `--entrypoint`를 생략하면 `lib/main.dart`를 사용한다.
 entrypoint는 선택한 Flutter 앱 안의 기존 Dart 파일이어야 한다.
+직접 준비한 의존성을 실행할 때는 `build/up --prepared-dependencies` 또는 GUI의 같은 선택을 사용한다.
+[ADR-0048](adr/0048-explicit-manually-prepared-flutter-dependencies.md)에 따라 lock 정렬과 plugin resolver 정합성 판정을 생략한다.
+기본값은 꺼짐이며 아래 SDK·경로·생성 입력·source 보호 검사는 유지한다. doctor와 setup은 이 선택을 사용하지 않는다.
 실행 입력은 `Generated.xcconfig`와 Xcode의 실제 build settings에 일치해야 한다.
 Runstir는 entrypoint를 바꾸려고 생성 설정이나 앱 소스를 수정하지 않는다.
 scheme이 여러 개면 선택을 요구한다.
@@ -110,7 +113,13 @@ native host에서는 `ios/Pods`·`ios/vendor/bundle`·`ios/Flutter/ephemeral`·`
 검증한 다른 package를 포함하는 경로는 이 제외를 적용하지 않는다.
 `lib/build`·`assets/build`·`lib/vendor` 같은 source는 이름이 같아도 보호한다.
 중첩 저장소를 포함한 `.git` metadata는 기존 개인정보 경계를 유지한다.
-일반 source·lockfile symlink는 파일과 directory 모두 native build child 전에 중단한다.
+기본 실행은 일반 source·lockfile symlink를 파일과 directory 모두 native build child 전에 중단한다.
+명시적 `--prepared-dependencies`에서는 Git index mode `120000`·stage `0`의 내부 source 파일 링크만 예외로 검증한다.
+상대 leaf 링크와 직접 일반 파일 대상이 모두 workspace의 보호 source에 있어야 한다.
+링크·대상·부모 identity와 bytes/type/mode를 고정하고 native child 전후에 재검사한다.
+대상은 workspace descriptor부터 부모별 `openat/O_NOFOLLOW`로 읽는다.
+sandbox는 링크·대상 쓰기와 양쪽 부모 교체를 거부한다. Git 추적 변경도 중단한다.
+lock·manifest·metadata·entrypoint·SDK·tool·generated/cache 경로 및 외부·절대·다중·directory 링크는 예외가 아니다.
 대상 상태를 확인할 수 없거나 link가 깨졌어도 중단한다.
 오류에는 source 상대 경로와 수동 준비 안내만 표시한다.
 이 검사로 외부 대상의 내용·권한·hash를 새로 수집하지 않는다.

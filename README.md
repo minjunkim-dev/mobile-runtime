@@ -50,11 +50,12 @@ swift test
 .build/debug/mobile down --platform android --json
 ```
 
-React Native에서 의존성을 직접 준비했다면 `mobile build/up --prepared-dependencies` 또는
+React Native·Flutter에서 의존성을 직접 준비했다면 `mobile build/up --prepared-dependencies` 또는
 GUI의 **직접 준비한 의존성 사용**을 명시적으로 선택할 수 있습니다. 기본값은 꺼짐입니다.
-이 모드는 Node·Bundle·Pods 재설치와 lock 정렬 재검증을 생략하며 의존성 정합성은 사용자가 확인해야 합니다.
-필수 node_modules·미완료 표식·iOS Pods와 workspace를 검사한 뒤 기존 빌드·실행을 수행합니다.
-[ADR-0047](docs/adr/0047-explicit-manually-prepared-rn-dependencies.md)의 경계를 따르며 setup·Flutter·native에는 적용하지 않습니다.
+이 모드는 의존성 재설치와 lock 정렬 재검증을 생략합니다. Flutter plugin resolver를 포함한 의존성 정합성은 사용자가 확인해야 합니다.
+Flutter의 추적된 내부 source 파일 링크는 링크·대상·부모를 검증해 허용하며, 외부·directory 링크와 lock·metadata·SDK 경계는 유지합니다.
+RN의 node_modules·미완료 표식, Flutter의 workspace 준비 파일·생성 경로·SDK, iOS Pods와 workspace 검사는 유지합니다.
+[ADR-0047](docs/adr/0047-explicit-manually-prepared-rn-dependencies.md)과 [ADR-0048](docs/adr/0048-explicit-manually-prepared-flutter-dependencies.md)의 경계를 따르며 setup·native·down에는 적용하지 않습니다.
 
 
 원시 로그와 오류 JSON에는 프로젝트 도구 출력이 그대로 남을 수 있다. 원시

@@ -40,7 +40,7 @@ public func androidBuildStages(
     note: @escaping @Sendable (String) -> Void
 ) -> [any Stage] {
     var stages: [any Stage] = [ValidateStage(engine: doctor, checkIDs: validationCheckIDs)]
-    if anchor.framework == .reactNative {
+    if anchor.framework == .reactNative || (anchor.framework == .flutter && preparedDependencies) {
         stages.append(DependenciesStage(anchor: anchor, runner: projectRunner, includePods: false,
             preparedDependencies: preparedDependencies))
     }

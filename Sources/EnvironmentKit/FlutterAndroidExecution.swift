@@ -22,6 +22,7 @@ final class FlutterAndroidExecution: Sendable {
     private let privateInputs: [URL: Entry]
     private let absentInputs: Set<URL>
     private let parentPolicy: URL
+    private let sourceLinks: FlutterSourceLinks?
 
     private static let gradleCache = ["packages/flutter_tools/gradle/.gradle", "packages/flutter_tools/gradle/.kotlin",
                                       "packages/flutter_tools/gradle/build"]
@@ -93,6 +94,7 @@ final class FlutterAndroidExecution: Sendable {
         }
         var absent = prepared.absent
         inputs[source] = try entry(source, bindIdentity: true)
+        let outputs = try prepared.checkedOutputs(protecting: inputs)
         let before = try tree(source, bindIdentity: true)
         for (relative, hash) in capability {
             guard before["packages/flutter_tools/gradle/src/main/" + relative]?.digest == hash else {
@@ -129,19 +131,12 @@ final class FlutterAndroidExecution: Sendable {
         let shadowMetadata = shadow.appendingPathComponent(".flutter-plugins-dependencies")
         if prepared.metadata == nil { absent.insert(shadowMetadata) }
         for child in ["home", "tmp"] { try directory(root.appendingPathComponent(child)) }
-        let outputs = [app.appendingPathComponent("build"), app.appendingPathComponent(".dart_tool/flutter_build")]
-        for output in outputs {
-            _ = try canonical(output, mayBeAbsent: true)
-            guard !inputs.keys.contains(where: { inside(output, $0) || inside($0, output) }) else {
-                throw failure("A Flutter generated output overlaps a protected source input.")
-            }
-        }
         let policy = root.appendingPathComponent("child.sb")
         let launcher = root.appendingPathComponent("flutter-child")
         let initScript = root.appendingPathComponent("binding.gradle")
         let childPolicy = try Self.childPolicy(protected: Array(inputs.keys) + Array(absent), sdk: copy,
             writable: outputs + [root.appendingPathComponent("home"), root.appendingPathComponent("tmp")])
-        try write(Data(childPolicy.utf8), to: policy)
+        try write(Data((childPolicy + (prepared.sourceLinks?.protection() ?? "")).utf8), to: policy)
         let script = """
         #!/bin/sh
         set -eu
@@ -155,7 +150,7 @@ final class FlutterAndroidExecution: Sendable {
                 shadowAndroid.appendingPathComponent("local.properties"), copy.appendingPathComponent("bin/cache/lockfile"),
                 root.appendingPathComponent("home"), root.appendingPathComponent("tmp")])
         let parentPolicy = root.appendingPathComponent("parent.sb")
-        try write(Data(parentText.utf8), to: parentPolicy)
+        try write(Data((parentText + (prepared.sourceLinks?.protection() ?? "")).utf8), to: parentPolicy)
         var privateFiles = [copy, settings, shadowAndroid.appendingPathComponent("gradle.properties"),
                             policy, parentPolicy, launcher, initScript]
         if prepared.metadata != nil { privateFiles.append(shadowMetadata) }
@@ -165,25 +160,27 @@ final class FlutterAndroidExecution: Sendable {
               absent.allSatisfy({ !exists($0) }) else {
             throw failure("Flutter inputs changed before the protected execution became ready.")
         }
+        try prepared.sourceLinks?.check()
         try write(Data("{\"schema\":1,\"state\":\"ready\",\"cleanup\":\"remove-after-use\"}\n".utf8),
                   to: root.appendingPathComponent("ready.json"))
         return FlutterAndroidExecution(root: root, sdk: copy, settings: settings, launcher: launcher,
             initScript: initScript, originalSDK: source, android: android, entrypoint: entrypoint,
             owner: owner, originalTree: before,
             immutableView: try tree(copy, excluding: mutableView, bindIdentity: true), protectedInputs: inputs,
-            privateInputs: privateInputs, absentInputs: absent, parentPolicy: parentPolicy)
+            privateInputs: privateInputs, absentInputs: absent, parentPolicy: parentPolicy, sourceLinks: prepared.sourceLinks)
     }
 
     private init(root: URL, sdk: URL, settings: URL, launcher: URL, initScript: URL, originalSDK: URL,
                  android: URL, entrypoint: URL, owner: OwnedRoot, originalTree: [String: Entry],
                  immutableView: [String: Entry], protectedInputs: [URL: Entry], privateInputs: [URL: Entry],
-                 absentInputs: Set<URL>, parentPolicy: URL) {
+                 absentInputs: Set<URL>, parentPolicy: URL, sourceLinks: FlutterSourceLinks?) {
         self.root = root; self.sdk = sdk; self.settings = settings; self.launcher = launcher
         self.initScript = initScript; self.originalSDK = originalSDK; self.android = android
         self.entrypoint = entrypoint; self.owner = owner; self.originalTree = originalTree
         self.immutableView = immutableView; self.protectedInputs = protectedInputs
         self.privateInputs = privateInputs; self.parentPolicy = parentPolicy
         self.absentInputs = absentInputs
+        self.sourceLinks = sourceLinks
     }
 
     func runner(base: any ProcessRunner) -> any ProcessRunner {
@@ -199,6 +196,7 @@ final class FlutterAndroidExecution: Sendable {
     }
 
     func check() throws {
+        try sourceLinks?.check()
         guard try Identity(root) == owner.identity, try Self.tree(originalSDK, bindIdentity: true) == originalTree,
               try Self.tree(sdk, excluding: Self.mutableView, bindIdentity: true) == immutableView,
               try protectedInputs.allSatisfy({ try Self.entry($0.key, bindIdentity: true) == $0.value }),
@@ -270,6 +268,8 @@ final class FlutterAndroidExecution: Sendable {
             // The base runner retains timeout, cancellation, streaming and nonzero status semantics.
             let result: ProcessResult
             do {
+                try await execution.sourceLinks?.checkTracking()
+                try execution.sourceLinks?.check()
                 result = try await withTaskCancellationHandler {
                     try await base.run(protected, onLine: onLine)
                 } onCancel: {
@@ -277,9 +277,15 @@ final class FlutterAndroidExecution: Sendable {
                 }
             } catch {
                 await broker?.finish()
+                await FlutterSourceLinks.observeFailure(error, links: execution.sourceLinks,
+                    check: { try execution.sourceLinks?.check() }, record: { primary, protection in
+                        try FlutterAndroidHostGuard.writeReceipt(primary: primary, protection: protection,
+                            root: execution.root, to: FlutterAndroidHostGuard.receiptDirectory)
+                    })
                 throw error
             }
             await broker?.finish()
+            try await execution.sourceLinks?.checkTracking()
             try execution.check()
             return result
         }
@@ -294,8 +300,21 @@ final class FlutterAndroidExecution: Sendable {
         let metadata: URL?
         let files: [URL: Entry]
         let absent: Set<URL>
+        let sourceLinks: FlutterSourceLinks?
+        let outputs: [URL]
+
+        func checkedOutputs(protecting inputs: [URL: Entry]) throws -> [URL] {
+            for output in outputs {
+                _ = try FlutterAndroidExecution.canonical(output, mayBeAbsent: true)
+                guard !inputs.keys.contains(where: { FlutterAndroidExecution.inside(output, $0) || FlutterAndroidExecution.inside($0, output) }) else {
+                    throw FlutterAndroidExecution.failure("A Flutter generated output overlaps a protected source input.")
+                }
+            }
+            return outputs
+        }
 
         func check() throws {
+            try sourceLinks?.check()
             guard try files.allSatisfy({ try FlutterAndroidExecution.entry($0.key, bindIdentity: true) == $0.value }),
                   absent.allSatisfy({ !FlutterAndroidExecution.exists($0) }) else {
                 throw FlutterAndroidExecution.failure("Prepared Flutter workspace inputs or verified absent metadata changed.")
@@ -327,7 +346,7 @@ final class FlutterAndroidExecution: Sendable {
         }
         let metadata = app.appendingPathComponent(".flutter-plugins-dependencies")
         let hasMetadata = exists(metadata)
-        var required = trackedFiles + [entrypoint, workspaceRoot.appendingPathComponent("pubspec.lock"),
+        var required = [entrypoint, workspaceRoot.appendingPathComponent("pubspec.lock"),
             workspaceRoot.appendingPathComponent(".dart_tool/package_config.json"),
             workspaceRoot.appendingPathComponent(".dart_tool/package_graph.json"),
             app.appendingPathComponent("android/local.properties")]
@@ -349,8 +368,11 @@ final class FlutterAndroidExecution: Sendable {
                 ancestor.deleteLastPathComponent()
             }
         }
+        let sourceLinks = preparation.preparedDependencies ? preparation.sourceLinks : nil
+        guard sourceLinks == nil || sourceLinks?.root.path == workspaceRoot.path else { throw failure("Flutter source 링크의 workspace가 변경됐습니다.") }
+        guard !required.contains(where: { sourceLinks?.contains($0) == true }) else { throw failure("필수 Flutter metadata 입력은 source 링크 예외가 될 수 없습니다.") }
         var files: [URL: Entry] = [:]
-        for path in Set(required) {
+        for path in Set(required + trackedFiles.filter { sourceLinks?.contains($0) != true }) {
             let path = try preparedPath(path)
             let value = try entry(path, bindIdentity: true)
             guard inside(workspaceRoot, path), value.kind == .file else {
@@ -369,8 +391,10 @@ final class FlutterAndroidExecution: Sendable {
         guard currentPreparation.pluginMetadataIssue(project: currentProject, sdk: sdk, platform: .android) == nil else {
             throw failure("Flutter Android plugin metadata does not match the current resolved package graph and manifests.")
         }
+        let outputs = [app.appendingPathComponent("build"), app.appendingPathComponent(".dart_tool/flutter_build"),
+                       workspaceRoot.appendingPathComponent(".dart_tool/hooks_runner")]
         let prepared = PreparedInputs(sdk: sdk, entrypoint: try canonical(entrypoint), metadata: hasMetadata ? metadata : nil,
-                                      files: files, absent: absent)
+                                      files: files, absent: absent, sourceLinks: sourceLinks, outputs: outputs)
         try prepared.check()
         return prepared
     }

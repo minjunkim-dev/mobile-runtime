@@ -75,7 +75,7 @@ with tempfile.TemporaryDirectory(prefix="runstir-workflow-") as temporary:
                                  capture_output=True, text=True, timeout=10)
     assert unsupported.returncode == 1, unsupported
     unsupported_document = json.loads(unsupported.stdout)
-    assert "--prepared-dependencies는 React Native build/up에서만 사용할 수 있습니다" in unsupported_document["error"]["message"]
+    assert "--prepared-dependencies는 React Native·Flutter build/up에서만 사용할 수 있습니다" in unsupported_document["error"]["message"]
     assert unsupported_document["operation"]["preparedDependencies"] is True
 
     tools = root / "tools"

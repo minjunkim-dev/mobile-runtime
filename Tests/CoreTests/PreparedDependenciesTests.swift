@@ -4,8 +4,36 @@ import Testing
 
 @testable import Core
 
-@Suite("explicit manually prepared RN dependencies")
+@Suite("explicit manually prepared dependencies")
 struct PreparedDependenciesTests {
+    @Test("Flutter manual preparation reads workspace output and requires no Node installation", arguments: [false, true])
+    func flutterWorkspace(_ workspace: Bool) async throws {
+        let repo = try flutterFixture(workspace: workspace)
+        let runner = FakeProcessRunner()
+        let anchor = try #require(ProjectAnchor.detect(from: workspace ? repo.url("apps/client") : repo.root))
+        var context = UpContext()
+        let result = try await DependenciesStage(anchor: anchor, runner: runner, includePods: false,
+            preparedDependencies: true).run(&context)
+        #expect(result.status == .skipped)
+        #expect(result.detail?.contains("plugin resolver") == true)
+        #expect(runner.log.all.isEmpty)
+        #expect(!context.nodeModulesReinstalled)
+    }
+
+    @Test("Flutter missing prepared output stops without installation", arguments: ["pubspec.lock", ".dart_tool/package_config.json", ".dart_tool/package_graph.json"])
+    func flutterMissingOutput(_ name: String) async throws {
+        let repo = try flutterFixture(workspace: true)
+        try FileManager.default.removeItem(at: repo.url(name))
+        let runner = FakeProcessRunner()
+        let anchor = try #require(ProjectAnchor.detect(from: repo.url("apps/client")))
+        var context = UpContext()
+        await #expect(throws: DomainError.self) {
+            try await DependenciesStage(anchor: anchor, runner: runner, includePods: false,
+                preparedDependencies: true).run(&context)
+        }
+        #expect(runner.log.all.isEmpty)
+    }
+
     @Test("manual preparation skips installers without claiming lock alignment", arguments: [false, true])
     func readyPreparedInputs(_ includePods: Bool) async throws {
         let repo = try fixture()
@@ -114,6 +142,17 @@ struct PreparedDependenciesTests {
                 preparedDependencies: true).run(&context)
         }
         #expect(runner.log.all.isEmpty)
+    }
+
+    private func flutterFixture(workspace: Bool) throws -> FixtureRepo {
+        let repo = try FixtureRepo()
+        let declaration = "name: example\nenvironment:\n  sdk: ^3.6.0\ndependencies:\n  flutter:\n    sdk: flutter\n"
+        try repo.write("pubspec.yaml", declaration + (workspace ? "workspace:\n  - apps/*\n" : ""))
+        if workspace { try repo.write("apps/client/pubspec.yaml", declaration.replacingOccurrences(of: "name: example", with: "name: client") + "resolution: workspace\n") }
+        try repo.write("pubspec.lock", "packages: {}\n")
+        try repo.write(".dart_tool/package_config.json", "{}")
+        try repo.write(".dart_tool/package_graph.json", "{}")
+        return repo
     }
 
     private func fixture() throws -> FixtureRepo {

@@ -7,6 +7,79 @@ import Testing
 
 @Suite("Flutter Android private execution boundaries", .serialized)
 struct FlutterAndroidExecutionTests {
+    @Test("Dart native hook cache stays at the resolved workspace and cannot write source or metadata", arguments: [false, true])
+    func nativeHookCache(_ member: Bool) async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let (app, preparation) = try await fixture.preparation(member: member)
+        let inputs = try FlutterAndroidExecution.preparedInputs(app: app, preparation: preparation, trackedFiles: [])
+        let profile = try FlutterAndroidExecution.childPolicy(protected: Array(inputs.files.keys) + Array(inputs.absent),
+            sdk: fixture.root.appendingPathComponent("sdk"), writable: inputs.checkedOutputs(protecting: inputs.files))
+        let generated = try await fixture.run(profile: profile,
+            script: "/bin/mkdir -p \"$1/workspace/.dart_tool/hooks_runner/shared/objective_c\" && printf cache > \"$1/workspace/.dart_tool/hooks_runner/shared/objective_c/.lock\"")
+        #expect(generated.terminationStatus.isSuccess, Comment(rawValue: generated.combinedOutput))
+        for path in ["workspace/pubspec.lock", "workspace/.dart_tool/package_config.json", "workspace/.dart_tool/package_graph.json",
+                     "workspace/.dart_tool/other.cache", "sdk/bin/cache/flutter.version.json",
+                     member ? "workspace/apps/client/lib/main.dart" : "workspace/lib/main.dart"] {
+            let result = try await fixture.run(profile: profile, script: "printf changed > \"$1/\(path)\"")
+            #expect(!result.terminationStatus.isSuccess, Comment(rawValue: path))
+        }
+        try inputs.check()
+        let outside = try fixture.directory("outside")
+        try fixture.file("outside/preserved", "preserved")
+        let escape = try await fixture.run(profile: profile,
+            script: "/bin/ln -s \"$1/outside\" \"$1/workspace/.dart_tool/hooks_runner/escape\" && printf changed > \"$1/workspace/.dart_tool/hooks_runner/escape/preserved\"")
+        #expect(!escape.terminationStatus.isSuccess)
+        #expect(try String(contentsOf: outside.appendingPathComponent("preserved"), encoding: .utf8) == "preserved")
+    }
+
+    @Test("native hook output aliases and source overlap are refused before creating a view", arguments: ["alias", "source"])
+    func nativeHookOutputBoundaries(_ mode: String) async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let (app, preparation) = try await fixture.preparation()
+        let target = try fixture.directory("outside")
+        var tracked: [URL] = []
+        if mode == "alias" {
+            try FileManager.default.createSymbolicLink(atPath: app.appendingPathComponent(".dart_tool/hooks_runner").path, withDestinationPath: target.path)
+        } else {
+            try fixture.file("workspace/.dart_tool/hooks_runner/source.dart", "preserved")
+            tracked = [app.appendingPathComponent(".dart_tool/hooks_runner/source.dart")]
+        }
+        let inputs = try FlutterAndroidExecution.preparedInputs(app: app, preparation: preparation, trackedFiles: tracked)
+        #expect(throws: DomainError.self) { try inputs.checkedOutputs(protecting: inputs.files) }
+    }
+
+    @Test("Android prepared inputs admit bound source leaves only in explicit manual mode", arguments: [false, true])
+    func preparedSourceLinks(_ manual: Bool) async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let (app, initial) = try await fixture.preparation()
+        var preparation = initial
+        preparation.preparedDependencies = manual
+        try fixture.file("workspace/assets/notes.md", "preserved notes\n")
+        let link = app.appendingPathComponent("NOTES.md"), target = app.appendingPathComponent("assets/notes.md")
+        try FileManager.default.createSymbolicLink(atPath: link.path, withDestinationPath: "assets/notes.md")
+        let runner = SystemProcessRunner(environment: ["PATH": "/usr/bin:/bin:/usr/sbin:/sbin"])
+        for arguments in [["init", "-q"], ["add", "--", "NOTES.md"]] {
+            let result = try await runner.run(ProcessCommand("/usr/bin/git", ["-C", app.path] + arguments))
+            try #require(result.terminationStatus.isSuccess)
+        }
+        preparation.sourceLinks = try await FlutterSourceLinks.capture(root: app, sources: [link.path, target.path],
+            links: [link.path], forbidden: [app.appendingPathComponent("lib/main.dart")], runner: runner)
+        if !manual {
+            #expect(throws: DomainError.self) {
+                try FlutterAndroidExecution.preparedInputs(app: app, preparation: preparation, trackedFiles: [link, target])
+            }
+            return
+        }
+        let inputs = try FlutterAndroidExecution.preparedInputs(app: app, preparation: preparation, trackedFiles: [link, target])
+        try inputs.check()
+        try "external change\n".write(to: target, atomically: false, encoding: .utf8)
+        #expect(throws: DomainError.self) { try inputs.check() }
+        #expect(try String(contentsOf: target, encoding: .utf8) == "external change\n")
+    }
+
     @Test("factory rejects unverified SDK capability before creating a private execution view")
     func unverifiedFactoryInput() async throws {
         let fixture = try Fixture()

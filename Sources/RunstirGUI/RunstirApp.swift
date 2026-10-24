@@ -255,17 +255,19 @@ struct InspectionView: View {
             }.disabled(busy)
             if result?.selection.selected?.framework == .reactNative {
                 TextField("Metro port (8081)", text: $port).disabled(busy).focused($focus, equals: .port)
-                Toggle("직접 준비한 의존성 사용", isOn: $preparedDependencies)
-                    .disabled(busy).focused($focus, equals: .preparedDependencies)
-                    .accessibilityIdentifier("project.prepared-dependencies")
-                    .accessibilityHint("RN 빌드와 실행에만 적용합니다. 의존성 재설치와 lock 정렬 재검증을 생략합니다.")
-                Text("의존성 재설치·lock 정렬 재검증을 생략합니다. 준비한 의존성의 정합성은 사용자가 확인해야 합니다.")
-                    .font(.caption).foregroundStyle(.secondary)
             } else if result?.selection.selected?.framework == .flutter {
                 HStack {
                     TextField("Entrypoint (lib/main.dart)", text: $entrypoint)
                     TextField("VM service port (자동 선택)", text: $port).focused($focus, equals: .port)
                 }.disabled(busy)
+            }
+            if result?.selection.selected?.framework == .reactNative || result?.selection.selected?.framework == .flutter {
+                Toggle("직접 준비한 의존성 사용", isOn: $preparedDependencies)
+                    .disabled(busy).focused($focus, equals: .preparedDependencies)
+                    .accessibilityIdentifier("project.prepared-dependencies")
+                    .accessibilityHint("RN·Flutter 빌드와 실행에 적용합니다. 의존성 재설치·lock 정렬·Flutter plugin resolver 재검증을 생략합니다. Flutter의 추적된 내부 source 파일 링크만 검증 후 허용합니다.")
+                Text("의존성 재설치·lock 정렬·Flutter plugin resolver 재검증을 생략합니다. 준비한 의존성의 정합성은 사용자가 확인해야 합니다. Flutter의 추적된 내부 source 파일 링크만 검증 후 허용합니다.")
+                    .font(.caption).foregroundStyle(.secondary)
             }
             HStack {
                 Button("준비 계획 확인") { prepare() }.disabled(busy).focused($focus, equals: .plan)
@@ -475,7 +477,7 @@ struct InspectionView: View {
             module: kind != .down && !module.isEmpty ? module : nil,
             variant: kind != .down && !variant.isEmpty ? variant : nil,
             port: usesPort && !port.isEmpty ? Int(port) : nil,
-            preparedDependencies: kind != .down && result?.selection.selected?.framework == .reactNative && preparedDependencies)
+            preparedDependencies: kind != .down && (result?.selection.selected?.framework == .reactNative || result?.selection.selected?.framework == .flutter) && preparedDependencies)
         session.start {
             let output = await WorkflowExecution.run(kind, input: input) { event in
                 Task { @MainActor in

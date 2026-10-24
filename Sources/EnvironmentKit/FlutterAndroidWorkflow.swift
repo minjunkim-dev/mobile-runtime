@@ -26,23 +26,30 @@ struct FlutterAndroidWorkflow: Sendable {
     let entrypoint: URL
 
     static func make(input: ProjectInspectionInput, anchor: ProjectAnchor, runner: any ProcessRunner,
+                     preparedDependencies: Bool = false,
                      preparation existing: FlutterPreparation? = nil, tools existingTools: ToolPreparation? = nil,
                      factory: Factory = defaultFactory) async throws -> Self {
         try Task.checkCancellation()
         guard anchor.framework == .flutter, anchor.hasAndroidDirectory else {
             throw failure()
         }
-        let preparation: FlutterPreparation
+        var preparation: FlutterPreparation
         if let existing { preparation = existing }
         else {
             preparation = try await FlutterPreparation.inspect(directory: anchor.directory,
-                entrypoint: input.entrypoint, environment: input.environment, runner: runner)
+                entrypoint: input.entrypoint, environment: input.environment, runner: runner,
+                preparedDependencies: preparedDependencies)
         }
         // Reuse the current graph/config validator. A workspace member never needs a local config.
         let inputs = try FlutterAndroidExecution.preparedInputs(app: anchor.directory, preparation: preparation, trackedFiles: [])
         guard let workspace = preparation.workspace else { throw failure() }
-        let tracked = try PreparationExecution.sourceFiles(workspace.directory, packageRoots: workspace.packages)
-            .keys.sorted().map { URL(fileURLWithPath: $0) }
+        let inventory = try PreparationExecution.sourceFiles(workspace.directory, packageRoots: workspace.packages)
+        let tracked = inventory.keys.sorted().map { URL(fileURLWithPath: $0) }
+        if preparedDependencies, let sdk = preparation.sdk {
+            preparation.sourceLinks = try await FlutterSourceLinks.capture(root: workspace.directory,
+                sources: Set(inventory.keys), links: Set(inventory.filter { $0.value.hasPrefix("symlink:") }.keys),
+                forbidden: [sdk.root, inputs.entrypoint], packageRoots: workspace.packages, runner: runner)
+        }
         try Task.checkCancellation()
         let view = try factory(anchor.directory, preparation, tracked)
         // Releasing the view removes its exclusive directory, after an interruption too.

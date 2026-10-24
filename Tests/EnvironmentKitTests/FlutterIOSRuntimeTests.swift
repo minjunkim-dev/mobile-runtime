@@ -9,6 +9,89 @@ import Testing
 // Subprocess fixtures must not compete with one another for their wall-clock budgets.
 @Suite("Flutter native child boundaries", .serialized)
 struct FlutterIOSRuntimeTests {
+    @Test("a finite native failure preserves its primary error and observes index and file protection",
+          arguments: ["source", "index", "receipt-failure", "cancel"])
+    func sourceLinkFailureObservation(_ mode: String) async throws {
+        let f = try FlutterIOSFixture()
+        let evidence = try FixtureRepo()
+        let receipts = evidence.url("receipts")
+        if mode == "receipt-failure" { try evidence.write("receipts", "preserved receipt path") }
+        try f.repo.write("assets/notes.md", "preserved notes\n")
+        try FileManager.default.createSymbolicLink(atPath: f.repo.url("NOTES.md").path, withDestinationPath: "assets/notes.md")
+        let git = SystemProcessRunner(environment: ["PATH": "/usr/bin:/bin:/usr/sbin:/sbin"])
+        for arguments in [["init", "-q"], ["add", "--", "NOTES.md"]] {
+            let result = try await git.run(ProcessCommand("/usr/bin/git", ["-C", f.repo.root.path] + arguments))
+            try #require(result.terminationStatus.isSuccess)
+        }
+        let runner = FlutterSourceFailureRunner(base: FlutterIOSRunner(fixture: f), root: f.repo.root, mode: mode)
+        let preparation = try await FlutterPreparation.inspect(directory: f.app, environment: f.flutter.environment,
+            runner: runner, preparedDependencies: true)
+        let candidate = try #require(f.input().project.selection().selected)
+        let anchor = try #require(ProjectAnchor.detect(candidate: candidate))
+        let workflow = try await FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation,
+            runner: runner, receipts: receipts)
+        let stage = try #require(workflow.guarding([SourceFailureStage(runner: workflow.buildRunner)]).first)
+        var context = UpContext()
+        do {
+            _ = try await stage.run(&context)
+            Issue.record("The finite native failure must escape")
+        } catch {
+            if mode == "cancel" { #expect(error is CancellationError) }
+            else {
+                guard let process = error as? ProcessError, case .timedOut(let command, _) = process else {
+                    Issue.record("The primary timeout must remain: \(error)")
+                    return
+                }
+                #expect(command == "fixture native build")
+            }
+        }
+        if mode == "cancel" {
+            #expect(!runner.observedAfterFailure)
+            #expect(!FileManager.default.fileExists(atPath: receipts.path))
+            return
+        }
+        #expect(runner.observedAfterFailure)
+        if mode == "receipt-failure" {
+            #expect(try String(contentsOf: receipts, encoding: .utf8) == "preserved receipt path")
+            return
+        }
+        let files = try FileManager.default.contentsOfDirectory(at: receipts, includingPropertiesForKeys: nil)
+        let file = try #require(files.only)
+        let receipt = try #require(JSONSerialization.jsonObject(with: Data(contentsOf: file)) as? [String: Any])
+        #expect((receipt["primary"] as? String)?.contains("fixture native build") == true)
+        #expect((receipt["protection"] as? String)?.isEmpty == false)
+        if mode == "source" { #expect(try String(contentsOf: f.repo.url("assets/notes.md"), encoding: .utf8) == "external change") }
+    }
+
+    @Test("explicit prepared Flutter source file links preserve the link and its target", arguments: [false, true])
+    func preparedSourceFileLink(_ manual: Bool) async throws {
+        let f = try FlutterIOSFixture()
+        try f.repo.write("assets/notes.md", "preserved notes\n")
+        try FileManager.default.createSymbolicLink(atPath: f.repo.url("NOTES.md").path, withDestinationPath: "assets/notes.md")
+        let git = SystemProcessRunner(environment: ["PATH": "/usr/bin:/bin:/usr/sbin:/sbin"])
+        for arguments in [["init", "-q"], ["add", "--", "NOTES.md", "assets/notes.md"]] {
+            let result = try await git.run(ProcessCommand("git", ["-C", f.repo.root.path] + arguments))
+            #expect(result.terminationStatus.isSuccess)
+        }
+        let runner = FlutterSourceLinkGitRunner(base: FlutterIOSRunner(fixture: f))
+        let preparation = try await FlutterPreparation.inspect(directory: f.app, environment: f.flutter.environment,
+            runner: runner, preparedDependencies: manual)
+        let candidate = try #require(f.input().project.selection().selected)
+        let anchor = try #require(ProjectAnchor.detect(candidate: candidate))
+        if !manual {
+            await #expect(throws: DomainError.self) {
+                try await FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation, runner: runner)
+            }
+            return
+        }
+        let workflow = try await FlutterIOSWorkflow(anchor: anchor, input: f.input().project,
+            preparation: preparation, runner: runner)
+        try workflow.check()
+        #expect(try FileManager.default.destinationOfSymbolicLink(atPath: f.repo.url("NOTES.md").path) == "assets/notes.md")
+        try f.repo.write("assets/notes.md", "external change\n")
+        #expect(throws: DomainError.self) { try workflow.check() }
+    }
+
     @Test("the native build wrapper preserves argument privacy and command controls")
     func buildCommandPrivacy() async throws {
         let f = try FlutterIOSFixture()
@@ -16,7 +99,7 @@ struct FlutterIOSRuntimeTests {
         let preparation = try await FlutterPreparation.inspect(directory: f.app, environment: f.flutter.environment, runner: runner)
         let candidate = try #require(f.input().project.selection().selected)
         let anchor = try #require(ProjectAnchor.detect(candidate: candidate))
-        let workflow = try FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation, runner: runner)
+        let workflow = try await FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation, runner: runner)
         _ = try await workflow.buildRunner.run(ProcessCommand("xcodebuild", ["synthetic-auth", "build"],
             environment: ["KEEP": "kept"], workingDirectory: f.app, timeout: .seconds(10), redactArguments: true))
         let wrapped = try #require(runner.commands.last)
@@ -63,7 +146,7 @@ struct FlutterIOSRuntimeTests {
         let preparation = try await FlutterPreparation.inspect(directory: f.app, environment: f.flutter.environment, runner: f.flutter.runner())
         let candidate = try #require(f.input().project.selection().selected)
         let anchor = try #require(ProjectAnchor.detect(candidate: candidate))
-        let workflow = try FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation, runner: f.flutter.runner())
+        let workflow = try await FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation, runner: f.flutter.runner())
         let runner = SystemProcessRunner(environment: ["PATH": "/usr/bin:/bin", "HOME": f.repo.url("home").path], workingDirectory: f.repo.root)
         let child = try await runner.run(ProcessCommand("/usr/bin/sandbox-exec",
             ["-f", workflow.childProfile.path, "/bin/sh", "-c", "printf changed > \"$1\"", "_", file.path], timeout: .seconds(10)))
@@ -83,7 +166,7 @@ struct FlutterIOSRuntimeTests {
         let candidate = try #require(f.input().project.selection().selected)
         let anchor = try #require(ProjectAnchor.detect(candidate: candidate))
         if mode == "unchanged" {
-            let workflow = try FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation, runner: f.flutter.runner())
+            let workflow = try await FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation, runner: f.flutter.runner())
             try workflow.check()
             try f.repo.write(".flutter-plugins-dependencies", "new metadata")
             #expect(throws: DomainError.self) { try workflow.check() }
@@ -91,8 +174,8 @@ struct FlutterIOSRuntimeTests {
             let outside = try FixtureRepo()
             if mode == "created" { try f.repo.write(".flutter-plugins-dependencies", "new metadata") }
             else { try FileManager.default.createSymbolicLink(at: file, withDestinationURL: outside.url("missing")) }
-            #expect(throws: DomainError.self) {
-                try FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation, runner: f.flutter.runner())
+            await #expect(throws: DomainError.self) {
+                try await FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation, runner: f.flutter.runner())
             }
             if mode == "created" { #expect(try String(contentsOf: file, encoding: .utf8) == "new metadata") }
             else { #expect(try FileManager.default.destinationOfSymbolicLink(atPath: file.path) == outside.url("missing").path) }
@@ -135,33 +218,34 @@ struct FlutterIOSRuntimeTests {
         #expect(try String(contentsOf: unrelated.url("preserve"), encoding: .utf8) == "owned temporary source\n")
     }
 
-    @Test("current inspection and the stage guard reject changed plugin metadata and source", arguments: ["before-metadata", "between-metadata-only", "between-metadata", "between-missing", "after-metadata", "after-source"])
-    func aliasEvidenceChanges(_ mode: String) async throws {
+    @Test("current inspection and the stage guard reject changed plugin metadata and source", arguments: ["before-metadata", "between-metadata-only", "between-metadata", "between-missing", "after-metadata", "after-source"], [false, true])
+    func aliasEvidenceChanges(_ mode: String, _ manual: Bool) async throws {
         let f = try FlutterIOSFixture()
         let plugin = try FixtureRepo()
         try f.configureIOSPlugin(directory: plugin.root)
         try f.repo.directory("ios/.symlinks/plugins")
         try FileManager.default.createSymbolicLink(at: f.repo.url("ios/.symlinks/plugins/owned_plugin"), withDestinationURL: plugin.root)
-        let preparation = try await FlutterPreparation.inspect(directory: f.app, environment: f.flutter.environment, runner: f.flutter.runner())
+        let preparation = try await FlutterPreparation.inspect(directory: f.app, environment: f.flutter.environment,
+            runner: f.flutter.runner(), preparedDependencies: manual)
         let candidate = try #require(f.input().project.selection().selected)
         let anchor = try #require(ProjectAnchor.detect(candidate: candidate))
         let changed = mode == "after-source" ? "lib/main.dart" : ".flutter-plugins-dependencies"
         if mode == "before-metadata" {
             try f.repo.write(changed, "changed metadata")
             let runner = FlutterIOSRunner(fixture: f)
-            let result = await WorkflowExecution.run(.build, input: f.input(), runner: runner, leases: f.leases)
+            let result = await WorkflowExecution.run(.build, input: f.input(preparedDependencies: manual), runner: runner, leases: f.leases)
             #expect(result.exitCode == 1)
             #expect(!runner.commands.contains { $0.arguments.last == "build" })
         } else if mode == "between-metadata-only" {
             try f.repo.write(changed, "changed metadata only")
-            #expect(throws: DomainError.self) {
-                try FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation, runner: f.flutter.runner())
+            await #expect(throws: DomainError.self) {
+                try await FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation, runner: f.flutter.runner())
             }
             #expect(try String(contentsOf: f.repo.url(changed), encoding: .utf8) == "changed metadata only")
         } else if mode == "between-missing" {
             try FileManager.default.removeItem(at: plugin.root)
-            #expect(throws: DomainError.self) {
-                try FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation, runner: f.flutter.runner())
+            await #expect(throws: DomainError.self) {
+                try await FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation, runner: f.flutter.runner())
             }
             #expect(!FileManager.default.fileExists(atPath: plugin.root.path))
         } else if mode == "between-metadata" {
@@ -172,13 +256,13 @@ struct FlutterIOSRuntimeTests {
             let alias = f.repo.url("ios/.symlinks/plugins/owned_plugin")
             try FileManager.default.removeItem(at: alias)
             try FileManager.default.createSymbolicLink(at: alias, withDestinationURL: unrelated.root)
-            #expect(throws: DomainError.self) {
-                try FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation, runner: f.flutter.runner())
+            await #expect(throws: DomainError.self) {
+                try await FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation, runner: f.flutter.runner())
             }
             #expect(try FileManager.default.destinationOfSymbolicLink(atPath: alias.path) == unrelated.root.path)
             return
         } else {
-            let workflow = try FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation, runner: f.flutter.runner())
+            let workflow = try await FlutterIOSWorkflow(anchor: anchor, input: f.input().project, preparation: preparation, runner: f.flutter.runner())
             try f.repo.write(changed, "changed source")
             #expect(throws: DomainError.self) { try workflow.check() }
             #expect(try String(contentsOf: f.repo.url(changed), encoding: .utf8) == "changed source")
@@ -220,7 +304,7 @@ struct FlutterIOSRuntimeTests {
             environment: f.flutter.environment, runner: f.flutter.runner())
         let candidate = try #require(f.input().project.selection().selected)
         let anchor = try #require(ProjectAnchor.detect(candidate: candidate))
-        let workflow = try FlutterIOSWorkflow(anchor: anchor, input: f.input().project,
+        let workflow = try await FlutterIOSWorkflow(anchor: anchor, input: f.input().project,
             preparation: preparation, runner: f.flutter.runner())
         let runner = SystemProcessRunner(environment: ["PATH": "/usr/bin:/bin", "HOME": f.repo.url("home").path,
             "TMPDIR": childTemporary.path], workingDirectory: f.repo.root)
@@ -262,20 +346,30 @@ struct FlutterIOSRuntimeTests {
         let leases = f.leases
         let task = Task { await WorkflowExecution.run(.up, input: input, runner: runner, leases: leases) }
         let marker = f.repo.url("build/child.pid")
-        let deadline = ContinuousClock.now.advanced(by: .seconds(30))
-        while !FileManager.default.fileExists(atPath: marker.path), ContinuousClock.now < deadline {
-            try await Task.sleep(for: .milliseconds(10))
-        }
+        let observedPID = await waitForCompletePID(at: marker)
         task.cancel()
         let result = await task.value
         #expect(result.exitCode == 130, Comment(rawValue: result.up?.failure?.message ?? ""))
-        let pid = try #require(Int32(try String(contentsOf: marker, encoding: .utf8).trimmingCharacters(in: .whitespacesAndNewlines)))
+        let pid = try #require(observedPID, "The finite child did not publish a complete positive PID within 30 seconds.")
         #expect(kill(pid, 0) == -1)
         #expect(errno == ESRCH)
         #expect(!runner.commands.contains { $0.arguments.contains("install") || $0.arguments.contains("launch") })
         let owner = LeaseOwner(operationId: "next", command: "build", project: f.repo.root.path)
         let lease = try f.leases.acquire([.folder(FolderIdentity(directory: f.repo.root)), .device(.ios, "A")], owner: owner)
         lease.release()
+    }
+
+    private func waitForCompletePID(at marker: URL) async -> Int32? {
+        let deadline = ContinuousClock.now.advanced(by: .seconds(30))
+        while ContinuousClock.now < deadline, !Task.isCancelled {
+            // Shell redirection creates the file before echo publishes the PID.
+            if let text = try? String(contentsOf: marker, encoding: .utf8), text.hasSuffix("\n"),
+               let pid = Int32(text.trimmingCharacters(in: .whitespacesAndNewlines)), pid > 0 {
+                return pid
+            }
+            try? await Task.sleep(for: .milliseconds(10))
+        }
+        return nil
     }
 
     @Test("a successful app PID without a service URI is not development readiness")
@@ -496,14 +590,11 @@ struct FlutterIOSRuntimeTests {
         let leases = f.leases
         let task = Task { await WorkflowExecution.run(.up, input: input, runner: runner, leases: leases) }
         let marker = f.repo.url("build/query.pid")
-        let deadline = ContinuousClock.now.advanced(by: .seconds(30))
-        while !FileManager.default.fileExists(atPath: marker.path), ContinuousClock.now < deadline {
-            try await Task.sleep(for: .milliseconds(10))
-        }
+        let observedPID = await waitForCompletePID(at: marker)
         task.cancel()
         let result = await task.value
         #expect(result.exitCode == 130, Comment(rawValue: result.up?.failure?.message ?? ""))
-        let pid = try #require(Int32(try String(contentsOf: marker, encoding: .utf8).trimmingCharacters(in: .whitespacesAndNewlines)))
+        let pid = try #require(observedPID, "The finite child did not publish a complete positive PID within 30 seconds.")
         #expect(kill(pid, 0) == -1)
         #expect(errno == ESRCH)
         #expect(result.operation.developmentServiceURI == nil)
@@ -545,7 +636,7 @@ struct FlutterIOSRuntimeTests {
             environment: f.flutter.environment, runner: f.flutter.runner())
         let candidate = try #require(f.input().project.selection().selected)
         let anchor = try #require(ProjectAnchor.detect(candidate: candidate))
-        let workflow = try FlutterIOSWorkflow(anchor: anchor, input: f.input().project,
+        let workflow = try await FlutterIOSWorkflow(anchor: anchor, input: f.input().project,
             preparation: preparation, runner: f.flutter.runner())
         let runner = SystemProcessRunner(environment: ["PATH": "/usr/bin:/bin", "HOME": f.repo.url("home").path], workingDirectory: f.repo.root)
         let remove = try await runner.run(ProcessCommand("/usr/bin/sandbox-exec",
@@ -557,6 +648,61 @@ struct FlutterIOSRuntimeTests {
         try FileManager.default.removeItem(at: alias)
         #expect(throws: DomainError.self) { try workflow.check() }
         #expect(!FileManager.default.fileExists(atPath: alias.path))
+    }
+}
+
+private struct SourceFailureStage: Stage {
+    let id = "fixture.native"
+    let runner: any ProcessRunner
+    func run(_ context: inout UpContext) async throws -> StageOutcome {
+        _ = try await runner.run(ProcessCommand("xcodebuild", ["build"]))
+        return .pass("fixture")
+    }
+}
+
+struct FlutterSourceLinkGitRunner: ProcessRunner {
+    let base: any ProcessRunner
+    func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+        if command.executable == "git" || command.executable == "/usr/bin/git"
+            || (command.executable == "/usr/bin/env" && command.arguments.first == "-i" && command.arguments.contains("/usr/bin/git")) {
+            return try await SystemProcessRunner(environment: ["PATH": "/usr/bin:/bin:/usr/sbin:/sbin"]).run(command, onLine: onLine)
+        }
+        return try await base.run(command, onLine: onLine)
+    }
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+        try await base.spawnDetached(command, logFile: logFile)
+    }
+}
+
+private final class FlutterSourceFailureRunner: ProcessRunner, @unchecked Sendable {
+    let base: any ProcessRunner
+    let root: URL
+    let mode: String
+    private let lock = NSLock()
+    private var failed = false
+    private var observed = false
+    var observedAfterFailure: Bool { lock.withLock { observed } }
+    init(base: any ProcessRunner, root: URL, mode: String) { self.base = base; self.root = root; self.mode = mode }
+    func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+        let system = SystemProcessRunner(environment: ["PATH": "/usr/bin:/bin:/usr/sbin:/sbin"])
+        if command.executable == "/usr/bin/env", command.arguments.contains("/usr/bin/git") {
+            lock.withLock { if failed { observed = true } }
+            return try await system.run(command, onLine: onLine)
+        }
+        if command.executable == "/usr/bin/sandbox-exec", command.arguments.last == "build" {
+            if mode == "source" { try "external change".write(to: root.appendingPathComponent("assets/notes.md"), atomically: false, encoding: .utf8) }
+            else {
+                let result = try await system.run(ProcessCommand("/usr/bin/git", ["-C", root.path, "update-index", "--force-remove", "--", "NOTES.md"]))
+                try #require(result.terminationStatus.isSuccess)
+            }
+            lock.withLock { failed = true }
+            if mode == "cancel" { throw CancellationError() }
+            throw ProcessError.timedOut(command: "fixture native build", timeout: .seconds(1))
+        }
+        return try await base.run(command, onLine: onLine)
+    }
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+        try await base.spawnDetached(command, logFile: logFile)
     }
 }
 
