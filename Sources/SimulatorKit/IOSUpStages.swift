@@ -35,7 +35,7 @@ public func iOSStages(
             promoteToError: IOSWorkflowValidation.promotesToError
         ),
     ]
-    if anchor.framework == .reactNative {
+    if anchor.framework == .reactNative || (anchor.framework == .flutter && preparedDependencies) {
         stages.append(DependenciesStage(anchor: anchor, runner: projectRunner, preparedDependencies: preparedDependencies))
     }
     if !buildWithoutDevice {

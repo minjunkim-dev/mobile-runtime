@@ -298,8 +298,9 @@ struct FlutterFixture {
         try graph.write(to: repo.url(".dart_tool/package_graph.json"))
     }
 
-    func inspect(_ runner: any ProcessRunner) async throws -> FlutterPreparation {
-        try await FlutterPreparation.inspect(directory: repo.root, environment: environment, runner: runner, installationRoot: repo.url("managed"))
+    func inspect(_ runner: any ProcessRunner, preparedDependencies: Bool = false) async throws -> FlutterPreparation {
+        try await FlutterPreparation.inspect(directory: repo.root, environment: environment, runner: runner, installationRoot: repo.url("managed"),
+            preparedDependencies: preparedDependencies)
     }
 
     func runner(workspace: String? = nil, app: String = "") -> FakeProcessRunner {

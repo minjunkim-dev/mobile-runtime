@@ -31,6 +31,7 @@ public struct WorkflowContext: Sendable {
         runner: any ProcessRunner,
         includeProjectEnvironment: Bool = true,
         includeRuntimeSDKTools: Bool = true,
+        preparedDependencies: Bool = false,
         projectEnvironmentOverride: ProjectExecutionEnvironment? = nil,
         projectRunnerOverride: (any ProcessRunner)? = nil,
         selectedConfig: ConfigContext? = nil,
@@ -47,7 +48,7 @@ public struct WorkflowContext: Sendable {
         if includeProjectEnvironment, projectEnvironmentOverride == nil, let anchor, anchor.framework == .flutter, platform == .ios {
             do {
                 let prepared = try await FlutterPreparation.inspect(directory: anchor.directory, entrypoint: input.entrypoint,
-                    environment: input.environment, runner: runner)
+                    environment: input.environment, runner: runner, preparedDependencies: preparedDependencies)
                 flutter = prepared
                 flutterChecks = prepared.checks.filter { $0.platform == nil || $0.platform == .ios }.map {
                     FlutterIOSPreparationCheck(step: $0, root: prepared.workspace?.directory ?? anchor.directory)

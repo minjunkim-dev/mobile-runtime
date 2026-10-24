@@ -6,6 +6,24 @@ import Testing
 
 @Suite("shared Flutter iOS workflow")
 struct FlutterIOSWorkflowTests {
+    @Test("explicit prepared Flutter dependencies preserve the protected build and skip installers", arguments: [false, true])
+    func manuallyPreparedDependencies(_ workspace: Bool) async throws {
+        let f = try FlutterIOSFixture(workspace: workspace)
+        let plugin = f.repo.url("packages/manual_plugin")
+        try f.repo.directory("packages/manual_plugin")
+        try f.configureIOSPlugin(directory: plugin)
+        try f.repo.write("packages/manual_plugin/pubspec.yaml", "name: owned_plugin\nflutter:\n  plugin:\n    implements: owned_interface\n    platforms:\n      ios:\n        pluginClass: OwnedPlugin\n")
+        let runner = FlutterIOSRunner(fixture: f)
+        let input = WorkflowInput(project: f.input().project, preparedDependencies: true)
+        let result = await WorkflowExecution.run(.build, input: input, runner: runner, leases: f.leases)
+        #expect(result.exitCode == 0, Comment(rawValue: result.up?.failure?.message ?? ""))
+        #expect(result.operation.preparedDependencies == true)
+        #expect(result.up?.stages.first { $0.id == "dependencies" }?.status == .skipped)
+        #expect(runner.commands.contains { $0.executable == "/usr/bin/sandbox-exec" && $0.arguments.last == "build" })
+        #expect(!runner.commands.contains { $0.arguments.contains("get") || $0.arguments.contains("install") })
+        #expect(try String(contentsOf: plugin.appendingPathComponent("pubspec.yaml"), encoding: .utf8).contains("implements: owned_interface"))
+    }
+
     @Test("prepared Flutter host builds without dependency alignment or installation")
     func build() async throws {
         let f = try FlutterIOSFixture()
@@ -436,9 +454,11 @@ struct FlutterIOSFixture {
             }]).write(to: repo.url(".dart_tool/package_graph.json"))
         }
     }
-    func input(entrypoint: String? = nil, port: Int? = nil, configuration: String? = nil, device: String? = nil) -> WorkflowInput {
+    func input(entrypoint: String? = nil, port: Int? = nil, configuration: String? = nil, device: String? = nil,
+               preparedDependencies: Bool = false) -> WorkflowInput {
         WorkflowInput(project: ProjectInspectionInput(directory: app, environment: flutter.environment,
-            platform: .ios, entrypoint: entrypoint), device: device, configuration: configuration, port: port)
+            platform: .ios, entrypoint: entrypoint), device: device, configuration: configuration, port: port,
+            preparedDependencies: preparedDependencies)
     }
 
     func configureIOSPlugin(directory: URL, name: String = "owned_plugin") throws {

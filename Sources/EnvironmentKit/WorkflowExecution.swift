@@ -88,8 +88,8 @@ public enum WorkflowExecution {
             if input.project.entrypoint != nil && anchor.framework != .flutter {
                 throw selectionFailure("An explicit entrypoint requires a Flutter app.")
             }
-            if input.preparedDependencies && (anchor.framework != .reactNative || kind == .down) {
-                throw selectionFailure("--prepared-dependencies는 React Native build/up에서만 사용할 수 있습니다.")
+            if input.preparedDependencies && (![ProjectFramework.reactNative, .flutter].contains(anchor.framework) || kind == .down) {
+                throw selectionFailure("--prepared-dependencies는 React Native·Flutter build/up에서만 사용할 수 있습니다.")
             }
             if let port = input.port {
                 let supported = (anchor.framework == .reactNative && kind != .down)
@@ -121,7 +121,7 @@ public enum WorkflowExecution {
                 // Copying and checking the SDK view can take minutes before validate reports.
                 events.send("detail", state: "running", detail: FlutterAndroidWorkflow.preparingViewDetail)
                 androidFlutter = try await FlutterAndroidWorkflow.make(input: input.project, anchor: anchor,
-                    runner: runner, factory: flutterFactory)
+                    runner: runner, preparedDependencies: input.preparedDependencies, factory: flutterFactory)
             } else {
                 androidFlutter = nil
             }
@@ -132,6 +132,7 @@ public enum WorkflowExecution {
             var wiring = await WorkflowContext.make(input: input.project, platform: platform, anchor: anchor,
                 runner: runner, includeProjectEnvironment: kind != .down,
                 includeRuntimeSDKTools: kind != .build || platform == .ios,
+                preparedDependencies: input.preparedDependencies,
                 projectEnvironmentOverride: androidFlutter?.projectEnvironment,
                 projectRunnerOverride: androidFlutter?.projectRunner, selectedConfig: config,
                 selectedConfiguration: input.configuration)
@@ -218,6 +219,7 @@ public enum WorkflowExecution {
                 }
                 wiring = await WorkflowContext.make(input: input.project, platform: platform, anchor: anchor,
                     runner: runner, includeRuntimeSDKTools: kind != .build || platform == .ios,
+                    preparedDependencies: input.preparedDependencies,
                     projectEnvironmentOverride: androidFlutter?.projectEnvironment,
                     projectRunnerOverride: androidFlutter?.projectRunner, selectedConfig: config,
                     selectedConfiguration: operation.configuration)

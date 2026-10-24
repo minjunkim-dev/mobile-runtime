@@ -98,6 +98,41 @@ struct FlutterPluginMetadataTests {
         let plan = try await f.inspect(f.runner())
         expectGenerated(plan, reuse: false)
         #expect(plan.checks.contains { $0.id == "ios.flutter.generated" && $0.observed?.contains("legacy or federated") == true })
+        let manual = try await f.inspect(f.runner(), preparedDependencies: true)
+        expectGenerated(manual, reuse: true)
+        #expect(manual.iosPluginDirectories == ["foo": f.repo.url("packages/foo")])
+        #expect(manual.iosPluginMetadata == .bytes(try Data(contentsOf: f.repo.url(".flutter-plugins-dependencies"))))
+    }
+
+    @Test("manual resolver reuse still rejects unsafe or missing generated evidence", arguments: ["absent", "version", "path", "duplicate", "native-number", "shared-number", "graph"])
+    func manualEvidence(_ fault: String) async throws {
+        let f = try FlutterFixture()
+        try configure(f, plugins: ["foo"])
+        try f.repo.write("packages/foo/pubspec.yaml", "name: foo\nflutter:\n  plugin:\n    pluginClass: FixturePlugin\n")
+        var row: [String: Any] = ["name": "foo", "path": f.repo.url("packages/foo").path, "native_build": true]
+        if fault == "path" { row["path"] = f.repo.url("another-package").path }
+        if fault == "native-number" { row["native_build"] = 1 }
+        if fault == "shared-number" { row["shared_darwin_source"] = 0 }
+        let rows = fault == "duplicate" ? [row, row] : [row]
+        try JSONSerialization.data(withJSONObject: ["version": fault == "version" ? "0.0.0" : "3.41.9",
+            "plugins": ["ios": rows, "android": rows]]).write(to: f.repo.url(".flutter-plugins-dependencies"))
+        if fault == "absent" { try FileManager.default.removeItem(at: f.repo.url(".flutter-plugins-dependencies")) }
+        if fault == "graph" { try FileManager.default.removeItem(at: f.repo.url(".dart_tool/package_graph.json")) }
+        let plan = try await f.inspect(f.runner(), preparedDependencies: true)
+        expectGenerated(plan, reuse: false)
+        #expect(plan.iosPluginMetadata == nil)
+    }
+
+    @Test("manual reuse binds generated native directories without claiming resolver completeness")
+    func manualResolverResponsibility() async throws {
+        let f = try FlutterFixture()
+        try configure(f, plugins: ["foo", "bar"])
+        try metadata(f, plugins: ["foo"])
+        let automatic = try await f.inspect(f.runner())
+        expectGenerated(automatic, reuse: false)
+        let manual = try await f.inspect(f.runner(), preparedDependencies: true)
+        expectGenerated(manual, reuse: true)
+        #expect(manual.iosPluginDirectories == ["foo": f.repo.url("packages/foo")])
     }
 
     @Test("plugin rows preserve exact identity and native build evidence", arguments: ["native", "path", "duplicate"])

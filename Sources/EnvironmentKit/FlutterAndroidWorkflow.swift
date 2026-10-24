@@ -26,6 +26,7 @@ struct FlutterAndroidWorkflow: Sendable {
     let entrypoint: URL
 
     static func make(input: ProjectInspectionInput, anchor: ProjectAnchor, runner: any ProcessRunner,
+                     preparedDependencies: Bool = false,
                      preparation existing: FlutterPreparation? = nil, tools existingTools: ToolPreparation? = nil,
                      factory: Factory = defaultFactory) async throws -> Self {
         try Task.checkCancellation()
@@ -36,7 +37,8 @@ struct FlutterAndroidWorkflow: Sendable {
         if let existing { preparation = existing }
         else {
             preparation = try await FlutterPreparation.inspect(directory: anchor.directory,
-                entrypoint: input.entrypoint, environment: input.environment, runner: runner)
+                entrypoint: input.entrypoint, environment: input.environment, runner: runner,
+                preparedDependencies: preparedDependencies)
         }
         // Reuse the current graph/config validator. A workspace member never needs a local config.
         let inputs = try FlutterAndroidExecution.preparedInputs(app: anchor.directory, preparation: preparation, trackedFiles: [])

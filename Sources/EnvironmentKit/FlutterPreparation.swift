@@ -21,11 +21,14 @@ struct FlutterPreparation {
     var sdk: FlutterSDK?
     var iosPluginDirectories: [String: URL] = [:]
     var iosPluginMetadata: IOSPluginMetadata?
+    var preparedDependencies = false
 
     static func inspect(directory: URL, entrypoint: String? = nil, environment: [String: String],
-                        runner: any ProcessRunner, installationRoot: URL? = nil) async throws -> Self {
+                        runner: any ProcessRunner, installationRoot: URL? = nil,
+                        preparedDependencies: Bool = false) async throws -> Self {
         try Task.checkCancellation()
         var plan = Self()
+        plan.preparedDependencies = preparedDependencies
         let project: FlutterProject
         do { project = try FlutterProject(directory: directory, entrypoint: entrypoint) }
         catch {
@@ -249,7 +252,8 @@ struct FlutterPreparation {
         }
         let id = "\(platform.rawValue).flutter.generated"
         let generated = PreparationStep(id: id, platform: platform, kind: issues.isEmpty ? "reuse" : "provider", target: directory.path,
-            observed: issues.isEmpty ? "existing debug engine marker and generated native input paths match selected Flutter/Dart and package paths" : issues.joined(separator: "; "),
+            observed: issues.isEmpty ? "existing debug engine marker and generated native input paths match selected Flutter/Dart and package paths"
+                + (preparedDependencies ? "; explicit manual dependencies: plugin resolver consistency is not revalidated" : "") : issues.joined(separator: "; "),
             required: "existing matching native generated inputs; no source migration", source: CheckSource(tier: 1, origin: directory.path), command: nil,
             remediation: issues.isEmpty ? nil : Remediation(summary: "Prepare only the listed missing or stale generated inputs with the exact SDK manually. Preserve source and lockfiles, then inspect again. Locked Dart alignment alone does not establish native preparation."))
         return [generated]
@@ -331,7 +335,11 @@ struct FlutterPreparation {
             guard let flutterValue = document["flutter"] else { continue }
             guard let flutter = flutterValue as? [String: Any] else { return unknown }
             guard let pluginValue = flutter["plugin"] else { continue }
-            guard let plugin = pluginValue as? [String: Any], plugin["implements"] == nil,
+            guard let plugin = pluginValue as? [String: Any] else { return unknown }
+            hasPlugins = true
+            // Explicit manual reuse delegates resolver semantics, never generated path validation.
+            if preparedDependencies { continue }
+            guard plugin["implements"] == nil,
                   let platforms = plugin["platforms"] as? [String: Any], !platforms.isEmpty,
                   platforms.values.allSatisfy({ value in
                       guard let declaration = value as? [String: Any] else { return false }
@@ -339,7 +347,6 @@ struct FlutterPreparation {
                   }) else {
                 return "plugin metadata requires manual resolution of legacy or federated plugin declarations with the exact Flutter SDK"
             }
-            hasPlugins = true
             guard let platformValue = platforms[platform.rawValue] else { continue }
             guard let implementation = platformValue as? [String: Any] else { return unknown }
             for key in ["pluginClass", "dartPluginClass"] where implementation[key] != nil {
@@ -363,18 +370,23 @@ struct FlutterPreparation {
               let metadata = (try? JSONSerialization.jsonObject(with: metadataData)) as? [String: Any],
               metadata["version"] as? String == sdk.version,
               let plugins = metadata["plugins"] as? [String: Any], let selected = plugins[platform.rawValue] as? [[String: Any]],
-              selected.count == expected.count else { return unknown }
+              preparedDependencies || selected.count == expected.count else { return unknown }
         if !hasPlugins, !plugins.values.allSatisfy({ ($0 as? [[String: Any]])?.isEmpty == true }) { return unknown }
         var seen: Set<String> = []
+        var nativeDirectories: [String: URL] = [:]
         for plugin in selected {
             guard let name = plugin["name"] as? String, seen.insert(name).inserted,
-                  let path = plugin["path"] as? String, path.hasPrefix("/"), let required = expected[name],
-                  URL(fileURLWithPath: path).standardizedFileURL.resolvingSymlinksInPath().path == required.root.path,
-                  jsonBoolean(plugin["native_build"]) == required.native,
-                  jsonBoolean(plugin["shared_darwin_source"], missing: false) == required.shared else { return unknown }
+                  let path = plugin["path"] as? String, path.hasPrefix("/"), let root = roots[name],
+                  URL(fileURLWithPath: path).standardizedFileURL.resolvingSymlinksInPath().path == root.path,
+                  let native = jsonBoolean(plugin["native_build"]),
+                  let shared = jsonBoolean(plugin["shared_darwin_source"], missing: false) else { return unknown }
+            if !preparedDependencies {
+                guard let required = expected[name], native == required.native, shared == required.shared else { return unknown }
+            }
+            if native { nativeDirectories[name] = root }
         }
         if platform == .ios {
-            iosPluginDirectories = expected.filter { $0.value.native }.mapValues(\.root)
+            iosPluginDirectories = nativeDirectories
             iosPluginMetadata = .bytes(metadataData)
         }
         return nil

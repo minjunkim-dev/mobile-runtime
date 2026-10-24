@@ -21,10 +21,10 @@ struct WorkflowExecutionTests {
         #expect((document["operation"] as? [String: Any])?["preparedDependencies"] as? Bool == true)
     }
 
-    @Test("manual dependencies never apply to down or another framework", arguments: ["down", "flutter", "native-ios", "native-android"])
+    @Test("manual dependencies never apply to down or native frameworks", arguments: ["down", "flutter-down", "native-ios", "native-android"])
     func manualModeScope(_ target: String) async throws {
         let repo = try FixtureRepo()
-        if target == "flutter" {
+        if target == "flutter-down" {
             try repo.write("pubspec.yaml", "name: fixture\ndependencies:\n  flutter:\n    sdk: flutter\n")
             try repo.directory("ios")
         } else if target == "native-ios" {
@@ -37,11 +37,11 @@ struct WorkflowExecutionTests {
             try repo.directory("ios")
         }
         let runner = FakeProcessRunner()
-        let result = await WorkflowExecution.run(target == "down" ? .down : .build,
+        let result = await WorkflowExecution.run(target.hasSuffix("down") ? .down : .build,
             input: WorkflowInput(project: ProjectInspectionInput(directory: repo.root, environment: [:]),
                 preparedDependencies: true), runner: runner, leases: temporaryLeases())
         #expect(result.exitCode == 1)
-        #expect((result.up?.failure?.message ?? result.down?.failure?.message)?.contains("--prepared-dependencies는 React Native build/up에서만 사용할 수 있습니다") == true)
+        #expect((result.up?.failure?.message ?? result.down?.failure?.message)?.contains("--prepared-dependencies는 React Native·Flutter build/up에서만 사용할 수 있습니다") == true)
         #expect(runner.log.all.isEmpty)
     }
 

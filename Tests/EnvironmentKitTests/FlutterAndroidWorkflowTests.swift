@@ -416,6 +416,34 @@ struct FlutterAndroidWorkflowTests {
         #expect(fixture.runner.base.log.spawned.isEmpty)
     }
 
+    @Test("explicit Flutter manual dependencies reach the protected Android workflow", arguments: [WorkflowKind.build, .up])
+    func manuallyPreparedDependencies(_ kind: WorkflowKind) async throws {
+        let fixture = try RuntimeFixture(workspace: true)
+        let trace = Trace()
+        let sdk = try fixture.native.repo.directory("owned-sdk-view")
+        let factory: FlutterAndroidWorkflow.Factory = { _, preparation, files in
+            #expect(preparation.preparedDependencies)
+            trace.record(files)
+            return View(sdk: sdk)
+        }
+        let result = await WorkflowExecution.run(kind,
+            input: WorkflowInput(project: fixture.input, preparedDependencies: true),
+            runner: fixture.runner, leases: fixture.leases, flutterFactory: factory)
+        #expect(result.exitCode == 0, Comment(rawValue: result.up?.failure?.message ?? ""))
+        #expect(result.operation.preparedDependencies == true)
+        #expect(result.up?.stages.first { $0.id == "dependencies" }?.status == .skipped)
+        #expect(trace.count == 1)
+        #expect(!fixture.runner.base.log.all.contains { $0.arguments.contains("get") || $0.executable.hasSuffix("/bin/flutter") })
+        if kind == .up {
+            #expect(result.operation.developmentServiceURI != nil)
+            let down = await WorkflowExecution.run(.down, input: WorkflowInput(project: fixture.input),
+                runner: fixture.runner, leases: fixture.leases, flutterFactory: factory)
+            #expect(down.exitCode == 0)
+            #expect(try AndroidActiveRunStore(project: fixture.app).read() == nil)
+        }
+        #expect(trace.count == 1)
+    }
+
     @Test("a record left at the pre-folder location blocks up but down leases its forward port and cleans it")
     func legacyRecordDown() async throws {
         let fixture = try RuntimeFixture(workspace: false)

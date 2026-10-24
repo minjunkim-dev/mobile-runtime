@@ -135,21 +135,22 @@ struct FlutterIOSRuntimeTests {
         #expect(try String(contentsOf: unrelated.url("preserve"), encoding: .utf8) == "owned temporary source\n")
     }
 
-    @Test("current inspection and the stage guard reject changed plugin metadata and source", arguments: ["before-metadata", "between-metadata-only", "between-metadata", "between-missing", "after-metadata", "after-source"])
-    func aliasEvidenceChanges(_ mode: String) async throws {
+    @Test("current inspection and the stage guard reject changed plugin metadata and source", arguments: ["before-metadata", "between-metadata-only", "between-metadata", "between-missing", "after-metadata", "after-source"], [false, true])
+    func aliasEvidenceChanges(_ mode: String, _ manual: Bool) async throws {
         let f = try FlutterIOSFixture()
         let plugin = try FixtureRepo()
         try f.configureIOSPlugin(directory: plugin.root)
         try f.repo.directory("ios/.symlinks/plugins")
         try FileManager.default.createSymbolicLink(at: f.repo.url("ios/.symlinks/plugins/owned_plugin"), withDestinationURL: plugin.root)
-        let preparation = try await FlutterPreparation.inspect(directory: f.app, environment: f.flutter.environment, runner: f.flutter.runner())
+        let preparation = try await FlutterPreparation.inspect(directory: f.app, environment: f.flutter.environment,
+            runner: f.flutter.runner(), preparedDependencies: manual)
         let candidate = try #require(f.input().project.selection().selected)
         let anchor = try #require(ProjectAnchor.detect(candidate: candidate))
         let changed = mode == "after-source" ? "lib/main.dart" : ".flutter-plugins-dependencies"
         if mode == "before-metadata" {
             try f.repo.write(changed, "changed metadata")
             let runner = FlutterIOSRunner(fixture: f)
-            let result = await WorkflowExecution.run(.build, input: f.input(), runner: runner, leases: f.leases)
+            let result = await WorkflowExecution.run(.build, input: f.input(preparedDependencies: manual), runner: runner, leases: f.leases)
             #expect(result.exitCode == 1)
             #expect(!runner.commands.contains { $0.arguments.last == "build" })
         } else if mode == "between-metadata-only" {

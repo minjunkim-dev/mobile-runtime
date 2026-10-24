@@ -16,6 +16,9 @@ mobile down --project /path/to/app --platform ios --json
 
 `--entrypoint`를 생략하면 `lib/main.dart`를 사용한다.
 entrypoint는 선택한 Flutter 앱 안의 기존 Dart 파일이어야 한다.
+직접 준비한 의존성을 실행할 때는 `build/up --prepared-dependencies` 또는 GUI의 같은 선택을 사용한다.
+[ADR-0048](adr/0048-explicit-manually-prepared-flutter-dependencies.md)에 따라 lock 정렬과 plugin resolver 정합성 판정을 생략한다.
+기본값은 꺼짐이며 아래 SDK·경로·생성 입력·source 보호 검사는 유지한다. doctor와 setup은 이 선택을 사용하지 않는다.
 실행 입력은 `Generated.xcconfig`와 Xcode의 실제 build settings에 일치해야 한다.
 Runstir는 entrypoint를 바꾸려고 생성 설정이나 앱 소스를 수정하지 않는다.
 scheme이 여러 개면 선택을 요구한다.
