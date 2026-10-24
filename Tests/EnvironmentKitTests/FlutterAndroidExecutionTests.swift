@@ -18,12 +18,15 @@ struct FlutterAndroidExecutionTests {
         let generated = try await fixture.run(profile: profile,
             script: "/bin/mkdir -p \"$1/workspace/.dart_tool/hooks_runner/shared/objective_c\" && printf cache > \"$1/workspace/.dart_tool/hooks_runner/shared/objective_c/.lock\"")
         #expect(generated.terminationStatus.isSuccess, Comment(rawValue: generated.combinedOutput))
-        for path in ["workspace/pubspec.lock", "workspace/.dart_tool/package_config.json", "workspace/.dart_tool/package_graph.json",
-                     "workspace/.dart_tool/other.cache", "sdk/bin/cache/flutter.version.json",
-                     member ? "workspace/apps/client/lib/main.dart" : "workspace/lib/main.dart"] {
-            let result = try await fixture.run(profile: profile, script: "printf changed > \"$1/\(path)\"")
-            #expect(!result.terminationStatus.isSuccess, Comment(rawValue: path))
-        }
+        let deniedPaths = ["workspace/pubspec.lock", "workspace/.dart_tool/package_config.json", "workspace/.dart_tool/package_graph.json",
+                           "workspace/.dart_tool/other.cache", "sdk/bin/cache/flutter.version.json",
+                           member ? "workspace/apps/client/lib/main.dart" : "workspace/lib/main.dart"]
+        let attempts = deniedPaths.map { path in
+            "if (printf changed > \"$1/\(path)\"); then exit 1; fi; printf '%s\\n' '\(path)'"
+        }.joined(separator: "\n")
+        let denied = try await fixture.run(profile: profile, script: attempts)
+        #expect(denied.terminationStatus.isSuccess, Comment(rawValue: denied.combinedOutput))
+        #expect(denied.standardOutput.split(separator: "\n").map(String.init) == deniedPaths)
         try inputs.check()
         let outside = try fixture.directory("outside")
         try fixture.file("outside/preserved", "preserved")
