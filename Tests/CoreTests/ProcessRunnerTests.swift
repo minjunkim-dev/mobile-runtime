@@ -125,32 +125,23 @@ struct SystemProcessRunnerTests {
         let release = directory.appendingPathComponent("release")
         defer { try? Data().write(to: release) }
         let observed = Mutable<[Data]>([Data(), Data()])
-        let completed = Mutable(false)
         let output = Data([1, 255]) + Data("out".utf8)
         let error = Data([0, 254]) + Data("err".utf8)
-        let (events, continuation) = AsyncStream<Void>.makeStream()
         let command = ProcessCommand("/bin/sh", ["-c",
             "printf '\\001\\377out'; printf '\\000\\376err' >&2; while [ ! -f \"$1\" ]; do /bin/sleep 0.01; done; printf tail; exit 7",
             "_", release.path], timeout: .seconds(5))
-        let task = Task {
-            defer { continuation.finish() }
-            let result = try await runner.run(command, onBytes: { channel, bytes in
-                let index = switch channel { case .standardOutput: 0; case .standardError: 1 }
-                observed.mutate { $0[index].append(bytes) }
-                continuation.yield(())
-            })
-            completed.mutate { $0 = true }
-            return result
-        }
-        defer { task.cancel() }
-        for await _ in events {
-            let bytes = observed.value
-            if bytes[0].count >= output.count, bytes[1].count >= error.count { break }
-        }
-        #expect(observed.value == [output, error])
-        #expect(!completed.value)
-        try Data().write(to: release)
-        let result = try await task.value
+        let result = try await runner.run(command, onBytes: { channel, bytes in
+            let index = switch channel { case .standardOutput: 0; case .standardError: 1 }
+            observed.mutate { streams in
+                streams[index].append(bytes)
+                // The child cannot exit until both live callbacks release it; no consumer task must win the timeout race.
+                if streams == [output, error] {
+                    do { try Data().write(to: release, options: .withoutOverwriting) }
+                    catch { Issue.record(error) }
+                }
+            }
+        })
+        #expect(FileManager.default.fileExists(atPath: release.path))
         #expect(result.terminationStatus == .exited(7))
         #expect(result.standardOutput == String(decoding: output + Data("tail".utf8), as: UTF8.self))
         #expect(result.standardError == String(decoding: error, as: UTF8.self))
