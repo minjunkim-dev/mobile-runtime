@@ -316,6 +316,12 @@ struct FlutterPreparation {
             edges[name] = dependencies
             devEdges[name] = dev as? [String] ?? []
         }
+        func packageIdentity(_ name: String) -> (root: URL, document: [String: Any], dependencies: [String])? {
+            guard let root = roots[name], let document = manifest(root), document["name"] as? String == name,
+                  let dependencies = names(document["dependencies"]), let resolved = edges[name],
+                  dependencies == Set(resolved) else { return nil }
+            return (root, document, resolved)
+        }
         // Use Pub's resolved graph. Only the selected app's dev dependencies
         // participate; another workspace app does not supply this app's plugins.
         var pending = [appName]
@@ -324,9 +330,7 @@ struct FlutterPreparation {
         var expected: [String: (root: URL, native: Bool, shared: Bool)] = [:]
         while let name = pending.popLast() {
             if !visited.insert(name).inserted { continue }
-            guard let root = roots[name], let document = manifest(root), document["name"] as? String == name,
-                  let dependencies = names(document["dependencies"]), let resolved = edges[name],
-                  dependencies == Set(resolved) else { return unknown }
+            guard let (root, document, resolved) = packageIdentity(name) else { return unknown }
             pending += resolved
             if name == appName {
                 guard let dev = names(document["dev_dependencies"]), let resolvedDev = devEdges[name], dev == Set(resolvedDev) else { return unknown }
@@ -378,15 +382,20 @@ struct FlutterPreparation {
             guard let name = plugin["name"] as? String, seen.insert(name).inserted,
                   let path = plugin["path"] as? String, path.hasPrefix("/"), let root = roots[name],
                   URL(fileURLWithPath: path).standardizedFileURL.resolvingSymlinksInPath().path == root.path,
-                  let document = manifest(root), document["name"] as? String == name,
-                  let dependencies = names(document["dependencies"]), let resolved = edges[name],
-                  dependencies == Set(resolved),
                   let native = jsonBoolean(plugin["native_build"]),
                   let shared = jsonBoolean(plugin["shared_darwin_source"], missing: false) else { return unknown }
             if !preparedDependencies {
                 guard let required = expected[name], native == required.native, shared == required.shared else { return unknown }
             }
             if native { nativeDirectories[name] = root }
+        }
+        // Manual federated implementations may be outside the app closure, but
+        // their runtime dependency identities still require resolved evidence.
+        pending = Array(seen)
+        while let name = pending.popLast() {
+            if !visited.insert(name).inserted { continue }
+            guard let package = packageIdentity(name) else { return unknown }
+            pending += package.dependencies
         }
         if platform == .ios {
             iosPluginDirectories = nativeDirectories
