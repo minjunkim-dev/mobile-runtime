@@ -5,7 +5,8 @@ import Foundation
 import TestSupport
 import Testing
 
-@Suite("explicit Flutter source file links")
+// Real Git fixtures must not compete for their subprocess wall-clock budgets.
+@Suite("explicit Flutter source file links", .serialized)
 struct FlutterSourceLinksTests {
     @Test("cancelling an in-flight post-failure Git observation starts no snapshot or receipt", arguments: [false, true])
     func cancelledFailureObservation(_ returnsCompletedResult: Bool) async throws {
