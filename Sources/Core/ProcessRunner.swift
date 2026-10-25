@@ -379,7 +379,7 @@ public struct SystemProcessRunner: ProcessRunner {
         var options = PlatformOptions()
         #if !os(Windows)
         options.processGroupID = 0
-        options.teardownSequence = [.gracefulShutDown(toProcessGroup: true, allowedDurationToNextStep: .seconds(5))]
+        options.teardownSequence = [.send(signal: .kill, toProcessGroup: true, allowedDurationToNextStep: .zero)]
         #endif
         return options
     }
