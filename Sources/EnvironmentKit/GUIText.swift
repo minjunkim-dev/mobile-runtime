@@ -20,6 +20,13 @@ public enum GUIText {
         switch kind { case .build: "빌드"; case .up: "실행"; case .down: "종료" }
     }
 
+    public static func appRunning(_ value: String) -> String {
+        if value == "running" { return "실행 중" }
+        if value.hasPrefix("running: ") { return "실행 중: " + value.dropFirst("running: ".count) }
+        if value.hasPrefix("unknown: ") { return "확인 불가: " + value.dropFirst("unknown: ".count) }
+        return state(value)
+    }
+
     public static func field(_ value: String) -> String {
         ["--app": "앱", "--platform": "플랫폼", "--device": "실행 기기", "--scheme": "Scheme",
          "--configuration": "빌드 구성", "--module": "모듈", "--variant": "빌드 변형",
