@@ -205,8 +205,8 @@ struct SystemProcessRunnerTests {
         let siblingToken = "30.\(UInt64.random(in: 1...UInt64.max))"
         let sibling = try await runner.spawnDetached(ProcessCommand("/bin/sleep", [siblingToken]),
                                                      logFile: directory.appendingPathComponent("sibling.log"))
-        // Redirect the grandchild's streams, as CocoaPods does for its curl pipe.
-        let script = #"/bin/sleep "$1" >/dev/null 2>&1 & child=$!; printf %s "$child" > "$2"; wait "$child""#
+        // A cooperative parent must not leave its TERM-ignoring child behind.
+        let script = #"trap 'exit 0' TERM; /bin/sh -c 'trap "" TERM; printf %s "$$" > "$2"; exec /bin/sleep "$1"' runstir-descendant-child "$1" "$2" >/dev/null 2>&1 & child=$!; wait "$child""#
         let command = ProcessCommand("/bin/sh", ["-c", script, "runstir-descendant-test", childToken, marker.path],
             timeout: timeout ? .seconds(10) : nil,
             output: mode == "streamed" ? .streamed(to: directory.appendingPathComponent("command.log")) : .collected)
@@ -219,9 +219,14 @@ struct SystemProcessRunnerTests {
             task.cancel()
             _ = try? await task.value
             let observed = child ?? (try? String(contentsOf: marker, encoding: .utf8)).flatMap(Int32.init)
-            for (pid, token) in [(observed, childToken), (Optional(sibling), siblingToken)] {
+            for (pid, token, signal) in [(observed, childToken, "-KILL"), (Optional(sibling), siblingToken, "-TERM")] {
                 if let pid, (try? await processMatches(pid, token: token)) == true {
-                    _ = try? await runner.run(ProcessCommand("/bin/kill", ["-TERM", "\(pid)"]))
+                    _ = try? await runner.run(ProcessCommand("/bin/kill", [signal, "\(pid)"]))
+                    let stopped = ContinuousClock.now + .seconds(3)
+                    while (try? await processMatches(pid, token: token)) == true, ContinuousClock.now < stopped {
+                        try? await Task.sleep(for: .milliseconds(20))
+                    }
+                    #expect((try? await processMatches(pid, token: token)) == false)
                 }
             }
         }
