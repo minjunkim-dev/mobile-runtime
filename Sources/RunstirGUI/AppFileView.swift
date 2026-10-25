@@ -88,7 +88,7 @@ struct AppFileView: View {
                         }
                         Text("설치 상태: \(GUIText.state(operation.installation))")
                         Text("실행 요청: \(GUIText.state(operation.launch))")
-                        Text("앱 실행 상태: \(operation.running == "running" ? "실행 중" : GUIText.state(operation.running))")
+                        Text("앱 실행 상태: \(GUIText.appRunning(operation.running))")
                         Text("앱 화면은 기기에서 직접 확인하세요.")
                         Text("개발 서버는 자동으로 시작하거나 연결하지 않습니다. 필요한 경우 별도로 준비하세요.")
                         if let installed = operation.installed {
