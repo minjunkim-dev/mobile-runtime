@@ -46,7 +46,7 @@ public struct NativeIOSProjectCheck: Check {
         guard let target = candidates.deploymentTarget, let minimum = MinimumVersion(target) else {
             return .unknown(reason: "Choose a shared app scheme before its Simulator deployment target can be measured.", source: source)
         }
-        guard candidates.configurations.contains(configuration) else {
+        guard candidates.configurations.contains(configuration), candidates.effectiveConfiguration == configuration else {
             return .unknown(reason: "The selected scheme did not resolve \(configuration). Choose an existing configuration explicitly for build or up.", source: source)
         }
         let runtime = MatrixLookup(xcode: lookup?.xcode ?? .unavailable(reason: "not measured", source: source),

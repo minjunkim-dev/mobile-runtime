@@ -306,6 +306,10 @@ struct NativeIOSWorkflowTests {
         runner.responses[try settings(repo)] = fallback
             ? .ok(#"[{"target":"App","buildSettings":{"CONFIGURATION":"Release","PLATFORM_NAME":"iphonesimulator","IPHONEOS_DEPLOYMENT_TARGET":"17.0","FULL_PRODUCT_NAME":"App.app"}}]"#)
             : .ok(#"[{"target":"Library","buildSettings":{"CONFIGURATION":"Debug","PLATFORM_NAME":"iphonesimulator","IPHONEOS_DEPLOYMENT_TARGET":"17.0","FULL_PRODUCT_NAME":"Library.framework"}}]"#)
+        if fallback {
+            let inspection = try await EnvironmentInspection.run(input: input(repo).project, runner: runner)
+            #expect(inspection.report.checks.first { $0.id == "project.native-ios" }?.status == .unknown)
+        }
         let result = await WorkflowExecution.run(.build, input: input(repo), runner: runner)
         #expect(result.exitCode == 1)
         #expect(!runner.log.all.contains { $0.arguments.contains("build") })

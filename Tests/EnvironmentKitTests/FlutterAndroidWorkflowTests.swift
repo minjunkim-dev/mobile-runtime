@@ -91,9 +91,12 @@ struct FlutterAndroidWorkflowTests {
         #expect(trace.count == 1)
         #expect(!metadata.isEmpty)
         #expect(metadata.allSatisfy { $0.environment["RUNSTIR_FIXTURE_VIEW"] == "same-view"
-            && $0.environment["FLUTTER_ROOT"] == sdk.path && $0.arguments.contains("--offline") })
-        #expect(!commands.contains { $0.arguments.contains { $0.contains("assemble") || $0.contains("install") }
-            || $0.arguments.contains("launch") || $0.arguments.contains("boot") || $0.executable == "emulator" && !$0.arguments.contains("-list-avds") && !$0.arguments.contains("-accel-check") })
+            && $0.environment["FLUTTER_ROOT"] == sdk.path && $0.arguments.contains("--offline")
+            && $0.arguments.last == "help" })
+        #expect(!commands.contains { $0.arguments.contains("build") || $0.arguments.contains("install")
+            || $0.arguments.contains("launch") || $0.arguments.contains("boot") || $0.arguments.contains("start")
+            || $0.executable == "emulator" && !$0.arguments.contains("-list-avds") && !$0.arguments.contains("-accel-check") },
+            Comment(rawValue: commands.map(\.description).joined(separator: "\n")))
         #expect(fixture.runner.base.log.spawned.isEmpty)
         #expect(try Data(contentsOf: source) == before)
     }
