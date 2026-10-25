@@ -3,16 +3,17 @@ import Core
 /// Presentation only. CLI/JSON values and tool diagnostics keep their original meaning.
 public enum GUIText {
     public static func state(_ value: String) -> String {
-        ["ready": "선택 항목 확인됨", "planned": "계획 확인됨", "running": "진행 중",
+        ["ready": "선택 항목 확인됨", "planned": "계획 확인됨", "inspecting": "확인 중", "running": "진행 중",
          "succeeded": "완료", "failed": "실패", "cancelled": "취소됨",
          "needs-selection": "선택 필요", "needs-approval": "승인 필요",
-         "waiting-manual": "직접 준비가 필요합니다", "partially-completed": "일부 완료",
+         "waiting-manual": "직접 준비가 필요합니다", "partially-completed": "일부 완료", "partial": "일부 완료",
          "pass": "확인됨", "error": "오류", "warning": "주의", "unknown": "확인 불가",
          "skipped": "생략됨", "stopped": "종료됨", "blocked": "진행할 수 없음",
          "not-requested": "요청하지 않음", "not-observed": "확인하지 못함",
          "unconfirmed": "확인되지 않음", "installed": "설치됨", "accepted": "요청 전달됨",
          "requested": "요청함", "absent": "없음", "present": "있음", "required": "필요",
-         "not-required": "필요 없음", "unavailable": "사용할 수 없음"][value] ?? value
+         "not-required": "필요 없음", "unavailable": "사용할 수 없음",
+         "started": "시작됨", "unobserved": "아직 확인하지 않음"][value] ?? value
     }
 
     public static func operation(_ kind: WorkflowKind) -> String {
