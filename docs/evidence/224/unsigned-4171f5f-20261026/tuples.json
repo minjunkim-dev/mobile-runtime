@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 1,
+  "tuples": [
+    {
+      "id": "rn-ios",
+      "candidateID": "4436d17033b2ed4ebff74769a46b67d9689593c7536e85f5b1433b370df14752",
+      "inputs": {
+        "host": "macOS27.0.1/26A434 arm64; actual host Android HVF, not Tart nested virtualization",
+        "minimalSample": "minimal",
+        "minimalSource": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+        "ossSample": "mattermost",
+        "ossSource": "c2fe3beda22befd2178dce431793c09111ed903e",
+        "deviceProfileAndRuntime": "iPhone16Pro iOS26.0/23A343",
+        "toolVersions": "Xcode27.1/27A9275 SDK27.1; RN0.87.1/0.83.9; Node22.23.2/npm10.9.8 and Node24.15.0/npm11.12.1; Ruby3.4.11/Bundler2.5.22/Pods1.15.2 and Ruby3.2.11/Bundler2.5.11/Pods1.16.1",
+        "targetAndRoot": "RunstirBaselineRN/Debug and Mattermost/Debug; arm64",
+        "developmentSigning": "Simulator local development only; Mattermost Xcode ad-hoc identity minus, no paid account",
+        "knownGoodReceipt": "baseline-rn-ios",
+        "selectedCurrentInputs": "fixed-inputs",
+        "preparationPolicy": "Reuse the 24 independently cloned CLI/GUI checkouts, prepared dependencies and prior outputs. Not new clones or cold setup for alpha.14.",
+        "proofBoundary": "Known-good baseline is historical. All current-candidate actual runtime gates start unverified.",
+        "runtimeExecutionInputs": "runtime-inputs",
+        "inputRevalidation": "input-audit",
+        "runtimeAvailability": "runtime-identities"
+      }
+    },
+    {
+      "id": "rn-android",
+      "candidateID": "4436d17033b2ed4ebff74769a46b67d9689593c7536e85f5b1433b370df14752",
+      "inputs": {
+        "host": "macOS27.0.1/26A434 arm64; actual host Android HVF, not Tart nested virtualization",
+        "minimalSample": "minimal",
+        "minimalSource": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+        "ossSample": "mattermost",
+        "ossSource": "c2fe3beda22befd2178dce431793c09111ed903e",
+        "deviceProfileAndRuntime": "Pixel10 API37 Google Play arm64 r6; CE2A.260420.019/15611780",
+        "toolVersions": "RN0.87.1/0.83.9; Node22.23.2/npm10.9.8 and Node24.15.0/npm11.12.1; Zulu17.0.19 and Temurin17.0.20.1+1; Gradle9.4.1/AGP9.2.1 and Gradle9.0.0/AGP8.12.0; compile37 and36; BT37.0.0 and36.0.0; NDK27.1.12297006",
+        "targetAndRoot": ":app/debug for both",
+        "developmentSigning": "Android local debug keystore; no distribution credentials",
+        "knownGoodReceipt": "baseline-rn-android",
+        "selectedCurrentInputs": "fixed-inputs",
+        "preparationPolicy": "Reuse the 24 independently cloned CLI/GUI checkouts, prepared dependencies and prior outputs. Not new clones or cold setup for alpha.14.",
+        "proofBoundary": "Known-good baseline is historical. All current-candidate actual runtime gates start unverified.",
+        "runtimeExecutionInputs": "runtime-inputs",
+        "inputRevalidation": "input-audit",
+        "runtimeAvailability": "runtime-identities",
+        "permissionPrerequisite": "API37 minimum RN uses ACCESS_LOCAL_NETWORK granted under previous user approval; requery after owned boot. This is not a fresh permission-prompt result."
+      }
+    },
+    {
+      "id": "flutter-ios",
+      "candidateID": "4436d17033b2ed4ebff74769a46b67d9689593c7536e85f5b1433b370df14752",
+      "inputs": {
+        "host": "macOS27.0.1/26A434 arm64; actual host Android HVF, not Tart nested virtualization",
+        "minimalSample": "minimal",
+        "minimalSource": "66732bc18ed28d9eed71336b4a2b018e09ad20b9",
+        "ossSample": "localsend",
+        "ossSource": "61145cf100522363e9658af97137097551c64832",
+        "deviceProfileAndRuntime": "iPhone16 iOS27.0/24A434",
+        "toolVersions": "Flutter3.41.9/Dart3.11.5; Xcode27.1/27A9275 SDK27.1/24A94232; Ruby3.2.2/Pods1.16.2; LocalSend Rust1.97.1 and fixed Cargokit/Pod source closures",
+        "targetAndRoot": "Runner/Debug arm64; minimal app root dot; LocalSend app root app, dependency root dot; lib/main.dart",
+        "developmentSigning": "Simulator CODE_SIGNING_ALLOWED=NO; no account",
+        "knownGoodReceipt": "baseline-flutter",
+        "selectedCurrentInputs": "fixed-inputs",
+        "preparationPolicy": "Reuse the 24 independently cloned CLI/GUI checkouts, prepared dependencies and prior outputs. Not new clones or cold setup for alpha.14.",
+        "proofBoundary": "Known-good baseline is historical. All current-candidate actual runtime gates start unverified.",
+        "runtimeExecutionInputs": "runtime-inputs",
+        "inputRevalidation": "input-audit",
+        "runtimeAvailability": "runtime-identities"
+      }
+    },
+    {
+      "id": "flutter-android",
+      "candidateID": "4436d17033b2ed4ebff74769a46b67d9689593c7536e85f5b1433b370df14752",
+      "inputs": {
+        "host": "macOS27.0.1/26A434 arm64; actual host Android HVF, not Tart nested virtualization",
+        "minimalSample": "minimal",
+        "minimalSource": "66732bc18ed28d9eed71336b4a2b018e09ad20b9",
+        "ossSample": "localsend",
+        "ossSource": "61145cf100522363e9658af97137097551c64832",
+        "deviceProfileAndRuntime": "Pixel7 API35 Google APIs arm64 r9; AE3A.240806.043/12960925",
+        "toolVersions": "Flutter3.41.9/Dart3.11.5; Zulu17.0.19; Gradle8.14/AGP8.11.1 and Gradle8.13/AGP8.12.1; compile36; BT35.0.0 and36.0.0; NDK28.2.13676358; Emulator37.1.11/15917651",
+        "targetAndRoot": ":app/debug; minimal root dot; LocalSend app root app, dependency root dot; lib/main.dart",
+        "developmentSigning": "Android local debug keystore; no distribution credentials",
+        "knownGoodReceipt": "baseline-flutter",
+        "selectedCurrentInputs": "fixed-inputs",
+        "preparationPolicy": "Reuse the 24 independently cloned CLI/GUI checkouts, prepared dependencies and prior outputs. Not new clones or cold setup for alpha.14.",
+        "proofBoundary": "Known-good baseline is historical. All current-candidate actual runtime gates start unverified.",
+        "runtimeExecutionInputs": "runtime-inputs",
+        "inputRevalidation": "input-audit",
+        "runtimeAvailability": "runtime-identities"
+      }
+    },
+    {
+      "id": "native-ios",
+      "candidateID": "4436d17033b2ed4ebff74769a46b67d9689593c7536e85f5b1433b370df14752",
+      "inputs": {
+        "host": "macOS27.0.1/26A434 arm64; actual host Android HVF, not Tart nested virtualization",
+        "minimalSample": "food-truck",
+        "minimalSource": "3954a769e99f3cc53297d94f2b960ceb2665b3d6",
+        "ossSample": "netnewswire",
+        "ossSource": "aea7795bcc0698ced6f28eba53da886eb6217e64",
+        "deviceProfileAndRuntime": "iPhone18Pro iOS27.0/24A434",
+        "toolVersions": "Xcode27.1/27A9275 SDK27.1/24A94232; NNW four exact Package.resolved revisions; original updateSecrets.sh, no credential inputs",
+        "targetAndRoot": "Food Truck.xcodeproj/Food Truck/Debug and NetNewsWire.xcodeproj/NetNewsWire-iOS/Debug; Food Truck sdk flag present; NNW sdk flag absent",
+        "developmentSigning": "Simulator CODE_SIGNING_ALLOWED=NO; no account",
+        "knownGoodReceipt": "baseline-native-ios-refresh",
+        "selectedCurrentInputs": "fixed-inputs",
+        "preparationPolicy": "Reuse the 24 independently cloned CLI/GUI checkouts, prepared dependencies and prior outputs. Not new clones or cold setup for alpha.14.",
+        "proofBoundary": "Known-good baseline is historical. All current-candidate actual runtime gates start unverified.",
+        "runtimeExecutionInputs": "runtime-inputs",
+        "inputRevalidation": "input-audit",
+        "runtimeAvailability": "runtime-identities"
+      }
+    },
+    {
+      "id": "native-android",
+      "candidateID": "4436d17033b2ed4ebff74769a46b67d9689593c7536e85f5b1433b370df14752",
+      "inputs": {
+        "host": "macOS27.0.1/26A434 arm64; actual host Android HVF, not Tart nested virtualization",
+        "minimalSample": "todo",
+        "minimalSource": "ee66e1526b84c026615df032c705842b7d2a521f",
+        "ossSample": "nia",
+        "ossSource": "a49ed253d75e61a2b6ab80a8da677b57437b08eb",
+        "deviceProfileAndRuntime": "Pixel7 API35 Google APIs arm64 r9; AE3A.240806.043/12960925",
+        "toolVersions": "Zulu17.0.19 and Zulu21.0.12.1; Gradle8.11.1/AGP8.7.3 and Gradle9.7.1/AGP9.3.2; compile35/BT34.0.0 and compile36/BT36.0.0; Emulator37.1.11/15917651",
+        "targetAndRoot": ":app/debug and :app/demoDebug",
+        "developmentSigning": "Android local debug keystore; no distribution credentials",
+        "knownGoodReceipt": "baseline-native-android",
+        "selectedCurrentInputs": "fixed-inputs",
+        "preparationPolicy": "Reuse the 24 independently cloned CLI/GUI checkouts, prepared dependencies and prior outputs. Not new clones or cold setup for alpha.14.",
+        "proofBoundary": "Known-good baseline is historical. All current-candidate actual runtime gates start unverified.",
+        "runtimeExecutionInputs": "runtime-inputs",
+        "inputRevalidation": "input-audit",
+        "runtimeAvailability": "runtime-identities"
+      }
+    },
+    {
+      "id": "package-and-inputs",
+      "candidateID": "4436d17033b2ed4ebff74769a46b67d9689593c7536e85f5b1433b370df14752",
+      "inputs": {
+        "host": "macOS27.0.1/26A434 arm64",
+        "source": "4171f5f132a611c73d785f28b424c46e65b7f4d5",
+        "productVersion": "0.1.0",
+        "artifactReleaseVersion": "0.1.0-alpha.14",
+        "signing": "unsigned",
+        "notarization": "not-requested",
+        "distribution": "not-ready",
+        "recipe": "package-recipe",
+        "purpose": "AC15 candidate and input linkage; actual AC01-AC19 release gates remain separate",
+        "runtimeExecutionInputs": "runtime-inputs",
+        "selectedCurrentInputs": "fixed-inputs",
+        "inputRevalidation": "input-audit",
+        "runtimeAvailability": "runtime-identities"
+      }
+    }
+  ]
+}
