@@ -393,6 +393,12 @@ public enum WorkflowExecution {
             if let configuration = input.configuration, !choices.configurations.contains(configuration) {
                 throw selectionFailure("Unknown configuration: \(configuration). Select a listed configuration.")
             }
+            if let selected = operation.configuration, let effective = choices.effectiveConfiguration, selected != effective {
+                if input.configuration != nil {
+                    throw selectionFailure("Xcode resolved configuration \(effective) instead of \(selected). Select a confirmed configuration.")
+                }
+                operation.configuration = nil
+            }
             if operation.configuration == nil { operation.requiredInput.append("--configuration") }
             operation.device = input.device ?? choices.declaredDeviceID
             if needsDevice && operation.device == nil && config.configuration?.device == nil && choices.devices.count == 1 {
@@ -413,7 +419,7 @@ public enum WorkflowExecution {
             operation.module = target.module
             operation.variant = target.variant
             operation.requiredInput += target.requiredInput
-        if let error = target.selectionError { throw error }
+            if let error = target.selectionError { throw error }
             config = config.selecting(module: target.module, variant: target.variant)
             if kind == .up {
                 operation.devices = try await androidWorkflowDevices(anchor: anchor, config: config, runner: runner,

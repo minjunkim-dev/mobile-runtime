@@ -74,6 +74,30 @@ struct FlutterAndroidWorkflowTests {
         #expect(!fixture.runner.log.all.contains { $0.arguments.contains("install") || $0.executable.hasSuffix("/bin/flutter") })
     }
 
+    @Test("GUI inspection retains Flutter Android choices in one protected view without starting the app", arguments: [false, true])
+    func inspectedTargets(_ workspace: Bool) async throws {
+        let fixture = try RuntimeFixture(workspace: workspace)
+        let trace = Trace()
+        let sdk = try fixture.native.repo.directory("owned-sdk-view")
+        let source = fixture.app.appendingPathComponent("lib/main.dart")
+        let before = try Data(contentsOf: source)
+        let result = try await EnvironmentInspection.run(input: fixture.input, runner: fixture.runner,
+            includeTargets: true, flutterFactory: { _, _, files in trace.record(files); return View(sdk: sdk) })
+        #expect(result.targets?.modules == [":app"])
+        #expect(result.targets?.variants == ["debug"])
+        #expect(result.targets?.devices.map(\.id) == ["avd:Pixel"])
+        let commands = fixture.runner.base.log.all
+        let metadata = commands.filter { $0.executable == "./gradlew" }
+        #expect(trace.count == 1)
+        #expect(!metadata.isEmpty)
+        #expect(metadata.allSatisfy { $0.environment["RUNSTIR_FIXTURE_VIEW"] == "same-view"
+            && $0.environment["FLUTTER_ROOT"] == sdk.path && $0.arguments.contains("--offline") })
+        #expect(!commands.contains { $0.arguments.contains { $0.contains("assemble") || $0.contains("install") }
+            || $0.arguments.contains("launch") || $0.arguments.contains("boot") || $0.executable == "emulator" && !$0.arguments.contains("-list-avds") && !$0.arguments.contains("-accel-check") })
+        #expect(fixture.runner.base.log.spawned.isEmpty)
+        #expect(try Data(contentsOf: source) == before)
+    }
+
     @Test("setup's first model uses the same ready-only protected composition")
     func preparationUsesView() async throws {
         let fixture = try CallerFixture()
