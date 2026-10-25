@@ -92,7 +92,7 @@ struct AppFileView: View {
                         Text("앱 화면은 기기에서 직접 확인하세요.")
                         Text("개발 서버는 자동으로 시작하거나 연결하지 않습니다. 필요한 경우 별도로 준비하세요.")
                         if let installed = operation.installed {
-                            Text("설치 후 확인: \(GUIText.state(installed.state)) · 빌드 \(installed.build ?? "확인 불가")")
+                            Text("현재 설치 상태: \(GUIText.state(installed.state)) · 빌드 \(installed.build ?? "확인 불가")")
                             if let detail = installed.detail { Text(detail) }
                         }
                         if let error = operation.error { Text("\(outcomeLabel(operation.state)): \(error)").foregroundStyle(.red) }
