@@ -6,6 +6,7 @@ public struct IOSWorkflowCandidates: Sendable {
     public let declaredDeviceID: String?
     public let schemes: [String]
     public let configurations: [String]
+    public let effectiveConfiguration: String?
     public let deploymentTarget: String?
 
     public static func load(anchor: ProjectAnchor, config: ConfigContext, lookup: MatrixLookup?,
@@ -49,8 +50,9 @@ public struct IOSWorkflowCandidates: Sendable {
                               remediation: Remediation(summary: "Share the app scheme in Xcode and commit the .xcscheme file, then retry."))
         }
         var configurations = listing.configurations
+        var effectiveConfiguration: String?
         var deploymentTarget: String?
-        // Workspace lists omit configurations. Expose the effective value so callers reject Xcode's fallback.
+        // Workspace lists omit configurations. Keep choices separate from Xcode's effective value.
         if (configurations.isEmpty || anchor.framework != .reactNative),
            !(anchor.framework == .flutter && configuration == nil && !configurations.isEmpty && !configurations.contains("Debug")),
            let scheme = config.configuration?.scheme ?? (schemes.count == 1 ? schemes.first : nil),
@@ -92,10 +94,11 @@ public struct IOSWorkflowCandidates: Sendable {
                             remediation: Remediation(summary: "Prepare the selected Flutter host with the exact SDK manually, preserving source and lockfiles. Runstir does not migrate generated inputs or substitute Release."))
                     }
                 }
-                // A declared configuration is not proof that Xcode used it.
-                // Keep the effective value so the caller rejects fallback to Release.
-                if effective != requested { configurations = [effective] }
-                else if configurations.isEmpty { configurations = [effective] }
+                // Choices and the effective value are separate: fallback must not hide other valid choices.
+                effectiveConfiguration = effective
+                configurations = try await configurationChoices(configurations, settings: resolved,
+                    target: targetToList, runner: runner, environment: environment)
+                if configurations.isEmpty { configurations = [effective] }
                 deploymentTarget = minimum
                 if let floor = MinimumVersion(minimum) {
                     availableSimulators = availableSimulators.filter { floor.isSatisfied(by: $0.runtime) }
@@ -106,7 +109,11 @@ public struct IOSWorkflowCandidates: Sendable {
                let effective = (entries.first?["buildSettings"] as? [String: String])?["CONFIGURATION"],
                !effective.isEmpty,
                entries.allSatisfy({ ($0["buildSettings"] as? [String: String])?["CONFIGURATION"] == effective }) {
-                configurations = [effective]
+                effectiveConfiguration = effective
+                let appSettings = XcodeBuildSettings.decode(settings.standardOutput)?.applicationSettings(scheme: scheme) ?? [:]
+                configurations = try await configurationChoices(configurations, settings: appSettings,
+                    target: targetToList, runner: runner, environment: environment)
+                if configurations.isEmpty { configurations = [effective] }
             }
         }
         devices = availableSimulators.map { RuntimeDeviceCandidate(id: $0.udid, name: $0.name, detail: "iOS \($0.runtimeText)",
@@ -117,6 +124,29 @@ public struct IOSWorkflowCandidates: Sendable {
             declaredID = selected.udid
         }
         return Self(devices: devices, declaredDeviceID: declaredID,
-                    schemes: schemes.sorted(), configurations: configurations.sorted(), deploymentTarget: deploymentTarget)
+                    schemes: schemes.sorted(), configurations: configurations.sorted(),
+                    effectiveConfiguration: effectiveConfiguration, deploymentTarget: deploymentTarget)
+    }
+
+    private static func configurationChoices(_ listed: [String], settings: [String: String], target: XcodeBuildTarget,
+                                             runner: any ProcessRunner, environment: [String: String]) async throws -> [String] {
+        guard listed.isEmpty, target.kind == .workspace, let path = settings["PROJECT_FILE_PATH"] else { return listed }
+        let project = URL(fileURLWithPath: path)
+        guard path.hasPrefix("/"), project.pathExtension == "xcodeproj" else {
+            throw ToolUnavailable(description: "Xcode did not report a project for the selected workspace app's build configurations.")
+        }
+        let canonicalProject = project.standardizedFileURL.resolvingSymlinksInPath()
+        guard XcodeSchemeList.projects(in: target).contains(where: {
+            $0.standardizedFileURL.resolvingSymlinksInPath() == canonicalProject
+        }) else {
+            throw ToolUnavailable(description: "Xcode reported an app project outside the selected workspace's members.")
+        }
+        let result = try await runner.run(XcodeSchemeList.command(
+            target: XcodeBuildTarget(kind: .project, url: project, freezesPackages: true), environment: environment))
+        guard result.terminationStatus.isSuccess, let listing = XcodeSchemeList.decode(result.standardOutput),
+              !listing.configurations.isEmpty else {
+            throw ToolUnavailable(description: "Could not list build configurations for the selected workspace app's project.")
+        }
+        return listing.configurations
     }
 }

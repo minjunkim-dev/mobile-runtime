@@ -160,59 +160,8 @@ public enum WorkflowExecution {
                     throw WorkflowStopped()
                 }
 
-                if platform == .ios {
-                    let needsDevice = kind == .up || anchor.framework == .flutter || input.device != nil
-                    let choices = try await IOSWorkflowCandidates.load(anchor: anchor, config: config, lookup: wiring.lookup,
-                        runner: wiring.projectRunner, locator: wiring.locator, includeDevices: needsDevice,
-                        configuration: input.configuration, entrypoint: input.project.entrypoint,
-                        flutterSDKRoot: wiring.flutter?.sdk?.root)
-                    operation.schemes = choices.schemes
-                    operation.configurations = choices.configurations
-                    operation.devices = choices.devices
-                    operation.scheme = config.configuration?.scheme ?? (choices.schemes.count == 1 ? choices.schemes.first : nil)
-                    if let scheme = operation.scheme, !choices.schemes.contains(scheme) {
-                        throw selectionFailure("Unknown scheme: \(scheme). Select a listed scheme.")
-                    }
-                    if operation.scheme == nil { operation.requiredInput.append("--scheme") }
-                    operation.configuration = input.configuration ?? (choices.configurations.contains("Debug") ? "Debug" : nil)
-                    if let configuration = input.configuration, !choices.configurations.contains(configuration) {
-                        throw selectionFailure("Unknown configuration: \(configuration). Select a listed configuration.")
-                    }
-                    if operation.configuration == nil { operation.requiredInput.append("--configuration") }
-                    operation.device = input.device ?? choices.declaredDeviceID
-                    if needsDevice && operation.device == nil && config.configuration?.device == nil && choices.devices.count == 1 {
-                        operation.device = choices.devices.first?.id
-                    }
-                    if needsDevice {
-                        if config.configuration?.device != nil && operation.device == nil && input.device == nil {
-                            throw selectionFailure("ios.device does not resolve to a compatible Simulator. Refresh and select a device identity.")
-                        }
-                        try selectDevice(&operation)
-                    }
-                    config = config.selecting(scheme: operation.scheme)
-                } else {
-                    let target = try await AndroidWorkflowTarget.load(anchor: anchor, config: config, hostRunner: runner,
-                        projectRunner: wiring.projectRunner, environment: AndroidEnvironment(values: input.project.environment))
-                    operation.modules = target.modules
-                    operation.variants = target.variants
-                    operation.module = target.module
-                    operation.variant = target.variant
-                    operation.requiredInput += target.requiredInput
-                    config = config.selecting(module: target.module, variant: target.variant)
-                    if kind == .up {
-                        operation.devices = try await androidWorkflowDevices(anchor: anchor, config: config, runner: runner,
-                            environment: AndroidEnvironment(values: input.project.environment))
-                        operation.device = input.device ?? config.configuration?.androidAVD.map { "avd:\($0)" }
-                        if operation.device == nil && operation.devices.count == 1 { operation.device = operation.devices.first?.id }
-                        try selectDevice(&operation)
-                        let avd = operation.devices.first { $0.id == operation.device }?.name
-                        config = config.selecting(avd: avd)
-                    } else if input.device != nil {
-                        throw selectionFailure("Android build does not use an execution device. Omit --device.")
-                    }
-                }
-                operation.module = config.configuration?.androidModule
-                operation.variant = config.configuration?.androidVariant
+                config = try await selectTargets(input: input, kind: kind, anchor: anchor, platform: platform,
+                    config: config, wiring: wiring, runner: runner, operation: &operation)
                 if !operation.requiredInput.isEmpty {
                     operation.state = "needs-selection"
                     throw selectionFailure("Select \(operation.requiredInput.joined(separator: ", ")) before starting changes.")
@@ -419,6 +368,74 @@ public enum WorkflowExecution {
         }
         events.send(code == 130 ? "cancelled" : "finished", state: operation.state, detail: operation.nextAction)
         return WorkflowResult(operation: operation, up: up, down: down)
+    }
+
+    /// Read-only candidates are shared by inspection and execution; execution validates them again.
+    static func selectTargets(input: WorkflowInput, kind: WorkflowKind, anchor: ProjectAnchor,
+                              platform: ProjectPlatform, config original: ConfigContext, wiring: WorkflowContext,
+                              runner: any ProcessRunner, operation: inout WorkflowOperation) async throws -> ConfigContext {
+        var config = original
+        if platform == .ios {
+            let needsDevice = kind == .up || anchor.framework == .flutter || input.device != nil
+            let choices = try await IOSWorkflowCandidates.load(anchor: anchor, config: config, lookup: wiring.lookup,
+                runner: wiring.projectRunner, locator: wiring.locator, includeDevices: needsDevice,
+                configuration: input.configuration, entrypoint: input.project.entrypoint,
+                flutterSDKRoot: wiring.flutter?.sdk?.root)
+            operation.schemes = choices.schemes
+            operation.configurations = choices.configurations
+            operation.devices = choices.devices
+            operation.scheme = config.configuration?.scheme ?? (choices.schemes.count == 1 ? choices.schemes.first : nil)
+            if let scheme = operation.scheme, !choices.schemes.contains(scheme) {
+                throw selectionFailure("Unknown scheme: \(scheme). Select a listed scheme.")
+            }
+            if operation.scheme == nil { operation.requiredInput.append("--scheme") }
+            operation.configuration = input.configuration ?? (choices.configurations.contains("Debug") ? "Debug" : nil)
+            if let configuration = input.configuration, !choices.configurations.contains(configuration) {
+                throw selectionFailure("Unknown configuration: \(configuration). Select a listed configuration.")
+            }
+            if let selected = operation.configuration, let effective = choices.effectiveConfiguration, selected != effective {
+                if input.configuration != nil {
+                    throw selectionFailure("Xcode resolved configuration \(effective) instead of \(selected). Select a confirmed configuration.")
+                }
+                operation.configuration = nil
+            }
+            if operation.configuration == nil { operation.requiredInput.append("--configuration") }
+            operation.device = input.device ?? choices.declaredDeviceID
+            if needsDevice && operation.device == nil && config.configuration?.device == nil && choices.devices.count == 1 {
+                operation.device = choices.devices.first?.id
+            }
+            if needsDevice {
+                if config.configuration?.device != nil && operation.device == nil && input.device == nil {
+                    throw selectionFailure("ios.device does not resolve to a compatible Simulator. Refresh and select a device identity.")
+                }
+                try selectDevice(&operation)
+            }
+            config = config.selecting(scheme: operation.scheme)
+        } else {
+            let target = try await AndroidWorkflowTarget.candidates(anchor: anchor, config: config, hostRunner: runner,
+                projectRunner: wiring.projectRunner, environment: AndroidEnvironment(values: input.project.environment))
+            operation.modules = target.modules
+            operation.variants = target.variants
+            operation.module = target.module
+            operation.variant = target.variant
+            operation.requiredInput += target.requiredInput
+            if let error = target.selectionError { throw error }
+            config = config.selecting(module: target.module, variant: target.variant)
+            if kind == .up {
+                operation.devices = try await androidWorkflowDevices(anchor: anchor, config: config, runner: runner,
+                    environment: AndroidEnvironment(values: input.project.environment))
+                operation.device = input.device ?? config.configuration?.androidAVD.map { "avd:\($0)" }
+                if operation.device == nil && operation.devices.count == 1 { operation.device = operation.devices.first?.id }
+                try selectDevice(&operation)
+                let avd = operation.devices.first { $0.id == operation.device }?.name
+                config = config.selecting(avd: avd)
+            } else if input.device != nil {
+                throw selectionFailure("Android build does not use an execution device. Omit --device.")
+            }
+        }
+        operation.module = config.configuration?.androidModule
+        operation.variant = config.configuration?.androidVariant
+        return config
     }
 
     private static func claim(_ context: UpContext, device: ResourceKey, platform: ProjectPlatform, owner: LeaseOwner) -> ResourceClaim? {

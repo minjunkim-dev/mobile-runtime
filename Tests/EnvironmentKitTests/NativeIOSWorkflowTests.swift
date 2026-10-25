@@ -306,10 +306,86 @@ struct NativeIOSWorkflowTests {
         runner.responses[try settings(repo)] = fallback
             ? .ok(#"[{"target":"App","buildSettings":{"CONFIGURATION":"Release","PLATFORM_NAME":"iphonesimulator","IPHONEOS_DEPLOYMENT_TARGET":"17.0","FULL_PRODUCT_NAME":"App.app"}}]"#)
             : .ok(#"[{"target":"Library","buildSettings":{"CONFIGURATION":"Debug","PLATFORM_NAME":"iphonesimulator","IPHONEOS_DEPLOYMENT_TARGET":"17.0","FULL_PRODUCT_NAME":"Library.framework"}}]"#)
+        if fallback {
+            let inspection = try await EnvironmentInspection.run(input: input(repo).project, runner: runner)
+            #expect(inspection.report.checks.first { $0.id == "project.native-ios" }?.status == .unknown)
+        }
         let result = await WorkflowExecution.run(.build, input: input(repo), runner: runner)
         #expect(result.exitCode == 1)
         #expect(!runner.log.all.contains { $0.arguments.contains("build") })
         if fallback { #expect(result.operation.requiredInput == ["--configuration"]) }
+    }
+
+    @Test("configuration choices survive a Debug fallback and include workspace app configurations", arguments: [false, true])
+    func configurationChoices(workspace: Bool) async throws {
+        let repo = try project()
+        if workspace {
+            try repo.write("Chosen.xcworkspace/contents.xcworkspacedata", #"<Workspace><FileRef location="group:App.xcodeproj"/></Workspace>"#)
+        }
+        var runner = try runner(repo)
+        let selectedTarget = workspace
+            ? "-workspace \(repo.url("Chosen.xcworkspace").path) -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile"
+            : target(repo)
+        let configurations = #"{"project":{"schemes":["App"],"configurations":["Development","Release"]}}"#
+        runner.responses[list(repo)] = .ok(configurations)
+        if workspace { runner.responses["xcodebuild -list -json \(selectedTarget)"] = .ok(#"{"workspace":{"schemes":["App"]}}"#) }
+        runner.responses["xcrun simctl list devices -j"] = .ok(#"{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-27-0":[{"name":"iPhone A","udid":"A","state":"Shutdown","isAvailable":true}]}}"#)
+        for requested in ["Debug", "Development"] {
+            let destination = "\(selectedTarget) -scheme App -configuration \(requested) -destination generic/platform=iOS Simulator -derivedDataPath \(try RunLogs(project: repo.root).derivedDataDirectory.path)"
+            let effective = requested == "Debug" ? "Release" : requested
+            runner.responses["xcodebuild -showBuildSettings -json \(destination)"] = .ok(
+                #"[{"target":"App","buildSettings":{"CONFIGURATION":"\#(effective)","PLATFORM_NAME":"iphonesimulator","IPHONEOS_DEPLOYMENT_TARGET":"17.0","FULL_PRODUCT_NAME":"App.app","PROJECT_FILE_PATH":"\#(repo.url("App.xcodeproj").path)"}}]"#)
+        }
+        let input = ProjectInspectionInput(directory: repo.root, environment: [:], app: workspace ? "Chosen.xcworkspace" : "App.xcodeproj")
+        let missing = try await EnvironmentInspection.run(input: input, runner: runner, includeTargets: true)
+        #expect(missing.targets?.configurations == ["Development", "Release"])
+        #expect(missing.targets?.configuration == nil)
+        #expect(missing.targets?.requiredInput == ["--configuration"])
+        let selected = try await EnvironmentInspection.run(input: input, runner: runner, configuration: "Development", includeTargets: true)
+        #expect(selected.targets?.configurations == ["Development", "Release"])
+        #expect(selected.targets?.configuration == "Development")
+        #expect(selected.targets?.requiredInput.isEmpty == true)
+        let development = "\(selectedTarget) -scheme App -configuration Development -destination generic/platform=iOS Simulator -derivedDataPath \(try RunLogs(project: repo.root).derivedDataDirectory.path)"
+        runner.responses["xcodebuild -showBuildSettings -json \(development)"] = .ok(
+            #"[{"target":"App","buildSettings":{"CONFIGURATION":"Release","PLATFORM_NAME":"iphonesimulator","IPHONEOS_DEPLOYMENT_TARGET":"17.0","FULL_PRODUCT_NAME":"App.app","PROJECT_FILE_PATH":"\#(repo.url("App.xcodeproj").path)"}}]"#)
+        let fallback = try await EnvironmentInspection.run(input: input, runner: runner, configuration: "Development", includeTargets: true)
+        #expect(fallback.targets?.state == "failed")
+        #expect(fallback.targets?.configuration == "Development")
+        #expect(fallback.targets?.configurations == ["Development", "Release"])
+        #expect(!runner.log.all.contains { $0.arguments.contains("build") || $0.arguments.contains("install") || $0.arguments.contains("boot") || $0.arguments.contains("launch") })
+        if workspace {
+            #expect(runner.log.all.contains { $0.description == list(repo) })
+        }
+    }
+
+    @Test("workspace configuration queries require an explicit member, including absolute external members", arguments: [false, true])
+    func workspaceConfigurationMember(declared: Bool) async throws {
+        let repo = try project()
+        let external = try FixtureRepo()
+        try external.write("External.xcodeproj/project.pbxproj", "external app")
+        let projectPath = external.url("External.xcodeproj").path
+        let reference = declared ? #"<FileRef location="absolute:\#(projectPath)"/>"# : ""
+        try repo.write("Chosen.xcworkspace/contents.xcworkspacedata", #"<Workspace><FileRef location="group:App.xcodeproj"/>\#(reference)</Workspace>"#)
+        var runner = try runner(repo)
+        let selectedTarget = "-workspace \(repo.url("Chosen.xcworkspace").path) -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile"
+        let projectList = "xcodebuild -list -json -project \(projectPath) -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile"
+        runner.responses["xcodebuild -list -json \(selectedTarget)"] = .ok(#"{"workspace":{"schemes":["App"]}}"#)
+        runner.responses[projectList] = .ok(#"{"project":{"schemes":["App"],"configurations":["Debug","Release"]}}"#)
+        let destination = "\(selectedTarget) -scheme App -configuration Debug -destination generic/platform=iOS Simulator -derivedDataPath \(try RunLogs(project: repo.root).derivedDataDirectory.path)"
+        runner.responses["xcodebuild -showBuildSettings -json \(destination)"] = .ok(
+            #"[{"target":"App","buildSettings":{"CONFIGURATION":"Debug","PLATFORM_NAME":"iphonesimulator","IPHONEOS_DEPLOYMENT_TARGET":"17.0","FULL_PRODUCT_NAME":"App.app","PROJECT_FILE_PATH":"\#(projectPath)"}}]"#)
+        runner.responses["xcrun simctl list devices -j"] = .ok(#"{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-27-0":[{"name":"iPhone A","udid":"A","state":"Shutdown","isAvailable":true}]}}"#)
+        let result = try await EnvironmentInspection.run(input: ProjectInspectionInput(directory: repo.root,
+            environment: [:], app: "Chosen.xcworkspace"), runner: runner, includeTargets: true)
+        #expect(runner.log.all.contains { $0.description == projectList } == declared)
+        if declared {
+            #expect(result.targets?.configurations == ["Debug", "Release"])
+            #expect(result.targets?.configuration == "Debug")
+        } else {
+            #expect(result.targets?.state == "failed")
+            #expect(result.targets?.nextAction?.contains("outside the selected workspace's members") == true)
+        }
+        #expect(!runner.log.all.contains { $0.arguments.contains("build") || $0.arguments.contains("install") || $0.arguments.contains("boot") || $0.arguments.contains("launch") })
     }
 
     @Test("native CocoaPods preparation is manual and never starts an installer")

@@ -7,9 +7,28 @@ public struct AndroidWorkflowTarget: Sendable {
     public let modules: [String]
     public let variants: [String]
     public let requiredInput: [String]
+    public let selectionError: DomainError?
+
+    private init(module: String?, variant: String?, modules: [String], variants: [String], requiredInput: [String], selectionError: DomainError? = nil) {
+        self.module = module
+        self.variant = variant
+        self.modules = modules
+        self.variants = variants
+        self.requiredInput = requiredInput
+        self.selectionError = selectionError
+    }
 
     public static func load(anchor: ProjectAnchor, config: ConfigContext, hostRunner: any ProcessRunner,
                             projectRunner: any ProcessRunner, environment: AndroidEnvironment) async throws -> Self {
+        let target = try await candidates(anchor: anchor, config: config, hostRunner: hostRunner,
+            projectRunner: projectRunner, environment: environment)
+        if let error = target.selectionError { throw error }
+        return target
+    }
+
+    /// A stale selection keeps the measured alternatives available for correction.
+    public static func candidates(anchor: ProjectAnchor, config: ConfigContext, hostRunner: any ProcessRunner,
+                                  projectRunner: any ProcessRunner, environment: AndroidEnvironment) async throws -> Self {
         let context = AndroidDoctorContext(anchor: anchor, config: config, hostRunner: hostRunner,
                                            projectRunner: projectRunner, environment: environment)
         let model: AndroidGradleModel
@@ -33,7 +52,13 @@ public struct AndroidWorkflowTarget: Sendable {
                         variants: module?.variants.filter { $0.debuggable && $0.assembleTask != nil && $0.installTask != nil }.map(\.name).sorted() ?? [],
                         requiredInput: [required.contains("android.module") ? "--module" : "--variant"])
         case .error(let observed, _, let remediation, _):
-            throw DomainError(summary: observed, remediation: remediation)
+            let module = config.configuration?.androidModule.flatMap { name in
+                model.modules.first { $0.path == name || $0.path == ":\(name)" }
+            } ?? (config.configuration?.androidModule == nil && model.modules.count == 1 ? model.modules.first : nil)
+            return Self(module: module?.path, variant: nil, modules: modules,
+                        variants: module?.variants.filter { $0.debuggable && $0.assembleTask != nil && $0.installTask != nil }.map(\.name).sorted() ?? [],
+                        requiredInput: [module == nil ? "--module" : "--variant"],
+                        selectionError: DomainError(summary: observed, remediation: remediation))
         }
     }
 }

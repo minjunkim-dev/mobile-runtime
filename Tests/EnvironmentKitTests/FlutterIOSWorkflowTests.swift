@@ -85,6 +85,42 @@ struct FlutterIOSWorkflowTests {
         #expect(!runner.commands.contains { $0.arguments.contains("build") || $0.arguments.contains("get") })
     }
 
+    @Test("GUI inspection retains the prepared Flutter iOS app and SDK choices without starting the app", arguments: [false, true])
+    func inspectedTargets(_ workspace: Bool) async throws {
+        let f = try FlutterIOSFixture(workspace: workspace)
+        let source = f.app.appendingPathComponent("lib/main.dart")
+        let before = try Data(contentsOf: source)
+        let doctorRunner = FlutterIOSRunner(fixture: f)
+        let doctor = try await EnvironmentInspection.run(input: f.input().project, runner: doctorRunner)
+        #expect(doctor.targets == nil)
+        let runner = FlutterIOSRunner(fixture: f)
+        let result = try await EnvironmentInspection.run(input: f.input().project, runner: runner, includeTargets: true)
+        #expect(result.targets?.schemes == ["Runner"])
+        #expect(result.targets?.configurations == ["Debug", "Release"])
+        #expect(result.targets?.devices.map(\.id) == ["A"])
+        #expect(result.targets?.configuration == "Debug")
+        let metadata = runner.commands.filter { $0.arguments.contains("-list") || $0.arguments.contains("-showBuildSettings") }
+        let candidates = runner.commands.dropFirst(doctorRunner.commands.count).filter {
+            $0.arguments.contains("-list") || $0.arguments.contains("-showBuildSettings")
+        }
+        // The existing doctor lists schemes before SDK selection. Only the later
+        // target queries must carry the selected SDK, while all queries freeze SPM.
+        func query(_ command: ProcessCommand) -> String {
+            "\(command.description) FLUTTER_ROOT=\(command.environment["FLUTTER_ROOT"] ?? "<unset>")"
+        }
+        #expect(runner.commands.prefix(doctorRunner.commands.count).map(query).sorted() == doctorRunner.commands.map(query).sorted())
+        #expect(candidates.contains { $0.arguments.contains("-list") })
+        #expect(candidates.contains { $0.arguments.contains("-showBuildSettings") })
+        #expect(candidates.allSatisfy { $0.environment["FLUTTER_ROOT"] == f.repo.url("sdk").path },
+            Comment(rawValue: candidates.map(query).joined(separator: "\n")))
+        #expect(metadata.allSatisfy { $0.arguments.contains("-disableAutomaticPackageResolution")
+            && $0.arguments.contains("-onlyUsePackageVersionsFromResolvedFile") },
+            Comment(rawValue: metadata.map { "\($0.description) FLUTTER_ROOT=\($0.environment["FLUTTER_ROOT"] ?? "<unset>")" }.joined(separator: "\n")))
+        #expect(!runner.commands.contains { $0.arguments.contains("build") || $0.arguments.contains("get")
+            || $0.arguments.contains("install") || $0.arguments.contains("boot") || $0.arguments.contains("launch") })
+        #expect(try Data(contentsOf: source) == before)
+    }
+
     @Test("doctor grades the selected Flutter app deployment target against observed runtimes", arguments: [
         "available", "missing", "older", "malformed",
     ])
