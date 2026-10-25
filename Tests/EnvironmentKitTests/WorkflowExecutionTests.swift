@@ -6,6 +6,26 @@ import Testing
 
 @Suite("shared CLI and GUI RN workflows")
 struct WorkflowExecutionTests {
+    @Test("GUI inspection exposes iOS choices before any build or runtime change")
+    func inspectTargets() async throws {
+        let repo = try iosProject()
+        let runner = try iosUpRunner(repo)
+        let input = ProjectInspectionInput(directory: repo.root, environment: [:])
+        let result = try await EnvironmentInspection.run(input: input, runner: runner, includeTargets: true)
+        let targets = try #require(result.targets)
+        #expect(targets.schemes == ["MyApp"])
+        #expect(targets.configurations == ["Debug", "Release"])
+        #expect(targets.devices.map(\.id) == ["A"])
+        #expect(targets.scheme == "MyApp")
+        #expect(targets.configuration == "Debug")
+        #expect(runner.log.spawned.isEmpty)
+        #expect(!runner.log.all.contains { command in
+            command.arguments.contains { ["build", "install", "launch", "boot", "bootstatus"].contains($0) }
+        })
+        let document = try #require(JSONSerialization.jsonObject(with: Data(try result.document(toolVersion: "test").encoded().utf8)) as? [String: Any])
+        #expect(document["targets"] == nil)
+    }
+
     @Test("RN manual build/up preserves selection and execution while skipping installers", arguments: [WorkflowKind.build, .up])
     func manuallyPreparedDependencies(_ kind: WorkflowKind) async throws {
         let repo = try iosProject()

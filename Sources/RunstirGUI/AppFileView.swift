@@ -21,7 +21,7 @@ struct AppFileView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(file.path).font(.headline).textSelection(.enabled)
-            Text("파일 확인 → 기기 선택 → 변경 계획 승인 → 설치 → 실행 요청")
+            Text("파일을 확인하고 실행할 기기를 선택하세요. 변경 계획을 승인하면 설치 후 실행을 요청합니다.")
             Text("소스 빌드와 환경 준비를 자동으로 시작하지 않습니다.").font(.caption)
             HStack {
                 Button("파일 다시 확인") { execute(inspectOnly: true) }.keyboardShortcut("r")
@@ -43,21 +43,21 @@ struct AppFileView: View {
                             Text(artifact.metadata.name ?? "앱 이름 확인 불가").font(.headline)
                             Text("\(artifact.metadata.platform.rawValue) · 앱 ID: \(artifact.metadata.appID)")
                             Text("표시 버전: \(artifact.metadata.version ?? "확인 불가") · 빌드: \(artifact.metadata.build)")
-                            Text("architecture: \(artifact.metadata.architectures.joined(separator: ", ")) · 최소 OS: \(artifact.metadata.minimumOS)")
+                            Text("아키텍처: \(artifact.metadata.architectures.joined(separator: ", ")) · 최소 OS: \(artifact.metadata.minimumOS)")
                             Text("출처: 사용자 선택 파일 · 제작자 신뢰와 안전성은 확인하지 않았습니다.")
                             Text("\(artifact.contentIdentityAlgorithm): \(artifact.contentIdentity)").font(.caption)
                             Text(artifact.metadata.signatureCondition)
-                            if let signer = artifact.metadata.signingIdentity { Text("signer SHA-256: \(signer)").font(.caption) }
+                            if let signer = artifact.metadata.signingIdentity { Text("서명 인증서 SHA-256: \(signer)").font(.caption) }
                         }
                         if let candidate = operation.devices.first(where: { $0.id == device }), let source = candidate.architectureSource {
-                            Text("기기 architecture capability: \(candidate.architectures.joined(separator: ", "))")
+                            Text("기기에서 지원하는 아키텍처: \(candidate.architectures.joined(separator: ", "))")
                             if candidate.pairing == nil {
-                                Text("runtime: \(candidate.runtimeIdentifier ?? "확인 불가") · 빌드: \(candidate.runtimeBuild ?? "확인 불가") · \(candidate.runtimeAvailable.map { $0 ? "사용 가능" : "사용 불가" } ?? "확인 불가")")
+                                Text("런타임: \(candidate.runtimeIdentifier ?? "확인 불가") · 빌드: \(candidate.runtimeBuild ?? "확인 불가") · \(candidate.runtimeAvailable.map { $0 ? "사용 가능" : "사용 불가" } ?? "확인 불가")")
                             }
                             Text("근거: \(source). 실제 기기 CPU: 미측정.").font(.caption)
                         }
                         ForEach(operation.prerequisites ?? [], id: \.id) { check in
-                            Text("조건 \(check.id): \(check.state) — \(check.observed)")
+                            Text("조건 \(check.id): \(GUIText.state(check.state)) / \(check.observed)")
                             if let action = check.action { Text("수동 조치: \(action)") }
                         }
                         if let plan = operation.plan, plan.device.id == device {
@@ -71,7 +71,7 @@ struct AppFileView: View {
                                     .disabled(session.task != nil).focused($focus, equals: .risk)
                             }
                             Text("plan-id: \(plan.id)").font(.caption)
-                            Button(plan.device.boot == "required" ? "현재 계획 승인·부팅·설치·실행 요청" : "현재 계획 승인·설치·실행 요청") { execute(approval: plan.approval) }
+                            Button(plan.device.boot == "required" ? "승인하고 부팅·설치·실행 요청" : "승인하고 설치·실행 요청") { execute(approval: plan.approval) }
                                 .disabled(busy || (plan.requiresRiskApproval && !downgradeAcknowledged))
                                 .focused($focus, equals: .approve)
                                 .accessibilityHint("plan-id \(plan.id)만 승인합니다. 기존 앱 데이터를 지우지 않습니다.")
@@ -80,19 +80,19 @@ struct AppFileView: View {
                                 : "실행 직전에 파일·기기·기존 앱 상태를 다시 확인합니다.").font(.caption)
                         }
                         Divider()
-                        Text("작업 상태: \(operation.state)").font(.headline)
+                        Text("작업 상태: \(GUIText.state(operation.state))").font(.headline)
                             .accessibilityAddTraits(.isHeader).accessibilityFocused($stateFocused)
                         if let boot = operation.deviceBoot {
-                            Text("기기 부팅: \(boot.state) · \(boot.device)\(boot.handle.map { " · \($0)" } ?? "")")
+                            Text("기기 부팅: \(GUIText.state(boot.state)) · \(boot.device)\(boot.handle.map { " · \($0)" } ?? "")")
                             Text("Runstir가 부팅한 기기는 끄지 않고 그대로 둡니다. 필요 없으면 직접 종료하세요. \(boot.detail)")
                         }
-                        Text("설치 관측: \(operation.installation)")
-                        Text("실행 요청: \(operation.launch)")
-                        Text("앱 실행 상태: \(operation.running)")
-                        Text("첫 화면 증거: 확인하지 않음")
-                        Text("외부 개발 서버 조건: 확인하지 않음. 서버를 시작하거나 연결하지 않았습니다.")
+                        Text("설치 상태: \(GUIText.state(operation.installation))")
+                        Text("실행 요청: \(GUIText.state(operation.launch))")
+                        Text("앱 실행 상태: \(operation.running == "running" ? "실행 중" : GUIText.state(operation.running))")
+                        Text("앱 화면은 기기에서 직접 확인하세요.")
+                        Text("개발 서버는 자동으로 시작하거나 연결하지 않습니다. 필요한 경우 별도로 준비하세요.")
                         if let installed = operation.installed {
-                            Text("현재 설치 재관측: \(installed.state) · 빌드 \(installed.build ?? "확인 불가")")
+                            Text("설치 후 확인: \(GUIText.state(installed.state)) · 빌드 \(installed.build ?? "확인 불가")")
                             if let detail = installed.detail { Text(detail) }
                         }
                         if let error = operation.error { Text("\(outcomeLabel(operation.state)): \(error)").foregroundStyle(.red) }
@@ -100,7 +100,7 @@ struct AppFileView: View {
                             Text("충돌: \(conflict.key.rawValue)")
                             if let owner = conflict.owner { Text("소유 작업: \(owner.command) / \(owner.project)") }
                         }
-                        if let next = operation.nextAction { Text("다음 행동: \(next)") }
+                        if let next = operation.nextAction { Text("다음 단계: \(next)") }
                         if !operation.completed.isEmpty { Text("완료 단계: \(operation.completed.joined(separator: ", "))") }
                     }.frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled)
                 }
@@ -160,7 +160,7 @@ struct AppFileView: View {
             default: nextFocus = .recheck
             }
             stateFocused = true
-            announce("앱 파일 작업: \(output.operation.state), 설치 \(output.operation.installation), 실행 요청 \(output.operation.launch)")
+            announce("앱 파일 작업: \(GUIText.state(output.operation.state)), 설치 \(GUIText.state(output.operation.installation)), 실행 요청 \(GUIText.state(output.operation.launch))")
         }
     }
 }

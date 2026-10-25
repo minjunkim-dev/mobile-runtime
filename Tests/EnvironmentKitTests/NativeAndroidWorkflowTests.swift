@@ -8,6 +8,42 @@ import Testing
 
 @Suite("native Android shared workflow")
 struct NativeAndroidWorkflowTests {
+    @Test("GUI inspection lists runnable flavors and refreshes the explicit variant without assembling")
+    func inspectTargets() async throws {
+        let fixture = try NativeAndroidFixture()
+        let runner = try fixture.runner(variants: ["stagingDebug", "prodDebug"], builtVariant: "stagingDebug")
+        let missing = try await EnvironmentInspection.run(input: fixture.input, runner: runner, includeTargets: true)
+        #expect(missing.targets?.modules == [":app"])
+        #expect(missing.targets?.variants == ["prodDebug", "stagingDebug"])
+        #expect(missing.targets?.requiredInput == ["--variant"])
+        let selected = try await EnvironmentInspection.run(input: fixture.input, runner: runner,
+            module: ":app", variant: "stagingDebug", includeTargets: true)
+        #expect(selected.targets?.module == ":app")
+        #expect(selected.targets?.variant == "stagingDebug")
+        #expect(selected.targets?.devices.map(\.id) == ["avd:Pixel"])
+        #expect(runner.log.spawned.isEmpty)
+        #expect(!runner.log.all.contains { command in
+            command.arguments.contains { $0.contains(":assemble") || $0.contains(":install") || ["install", "start", "force-stop"].contains($0) }
+        })
+        try fixture.assertPreserved()
+    }
+
+    @Test("a stale Android selector retains measured choices and never starts a build", arguments: ["module", "variant"])
+    func staleTargets(_ field: String) async throws {
+        let fixture = try NativeAndroidFixture()
+        let runner = try fixture.runner()
+        let result = try await EnvironmentInspection.run(input: fixture.input, runner: runner,
+            module: field == "module" ? ":removed" : ":app", variant: field == "variant" ? "removedDebug" : nil,
+            includeTargets: true)
+        #expect(result.targets?.state == "failed")
+        #expect(result.targets?.modules == [":app"])
+        #expect(result.targets?.requiredInput == [field == "module" ? "--module" : "--variant"])
+        if field == "variant" { #expect(result.targets?.variants == ["debug"]) }
+        #expect(!runner.log.all.contains { $0.arguments.first == ":app:assembleDebug" })
+        #expect(runner.log.spawned.isEmpty)
+        try fixture.assertPreserved()
+    }
+
     @Test("native doctor uses evaluated Gradle and SDK facts without React Native inputs")
     func doctor() async throws {
         let fixture = try NativeAndroidFixture()

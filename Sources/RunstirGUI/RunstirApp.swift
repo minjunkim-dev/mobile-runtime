@@ -166,7 +166,7 @@ extension GUIOperationSession {
     /// Cancellation names the step still returning instead of claiming a stop it cannot force.
     var statusText: String {
         guard cancelling else { return progress }
-        return "취소 요청됨. 새 단계를 시작하지 않고 실행 중인 도구가 반환될 때까지 기다립니다."
+        return "취소하는 중입니다. 실행 중인 도구가 끝날 때까지 기다려 주세요."
             + (progress.isEmpty ? "" : " 현재 단계: \(progress)")
     }
 }
@@ -177,7 +177,7 @@ func outcomeLabel(_ state: String) -> String {
     case "cancelled": "취소됨"
     case "needs-selection": "선택 필요"
     case "needs-approval": "승인 필요"
-    case "waiting-manual": "수동 대기"
+    case "waiting-manual": "직접 준비 필요"
     default: "실패"
     }
 }
@@ -188,7 +188,7 @@ func outcomeLabel(_ state: String) -> String {
 }
 
 struct InspectionView: View {
-    private enum Field: Hashable { case app, platform, device, scheme, configuration, module, variant, port, trust, recheck, plan, approve, preparedDependencies }
+    private enum Field: Hashable { case app, platform, device, scheme, configuration, module, variant, entrypoint, port, trust, recheck, plan, approve, preparedDependencies }
     private enum Region: Hashable { case inspection, preparation, workflow }
     let directory: URL
     let session: GUIOperationSession
@@ -205,6 +205,7 @@ struct InspectionView: View {
     @State private var entrypoint = ""
     @State private var port = ""
     @State private var preparedDependencies = false
+    @State private var targets: WorkflowOperation?
     @State private var workflow: WorkflowResult?
     private var running: Task<Void, Never>? { session.task }
     @State private var events: [WorkflowEvent] = []
@@ -231,59 +232,66 @@ struct InspectionView: View {
                 }.disabled(busy).focused($focus, equals: .app)
                 Picker("플랫폼", selection: $platform) {
                     Text("자동 선택").tag("")
-                    Text("iOS").tag("ios")
-                    Text("Android").tag("android")
-                }.disabled(busy).focused($focus, equals: .platform)
+                    ForEach(selectedCandidate?.platforms ?? [], id: \.rawValue) { candidate in
+                        Text(candidate == .ios ? "iOS" : "Android").tag(candidate.rawValue)
+                    }
+                }.disabled(busy || selectedCandidate == nil).focused($focus, equals: .platform)
                 Button(result == nil ? "환경 확인" : "환경 다시 확인") { inspect() }.keyboardShortcut("r").disabled(busy)
                     .focused($focus, equals: .recheck)
                     .accessibilityHint("선택한 앱과 플랫폼의 현재 상태를 다시 확인합니다. 변경하지 않습니다.")
             }
             HStack {
                 Picker("기기", selection: $device) {
-                    Text("설정 또는 단일 후보").tag("")
+                    Text("기기를 선택하세요").tag("")
                     ForEach(devices, id: \.id) { candidate in
                         Text("\(candidate.name) / \(candidate.detail)\(candidate.origin.map { " / " + $0.displayName } ?? "")\(candidate.avdDirectory.map { " / " + $0 } ?? "")").tag(candidate.id)
                     }
-                }.focused($focus, equals: .device)
+                }.disabled(devices.isEmpty).focused($focus, equals: .device)
                 if platform == "android" || (platform.isEmpty && result?.selection.platform == .android) {
-                    TextField("Module (설정 또는 단일 후보)", text: $module).focused($focus, equals: .module)
-                    TextField("Variant (설정 또는 debug)", text: $variant).focused($focus, equals: .variant)
+                    choicePicker("모듈", selection: $module, options: targets?.modules ?? [], defaultValue: targets?.module, field: .module)
+                    choicePicker("빌드 변형", selection: $variant, options: targets?.variants ?? [], defaultValue: targets?.variant, field: .variant)
                 } else {
-                    TextField("Scheme (설정 또는 단일 후보)", text: $scheme).focused($focus, equals: .scheme)
-                    TextField("Configuration (Debug)", text: $configuration).focused($focus, equals: .configuration)
+                    choicePicker("Scheme", selection: $scheme, options: targets?.schemes ?? [], defaultValue: targets?.scheme, field: .scheme)
+                    choicePicker("빌드 구성", selection: $configuration, options: targets?.configurations ?? [], defaultValue: targets?.configuration, field: .configuration)
                 }
             }.disabled(busy)
+            if let action = targets?.nextAction { Text("선택 항목을 확인하지 못했습니다: \(action)").foregroundStyle(.secondary) }
+
             if result?.selection.selected?.framework == .reactNative {
-                TextField("Metro port (8081)", text: $port).disabled(busy).focused($focus, equals: .port)
+                TextField("Metro 포트 (기본값: 8081)", text: $port).disabled(busy).focused($focus, equals: .port)
+                    .accessibilityLabel("Metro 포트").help("1부터 65535까지 입력하세요. 비워 두면 8081을 사용합니다.")
             } else if result?.selection.selected?.framework == .flutter {
                 HStack {
-                    TextField("Entrypoint (lib/main.dart)", text: $entrypoint)
-                    TextField("VM service port (자동 선택)", text: $port).focused($focus, equals: .port)
+                    TextField("실행 파일 경로 (기본값: lib/main.dart)", text: $entrypoint)
+                        .focused($focus, equals: .entrypoint).accessibilityLabel("Flutter 실행 파일 경로")
+                        .help("선택한 Flutter 앱 안에 있는 Dart 파일의 상대 경로를 입력하세요.")
+                    TextField("VM 서비스 포트 (자동 할당)", text: $port).focused($focus, equals: .port)
+                        .accessibilityLabel("Flutter VM 서비스 포트").help("1부터 65535까지 입력하세요. 비워 두면 사용 가능한 포트를 할당합니다.")
                 }.disabled(busy)
             }
             if result?.selection.selected?.framework == .reactNative || result?.selection.selected?.framework == .flutter {
-                Toggle("직접 준비한 의존성 사용", isOn: $preparedDependencies)
+                Toggle("미리 준비한 의존성 사용", isOn: $preparedDependencies)
                     .disabled(busy).focused($focus, equals: .preparedDependencies)
                     .accessibilityIdentifier("project.prepared-dependencies")
-                    .accessibilityHint("RN·Flutter 빌드와 실행에 적용합니다. 의존성 재설치·lock 정렬·Flutter plugin resolver 재검증을 생략합니다. Flutter의 추적된 내부 source 파일 링크만 검증 후 허용합니다.")
-                Text("의존성 재설치·lock 정렬·Flutter plugin resolver 재검증을 생략합니다. 준비한 의존성의 정합성은 사용자가 확인해야 합니다. Flutter의 추적된 내부 source 파일 링크만 검증 후 허용합니다.")
+                    .accessibilityHint("RN·Flutter의 빌드와 실행에 적용합니다. 의존성을 다시 설치하거나 lock 파일과 Flutter 플러그인 구성을 확인하지 않습니다. Flutter 파일 링크는 Git에 기록된 프로젝트 내부 소스만 허용합니다.")
+                Text("의존성을 다시 설치하거나 lock 파일과 Flutter 플러그인 구성을 확인하지 않습니다. 준비 상태를 직접 확인한 경우에 선택하세요. Flutter 파일 링크는 Git에 기록된 프로젝트 내부 소스만 허용합니다.")
                     .font(.caption).foregroundStyle(.secondary)
             }
             HStack {
                 Button("준비 계획 확인") { prepare() }.disabled(busy).focused($focus, equals: .plan)
-                Toggle("저장소 스크립트 신뢰", isOn: $repositoryTrusted)
-                    .help("준비 승인과 별개입니다. 라이선스 동의와 관리자 권한을 대신하지 않습니다.")
+                Toggle("저장소 스크립트 실행 허용", isOn: $repositoryTrusted)
+                    .help("이 저장소의 준비 스크립트 실행을 허용합니다. 변경 계획의 승인과 라이선스 동의·관리자 권한은 각각 필요합니다.")
                     .disabled(busy).focused($focus, equals: .trust)
-                Button("현재 계획 승인·준비") { prepare(approvedPlanID: preparation?.plan?.id) }
+                Button("계획 승인하고 준비") { prepare(approvedPlanID: preparation?.plan?.id) }
                     .disabled(busy || preparation?.plan == nil).focused($focus, equals: .approve)
                     .accessibilityHint(preparation?.plan.map { "plan-id \($0.id)만 승인합니다. 저장소 신뢰는 별도입니다." } ?? "먼저 준비 계획을 확인하세요.")
             }
             if let preparation {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("setup: \(preparation.operation.state) / exit \(preparation.exitCode)").font(.headline)
+                    Text("환경 준비: \(GUIText.state(preparation.operation.state))").help("종료 코드: \(preparation.exitCode)").font(.headline)
                         .accessibilityAddTraits(.isHeader).accessibilityFocused($resultFocus, equals: .preparation)
                     if preparation.operation.state == "waiting-manual" {
-                        Text("수동 대기: 아래 단계를 직접 마친 뒤 환경 다시 확인과 준비 계획 확인을 실행하세요.")
+                        Text("아래 단계를 직접 마친 뒤 환경과 준비 계획을 다시 확인하세요.")
                     }
                     if let plan = preparation.plan {
                         Text("승인 대상 plan-id: \(plan.id)").font(.caption)
@@ -299,13 +307,13 @@ struct InspectionView: View {
                                 }
                             }.frame(maxWidth: .infinity, alignment: .leading)
                         }.frame(height: 150)
-                        Text(plan.platforms.map { "\($0.platform.rawValue): \($0.state)" }.joined(separator: " / "))
+                        Text(plan.platforms.map { "\($0.platform.rawValue): \(GUIText.state($0.state))" }.joined(separator: " / "))
                     }
                     if let error = preparation.operation.error { Text("\(outcomeLabel(preparation.operation.state)): \(error)").foregroundStyle(.red) }
                     if !preparation.operation.completed.isEmpty { Text("완료한 변경: \(preparation.operation.completed.joined(separator: ", "))") }
                     if !preparation.operation.remaining.isEmpty { Text("남은 작업: \(preparation.operation.remaining.joined(separator: ", "))") }
                     ForEach(preparation.operation.changedFiles, id: \.self) { Text("변경 파일: \($0)") }
-                    if let next = preparation.operation.nextAction { Text("다음 행동: \(next)") }
+                    if let next = preparation.operation.nextAction { Text("다음 단계: \(next)") }
                     if let log = preparation.operation.log { Text("설치 로그: \(log)") }
                 }.textSelection(.enabled)
             }
@@ -313,33 +321,33 @@ struct InspectionView: View {
                 Button("빌드") { execute(.build) }.disabled(busy)
                 Button("실행") { execute(.up) }.disabled(busy)
                 Button("종료") { execute(.down) }.disabled(busy)
-                    .accessibilityHint("이 프로젝트가 기록한 앱과 개발 서버를 down 소유권 규칙으로 종료합니다. 작업 취소와 다릅니다.")
+                    .accessibilityHint("이 프로젝트가 실행한 앱과 개발 서버를 종료합니다. 다른 프로젝트의 자원은 유지합니다.")
                 if running != nil {
                     ProgressView().controlSize(.small).accessibilityHidden(true)
                     // Before the growing status text, so the button does not move while it is aimed at.
                     Button("작업 취소") { cancel() }.disabled(cancelling)
-                        .accessibilityHint("이 창의 작업만 새 단계를 막습니다. 완료한 변경과 다른 창의 작업은 보존합니다.")
+                        .accessibilityHint("이 창의 작업에서 새 단계를 시작하지 않습니다. 완료한 변경과 다른 창의 작업은 유지합니다.")
                     Text(session.statusText).accessibilityLabel("작업 상태").accessibilityValue(session.statusText)
                 }
             }
             if let workflow {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("\(workflow.operation.kind.rawValue): \(workflow.operation.state) / exit \(workflow.exitCode)").font(.headline)
+                    Text("\(GUIText.operation(workflow.operation.kind)): \(GUIText.state(workflow.operation.state))").help("종료 코드: \(workflow.exitCode)").font(.headline)
                         .accessibilityAddTraits(.isHeader).accessibilityFocused($resultFocus, equals: .workflow)
                     if let message = workflow.up?.failure?.message ?? workflow.down?.failure?.message { Text("\(outcomeLabel(workflow.operation.state)): \(message)").foregroundStyle(.red) }
                     ForEach(workflow.down?.toolFailures ?? [], id: \.self) { Text($0).foregroundStyle(.red) }
                     ForEach(workflow.down?.items ?? [], id: \.id) { item in
                         Text("\(item.id): \(item.status.rawValue)\(item.detail.map { " — \($0)" } ?? "")")
                     }
-                    if !workflow.operation.requiredInput.isEmpty { Text("선택 필요: \(workflow.operation.requiredInput.joined(separator: ", "))") }
-                    if !workflow.operation.schemes.isEmpty { Text("Scheme 후보: \(workflow.operation.schemes.joined(separator: ", "))") }
-                    if !workflow.operation.configurations.isEmpty { Text("Configuration 후보: \(workflow.operation.configurations.joined(separator: ", "))") }
-                    if !workflow.operation.modules.isEmpty { Text("Module 후보: \(workflow.operation.modules.joined(separator: ", "))") }
-                    if !workflow.operation.variants.isEmpty { Text("Variant 후보: \(workflow.operation.variants.joined(separator: ", "))") }
-                    if let next = workflow.operation.nextAction { Text("다음 행동: \(next)") }
+                    if !workflow.operation.requiredInput.isEmpty { Text("선택 필요: \(workflow.operation.requiredInput.map(GUIText.field).joined(separator: ", "))") }
+                    if !workflow.operation.schemes.isEmpty { Text("Scheme 선택지: \(workflow.operation.schemes.joined(separator: ", "))") }
+                    if !workflow.operation.configurations.isEmpty { Text("빌드 구성 선택지: \(workflow.operation.configurations.joined(separator: ", "))") }
+                    if !workflow.operation.modules.isEmpty { Text("모듈 선택지: \(workflow.operation.modules.joined(separator: ", "))") }
+                    if !workflow.operation.variants.isEmpty { Text("빌드 변형 선택지: \(workflow.operation.variants.joined(separator: ", "))") }
+                    if let next = workflow.operation.nextAction { Text("다음 단계: \(next)") }
                     ForEach(workflow.operation.remaining, id: \.self) { Text("남은 작업: \($0)") }
-                    if let uri = workflow.operation.developmentServiceURI { Text("Flutter VM service: \(uri)") }
-                    if workflow.operation.preparedDependencies == true { Text("직접 준비한 의존성 사용 선택: 재설치·lock 정렬 재검증 생략") }
+                    if let uri = workflow.operation.developmentServiceURI { Text("Flutter VM 서비스: \(uri)") }
+                    if workflow.operation.preparedDependencies == true { Text("미리 준비한 의존성 사용 선택: 의존성과 lock 파일을 다시 확인하지 않았습니다") }
                     if let log = workflow.up?.context.buildLog { Text("빌드 로그: \(log)") }
                 }.textSelection(.enabled)
             }
@@ -352,7 +360,7 @@ struct InspectionView: View {
                     }.frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled)
                 }.frame(maxHeight: 130)
             }
-            if let error { Text("실패: \(error)").foregroundStyle(.red).textSelection(.enabled) }
+            if let error { Text(error).foregroundStyle(.red).textSelection(.enabled) }
             if let result {
                 Text(inspectionSummary(result)).font(.headline)
                     .accessibilityAddTraits(.isHeader).accessibilityFocused($resultFocus, equals: .inspection)
@@ -361,14 +369,14 @@ struct InspectionView: View {
                 }
                 if let selectionError = result.selection.error { Text("실패: \(selectionError)").foregroundStyle(.red) }
                 if !result.selection.requiredInput.isEmpty {
-                    Text("선택 필요: \(result.selection.requiredInput.joined(separator: ", "))")
+                    Text("선택 필요: \(result.selection.requiredInput.map(GUIText.field).joined(separator: ", "))")
                 }
                 if result.selection.candidates.isEmpty { Text("프로젝트를 찾지 못했습니다. 호스트 검사만 표시합니다.") }
                 ScrollView {
                     VStack(alignment: .leading, spacing: 12) {
                         ForEach(result.report.checks, id: \.id) { check in
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("[\(check.status.rawValue)] \(check.title)").font(.headline)
+                                Text("[\(GUIText.state(check.status.rawValue))] \(check.title)").font(.headline)
                                 Text(check.id).font(.caption)
                                 if let observed = check.outcome.observed { Text(observed) }
                                 if let reason = check.outcome.reason { Text(reason) }
@@ -384,22 +392,47 @@ struct InspectionView: View {
             Spacer(minLength: 0)
         }.padding(20).task { inspect() }
             .onChange(of: platform) { _, _ in
-                device = ""; devices = []; workflow = nil
+                device = ""; devices = []; targets = nil; workflow = nil
+                preparation = nil; repositoryTrusted = false
                 scheme = ""; configuration = ""; module = ""; variant = ""
                 port = ""
                 preparedDependencies = false
+                inspect()
             }
             .onChange(of: app) { _, _ in
-                device = ""; devices = []; workflow = nil
+                platform = ""
+                device = ""; devices = []; targets = nil; workflow = nil
                 preparation = nil; repositoryTrusted = false
                 scheme = ""; configuration = ""; module = ""; variant = ""
                 entrypoint = ""; port = ""
                 preparedDependencies = false
+                inspect()
             }
+            .onChange(of: scheme) { _, _ in configuration = ""; refreshTargets() }
+            .onChange(of: module) { _, _ in variant = ""; refreshTargets() }
+            .onChange(of: configuration) { _, _ in refreshTargets() }
+            .onChange(of: variant) { _, _ in refreshTargets() }
             .onChange(of: busy) { _, busy in
                 if !busy, let nextFocus { focus = nextFocus; self.nextFocus = nil }
             }
             .onDisappear { session.cancel() }
+    }
+
+    private var selectedCandidate: ProjectCandidate? {
+        app.isEmpty ? result?.selection.selected : result?.selection.candidates.first { $0.id == app }
+    }
+
+    private func choicePicker(_ title: String, selection: Binding<String>, options: [String], defaultValue: String?, field: Field) -> some View {
+        Picker(title, selection: selection) {
+            Text(defaultValue.map { "기본값: \($0)" } ?? (options.isEmpty ? "환경 확인이 필요합니다" : "선택하세요")).tag("")
+            ForEach(options, id: \.self) { Text($0).tag($0) }
+        }.disabled(options.isEmpty).focused($focus, equals: field)
+            .accessibilityHint("프로젝트에서 확인한 항목 중에서 선택하세요.")
+    }
+
+    private func refreshTargets() {
+        device = ""; devices = []; targets = nil; workflow = nil
+        inspect()
     }
 
     @MainActor private func inspect() {
@@ -417,11 +450,21 @@ struct InspectionView: View {
             defer { checking = false }
             do {
                 let inspection = try await EnvironmentInspection.run(input: input,
-                    scheme: scheme.isEmpty ? nil : scheme, configuration: configuration.isEmpty ? nil : configuration) { detail in
+                    scheme: scheme.isEmpty ? nil : scheme, configuration: configuration.isEmpty ? nil : configuration,
+                    module: module.isEmpty ? nil : module, variant: variant.isEmpty ? nil : variant, includeTargets: true) { detail in
                     Task { @MainActor in if executionID == generation, session.task != nil { session.progress = "환경 확인 중 — \(detail)" } }
                 }
                 result = inspection
-                nextFocus = field(for: inspection.selection.requiredInput) ?? .recheck
+                targets = inspection.targets
+                devices = inspection.targets?.devices ?? []
+                if !device.isEmpty && !devices.contains(where: { $0.id == device }) { device = "" }
+                if let targets = inspection.targets {
+                    if !scheme.isEmpty && !targets.schemes.contains(scheme) { scheme = "" }
+                    if !configuration.isEmpty && !targets.configurations.contains(configuration) { configuration = "" }
+                    if !module.isEmpty && !targets.modules.contains(module) { module = "" }
+                    if !variant.isEmpty && !targets.variants.contains(variant) { variant = "" }
+                }
+                nextFocus = field(for: inspection.selection.requiredInput + (inspection.targets?.requiredInput ?? [])) ?? .recheck
                 resultFocus = .inspection
                 announce(inspectionSummary(inspection))
             } catch is CancellationError {
@@ -438,14 +481,15 @@ struct InspectionView: View {
 
     private func inspectionSummary(_ result: EnvironmentInspection) -> String {
         if result.selection.error != nil { return "환경 확인: 선택 오류" }
-        if !result.selection.requiredInput.isEmpty { return "환경 확인: 선택 필요 \(result.selection.requiredInput.joined(separator: ", "))" }
+        let required = result.selection.requiredInput + (result.targets?.requiredInput ?? [])
+        if !required.isEmpty { return "환경 확인: \(required.map(GUIText.field).joined(separator: ", ")) 선택이 필요합니다" }
         let count = { (status: CheckStatus) in result.report.checks.filter { $0.status == status }.count }
-        return "환경 확인: exit \(result.exitCode) · error \(count(.error)) · warning \(count(.warning)) · unknown \(count(.unknown))"
+        return "환경 확인: 오류 \(count(.error))개 · 주의 \(count(.warning))개 · 확인 불가 \(count(.unknown))개"
     }
 
     private func field(for input: [String]) -> Field? {
         let fields: [String: Field] = ["--app": .app, "--platform": .platform, "--device": .device, "--scheme": .scheme,
-            "--configuration": .configuration, "--module": .module, "--variant": .variant, "--trust-repository": .trust]
+            "--configuration": .configuration, "--entrypoint": .entrypoint, "--port": .port, "--module": .module, "--variant": .variant, "--trust-repository": .trust]
         return input.lazy.compactMap { fields[$0] }.first
     }
 
@@ -458,6 +502,11 @@ struct InspectionView: View {
         guard !busy else { return }
         let selectedPlatform = ProjectPlatform(rawValue: platform) ?? result?.selection.platform
         let usesPort = kind == .up || (kind == .build && result?.selection.selected?.framework == .reactNative)
+        if (kind == .up || (kind == .build && selectedPlatform == .ios && selectedCandidate?.framework == .flutter)), device.isEmpty {
+            error = "실행할 기기를 선택하세요."
+            focus = .device
+            return
+        }
         if usesPort, !port.isEmpty, Int(port).map({ (1...65535).contains($0) }) != true {
             error = "포트는 1부터 65535까지의 정수로 입력하세요."
             return
@@ -488,14 +537,14 @@ struct InspectionView: View {
                 }
             }
             workflow = output
-            if !output.operation.devices.isEmpty { devices = output.operation.devices }
+            if kind != .down { targets = output.operation; devices = output.operation.devices }
             switch output.operation.state {
             case "needs-selection": nextFocus = field(for: output.operation.requiredInput) ?? .recheck
             case "succeeded": break
             default: nextFocus = .recheck
             }
             resultFocus = .workflow
-            announce("\(output.operation.kind.rawValue): \(output.operation.state), exit \(output.exitCode)")
+            announce("\(GUIText.operation(output.operation.kind)): \(GUIText.state(output.operation.state))")
         }
     }
 
@@ -528,7 +577,7 @@ struct InspectionView: View {
             default: nextFocus = .recheck
             }
             resultFocus = .preparation
-            announce("setup: \(output.operation.state), exit \(output.exitCode)")
+            announce("환경 준비: \(GUIText.state(output.operation.state))")
         }
     }
 }
