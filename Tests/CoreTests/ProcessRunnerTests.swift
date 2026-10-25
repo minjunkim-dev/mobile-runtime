@@ -195,6 +195,77 @@ struct SystemProcessRunnerTests {
         #expect(observed.value == [Data("out".utf8), Data("err".utf8)])
     }
 
+    @Test("cancellation and timeout stop owned descendants while preserving an unrelated detached child", .serialized,
+          arguments: ["collected", "bytes", "streamed"], [false, true])
+    func descendantInterruption(_ mode: String, _ timeout: Bool) async throws {
+        let directory = try temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let marker = directory.appendingPathComponent("child.pid")
+        let childToken = "30.\(UInt64.random(in: 1...UInt64.max))"
+        let siblingToken = "30.\(UInt64.random(in: 1...UInt64.max))"
+        let sibling = try await runner.spawnDetached(ProcessCommand("/bin/sleep", [siblingToken]),
+                                                     logFile: directory.appendingPathComponent("sibling.log"))
+        // A cooperative parent must not leave its TERM-ignoring child behind.
+        let script = #"trap 'exit 0' TERM; /bin/sh -c 'trap "" TERM; printf %s "$$" > "$2"; exec /bin/sleep "$1"' runstir-descendant-child "$1" "$2" >/dev/null 2>&1 & child=$!; wait "$child""#
+        let command = ProcessCommand("/bin/sh", ["-c", script, "runstir-descendant-test", childToken, marker.path],
+            timeout: timeout ? .seconds(10) : nil,
+            output: mode == "streamed" ? .streamed(to: directory.appendingPathComponent("command.log")) : .collected)
+        let task = Task {
+            if mode == "bytes" { return try await runner.run(command, onBytes: { _, _ in }) }
+            return try await runner.run(command)
+        }
+        var child: Int32?
+        func cleanup() async {
+            task.cancel()
+            _ = try? await task.value
+            let observed = child ?? (try? String(contentsOf: marker, encoding: .utf8)).flatMap(Int32.init)
+            for (pid, token, signal) in [(observed, childToken, "-KILL"), (Optional(sibling), siblingToken, "-TERM")] {
+                if let pid, (try? await processMatches(pid, token: token)) == true {
+                    _ = try? await runner.run(ProcessCommand("/bin/kill", [signal, "\(pid)"]))
+                    let stopped = ContinuousClock.now + .seconds(3)
+                    while (try? await processMatches(pid, token: token)) == true, ContinuousClock.now < stopped {
+                        try? await Task.sleep(for: .milliseconds(20))
+                    }
+                    #expect((try? await processMatches(pid, token: token)) == false)
+                }
+            }
+        }
+        do {
+            let ready = ContinuousClock.now + .seconds(5)
+            while child == nil, ContinuousClock.now < ready {
+                child = (try? String(contentsOf: marker, encoding: .utf8)).flatMap(Int32.init)
+                if child == nil { try await Task.sleep(for: .milliseconds(10)) }
+            }
+            let pid = try #require(child)
+            #expect(try await processMatches(pid, token: childToken))
+            if !timeout { task.cancel() }
+            do {
+                _ = try await task.value
+                Issue.record("the interrupted command must not succeed")
+            } catch is CancellationError {
+                #expect(!timeout)
+            } catch let error as ProcessError {
+                guard case .timedOut = error else { throw error }
+                #expect(timeout)
+            }
+            let stopped = ContinuousClock.now + .seconds(3)
+            while try await processMatches(pid, token: childToken), ContinuousClock.now < stopped {
+                try await Task.sleep(for: .milliseconds(20))
+            }
+            #expect(try await !processMatches(pid, token: childToken))
+            #expect(try await processMatches(sibling, token: siblingToken))
+        } catch {
+            await cleanup()
+            throw error
+        }
+        await cleanup()
+    }
+
+    private func processMatches(_ pid: Int32, token: String) async throws -> Bool {
+        let result = try await runner.run(ProcessCommand("/bin/ps", ["-p", "\(pid)", "-o", "command="]))
+        return result.terminationStatus.isSuccess && result.standardOutput.contains(token)
+    }
+
     @Test("byte callbacks keep the separate collected output limits", arguments: [false, true])
     func byteLimits(_ standardError: Bool) async throws {
         let limit = (standardError ? 1 : 4) * 1024 * 1024

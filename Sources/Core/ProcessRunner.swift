@@ -263,6 +263,7 @@ public struct SystemProcessRunner: ProcessRunner {
                     executable,
                     arguments: Arguments(invocation.arguments),
                     environment: environment,
+                    platformOptions: Self.commandPlatformOptions,
                     output: .string(limit: Self.outputLimit),
                     error: .string(limit: Self.errorLimit)
                 )
@@ -277,6 +278,7 @@ public struct SystemProcessRunner: ProcessRunner {
                     executable,
                     arguments: Arguments(invocation.arguments),
                     environment: environment,
+                    platformOptions: Self.commandPlatformOptions,
                     input: .none,
                     output: .sequence,
                     error: .sequence
@@ -300,6 +302,7 @@ public struct SystemProcessRunner: ProcessRunner {
                     executable,
                     arguments: Arguments(invocation.arguments),
                     environment: environment,
+                    platformOptions: Self.commandPlatformOptions,
                     input: .none,
                     output: .sequence,
                     error: .sequence
@@ -318,8 +321,8 @@ public struct SystemProcessRunner: ProcessRunner {
             }
         }
 
-        // swift-subprocess has no timeout of its own; cancelling the task kills the
-        // child, which comes back as an ordinary signaled result — hence the flag.
+        // Cancellation tears down this command's owned group, including tool children.
+        // The deadline still needs its own flag to retain the timeout classification.
         let expired = Flag()
         let deadline: Task<Void, any Error>? = command.timeout.map { timeout in
             Task {
@@ -370,6 +373,15 @@ public struct SystemProcessRunner: ProcessRunner {
             if error is CancellationError { throw error }  // our caller was cancelled, not the child
             throw ProcessError.spawnFailed(command: command.description, underlying: error)
         }
+    }
+
+    private static var commandPlatformOptions: PlatformOptions {
+        var options = PlatformOptions()
+        #if !os(Windows)
+        options.processGroupID = 0
+        options.teardownSequence = [.send(signal: .kill, toProcessGroup: true, allowedDurationToNextStep: .zero)]
+        #endif
+        return options
     }
 
     /// Foundation's `Process` rather than swift-subprocess: that library's whole API
