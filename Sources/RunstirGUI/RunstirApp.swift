@@ -273,8 +273,8 @@ struct InspectionView: View {
                 Toggle("미리 준비한 의존성 사용", isOn: $preparedDependencies)
                     .disabled(busy).focused($focus, equals: .preparedDependencies)
                     .accessibilityIdentifier("project.prepared-dependencies")
-                    .accessibilityHint("RN·Flutter의 빌드와 실행에 적용합니다. 의존성을 다시 설치하거나 lock 파일과 Flutter 플러그인 구성을 확인하지 않습니다. Flutter 파일 링크는 Git에 기록된 프로젝트 내부 소스만 허용합니다.")
-                Text("의존성을 다시 설치하거나 lock 파일과 Flutter 플러그인 구성을 확인하지 않습니다. 준비 상태를 직접 확인한 경우에 선택하세요. Flutter 파일 링크는 Git에 기록된 프로젝트 내부 소스만 허용합니다.")
+                    .accessibilityHint("RN·Flutter의 빌드와 실행에 적용합니다. 의존성 재설치와 lock 정렬·Flutter 플러그인 정합성 재검증을 생략합니다. Flutter 파일 링크는 Git에 기록된 프로젝트 내부 소스만 허용합니다.")
+                Text("의존성 재설치와 lock 정렬·Flutter 플러그인 정합성 재검증을 생략합니다. 준비 상태를 직접 확인한 경우에 선택하세요. Flutter 파일 링크는 Git에 기록된 프로젝트 내부 소스만 허용합니다.")
                     .font(.caption).foregroundStyle(.secondary)
             }
             HStack {
@@ -284,7 +284,7 @@ struct InspectionView: View {
                     .disabled(busy).focused($focus, equals: .trust)
                 Button("계획 승인하고 준비") { prepare(approvedPlanID: preparation?.plan?.id) }
                     .disabled(busy || preparation?.plan == nil).focused($focus, equals: .approve)
-                    .accessibilityHint(preparation?.plan.map { "plan-id \($0.id)만 승인합니다. 저장소 신뢰는 별도입니다." } ?? "먼저 준비 계획을 확인하세요.")
+                    .accessibilityHint(preparation?.plan.map { "plan-id \($0.id)만 승인합니다. 저장소 스크립트 실행 허용은 별도입니다." } ?? "먼저 준비 계획을 확인하세요.")
             }
             if let preparation {
                 VStack(alignment: .leading, spacing: 4) {
@@ -347,7 +347,7 @@ struct InspectionView: View {
                     if let next = workflow.operation.nextAction { Text("다음 단계: \(next)") }
                     ForEach(workflow.operation.remaining, id: \.self) { Text("남은 작업: \($0)") }
                     if let uri = workflow.operation.developmentServiceURI { Text("Flutter VM 서비스: \(uri)") }
-                    if workflow.operation.preparedDependencies == true { Text("미리 준비한 의존성 사용 선택: 의존성과 lock 파일을 다시 확인하지 않았습니다") }
+                    if workflow.operation.preparedDependencies == true { Text("미리 준비한 의존성 사용: 재설치·lock 정렬·Flutter 플러그인 정합성 재검증을 생략했습니다") }
                     if let log = workflow.up?.context.buildLog { Text("빌드 로그: \(log)") }
                 }.textSelection(.enabled)
             }
