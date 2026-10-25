@@ -201,8 +201,8 @@ struct SystemProcessRunnerTests {
         let directory = try temporaryDirectory()
         defer { try? FileManager.default.removeItem(at: directory) }
         let marker = directory.appendingPathComponent("child.pid")
-        let childToken = "30.\(UInt64.random(in: 1...UInt64.max))"
-        let siblingToken = "30.\(UInt64.random(in: 1...UInt64.max))"
+        let childToken = "120.\(UInt64.random(in: 1...UInt64.max))"
+        let siblingToken = "120.\(UInt64.random(in: 1...UInt64.max))"
         let sibling = try await runner.spawnDetached(ProcessCommand("/bin/sleep", [siblingToken]),
                                                      logFile: directory.appendingPathComponent("sibling.log"))
         // A cooperative parent must not leave its TERM-ignoring child behind.
@@ -211,6 +211,8 @@ struct SystemProcessRunnerTests {
             timeout: timeout ? .seconds(10) : nil,
             output: mode == "streamed" ? .streamed(to: directory.appendingPathComponent("command.log")) : .collected)
         let task = Task {
+            // Exercise readiness after executor congestion exceeds the old five-second setup budget.
+            if mode == "collected", !timeout { try await Task.sleep(for: .seconds(6)) }
             if mode == "bytes" { return try await runner.run(command, onBytes: { _, _ in }) }
             return try await runner.run(command)
         }
@@ -231,7 +233,8 @@ struct SystemProcessRunnerTests {
             }
         }
         do {
-            let ready = ContinuousClock.now + .seconds(5)
+            // Fixture startup shares CI executors with the full suite; interruption keeps its own bounds.
+            let ready = ContinuousClock.now + .seconds(30)
             while child == nil, ContinuousClock.now < ready {
                 child = (try? String(contentsOf: marker, encoding: .utf8)).flatMap(Int32.init)
                 if child == nil { try await Task.sleep(for: .milliseconds(10)) }
