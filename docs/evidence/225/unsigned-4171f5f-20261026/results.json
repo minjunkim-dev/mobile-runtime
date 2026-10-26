@@ -1887,7 +1887,7 @@
       "evidenceClass": "actual",
       "expected": "확정된 RN 범위에서 AC02의 실행·부분 완료·실패 경계를 증거로 구분한다.",
       "observed": "호스트 fresh clone별 준비와 재사용을 확인했다. 최소 앱은 source 보호 중단 뒤 재계획으로 부분 완료, Mattermost는 원 CI 명령의 독립 준비와 명시적 준비 선택이다. cold baseline-clone VM의 실제 도구 설치는 수동 JDK·SDK·의존성이 남은 partial이다.",
-      "observedAt": "2026-10-26T08:14:25Z",
+      "observedAt": "2026-10-26T08:22:10Z",
       "executor": "codex-rn-alpha14",
       "result": "pass",
       "evidence": [
@@ -2021,7 +2021,7 @@
       "evidenceClass": "actual",
       "expected": "실제 하위 도구에 도달한 실패·취소와 보존·복구를 확인한다.",
       "observed": "Bundler 실패와 Pods 취소를 보강하던 첫 병행 검사는 큰 iOS 빌드와 겹쳐 Gradle 사전 검사 90초 제한에서 종료됐다. 의도한 하위 도구에는 도달하지 않았고 신호도 보내지 않았다. 부하와 공유 cache 경합의 기여도는 미확정이다.",
-      "observedAt": "2026-10-26T08:14:25Z",
+      "observedAt": "2026-10-26T08:22:10Z",
       "executor": "codex-rn-alpha14",
       "result": "inconclusive",
       "evidence": [
@@ -2045,7 +2045,7 @@
       "evidenceClass": "actual",
       "expected": "확정된 RN 범위에서 AC03의 실행·부분 완료·실패 경계를 증거로 구분한다.",
       "observed": "최소 앱의 실제 Node 다운로드 취소·전송 실패·같은 목적지 거부, npm 취소·옛 승인 거부·복구, Bundler 설치 실패·복구, Pods 취소·복구, 양 플랫폼 native build 취소와 재빌드를 확인했다. Mattermost의 native Pods checksum·DNS 실패와 수동 준비 복구, 미지원 포트·AVD 식별 불가 거부도 보존했다. SDK·JDK 자동 다운로드의 수동 경계와 기존 자원 재사용을 별도로 기록한다. 첫 병행 preflight timeout과 수집기 실패는 지우지 않았다.",
-      "observedAt": "2026-10-26T08:14:25Z",
+      "observedAt": "2026-10-26T08:22:10Z",
       "executor": "codex-rn-alpha14",
       "result": "pass",
       "evidence": [
@@ -2242,7 +2242,7 @@
       "evidenceClass": "actual",
       "expected": "확정된 RN 범위에서 AC06의 실행·부분 완료·실패 경계를 증거로 구분한다.",
       "observed": "보존 기준 VM의 새 clone에서 가능한 도구 설치·반복·부분 완료와 수동 경계를 확인하고 원 baseline과 새 VM의 정상 종료를 확인했다. Android 실제 실행은 호스트 HVF 결과이며 guest의 nested virtualization 성공으로 세지 않는다.",
-      "observedAt": "2026-10-26T08:14:25Z",
+      "observedAt": "2026-10-26T08:22:10Z",
       "executor": "codex-rn-alpha14",
       "result": "pass",
       "evidence": [
@@ -2376,7 +2376,7 @@
       "evidenceClass": "actual",
       "expected": "확정된 RN 범위에서 AC04의 실행·부분 완료·실패 경계를 증거로 구분한다.",
       "observed": "같은 source·도구·기기 profile에서 CLI와 GUI의 doctor·준비 계획·선택·독립 build·up·down을 실행했다. 최소 앱은 기본 의존성 경로, Mattermost는 승인된 명시적 준비 경로다. build를 설치·실행·새 도구 provisioning의 증거로 바꾸지 않는다.",
-      "observedAt": "2026-10-26T08:14:25Z",
+      "observedAt": "2026-10-26T08:22:10Z",
       "executor": "codex-rn-alpha14",
       "result": "pass",
       "evidence": [
@@ -2488,7 +2488,7 @@
       "evidenceClass": "actual",
       "expected": "확정된 RN 범위에서 AC04의 실행·부분 완료·실패 경계를 증거로 구분한다.",
       "observed": "같은 source·도구·기기 profile에서 CLI와 GUI의 doctor·준비 계획·선택·독립 build·up·down을 실행했다. 최소 앱은 기본 의존성 경로, Mattermost는 승인된 명시적 준비 경로다. build를 설치·실행·새 도구 provisioning의 증거로 바꾸지 않는다.",
-      "observedAt": "2026-10-26T08:14:25Z",
+      "observedAt": "2026-10-26T08:22:10Z",
       "executor": "codex-rn-alpha14",
       "result": "pass",
       "evidence": [
@@ -2641,7 +2641,7 @@
       "evidenceClass": "actual",
       "expected": "확정된 RN 범위에서 AC02의 실행·부분 완료·실패 경계를 증거로 구분한다.",
       "observed": "호스트 fresh clone별 준비와 재사용을 확인했다. 최소 앱은 source 보호 중단 뒤 재계획으로 부분 완료, Mattermost는 원 CI 명령의 독립 준비와 명시적 준비 선택이다. cold baseline-clone VM의 실제 도구 설치는 수동 JDK·SDK·의존성이 남은 partial이다.",
-      "observedAt": "2026-10-26T08:14:25Z",
+      "observedAt": "2026-10-26T08:22:10Z",
       "executor": "codex-rn-alpha14",
       "result": "pass",
       "evidence": [
@@ -2837,7 +2837,7 @@
       "evidenceClass": "actual",
       "expected": "확정된 RN 범위에서 AC03의 실행·부분 완료·실패 경계를 증거로 구분한다.",
       "observed": "최소 앱의 실제 Node 다운로드 취소·전송 실패·같은 목적지 거부, npm 취소·옛 승인 거부·복구, Bundler 설치 실패·복구, Pods 취소·복구, 양 플랫폼 native build 취소와 재빌드를 확인했다. Mattermost의 native Pods checksum·DNS 실패와 수동 준비 복구, 미지원 포트·AVD 식별 불가 거부도 보존했다. SDK·JDK 자동 다운로드의 수동 경계와 기존 자원 재사용을 별도로 기록한다. 첫 병행 preflight timeout과 수집기 실패는 지우지 않았다.",
-      "observedAt": "2026-10-26T08:14:25Z",
+      "observedAt": "2026-10-26T08:22:10Z",
       "executor": "codex-rn-alpha14",
       "result": "pass",
       "evidence": [
@@ -2930,7 +2930,7 @@
       "evidenceClass": "actual",
       "expected": "확정된 RN 범위에서 AC06의 실행·부분 완료·실패 경계를 증거로 구분한다.",
       "observed": "보존 기준 VM의 새 clone에서 가능한 도구 설치·반복·부분 완료와 수동 경계를 확인하고 원 baseline과 새 VM의 정상 종료를 확인했다. Android 실제 실행은 호스트 HVF 결과이며 guest의 nested virtualization 성공으로 세지 않는다.",
-      "observedAt": "2026-10-26T08:14:25Z",
+      "observedAt": "2026-10-26T08:22:10Z",
       "executor": "codex-rn-alpha14",
       "result": "pass",
       "evidence": [
@@ -3064,7 +3064,7 @@
       "evidenceClass": "actual",
       "expected": "확정된 RN 범위에서 AC04의 실행·부분 완료·실패 경계를 증거로 구분한다.",
       "observed": "같은 source·도구·기기 profile에서 CLI와 GUI의 doctor·준비 계획·선택·독립 build·up·down을 실행했다. 최소 앱은 기본 의존성 경로, Mattermost는 승인된 명시적 준비 경로다. build를 설치·실행·새 도구 provisioning의 증거로 바꾸지 않는다.",
-      "observedAt": "2026-10-26T08:14:25Z",
+      "observedAt": "2026-10-26T08:22:10Z",
       "executor": "codex-rn-alpha14",
       "result": "pass",
       "evidence": [
@@ -3200,7 +3200,7 @@
       "evidenceClass": "actual",
       "expected": "확정된 RN 범위에서 AC04의 실행·부분 완료·실패 경계를 증거로 구분한다.",
       "observed": "같은 source·도구·기기 profile에서 CLI와 GUI의 doctor·준비 계획·선택·독립 build·up·down을 실행했다. 최소 앱은 기본 의존성 경로, Mattermost는 승인된 명시적 준비 경로다. build를 설치·실행·새 도구 provisioning의 증거로 바꾸지 않는다.",
-      "observedAt": "2026-10-26T08:14:25Z",
+      "observedAt": "2026-10-26T08:22:10Z",
       "executor": "codex-rn-alpha14",
       "result": "pass",
       "evidence": [
@@ -3323,8 +3323,8 @@
       "candidateID": "4436d17033b2ed4ebff74769a46b67d9689593c7536e85f5b1433b370df14752",
       "evidenceClass": "actual",
       "expected": "Android fresh clone의 첫 Metro가 10초를 넘어도 같은 후보가 기동에 성공하고 ANSI·BUNDLE 완료를 보존한다.",
-      "observed": "독립 Spec 리뷰에서 빠진 실제 경계 증거를 확인했다. 기존 Android 8개 경로를 10초 초과 증거로 확대하지 않는다.",
-      "observedAt": "2026-10-26T08:14:25Z",
+      "observed": "독립 Spec 리뷰에서 빠진 실제 경계 증거를 확인했다. 기존 Android 4개 경로를 10초 초과 증거로 확대하지 않는다.",
+      "observedAt": "2026-10-26T08:22:10Z",
       "executor": "codex-rn-alpha14",
       "result": "unverified",
       "evidence": [
@@ -3346,7 +3346,7 @@
       "evidenceClass": "actual",
       "expected": "소유 Metro에 실제 지연을 적용해 경계를 관측한다.",
       "observed": "입력 10의 native up/down은 0이었지만 관측기가 명시적 --port를 요구해 기본 명령을 놓쳤다. 지연은 적용되지 않아 통과로 세지 않는다.",
-      "observedAt": "2026-10-26T08:14:25Z",
+      "observedAt": "2026-10-26T08:22:10Z",
       "executor": "codex-rn-alpha14",
       "result": "inconclusive",
       "evidence": [
@@ -3371,7 +3371,7 @@
       "evidenceClass": "actual",
       "expected": "소유 Metro에 bind 전 실제 지연을 적용한다.",
       "observed": "입력 11은 RN 자식의 cwd·실행 파일 확인을 마쳤을 때 이미 bind한 뒤였다. 관측기는 지연을 적용하지 않고 소유 mobile만 취소했다. native 130과 제품의 Metro rollback을 보존한다.",
-      "observedAt": "2026-10-26T08:14:25Z",
+      "observedAt": "2026-10-26T08:22:10Z",
       "executor": "codex-rn-alpha14",
       "result": "inconclusive",
       "evidence": [
@@ -3395,7 +3395,7 @@
       "evidenceClass": "actual",
       "expected": "첫 Metro bind를 10초 넘게 늦춰도 원래 mobile up이 성공하고 올바른 앱 첫 화면·ANSI·BUNDLE 완료·down·원본 보존을 확인한다.",
       "observed": "입력 12는 새 독립 full Git clone이며 npm ci로 의존성을 준비했다. 제품이 시작한 원래 npm start Node launcher만 정지해 cwd·실행 파일·부모·미bind 상태를 확인하고 13초 이상 후 같은 PID를 재개했다. native metro 15239ms/pass, up/down 0, RN 0.87.1·Hermes 첫 화면과 ANSI·BUNDLE 완료를 확인했다. 자연 cold-cache 지연 성능을 증명하지 않는다.",
-      "observedAt": "2026-10-26T08:14:25Z",
+      "observedAt": "2026-10-26T08:22:10Z",
       "executor": "codex-rn-alpha14",
       "result": "pass",
       "evidence": [
