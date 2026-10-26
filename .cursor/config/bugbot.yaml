@@ -1,8 +1,0 @@
-version: 1
-triggers:
-  drafts: false
-prSummary:
-  mode: comment
-  riskScore: true
-autofix:
-  mode: disabled
