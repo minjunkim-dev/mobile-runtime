@@ -34,3 +34,7 @@ Single-context — `CONTEXT.md` and `docs/adr/` at the repo root. See `docs/agen
 Follow `docs/agents/review.md` for independent review, direct fixes, final-head verification, and merge risk. Reviewers read `docs/coding-standards.md`; do not inline the standards here.
 
 The agent merges its own two-way, narrow-impact pull request after the ticket's verification, independent review, and required `CI` check pass on the final head. One-way or broad-impact changes require human approval of that final head. Green CI does not replace measurements required by the ticket.
+
+### 작업 진입
+
+작업 진입·초기 설정 확인·명세와 티켓의 통합: [개발 절차](docs/agents/development.md)를 읽습니다. 작은 수정에는 전체 명세 절차를 강제하지 않습니다.

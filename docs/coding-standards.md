@@ -33,3 +33,8 @@
 확실한 결함은 범위 안에서 직접 수정한다. 변경 근거와 검증 결과를 짧게 남긴다.
 불확실한 동작, ADR 변경, 승인 범위 확대는 구체적인 질문으로 남긴다.
 스타일 취향만으로 코멘트를 만들지 않는다.
+
+## CI·패키징과 근거
+
+- GitHub token은 기본 read로 두고 쓰기·Secret은 필요한 job에만 둔다. Secret 환경에서 PR 코드를 실행하지 않는다. 외부 Action은 SHA로 고정한다. 선택된 하위 검사 실패·취소·누락을 집계 성공으로 숨기지 않고 head·base·run·attempt·publisher를 대조한다.
+- Draft는 main에 포함된 source SHA와 같은 SHA의 CI·archive checksum을 확인한다. 빌드와 게시를 분리하고 기존 Release·태그·asset을 덮어쓰지 않는다. 일부 성공으로 UNKNOWN_STOP·FAILURE_STOP을 지우지 않는다.
