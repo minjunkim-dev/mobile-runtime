@@ -9,7 +9,7 @@ import subprocess
 def main():
     try:
         result = subprocess.run(
-            ["/bin/ps", "-A", "-c", "-o", "pid=,ppid=,%cpu=,%mem=,etime=,comm="],
+            ["/bin/ps", "-A", "-o", "pid=,ppid=,%cpu=,%mem=,etime=,comm="],
             capture_output=True, text=True, timeout=10,
         )
         if result.returncode:
