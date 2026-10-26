@@ -69,3 +69,7 @@ Copilot MCP tools·PR 승인과 추가 자동 AI 리뷰를 켜지 않는다. Cha
 기존 기준선의 설명용 `exceptions` 배열은 내용을 보존해 `observations`로 옮겼다. 관측 기록은 API 감사 항목을 제외하지 않는다. 실제 기능 미지원·비해당을 감사 범위에서 제외하려면 원본의 [설정 기준선 형식](https://github.com/minjunkim-dev/repo-baseline/blob/9d3958b5dc35b43b98ee8adb53bd416eac956e0a/docs/github-settings-profile.md)에 맞는 `exceptions` 객체와 사유·근거가 필요하다. 예외가 있으면 exit 0이어도 결과는 전체 PASS가 아닌 LIMITED다. 미선언 403·404·누락·권한 오류는 계속 실패한다.
 
 이번 갱신은 GitHub 서버 기대값·권한·필수 체크·CodeQL·배포를 변경하지 않는다. 과거 실행 기록을 현재 검증 결과로 바꾸지 않는다.
+
+## 과거 Bugbot 확인 기록
+
+이전 설정 점검의 Cursor 조회는 브라우저 `Page.enable` timeout으로 실패했다. 당시 설정과 결제를 변경하지 않았고 대시보드 값은 미확인이었다. 같은 기록을 기준선 `observations`에도 보존한다. 이 과거 실패는 현재 연결 상태나 새 실행 요구를 뜻하지 않는다.
