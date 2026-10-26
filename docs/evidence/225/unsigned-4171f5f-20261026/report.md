@@ -1,4 +1,4 @@
-alpha.14의 RN 최소 앱·Mattermost, iOS·Android, CLI·GUI 8개 경로에서 올바른 앱 첫 화면과 정상 종료를 확인했습니다.
+alpha.14의 RN 최소 앱·Mattermost, iOS·Android, CLI·GUI 8개 경로에서 올바른 앱 첫 화면과 정상 종료를 확인했습니다. 이 문서는 실제 실행·경계·보존 검증을 기록합니다. 최종 head의 독립 리뷰·CI와 병합 상태는 PR·이슈에 별도로 기록합니다.
 
 후보는 `4436d17033b2ed4ebff74769a46b67d9689593c7536e85f5b1433b370df14752`, 제품 source는 `4171f5f132a611c73d785f28b424c46e65b7f4d5`입니다. CLI·GUI 실행 파일과 후보 metadata의 SHA-256은 처음과 같으며 제품 코드는 수정하지 않았습니다.
 
@@ -25,10 +25,14 @@ Mattermost는 서버 연결 화면의 2.44.0, build 814를 확인했습니다. �
 
 AC02는 도구 재사용·cold VM 설치·부분 완료·수동 준비, AC03은 실패·취소·동시 목적지·조건 변경·소스 보호·재시도, AC04는 각 frontend의 doctor·계획·독립 build·up·down, AC05는 8개 fresh clone 첫 화면, AC06은 호스트 가속 실행과 baseline 보존 clone VM의 준비 경로에 연결합니다. AC15의 같은 후보 연결과 AC17의 실패 이력 보존을 유지합니다. 전체 공동 게이트와 서명·공증·공개 완료 판정은 별도로 남습니다.
 
-직접 시작한 GUI·앱·Metro·Emulator·Simulator·Watchman·VM은 정상 종료했습니다. 기존 global Watchman과 다른 작업의 프로세스·worktree는 보존했습니다. 임시 console 사본 4개를 제거하고 원래 정보는 보존했습니다. 소유 adb 서버 2개는 연결된 기기가 없고 실제 실행 image가 지정한 SDK와 일치함을 확인한 뒤 정상 종료했습니다. 첫 정리 검사에서 argv의 단축 이름을 경로로 오인한 수집기 assert도 별도 보존했습니다. 완료된 cache·빌드 출력과 제한 증거는 유지합니다. 실기기 설치·실행, Apple 유료 계정 준비, 서명·공증·배포는 진행하지 않았습니다.
+직접 시작한 GUI·앱·Metro·Emulator·Simulator·Watchman·VM은 정상 종료했습니다. 기존 global Watchman과 다른 작업의 프로세스·worktree는 보존했습니다. 임시 console 사본 7개를 제거하고 원래 정보는 보존했습니다. 소유 adb 서버 2개는 연결된 기기가 없고 실제 실행 image가 지정한 SDK와 일치함을 확인한 뒤 정상 종료했습니다. 첫 정리 검사에서 argv의 단축 이름을 경로로 오인한 수집기 assert도 별도 보존했습니다. 완료된 cache·빌드 출력과 제한 증거는 유지합니다. 실기기 설치·실행, Apple 유료 계정 준비, 서명·공증·배포는 진행하지 않았습니다.
 
 큰 입력 JSON은 원시 bytes의 checksum으로 보관하며, 추적 원본·index·flags와 허용한 Mattermost 보정의 의미는 별도 실행 검사로 대조했습니다. 원시 참조 무결성을 모든 JSON 의미의 자동 검증으로 확대하지 않습니다. 현재 기본 mobile runtime root는 실제 폴더입니다. 이번 실행 초기에 옛 SSD symlink는 없었고 후보가 폴더를 생성했으므로 임시 복구나 링크 복원은 수행하지 않았습니다.
 
 로컬 전체 Swift 테스트 1,166개와 증거 검사기 회귀 테스트 17개가 통과했습니다. 중첩 helper 실행 두 개는 Swift 총수에 중복 합산하지 않았습니다. 정본 참조 무결성은 verified이며 전체 공동 게이트는 나머지 필수 요구 미검증과 unsigned 제한으로 blocked입니다.
 
-이 정본은 #225의 RN 범위 18개 요구를 pass로 기록합니다. 기존 후보·입력 연결 pass 1개를 포함한 현재 결과는 pass 19개, unverified 35개입니다. 다른 프레임워크와 공통 게이트의 미검증, unsigned 배포 제한으로 공동 출시 판정은 blocked입니다. #224의 최초 결과와 첫 RN redbox·보강 검사 판정 불가 이력을 보존합니다. AC15 전체나 AC17 전체의 완료로 확대하지 않습니다.
+독립 Spec 리뷰에서 빠진 Android 첫 Metro의 10초 초과 bind 경계를 보강했습니다. 새 독립 full Git clone에서 원래 npm ci를 실행한 뒤, 제품이 시작한 원래 npm start Node launcher만 정지했습니다. 정지 상태의 PID·부모·cwd·실행 파일과 미bind를 확인하고 13.290초 뒤 같은 프로세스를 재개했습니다. mobile 부모와 60초 대기 clock은 계속 실행됐으며 native Metro 단계는 15,239ms/pass, up/down은 모두 0이었습니다. SDK PNG의 RN 0.87.1·Hermes 첫 화면, 초록색 ANSI BUNDLE 완료, 앱·Metro·reverse·포트 정리를 확인했습니다. 이는 통제한 bind 지연이며 자연 cold-cache 지연 성능을 증명하지 않습니다. 앞선 입력 10의 관측 조건 누락과 입력 11의 늦은 관측·소유 mobile 취소는 각각 판정 불가 이력으로 보존했습니다. 추가 표본까지 고유 Git clone 11개와 입력 단계 13개를 구분해 원본 보존을 대조했습니다.
+
+Security 리뷰에서 제한 호스트 프로세스 목록 한 곳에 다른 서비스의 API-key 인수가 우연히 포함된 사실을 확인했습니다. 전체 명령행 수집 범위가 과했습니다. PR 게시 전에 수집 파일을 제자리에서 비식별화해 1,709개 행의 PID·PPID·CPU·메모리·elapsed·안전한 실행 basename만 남겼습니다. 원문·비밀값 fingerprint·백업은 만들지 않았으며 원래 서비스와 자격 정보는 변경하지 않았습니다. 수집 영역의 잔존 검사 범위와 예외를 별도 영수증에 기록하고 비식별화한 bytes로 참조 해시를 다시 고정했습니다. 공개 문서에 값이 포함된 정황은 없었습니다.
+
+이 정본은 #225의 RN 범위 19개 요구를 pass로 기록합니다. 기존 후보·입력 연결 pass 1개를 포함한 현재 결과는 pass 20개, unverified 35개입니다. 다른 프레임워크와 공통 게이트의 미검증, unsigned 배포 제한으로 공동 출시 판정은 blocked입니다. #224의 최초 결과와 첫 RN redbox·보강 검사 판정 불가 이력을 보존합니다. AC15 전체나 AC17 전체의 완료로 확대하지 않습니다.
