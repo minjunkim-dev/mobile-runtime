@@ -412,6 +412,7 @@ struct InspectionView: View {
             .onChange(of: module) { _, _ in variant = ""; refreshTargets() }
             .onChange(of: configuration) { _, _ in refreshTargets() }
             .onChange(of: variant) { _, _ in refreshTargets() }
+            .onChange(of: preparedDependencies) { _, _ in refreshTargets() }
             .onChange(of: busy) { _, busy in
                 if !busy, let nextFocus { focus = nextFocus; self.nextFocus = nil }
             }
@@ -443,6 +444,8 @@ struct InspectionView: View {
         let input = ProjectInspectionInput(directory: directory, environment: environment,
                                            app: app.isEmpty ? nil : app, platform: ProjectPlatform(rawValue: platform),
                                            entrypoint: entrypoint.isEmpty ? nil : entrypoint)
+        // Inspect the same Flutter inputs that build/up will accept with this toggle.
+        let prepared = (result?.selection.selected?.framework == .reactNative || result?.selection.selected?.framework == .flutter) && preparedDependencies
         let generation = UUID()
         executionID = generation
         session.progress = "환경 확인 중"
@@ -451,7 +454,8 @@ struct InspectionView: View {
             do {
                 let inspection = try await EnvironmentInspection.run(input: input,
                     scheme: scheme.isEmpty ? nil : scheme, configuration: configuration.isEmpty ? nil : configuration,
-                    module: module.isEmpty ? nil : module, variant: variant.isEmpty ? nil : variant, includeTargets: true) { detail in
+                    module: module.isEmpty ? nil : module, variant: variant.isEmpty ? nil : variant, includeTargets: true,
+                    preparedDependencies: prepared) { detail in
                     Task { @MainActor in if executionID == generation, session.task != nil { session.progress = "환경 확인 중 — \(detail)" } }
                 }
                 result = inspection

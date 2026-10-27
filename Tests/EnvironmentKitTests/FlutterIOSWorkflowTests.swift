@@ -24,6 +24,23 @@ struct FlutterIOSWorkflowTests {
         #expect(try String(contentsOf: plugin.appendingPathComponent("pubspec.yaml"), encoding: .utf8).contains("implements: owned_interface"))
     }
 
+    @Test("inspection accepts a federated plugin only with explicit prepared dependencies")
+    func inspectedPreparedDependencies() async throws {
+        let f = try FlutterIOSFixture(workspace: true)
+        let plugin = f.repo.url("packages/manual_plugin")
+        try f.repo.directory("packages/manual_plugin")
+        try f.configureIOSPlugin(directory: plugin)
+        try f.repo.write("packages/manual_plugin/pubspec.yaml", "name: owned_plugin\nflutter:\n  plugin:\n    implements: owned_interface\n    platforms:\n      ios:\n        pluginClass: OwnedPlugin\n")
+        let automatic = try await EnvironmentInspection.run(input: f.input().project, runner: FlutterIOSRunner(fixture: f))
+        #expect(automatic.report.checks.first { $0.id == "ios.flutter.generated" }?.status == .error)
+        let runner = FlutterIOSRunner(fixture: f)
+        let prepared = try await EnvironmentInspection.run(input: f.input().project, runner: runner,
+            includeTargets: true, preparedDependencies: true)
+        #expect(prepared.report.checks.first { $0.id == "ios.flutter.generated" }?.status == .pass)
+        #expect(prepared.targets?.devices.map(\.id) == ["A"])
+        #expect(!runner.commands.contains { $0.arguments.last == "build" || $0.arguments.contains("get") || $0.arguments.contains("install") })
+    }
+
     @Test("prepared Flutter host builds without dependency alignment or installation")
     func build() async throws {
         let f = try FlutterIOSFixture()

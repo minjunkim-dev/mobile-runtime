@@ -101,6 +101,23 @@ struct FlutterAndroidWorkflowTests {
         #expect(try Data(contentsOf: source) == before)
     }
 
+    @Test("GUI inspection passes explicit prepared dependencies to the protected view and keeps device choices", arguments: [false, true])
+    func inspectedPreparedDependencies(_ prepared: Bool) async throws {
+        let fixture = try RuntimeFixture(workspace: true)
+        let trace = Trace()
+        let sdk = try fixture.native.repo.directory("owned-sdk-view")
+        let result = try await EnvironmentInspection.run(input: fixture.input, runner: fixture.runner,
+            includeTargets: true, preparedDependencies: prepared, flutterFactory: { _, preparation, files in
+                #expect(preparation.preparedDependencies == prepared)
+                trace.record(files)
+                return View(sdk: sdk)
+            })
+        #expect(trace.count == 1)
+        #expect(!result.report.checks.contains { $0.id == "android.flutter.execution" })
+        #expect(result.targets?.devices.map(\.id) == ["avd:Pixel"])
+        #expect(fixture.runner.base.log.spawned.isEmpty)
+    }
+
     @Test("setup's first model uses the same ready-only protected composition")
     func preparationUsesView() async throws {
         let fixture = try CallerFixture()
