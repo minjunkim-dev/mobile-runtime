@@ -273,8 +273,8 @@ struct InspectionView: View {
                 Toggle("미리 준비한 의존성 사용", isOn: $preparedDependencies)
                     .disabled(busy).focused($focus, equals: .preparedDependencies)
                     .accessibilityIdentifier("project.prepared-dependencies")
-                    .accessibilityHint("RN·Flutter의 빌드와 실행에 적용합니다. 의존성 재설치와 lock 정렬·Flutter 플러그인 정합성 재검증을 생략합니다. Flutter 파일 링크는 Git에 기록된 프로젝트 내부 소스만 허용합니다.")
-                Text("의존성 재설치와 lock 정렬·Flutter 플러그인 정합성 재검증을 생략합니다. 준비 상태를 직접 확인한 경우에 선택하세요. Flutter 파일 링크는 Git에 기록된 프로젝트 내부 소스만 허용합니다.")
+                    .accessibilityHint("RN·Flutter의 빌드와 실행, Flutter 환경 확인에 적용합니다. 의존성 재설치와 lock 정렬·Flutter 플러그인 정합성 재검증을 생략합니다. Flutter 파일 링크는 Git에 기록된 프로젝트 내부 소스만 허용합니다.")
+                Text("의존성 재설치와 lock 정렬·Flutter 플러그인 정합성 재검증을 생략합니다. Flutter는 환경 확인에도 적용합니다. 준비 상태를 직접 확인한 경우에 선택하세요. Flutter 파일 링크는 Git에 기록된 프로젝트 내부 소스만 허용합니다.")
                     .font(.caption).foregroundStyle(.secondary)
             }
             HStack {
@@ -412,7 +412,10 @@ struct InspectionView: View {
             .onChange(of: module) { _, _ in variant = ""; refreshTargets() }
             .onChange(of: configuration) { _, _ in refreshTargets() }
             .onChange(of: variant) { _, _ in refreshTargets() }
-            .onChange(of: preparedDependencies) { _, _ in refreshTargets() }
+            .onChange(of: preparedDependencies) { _, _ in
+                // Only Flutter inspection depends on this choice; RN keeps its selected device.
+                if result?.selection.selected?.framework == .flutter { refreshTargets() }
+            }
             .onChange(of: busy) { _, busy in
                 if !busy, let nextFocus { focus = nextFocus; self.nextFocus = nil }
             }
