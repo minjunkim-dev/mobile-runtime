@@ -51,3 +51,10 @@ workspace와 Pods, installer 미실행, 정상 down을 동작 검사로 확인�
 실제 LocalSend CLI·GUI 첫 화면·개발 연결·정상 종료와 source·SDK 보존은 별도 검증한다.
 fixture·원래 빌드·이전 후보의 성공을 새 unsigned 후보의 실제 게이트로 이전하지 않는다.
 서명·공증·배포 순서와 Ad Hoc 보류, 사용자 실기기의 동작별 승인 경계는 유지한다.
+
+## 추가 범위: GUI 환경 확인 (2026-10-27)
+
+사용자가 2026-10-27에 승인했다(#346).
+GUI의 환경 확인은 Flutter 앱에서 같은 선택을 반영하여 build/up과 같은 준비 입력으로 판정한다.
+선택하지 않은 GUI 환경 확인과 CLI doctor·setup의 판정은 바꾸지 않는다. CLI doctor에는 이 선택을 추가하지 않는다.
+환경 확인의 판정은 실행 단계의 검사를 대신하지 않는다. build/up은 보호 view·준비 입력·validate를 다시 확인한다.
