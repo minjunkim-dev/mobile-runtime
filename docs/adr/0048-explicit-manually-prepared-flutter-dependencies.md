@@ -17,7 +17,7 @@ legacy·federated plugin resolver 수동 경계에서 멈춘다. 원래 빌드 �
 
 - Flutter `build/up --prepared-dependencies`와 GUI의 **직접 준비한 의존성 사용**을
   같은 공유 입력으로 연결한다. 기본값은 꺼짐이며 앱·플랫폼 선택 변경 시 해제한다.
-  native·down은 계속 거부하며 doctor와 setup의 판정·승인된 정렬은 바꾸지 않는다.
+  native·down은 계속 거부하며 CLI doctor와 setup의 판정·승인된 정렬은 바꾸지 않는다(GUI 환경 확인은 아래 추가 범위).
 - 선택한 실행에서 의존성 재설치·lock 정렬 재검증과 plugin resolver 정합성 판정을 생략한다.
   legacy·implements·default_package, 선택 플랫폼 plugin 목록의 완전성과 native 속성의
   선언 일치 여부는 사용자가 정확한 SDK로 준비하고 확인한다. 이 결과를 resolver PASS로 부르지 않는다.
@@ -57,4 +57,4 @@ fixture·원래 빌드·이전 후보의 성공을 새 unsigned 후보의 실제
 사용자가 2026-10-27에 승인했다(#346).
 GUI의 환경 확인은 Flutter 앱에서 같은 선택을 반영하여 build/up과 같은 준비 입력으로 판정한다.
 선택하지 않은 GUI 환경 확인과 CLI doctor·setup의 판정은 바꾸지 않는다. CLI doctor에는 이 선택을 추가하지 않는다.
-환경 확인의 판정은 실행 단계의 검사를 대신하지 않는다. build/up은 보호 view·준비 입력·validate를 다시 확인한다.
+환경 확인의 판정은 실행 단계의 검사를 대신하지 않는다. build/up은 준비 입력·validate와 Android 보호 view를 다시 확인한다.

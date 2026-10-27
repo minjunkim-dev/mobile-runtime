@@ -448,7 +448,7 @@ struct InspectionView: View {
                                            app: app.isEmpty ? nil : app, platform: ProjectPlatform(rawValue: platform),
                                            entrypoint: entrypoint.isEmpty ? nil : entrypoint)
         // Inspect the same Flutter inputs that build/up will accept with this toggle.
-        let prepared = (result?.selection.selected?.framework == .reactNative || result?.selection.selected?.framework == .flutter) && preparedDependencies
+        let prepared = result?.selection.selected?.framework == .flutter && preparedDependencies
         let generation = UUID()
         executionID = generation
         session.progress = "환경 확인 중"
