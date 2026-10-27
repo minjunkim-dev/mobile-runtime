@@ -216,6 +216,7 @@ lockfile을 읽기 전용 정본으로 두고 node_modules·Bundle gems·Pods �
 **직접 준비한 의존성 (Manually prepared dependencies)**:
 사용자가 의존성 정합성을 확인하고 RN·Flutter build/up에서 명시적으로 재사용하도록 선택한 설치 산출물이다.
 ADR-0047과 ADR-0048의 `--prepared-dependencies`와 GUI 선택은 재설치·lock 정렬 재검증을 생략하며 기본값은 꺼짐이다.
+Flutter에서는 GUI 환경 확인도 같은 선택으로 판정한다. CLI doctor·setup의 판정은 바꾸지 않는다.
 Flutter는 plugin resolver 정합성 판정도 생략한다. 필수 산출물·경로·SDK·미완료 표식·Pods lock 일치 검사는 유지한다.
 이 명시적 Flutter 모드에서는 추적된 내부 source 파일 링크만 양쪽 bytes·identity와 부모를 고정해 허용한다.
 기본 source alias 거부 및 lock·metadata·entrypoint·SDK·tool 경계는 유지한다(ADR-0048).

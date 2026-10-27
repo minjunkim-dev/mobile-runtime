@@ -23,18 +23,22 @@ public struct EnvironmentInspection: Sendable {
     }
 
     /// `note` reports long steps that emit no check result, such as the protected SDK view.
+    /// `preparedDependencies` inspects the same Flutter inputs that a prepared build/up would accept.
     public static func run(input: ProjectInspectionInput, runner: (any ProcessRunner)? = nil,
                            scheme: String? = nil, configuration: String? = nil,
                            module: String? = nil, variant: String? = nil, includeTargets: Bool = false,
+                           preparedDependencies: Bool = false,
                            note: @Sendable (String) -> Void = { _ in }) async throws -> Self {
         try await run(input: input, runner: runner, scheme: scheme, configuration: configuration,
                       module: module, variant: variant, includeTargets: includeTargets,
+                      preparedDependencies: preparedDependencies,
                       flutterFactory: FlutterAndroidWorkflow.defaultFactory, note: note)
     }
 
     static func run(input: ProjectInspectionInput, runner: (any ProcessRunner)? = nil,
                     scheme: String? = nil, configuration: String? = nil,
                     module: String? = nil, variant: String? = nil, includeTargets: Bool = false,
+                    preparedDependencies: Bool = false,
                     flutterFactory: FlutterAndroidWorkflow.Factory,
                     note: @Sendable (String) -> Void = { _ in }) async throws -> Self {
         let runner = runner ?? SystemProcessRunner(environment: input.environment, workingDirectory: input.directory)
@@ -90,7 +94,7 @@ public struct EnvironmentInspection: Sendable {
             note(FlutterAndroidWorkflow.preparingViewDetail)
             do {
                 let flutter = try await FlutterAndroidWorkflow.make(input: input, anchor: anchor, runner: runner,
-                    factory: flutterFactory)
+                    preparedDependencies: preparedDependencies, factory: flutterFactory)
                 note(FlutterAndroidWorkflow.viewReadyDetail)
                 let context = await WorkflowContext.make(input: input, platform: .android, anchor: anchor, runner: runner,
                     projectEnvironmentOverride: flutter.projectEnvironment, projectRunnerOverride: flutter.projectRunner,
@@ -107,7 +111,8 @@ public struct EnvironmentInspection: Sendable {
             }
         }
         let context = await WorkflowContext.make(input: input, platform: selection.platform ?? .ios,
-                                                 anchor: anchor, runner: runner, selectedConfig: config,
+                                                 anchor: anchor, runner: runner,
+                                                 preparedDependencies: preparedDependencies, selectedConfig: config,
                                                  selectedConfiguration: configuration)
         let report = await context.engine.run()
         // The engine records cancelled checks as unknown; a cancelled inspection is not a result.
