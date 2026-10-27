@@ -16,8 +16,8 @@ struct FlutterAndroidWorkflow: Sendable {
     static let defaultFactory: Factory = {
         try FlutterAndroidExecution.prepare(app: $0, preparation: $1, trackedFiles: $2)
     }
-    /// The factory copies and checks the SDK synchronously but checks cancellation per file and per 4 MB read.
-    static let preparingViewDetail = "Preparing the protected Flutter Android SDK view. Copying and checking the SDK can take minutes; cancellation stops it at the next file."
+    /// The factory copies and checks the SDK synchronously. It checks cancellation before each file and, for byte copies, after each read of up to 4 MB.
+    static let preparingViewDetail = "Preparing the protected Flutter Android SDK view. Copying and checking the SDK can take minutes; cancellation stops it at the next file or 4 MB read."
     static let viewReadyDetail = "The protected Flutter Android SDK view is ready. Running Android checks."
 
     let projectEnvironment: ProjectExecutionEnvironment
