@@ -159,9 +159,20 @@ struct FlutterAndroidWorkflowTests {
         let sourceSDK = try Self.physical(fixture.flutter.repo.url("sdk"))
         let before = try FlutterAndroidExecution.tree(sourceSDK, bindIdentity: true)
         let result = try await EnvironmentInspection.run(input: fixture.input, runner: fixture.runner)
-        #expect(result.report.checks.contains { $0.id == "android.flutter.execution" && $0.status == .error })
+        let blocked = result.report.checks.first { $0.id == "android.flutter.execution" }
+        #expect(blocked?.status == .error)
+        #expect(blocked?.outcome.remediation?.summary.contains("--prepared-dependencies") == true)
         #expect(!fixture.runner.log.all.contains { $0.executable == "./gradlew" })
         #expect(try FlutterAndroidExecution.tree(sourceSDK, bindIdentity: true) == before)
+    }
+
+    @Test("prepared inspection failure does not point back to the prepared choice")
+    func unsupportedSDKPrepared() async throws {
+        let fixture = try CallerFixture()
+        let result = try await EnvironmentInspection.run(input: fixture.input, runner: fixture.runner, preparedDependencies: true)
+        let blocked = result.report.checks.first { $0.id == "android.flutter.execution" }
+        #expect(blocked?.status == .error)
+        #expect(blocked?.outcome.remediation == FlutterAndroidWorkflow.failure().remediation)
     }
 
     @Test("down never requires Flutter preparation or creates an SDK view")

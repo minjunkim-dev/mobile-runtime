@@ -57,4 +57,5 @@ fixture·원래 빌드·이전 후보의 성공을 새 unsigned 후보의 실제
 사용자가 2026-10-27에 승인했다(#346).
 GUI의 환경 확인은 Flutter 앱에서 같은 선택을 반영하여 build/up과 같은 준비 입력으로 판정한다.
 선택하지 않은 GUI 환경 확인과 CLI doctor·setup의 판정은 바꾸지 않는다. CLI doctor에는 이 선택을 추가하지 않는다.
+선택하지 않은 환경 확인이 `android.flutter.execution`에서 실패하면 판정은 그대로 두고, 해결 안내에 build/up의 `--prepared-dependencies`와 GUI 선택을 덧붙인다.
 환경 확인의 판정은 실행 단계의 검사를 대신하지 않는다. build/up은 준비 입력·validate와 Android 보호 view를 다시 확인한다.
