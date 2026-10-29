@@ -16,8 +16,8 @@ final class FlutterAndroidExecution: Sendable {
     private let android: URL
     private let entrypoint: URL
     private let owner: OwnedRoot
-    private let originalTree: [String: Entry]
-    private let immutableView: [String: Entry]
+    private let originalNodes: [String: Node]
+    private let immutableNodes: [String: Node]
     private let protectedInputs: [URL: Entry]
     private let privateInputs: [URL: Entry]
     private let absentInputs: Set<URL>
@@ -95,6 +95,8 @@ final class FlutterAndroidExecution: Sendable {
         var absent = prepared.absent
         inputs[source] = try entry(source, bindIdentity: true)
         let outputs = try prepared.checkedOutputs(protecting: inputs)
+        // The only content hash of each SDK tree; later checks compare these metadata snapshots (#344).
+        let sourceNodes = try nodes(source)
         let before = try tree(source, bindIdentity: true)
         for (relative, hash) in capability {
             guard before["packages/flutter_tools/gradle/src/main/" + relative]?.digest == hash else {
@@ -120,9 +122,12 @@ final class FlutterAndroidExecution: Sendable {
             preparationFingerprint: selected.fingerprint, inputs: before)), to: root.appendingPathComponent("sdk-manifest.json"))
         let copy = root.appendingPathComponent("sdk")
         try copyTree(source, to: copy, snapshot: before, excluding: gradleCache)
+        let copyNodes = try nodes(copy, excluding: mutableView)
+        let copied = try tree(copy, excluding: gradleCache)
         guard try FlutterSDK.read(source).fingerprint == selected.fingerprint,
-              try tree(source, bindIdentity: true) == before,
-              try tree(copy, excluding: gradleCache) == filtered(before, excluding: gradleCache).mapValues(\.unbound) else {
+              try nodes(source) == sourceNodes,
+              copied == filtered(before, excluding: gradleCache).mapValues(\.unbound),
+              try nodes(copy, excluding: mutableView) == copyNodes else {
             throw failure("Flutter SDK inputs changed while making the private execution copy.")
         }
         let settings = try makeShadow(app: app, settingsFile: originalSettings, ownedRoot: root)
@@ -155,7 +160,7 @@ final class FlutterAndroidExecution: Sendable {
                             policy, parentPolicy, launcher, initScript]
         if prepared.metadata != nil { privateFiles.append(shadowMetadata) }
         let privateInputs = try Dictionary(uniqueKeysWithValues: privateFiles.map { ($0, try entry($0, bindIdentity: true)) })
-        guard try tree(source, bindIdentity: true) == before,
+        guard try nodes(source) == sourceNodes,
               try inputs.allSatisfy({ try entry($0.key, bindIdentity: true) == $0.value }),
               absent.allSatisfy({ !exists($0) }) else {
             throw failure("Flutter inputs changed before the protected execution became ready.")
@@ -165,19 +170,18 @@ final class FlutterAndroidExecution: Sendable {
                   to: root.appendingPathComponent("ready.json"))
         return FlutterAndroidExecution(root: root, sdk: copy, settings: settings, launcher: launcher,
             initScript: initScript, originalSDK: source, android: android, entrypoint: entrypoint,
-            owner: owner, originalTree: before,
-            immutableView: try tree(copy, excluding: mutableView, bindIdentity: true), protectedInputs: inputs,
+            owner: owner, originalNodes: sourceNodes, immutableNodes: copyNodes, protectedInputs: inputs,
             privateInputs: privateInputs, absentInputs: absent, parentPolicy: parentPolicy, sourceLinks: prepared.sourceLinks)
     }
 
     private init(root: URL, sdk: URL, settings: URL, launcher: URL, initScript: URL, originalSDK: URL,
-                 android: URL, entrypoint: URL, owner: OwnedRoot, originalTree: [String: Entry],
-                 immutableView: [String: Entry], protectedInputs: [URL: Entry], privateInputs: [URL: Entry],
+                 android: URL, entrypoint: URL, owner: OwnedRoot, originalNodes: [String: Node],
+                 immutableNodes: [String: Node], protectedInputs: [URL: Entry], privateInputs: [URL: Entry],
                  absentInputs: Set<URL>, parentPolicy: URL, sourceLinks: FlutterSourceLinks?) {
         self.root = root; self.sdk = sdk; self.settings = settings; self.launcher = launcher
         self.initScript = initScript; self.originalSDK = originalSDK; self.android = android
-        self.entrypoint = entrypoint; self.owner = owner; self.originalTree = originalTree
-        self.immutableView = immutableView; self.protectedInputs = protectedInputs
+        self.entrypoint = entrypoint; self.owner = owner; self.originalNodes = originalNodes
+        self.immutableNodes = immutableNodes; self.protectedInputs = protectedInputs
         self.privateInputs = privateInputs; self.parentPolicy = parentPolicy
         self.absentInputs = absentInputs
         self.sourceLinks = sourceLinks
@@ -197,8 +201,8 @@ final class FlutterAndroidExecution: Sendable {
 
     func check() throws {
         try sourceLinks?.check()
-        guard try Identity(root) == owner.identity, try Self.tree(originalSDK, bindIdentity: true) == originalTree,
-              try Self.tree(sdk, excluding: Self.mutableView, bindIdentity: true) == immutableView,
+        guard try Identity(root) == owner.identity, try Self.nodes(originalSDK) == originalNodes,
+              try Self.nodes(sdk, excluding: Self.mutableView) == immutableNodes,
               try protectedInputs.allSatisfy({ try Self.entry($0.key, bindIdentity: true) == $0.value }),
               try privateInputs.allSatisfy({ try Self.entry($0.key, bindIdentity: true) == $0.value }),
               absentInputs.allSatisfy({ !Self.exists($0) }) else {
@@ -646,6 +650,52 @@ final class FlutterAndroidExecution: Sendable {
         return result
     }
 
+    /// After one content hash, a write, replacement, permission or link change moves ctime, which an unprivileged process cannot set back.
+    /// shortcut: bytes changed through a shared writable mapping outside both sandboxes go unseen until writeback; ADR-0040 records this #344 decision.
+    struct Node: Equatable, Sendable {
+        let device: Int32
+        let inode: UInt64
+        let uid: UInt32
+        let mode: UInt16
+        let links: UInt16
+        let size: Int64
+        let times: [Int]
+        init(_ info: stat) {
+            device = info.st_dev; inode = info.st_ino; uid = info.st_uid; mode = info.st_mode
+            // A directory's entries are compared by key; its own times move when Gradle adds an excluded cache inside it.
+            let directory = info.st_mode & S_IFMT == S_IFDIR
+            links = directory ? 0 : info.st_nlink
+            size = directory ? 0 : info.st_size
+            times = directory ? [] : [info.st_mtimespec.tv_sec, info.st_mtimespec.tv_nsec, info.st_ctimespec.tv_sec, info.st_ctimespec.tv_nsec]
+        }
+    }
+
+    static func nodes(_ root: URL, excluding: [String] = []) throws -> [String: Node] {
+        _ = try canonical(root)
+        var result: [String: Node] = [:]
+        func visit(_ directory: URL) throws {
+            for file in try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil) {
+                try Task.checkCancellation()
+                let relative = String(file.path.dropFirst(root.path.count + 1))
+                if excluding.contains(where: { relative == $0 || relative.hasPrefix($0 + "/") }) { continue }
+                var info = stat()
+                guard lstat(file.path, &info) == 0 else { throw failure("A protected Flutter SDK entry disappeared.") }
+                result[relative] = Node(info)
+                if info.st_mode & S_IFMT == S_IFDIR { try visit(file) }
+            }
+        }
+        try visit(root)
+        return result
+    }
+
+    /// The copy's own bytes are hashed against the snapshot; the source keeps its stat identity here and its metadata snapshot afterwards.
+    private static func unchanged(_ path: URL, _ value: Entry) -> Bool {
+        var info = stat()
+        guard lstat(path.path, &info) == 0, info.st_mode & S_IFMT == S_IFREG, value.kind == .file else { return false }
+        return UInt16(info.st_mode & 0o777) == value.mode && info.st_size == value.size
+            && (value.nodeIdentity == nil || value.nodeIdentity == "\(info.st_dev):\(info.st_ino):\(info.st_uid)")
+    }
+
     static func copyTree(_ source: URL, to destination: URL, snapshot: [String: Entry], excluding: [String] = [],
                          clone: Bool = true) throws {
         try directory(destination)
@@ -658,14 +708,13 @@ final class FlutterAndroidExecution: Sendable {
             try Task.checkCancellation()
             let input = source.appendingPathComponent(relative)
             let output = destination.appendingPathComponent(relative)
-            guard try entry(input, bindIdentity: value.nodeIdentity != nil) == value else { throw failure("An SDK file changed before it could be copied.") }
+            guard unchanged(input, value) else { throw failure("An SDK file changed before it could be copied.") }
             let descriptor = open(input.path, O_RDONLY | O_NOFOLLOW)
             guard descriptor >= 0 else { throw failure("An SDK file could not be opened without following links.") }
             let handle = FileHandle(fileDescriptor: descriptor, closeOnDealloc: true)
             // An APFS clone is its own inode sharing blocks until written; another volume takes the byte copy below.
             if clone, fclonefileat(descriptor, AT_FDCWD, output.path, 0) == 0 {
-                guard try entry(output) == value.unbound,
-                      try entry(input, bindIdentity: value.nodeIdentity != nil) == value else { throw failure("An SDK file changed during its private copy.") }
+                guard try entry(output) == value.unbound, unchanged(input, value) else { throw failure("An SDK file changed during its private copy.") }
                 continue
             }
             let destinationFD = open(output.path, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW, 0o600)
@@ -686,7 +735,7 @@ final class FlutterAndroidExecution: Sendable {
             try destinationHandle.close()
             try handle.close()
             guard digest.finalize().map({ String(format: "%02x", $0) }).joined() == value.digest,
-                  try entry(input, bindIdentity: value.nodeIdentity != nil) == value else { throw failure("An SDK file changed during its private copy.") }
+                  unchanged(input, value) else { throw failure("An SDK file changed during its private copy.") }
         }
         for (relative, value) in expected.sorted(by: { $0.key < $1.key }) where value.kind == .link {
             guard let target = value.target, try entry(source.appendingPathComponent(relative), bindIdentity: value.nodeIdentity != nil) == value else {

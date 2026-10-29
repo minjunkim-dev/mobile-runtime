@@ -152,6 +152,17 @@ SIGKILL과 강제 종료는 root를 남길 수 있다.
 root는 `RUNSTIR_SCRATCH_DIR`, 연결된 `$DEVSSD_ROOT/scratch`, `TMPDIR` 순서로 고른다.
 후보는 이 사용자가 소유하고 group·other가 쓸 수 없는 기존 디렉터리여야 한다. 그래야 다른 사용자가 지운 root 경로를 다시 만들 수 없다. 상위 경로에 symlink가 있어도 안 된다. 조건에 맞지 않으면 `TMPDIR`를 쓴다.
 ownership을 무시하는 volume(`Owners: Disabled`)에서는 이 보장이 약하다. 그 volume의 보호 입력도 같은 한계를 가진다.
+
+### SDK 변경 감지 (#344, 2026-10-29 사용자 결정)
+
+원본 SDK와 private copy의 내용은 view 준비 중에 한 번씩만 해시한다. 원본은 snapshot 1회, copy는 파일별 clone 확인과 snapshot 비교 1회다.
+해시 전에 각 트리의 metadata snapshot을 남긴다. 파일·link는 device·inode·uid·mode·link 수·size·mtime·ctime(ns)을, directory는 device·inode·uid·mode를 기록한다. 항목 추가·삭제는 경로 목록으로 비교한다.
+view 준비를 마치기 전과 이후의 모든 보호 검사(host 명령 앞뒤, Gradle 앞뒤, Dart child 시작)는 이 metadata를 비교한다. 3.9 GB SDK를 다시 읽지 않는다.
+내용 쓰기·교체·권한 변경·hard link 추가는 ctime을 바꾼다. 권한 없는 프로세스는 ctime을 되돌릴 수 없다. 해시 중에 바뀐 파일도 metadata 비교에서 드러난다.
+한계: sandbox 밖의 같은 UID 프로세스가 공유 쓰기 mmap으로 바꾼 byte는 writeback 전까지 ctime에 나타나지 않는다. 그 사이의 보호 검사는 이 변경을 놓친다. root 권한이나 시스템 시계 조작은 원래 이 경계 밖이다.
+기존 검사도 시점 표본이었다. 검사 사이에 바꿨다 되돌린 변경은 원래 감지하지 못했다. 사용자는 이 한계를 보고 실행 비용 대신 metadata 비교를 선택했다(Gradle 전 약 270초, setup 742초 측정).
+source·lockfile·생성 metadata 같은 보호 입력은 계속 내용으로 비교한다.
+
 이 실행 구조의 테스트는 실제 앱 Build·Up·Down·첫 화면 검증을 대신하지 않는다.
 
 ## 검증 경계

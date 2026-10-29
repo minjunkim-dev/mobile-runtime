@@ -213,6 +213,45 @@ struct FlutterAndroidExecutionTests {
         #expect(try FlutterAndroidExecution.tree(source, bindIdentity: true) != before)
     }
 
+    @Test("after the one content hash, metadata catches rewrites, replacements, permission, link and entry changes without reading bytes",
+          arguments: ["rewrite", "replace", "chmod", "add", "remove", "hardlink", "retarget"])
+    func metadataSnapshot(_ change: String) throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let source = try fixture.directory("source")
+        try fixture.file("source/bin/tool", "selected SDK bytes", mode: 0o755)
+        try fixture.file("source/bin/unreadable", "never read", mode: 0o000)
+        try fixture.file("source/cache/lockfile", "mutable")
+        let alias = source.appendingPathComponent("bin/alias")
+        #expect(symlink("tool", alias.path) == 0)
+        let before = try FlutterAndroidExecution.nodes(source, excluding: ["cache"])
+        try Data("written by the selected tool".utf8).write(to: source.appendingPathComponent("cache/lockfile"))
+        #expect(try FlutterAndroidExecution.nodes(source, excluding: ["cache"]) == before)
+        let tool = source.appendingPathComponent("bin/tool")
+        switch change {
+        case "rewrite":
+            // Same size and a restored mtime still move ctime, which an unprivileged process cannot set back.
+            var info = stat()
+            #expect(lstat(tool.path, &info) == 0)
+            let handle = try FileHandle(forWritingTo: tool)
+            try handle.write(contentsOf: Data("selected SDK BYTES".utf8))
+            try handle.close()
+            let times = [info.st_atimespec, info.st_mtimespec]
+            #expect(utimensat(AT_FDCWD, tool.path, times, 0) == 0)
+        case "replace":
+            try FileManager.default.moveItem(at: tool, to: fixture.root.appendingPathComponent("old-tool"))
+            try fixture.file("source/bin/tool", "selected SDK bytes", mode: 0o755)
+        case "chmod": #expect(chmod(tool.path, 0o700) == 0)
+        case "add": try fixture.file("source/bin/new", "added")
+        case "remove": #expect(unlink(alias.path) == 0)
+        case "hardlink": #expect(link(tool.path, fixture.root.appendingPathComponent("outside").path) == 0)
+        default:
+            #expect(unlink(alias.path) == 0)
+            #expect(symlink("unreadable", alias.path) == 0)
+        }
+        #expect(try FlutterAndroidExecution.nodes(source, excluding: ["cache"]) != before)
+    }
+
     @Test("cancellation preserves a partial owned copy and original SDK")
     func cancelledCopy() async throws {
         let fixture = try Fixture()
