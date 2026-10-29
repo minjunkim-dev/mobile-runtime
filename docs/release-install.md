@@ -82,7 +82,7 @@ gh workflow run draft-release.yml --repo minjunkim-dev/mobile-runtime --ref main
 ```
 
 workflow는 잠근 의존성으로 macOS arm64 CLI archive·GUI DMG·checksum·`CANDIDATE.json`을 만들고 검증한다.
-현재 workflow는 서명 자격을 준비하거나 서명 입력을 전달하지 않는다. 구조 검증용 unsigned 후보를 만든다.
+workflow는 구조 검증용 unsigned 후보를 만든다.
 GitHub에 `draft=true`, `prerelease=true`인 Release만 생성한다.
 기존 Release와 태그가 있는 버전은 거절한다. 기존 asset을 덮어쓰지 않는다.
 Draft 생성 직전에 입력을 다시 검증한다. 생성 후 같은 태그가 생겼으면 실패로 처리하고 Draft를 공개하지 않는다.
