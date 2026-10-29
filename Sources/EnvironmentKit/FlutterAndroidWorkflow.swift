@@ -98,6 +98,10 @@ struct FlutterAndroidWorkflow: Sendable {
                 "Inspect mobile setup with the same app and entrypoint. Preserve source, lockfiles and the selected SDK. No tool installation or Gradle execution occurred."))
     }
 
+    /// Inspection without the prepared choice cannot accept manually prepared plugin inputs; point to the run paths that can.
+    static let unpreparedInspectionRemediation = Remediation(summary: failure().remediation.summary
+        + " If you prepared this app's dependencies yourself, run build/up with --prepared-dependencies, or turn on \"미리 준비한 의존성 사용\" in the GUI and inspect again.")
+
     static func blockedStep(app: URL) -> PreparationStep {
         PreparationStep(id: "android.flutter.execution", platform: .android, kind: "provider", target: app.path,
             observed: "A protected Flutter Android execution view is not ready",
@@ -180,10 +184,11 @@ struct FlutterAndroidReadinessCheck: Check, ProcessRunner {
     let id = "android.flutter.execution"
     let category = "Flutter Android"
     let title = "Prepared protected Flutter Android execution"
+    var remediation = FlutterAndroidWorkflow.failure().remediation
     func run() async throws -> CheckOutcome {
         .error(observed: "A protected Flutter Android execution view is not ready",
             source: CheckSource(tier: 1, origin: "Flutter Android preparation"),
-            remediation: FlutterAndroidWorkflow.failure().remediation)
+            remediation: remediation)
     }
     func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
         throw FlutterAndroidWorkflow.failure()
