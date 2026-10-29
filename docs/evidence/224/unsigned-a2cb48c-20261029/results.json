@@ -366,7 +366,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -393,7 +393,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -420,7 +420,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -447,7 +447,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -474,7 +474,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -501,7 +501,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -528,7 +528,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -555,7 +555,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -582,7 +582,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -609,7 +609,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -636,7 +636,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -663,7 +663,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -690,7 +690,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -717,7 +717,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -744,7 +744,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -771,7 +771,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -798,7 +798,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -825,7 +825,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -852,7 +852,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -879,7 +879,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -906,7 +906,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -933,7 +933,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -960,7 +960,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -987,7 +987,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -1014,7 +1014,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -1041,7 +1041,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -1068,7 +1068,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -1095,7 +1095,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -1122,7 +1122,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -1149,7 +1149,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -1176,7 +1176,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -1203,7 +1203,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -1230,7 +1230,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -1257,7 +1257,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -1284,7 +1284,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -1311,7 +1311,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -1338,7 +1338,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -1365,7 +1365,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -1392,7 +1392,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -1419,7 +1419,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -1446,7 +1446,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -1473,7 +1473,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [
@@ -1500,7 +1500,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "단일 release build의 CLI·GUI·Core, 배포 파일과 재사용 입력 24개의 현재 동일성을 확인했다. 고정 전 adb 원본 복원과 남은 Emulator 종료를 기록했다. AC15 후보·입력 연결 행만 통과한다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "pass",
       "evidence": [
@@ -1525,7 +1525,7 @@
       "evidenceClass": "actual",
       "expected": "고정한 새 후보와 입력에 해당 요구의 관측 증거를 연결한다.",
       "observed": "새 alpha.15의 이 실제 게이트는 아직 검증하지 않았다. 이전 후보와 개발 검증 결과를 승계하지 않는다.",
-      "observedAt": "2026-10-29T15:34:28Z",
+      "observedAt": "2026-10-29T15:42:32Z",
       "executor": "claude-alpha15",
       "result": "unverified",
       "evidence": [

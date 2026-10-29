@@ -105,8 +105,8 @@
     {
       "id": "source-prs",
       "path": "receipts/source-prs.private.json",
-      "bytes": 1485,
-      "sha256": "f40bc680e3d7a6efea541c1fb04388a500214ab453df0d5958fe7a5f914bad38"
+      "bytes": 3748,
+      "sha256": "0baed540c16b19ad682177d6e20c09595693bda054f4658affddebba03132945"
     },
     {
       "id": "package-build-log",
@@ -129,8 +129,8 @@
     {
       "id": "bundle-composer",
       "path": "receipts/compose-bundle.py",
-      "bytes": 23520,
-      "sha256": "ab87020fd433d9014f3e0c875fbc9798549eb4890db7fab46a3a04341d608379"
+      "bytes": 24713,
+      "sha256": "7162a2ddea22e326eab2b4b9ffac2837ba5c1b58ea188c31ffe5708fa5d67b07"
     },
     {
       "id": "adb-wrapper-226",
@@ -328,7 +328,7 @@
       "id": "origin-index",
       "path": "ORIGIN-INDEX.json",
       "bytes": 9489,
-      "sha256": "e0974209ac7afd781e7d1076bce7a0f90d8a03365b00d60ac3db4c13341ce9af"
+      "sha256": "40d9f9799e336e407e353c89508b884e94fbc281d8500bc515f737224a1b3ac0"
     }
   ]
 }

@@ -13,7 +13,7 @@
 
 main의 `scripts/package-release.sh`로 한 번의 disposable release build를 실행해 CLI·GUI와 Core 객체 48개를 만들었다. 제작기는 빌드 폴더를 지운 뒤 archive smoke와 `scripts/verify-candidate.sh`를 실행했고 모두 통과했다. 두 배포 파일의 BUILD metadata와 resource bytes가 일치하고 GUI bundle에는 CLI가 없다. DMG는 읽기 전용으로 마운트해 앱을 복사한 뒤 분리했다. formula는 구문만 검사했으며 실제 Homebrew 설치는 하지 않았다. `CANDIDATE.json`의 `ciRun`은 로컬 제작이라 `null`이다.
 
-Source main CI [40892947080](https://github.com/minjunkim-dev/mobile-runtime/actions/runs/40892947080)와 CodeQL [40892946868](https://github.com/minjunkim-dev/mobile-runtime/actions/runs/40892946868)은 exact SHA의 모든 job이 성공했다. CI는 1차 시도에서 macOS runner를 할당받지 못해 취소됐고, 2차 시도에서 부하 중 `ProcessRunnerTests`의 5초 timeout 하나가 실패했다. 두 실패의 기록을 보존했고, 이 tree는 CI를 통과한 PR #351 최종 head와 같다. alpha.14 source 이후 병합된 제품 변경은 다음과 같다. 각 PR은 별도 컨텍스트의 리뷰와 최종 head CI를 거쳐 병합됐다.
+Source main CI [40892947080](https://github.com/minjunkim-dev/mobile-runtime/actions/runs/40892947080)와 CodeQL [40892946868](https://github.com/minjunkim-dev/mobile-runtime/actions/runs/40892946868)은 exact SHA의 모든 job이 성공했다. CI는 1차 시도에서 macOS runner를 할당받지 못해 취소됐고, 2차 시도에서 부하 중 `ProcessRunnerTests`의 5초 timeout 하나가 실패했다. 두 실패의 기록을 보존했고, 이 tree는 CI를 통과한 PR #351 최종 head와 같다. alpha.14 source 이후 병합된 제품 변경은 다음과 같다. 각 PR 본문의 별도 컨텍스트 리뷰 기록과 최종 head의 필수 CI 성공을 제한 원본 `source-prs`에 보존했다. 같은 기간의 증거 문서·리뷰 설정·검증 도구·CI 설정 변경(#340~#343, #349)은 배포 파일에 들어가지 않으므로 표에서 뺐다.
 
 | PR | 제목 | merge |
 | --- | --- | --- |
@@ -26,7 +26,7 @@ Source main CI [40892947080](https://github.com/minjunkim-dev/mobile-runtime/act
 
 조합·표본·runtime은 alpha.14와 같다(tuples.json). 기존 baseline과 별도인 checkout 24개를 재사용했다. alpha.14가 이 입력에서 이미 실행됐으므로 Runstir 상태와 빌드 출력이 남아 있을 수 있다. 새 clone이나 cold setup 성공으로 세지 않는다.
 
-현재 입력의 추적 항목 26,954개는 alpha.14 descriptor의 원래 값과 일치한다. 파일 bytes·종류·실행 비트와 gitlink OID·디렉터리 내용, HEAD와 추적 목록을 비교했고 index/flags digest도 alpha.14와 같다. 도구 버전 12개와 선택 SDK 파일 15개를 다시 확인했다. Simulator의 이름·runtime·사용 가능 상태와 AVD config를 조회했으며 기기를 부팅하거나 설치하지 않았다. SDK·HOME·cache 전체 재hash나 새 runtime boot 성공은 주장하지 않는다.
+현재 입력의 추적 항목 26,954개는 alpha.14 descriptor의 원래 값과 일치한다. 파일 bytes·종류·실행 비트와 gitlink OID·디렉터리 내용, HEAD와 추적 목록을 비교했고 index/flags digest도 alpha.14와 같다. 도구 버전 12개와 선택 SDK 파일 15개를 다시 확인했다. Simulator의 이름·runtime·사용 가능 상태와 AVD config를 조회했으며 기기를 부팅하거나 설치하지 않았다. SDK·HOME·cache 전체 재hash나 새 runtime boot 성공은 주장하지 않는다. API37 최소 RN의 기존 로컬 네트워크 권한 허용 조건도 입력에 명시했으며 다음 부팅 때 실제 상태를 다시 확인해야 한다.
 
 **고정 전 정리:** 고정 SDK의 `platform-tools/adb`는 #226 alpha.14 게이트(2026-10-27)가 설치한 `adb devices` 필터 wrapper로 바뀌어 있었다. 사용자 승인 뒤 wrapper를 제한 보관소에 보존하고 원본(`adb.real`, 고정 SHA와 같음)을 `adb`로 되돌렸다. 이전 게이트가 남긴 headless Emulator 2개(cli35·gui35)도 사용자 승인 뒤 종료했다. 정상 종료 신호에 응답하지 않아 보조 프로세스는 강제 종료했고, 두 AVD에 `hardware-qemu.ini.lock`이 남아 있다. 정리 후 도구·SDK 파일·AVD config 재확인은 alpha.14 고정값과 모두 같다. 입력에 쓰지 않는 Simulator 3개는 alpha.14 이후 삭제됐다.
 
@@ -38,4 +38,4 @@ Source main CI [40892947080](https://github.com/minjunkim-dev/mobile-runtime/act
 
 현재 호스트 기본 임시 mobile 경로는 기존 SSD symlink이며 후보가 안전 검사에서 거부한다. 이 작업은 링크와 전역 설정을 변경하지 않았다.
 
-signing=unsigned, notarization=not-requested, distributionReady=false다. 바이너리 업로드·태그·공식 공개는 수행하지 않았다. #225~230 실제 기능 게이트를 마친 뒤 #222 서명·공증 → #231 → #232 → #233 순서를 유지한다. 후보나 입력이 바뀌면 새 시도와 영향 재검증을 기록하며 같은 버전 파일을 덮어쓰지 않는다.
+signing=unsigned, notarization=not-requested, distributionReady=false다. 바이너리 업로드·태그·공식 공개는 수행하지 않았다. #225~230 실제 기능 게이트를 마친 뒤 #222 서명·공증 → #231 → #232 → #233 순서를 유지한다. PR #284는 보류다. 후보나 입력이 바뀌면 새 시도와 영향 재검증을 기록하며 같은 버전 파일을 덮어쓰지 않는다.
