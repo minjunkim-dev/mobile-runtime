@@ -164,7 +164,7 @@ APFS가 아닌 volume(exFAT·네트워크·HFS+ 등)에서는 같은 크기로 �
 기존 검사도 시점 표본이었다. 검사 사이에 바꿨다 되돌린 변경은 원래 감지하지 못했다. 사용자는 이 한계를 보고 실행 비용 대신 metadata 비교를 선택했다. 변경 전 alpha.14 측정에서 이 재해시가 Gradle 전 약 270초, setup 742초 대부분을 차지했다.
 반대로 `touch`처럼 내용이 같아도 ctime이 바뀌는 외부 조작은 이제 변경으로 판정한다. 보호 입력을 보존하고 다시 실행한다.
 예외로 원본 SDK의 `bin/cache/lockfile`·`engine.stamp`·`engine.realm`은 내용과 identity로 비교한다. 같은 SDK로 IDE나 터미널에서 `flutter`를 실행하면 `Cache.lock()`과 `update_engine_version.sh`가 매번 이 파일들을 같은 내용으로 다시 써서 ctime을 바꾸기 때문이다.
-source·lockfile·생성 metadata 같은 다른 보호 입력은 계속 내용으로 비교한다.
+앱 source·`pubspec.lock`·생성 metadata 같은 다른 보호 입력은 계속 내용으로 비교한다.
 
 이 실행 구조의 테스트는 실제 앱 Build·Up·Down·첫 화면 검증을 대신하지 않는다.
 

@@ -681,17 +681,19 @@ final class FlutterAndroidExecution: Sendable {
             errno = 0
             guard let entry = fts_read(walk) else { break }
             try Task.checkCancellation()
+            let level = entry.pointee.fts_level
+            let relative = String(decoding: UnsafeRawBufferPointer(start: entry.pointee.fts_path, count: Int(entry.pointee.fts_pathlen)).dropFirst(prefix), as: UTF8.self)
+            // An excluded cache may vanish mid-walk, as `tree` tolerated.
+            if level > 0, excluding.contains(where: { relative == $0 || relative.hasPrefix($0 + "/") }) {
+                fts_set(walk, entry, FTS_SKIP)
+                continue
+            }
             switch Int32(entry.pointee.fts_info) {
             case FTS_DP: continue
             case FTS_DNR, FTS_ERR, FTS_NS: throw failure("A protected Flutter SDK entry disappeared or cannot be listed.")
             default: break
             }
-            guard entry.pointee.fts_level > 0 else { continue }
-            let relative = String(decoding: UnsafeRawBufferPointer(start: entry.pointee.fts_path, count: Int(entry.pointee.fts_pathlen)).dropFirst(prefix), as: UTF8.self)
-            if excluding.contains(where: { relative == $0 || relative.hasPrefix($0 + "/") }) {
-                fts_set(walk, entry, FTS_SKIP)
-                continue
-            }
+            guard level > 0 else { continue }
             result[relative] = Node(entry.pointee.fts_statp.pointee)
         }
         guard errno == 0 else { throw failure("A protected Flutter SDK tree cannot be listed.") }
