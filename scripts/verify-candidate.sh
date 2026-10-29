@@ -10,7 +10,10 @@ scratch=$(mktemp -d)
 mounted=false
 cleanup() {
   if [[ $mounted == true ]]; then
-    hdiutil detach -quiet "$scratch/mount" || hdiutil detach -quiet -force "$scratch/mount" || return
+    if ! hdiutil detach -quiet "$scratch/mount" && ! hdiutil detach -quiet -force "$scratch/mount"; then
+      echo "DMG still mounted at $scratch/mount" >&2
+      return 1
+    fi
   fi
   rm -rf "$scratch"
 }

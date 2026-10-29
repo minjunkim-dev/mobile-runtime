@@ -107,7 +107,8 @@ class ReleaseInputTests(unittest.TestCase):
         states = [{}, {"signing": "unknown", "notarization": "accepted"},
                   {"signing": "unsigned", "notarization": "accepted"},
                   {"signing": "developer-id", "notarization": "not-requested"},
-                  {"signing": "unsigned", "notarization": "not-requested", "distributionReady": True}]
+                  {"signing": "unsigned", "notarization": "not-requested", "distributionReady": True},
+                  {"signing": "unsigned", "notarization": "not-requested", "distributionReady": None}]
         for state in states:
             with self.subTest(state=state), self.assertRaises(ValueError):
                 release_input.validate_candidate({**candidate, **state}, build, build)
