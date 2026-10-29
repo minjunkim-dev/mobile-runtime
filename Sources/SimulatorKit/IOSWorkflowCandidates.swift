@@ -6,11 +6,12 @@ public struct IOSWorkflowCandidates: Sendable {
     public let declaredDeviceID: String?
     public let schemes: [String]
     public let configurations: [String]
+    public let effectiveConfiguration: String?
     public let deploymentTarget: String?
 
     public static func load(anchor: ProjectAnchor, config: ConfigContext, lookup: MatrixLookup?,
                             runner: any ProcessRunner, locator: XcodeLocator,
-                            includeDevices: Bool, configuration: String? = nil) async throws -> Self {
+                            includeDevices: Bool, configuration: String? = nil, entrypoint: String? = nil, flutterSDKRoot: URL? = nil) async throws -> Self {
         let environment = await locator.pinnedEnvironment()
         var devices: [RuntimeDeviceCandidate] = []
         var declaredID: String?
@@ -32,7 +33,7 @@ public struct IOSWorkflowCandidates: Sendable {
         }
         let targetToList = XcodeSchemeList.target(inIOSDirectoryOf: anchor, buildTarget: target)
         let result = try await runner.run(XcodeSchemeList.command(target: targetToList, environment: environment))
-        if anchor.framework == .nativeIOS, !result.terminationStatus.isSuccess {
+        if anchor.framework != .reactNative, !result.terminationStatus.isSuccess {
             throw DomainError(summary: "Xcode could not inspect the selected native iOS container.",
                 observed: result.combinedOutput.lastLines(10),
                 remediation: Remediation(summary: "Prepare this project's locked dependencies and shared app scheme in Xcode, then retry. Automatic dependency resolution remains disabled."))
@@ -42,23 +43,27 @@ public struct IOSWorkflowCandidates: Sendable {
         }
         let schemes = listing.schemes(in: targetToList, anchor: anchor)
         guard !schemes.isEmpty else {
-            guard anchor.framework == .nativeIOS else {
+            guard anchor.framework != .reactNative else {
                 throw ToolUnavailable(description: "Could not list Xcode schemes. Check Xcode and run mobile doctor.")
             }
             throw DomainError(summary: "No shared Xcode scheme is available in the selected container.",
                               remediation: Remediation(summary: "Share the app scheme in Xcode and commit the .xcscheme file, then retry."))
         }
         var configurations = listing.configurations
+        var effectiveConfiguration: String?
         var deploymentTarget: String?
-        // Workspace lists omit configurations. Expose the effective value so callers reject Xcode's fallback.
-        if (configurations.isEmpty || anchor.framework == .nativeIOS),
+        // Workspace lists omit configurations. Keep choices separate from Xcode's effective value.
+        if (configurations.isEmpty || anchor.framework != .reactNative),
+           !(anchor.framework == .flutter && configuration == nil && !configurations.isEmpty && !configurations.contains("Debug")),
            let scheme = config.configuration?.scheme ?? (schemes.count == 1 ? schemes.first : nil),
            schemes.contains(scheme) {
             let requested = configuration ?? "Debug"
+            let derivedData = try RunLogs(project: anchor.directory).derivedDataDirectory
             let arguments = ["-showBuildSettings", "-json"] + targetToList.arguments
                 + ["-scheme", scheme, "-configuration", requested, "-destination", "generic/platform=iOS Simulator"]
+                + ["-derivedDataPath", derivedData.path]
             let settings = try await runner.run(ProcessCommand("xcodebuild", arguments, environment: environment, timeout: .seconds(120)))
-            if anchor.framework == .nativeIOS {
+            if anchor.framework != .reactNative {
                 guard settings.terminationStatus.isSuccess,
                     let resolved = XcodeBuildSettings.decode(settings.standardOutput)?.applicationSettings(scheme: scheme, nativeTarget: targetToList),
                     let effective = resolved["CONFIGURATION"],
@@ -69,10 +74,31 @@ public struct IOSWorkflowCandidates: Sendable {
                         observed: settings.terminationStatus.isSuccess ? nil : settings.combinedOutput.lastLines(10),
                         remediation: Remediation(summary: "Prepare this shared app scheme in Xcode. Resolve dependencies and any required signing there, then retry. Runstir never provisions signing or changes the project."))
                 }
-                // A declared configuration is not proof that Xcode used it.
-                // Keep the effective value so the caller rejects fallback to Release.
-                if effective != requested { configurations = [effective] }
-                else if configurations.isEmpty { configurations = [effective] }
+                if anchor.framework == .flutter {
+                    let mode = (resolved["FLUTTER_BUILD_MODE"] ?? effective).lowercased()
+                    let debug = resolved["FLUTTER_BUILD_MODE"] == nil ? mode.contains("debug") : mode == "debug"
+                    let alternate = ["FLUTTER_TOOL_ARGS", "FLUTTER_ENGINE", "LOCAL_ENGINE", "LOCAL_ENGINE_HOST", "FLUTTER_ENGINE_SRC_PATH"]
+                    let project = try FlutterProject(directory: anchor.directory, entrypoint: entrypoint)
+                    func matches(_ value: String?, _ expected: URL?, relativeTo directory: URL) -> Bool {
+                        guard let value, let expected else { return false }
+                        let path = value.hasPrefix("/") ? URL(fileURLWithPath: value) : directory.appendingPathComponent(value)
+                        return path.standardizedFileURL.resolvingSymlinksInPath() == expected.standardizedFileURL.resolvingSymlinksInPath()
+                    }
+                    guard effective == requested, debug, !mode.contains("release"), !mode.contains("profile"),
+                        !alternate.contains(where: { resolved[$0].map { !$0.isEmpty } == true }),
+                        matches(resolved["FLUTTER_ROOT"], flutterSDKRoot, relativeTo: anchor.iosDirectory),
+                        matches(resolved["FLUTTER_APPLICATION_PATH"], anchor.directory, relativeTo: anchor.iosDirectory),
+                        matches(resolved["FLUTTER_TARGET"], project.entrypoint, relativeTo: anchor.directory)
+                    else {
+                        throw DomainError(summary: "Flutter iOS requires the selected SDK, app, entrypoint and an effective debug configuration.",
+                            remediation: Remediation(summary: "Prepare the selected Flutter host with the exact SDK manually, preserving source and lockfiles. Runstir does not migrate generated inputs or substitute Release."))
+                    }
+                }
+                // Choices and the effective value are separate: fallback must not hide other valid choices.
+                effectiveConfiguration = effective
+                configurations = try await configurationChoices(configurations, settings: resolved,
+                    target: targetToList, runner: runner, environment: environment)
+                if configurations.isEmpty { configurations = [effective] }
                 deploymentTarget = minimum
                 if let floor = MinimumVersion(minimum) {
                     availableSimulators = availableSimulators.filter { floor.isSatisfied(by: $0.runtime) }
@@ -83,16 +109,44 @@ public struct IOSWorkflowCandidates: Sendable {
                let effective = (entries.first?["buildSettings"] as? [String: String])?["CONFIGURATION"],
                !effective.isEmpty,
                entries.allSatisfy({ ($0["buildSettings"] as? [String: String])?["CONFIGURATION"] == effective }) {
-                configurations = [effective]
+                effectiveConfiguration = effective
+                let appSettings = XcodeBuildSettings.decode(settings.standardOutput)?.applicationSettings(scheme: scheme) ?? [:]
+                configurations = try await configurationChoices(configurations, settings: appSettings,
+                    target: targetToList, runner: runner, environment: environment)
+                if configurations.isEmpty { configurations = [effective] }
             }
         }
-        devices = availableSimulators.map { RuntimeDeviceCandidate(id: $0.udid, name: $0.name, detail: "iOS \($0.runtimeText)") }
+        devices = availableSimulators.map { RuntimeDeviceCandidate(id: $0.udid, name: $0.name, detail: "iOS \($0.runtimeText)",
+            origin: DeviceOriginStore.user.origin(platform: .ios, id: $0.udid)) }
             .sorted { $0.id < $1.id }
         if let name = config.configuration?.device,
             case .success(let selected) = SimulatorSelector(simulators: availableSimulators, lookup: lookup).named(name) {
             declaredID = selected.udid
         }
         return Self(devices: devices, declaredDeviceID: declaredID,
-                    schemes: schemes.sorted(), configurations: configurations.sorted(), deploymentTarget: deploymentTarget)
+                    schemes: schemes.sorted(), configurations: configurations.sorted(),
+                    effectiveConfiguration: effectiveConfiguration, deploymentTarget: deploymentTarget)
+    }
+
+    private static func configurationChoices(_ listed: [String], settings: [String: String], target: XcodeBuildTarget,
+                                             runner: any ProcessRunner, environment: [String: String]) async throws -> [String] {
+        guard listed.isEmpty, target.kind == .workspace, let path = settings["PROJECT_FILE_PATH"] else { return listed }
+        let project = URL(fileURLWithPath: path)
+        guard path.hasPrefix("/"), project.pathExtension == "xcodeproj" else {
+            throw ToolUnavailable(description: "Xcode did not report a project for the selected workspace app's build configurations.")
+        }
+        let canonicalProject = project.standardizedFileURL.resolvingSymlinksInPath()
+        guard XcodeSchemeList.projects(in: target).contains(where: {
+            $0.standardizedFileURL.resolvingSymlinksInPath() == canonicalProject
+        }) else {
+            throw ToolUnavailable(description: "Xcode reported an app project outside the selected workspace's members.")
+        }
+        let result = try await runner.run(XcodeSchemeList.command(
+            target: XcodeBuildTarget(kind: .project, url: project, freezesPackages: true), environment: environment))
+        guard result.terminationStatus.isSuccess, let listing = XcodeSchemeList.decode(result.standardOutput),
+              !listing.configurations.isEmpty else {
+            throw ToolUnavailable(description: "Could not list build configurations for the selected workspace app's project.")
+        }
+        return listing.configurations
     }
 }

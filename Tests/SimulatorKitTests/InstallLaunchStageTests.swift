@@ -43,6 +43,19 @@ private func install(_ runner: FakeProcessRunner, logs: RunLogs? = nil) throws -
 
 @Suite("install stage")
 struct InstallStageTests {
+    @Test("a missing live input identity blocks install before any tool")
+    func missingInstallIdentity() async throws {
+        let repo = try FixtureRepo()
+        let logs = RunLogs(project: repo.url("missing-input"), temporaryDirectory: try repo.directory("outputs"))
+        let runner = runner([installCommand: .ok("")])
+        var context = afterBuild()
+
+        await #expect(throws: (any Error).self) { try await install(runner, logs: logs).run(&context) }
+
+        #expect(runner.log.all.isEmpty)
+        #expect(!FileManager.default.fileExists(atPath: logs.directory.path))
+    }
+
     /// simctl replaces the bundle in place. Uninstalling first would take the app's
     /// data with it — a logged-in session is not this stage's to throw away.
     @Test("the app is installed straight over whatever is already there")
@@ -69,7 +82,7 @@ struct InstallStageTests {
 
         _ = try await install(runner, logs: logs).run(&context)
 
-        let record = try #require(InstallRecord.read(from: logs))
+        let record = try #require(try InstallRecord.read(from: logs))
         #expect(record.udid == udid)
         #expect(record.bundleId == bundleID)
     }
@@ -226,7 +239,7 @@ struct LaunchStageTests {
         let logs = try RunLogs.temporary()
         _ = logs.write(" BUNDLE ./index.js 100.0% (4050/4050)\n", to: "metro.log")
         var context = afterBuild()
-        context.metro = MetroProcess(state: .spawned, logPath: logs.url("metro.log").path)
+        context.metro = MetroProcess(state: .spawned, logPath: try logs.url("metro.log").path)
 
         let outcome = try await stage(runner).run(&context)
 
@@ -242,7 +255,7 @@ struct LaunchStageTests {
             to: "metro.log"
         )
         var context = afterBuild()
-        context.metro = MetroProcess(state: .spawned, logPath: logs.url("metro.log").path)
+        context.metro = MetroProcess(state: .spawned, logPath: try logs.url("metro.log").path)
 
         let outcome = try await stage(runner).run(&context)
 

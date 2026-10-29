@@ -8,36 +8,110 @@ import Foundation
 /// find is not a log.
 public struct RunLogs: Sendable {
     /// `<temp>/mobile/<project name>-<digest of its path>`. The name is there so a
-    /// human scanning the directory recognises their project; the digest is there so
-    /// two checkouts called `MyApp` do not overwrite each other's logs.
+    /// human scanning the directory recognises their project. The legacy digest
+    /// reduces log name collisions; it is not the real input folder's identity.
     public let directory: URL
+    let project: URL
 
     public init(project: URL, temporaryDirectory: URL = FileManager.default.temporaryDirectory) {
         // Resolved for both halves: a project reached through a symlink and through
         // its real path is one project, and must not get two log directories.
         let resolved = project.resolvingSymlinksInPath()
+        self.project = resolved
         directory = temporaryDirectory
             .appendingPathComponent("mobile")
             .appendingPathComponent("\(resolved.lastPathComponent)-\(Self.digest(resolved.path))")
     }
 
-    /// Where a log by this name goes, without creating anything. For output something
-    /// else writes — a `ProcessCommand` streamed straight to its file.
-    public func url(_ name: String) -> URL {
-        directory.appendingPathComponent(name)
+    /// The legacy path remains available for ownership-checked reads. New writes
+    /// use the same real folder identity as leases, even if the log digest collides.
+    public func url(_ name: String) throws -> URL {
+        try guardedURL(name, type: .typeRegular)
     }
 
-    /// - Returns: the file written, or nil when it could not be. A log that failed to
-    ///   save must not become the failure the caller reports — it had one already.
-    public func write(_ contents: String, to name: String) -> URL? {
-        let file = url(name)
+    public var derivedDataDirectory: URL {
+        get throws { try guardedURL("DerivedData", type: .typeDirectory) }
+    }
+
+    private var folderDirectory: URL {
+        get throws {
+            let identity = try FolderIdentity(directory: project)
+            let root = directory.deletingLastPathComponent().deletingLastPathComponent()
+                .resolvingSymlinksInPath().standardizedFileURL
+            let parent = root.appendingPathComponent("mobile")
+            let input = parent.appendingPathComponent(directory.lastPathComponent)
+            let folder = input.appendingPathComponent("folder-\(identity.volume)-\(identity.file)")
+            for component in [root, parent, input, folder] {
+                do {
+                    let attributes = try FileManager.default.attributesOfItem(atPath: component.path)
+                    guard attributes[.type] as? FileAttributeType == .typeDirectory else { throw redirected(component) }
+                } catch let error as CocoaError where error.code == .fileReadNoSuchFile && component != root {
+                    continue
+                }
+            }
+            return folder
+        }
+    }
+
+    private func guardedURL(_ name: String, type: FileAttributeType) throws -> URL {
+        guard !name.isEmpty, name != ".", name != "..", URL(fileURLWithPath: name).lastPathComponent == name else {
+            throw CocoaError(.fileReadInvalidFileName)
+        }
+        let file = try folderDirectory.appendingPathComponent(name)
         do {
-            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            let attributes = try FileManager.default.attributesOfItem(atPath: file.path)
+            guard attributes[.type] as? FileAttributeType == type else { throw redirected(file) }
+        } catch let error as CocoaError where error.code == .fileReadNoSuchFile { return file }
+        return file
+    }
+
+    private func redirected(_ path: URL) -> DomainError {
+        DomainError(summary: "The input's runtime output path is redirected or has an unexpected type.",
+            remediation: Remediation(summary: "Inspect \(path.path). Existing content was preserved."))
+    }
+
+    /// A failed diagnostic write does not replace the failure being reported.
+    public func write(_ contents: String, to name: String) -> URL? {
+        do {
+            let file = try url(name)
+            try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
             try Data(contents.utf8).write(to: file)
             return file
-        } catch {
-            return nil
+        } catch { return nil }
+    }
+
+    /// Only exact absence in both namespaces permits the base-main 8081 endpoint.
+    /// Earlier unmerged development port files carry no confirmed folder identity.
+    public func metroPort(platform: ProjectPlatform = .ios) throws -> Int? {
+        let name = "metro-port-\(platform.rawValue)"
+        let file = try url(name)
+        do {
+            _ = try FileManager.default.attributesOfItem(atPath: file.path)
+        } catch let error as CocoaError where error.code == .fileReadNoSuchFile {
+            let legacy = directory.appendingPathComponent(name)
+            do {
+                _ = try FileManager.default.attributesOfItem(atPath: legacy.path)
+            } catch let error as CocoaError where error.code == .fileReadNoSuchFile { return nil }
+            throw DomainError(summary: "The earlier Metro port record has no confirmed folder owner.",
+                remediation: Remediation(summary: "Inspect \(legacy.path) and the earlier run's evidence before choosing a recovery action. Existing records and servers were preserved."))
         }
+        let data = try Data(contentsOf: file)
+        guard let text = String(data: data, encoding: .utf8),
+              let port = Int(text.trimmingCharacters(in: .whitespacesAndNewlines)), (1...65535).contains(port)
+        else { throw DomainError(summary: "The recorded Metro port is unreadable or invalid.",
+            remediation: Remediation(summary: "Inspect \(file.path). Existing servers were preserved.")) }
+        return port
+    }
+
+    public func recordMetroPort(_ port: Int, platform: ProjectPlatform = .ios) throws {
+        guard (1...65535).contains(port) else {
+            throw DomainError(summary: "The Metro port must be from 1 through 65535.",
+                remediation: Remediation(summary: "Select a valid development server port."))
+        }
+        _ = try metroPort(platform: platform)
+        let file = try url("metro-port-\(platform.rawValue)")
+        try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data("\(port)\n".utf8).write(to: file, options: .atomic)
     }
 
     /// FNV-1a. Swift's `Hasher` is seeded per process, and a path that hashes

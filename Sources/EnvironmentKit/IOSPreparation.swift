@@ -296,6 +296,8 @@ struct IOSPreparation {
             case .iosSimulator(let request):
                 guard let device = matchingDevice(request, in: inventory), device.available,
                       ["Shutdown", "Booted"].contains(device.state) else { return true }
+            case .androidAVD:
+                continue
             }
         }
         return false

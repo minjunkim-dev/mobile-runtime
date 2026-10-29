@@ -19,6 +19,7 @@ struct AndroidCleanup: Sendable {
     private let timeouts: AndroidRuntimeTimeouts
     private let store: AndroidActiveRunStore
     private let doctorContext: AndroidDoctorContext
+    private let environment: AndroidEnvironment
 
     init(
         anchor: ProjectAnchor,
@@ -33,7 +34,8 @@ struct AndroidCleanup: Sendable {
         self.runner = runner
         self.projectRunner = projectRunner
         self.timeouts = timeouts
-        self.store = AndroidActiveRunStore(project: anchor.directory, logs: logs)
+        self.environment = environment
+        self.store = AndroidActiveRunStore(project: anchor.directory, logs: logs, operation: .down)
         self.doctorContext = AndroidDoctorContext(
             anchor: anchor,
             config: config,
@@ -43,10 +45,15 @@ struct AndroidCleanup: Sendable {
         )
     }
 
-    func run() async -> Result {
-        let ids = ["android.app", "android.adb.reverse", "metro", "android.emulator"]
+    func run(eligibleResources: Set<String>? = nil) async -> Result {
+        let allIDs = anchor.framework == .flutter
+            ? [AndroidFlutterService.cleanupID, "android.app", "android.emulator"]
+            : ["android.app", "android.adb.reverse", "metro", "android.emulator"]
+        // Excluded pre-existing resources retain both their state and ledger.
+        let ids = allIDs.filter { eligibleResources?.contains($0) ?? true }
         let original: AndroidActiveRun?
         do {
+            if anchor.framework == .reactNative { _ = try store.logs.metroPort(platform: .android) }
             original = try store.read()
         } catch {
             let message = "android.active-run: \(error)"
@@ -69,28 +76,63 @@ struct AndroidCleanup: Sendable {
             )
         }
 
+        if (anchor.framework == .flutter) != (active.schemaVersion == 2) {
+            return Result(report: TeardownReport(items: ids.map { .unknown($0,
+                "the current framework does not match recorded Android ownership") },
+                toolFailures: ["android.active-run: framework ownership is unknown"], blockedIsFailure: true),
+                hasRemainingRecord: true)
+        }
+        if active.schemaVersion == 2 {
+            do {
+                guard anchor.framework == .flutter,
+                      try AndroidADBEndpoint(environment: environment).socket == active.target.serverSocket else {
+                    throw AndroidStateError("Flutter cleanup requires the recorded adb endpoint and framework")
+                }
+            } catch {
+                return Result(report: TeardownReport(items: ids.map { .unknown($0,
+                    "Flutter endpoint or target ownership cannot be confirmed; preserve all resources") },
+                    toolFailures: ["android.active-run: endpoint ownership is unknown"], blockedIsFailure: true),
+                    hasRemainingRecord: true)
+            }
+        }
+
         var items: [TeardownItem] = []
         var toolFailures: [String] = []
         var failure: DomainError?
+        var forwardResolved = active.forward == nil
         for id in ids {
             do {
                 try Task.checkCancellation()
                 let item: TeardownItem
                 switch id {
-                case "android.app": item = try await cleanApp(active.app, device: active.device)
+                case AndroidFlutterService.cleanupID:
+                    let service = try flutterService()
+                    item = try await service.remove(active)
+                case "android.app":
+                    if active.schemaVersion == 2 && !forwardResolved {
+                        item = .unknown(id, "unresolved forward retains its app ownership evidence")
+                    } else {
+                        item = try await cleanApp(active.app, device: active.device,
+                            flutter: active.schemaVersion == 2)
+                    }
                 case "android.adb.reverse":
                     item = try await cleanReverse(active.reverse, device: active.device)
                 case "metro": item = try await cleanMetro(active.metro)
-                default: item = try await cleanEmulator(active.device)
+                default:
+                    if active.schemaVersion == 2 && (!forwardResolved || active.app != nil) {
+                        item = .unknown(id, "unresolved Flutter ownership retains its device evidence")
+                    } else { item = try await cleanEmulator(active.device) }
                 }
                 if item.status == .stopped || item.status == .skipped {
                     switch id {
+                    case AndroidFlutterService.cleanupID: active.forward = nil
                     case "android.app": active.app = nil
                     case "android.adb.reverse": active.reverse = nil
                     case "metro": active.metro = nil
                     default: active.device = nil
                     }
                     try store.removeIfEmpty(active)
+                    if id == AndroidFlutterService.cleanupID { forwardResolved = true }
                 }
                 items.append(item)
             } catch is CancellationError {
@@ -114,12 +156,12 @@ struct AndroidCleanup: Sendable {
                 failure: failure,
                 blockedIsFailure: true
             ),
-            hasRemainingRecord: FileManager.default.fileExists(atPath: store.file.path)
+            hasRemainingRecord: (try? store.file).map { FileManager.default.fileExists(atPath: $0.path) } ?? true
         )
     }
 
     private func cleanApp(
-        _ app: AndroidActiveRun.App?, device: AndroidActiveRun.Device?
+        _ app: AndroidActiveRun.App?, device: AndroidActiveRun.Device?, flutter: Bool = false
     ) async throws -> TeardownItem {
         guard let app else { return .skipped("android.app", "not recorded") }
         guard app.launched else {
@@ -134,15 +176,32 @@ struct AndroidCleanup: Sendable {
         case .blocked(let item): return item
         case .verified: break
         }
+        if flutter {
+            guard let expected = app.pid else {
+                throw AndroidStateError("the launched Flutter process has no confirmed PID")
+            }
+            let observed = try await flutterService().appPID(serial: app.serial, applicationId: app.applicationId)
+            if observed == nil { return .skipped("android.app", "recorded Flutter app is absent") }
+            guard observed == expected else {
+                return .blocked("android.app", identityMismatch(
+                    "a replacement Flutter app process is preserved",
+                    observed: "the current PID differs from recorded app ownership"
+                ))
+            }
+        }
         let installed = try await runner.run(adb(
             ["-s", app.serial, "shell", "pm", "path", app.applicationId], sdk: sdk
         ))
         guard installed.terminationStatus.isSuccess,
+            !flutter || installed.standardError.isEmpty,
             installed.standardOutput.contains("package:")
         else {
+            if flutter {
+                throw AndroidStateError("the recorded Flutter package cannot be confirmed; preserve app and device ownership")
+            }
             return .skipped("android.app", "package is no longer installed")
         }
-        let command = adb(
+        let command = try adb(
             ["-s", app.serial, "shell", "am", "force-stop", app.applicationId], sdk: sdk
         )
         let stopped = try await runner.run(command)
@@ -154,6 +213,15 @@ struct AndroidCleanup: Sendable {
                     observed: stopped.combinedOutput.lastLines(8)
                 )
             )
+        }
+        if flutter {
+            guard try await flutterService().appPID(serial: app.serial, applicationId: app.applicationId) == nil else {
+                return .blocked("android.app", identityMismatch(
+                    "Flutter app absence was not confirmed after force-stop",
+                    observed: "a current app process remains; preserve app and device ownership"
+                ))
+            }
+            return .stopped("android.app", app.applicationId)
         }
         let after = try await runner.run(adb(
             ["-s", app.serial, "shell", "pidof", app.applicationId], sdk: sdk
@@ -188,7 +256,7 @@ struct AndroidCleanup: Sendable {
         case .blocked(let item): return item
         case .verified: break
         }
-        let source = "tcp:\(MetroVerdict.port)"
+        let source = "tcp:\(try store.logs.metroPort(platform: .android) ?? MetroVerdict.port)"
         let mappings = try await doctorContext.reverseMappings(serial: reverse.serial, sdk: sdk, runner: runner)
         guard let current = mappings[source] else {
             return .skipped("android.adb.reverse", "mapping already absent")
@@ -202,7 +270,7 @@ struct AndroidCleanup: Sendable {
                 )
             )
         }
-        let command = adb(
+        let command = try adb(
             ["-s", reverse.serial, "reverse", "--remove", source], sdk: sdk
         )
         let removed = try await runner.run(command)
@@ -238,7 +306,8 @@ struct AndroidCleanup: Sendable {
         } else {
             false
         }
-        let listener = try await MetroLaunch.listeners(runner: projectRunner).first
+        let port = try store.logs.metroPort(platform: .android) ?? MetroVerdict.port
+        let listener = try await MetroLaunch.listeners(runner: projectRunner, port: port).first
         if !startRunning && listener == nil {
             return .skipped("metro", "owned Metro already stopped")
         }
@@ -254,7 +323,7 @@ struct AndroidCleanup: Sendable {
                 )
             }
             guard try await MetroVerdict.ask(
-                anchor: anchor.directory, runner: projectRunner
+                anchor: anchor.directory, runner: projectRunner, port: port
             ) == .mine else {
                 return .blocked(
                     "metro",
@@ -267,7 +336,7 @@ struct AndroidCleanup: Sendable {
         } else if let listener {
             guard startRunning,
                 try await MetroVerdict.ask(
-                    anchor: anchor.directory, runner: projectRunner
+                    anchor: anchor.directory, runner: projectRunner, port: port
                 ) == .mine
             else {
                 return .blocked(
@@ -298,7 +367,7 @@ struct AndroidCleanup: Sendable {
             )
         }
         try await pause()
-        let listenerAfter = try await MetroLaunch.listeners(runner: projectRunner).first
+        let listenerAfter = try await MetroLaunch.listeners(runner: projectRunner, port: port).first
         let startAfter = if let pid = metro.startPID {
             try await processIsRunning(pid)
         } else {
@@ -337,7 +406,7 @@ struct AndroidCleanup: Sendable {
                         )
                     )
                 }
-                let command = adb(["-s", serial, "emu", "kill"], sdk: sdk)
+                let command = try adb(["-s", serial, "emu", "kill"], sdk: sdk)
                 let stopped = try await runner.run(command)
                 guard stopped.terminationStatus.isSuccess else {
                     return .failed(
@@ -405,19 +474,21 @@ struct AndroidCleanup: Sendable {
     }
 
     private func ownedLauncherPresence(_ pid: Int32) async throws -> Bool? {
-        let result = try await runner.run(
-            ProcessCommand("ps", ["-p", "\(pid)", "-o", "pid="], timeout: .seconds(10))
-        )
-        guard result.standardError.isEmpty else { return nil }
-        let pids = result.standardOutput.split(whereSeparator: \.isWhitespace).map(String.init)
-        if case .exited(1) = result.terminationStatus, pids.isEmpty { return false }
-        return result.terminationStatus.isSuccess && pids == [String(pid)] ? true : nil
+        try await androidLauncherPresence(pid, runner: runner)
     }
 
     private func adb(
         _ arguments: [String], sdk: URL, timeout: Duration = .seconds(15)
-    ) -> ProcessCommand {
-        doctorContext.toolCommand("adb", arguments, sdk: sdk, timeout: timeout)
+    ) throws -> ProcessCommand {
+        let selected = anchor.framework == .flutter
+            ? try AndroidADBEndpoint(environment: environment).arguments(arguments) : arguments
+        return doctorContext.toolCommand("adb", selected, sdk: sdk, timeout: timeout)
+    }
+
+    private func flutterService() throws -> AndroidFlutterService {
+        AndroidFlutterService(context: doctorContext, runner: runner,
+            sdk: try doctorContext.requiredSDKRoot(), endpoint: try AndroidADBEndpoint(environment: environment),
+            timeouts: timeouts)
     }
 
     private func processIsRunning(_ pid: Int32) async throws -> Bool {
@@ -532,8 +603,17 @@ struct AndroidCleanup: Sendable {
 
 /// Read while holding the project lease, before acquiring the device lease.
 public func androidTeardownDeviceKey(anchor: ProjectAnchor, logs: RunLogs? = nil) throws -> ResourceKey? {
-    try AndroidActiveRunStore(project: anchor.directory, logs: logs).read()?.device
+    try AndroidActiveRunStore(project: anchor.directory, logs: logs, operation: .down).read()?.device
         .map { .device(.android, "avd:\($0.avd)") }
+}
+
+/// Parent integration acquires these together under its existing folder lease.
+/// This adds the same general TCP namespace used by other development servers.
+public func androidTeardownResourceKeys(anchor: ProjectAnchor, logs: RunLogs? = nil) throws -> [ResourceKey] {
+    guard let active = try AndroidActiveRunStore(project: anchor.directory, logs: logs, operation: .down).read() else { return [] }
+    var keys = active.device.map { [ResourceKey.device(.android, "avd:\($0.avd)")] } ?? []
+    if let forward = active.forward { keys.append(.port(forward.hostPort)) }
+    return keys
 }
 
 public func androidTeardown(
@@ -546,7 +626,7 @@ public func androidTeardown(
     timeouts: AndroidRuntimeTimeouts = AndroidRuntimeTimeouts()
 ) async -> TeardownReport {
     let logs = logs ?? RunLogs(project: anchor.directory)
-    let store = AndroidActiveRunStore(project: anchor.directory, logs: logs)
+    let store = AndroidActiveRunStore(project: anchor.directory, logs: logs, operation: .down)
     do {
         let lease = try store.acquire(operation: "down")
         defer { withExtendedLifetime(lease) {} }

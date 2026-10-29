@@ -18,14 +18,14 @@ struct AndroidSDKPreparation {
             plan.checks.append(blocker("requirements", requirements.blockers.joined(separator: "; ")))
             return plan
         }
-        var repository: AndroidSDKRepository?
+        var repositories: [AndroidSDKRepositorySource: AndroidSDKRepository] = [:]
         var repositoryFailure: String?
         let missing = requirements.packages.filter { !$0.observation(in: sdk).present }
-        if !missing.isEmpty {
+        for source in Set(missing.map { $0.packagePath.hasPrefix("system-images;") ? AndroidSDKRepositorySource.googleAPIs : .sdk }) {
             do {
-                let result = try await runner.run(AndroidSDKRepository.command)
+                let result = try await runner.run(source.command)
                 guard result.terminationStatus.isSuccess else { throw InstallationExecution.failure("Official Android SDK metadata download failed") }
-                repository = try AndroidSDKRepository(data: Data(result.standardOutput.utf8))
+                repositories[source] = try AndroidSDKRepository(data: Data(result.standardOutput.utf8), source: source)
             } catch is CancellationError { throw CancellationError() }
             catch { repositoryFailure = "Official archive identity is unavailable. Recheck the official metadata before approving installation." }
         }
@@ -44,7 +44,8 @@ struct AndroidSDKPreparation {
                     remediation: observed.ready ? nil : Remediation(summary: observed.reason ?? "Inspect the existing SDK package and license metadata, then re-plan.")))
                 continue
             }
-            guard let repository else {
+            let source: AndroidSDKRepositorySource = path.hasPrefix("system-images;") ? .googleAPIs : .sdk
+            guard let repository = repositories[source] else {
                 plan.checks.append(blocker(path, repositoryFailure ?? "Official repository metadata is unavailable", target: destination.path))
                 continue
             }
@@ -52,7 +53,7 @@ struct AndroidSDKPreparation {
                 let package = try repository.package(path)
                 let metadata = InstallationMetadata(package: path, revision: package.revision, destination: destination, resourceRoot: sdk,
                     artifact: InstallationArtifact(url: package.archiveURL, checksumAlgorithm: "sha1", checksum: package.sha1, size: package.size),
-                    repositoryURL: AndroidSDKRepository.url, repositorySHA256: repository.sha256,
+                    repositoryURL: source.url, repositorySHA256: repository.sha256,
                     licenseID: package.licenseID, licenseSHA1: package.licenseSHA1,
                     requiredFile: requirement.requiredFile, executable: requirement.executable)
                 let licensed = package.licenseAccepted(in: sdk)
@@ -65,7 +66,7 @@ struct AndroidSDKPreparation {
                 }
                 var step = PreparationStep(id: id, platform: .android, kind: kind, target: destination.path,
                     observed: "absent", required: "\(path), revision \(package.revision), \(package.size) bytes, SHA-1 \(package.sha1)",
-                    source: CheckSource(tier: 1, origin: "\(AndroidSDKRepository.url.absoluteString); metadata SHA-256 \(repository.sha256); \(requirement.source.origin)"),
+                    source: CheckSource(tier: 1, origin: "\(source.url.absoluteString); metadata SHA-256 \(repository.sha256); \(requirement.source.origin)"),
                     command: nil, remediation: Remediation(summary: summary, url: "https://developer.android.com/tools/sdkmanager#accept-licenses"))
                 step.installation = metadata
                 plan.checks.append(step)

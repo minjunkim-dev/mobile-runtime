@@ -22,6 +22,9 @@ Android 지원을 뜻하지 않는다. CLI가 현재 실행 표면이고,
 SwiftUI macOS 앱은 같은 Core/provider 계약을 표현할 후속 표면이다. 현재 계약과
 제약은 [CONTEXT.md](CONTEXT.md)와 [ADRs](docs/adr/)에 둔다.
 
+개발 `main`의 소스 없는 앱 파일 실행은 [지원·실제 검증 상태](docs/app-file-direct-install.md#지원과-실제-검증-상태)를 확인한다.
+대표 iOS Development 실기기 결과와 미검증 Ad Hoc·Android 실기기를 구분하며, 공개 배포판의 검증 완료를 뜻하지 않는다.
+
 제품명은 Runstir다. CLI 명령어는 `mobile`이다. iOS의 Xcode 27 Go 게이트는
 고정 BlueWallet 표본과 검증 조합에서 통과했다. [실행 증거](docs/go-round-runbook.md)를 확인한다.
 일반적인 React Native 지원을 뜻하지 않는다.
@@ -46,6 +49,14 @@ swift test
 .build/debug/mobile up --platform android --json # build, install, and launch on an existing AVD
 .build/debug/mobile down --platform android --json
 ```
+
+React Native·Flutter에서 의존성을 직접 준비했다면 `mobile build/up --prepared-dependencies` 또는
+GUI의 **직접 준비한 의존성 사용**을 명시적으로 선택할 수 있습니다. 기본값은 꺼짐입니다.
+이 모드는 의존성 재설치와 lock 정렬 재검증을 생략합니다. Flutter plugin resolver를 포함한 의존성 정합성은 사용자가 확인해야 합니다.
+Flutter의 추적된 내부 source 파일 링크는 링크·대상·부모를 검증해 허용하며, 외부·directory 링크와 lock·metadata·SDK 경계는 유지합니다.
+RN의 node_modules·미완료 표식, Flutter의 workspace 준비 파일·생성 경로·SDK, iOS Pods와 workspace 검사는 유지합니다.
+[ADR-0047](docs/adr/0047-explicit-manually-prepared-rn-dependencies.md)과 [ADR-0048](docs/adr/0048-explicit-manually-prepared-flutter-dependencies.md)의 경계를 따르며 setup·native·down에는 적용하지 않습니다.
+
 
 원시 로그와 오류 JSON에는 프로젝트 도구 출력이 그대로 남을 수 있다. 원시
 로그는 민감정보로 보고, 공유하거나 이슈에 붙이기 전에 확인한다.

@@ -5,7 +5,7 @@ Issues and specs for this repo live as GitHub issues on `minjunkim-dev/mobile-ru
 ## Conventions
 
 - **Create an issue**: `gh issue create --title "..." --body "..."`. Use a heredoc for multi-line bodies.
-- **Read an issue**: `gh issue view <number> --comments`, filtering comments by `jq` and also fetching labels.
+- **Read an issue**: `gh issue view <number> --json number,title,body,labels,comments`.
 - **List issues**: `gh issue list --state open --json number,title,body,labels,comments --jq '[.[] | {number, title, body, labels: [.labels[].name], comments: [.comments[].body]}]'` with appropriate `--label` and `--state` filters.
 - **Comment on an issue**: `gh issue comment <number> --body "..."`
 - **Apply / remove labels**: `gh issue edit <number> --add-label "..."` / `--remove-label "..."`
@@ -31,7 +31,7 @@ Create a GitHub issue.
 
 ## When a skill says "fetch the relevant ticket"
 
-Run `gh issue view <number> --comments`.
+Run `gh issue view <number> --json number,title,body,labels,comments`.
 
 ## Wayfinding operations
 
@@ -43,3 +43,7 @@ Used by `/wayfinder`. The **map** is a single issue with **child** issues as tic
 - **Frontier query**: list the map's open children (`gh issue list --state open`, scoped to the map's sub-issues / task list), drop any with an open blocker (`issue_dependencies_summary.blocked_by > 0`, or an open issue in the `Blocked by` line) or an assignee; first in map order wins.
 - **Claim**: `gh issue edit <n> --add-assignee @me` — the session's first write.
 - **Resolve**: `gh issue comment <n> --body "<answer>"`, then `gh issue close <n>`, then append a context pointer (gist + link) to the map's Decisions-so-far.
+
+## 명세·티켓 의존성
+
+`to-spec`·`to-tickets`·`implement-spec`는 [개발 절차](development.md)로 연결한다. 승인된 티켓은 부모 명세와 연결하고 GitHub native sub-issue·dependency를 사용한다. 지원되지 않으면 부모 참조와 명시적인 `Blocked by`를 기록한다. 선행 티켓의 실제 완료 상태와 담당자를 확인하고 준비된 작업만 선택한다. 기존 본문·코멘트·착수 소유권 규칙을 유지한다. 명세 작성·티켓 분해만으로 부모를 닫지 않으며, 구현·통합 검증·기존 병합 조건을 충족한 뒤 tracker의 완료 관례를 따른다.

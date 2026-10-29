@@ -1,0 +1,355 @@
+# React Native 고정 표본 baseline — #212
+
+최신 검증일: 2026-10-23, Asia/Seoul. [attempt-21](rn-baseline-212-attempt-21.md)의 두 Android 첫 화면과 [attempt-22](rn-baseline-212-attempt-22.md)의 두 iOS 첫 화면을 확인했다. 새 사본의 독립 준비와 최종 입력 감사 결과는 attempt-22에 기록한다. 이 baseline은 실제 Runstir CLI·GUI 후보 게이트의 성공이 아니다.
+
+## 과거 시도 기록
+
+아래 미완료·권한·대기 표현은 각 시점의 기록이다. 현재 실행 조건은 [ADR-0046](adr/0046-rn-baseline-direct-execution.md), 현재 결과는 attempt-22를 따른다. 실패와 당시 수집기의 한계는 그대로 보존한다.
+최소 앱은 [attempt-02](./rn-baseline-212-attempt-02.md)의 과거 iOS 26·Android 조건에서 양플랫폼 known-good이다.
+OSS는 [attempt-03 Mattermost](./rn-baseline-212-attempt-03.md)의 과거 원본 Android 첫 화면을 확인했다.
+[attempt-04](./rn-baseline-212-attempt-04.md)는 ADR-0020의 별도 준비 입력이다.
+Hermes 한 값 재생성과 frozen 준비는 성공했다. iOS build는 Pods deployment target 검사에서 실패했다.
+[attempt-06](./rn-baseline-212-attempt-06.md)은 ADR-0021의 생성 resource bundle 11개 Debug 보정을 적용했다.
+frozen 준비와 source·generated project 감사는 성공했다. iOS build는 ExpoRouter Swift compile에서 exit `65`로 실패했다.
+[attempt-07](./rn-baseline-212-attempt-07.md)은 ADR-0022의 ExpoRouter Debug 보정까지 합한 정확한 12개 값을 준비했다.
+frozen 준비와 source·generated project 및 사후 감사는 성공했다. iOS build는 앱 compiler 하한 `16.0`과 ExpoRouter module 하한 `16.4`의 import 경계에서 exit `65`로 실패했다.
+[attempt-08](./rn-baseline-212-attempt-08.md)은 ADR-0023의 resource bundle 11개 Debug `16.4`와 ExpoRouter Debug `16.0`을 준비했다.
+frozen 준비와 source·generated project 및 사후 감사는 성공했다. iOS native build와 install은 성공했다. 원본 Metro는 Watchman의 `Operation not permitted` 오류로 exit `1`이었다. 접근 차단 원인은 미확정이다.
+Metro 실패 뒤 launch를 호출한 순서 오류를 보존했다. launch 요청 exit `0`은 앱 생존이나 첫 화면 성공이 아니다. 첫 화면은 확인하지 못했다.
+[attempt-09](./rn-baseline-212-attempt-09.md)는 ADR-0024의 새 내장 경로에서 최소 RN의 원본 clone·npm·source 감사를 통과했다. 원본 Metro의 실제 HTTP `200`과 own process·port를 확인했다. 첫 화면 증거는 아니다.
+최소 RN의 원본 frozen Bundle 명령은 `Bundler 2.5.22` executable을 찾지 못해 exit `1`이었다. 필수 실패 뒤 모든 후속 실행을 중단했다. 최소 Pods·native·install·launch·첫 화면·Android 및 Mattermost·fresh를 시작하지 않았다. 사후 source 감사와 자원 보존을 확인했다. 단독 lease를 반납했다.
+[attempt-10](./rn-baseline-212-attempt-10.md)은 새 최소 clone·원본 npm·early Metro를 통과했다. 원본 Ruby plugin 한 개를 사전 guard가 거부했다.
+[attempt-11](./rn-baseline-212-attempt-11.md)은 원본 mise 선택 exit `0` 뒤 private STATE symlink 5개를 사후 guard가 거부한 이력이다.
+[attempt-12](./rn-baseline-212-attempt-12.md)은 원본 metadata·Ruby facts/spec을 통과한 뒤 installer exit1과 observer unknown으로 중단한 이력이다.
+[attempt-13](./rn-baseline-212-attempt-13.md)은 installer·activation·bootstrap 성공 뒤 다음 선택 receipt label 중복으로 중단한 이력이다.
+[attempt-14](./rn-baseline-212-attempt-14.md)은 원본 조건을 유지한 frozen 선택 receipt producer/read ID 정정을 적용했다. 최소 clone·npm·early Metro·strict55/세 lock·metadata/host/shared·installer·activation·새 선택·원본 frozen Bundle은 PASS다.
+원본 runner12개는 모두 exit0이다. gem-actual은 CocoaPods1.15.2/xcodeproj1.25.1을 출력했다. observer는 저장된 관측83개와 EXECUTABLE_UNKNOWN 오류1개로 FAIL이다. 준비 helper는 exit1이었다. 정확한 하위 원인은 unknown이다. Bundle exec 내부환경·Pods·native·기기·첫 화면·Android·Mattermost·두 fresh는 미시작이다. 최초 파생 count0은 보존했고 별도 sidecar가83/총554로 정정한다. source/metadata/host/shared 사후 감사와 owned cleanup은 PASS다. 일시적 공유 write 부재는 증명하지 않는다. lease는 RELEASED다.
+[attempt-15](./rn-baseline-212-attempt-15.md)는 기존 ADR-0028의 고정 executable call-site 진단만 구분했다. 최소 clone·npm·early Metro·strict55/세 lock·metadata/host/shared·installer·activation·새 frozen 선택은 PASS다. 원본 frozen Bundle command는 exit0이지만 observer551관측과 executable-launcher-image-zero/EXECUTABLE_RETURN_ZERO 오류1개로 준비 guard가 FAIL이다. 하위 원인은 unknown이다. 원본 runner11개 모두 exit0, guard10PASS/1FAIL, Ruby receipt5개 총582관측/오류1개다. 후속 gem-actual·Pods·native·기기·첫 화면·Android·Mattermost·두 fresh는 미시작이다. 사후 감사·owned cleanup은 PASS다. lease는 RELEASED다.
+[attempt-16](./rn-baseline-212-attempt-16.md)은 ADR-0029의 errno 진단을 준비한 새 시도다. 최소 clone·checkout·원본 npm과 strict55/세 lock은 PASS다. 원본 runner3개는 모두 exit0이며 준비 guard3개도 PASS다. early Metro 호출자가 상대 audit 인자를 전달해 경로 guard에서 helper exit1로 중단했다. Metro 자체와 Ruby·errno 관측은 시작하지 않았다. source·제품·Metro 실패로 분류하지 않는다. metadata/host/shared Ruby context와 사후 snapshot은 미시작이다. strict 사후 감사와 resource 보존은 PASS다. 소유 실행 자원은 없었다. lease는 RELEASED다. 후속 Pods·native·기기·첫 화면·Android·Mattermost·두 fresh는 미시작이다.
+[ADR-0029](https://github.com/minjunkim-dev/mobile-runtime/blob/ad301bbe77a5245fbc04ccd26a82e1c96616dddc/docs/adr/0029-rn-observer-executable-errno.md)는 main에 채택했다. PR248 exact head의 CI38129147071 네 job은 SUCCESS다. 실제 errno는 미측정이다. 다음 routine attempt17은 absolute audit 인자만 정정하는 source-only 준비다. 입력 정책은 바꾸지 않는다. 새 정책 승인은 필요하지 않다. 새 helper 검토·preflight·root lease 전에는 실제 권한이 없다.
+[attempt-17](./rn-baseline-212-attempt-17.md)은 caller의 audit 인자만 canonical absolute 경로로 정정했다. 첫 호출 전에 resolved interpreter·정확한 argv·audit와 caller cwd를 기록했다. 원본 early Metro·실제 HTTP200·owned stop은 PASS다. 원본 runner14개 모두 exit0이며 guard13PASS/1FAIL이다. Ruby receipt8개 총8282관측/읽기오류0이다. 원본 pod deployment는 exit0이지만 관측7712개 중496개가 current CWD equality 한 항목만 달라 준비 guard가 FAIL이다. 일치 관측은7216개다. context match는 true다. 원인과 새 판정 정책은 미확정이다. source55/세 lock·metadata/host/shared/private 사후 감사와 cleanup/resource는 PASS다. 일시 공유 write 부재는 증명하지 않는다. lease는 RELEASED다. native·기기·첫 화면·Android·Mattermost·두 fresh는 미시작이다. 기존 executable query는 실제 observer 경로에서 실행했다. 실패 반환에 대응하는 errno enum과 get_errno 실패 분기는 관측하지 않았다. 과거 unknown 원인 해결이나 errno 효과를 주장하지 않는다. 원본 packet은 두 독립 검토에서 material finding0을 확인했다. 공개 문서는 두 독립 검토에서 material finding0을 확인했다. publicationReady=true다. 새 공개 head·CI는 CI_PENDING이다. 다음 ADR-0030은 proposal/USER_Q1_PENDING이며 채택 정책이 아니다. 새 actual 권한은 없다.
+
+[attempt-18](./rn-baseline-212-attempt-18.md)은 caller receipt 작성 오류로 필수 STOP이다. 원본 path/공간 guard는 exit0/PASS다. 이후 작성자 caller가 require_lease()의 tuple 반환을 mapping으로 읽어 receipt 작성 중 TypeError를 냈다. caller exit1과 원본 guard 결과를 구분한다. 같은 attempt에서 수정하거나 재실행하지 않았다. 새 source root는 부재다. clone·npm·Metro·Ruby·Bundler·Pods·native·설치·launch·첫 화면·Android·Mattermost·fresh는 모두 미시작이다. source/metadata/host/shared Ruby context 사후 감사도 미시작이다. errno와 새 Pod CWD 판정의 실제 효과는 미측정이다. 소유 실행 자원과 cleanup command는 각각0개다. worker의 마지막 읽기 resource snapshot은 PASS다. root의 나중 snapshot은 비소유 native process2개를 보았다. 이를 보존했다. root의 나중 native-free/global-resource PASS를 주장하지 않는다. 별도 root receipt가 lease RELEASED를 확정했다. 원본 recursive packet80개/index79개/base77개를 보존했다. log3개/bytecode0개이며 PNG·APK·ZIP은 없다. source-only memory2656개와 syntax31개는 PASS다. 이는 실제 baseline PASS가 아니다. 원본 packet과 공개 문서는 각각 두 독립 검토에서 material finding0을 확인했다. publicationReady=true다. 새 공개 head·CI는 CI_PENDING이다. 다음 attempt19는 같은 ADR-0030 조건을 유지한 caller tuple unpack 정정의 source-only 준비다. artifact ID는 미확정이다. 새 독립 검토와 fresh resource preflight 및 root lease를 받기 전 실제 실행은 금지한다. 입력 정책을 넓히지 않는다. 성공을 보장하지 않는다.
+
+
+[attempt-19](./rn-baseline-212-attempt-19.md)은 observer guard의 필수 STOP이다. 봉인된 caller의 tuple unpack 정정과 원본 path/공간 guard를 실제 통과했다. 최소 clone·원본 npm·early Metro·HTTP200·owned stop과 Ruby bootstrap을 통과했다. 원본 frozen Bundle install은 exit0이다. observer530관측과 읽기오류1개로 준비 guard는 false다. 고정 stage는 executable-launcher-image-zero다. errorCode는 EXECUTABLE_RETURN_ZERO다. 실패 errno enum은 ESRCH다. 정확한 동적 원인은 unknown이다. 원본 runner11개는 exit0이고 guard10PASS/1FAIL이다. Ruby receipt5개 총562관측/읽기오류1개다. gem-actual·Pod deployment·native·기기·install·launch·첫 화면·Android·Mattermost·두 fresh는 미시작이다. 새 Pod CWD 범위는 실제 검증하지 않았다. 같은 attempt에서 helper·argv·query·sampling·delay·조건을 바꾸거나 재실행하지 않았다. strict55/세 lock과 metadata·host·shared·private 사후 감사는 PASS다. source와 공유 변경은0개다. 소유 Metro는 Ruby 전에 종료했다. 추가 cleanup command는0개다. worker와 root의 마지막 resource 검사는 PASS다. 별도 root receipt가 lease RELEASED를 확정했다. 공유 snapshot 최종 equality는 일시 write 부재를 증명하지 않는다. recursive193/index192/base190/log20/bytecode10을 보존했다. 이전 attempt12–18의 mapped 검증은992개다. 이 수치는 attempt12 base116개를 포함한다. 이전 전체 packet은995개이고 index는988개다. attempt12 전체는119개다. PNG·APK·ZIP은 없다. 원본 packet과 공개 문서는 각각 두 독립 검토에서 material finding0을 확인했다. publicationReady=true다. 새 공개 head·CI는 CI_PENDING이다. 다음은 원본 call-site와 ABI 및 저장된 관측의 읽기 조사다. 추가 attempt와 새 조건·guard 완화는 승인하지 않았다. 새 actual 권한은 없다. 실제 Runstir는 NOT_AUTHORIZED다.
+
+[attempt-20](./rn-baseline-212-attempt-20.md)은 원본 mise identity guard의 필수 STOP이다. 새 최소 clone·checkout·원본 npm runner3개는 exit0/guardPASS다. strict55/세 lock과 원본 early Metro·실제 HTTP200·owned stop은 PASS다. Ruby 준비 context 전에 파일 존재·nonsymlink·digest를 함께 검사하는 assertion이 실패했다. helper outer exit1과 원본 Ruby command 미시작을 구분한다. 나중 읽기 facts는 당시 기대 hash와 실제 hash가 달랐음을 확인했다. 정확히 실패한 operand의 원자적 관측과 변경 actor/time/how/version은 미확정이다. ORIGINAL_MISE_IDENTITY_DIGEST_MISMATCH는 작성자의 파생 고정 진단이다. 원본 exception 본문이 아니다. Ruby receipt·context·관측은0개다. observer에 도달하지 않아 ADR-0031의 실제 세 field와 errno는 미측정이다. installer·activation·Bundle·Pods·native·기기·첫 화면·Android·Mattermost·두 fresh는 미시작이다. 사후 strict source 감사는 PASS다. shared/host/metadata snapshot은 미시작이다. 그 사후 불변 PASS나 일시 write 부재를 주장하지 않는다. 소유 Metro는 Ruby 전에 종료했다. 추가 cleanup command는0개다. worker resource PASS는 외장 볼륨 부재 전 snapshot이다. 최초 root 응답은 parse 실패이며 실행 command count는 NOT_CONFIRMED다. 별도 후속 ENOENT와 볼륨 부재 확인을 원본 command 실패와 구분한다. root가 권한을 행정상 취소했다. 볼륨 복구 뒤 qualified canonical release를 기록했다. 현재 실제 권한은 RELEASED다. 복구 후 root의 Simulator·dedicated·Watchman·Metro·native predicate는 true다. historical GUI와 ADB predicate는 false다. 현재 전체 자원 보존 PASS를 주장하지 않는다. recursive100/index99/base97/log14/bytecode0을 보존했다. 원본 packet은 두 독립 검토에서 material finding0을 확인했다. 공개 문서는 두 독립 검토에서 material finding0을 확인했다. publicationReady=true다. 새 공개 head·CI는 CI_PENDING이다. 현재 asset의 공식 출처 조사는 새 identity 채택이나 실행 version 증거가 아니다. 새 actual 권한은 없다. 실제 Runstir는 NOT_AUTHORIZED다.
+
+[attempt-21](./rn-baseline-212-attempt-21.md)은 [ADR-0046](./adr/0046-rn-baseline-direct-execution.md)의 직접 실행이다. 내장 경로에서 두 표본의 원본 Metro 선확인, frozen Bundle·Pods, Android build·첫 화면, iOS 26.0 Simulator build를 확인했다. iOS 첫 화면은 host 메모리 고갈로 launch가 반환하지 않아 미확인이다. fresh 준비는 미실행이다. host Xcode는 `27.1`로 이전 기록과 다르다.
+
+제품 실행 SHA: 없음. 모든 앱 준비·빌드·설치·실행에 Runstir를 사용하지 않았다.
+
+입력은 [#194 조사 정본](https://github.com/minjunkim-dev/mobile-runtime/blob/52ca6150685780cca86d5cb7c0b562033b40bd30/docs/research/cli-expansion-validation-candidates.md)이다.
+[지원 계약](./cli-expansion-support-contract.md)과 [공동 게이트 계약](./shared-launch-gate-contract.md)을 적용했다.
+[명세 #199](https://github.com/minjunkim-dev/mobile-runtime/issues/199)의 AC05·AC06에 baseline 증거만 제공한다.
+과거 BlueWallet Go의 Pod checksum 예외와 #201의 RN 0.82 준비 앱 증거를 적용하지 않았다.
+attempt-04 이후의 고정 Mattermost 준비 입력에 [ADR-0020](./adr/0020-rn-baseline-prepared-input.md)의 Hermes 한 값 예외를 적용했다.
+아래 최초 source·실행 기록은 원본 이력이다. 당시 판정은 attempt-20에 보존하며, 현재 결과는 attempt-22와 현재 AC 표를 따른다. 과거 성공을 새 내장 경로·원본 Metro 조건의 성공으로 승계하지 않는다.
+
+## 최초 attempt 판정
+
+아래 표와 최초 실행 기록은 `attempt-01-ios27` 이력이다.
+
+| 표본 | Android | iOS | known-good |
+| --- | --- | --- | --- |
+| 최소 RN `0.87.1` | build·install·launch·첫 화면 확인 | build·install 성공. launch 요청 성공 뒤 UIScene 미채택으로 crash | Android만 확인. 양플랫폼 미충족 |
+| BlueWallet `69adb155` | build·install·launch·첫 화면 확인 | frozen Pods 준비 실패. build·install·launch·첫 화면 미실행 | Android만 확인. 양플랫폼 미충족 |
+
+이 실패는 **Runstir 실패가 아니다.** RN 원본 표본의 준비 또는 실행 실패다.
+최소 앱과 BlueWallet의 RN·AGP·Gradle·NDK와 bundled CocoaPods·xcodeproj가 다르다.
+공통 host·Node·Ruby·JDK·SDK 설치·기기 조건과 표본별 resolved 도구를 분리했다.
+[사용자 tuple 확정](https://github.com/minjunkim-dev/mobile-runtime/issues/212#issuecomment-6092021206)은 같은 host·기기 조건에서 표본별 선언 버전을 유지한다.
+각 표본의 baseline과 후속 Runstir 실행은 같은 표본 tuple을 사용해야 한다.
+두 표본의 선언 버전 차이는 허용한다. 차이 자체를 현재 미달 조건으로 세지 않는다.
+필수 양플랫폼 baseline은 아직 출시 게이트를 통과하지 못했다.
+
+## source와 lockfile
+
+최소 앱은 정식 `@react-native-community/template` tag `0.87.2`의 SHA `bf0ef330c39d85c3f5bab248b83c7eedbce943da`를 사용했다.
+template 버전과 내부 RN `0.87.1`을 구분한다.
+`@react-native-community/cli@20.2.0`으로 `RunstirBaselineRN`을 생성했다.
+최초 생성 commit은 `a7b475080bae86f2a2408806233a724061ad7bdb`다.
+처음 생성한 앱에는 JS·Ruby·Pods lockfile이 없었다.
+최초 의존성 해석과 upstream CocoaPods의 생성 변경을 고정한 실행 source는 `b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4`다.
+두 commit과 lockfile을 [source bundle](./evidence/212/minimal-source.bundle)에 보존한다.
+AppDelegate·SceneDelegate 또는 컴파일러 workaround를 수동 변경하지 않았다.
+
+upstream `pod install`은 생성 앱의 Xcode project·Info.plist·PrivacyInfo.xcprivacy를 변경했다.
+이 변경을 최초 생성 commit의 무변경이라고 주장하지 않는다.
+준비 변경과 새 lockfile을 실행 source에 포함했다.
+고정 뒤 Ruby `3.4.11`의 `pod install --deployment` 재실행에서 tracked byte가 같았다.
+
+BlueWallet는 공개 원본 SHA `69adb1555038c8b2385952edd0404d2e1ecd7ca7`을 그대로 사용했다.
+`packageManager` 필드는 없다. 원본은 `package-lock.json`만 제공한다.
+Node `22.23.2`·npm `10.9.8`의 `npm ci`가 성공했다.
+`npm install`이나 lockfile migration을 사용하지 않았다.
+원본 package.json·package-lock.json·Gemfile.lock·Podfile.lock byte를 보존했다.
+
+| 표본 | 파일 | SHA-256 |
+| --- | --- | --- |
+| 최소 | package-lock.json | `3478830fc86d9d1ae7cd46ae129eec9c4915b0ec4e2df247e2cb62b136caeee0` |
+| 최소 | Gemfile.lock | `3679d60340d049c31b74052580c64ab26b3e6fa611f332c1407121dfc3c791eb` |
+| 최소 | ios/Podfile.lock | `cec099ee896ed83dd780bd8da0a03e840c3ba6a0803f90c0bbfcd04efaf17d56` |
+| BlueWallet | package-lock.json | `d4baeb805376bc178428464867435c1832b4f94ccbb2d2ea4dfd7286a3d8fc07` |
+| BlueWallet | Gemfile.lock | `09528bbbbf3141568bbc664e0ee9270c617ac87c937f36a66911edf3fa916814` |
+| BlueWallet | ios/Podfile.lock | `01db3c351c647e5e15988227c8851003c0262159c8c11d3e2240a9d13f3b3e4f` |
+
+## 최초 attempt의 환경과 선택
+
+공통 실제 host는 macOS `27.0.1`, build `26A434`, Apple Silicon `arm64`다.
+Xcode는 `27.0`, build `27A266a`다. `DEVELOPER_DIR` 전역 선택을 바꾸지 않았다.
+Node는 기존 `22.23.2`를 사용했다. 두 표본의 정본 범위를 충족한다.
+Ruby `3.4.11p137`은 기존 버전을 보존하고 나란히 설치했다.
+BlueWallet의 정확한 Ruby 선언을 따랐다.
+최소 앱의 최초 lock 생성·Pod 준비는 Ruby `3.3.12`로 수행했다.
+고정 전 Ruby lock identity를 `3.4.11`로 갱신했다.
+고정 뒤 Ruby `3.4.11`의 frozen Pods 재검사가 성공했다.
+JDK는 기존 Zulu `17.66.19.0`을 이번 프로세스에서만 선택했다.
+실효 Java는 `17.0.19+10-LTS`, 공급자는 `Zulu17.66+19-CA`다.
+전역 mise 설정·PATH·Xcode 선택·라이선스 승인을 바꾸지 않았다.
+
+| 도구/선택 | 최소 앱 | BlueWallet |
+| --- | --- | --- |
+| React Native | `0.87.1` | `0.85.3` |
+| Bundler | `2.5.22` | `2.6.9` |
+| CocoaPods / xcodeproj | `1.15.2` / `1.25.1` | `1.17.0` / `1.28.1` |
+| Gradle / AGP | `9.4.1` / `9.2.1` | `9.3.1` / `8.13.2` |
+| compile / target SDK | `37` / `36` | `36` / `36` |
+| build-tools / NDK | `37.0.0` / `27.1.12297006` | `36.0.0` / `28.2.13676358` |
+| Android module / variant | `:app` / `debug` | `:app` / `debug` |
+| iOS scheme / configuration | `RunstirBaselineRN` / `Debug` | `BlueWallet` / `Debug` (준비 미완료) |
+
+Android SDK root는 같은 로컬 설치다.
+재현 명령은 `ANDROID_HOME`·`ANDROID_SDK_ROOT`를 명시한다.
+기존 platform `android-37.0` revision `2`와 platform `android-36` revision `2`를 사용했다.
+새 `build-tools;37.0.0`만 공식 stable metadata에서 추가했다.
+기존 라이선스 기록으로 설치했다. 새 라이선스 동의는 없다.
+공식 macOS archive는 `build-tools_r37_macosx.zip`, SHA-1 `eb080751b2b2028eb3604f571027d6f7b3c46321`이다.
+설치한 `aapt2`의 SHA-256은 `13a206c0b022ba3b92f21b6f142f3a4b2d0f3bb1ac0bddfa820ee2c6b00c4c99`다.
+archive 자체를 별도 다운로드하여 checksum을 검사한 증거는 아니다.
+
+실제 Android 대상은 기존 AVD `Pixel_10_API_37_Play`, serial `emulator-5554`다.
+Emulator `37.1.11`, platform-tools `37.0.1`을 재사용했다.
+system image는 API `37.0` Google Play ARM64 revision `6`다.
+기기 fingerprint는 `google/sdk_gphone64_arm64/emu64a:17/CE2A.260420.019/15611780:user/release-keys`다.
+실제 Mac의 `emulator -accel-check`는 code `0`과 `Hypervisor.Framework OS X Version 27.0`을 반환했다.
+VM에서 Android 가속을 검증했다고 주장하지 않는다.
+
+iOS 대상은 기존 iPhone 18 Pro, iOS `27.0`, UDID `<BASELINE_SIMULATOR_UDID>`다. 실제 UDID는 로컬 원본 증거에 보존한다.
+Simulator build에는 `CODE_SIGNING_ALLOWED=NO`를 명시했다.
+기존 두 Simulator·Smallnext QA·사용자 GUI를 보존했다.
+
+## 실패 보존과 후보 교체 경계
+
+최소 iOS는 `xcodebuild` 성공과 `simctl install` 성공 뒤 두 번 launch를 요청했다.
+첫 요청 PID는 `<FIRST_LAUNCH_PID>`다. 두 번째는 `<SECOND_LAUNCH_PID>`다. 실제 PID는 로컬 원본 증거에 보존한다.
+두 PID 모두 첫 화면 전에 종료했다.
+crash의 exception은 `EXC_BREAKPOINT / SIGTRAP`이다.
+첫 frame은 `___UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption_block_invoke`다.
+고정한 공식 AppDelegate는 UIScene lifecycle을 채택하지 않는다.
+이 실행을 launch 성공이나 known-good iOS로 기록하지 않는다.
+
+BlueWallet Android는 `BUILD SUCCESSFUL in 7m 19s`를 반환했다.
+기존 동일 앱 ID가 없는 Emulator에 설치했다.
+Activity `io.bluewallet.bluewallet/.MainActivity`의 PID `<ANDROID_APP_PID>`를 확인했다. 실제 PID는 로컬 원본 증거에 보존한다.
+선택한 Emulator에서 `Wallets`·`Add a wallet`·빈 `Transactions` 첫 화면을 직접 확인했다.
+red box·crash·빈 화면은 관측하지 않았다.
+지갑·키·거래 데이터는 생성하지 않았다.
+
+| 산출물 | SHA-256 |
+| --- | --- |
+| 최소 Android APK | `ea625a29a21df8348c113d817020311059f523c4e4f277505abcf8534623b3d3` |
+| BlueWallet Android APK | `3b18c23f5fb0f376f0fccf62c27e409a2c8e2fcc8ac43c9827ee4b24dcb04218` |
+| 최소 iOS .app의 로컬 zip | `af040475f573409ec581760345cdde269542a52df956243747d69c6280474ee8` |
+
+실제 산출물과 원본 로그는 로컬 검증 루트에 보존한다.
+공개 파일별 checksum은 manifest에서 확인한다.
+
+최초 iOS build의 sandbox 임시 `TMPDIR` 소멸 오류도 보존했다.
+실행 환경을 지속 경로 `TMPDIR=/tmp`로 정정한 같은 source의 build는 성공했다.
+이 하네스 오류를 template 실패로 분류하지 않는다.
+
+외부 볼륨의 Watchman 접근은 `Operation not permitted`로 실패했다.
+권한을 변경하지 않았다.
+별도 Metro config의 `resolver.useWatchman=false`로 Node watcher를 선택했다.
+원본 Metro config와 tracked 파일을 바꾸지 않았다.
+최소 Android 첫 화면은 이 명시한 환경 입력에서 관측했다.
+Android의 새 표본 권한 화면에서 nearby-devices 허용을 선택했다.
+앱 첫 화면 이후 기능은 검사하지 않았다.
+
+BlueWallet iOS 준비는 `bundle exec pod install --deployment` exit `1`로 중단했다.
+원본 npm lock은 lottie-react-native `7.5.0`과 safe-area-context `5.10.1`을 고정한다.
+원본 Pod lock은 각각 `7.4.0`과 `5.8.1`을 고정한다.
+로그는 `There were changes to the lockfile in deployment mode`를 반환했다.
+정본 npm manager를 잘못 고른 문제가 아니다.
+Pod lock을 재생성하거나 과거 checksum 예외를 적용하지 않았다.
+준비가 실패했으므로 iOS build·install·launch·첫 화면은 미검증이다.
+
+2026-10-10 조회한 정식 template의 최신 tag는 `0.87.2`다.
+공식 UIScene 채택 commit `2858702eec721c63077e0bfb33f8eb68748f214f`는 현재 정식 tag에 포함되지 않는다.
+`main`은 `react-native: nightly`, CLI `21.0.0-alpha.1`을 선언한다.
+그 입력을 정식 교체 후보로 사용하지 않았다.
+빌드 성공 SHA를 찾는 탐색과 nightly 우회를 수행하지 않았다.
+교체 후보는 baseline 실패 기록을 보존한 뒤 별도 source와 도구 조건으로 고정해야 한다.
+
+### tuple 확정 전 후속 후보 조사 이력
+
+2026-10-10 추가 확인은 공식 선언과 계약의 read-only 검토다.
+추가 설치·부팅·빌드·앱 실행은 수행하지 않았다.
+[지원 계약](./cli-expansion-support-contract.md)은 Xcode `27.0` 정식을 하한으로 둔다.
+Xcode `26.x`로 변경할 수 없다.
+새 [공동 계약](./shared-launch-gate-contract.md)과 명세 #199는 iOS runtime `27.0` 하한을 별도로 두지 않는다.
+ADR-0017·0018의 iOS `27.0` 고정은 과거 Go 게이트의 입력이다.
+따라서 Xcode `27.0`을 유지한 정식 iOS `26.x` runtime을 새 tuple 후보로 검토할 수 있다.
+그 후보의 호환성과 첫 화면은 미검증이다.
+[Apple UIScene 문서](https://developer.apple.com/documentation/uikit/transitioning-to-the-uikit-scene-based-life-cycle)는 iOS 26의 경고와 iOS 27에서 최신 SDK 앱의 실행 거부를 구분한다.
+다른 runtime에서 성공해도 이 보고서의 iOS 27 실패를 대체하지 않는다.
+새 tuple identity와 두 표본의 전체 baseline 증거가 필요하다.
+
+BlueWallet의 [공식 latest 정식 release `v8.0.2`](https://github.com/BlueWallet/BlueWallet/releases/tag/v8.0.2) 하나만 확인했다.
+발표일은 `2026-10-06`이다. `prerelease=false`다.
+source는 `a7fe068709b0f91c504b28accda8bc85ee4c3714`다.
+이 입력은 현재 실행한 `69adb1555038c8b2385952edd0404d2e1ecd7ca7`과 다르다.
+이 tag의 [package.json](https://github.com/BlueWallet/BlueWallet/blob/a7fe068709b0f91c504b28accda8bc85ee4c3714/package.json), [package-lock.json](https://github.com/BlueWallet/BlueWallet/blob/a7fe068709b0f91c504b28accda8bc85ee4c3714/package-lock.json), [Podfile.lock](https://github.com/BlueWallet/BlueWallet/blob/a7fe068709b0f91c504b28accda8bc85ee4c3714/ios/Podfile.lock)은 lottie `7.4.0`과 safe-area `5.8.1`을 함께 고정한다.
+선언상 이번 두 의존성의 lock 불일치는 없다.
+RN은 `0.85.3`이다. Node 요구는 `>=22.11.0`이다.
+[Gemfile.lock](https://github.com/BlueWallet/BlueWallet/blob/a7fe068709b0f91c504b28accda8bc85ee4c3714/Gemfile.lock)은 Ruby `3.4.10p104`, Bundler `2.6.9`, CocoaPods `1.17.0`, xcodeproj `1.28.1`을 고정한다.
+이 선언은 교체 후보 근거다. 성공한 baseline 근거가 아니다.
+여러 SHA의 build 성공을 탐색하지 않았다.
+
+당시 최소 앱의 xcodeproj `<1.26.0`과 이 후보의 `1.28.1` 차이를 tuple 미확정 조건으로 기록했다.
+이 조건은 위 사용자 확정으로 해소했다.
+이후 `attempt-02-ios26`에서 표본별 선언 버전을 유지한 새 실행을 시작했다.
+최초 iOS 27 실패와 원본 `69adb155` 실패를 덮어쓰지 않는다.
+새 실행 증거는 [attempt-02 기록](./rn-baseline-212-attempt-02.md)에 연결한다.
+
+## 최초 attempt의 fresh clone 인계
+
+독립 검증 루트는 `<LOCAL_VALIDATION_ROOT>`로 표시한다. 실제 host 절대 경로는 로컬 원본 증거에 보존한다.
+`minimal-source`와 `bluewallet-source`는 baseline 실행용이다.
+`minimal-fresh`와 `bluewallet-fresh`는 실행하지 않은 별도 clone이다.
+fresh clone에는 baseline의 node_modules·Pods·build 산출물·앱 데이터·Metro를 복사하지 않았다.
+known-good 미충족 표본을 후속 Runstir PASS 입력으로 사용하지 않는다.
+원본 로그는 이 로컬 루트에 보존한다. 전체 로그·crash report는 공개하지 않는다.
+공개 자료에는 필요한 비식별 발췌와 두 Android 첫 화면만 포함한다.
+
+baseline이 시작한 두 Metro 프로세스를 identity와 cwd 확인 뒤 종료했다.
+두 새 Android 표본 앱을 force-stop했다.
+baseline의 `adb reverse tcp:8081`을 제거했다.
+baseline이 boot한 Emulator만 `adb emu kill`로 정상 종료했다.
+기존 AVD를 삭제하거나 초기화하지 않았다.
+정리 뒤 adb 기기와 8081 listener는 없었다.
+초기 두 booted Simulator와 기존 GUI를 유지했다.
+Smallnext QA Simulator를 사용하지 않았다.
+새 표본 앱 설치와 선언한 로컬 도구·dependency 준비 산출물은 남겼다.
+기존 앱의 데이터와 설치를 교체하지 않았다.
+
+1. source bundle을 새 디렉터리에 clone한다.
+2. 생성 source SHA를 확인한다.
+3. 아래 명령으로 선언한 기존 도구만 선택한다.
+4. JS·Ruby·Pods lockfile의 SHA-256을 확인한다.
+5. 실제 대상과 8081을 독점 배정한 뒤 빌드·설치·실행한다.
+
+`SDK_ROOT`는 재확인한 기존 Android SDK 경로다.
+`SIMULATOR_UDID`·`EMULATOR_SERIAL`은 독점 배정한 실제 대상 identity다.
+`DERIVED_DATA`는 해당 표본만 사용하는 새 산출물 경로다.
+`APP_ROOT`·`RUNSTIR_REPO`·`APK`는 각각 표본 root·이 저장소 root·확인한 APK 경로다.
+예시 변수를 설정한 뒤 명령을 실행한다.
+
+```sh
+git clone docs/evidence/212/minimal-source.bundle minimal-fresh
+git -C minimal-fresh checkout --detach b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4
+git clone https://github.com/BlueWallet/BlueWallet.git bluewallet-fresh
+git -C bluewallet-fresh checkout --detach 69adb1555038c8b2385952edd0404d2e1ecd7ca7
+
+# 각 표본 root
+mise exec node@22.23.2 -- npm ci
+mise exec ruby@3.4.11 node@22.23.2 -- bundle config set --local path vendor/bundle
+mise exec ruby@3.4.11 node@22.23.2 -- bundle install
+# 각 표본 ios/ — BlueWallet는 이 단계에서 원본 lock drift로 중단한다.
+mise exec ruby@3.4.11 node@22.23.2 -- bundle exec pod install --deployment
+
+# Android root, 실행 SDK 경로를 실제 설치 경로로 명시한다.
+mise exec java@zulu-17.66.19.0 -- env ANDROID_HOME="$SDK_ROOT" ANDROID_SDK_ROOT="$SDK_ROOT" \
+  ./gradlew --no-daemon :app:assembleDebug -PreactNativeArchitectures=arm64-v8a
+
+# 최소 앱 root, 대상 UDID를 다시 검증한다.
+env TMPDIR=/tmp mise exec node@22.23.2 ruby@3.4.11 -- xcodebuild \
+  -workspace ios/RunstirBaselineRN.xcworkspace -scheme RunstirBaselineRN \
+  -configuration Debug -destination "platform=iOS Simulator,id=$SIMULATOR_UDID" \
+  -derivedDataPath "$DERIVED_DATA" CODE_SIGNING_ALLOWED=NO build
+```
+
+최소 앱의 실제 Android build는 architecture 제한 없이 수행했다.
+BlueWallet의 실제 명령에는 `-PreactNativeArchitectures=arm64-v8a`를 명시했다.
+생성 명령과 환경 입력은 [manifest](./evidence/212/manifest.json)에 연결한다.
+
+외부 watcher config를 사용할 때 앱 root를 명시한다.
+아래 config는 표본의 원본 Metro config를 읽고 Watchman 선택만 바꾼다.
+
+```sh
+BASELINE_APP_ROOT="$APP_ROOT" mise exec node@22.23.2 -- npm start -- \
+  --port 8081 --config "$RUNSTIR_REPO/docs/evidence/212/no-watchman-config.cjs"
+```
+
+Android 앱은 `adb -s "$EMULATOR_SERIAL" install "$APK"`로 설치했다.
+`adb reverse tcp:8081 tcp:8081`로 개발 서버를 연결했다.
+`am start -W -n com.runstirbaselinern/.MainActivity`로 최소 앱을 실행했다.
+BlueWallet의 Activity는 `io.bluewallet.bluewallet/.MainActivity`다.
+iOS는 명시한 UDID의 `simctl install`과 `simctl launch`를 사용했다.
+앱 첫 화면과 프로세스 상태는 설치·실행 요청 결과와 별도로 관측했다.
+
+## 현재 AC 연결
+
+| 기준 | 결과 |
+| --- | --- |
+| #212 source·generator·locks 고정 | 최소 RN의 template/generator와 생성 source `b62e3a4d`, 실제 OSS Mattermost `c2fe3bed`, 각 원본 lock과 준비 후 hash를 고정했다. |
+| #212 정확 도구·환경 입력 | 같은 실제 Mac의 macOS 27.0.1·Xcode 27.1, iOS 26.0·Android API37 조건에서 표본별 선언 도구를 유지했다. attempt-21·22의 tuple과 원본 명령을 인계한다. |
+| #212 양플랫폼 최소+OSS 첫 화면 | 최소 RN 0.87.1와 Mattermost RN 0.83.9의 Android는 attempt-21, iOS는 attempt-22에서 build/install/launch/실제 화면을 확인했다. iOS Mattermost는 알림 권한 창 뒤 서버 접속 화면과 버전이 렌더링됐고 process가 생존했다. |
+| #212 실패·교체 이유 보존 | 원본 실패·수집기 오류·native/Metro 실패·launch 순서 오류를 구분했다. 승인된 Hermes 한 값·생성 Debug 12값·Simulator 전용 Xcode 로컬 서명 외 source/버전/graph를 바꾸지 않았다. |
+| #212 fresh clone 인계 | attempt-22의 두 별도 fresh clone을 원본 npm·Metro·frozen Bundle/Pods로 독립 준비했다. baseline dependency/build 산출물을 복사하지 않았다. 최종 source/lock/생성 project 감사와 사용 순서는 attempt-22에 연결한다. |
+| #199 AC05 | RN 두 표본의 known-good baseline과 별도 fresh 입력을 제공한다. 같은 후보의 실제 Runstir CLI·GUI 여섯 조합은 #224 이후 기능 게이트에서 검증한다. |
+| #199 AC06 | 실제 Mac의 Android 가속과 표본 실행을 확인했다. Tart guest Android 가속, 새 호스트, 전체 실기기 행렬을 검증했다고 주장하지 않는다. |
+
+최종 독립 리뷰와 최종 head CI·CodeQL, 병합 후 main CI를 확인한 뒤 #212의 완료를 기록한다. #199 AC05·AC06 전체와 #224 이후 게이트를 닫는 근거로 사용하지 않는다.
+
+## 과거 후속 기록
+
+[attempt-05 기록](./rn-baseline-212-attempt-05.md)은 plain Pods 설치 성공 뒤 감사 도구의 과잉 POSIX 권한 검사로 중단한 시도를 보존한다. 허용한 Hermes 한 값 외 tracked byte·파일 유형·Git 실행 권한·index는 같았다. deployment 재검사·생성 Pods 보정·native 실행은 수행하지 않았다.
+[ADR-0021](./adr/0021-mattermost-generated-pods-preparation.md)은 고정 Mattermost 입력의 생성 resource bundle target 11개에서 Debug deployment 값만 `16.4`로 준비하도록 허용한다. `16.4`는 원본 Podfile.properties.json의 `deploymentTarget`과 생성 Pods project의 하한이다. 원본 앱 project의 명시 값 `16.0`과 구분한다. Release·다른 설정·source·graph는 유지한다. 이 준비 조건의 확정은 baseline 성공이 아니다. 허용 범위 밖의 변경이나 필수 실패가 나오면 중단한다.
+[attempt-06 기록](./rn-baseline-212-attempt-06.md)은 실제 compiler가 ExpoRouter의 `subtitle` 사용에 iOS `16.0+`를 요구한 실패를 보존한다. ExpoRouter framework target의 원본 Debug·Release 값은 `15.1`이며 기존 11개 resource bundle 예외에 포함되지 않는다. SDK header의 iOS `15.0` 선언과 Swift diagnostic의 차이는 원인 미확정이다. source와 생성 project의 사후 감사는 통과했다. 추가 target을 보정하지 않았다.
+[ADR-0022](./adr/0022-mattermost-exporouter-debug-preparation.md)은 ExpoRouter framework의 생성 Debug 한 값만 `15.1`에서 `16.4`로 준비하는 추가 예외다. 기존 11개와 합한 정확한 12값의 감사를 요구한다. 원본 앱 project `16.0`, ExpoRouter Release `15.1`, source·버전·나머지 설정을 유지한다. 이 정책의 채택은 attempt-06 실패를 바꾸지 않는다. 새 실행과 독립 fresh 준비의 결과는 별도로 기록한다.
+[attempt-07 기록](./rn-baseline-212-attempt-07.md)은 이 12값의 frozen/source/전체 project 준비와 사후 감사를 통과한 뒤 `ExpoModulesProvider.swift:21:17`에서 실패한 실행을 보존한다. compiler는 iOS `16.0`으로 컴파일하는 앱이 최소값 `16.4`의 ExpoRouter module을 import할 수 없다고 보고했다. 원본 앱 project의 8개 `16.0` 값은 유지됐다. install·launch·새 Android·fresh 준비를 시작하지 않았다. 자원 보존을 확인하고 단독 lease를 반납했다. 새 조건의 실제 실행은 시작하지 않았다.
+
+[ADR-0023](https://github.com/minjunkim-dev/mobile-runtime/blob/4f2d585da92c60df86000a5ce75faf4693bb69b5/docs/adr/0023-mattermost-exporouter-app-floor-preparation.md)은 ExpoRouter Debug 한 값을 원본 앱 하한 `16.0`으로 준비하도록 확정했다. 11개 resource bundle Debug `16.4`와 합한 정확한 mixed 12값을 감사했다. 앱 8개 `16.0`과 ExpoRouter Release `15.1` 및 source·dependency graph를 유지했다.
+[attempt-08 기록](./rn-baseline-212-attempt-08.md)은 실제 iOS native build와 install 성공을 보존한다. ExpoRouter와 Mattermost의 실제 Swift target은 모두 `arm64-apple-ios16.0-simulator`다. 원본 Metro는 Watchman 접근 오류로 실패했다. status 확인은 도구 hook에 redirect되어 실제 receipt가 없었다. Metro 실패 뒤 launch 요청을 실행한 순서 오류도 보존했다. launch exit `0` 뒤 앱 생존과 첫 화면을 확인하지 못했다. terminate exit `3`의 앱 종료 원인은 미확정이다. 후속 Android와 두 표본 fresh를 시작하지 않았다. source·generated 사후 감사와 소유 자원 정리를 통과했다. 단독 lease를 반환했다. 추가 조건을 확정하기 전에는 실제 실행을 재개하지 않는다.
+
+[ADR-0024](https://github.com/minjunkim-dev/mobile-runtime/blob/e323ed43a462b63994debcb22367da111b6ba98c/docs/adr/0024-rn-baseline-internal-volume-preflight.md)은 두 표본을 새 내장 경로에서 독립 준비하도록 확정했다. 원본 Metro를 frozen 준비보다 먼저 확인한다. 두 표본의 양플랫폼 첫 화면 뒤 각각의 독립 fresh를 준비한다. 최소 RN에는 Mattermost의 checksum·generated target 예외를 적용하지 않는다.
+[attempt-09 기록](./rn-baseline-212-attempt-09.md)은 최소 b62의 tracked 55개 파일과 원본 세 lock을 보존한다. clone·checkout·npm runner 3개는 exit `0`이다. 별도 원본 Metro에서 실제 HTTP `200`, 응답 원본과 hash, own process·port 및 오류 부재를 확인했다. 우리 Metro만 종료했다. frozen Bundle runner는 요청한 `Bundler 2.5.22` executable lookup에서 exit `1`이었다. 조사한 Ruby default에는 `2.6.9`, 과거 vendor에는 `2.5.22`가 있었다. 새 clone의 해당 specifications 폴더는 없었다. 전체 host 부재를 주장하지 않는다. 새 도구 설치나 vendor 복사는 하지 않았다. 후속 Pods·native·기기·Android·Mattermost·fresh를 중단했다. strict 사후 감사와 cleanup을 통과했다. final index 109개와 index 포함 evidence 110개를 보존했다. runner log 4개와 별도 Metro log 1개를 구분한다. PNG·APK·ZIP은 0개다. 최초 grant와 반납 요청 및 root RELEASED receipt를 별도로 보존했다. 새 실행 조건은 별도 결정과 새 lease가 필요하다.
+
+[ADR-0025](https://github.com/minjunkim-dev/mobile-runtime/blob/5cd6ed8535cbdb76cba187ab9cc060c9812c109f/docs/adr/0025-rn-clone-local-declared-bundler.md)은 최소 b62의 baseline/fresh에서 원본 Bundler `2.5.22`만 공식 raw gem으로 clone별 준비하도록 확정했다. 같은 Ruby default repository 읽기와 clone 전용 GEM_HOME/GEM_PATH를 구분한다. plugin 입력은 거부한다. source·세 lock·원본 버전과 Metro/native 명령 및 global 도구·권한을 유지한다.
+[attempt-10 기록](./rn-baseline-212-attempt-10.md)은 새 최소 clone·원본 npm과 원본 Metro 실제 HTTP `200` 성공을 보존한다. Ruby `3.4.11`과 RubyGems `3.6.9` facts 뒤 LOAD_PATH의 `rubygems_plugin.rb` 1개로 사전 guard가 중단했다. 파일은 1,553 bytes이며 SHA256은 `6cedbcf33ae6de36e2569a3a181735031e05e1e5c52745d0d725d8b665f0ac5c`다. 환경 변수 3개는 비어 있었다. plugin의 실제 로드와 runtime 효과는 미측정이다. 공식 gem metadata/archive·설치·activation·원본 frozen Bundle·Pods·native·기기·Mattermost·fresh를 시작하지 않았다. strict 55개/세 lock 사후 감사와 cleanup PASS 뒤 lease를 RELEASED로 확정했다. 원본 index 122개와 index 포함 123개 파일을 보존했다. helper grant map 38개와 연결된 source-only index 40개를 구분한다. 원본 plugin·환경·권한 보정과 재시도는 없다. 새 plugin 조건은 별도 결정과 새 실행이 필요하다.
+
+[ADR-0026](https://github.com/minjunkim-dev/mobile-runtime/blob/24c3189997316fced36b77cb1af261318ebb4696/docs/adr/0026-rn-original-plugin-preparation.md)은 원본 Ruby/plugin identity와 clone별 private mise 준비 환경 및 shared installs lookup을 확정했다. 원본 npm/hook 분리·Metro/native 명령을 유지한다. 공유 최종 byte·kind·link·mode와 실제 consumer 연결을 감사한다. 최소 표본에만 Bundler 2.5.22 bootstrap을 적용한다.
+[attempt-11 기록](./rn-baseline-212-attempt-11.md)은 새 최소 b62 clone·원본 npm·early Metro 실제 HTTP200과 own process/port를 통과했다. 원본 mise 선택 명령은 exit0이었다. Python launcher lookup은 실제 Ruby facts나 activation 증거가 아니다. private STATE의 tracked-configs 4개와 trusted-configs 1개 symlink를 사후 guard가 거부했다. 공유 changedPaths는0이며 원본 plugin과 strict55/세 lock은 불변이다. 최종 snapshot은 일시write 부재나 OS 격리를 증명하지 않는다. 실제 Ruby facts/prefix/pkgconfig·공식 gem·frozen Bundle·Pods·native·기기·Mattermost·fresh는 미시작이다. 재시도나 source/helper/settings/symlink 변경은 없다. own Metro 종료와 자원 보존 뒤 root는 lease를 RELEASED로 확정했다. 원본 index101개와 index 포함 packet102개, runner log4개와 Metro log1개를 보존했다. PNG·APK·ZIP은0개다. 원본 mise exit0과 private output guard FAIL을 앱 또는 원본 frozen 실패로 표현하지 않는다.
+
+[ADR-0027](https://github.com/minjunkim-dev/mobile-runtime/blob/81f25a513fef92be75c09c8d3f0b567ded3f4d8c/docs/adr/0027-rn-mise-state-metadata-links.md)은 원본 clone/host config와 기존 shared home marker의 제한된 private STATE metadata 링크를 감사하도록 확정했다. primary/store/shims/wrappers의 링크 규칙을 넓히지 않았다.
+[attempt-12 기록](./rn-baseline-212-attempt-12.md)은 metadata guard와 실제 Ruby facts/spec을 통과했다. 원본 installer는 `--norc` 거부로 exit1이었다. observer의 RuntimeError와 정확한 query/predicate unknown을 분리했다. 사후 strict55/세 lock·metadata/host/shared와 same-Ruby repository 최종 감사는 PASS다. activation 이후 모든 후속 단계는 미시작이다. own cleanup 뒤 root가 lease RELEASED를 확정했다. 원본 index118/전체119개와 runner result7/log7·Metro log1을 보존했다. PNG·APK·app ZIP은0개다. 최소 installer 두 token 위치정정 정책검토와 observer 비식별 진단은 다음 조건이며 아직 미확정이다.
+
+[ADR-0028](https://github.com/minjunkim-dev/mobile-runtime/blob/9e121a5ae9bf5a099698805361856d54e9e4b409/docs/adr/0028-rn-bundler-norc-argument-order.md)은 최소 installer의 `install`·`--norc` 위치정정과 기존 observer 지점의 비식별 diagnostic만 확정했다.
+[attempt-13 기록](./rn-baseline-212-attempt-13.md)은 installer·Bundler2.5.22 activation·bootstrap PASS를 보존한다. 다음 선택의 receipt label 중복으로 helper가 중단했다. 원본 tool 실패가 아니다. 최초 선택 receipt를 보존했다. 두 번째 선택 실제 consumer와 frozen·Pods·native·Android·Mattermost·fresh는 미시작이다. 원본 packet133개/index132개와 runner8/log8·Metro log1을 연결했다. source·metadata·host·shared 사후 감사와 owned cleanup은 PASS다. root lease는 RELEASED다. 다음 routine receipt-ID 정정은 별도 source-only attempt14다. 새 입력 정책 예외와 현재 actual 권한은 없다. 공개 초안의 검토와 새 head·CI는 대기한다.
+
+[attempt-14 기록](./rn-baseline-212-attempt-14.md)은 입력 조건을 유지한 선택 receipt-ID producer/read 정정과 원본 frozen Bundle PASS를 보존한다. 원본 tool12개는 모두 exit0이다. gem-actual의 저장된 관측83개와 executable 단계의 EXECUTABLE_UNKNOWN 오류1개로 observer·준비 guard가 FAIL이다. 정확한 하위 원인은 unknown이다. 최초 파생 count0은 보존하고 별도 sidecar가83/총554를 연결한다. 후속 Pods·native·첫 화면·Android·Mattermost·fresh는 미시작이다. 원본 recursive packet178개/index177개에는 bytecode10개도 포함했다. source·metadata·host·shared 사후 감사와 owned cleanup은 PASS다. root lease는 RELEASED다. 다음 attempt15는 기존 ADR-0028의 고정 비식별 진단 범위에서 source-only로 준비 중이다. 원인 해결이나 성공 보장을 뜻하지 않는다. 공개 문서는 두 독립 검토에서 material finding0을 확인했다. publicationReady=true다. 새 공개 head·CI 결과는 PR236 본문과 공개 checkpoint 댓글에 기록한다.
+
+[attempt-15 기록](./rn-baseline-212-attempt-15.md)은 기존 ADR-0028 범위의 executable call-site4곳과 같은 query 반환 zero/negative 진단만 구분했다. 원본 argv/env·query·FFI·sampling·delay·판정은 유지했다. 최소 원본 frozen Bundle command는 exit0이었다. observer551관측과 executable-launcher-image-zero/EXECUTABLE_RETURN_ZERO 오류1개로 guard가 FAIL이다. 하위 원인은 unknown이다. 실제 Ruby receipt5개는 총582관측/오류1개다. 원본 tool11개 exit0와 guard10PASS/1FAIL을 구분한다. 원본 recursive packet171개/index170개에는 bytecode9개와 log14개를 포함했다. 사후 source/metadata/host/shared 감사와 owned cleanup은 PASS다. root lease는 RELEASED다. 모든 후속 실제 실행은 미시작이다. 원본 packet과 공개 문서는 각각 두 독립 검토에서 material finding0을 확인했다. publicationReady=true이며 새 head·CI를 기다린다. ADR-0029는 proposal/PENDING_USER_Q1이다. attempt16 actual 권한은 없다.
+
+[attempt-16 기록](./rn-baseline-212-attempt-16.md)은 caller의 상대 audit 경로 결합 실패를 보존한다. 원본 source·제품·Metro 오류가 아니다. 최소 clone·checkout·npm runner3개 exit0/guard3PASS와 strict55/세 lock 사후 PASS를 확인했다. Metro helper는 Popen 전에 exit1이었다. 최초 interpreter 절대 executable token은 관측하지 않았다. 요청 alias만 보존했다. 실제 errno·Ruby 준비·metadata/host/shared context·Pods·native·기기·두 baseline 첫 화면과 fresh는 미시작이다. 소유 실행 자원은 없다. 기존 자원을 보존하고 lease를 RELEASED로 확정했다. recursive packet97개/index96개에는 bytecode3개와 log10개를 포함했다. publicationReady=true다. 원본 packet과 공개 문서는 각각 두 독립 검토에서 material finding0을 확인했다. 새 head·CI는 대기한다. 다음 attempt17은 입력 조건을 유지한 absolute audit caller 인자 정정의 source-only 준비다. 새 실제 권한은 없다.
+
+[attempt-17 기록](./rn-baseline-212-attempt-17.md)은 원본 Metro helper의 absolute audit 호출을 실제 통과했다. caller17의 actual Path.cwd 표현은 caller16의 요청 workdir 표현과 canonical 경로가 같다. 특정 다른 worktree 경로로 승계하지 않는다. Ruby 준비와 원본 Pod command는 exit0이다. observer의 current CWD 한 항목이496개에서 달라 필수 STOP이다. 저장된 관측과 CocoaPods 원본 기능의 대응은 읽기 근거다. 실제 stack의 동적 원인 증명은 아니다. 사후 shared 함수는 PASS receipt를 기록했으며 작성자 요약 wrapper의 tuple TypeError는 별도 진단으로 보존했다. root의 extractor·hash lookup 읽기 진단도 원본 자료에 보존했다. recursive217/index216/base214/log27/bytecode9를 연결한다. 이전 packet과 공개 이력은 보존했다. 공개 문서는 두 독립 검토에서 material finding0을 확인했다. publicationReady=true다. ADR-0030은 미채택 proposal/USER_Q1_PENDING이다. 새 attempt artifact와 실제 권한은 미확정이다.
+
+
+[attempt-18 기록](./rn-baseline-212-attempt-18.md)은 입력 조건을 유지한 새 준비의 첫 caller 오류를 보존한다. 원본 path/공간 guard는 exit0/PASS다. 이후 작성자 caller가 require_lease()의 tuple 반환을 mapping으로 읽어 receipt 작성 중 TypeError를 냈다. caller exit1과 원본 guard 결과를 구분한다. 같은 attempt에서 수정하거나 재실행하지 않았다. 새 source root는 부재다. clone·npm·Metro·Ruby·Bundler·Pods·native·설치·launch·첫 화면·Android·Mattermost·fresh는 모두 미시작이다. source/metadata/host/shared Ruby context 사후 감사도 미시작이다. errno와 새 Pod CWD 판정의 실제 효과는 미측정이다. 소유 실행 자원과 cleanup command는 각각0개다. worker의 마지막 읽기 resource snapshot은 PASS다. root의 나중 snapshot은 비소유 native process2개를 보았다. 이를 보존했다. root의 나중 native-free/global-resource PASS를 주장하지 않는다. 별도 root receipt가 lease RELEASED를 확정했다. 첫 outer result와 호출 전 interpreter/argv receipt는 작성되지 않았다. 실패 뒤 보존한 caller source를 호출 전 관측으로 승계하지 않는다. recursive80/index79/base77/log3/bytecode0을 연결한다. 원본 packet과 공개 문서는 각각 두 독립 검토에서 material finding0을 확인했다. publicationReady=true다. 새 공개 head·CI는 CI_PENDING이다. 다음 attempt19는 같은 ADR-0030 조건을 유지한 caller tuple unpack 정정의 source-only 준비다. artifact ID는 미확정이다. 새 독립 검토와 fresh resource preflight 및 root lease를 받기 전 실제 실행은 금지한다. 입력 정책을 넓히지 않는다. 성공을 보장하지 않는다.
+
+
+[attempt-19 기록](./rn-baseline-212-attempt-19.md)은 입력 조건을 유지한 tuple unpack caller 정정을 실제 통과했다. 원본 Metro helper의 absolute audit 호출과 호출 전 interpreter·argv·caller cwd receipt, 실제 HTTP200과 owned stop을 기록했다. 원본 frozen Bundle install은 exit0이다. observer530관측과 읽기오류1개로 준비 guard는 false다. 고정 stage는 executable-launcher-image-zero다. errorCode는 EXECUTABLE_RETURN_ZERO다. 실패 errno enum은 ESRCH다. 정확한 동적 원인은 unknown이다. 원본 runner11exit0/guard10PASS·1FAIL, Ruby5/총562관측·오류1이다. gem-actual·Pod deployment·native·기기·install·launch·첫 화면·Android·Mattermost·두 fresh는 미시작이다. 새 Pod CWD 범위는 실제 검증하지 않았다. 같은 attempt에서 helper·argv·query·sampling·delay·조건을 바꾸거나 재실행하지 않았다. strict55/세 lock과 metadata·host·shared·private 사후 감사는 PASS다. source와 공유 변경은0개다. 소유 Metro는 Ruby 전에 종료했다. 추가 cleanup command는0개다. worker와 root의 마지막 resource 검사는 PASS다. 별도 root receipt가 lease RELEASED를 확정했다. 공유 snapshot 최종 equality는 일시 write 부재를 증명하지 않는다. 원본 recursive193/index192/base190/log20/bytecode10을 고정했다. 최초 list 출력과 읽기 filename/parser 진단 오류는 원본 tool 실패와 구분했다. 원본 packet과 공개 문서는 각각 두 독립 검토에서 material finding0을 확인했다. publicationReady=true다. 새 공개 head·CI는 CI_PENDING이다. 다음은 원본 call-site와 ABI 및 저장된 관측의 읽기 조사다. 추가 attempt와 새 조건·guard 완화는 승인하지 않았다. 새 actual 권한은 없다. 실제 Runstir는 NOT_AUTHORIZED다.

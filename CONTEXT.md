@@ -42,6 +42,19 @@ native iOS의 공유 CLI·GUI 실행 경계는 ADR-0036과 `docs/native-ios.md`�
 **실행 기기 (Execution device)**:
 앱을 설치하고 실행할 Simulator·Emulator 또는 연결된 실기기다. 실행 기기는 특정 플랫폼에 속한다.
 
+**기기 출처 (Device origin)**:
+가상 실행 기기를 누가 만들었는지에 대한 Runstir의 판단이다. **Runstir가 만듦**, **외부 기기**, **출처 불명** 중 하나다. 실기기에는 쓰지 않는다. 표시용이며 기기 선택이나 정리 동작을 바꾸지 않는다.
+_Avoid_: 소유 기기(활성 실행의 소유 자원과 섞인다), 확인 불가(Metro 판정 용어다)
+
+**Runstir가 만듦 (Runstir-created)**:
+승인된 환경 준비가 새로 만들었고, 지금 기기가 그때 만든 바로 그 기기임을 Runstir가 다시 확인할 수 있는 가상 기기다. Runstir가 설치한 runtime·system image 위에 다른 도구가 만든 기기는 포함하지 않는다.
+
+**외부 기기 (External device)**:
+Runstir가 만든 기록이 없는 가상 기기다. Xcode·Android Studio·직접 명령으로 만든 기기, 그리고 기기 출처를 기록하기 전에 만든 기기를 포함한다.
+
+**출처 불명 (Origin unknown)**:
+Runstir가 만든 기록은 있지만 지금 기기가 그 기기와 같은지 다시 확인할 수 없는 가상 기기다. 외부 기기로 단정하지 않는다.
+
 **환경 준비 (Environment preparation)**:
 프로젝트가 요구하는 도구·프로젝트 의존성과 가상 기기·실기기의 실행 조건을 갖추는 일이다. 특정 실행 기기에 앱을 설치하고 실행하는 일과 구분한다.
 
@@ -163,7 +176,7 @@ Stage의 결과. `pass` / `skipped`(이미 되어 있어 할 일이 없었다) /
 Stage가 다음 Stage에 넘기는 값의 명시적 타입. 앞 Stage가 실제로 넣은 것만 뒤가 읽는다 — 전역 가변 상태 없음.
 
 **기기 선택 (Device selection)**:
-어느 시뮬레이터를 쓸지 정하는 순서 — `mobile.yml`의 `ios.device` → 이미 booted된 기기 → 사용 가능한 최신 runtime의 최신 iPhone(세대가 높은 쪽, 같으면 이름이 가장 단순한 모델). doctor의 `config.values`와 up의 `device` Stage가 **같은 셀렉터**를 쓴다 — 판정과 실행이 갈리면 doctor가 쓸 수 있다고 한 기기를 up이 안 쓰는 일이 생긴다. 후보가 없으면 `simctl create` 명령을 주고 멈춘다. 시뮬레이터를 만들어 주지는 않는다.
+어느 시뮬레이터를 쓸지 정하는 순서 — `mobile.yml`의 `ios.device` → 이미 booted된 기기 → 사용 가능한 최신 runtime의 최신 iPhone(세대가 높은 쪽, 같으면 이름이 가장 단순한 모델). doctor의 `config.values`와 up의 `device` Stage가 **같은 셀렉터**를 쓴다 — 판정과 실행이 갈리면 doctor가 쓸 수 있다고 한 기기를 up이 안 쓰는 일이 생긴다. 후보가 없으면 `simctl create` 명령을 주고 멈춘다. 기기 선택은 기기를 만들지 않는다. 기기 생성은 승인된 환경 준비에서만 한다.
 
 **scheme 결정 (Scheme selection)**:
 어느 scheme을 빌드할지 정하는 순서 — `mobile.yml`의 `ios.scheme` → 프로젝트에 하나뿐이면 그것. 여럿인데 선언이 없으면 고르지 않는다. doctor의 `config.values`와 up의 `build` Stage가 **같은 셀렉터**를 쓰고, 등급만 다르다 — doctor는 warning(아직 아무도 고르지 않았을 뿐 머신은 멀쩡하다, ADR-0004), up은 error(고르지 않으면 빌드할 수 없다). scheme 목록은 언제나 `.xcodeproj`에서 읽는다 — workspace를 읽으면 Pod scheme이 쏟아진다.
@@ -173,6 +186,21 @@ xcodebuild가 겨누는 것 — `ios/*.xcworkspace`가 정확히 하나면 그�
 
 **빌드 산출물 (Built product)**:
 build Stage가 확정해 install·launch에 넘기는 `.app` 경로와 bundle id. 빌드 로그 파싱이 아니라 `xcodebuild -showBuildSettings`가 근거다 — 로그 포맷은 Xcode 버전마다 움직인다.
+
+iOS build와 관련 `-showBuildSettings`는 같은 실제 입력의 `FolderIdentity` volume·file로
+`RunLogs/folder-<volume>-<file>/DerivedData`를 정하고 `-derivedDataPath`로 명시한다. 선택용 build settings 조회도 같은 경로를 쓴다.
+독립 clone·worktree의 산출물을 분리한다. 같은 실제 폴더의 symlink는 같은 경로를 쓴다.
+현재 입력 identity를 읽지 못하면 도구 실행 전에 중단한다.
+기존 output 부모나 output 자체가 symlink·일반 파일이면 중단한다.
+기존 32-bit digest의 `RunLogs.directory`는 legacy 읽기 경계로 유지한다.
+새 로그·설치 기록·Android active-run과 lock·Metro 포트는 같은 volume·file child에 쓴다.
+`RunLogs.url`은 현재 입력과 경로를 확인하지 못하면 throw한다.
+legacy Android는 canonical project와 기존 PID·root 검사를 통과한 down만 원래 경로에서 정리한다.
+legacy iOS install은 기존 reservation book의 owner project·device·appID 일치가 있어야 down에 사용한다.
+소유권을 확인하지 못한 기록과 자원은 보존하고 차단한다. 자동 이관은 하지 않는다.
+이 경로 검사는 외부 도구 실행 중 경로 교체를 원자적으로 막지 않는다.
+scheme의 `-list` 조회에는 검증하지 않은 flag를 추가하지 않는다.
+Xcode의 전체 cache·HOME·임시 경로 격리를 보장하는 계약은 아니다.
 
 **실행 로그 (Run log)**:
 Stage의 전체 출력을 담는 파일. 앱 repo가 아니라 시스템 임시 디렉터리 아래 프로젝트별 경로에 쓴다(앱 repo에 `.gitignore` 항목을 요구하지 않기 위해). 경로는 언제나 실패와 함께 출력된다 — 사람이 찾을 수 없는 로그는 없는 로그다.
@@ -186,6 +214,16 @@ up의 종합 결과. envelope의 `status`는 doctor와 같은 어휘를 쓴다 �
 **프로젝트 의존성 정렬 (Project dependency alignment)**:
 lockfile을 읽기 전용 정본으로 두고 node_modules·Bundle gems·Pods 같은 설치 산출물을 그 상태에 맞추는 일. 소스 선언이나 lockfile을 바꾸는 마이그레이션과 다르다.
 
+**직접 준비한 의존성 (Manually prepared dependencies)**:
+사용자가 의존성 정합성을 확인하고 RN·Flutter build/up에서 명시적으로 재사용하도록 선택한 설치 산출물이다.
+ADR-0047과 ADR-0048의 `--prepared-dependencies`와 GUI 선택은 재설치·lock 정렬 재검증을 생략하며 기본값은 꺼짐이다.
+Flutter에서는 GUI 환경 확인도 같은 선택으로 판정한다. CLI doctor·setup의 판정은 바꾸지 않는다.
+Flutter는 plugin resolver 정합성 판정도 생략한다. 필수 산출물·경로·SDK·미완료 표식·Pods lock 일치 검사는 유지한다.
+이 명시적 Flutter 모드에서는 추적된 내부 source 파일 링크만 양쪽 bytes·identity와 부모를 고정해 허용한다.
+기본 source alias 거부 및 lock·metadata·entrypoint·SDK·tool 경계는 유지한다(ADR-0048).
+정렬 검증 PASS나 준비 완료의 증거로 취급하지 않는다.
+_Avoid_: 정렬 검증된 의존성, 설치 성공 기록
+
 **도구체인 활성화 (Toolchain activation)**:
 프로젝트가 선언한 이미 설치된 Node·Ruby·JDK 등을 이번 실행이 사용하도록 고르는 비파괴적 Resolve 단계. 커밋된 도구 관리자 설정이 있으면 그것이 정본이며, 없을 때만 현재 셸의 도구를 쓴다.
 
@@ -196,7 +234,7 @@ lockfile을 읽기 전용 정본으로 두고 node_modules·Bundle gems·Pods �
 Pods를 어떻게 설치하는가에 대한 근거 체인 — 앵커 `package.json`의 관행 이름 스크립트(`pod-install`, `install-pods` 등) → 맨 `pod install`. 스크립트로 인정하려면 **이름이 관행 목록에 있고 본문이 실제로 pod 설치를 돈다**는 두 조건이 함께 성립해야 한다. 한쪽만 보면 `pods`라는 이름의 청소 스크립트를 설치로 돌리거나(이름만), 루트 `postinstall` 전체를 pod 설치로 착각한다(본문만). repo가 설치 방법을 적어두는 것은 맨 `pod install`이 거기서 통하지 않기 때문이다 — mattermost-mobile의 `RCT_NEW_ARCH_ENABLED=1`이 없으면 `Podfile` 평가 자체가 거부된다. up이 돌리는 명령과 실패 remediation이 주는 복붙 명령은 언제나 같은 답에서 나오고, 그 명령을 무엇이 골랐는지도 함께 나간다. ADR-0006 참조.
 
 **Metro 판정 (Metro verdict)**:
-8081 포트 한 번의 질의(`/status`)가 내는 다섯 갈래. **내 것** = 응답 바디가 Metro이고 `X-React-Native-Project-Root` 헤더가 앵커와 같다, **남의 것** = Metro이지만 헤더가 다른 프로젝트를 가리킨다, **확인 불가** = 포트는 답했는데 정체성을 물을 수 없다, **Metro 아님** = 응답이 있으나 Metro의 것이 아니다(연결 자체가 실패한 것과 구분된다 — 연결이 됐는데 말을 끝내지 않은 것도 여기다), **비어 있음** = 연결 실패, 그때만 띄운다. 포트는 8081 고정이다.
+선택한 개발 서버 포트의 질의(`/status`)가 내는 다섯 갈래. **내 것** = 응답 바디가 Metro이고 `X-React-Native-Project-Root` 헤더가 앵커와 같다, **남의 것** = Metro이지만 헤더가 다른 프로젝트를 가리킨다, **확인 불가** = 포트는 답했는데 정체성을 물을 수 없다, **Metro 아님** = 응답이 있으나 Metro의 것이 아니다(연결 자체가 실패한 것과 구분된다 — 연결이 됐는데 말을 끝내지 않은 것도 여기다), **비어 있음** = 연결 실패, 그때만 띄운다. 기본값은 8081이다. 명시적 `--port`는 CLI·GUI의 같은 입력으로 native build와 앱 실행에 전달한다. 전달 근거가 없는 경로는 변경 전에 중단한다. 선택 포트 기록은 `down`의 입력이며 PID 소유권 증거가 아니다. ADR-0042 참조.
 
 `up`의 재사용 판정과 `down`의 "죽여도 되는가"는 **같은 판정기**를 쓴다 — 기기 셀렉터를 doctor와 up이 공유하는 것과 같은 이유로, up이 내 것이라 재사용한 Metro를 down이 남의 것이라 못 죽이면 그 균열은 사용자에게 나타난다. 내 것만 재사용하고 내 것만 죽인다. 나머지 셋은 멈춘다.
 
@@ -209,10 +247,12 @@ _Avoid_: 점유(무엇이 잡고 있는지 안다는 뜻이 섞인다)
 _Avoid_: daemon, background job
 
 **Metro 기동 (Metro launch)**:
-프로젝트 start 스크립트를 detached spawn하고 8081 listener가 생길 때까지 기다리는 절차다. bind 대기는 시작 PID의 조기 종료를 함께 확인하며 기본 60초다. iOS와 Android가 같은 절차를 쓴다. 누구의 Metro인가는 Metro 판정과 플랫폼별 소유 기록이 정한다(ADR-0013).
+프로젝트 start 스크립트를 detached spawn하고 선택 포트의 listener가 생길 때까지 기다리는 절차다. bind 대기는 시작 PID의 조기 종료를 함께 확인하며 기본 60초다. 새 실행의 readiness는 현재 시작 PID·부모·시작 시각으로 연결한 자식 트리와 프로젝트 cwd를 확인한 뒤 PID-bound listener 조회를 쓴다. Metro 판정이 `mine`이어야 성공한다. 불명확한 트리·PID·cwd와 도구 timeout·취소를 전역 조회나 HTTP-only 성공으로 우회하지 않는다. `down`의 전역 listener 조회와 정체성 판정은 유지한다. iOS와 Android가 같은 기동 절차를 쓰며 플랫폼별 정리 계약은 유지한다(ADR-0007, ADR-0013).
 
 **MetroProcess**:
 up이 남긴 Metro의 보고. `state`(reused/spawned)와, spawn했을 때만 PID·로그 경로. 재사용에는 PID가 없다 — **우리가 띄우지 않은** 프로세스이고, CI는 자기가 띄운 것만 정리해야 한다. 재사용이 성립했다는 것은 그 Metro가 이 프로젝트의 것이라는 뜻이지(Metro 판정), 이 실행이 시작했다는 뜻이 아니다. 실패한 `up`이 `mobile down`을 권하는 것은 `spawned`일 때뿐인 이유가 그것이다.
+
+spawn 직후에는 시작 PID·로그 경로·선택 포트를 부분 결과로 보존한다. listener PID는 readiness를 통과한 뒤에만 채운다. 부분 결과는 listener 준비 성공이나 프로세스의 현재 생존을 뜻하지 않는다. iOS 실패·취소는 detached Metro를 자동 종료하지 않는다.
 
 **도구 프로비저닝 (Tool provisioning)**:
 Xcode·iOS runtime·도구 관리자 자체 또는 누락된 Node·Ruby·JDK 버전을 설치하거나 저장소 설정을 trust하는 일. 명시적 사용자 동의가 필요한 별도 흐름이며 `up`은 수행하지 않는다.

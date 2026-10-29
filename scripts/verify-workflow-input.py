@@ -10,6 +10,34 @@ import tempfile
 import time
 
 binary = str(Path(sys.argv[1]).resolve())
+for command in ("build", "up"):
+    help_text = subprocess.run([binary, command, "--help"], capture_output=True, text=True, check=True).stdout
+    assert "--prepared-dependencies" in help_text, command
+
+with tempfile.TemporaryDirectory(prefix="runstir-app-parser-") as temporary:
+    for command in ("inspect", "run"):
+        help_text = subprocess.run([binary, "app", command, "--help"], capture_output=True, text=True, check=True).stdout
+        assert "--platform" in help_text, command
+        for platform in (None, "ios", "android", "invalid"):
+            file = Path(temporary) / "Missing.app"
+            arguments = [binary, "app", command, str(file), "--json", "--non-interactive"]
+            if command == "run":
+                arguments.append("--plan")
+            if platform is not None:
+                arguments += ["--platform", platform]
+            result = subprocess.run(arguments, capture_output=True, text=True, timeout=10)
+            if platform == "invalid":
+                assert result.returncode == 64, (command, result)
+                continue
+            # An absent file stops before tools; the accepted option reaches the common boundary.
+            assert result.returncode in (1, 2), (command, platform, result)
+            document = json.loads(result.stdout)
+            assert document["command"] == "app " + command
+            operation = document["operation"]
+            assert operation["error"] and "plan" not in operation
+            assert operation["installation"] == "not-requested" and operation["launch"] == "not-requested"
+    assert list(Path(temporary).iterdir()) == [], "parser inspection changed its input directory"
+
 for command in ("build", "up", "down"):
     help_text = subprocess.run([binary, command, "--help"], capture_output=True, text=True, check=True).stdout
     for option in ("--project", "--app", "--platform", "--device", "--scheme", "--configuration", "--module", "--variant", "--non-interactive", "--progress-json", "--json"):
@@ -42,6 +70,14 @@ with tempfile.TemporaryDirectory(prefix="runstir-workflow-") as temporary:
     invalid = subprocess.run([binary, "up", "--platform", "invalid"], capture_output=True, text=True)
     assert invalid.returncode == 64
 
+    unsupported = subprocess.run([binary, "down", "--project", str(root), "--platform", "ios",
+                                  "--prepared-dependencies", "--json", "--non-interactive"],
+                                 capture_output=True, text=True, timeout=10)
+    assert unsupported.returncode == 1, unsupported
+    unsupported_document = json.loads(unsupported.stdout)
+    assert "--prepared-dependencies는 React Native·Flutter build/up에서만 사용할 수 있습니다" in unsupported_document["error"]["message"]
+    assert unsupported_document["operation"]["preparedDependencies"] is True
+
     tools = root / "tools"
     tools.mkdir()
     probe = tools / "xcode-select"
@@ -73,4 +109,4 @@ with tempfile.TemporaryDirectory(prefix="runstir-workflow-") as temporary:
     assert events[-1]["kind"] == "cancelled"
     assert all(event["operationId"] == document["operation"]["id"] for event in events)
 
-print("RN workflow executable help/selection/JSON/NDJSON/no-mutation/SIGINT-130: PASS")
+print("App file platform parser and RN workflow help/selection/JSON/NDJSON/no-mutation/SIGINT-130: PASS")

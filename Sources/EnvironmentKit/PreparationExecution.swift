@@ -38,6 +38,7 @@ public struct PreparationPlan: Codable, Sendable {
     public var androidRequirements: AndroidSDKRequirements? = nil
     /// Observed iOS identities are approval inputs, separate from payload checksums.
     public var resources: [IOSPreparationResource]? = nil
+    public var androidResources: [AndroidPreparationResource]? = nil
 
     /// The same approval inspection is visible in both clients.
     public var inspectionLines: [String] {
@@ -65,6 +66,7 @@ public struct PreparationOperation: Encodable, Sendable {
     public var conflict: ResourceConflict?
     /// Completed or uncertain OS resources survive failures and cancellation.
     public var resources: [IOSPreparationResource] = []
+    public var androidResources: [AndroidPreparationResource]? = nil
 }
 
 public struct PreparationResult: Sendable {
@@ -98,16 +100,29 @@ public enum PreparationExecution {
         runner: (any ProcessRunner)? = nil, leases: ResourceLeases = .user,
         onEvent: (@Sendable (WorkflowEvent) -> Void)? = nil
     ) async -> PreparationResult {
+        await run(input: input, planOnly: planOnly, approvedPlanID: approvedPlanID, trustRepository: trustRepository,
+            runner: runner, leases: leases, flutterFactory: FlutterAndroidWorkflow.defaultFactory, onEvent: onEvent)
+    }
+
+    static func run(
+        input: ProjectInspectionInput, planOnly: Bool = false,
+        approvedPlanID: String? = nil, trustRepository: Bool = false,
+        runner: (any ProcessRunner)? = nil, leases: ResourceLeases = .user,
+        flutterFactory: @escaping FlutterAndroidWorkflow.Factory,
+        onEvent: (@Sendable (WorkflowEvent) -> Void)? = nil
+    ) async -> PreparationResult {
         let events = PreparationEvents(onEvent)
         var result = PreparationResult(operation: PreparationOperation(id: events.id), exitCode: 1)
         let host = runner ?? SystemProcessRunner(environment: input.environment, workingDirectory: input.directory)
         events.emit("started", state: "running", detail: "Inspect preparation platforms")
+        let note: @Sendable (String) -> Void = { events.emit("detail", state: "running", detail: $0) }
         do {
             try Task.checkCancellation()
-            let prepared = try await inspect(input, runner: host)
+            let prepared = try await inspect(input, runner: host, flutterFactory: flutterFactory, note: note)
             result.plan = prepared.plan
             result.selection = prepared.selection
             result.operation.resources = prepared.resources
+            result.operation.androidResources = prepared.androidResources.isEmpty ? nil : prepared.androidResources
             result.operation.requiredInput = prepared.selection?.requiredInput ?? []
             if !result.operation.requiredInput.isEmpty || prepared.plan == nil {
                 result.operation.error = prepared.selection?.error ?? "Choose a detected project app."
@@ -138,7 +153,7 @@ public enum PreparationExecution {
                 return finish(result, events)
             }
             // Recheck after approval and immediately before acquiring the dependency target.
-            let fresh = try await inspect(input, runner: host)
+            let fresh = try await inspect(input, runner: host, flutterFactory: flutterFactory, note: note)
             guard fresh.plan?.id == plan.id else {
                 result.plan = fresh.plan
                 result.operation.state = "needs-approval"
@@ -159,13 +174,13 @@ public enum PreparationExecution {
                 owner: LeaseOwner(operationId: result.operation.id, command: "setup", project: folder.path))
             defer { lease.release() }
             // Another preparation may have finished while the plan was being read.
-            guard try await inspect(input, runner: host).plan?.id == plan.id else {
-                result.plan = try await inspect(input, runner: host).plan
+            guard try await inspect(input, runner: host, flutterFactory: flutterFactory, note: note).plan?.id == plan.id else {
+                result.plan = try await inspect(input, runner: host, flutterFactory: flutterFactory, note: note).plan
                 result.operation.state = "needs-approval"
                 result.operation.error = "Conditions changed while acquiring the preparation target."
                 return finish(result, events)
             }
-            let installedDestinations = installations.compactMap { $0.installation?.destination }
+            let installedDestinations = installations.flatMap { $0.installation?.mutationTargets ?? [] }
             let originalFiles = try sourceFiles(prepared.root, excluding: installedDestinations)
             let sourceRoot = prepared.root
             var existingIOSDevices: [IOSResourceInventory.Device]?
@@ -189,7 +204,7 @@ public enum PreparationExecution {
                         throw DomainError(summary: "Existing Simulator conditions changed after runtime installation",
                             remediation: Remediation(summary: "Preserve completed resources. Inspect the changed devices and approve the remaining plan again."))
                     }
-                    let fresh = try await inspect(input, runner: host)
+                    let fresh = try await inspect(input, runner: host, flutterFactory: flutterFactory, note: note)
                     if let current = fresh.plan, current.project == plan.project, current.app == plan.app,
                        current.files == plan.files, current.androidRequirements == plan.androidRequirements,
                        !current.steps.contains(where: { $0.id == step.id }),
@@ -212,14 +227,32 @@ public enum PreparationExecution {
                 }
                 result.operation.state = "running"
                 events.emit("stage", stage: step.id, state: "running", detail: "\(metadata.package) revision \(metadata.revision)")
+                var originError: (any Error)?
                 do {
                     let installed = try await action.run(runner: host) { ownedTemporaryPaths in
                         try await verifyInstallation(input: input, host: host, plan: plan, step: step, root: sourceRoot,
                             files: originalFiles, excluding: installedDestinations + ownedTemporaryPaths)
                     }
                     result.operation.resources += installed.resources
+                    if !installed.androidResources.isEmpty {
+                        result.operation.androidResources = (result.operation.androidResources ?? []) + installed.androidResources
+                    }
+                    do {
+                        try Task.checkCancellation()
+                        let origins = DeviceOriginStore(leases: leases)
+                        for resource in installed.resources where resource.kind == .simulator && resource.origin == .created {
+                            if let id = resource.identifier { try origins.record(platform: .ios, id: id) }
+                        }
+                        for resource in installed.androidResources where resource.origin == .created {
+                            try origins.record(platform: .android, id: resource.name, directory: resource.directory)
+                        }
+                    } catch is CancellationError { throw CancellationError() }
+                    catch { originError = error }
                 } catch let failure as InstallationActionFailure {
                     result.operation.resources += failure.result.resources
+                    if !failure.result.androidResources.isEmpty {
+                        result.operation.androidResources = (result.operation.androidResources ?? []) + failure.result.androidResources
+                    }
                     events.emit("stage", stage: step.id, state: failure.underlying is CancellationError ? "cancelled" : "failed")
                     throw failure.underlying
                 } catch {
@@ -234,13 +267,22 @@ public enum PreparationExecution {
                     result.operation.changedFiles = changedAfter
                     throw DomainError(summary: "Source changed during resource installation", remediation: Remediation(summary: "Preserve the completed resource. Inspect changed files manually, then re-plan."))
                 }
+                if let originError {
+                    result.operation.state = "partial"
+                    result.operation.error = "The device was created, but its origin could not be recorded: \(originError)"
+                    result.operation.nextAction = "Preserve the created device and origin record. Inspect the record manually; Runstir did not delete the device or repair the record."
+                    result.exitCode = 1
+                    return finish(result, events)
+                }
             }
             if !actions.isEmpty {
                 result.operation.state = "running"
                 let guarded = PreparationRunner(base: dependencyRunner, plan: plan,
+                    reactNativeVersion: anchor.reactNativeVersion, xcode: prepared.context?.lookup?.xcode,
                     root: prepared.root, files: try sourceFiles(prepared.root, excluding: actions.filter { $0.id == "dependencies.flutter" }.map { URL(fileURLWithPath: $0.target) }),
                     excluded: actions.filter { $0.id == "dependencies.flutter" }.map { URL(fileURLWithPath: $0.target) }, actions: actions, events: events) {
-                        try await inspect(input, runner: host).plan
+                        let current = try await inspect(input, runner: host, flutterFactory: flutterFactory, note: note)
+                        return (current.plan, current.anchor?.reactNativeVersion, current.context?.lookup?.xcode)
                     }
                 let includePods = actions.contains { $0.id == "dependencies.pods" }
                 var stageContext = UpContext()
@@ -268,7 +310,7 @@ public enum PreparationExecution {
                 result.operation.log = guarded.log
             }
             try Task.checkCancellation()
-            let after = try await inspect(input, runner: host)
+            let after = try await inspect(input, runner: host, flutterFactory: flutterFactory, note: note)
             result.plan = after.plan
             result.operation.manual = after.plan?.steps.filter { $0.kind != "align" && $0.kind != "install" } ?? []
             result.operation.remaining = after.plan?.steps.filter {
@@ -339,17 +381,21 @@ public enum PreparationExecution {
         guard changed.isEmpty else { throw PreparationSourceChanged(files: changed) }
         guard let current = try await inspect(input, runner: host, excluding: excluding).plan,
               current.project == plan.project, current.app == plan.app, current.files == plan.files,
-              current.androidRequirements == plan.androidRequirements,
-              current.steps.contains(where: { $0.id == step.id && $0.kind == "install" && $0.installation == step.installation }) else {
+              current.androidRequirements == plan.androidRequirements else {
             throw DomainError(summary: "Installation conditions changed before the next package commit",
                 remediation: Remediation(summary: "Preserve completed packages. Inspect the remaining plan and approve it again."))
+        }
+        guard current.steps.contains(where: { $0.id == step.id && $0.kind == "install" && $0.installation == step.installation }) else {
+            throw DomainError(summary: "Approved installation identity is no longer available before commit",
+                remediation: Remediation(summary: current.steps.first(where: { $0.id == "android.emulator.preparation" })?.observed
+                    ?? "Preserve completed resources. Inspect and approve the remaining plan again."))
         }
         let inspected = try sourceFiles(root, excluding: excluding)
         let changedDuringInspection = Set(inspected.keys).union(files.keys).filter { inspected[$0] != files[$0] }.sorted()
         guard changedDuringInspection.isEmpty else { throw PreparationSourceChanged(files: changedDuringInspection) }
     }
 
-    private struct Inspection {
+    struct Inspection {
         var plan: PreparationPlan?
         var selection: ProjectSelection?
         var anchor: ProjectAnchor?
@@ -359,9 +405,12 @@ public enum PreparationExecution {
         var root: URL
         var installationActions: [String: InstallationAction] = [:]
         var resources: [IOSPreparationResource] = []
+        var androidResources: [AndroidPreparationResource] = []
     }
 
-    private static func inspect(_ input: ProjectInspectionInput, runner: any ProcessRunner, excluding: [URL] = []) async throws -> Inspection {
+    static func inspect(_ input: ProjectInspectionInput, runner: any ProcessRunner, excluding: [URL] = [],
+                        flutterFactory: FlutterAndroidWorkflow.Factory = FlutterAndroidWorkflow.defaultFactory,
+                        note: @Sendable (String) -> Void = { _ in }) async throws -> Inspection {
         try Task.checkCancellation()
         let detected = try ProjectInspectionInput(directory: input.directory, environment: input.environment, app: input.app, entrypoint: input.entrypoint).selection()
         // Setup selects an app; both platforms remain in its preparation scope.
@@ -439,9 +488,24 @@ public enum PreparationExecution {
                 continue
             }
             let nativeReady = flutter == nil || flutter?.checks.contains { $0.id == "\(platform.rawValue).flutter.generated" && $0.kind == "reuse" } == true
+            let flutterAndroid = anchor.framework == .flutter && platform == .android
+            var protectedFlutter: FlutterAndroidWorkflow?
+            var executionBlocked = false
+            if flutterAndroid, !pendingTools, nativeReady {
+                note(FlutterAndroidWorkflow.preparingViewDetail)
+                do {
+                    protectedFlutter = try await FlutterAndroidWorkflow.make(input: input, anchor: anchor, runner: runner,
+                        preparation: flutter, tools: toolPreparation, factory: flutterFactory)
+                    note(FlutterAndroidWorkflow.viewReadyDetail)
+                } catch is CancellationError { throw CancellationError() }
+                catch is DomainError { executionBlocked = true }
+            }
             let context = await WorkflowContext.make(input: input, platform: platform, anchor: anchor, runner: runner,
-                includeProjectEnvironment: !pendingTools && (platform != .android || nativeReady),
-                projectEnvironmentOverride: flutter == nil ? nil : currentEnvironment.activatingTools(toolPreparation.activeTools, environment: input.environment))
+                includeProjectEnvironment: !pendingTools && (platform != .android || nativeReady)
+                    && (!flutterAndroid || protectedFlutter != nil),
+                projectEnvironmentOverride: protectedFlutter?.projectEnvironment
+                    ?? (flutter == nil ? nil : currentEnvironment.activatingTools(toolPreparation.activeTools, environment: input.environment)),
+                projectRunnerOverride: protectedFlutter?.projectRunner)
             contexts[platform] = context
             let report = await context.engine.run()
             var sdkPreparation: AndroidSDKPreparation?
@@ -460,6 +524,7 @@ public enum PreparationExecution {
                     remediation: check.outcome.remediation ?? (check.outcome.reason.map { Remediation(summary: $0) }))
             }
             checks += toolPreparation.checks
+            if executionBlocked { checks.append(FlutterAndroidWorkflow.blockedStep(app: anchor.directory)) }
             if let flutter { checks += flutter.checks.filter { $0.platform == nil || $0.platform == platform } }
             if pendingTools {
                 checks.append(PreparationStep(id: "\(platform.rawValue).tools.reinspect", platform: platform, kind: "provider", target: selected.app.path,
@@ -485,6 +550,16 @@ public enum PreparationExecution {
                 checks += sdkPreparation.checks
                 sdkInstalled.merge(sdkPreparation.installed) { _, new in new }
                 value.installationActions.merge(sdkPreparation.actions) { _, new in new }
+            }
+            if platform == .android, !pendingTools, nativeReady, let android = context.androidContext {
+                let emulator = try await AndroidEmulatorPreparation.inspect(context: android, runner: runner)
+                checks += emulator.checks
+                sdkInstalled.merge(emulator.installed) { _, new in new }
+                value.installationActions.merge(emulator.actions) { _, new in new }
+                value.androidResources += emulator.resources
+                if emulator.resources.contains(where: { $0.origin == .reused && $0.state == "available" }) {
+                    checks.removeAll { $0.id == "android.android.avd" }
+                }
             }
             if platform == .ios, !pendingTools, nativeReady {
                 let iosPreparation = try await IOSPreparation.inspect(context: context, input: input)
@@ -544,7 +619,7 @@ public enum PreparationExecution {
         if anchor.framework != .reactNative && anchor.framework != .flutter {
             value.plan = try makePlan(project: selected.app, app: selected.id, kind: anchor.framework.rawValue,
                                      platforms: platforms, steps: steps, files: approvalFiles(root, excluding: excluding), installed: sdkInstalled,
-                                     androidRequirements: androidRequirements, resources: value.resources)
+                                     androidRequirements: androidRequirements, resources: value.resources, androidResources: value.androidResources)
             return value
         }
         var installed: [String: Bool] = sdkInstalled
@@ -654,7 +729,7 @@ public enum PreparationExecution {
         }
         value.plan = try makePlan(project: selected.app, app: selected.id, kind: anchor.framework.rawValue, platforms: platforms,
                                  steps: steps, files: files, installed: installed,
-                                 androidRequirements: androidRequirements, resources: value.resources)
+                                 androidRequirements: androidRequirements, resources: value.resources, androidResources: value.androidResources)
         return value
     }
 
@@ -690,11 +765,12 @@ public enum PreparationExecution {
     private static func makePlan(project: FolderIdentity, app: String, kind: String,
                                  platforms: [PreparationPlatform], steps: [PreparationStep], files: [String: String], installed: [String: Bool],
                                  androidRequirements: AndroidSDKRequirements? = nil,
-                                 resources: [IOSPreparationResource] = []) throws -> PreparationPlan {
+                                 resources: [IOSPreparationResource] = [], androidResources: [AndroidPreparationResource] = []) throws -> PreparationPlan {
         var plan = PreparationPlan(id: "", project: project, app: app, projectKind: kind,
                                    platforms: platforms, steps: steps.sorted { $0.id < $1.id }, files: files, installed: installed)
         plan.androidRequirements = androidRequirements
         plan.resources = resources.isEmpty ? nil : resources
+        plan.androidResources = androidResources.isEmpty ? nil : androidResources
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
         plan.id = digest(try encoder.encode(plan))
@@ -724,8 +800,29 @@ public enum PreparationExecution {
     }
 
     /// Private source/lock observation. Digests never enter the public plan or its identity.
-    fileprivate static func sourceFiles(_ root: URL, excluding destinations: [URL] = []) throws -> [String: String] {
+    static func sourceFiles(_ root: URL, excluding destinations: [URL] = [], packageRoots: [URL]? = nil) throws -> [String: String] {
         let excluded: Set<String> = [".git", "node_modules", "Pods", "vendor", "build", ".build", ".gradle", ".dart_tool", ".mobile", "graft"]
+        // Setup keeps its existing dependency snapshot policy. Protected Flutter execution
+        // supplies verified package roots and excludes only their exact generated paths.
+        var generated: Set<String> = []
+        var physicalRoot: String?
+        if let packageRoots {
+            let parent = try FolderIdentity(directory: root).path
+            let packages = Set(try ([root] + packageRoots).map { try FolderIdentity(directory: $0).path })
+            guard packages.allSatisfy({ $0 == parent || $0.hasPrefix(parent + "/") }) else {
+                throw CocoaError(.fileReadInvalidFileName)
+            }
+            physicalRoot = parent
+            for package in packages {
+                for relative in ["build", ".dart_tool", ".gradle", ".mobile", "android/.gradle", "android/build", "android/app/build", "ios/Pods"] {
+                    let candidate = package + "/" + relative
+                    // A generated-looking directory may itself contain a verified package.
+                    if !packages.contains(where: { $0 == candidate || $0.hasPrefix(candidate + "/") }) {
+                        generated.insert(candidate)
+                    }
+                }
+            }
+        }
         var failure: (any Error)?
         guard let files = FileManager.default.enumerator(at: root, includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey],
             errorHandler: { _, error in failure = error; return false }) else { throw CocoaError(.fileReadNoPermission) }
@@ -737,8 +834,17 @@ public enum PreparationExecution {
                 continue
             }
             let attributes = try url.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
-            if excluded.contains(url.lastPathComponent) { files.skipDescendants(); continue }
-            if url.pathExtension == "log" || url.lastPathComponent == ".DS_Store" { continue }
+            if let physicalRoot {
+                let observed = try FolderIdentity(directory: url.deletingLastPathComponent()).path + "/" + url.lastPathComponent
+                guard observed.hasPrefix(physicalRoot + "/") else { throw CocoaError(.fileReadInvalidFileName) }
+                if url.lastPathComponent == ".git"
+                    || (generated.contains(observed) && attributes.isDirectory == true && attributes.isSymbolicLink != true) {
+                    files.skipDescendants(); continue
+                }
+            } else {
+                if excluded.contains(url.lastPathComponent) { files.skipDescendants(); continue }
+                if url.pathExtension == "log" || url.lastPathComponent == ".DS_Store" { continue }
+            }
             if attributes.isSymbolicLink == true {
                 files.skipDescendants()
                 result[url.path] = "symlink:" + (try FileManager.default.destinationOfSymbolicLink(atPath: url.path))
@@ -769,14 +875,17 @@ private final class PreparationEvents: @unchecked Sendable {
 }
 
 private final class PreparationRunner: ProcessRunner, @unchecked Sendable {
+    typealias Inspection = (plan: PreparationPlan?, reactNativeVersion: ReactNativeVersion?, xcode: RequirementLookup?)
     let base: any ProcessRunner
     let plan: PreparationPlan
+    let reactNativeVersion: ReactNativeVersion?
+    let xcode: RequirementLookup?
     let root: URL
     let files: [String: String]
     let excluded: [URL]
     let actions: [PreparationStep]
     let events: PreparationEvents
-    let freshPlan: @Sendable () async throws -> PreparationPlan?
+    let freshPlan: @Sendable () async throws -> Inspection
     private let lock = NSLock()
     private var finished: [String] = []
     private var changed: [String] = []
@@ -784,9 +893,11 @@ private final class PreparationRunner: ProcessRunner, @unchecked Sendable {
     var completed: [String] { lock.withLock { finished } }
     var changedFiles: [String] { lock.withLock { changed } }
     var log: String? { lock.withLock { logPath } }
-    init(base: any ProcessRunner, plan: PreparationPlan, root: URL, files: [String: String], excluded: [URL], actions: [PreparationStep], events: PreparationEvents,
-         freshPlan: @escaping @Sendable () async throws -> PreparationPlan?) {
+    init(base: any ProcessRunner, plan: PreparationPlan, reactNativeVersion: ReactNativeVersion?, xcode: RequirementLookup?,
+         root: URL, files: [String: String], excluded: [URL], actions: [PreparationStep], events: PreparationEvents,
+         freshPlan: @escaping @Sendable () async throws -> Inspection) {
         self.base = base; self.plan = plan; self.root = root; self.files = files; self.excluded = excluded; self.actions = actions; self.events = events
+        self.reactNativeVersion = reactNativeVersion; self.xcode = xcode
         self.freshPlan = freshPlan
     }
     func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
@@ -823,15 +934,39 @@ private final class PreparationRunner: ProcessRunner, @unchecked Sendable {
         throw DomainError(summary: "Setup cannot spawn runtime processes", remediation: Remediation(summary: "Run build/up separately after preparation."))
     }
     private func verifyConditions(_ completed: [String]) async throws {
-        guard let current = try await freshPlan(),
+        let inspection = try await freshPlan()
+        let materialized: Bool
+        if completed.contains("dependencies.node"), let before = reactNativeVersion, let after = inspection.reactNativeVersion,
+           before.value == after.value, before.disagreement == nil, after.disagreement == nil,
+           ["package-lock.json", "yarn.lock", DeclarationOrigin.anchor("dependencies.react-native")].contains(before.origin),
+           after.origin == "node_modules/react-native" {
+            materialized = true
+        } else {
+            materialized = false
+        }
+        var sourceTransition: (from: CheckSource, to: CheckSource)?
+        if materialized, let beforeRN = reactNativeVersion, let afterRN = inspection.reactNativeVersion,
+           case .requirement(let before, let source)? = xcode,
+           case .requirement(let after, let currentSource)? = inspection.xcode,
+           before == after, let tier = source.tier, (1...3).contains(tier), currentSource.tier == tier,
+           // A declaration may also contain this text; only one matrix provenance token may change.
+           source.origin.components(separatedBy: beforeRN.described).count == 2,
+           source.origin.replacingOccurrences(of: beforeRN.described, with: afterRN.described) == currentSource.origin {
+            sourceTransition = (currentSource, source)
+        }
+        guard let current = inspection.plan,
               current.project == plan.project, current.app == plan.app, current.files == plan.files,
-              try Self.executionConditions(current, completed: completed) == Self.executionConditions(plan, completed: completed)
+              reactNativeVersion == inspection.reactNativeVersion || materialized,
+              try Self.executionConditions(current, completed: completed, sourceTransition: sourceTransition)
+                == Self.executionConditions(plan, completed: completed)
         else {
             throw DomainError(summary: "Preparation conditions changed before a dependency command",
                 remediation: Remediation(summary: "Preserve completed resources. Inspect the current tools and approve a new plan."))
         }
     }
-    private static func executionConditions(_ plan: PreparationPlan, completed: [String]) throws -> Data {
+    private static func executionConditions(
+        _ plan: PreparationPlan, completed: [String], sourceTransition: (from: CheckSource, to: CheckSource)? = nil
+    ) throws -> Data {
         // Installed resources change through this operation. Tool selection and destinations do not.
         struct Conditions: Encodable {
             let checks: [PreparationStep]
@@ -843,6 +978,16 @@ private final class PreparationRunner: ProcessRunner, @unchecked Sendable {
                 || $0.id.hasSuffix(".xcode.ready") || $0.id.hasSuffix(".project.execution-environment")
                 || $0.id.hasPrefix("flutter.") || $0.id.hasSuffix(".flutter.generated"))
                 && !($0.id.hasSuffix(".cocoapods.version") && completed.contains("dependencies.gems"))
+        }.map { check in
+            guard let sourceTransition, check.id == "ios.xcode.version", check.source == sourceTransition.from,
+                  check.target == sourceTransition.from.origin else { return check }
+            // This operation materialized the same resolved framework; keep every other approval condition.
+            var normalized = PreparationStep(id: check.id, platform: check.platform, kind: check.kind,
+                target: sourceTransition.to.origin, observed: check.observed, required: check.required,
+                source: sourceTransition.to, command: check.command, remediation: check.remediation)
+            normalized.environment = check.environment
+            normalized.installation = check.installation
+            return normalized
         }
         let destinations = Dictionary(uniqueKeysWithValues: plan.steps.filter { $0.id.hasPrefix("dependencies.") }.map {
             ($0.id, $0.environment.merging(["kind": $0.kind, "target": $0.target, "command": $0.command ?? ""]) { _, last in last })

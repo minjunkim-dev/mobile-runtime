@@ -1,0 +1,1676 @@
+{
+  "issue": 212,
+  "attempt": "08-exporouter-debug-16",
+  "date": "2026-10-11",
+  "recordedAt": "2026-10-11T00:26:32.132121+09:00",
+  "status": "PARTIAL_STOP_METRO_WATCHMAN_PERMISSION",
+  "publicationReady": true,
+  "issueCompleted": false,
+  "runstirUsed": false,
+  "runstirSourceSha": null,
+  "policy": {
+    "mainSha": "4f2d585da92c60df86000a5ce75faf4693bb69b5",
+    "adrs": [
+      "ADR-0020",
+      "ADR-0021",
+      "ADR-0023"
+    ],
+    "stopBoundary": "mandatory Metro failure; author post-failure launch sequencing violation preserved; no extra workaround"
+  },
+  "source": {
+    "candidateSha": "c2fe3beda22befd2178dce431793c09111ed903e",
+    "baselineCheckoutSha": "c2fe3beda22befd2178dce431793c09111ed903e",
+    "trackedFiles": 4216,
+    "freshCandidateSha": "c2fe3beda22befd2178dce431793c09111ed903e",
+    "freshCloneCreated": false,
+    "freshCheckoutSha": null,
+    "freshDependenciesPrepared": false,
+    "minimalFreshCandidateSha": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+    "minimalFreshPrepared": false
+  },
+  "preparation": {
+    "npmCiIgnoreScripts": "PASS",
+    "originalHooks": "PASS",
+    "frozenBundle": "PASS",
+    "plainPodInstall": "PASS",
+    "totalInstalledPods": 160,
+    "podDeployment": "PASS",
+    "sourceAudit": "PASS",
+    "sameCloneFrozenSourceBinding": "PASS",
+    "generatedMixedExactly12DebugCorrection": "PASS",
+    "generatedObjectCount": 22792,
+    "allConfigurationListOwnersIncludingProject": 187,
+    "scopedXcconfigCount": 24,
+    "rawChangedLinePairs": 12,
+    "semanticDeltaCount": 12,
+    "postNativeSource": "PASS",
+    "postNativeGenerated": "PASS",
+    "postMetroSource": "PASS",
+    "postMetroGenerated": "PASS",
+    "sourceOrFlagsWorkaroundApplied": false,
+    "posixFullLstatPermissions": "diagnostic metadata only; kind and Git executable mode invariant"
+  },
+  "policyScope": {
+    "hermesChecksumOnly": true,
+    "resourceBundle11Debug": "16.4",
+    "ExpoRouterDebugBefore": "15.1",
+    "ExpoRouterDebugAfter": "16.0",
+    "ExpoRouterRelease": "15.1",
+    "originalAppEightDeploymentValues": [
+      "16.0",
+      "16.0",
+      "16.0",
+      "16.0",
+      "16.0",
+      "16.0",
+      "16.0",
+      "16.0"
+    ],
+    "podPropertiesDeploymentTarget": "16.4",
+    "releaseSourceVersionGraphOtherObjectsArraysFlagsUnchanged": true,
+    "additionalExceptionsApplied": false,
+    "originalSerializedHermesSpecProvenance": "unknown",
+    "originalDifferencePathOnlyProven": false
+  },
+  "locks": {
+    "sourceHead": "c2fe3beda22befd2178dce431793c09111ed903e",
+    "originalInputHashes": {
+      "package-lock.json": {
+        "rawSha256": "c0ff8ca81bcf9f89abdfa4fc8980e81aae86ca161d25590a8af1b9360733bcb8",
+        "headBlobSha256": "c0ff8ca81bcf9f89abdfa4fc8980e81aae86ca161d25590a8af1b9360733bcb8"
+      },
+      "Gemfile.lock": {
+        "rawSha256": "aacdfd202b0bbb5f2268a0b4af6ea5054d13af98b9b250796c8088ea7fa4e38c",
+        "headBlobSha256": "aacdfd202b0bbb5f2268a0b4af6ea5054d13af98b9b250796c8088ea7fa4e38c"
+      },
+      "ios/Podfile.lock": {
+        "rawSha256": "64d1d50255e98c08f7722481629507a568e6f4efbce551344b658fe2d8f3ef1b",
+        "headBlobSha256": "64d1d50255e98c08f7722481629507a568e6f4efbce551344b658fe2d8f3ef1b"
+      },
+      "ios/Podfile": {
+        "rawSha256": "432b83b3be6ff211c3922bef817fa2de11b8fc127545821874d5441336a1467b",
+        "headBlobSha256": "432b83b3be6ff211c3922bef817fa2de11b8fc127545821874d5441336a1467b"
+      },
+      "ios/Podfile.properties.json": {
+        "rawSha256": "d467d772218d88c784d80ecee9054f1f1f91238d840e347781c22361f28dee77",
+        "headBlobSha256": "d467d772218d88c784d80ecee9054f1f1f91238d840e347781c22361f28dee77"
+      },
+      "package.json": {
+        "rawSha256": "68addf1992337c0c600859455e713d13e364fc1869ee9174c0ee3d8787c1c74c",
+        "headBlobSha256": "68addf1992337c0c600859455e713d13e364fc1869ee9174c0ee3d8787c1c74c"
+      },
+      ".gitattributes": {
+        "rawSha256": "8ccdb3d97c5beb71838952e014c46eead1f586556115724f43845d96241c1f6c",
+        "headBlobSha256": "8ccdb3d97c5beb71838952e014c46eead1f586556115724f43845d96241c1f6c"
+      }
+    },
+    "finalInputHashes": {
+      "package-lock.json": "c0ff8ca81bcf9f89abdfa4fc8980e81aae86ca161d25590a8af1b9360733bcb8",
+      "Gemfile.lock": "aacdfd202b0bbb5f2268a0b4af6ea5054d13af98b9b250796c8088ea7fa4e38c",
+      "ios/Podfile.lock": "a8d27643b80fddb08818cdf2df4eaf5a601debf6c89e4d0ce8661771b4def6d9",
+      "ios/Podfile": "432b83b3be6ff211c3922bef817fa2de11b8fc127545821874d5441336a1467b",
+      "ios/Podfile.properties.json": "d467d772218d88c784d80ecee9054f1f1f91238d840e347781c22361f28dee77",
+      "ios/Mattermost.xcodeproj/project.pbxproj": "8ed8c81f2861eec2f92c6a252edd0150ee8c0eb6a082aaf85373bbc3a28dd33f",
+      "package.json": "68addf1992337c0c600859455e713d13e364fc1869ee9174c0ee3d8787c1c74c",
+      ".gitattributes": "8ccdb3d97c5beb71838952e014c46eead1f586556115724f43845d96241c1f6c"
+    },
+    "oldHermesChecksum": "28814c9c9296d16aef26cb514de5378d18885e44",
+    "currentHermesChecksum": "210827e9b6969083de6f54ce755d508a5722868b",
+    "actualSpecRawSha1": "210827e9b6969083de6f54ce755d508a5722868b",
+    "originalPodLockSha256": "64d1d50255e98c08f7722481629507a568e6f4efbce551344b658fe2d8f3ef1b",
+    "preparedPodLockSha256": "a8d27643b80fddb08818cdf2df4eaf5a601debf6c89e4d0ce8661771b4def6d9",
+    "otherLockBytesOriginal": true
+  },
+  "sourceFactClarification": {
+    "podPropertiesActualKey": "deploymentTarget",
+    "originalPodsPreparationDeclaration": "16.4",
+    "generatedPodsPbxProjectDebug": "16.4",
+    "generatedPodsPbxProjectRelease": "16.4",
+    "originalAppExplicitDeploymentValues": [
+      "16.0",
+      "16.0",
+      "16.0",
+      "16.0",
+      "16.0",
+      "16.0",
+      "16.0",
+      "16.0"
+    ],
+    "originalAppProjectRawSha256": "8ed8c81f2861eec2f92c6a252edd0150ee8c0eb6a082aaf85373bbc3a28dd33f",
+    "expoRouterPreparedDebug": "16.0",
+    "expoRouterOriginalRelease": "15.1",
+    "historicalRawMetadataAndHashesUnchanged": true
+  },
+  "generatedPodsPreparation": {
+    "actualApplied": true,
+    "helperSha256": "a90893485af8e1aff9e0ccd62bdf25b3df5ff1080544b2abd24429f18e3bfa2b",
+    "beforeRawSha256": "88e616365610ebcf3a74d0ea2f45caa8e6c48d111cb8a8c6c7ef52102a276fbd",
+    "afterRawSha256": "b51e164213f26124519853c1f5acb8eb90f59eff93df781a5da86684fabdade0",
+    "beforeCanonicalObjectsSha256": "887cf823b36fd827b51739644264125014c31ae46bf53dd3b72b3b3fbacdf6c9",
+    "afterCanonicalObjectsSha256": "0ff40a93ce80aabd4cfa0e625b1da659627a86003e6527a0962a9cc919865221",
+    "semanticDeltaCount": 12,
+    "rawChangedLinePairs": 12,
+    "allowedDebugTargets": [
+      {
+        "name": "Alamofire-Alamofire",
+        "productType": "com.apple.product-type.bundle",
+        "debugBefore": "10.0",
+        "debugAfter": "16.4",
+        "releaseUnchanged": true
+      },
+      {
+        "name": "CocoaLumberjack-CocoaLumberjackPrivacy",
+        "productType": "com.apple.product-type.bundle",
+        "debugBefore": "11.0",
+        "debugAfter": "16.4",
+        "releaseUnchanged": true
+      },
+      {
+        "name": "ExpoRouter",
+        "productType": "com.apple.product-type.framework",
+        "debugBefore": "15.1",
+        "debugAfter": "16.0",
+        "releaseUnchanged": true
+      },
+      {
+        "name": "ratex-react-native-RaTeXFonts",
+        "productType": "com.apple.product-type.bundle",
+        "debugBefore": "14.0",
+        "debugAfter": "16.4",
+        "releaseUnchanged": true
+      },
+      {
+        "name": "react-native-cameraroll-RNCameraRollPrivacyInfo",
+        "productType": "com.apple.product-type.bundle",
+        "debugBefore": "9.0",
+        "debugAfter": "16.4",
+        "releaseUnchanged": true
+      },
+      {
+        "name": "react-native-image-picker-RNImagePickerPrivacyInfo",
+        "productType": "com.apple.product-type.bundle",
+        "debugBefore": "9.0",
+        "debugAfter": "16.4",
+        "releaseUnchanged": true
+      },
+      {
+        "name": "RNPermissions-RNPermissionsPrivacyInfo",
+        "productType": "com.apple.product-type.bundle",
+        "debugBefore": "12.4",
+        "debugAfter": "16.4",
+        "releaseUnchanged": true
+      },
+      {
+        "name": "RNSVG-RNSVGFilters",
+        "productType": "com.apple.product-type.bundle",
+        "debugBefore": "12.4",
+        "debugAfter": "16.4",
+        "releaseUnchanged": true
+      },
+      {
+        "name": "SDWebImage-SDWebImage",
+        "productType": "com.apple.product-type.bundle",
+        "debugBefore": "9.0",
+        "debugAfter": "16.4",
+        "releaseUnchanged": true
+      },
+      {
+        "name": "SQLite.swift-SQLite.swift",
+        "productType": "com.apple.product-type.bundle",
+        "debugBefore": "12.0",
+        "debugAfter": "16.4",
+        "releaseUnchanged": true
+      },
+      {
+        "name": "Starscream-Starscream_Privacy",
+        "productType": "com.apple.product-type.bundle",
+        "debugBefore": "12.0",
+        "debugAfter": "16.4",
+        "releaseUnchanged": true
+      },
+      {
+        "name": "SwiftyJSON-SwiftyJSON",
+        "productType": "com.apple.product-type.bundle",
+        "debugBefore": "12.0",
+        "debugAfter": "16.4",
+        "releaseUnchanged": true
+      }
+    ],
+    "postMetroSameCloneBindingPassed": true,
+    "postMetroEntireObjectsInverseExact12Passed": true,
+    "originalVerifyReceiptUnmodified": true,
+    "postWrapperSha256": "06a22901ff6cb1a7d67dd791a62d5c3d2b0cc2ffb04aa2aa04a0c84b4ffac8bc",
+    "postMetroRawEvidenceSha256": "d485d73f2446f5d32ed2841578a88059b4b9968fd45928b0e671200439ec2b47",
+    "hashScope": "original local raw bytes"
+  },
+  "sourceAudit": {
+    "schema": 4,
+    "source": "c2fe3beda22befd2178dce431793c09111ed903e",
+    "trackedFiles": 4216,
+    "indexUnchanged": true,
+    "hiddenFlags": [],
+    "normalizedLockEqualOriginal": true,
+    "beforeAfterRawInvariant": true,
+    "passed": true,
+    "latestRawEvidenceSha256": "e142e2bf614403b41b8324e2f859f85bbb88b22970e5e4248f01c392c457d8f7",
+    "hashScope": "original local raw bytes"
+  },
+  "audits": {
+    "baseline-post-build.audit-v2.json": "37dc9b0d939b49ecfd8180b9ccc275cf39c334efd1c22792c9107ba912a16d79",
+    "baseline-generated-post-build.json": "a26b17c8692f1a206b02c2ae00f1dc9a73c0a03ef49afe4fbbf1b323b70a244a",
+    "baseline-post-metro-failure.audit-v2.json": "e142e2bf614403b41b8324e2f859f85bbb88b22970e5e4248f01c392c457d8f7",
+    "baseline-generated-post-metro-failure.json": "d485d73f2446f5d32ed2841578a88059b4b9968fd45928b0e671200439ec2b47",
+    "baseline-generated-pods.receipt.json": "388057ee1e3c55838a229d8fb78c246a9193540ff253dac806247f381c7594c4",
+    "baseline-generated-pods.verify.json": "6058b98ef6c7e5d6bd203a714b551287bf94f42b3a284f4c8154720fc85ad3cd"
+  },
+  "selfchecks": {
+    "generated": 34,
+    "prerequisite": 27,
+    "resource": 21,
+    "postWrapper": 11,
+    "total": 93,
+    "allPassed": true,
+    "independentMaterialFindings": 0,
+    "independentReviewFile": "independent-helper-review.md",
+    "independentReviewSha256": "51a01d152d749076ddea8d1db96ea995dd07907e4ee35baffd712879753b59cb"
+  },
+  "helperHashes": {
+    "generated_pods.py": "a90893485af8e1aff9e0ccd62bdf25b3df5ff1080544b2abd24429f18e3bfa2b",
+    "audit-v2.py": "a0a030097bd67c85c3bed3f7436ad6a86f8f66229731dbed3078647b9bb2d528",
+    "run_step.py": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+    "resource_preflight.py": "9fe84c1e5dd16ea83284bbc4a34ce1ddb5cb51a4c851bcb0d42a3df5c5e6a6fe",
+    "PLAN.md": "46e25bb7ec8325365cef9d8f778faf85184930188909debf5ed3a730f32d39b9",
+    "readiness.json": "d552c359e14ec5bf4bc755f9e7541e6f024b6c8c8b0f09f79ccf1cd0e9a5e7d4"
+  },
+  "nativeIos": {
+    "status": "PASS",
+    "exitCode": 0,
+    "actualCompilationEntered": true,
+    "started": "2026-10-11T00:15:28.254396+09:00",
+    "finished": "2026-10-11T00:20:46.510169+09:00",
+    "compileLogEntries": 3321,
+    "compilerFloors": [
+      {
+        "line": 113893,
+        "module": "ExpoRouter",
+        "target": "arm64-apple-ios16.0-simulator",
+        "lineSha256": "5910451a8775953ce45ee9e0ece1504436948ae61d64ed009b723e40e20dc297"
+      },
+      {
+        "line": 123146,
+        "module": "Mattermost",
+        "target": "arm64-apple-ios16.0-simulator",
+        "lineSha256": "d00d0d7f20a4f44ea50a6275a602a97fd6e217bb2ae4d8073b23bbb5fc7d1b12"
+      }
+    ],
+    "nativeLogSha256": "c0c2b939adcfd1a44e8ab16c22574f65d1d3ca8650b1095633d00c42c4bda631",
+    "appMinimumOs": "16.0",
+    "errors": []
+  },
+  "iosRuntime": {
+    "install": "PASS",
+    "metro": "FAIL",
+    "metroExitCode": 1,
+    "metroStarted": "2026-10-11T00:22:17.590518+09:00",
+    "metroFinished": "2026-10-11T00:22:24.755059+09:00",
+    "watchmanReportedVersion": "2026.09.21.00",
+    "precisePermissionRootCause": "unknown",
+    "launchRequestExitCode": 0,
+    "launchAfterRecognizedMetroFailure": "author batching/Q5 sequencing error; preserved",
+    "launchSurvivalOrFirstScreenPassClaimed": false,
+    "appTerminationCause": "unknown; no causal attribution to Watchman",
+    "firstScreen": "NOT_STARTED",
+    "statusCurlHookRedirected": true,
+    "actualStatusRunnerReceiptExists": false,
+    "statusPassClaimed": false,
+    "metroCommand": [
+      "mise",
+      "exec",
+      "node@24.15.0",
+      "--",
+      "./node_modules/.bin/react-native",
+      "start",
+      "--host",
+      "127.0.0.1"
+    ],
+    "permissionDiagnostic": "Watchman reported Operation not permitted while opening the new baseline clone",
+    "metroAutomaticNodeCrawlerRetry": true,
+    "launchReturnedPidRepresentation": "<UNVERIFIED_LAUNCH_REQUEST_PID>",
+    "launchErrorClassification": "author batching violated Q5 stop sequencing after acknowledged Metro failure; request exit 0 does not prove survival or first screen",
+    "statusActualHttpResponseObserved": false
+  },
+  "tuple": {
+    "node": "24.15.0",
+    "npm": "11.12.1",
+    "ruby": "3.2.11",
+    "bundler": "2.5.11",
+    "cocoapods": "1.16.1",
+    "xcodeproj": "1.27.0",
+    "jdk": "Temurin 17.0.20.1+1",
+    "reactNative": "0.83.9",
+    "expo": "55.0.23",
+    "expoRouter": "55.0.14",
+    "expoModulesCore": "55.0.25",
+    "xcode": "27.0",
+    "xcodeBuild": "27A266a",
+    "iosSdk": "27.0",
+    "iosActualRuntime": "26.0",
+    "iosRuntimeBuild": "23A343",
+    "iosDevice": "<OWNED_IOS_SIMULATOR>",
+    "iosBootedByAttempt": true,
+    "androidDevice": "<EXISTING_ANDROID_AVD>",
+    "androidIntendedRuntimeApi": 37,
+    "androidIntendedCompileSdk": 36,
+    "androidActualRunThisAttempt": false
+  },
+  "commandResults": [
+    {
+      "step": "baseline-clone",
+      "started": "2026-10-11T00:11:34.619108+09:00",
+      "finished": "2026-10-11T00:12:01.093526+09:00",
+      "exitCode": 0,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "baseline-clone.result.json",
+      "resultRawSha256": "0fef2b42aca08dbff48878bfb3149d692ffde69b277ddf6ca8e85349c75d3cc4",
+      "logFile": "baseline-clone.log",
+      "logRawSha256": "053e4747abd4706c451a751fd0dc5d96418f831cc616485aaec56dd544907f89",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "baseline-checkout",
+      "started": "2026-10-11T00:12:01.157750+09:00",
+      "finished": "2026-10-11T00:12:01.728714+09:00",
+      "exitCode": 0,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "baseline-checkout.result.json",
+      "resultRawSha256": "9d3937ad91f53ba8eaaed7af809c9a607ad3a7e49182ffbddf6d7055e4de0626",
+      "logFile": "baseline-checkout.log",
+      "logRawSha256": "be3830ec95d40694769561922b7c0fe21015e44a5f91ae7dc3184890aa78b6b0",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "baseline-npm-ci",
+      "started": "2026-10-11T00:12:02.789857+09:00",
+      "finished": "2026-10-11T00:12:17.747538+09:00",
+      "exitCode": 0,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "baseline-npm-ci.result.json",
+      "resultRawSha256": "3712a6183959df34cd83fd22d9a65fb5993524df006045f5c4f792a01b03da09",
+      "logFile": "baseline-npm-ci.log",
+      "logRawSha256": "9470f254dc4393ed159cf288757926eb4b7dbaced33b1cc9d3d6f8059e369eb6",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "baseline-sentry-install",
+      "started": "2026-10-11T00:12:18.902462+09:00",
+      "finished": "2026-10-11T00:12:18.985383+09:00",
+      "exitCode": 0,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "baseline-sentry-install.result.json",
+      "resultRawSha256": "e05190fcb2c5267976e125af71592cb79bd1a94f7bfbbad078e7338c8e68a57e",
+      "logFile": "baseline-sentry-install.log",
+      "logRawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "baseline-patch-package",
+      "started": "2026-10-11T00:12:19.811130+09:00",
+      "finished": "2026-10-11T00:12:20.237595+09:00",
+      "exitCode": 0,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "baseline-patch-package.result.json",
+      "resultRawSha256": "0666960673b30c748e48c50bd6bf3d181b093545a4bcadd10217aa3dea560080",
+      "logFile": "baseline-patch-package.log",
+      "logRawSha256": "41dd2e8fcda5356193a2193d62925c10bd9baae6ce512b0ab2ac2ce1c6ac24c5",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "baseline-generate-assets",
+      "started": "2026-10-11T00:12:21.069418+09:00",
+      "finished": "2026-10-11T00:12:21.135425+09:00",
+      "exitCode": 0,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "baseline-generate-assets.result.json",
+      "resultRawSha256": "2a5a444ba424da551573e8a7d4868852c87d6c4a1f0b8981990d6b3cdb146a59",
+      "logFile": "baseline-generate-assets.log",
+      "logRawSha256": "e817aec836b12165c8b4488cbd48d9a82c1c7bdc32dfc061af25e2a65a168cb2",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "baseline-font-assets",
+      "started": "2026-10-11T00:12:21.928228+09:00",
+      "finished": "2026-10-11T00:12:21.934194+09:00",
+      "exitCode": 0,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "baseline-font-assets.result.json",
+      "resultRawSha256": "7513502529ffec40d00a6525b6fd7c15315021cf25099106de830e4013b56ad0",
+      "logFile": "baseline-font-assets.log",
+      "logRawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "baseline-font-android",
+      "started": "2026-10-11T00:12:22.732937+09:00",
+      "finished": "2026-10-11T00:12:22.736546+09:00",
+      "exitCode": 0,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "baseline-font-android.result.json",
+      "resultRawSha256": "bef69d1b36f3e1056014caa31958097406dd1e4e72d0fb57f74d0467554fd937",
+      "logFile": "baseline-font-android.log",
+      "logRawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "baseline-generate-glyph",
+      "started": "2026-10-11T00:12:23.593980+09:00",
+      "finished": "2026-10-11T00:12:23.640486+09:00",
+      "exitCode": 0,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "baseline-generate-glyph.result.json",
+      "resultRawSha256": "45284bc1e068da228cb1ba78d94ceafbcabcf7f0a0bfc31e2d47da90fa5efa1c",
+      "logFile": "baseline-generate-glyph.log",
+      "logRawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "baseline-sounds-copy",
+      "started": "2026-10-11T00:12:24.468419+09:00",
+      "finished": "2026-10-11T00:12:24.472692+09:00",
+      "exitCode": 0,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "baseline-sounds-copy.result.json",
+      "resultRawSha256": "71161a7453c0b3f047dc76a6c32cdc4a9c2e404c4ae3c32717ae2bdf6c66e2ba",
+      "logFile": "baseline-sounds-copy.log",
+      "logRawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "baseline-jetify",
+      "started": "2026-10-11T00:12:24.814462+09:00",
+      "finished": "2026-10-11T00:12:26.190341+09:00",
+      "exitCode": 0,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "baseline-jetify.result.json",
+      "resultRawSha256": "bf3196598c17dcfad446e90a3e24dc685c12995ba75cbbf5c7b097eab5e17c2d",
+      "logFile": "baseline-jetify.log",
+      "logRawSha256": "2c7cbd938aeeee8e1260c7e5fca3c21339a108fcbd8e82949e53aafc553266e7",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "baseline-bundle-install",
+      "started": "2026-10-11T00:12:27.012542+09:00",
+      "finished": "2026-10-11T00:12:37.422351+09:00",
+      "exitCode": 0,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "baseline-bundle-install.result.json",
+      "resultRawSha256": "b33d8b24200860ff51908a181d8d0cc28663b620f2b9d1bafa2c20f9725853d2",
+      "logFile": "baseline-bundle-install.log",
+      "logRawSha256": "c9f303951884495fbb789053689316ec214e09703fc9218db77056ac8f68452b",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "baseline-gem-actual",
+      "started": "2026-10-11T00:12:38.302883+09:00",
+      "finished": "2026-10-11T00:12:39.609070+09:00",
+      "exitCode": 0,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "baseline-gem-actual.result.json",
+      "resultRawSha256": "1230c1f068de4720ba3773222f5f0914d7e3576a85516493631084aa6504295c",
+      "logFile": "baseline-gem-actual.log",
+      "logRawSha256": "818905e2fadcfd86a695bf83f508889dead159232bed5954d22652103c389aad",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "baseline-pod-install",
+      "started": "2026-10-11T00:12:52.147517+09:00",
+      "finished": "2026-10-11T00:14:33.299683+09:00",
+      "exitCode": 0,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "baseline-pod-install.result.json",
+      "resultRawSha256": "d476e5885dbf5a8f8979c0bc42f49f9979b761d21b8f8c9d47d53b249b7605e8",
+      "logFile": "baseline-pod-install.log",
+      "logRawSha256": "c3e64ebe41be13ef4d24af5e2572e362dd2476343075accf3d2417717e404415",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "baseline-pod-deployment",
+      "started": "2026-10-11T00:14:34.448334+09:00",
+      "finished": "2026-10-11T00:14:47.541603+09:00",
+      "exitCode": 0,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "baseline-pod-deployment.result.json",
+      "resultRawSha256": "305afbbd56ea8284cb830951f993ac16b14f979074dac77e176baf6895634c33",
+      "logFile": "baseline-pod-deployment.log",
+      "logRawSha256": "abb65f123586410b9dd97971bca57b9a71f704271720ee29670265ab43e4702e",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "baseline-generated-pods-apply",
+      "started": "2026-10-11T00:14:48.218070+09:00",
+      "finished": "2026-10-11T00:14:52.746025+09:00",
+      "exitCode": 0,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "baseline-generated-pods-apply.result.json",
+      "resultRawSha256": "9f964baaebcc20da08c720bb68cadf6ca2b6a06ecb6125ea17b7ab439250227b",
+      "logFile": "baseline-generated-pods-apply.log",
+      "logRawSha256": "388057ee1e3c55838a229d8fb78c246a9193540ff253dac806247f381c7594c4",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "baseline-ios-build",
+      "started": "2026-10-11T00:15:28.254396+09:00",
+      "finished": "2026-10-11T00:20:46.510169+09:00",
+      "exitCode": 0,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "baseline-ios-build.result.json",
+      "resultRawSha256": "340dc7093d2712178ad9b8896662b7c1a07b7a756c5241327c7efea773eb5868",
+      "logFile": "baseline-ios-build.log",
+      "logRawSha256": "c0c2b939adcfd1a44e8ab16c22574f65d1d3ca8650b1095633d00c42c4bda631",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "baseline-ios-boot",
+      "started": "2026-10-11T00:21:42.360032+09:00",
+      "finished": "2026-10-11T00:21:43.598996+09:00",
+      "exitCode": 0,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "baseline-ios-boot.result.json",
+      "resultRawSha256": "2c208398d0591525b834513ee6ca7a09b116ac785501763f47cbb758c84b934c",
+      "logFile": "baseline-ios-boot.log",
+      "logRawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "baseline-ios-bootstatus",
+      "started": "2026-10-11T00:21:43.853648+09:00",
+      "finished": "2026-10-11T00:21:49.696261+09:00",
+      "exitCode": 0,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "baseline-ios-bootstatus.result.json",
+      "resultRawSha256": "4ffaaaf4669c029b93405d31c1e1f7ebd77fa89c7345a74ef91b4dbcf52b5802",
+      "logFile": "baseline-ios-bootstatus.log",
+      "logRawSha256": "148763c6528458492c0439d84dd316a4771eae01313b345993f3e69abf7d24e2",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "baseline-ios-existing-apps",
+      "started": "2026-10-11T00:22:05.649624+09:00",
+      "finished": "2026-10-11T00:22:05.890200+09:00",
+      "exitCode": 0,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "baseline-ios-existing-apps.result.json",
+      "resultRawSha256": "2f8c528fa62aebbcb7249f307c6282ddf084a59339c1539e92a4ed86c60e6101",
+      "logFile": "baseline-ios-existing-apps.log",
+      "logRawSha256": "0e16718201db3cdd1b67f6f8dedac6948249f24ecd3ebcef73b1491f94c64ddb",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "baseline-ios-install",
+      "started": "2026-10-11T00:22:06.887517+09:00",
+      "finished": "2026-10-11T00:22:10.113233+09:00",
+      "exitCode": 0,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "baseline-ios-install.result.json",
+      "resultRawSha256": "a419a5269ea0bff6c9c57830a828cfc63fb5b639ecdb92cf323b87840744d3ee",
+      "logFile": "baseline-ios-install.log",
+      "logRawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "baseline-metro",
+      "started": "2026-10-11T00:22:17.590518+09:00",
+      "finished": "2026-10-11T00:22:24.755059+09:00",
+      "exitCode": 1,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "baseline-metro.result.json",
+      "resultRawSha256": "b83729e4a678d60f0646d77aa8df20895e65c40dfe800486aaeb8190093c1832",
+      "logFile": "baseline-metro.log",
+      "logRawSha256": "d518efcb5d23c0a6c5ef4fa67fb65590f0dec81240d021260a8f8a767a70b345",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "baseline-ios-launch",
+      "started": "2026-10-11T00:22:28.216411+09:00",
+      "finished": "2026-10-11T00:22:28.533233+09:00",
+      "exitCode": 0,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "baseline-ios-launch.result.json",
+      "resultRawSha256": "f04a0e22f3783ecf2ed8d1a4c059a62d64f5e98c1a687d524246f85dbff264a0",
+      "logFile": "baseline-ios-launch.log",
+      "logRawSha256": "8fffe7c1b6d28f632dbc8c19a33eb6ba733517f59f68d4091f2224ca0d08226d",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "cleanup-ios-terminate",
+      "started": "2026-10-11T00:22:52.899486+09:00",
+      "finished": "2026-10-11T00:22:53.082046+09:00",
+      "exitCode": 3,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "cleanup-ios-terminate.result.json",
+      "resultRawSha256": "53e8961c030656789bb5d263c4b78a5d697eed1ac9b73f65c5089e949fccba6c",
+      "logFile": "cleanup-ios-terminate.log",
+      "logRawSha256": "9471221f841e918755e75b81c58a20c8cb25ad61875016a6bf7d27fb42b0cfcd",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "cleanup-ios-uninstall",
+      "started": "2026-10-11T00:23:04.921396+09:00",
+      "finished": "2026-10-11T00:23:05.107436+09:00",
+      "exitCode": 0,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "cleanup-ios-uninstall.result.json",
+      "resultRawSha256": "cd67a4279b9f84ec42adc48ef0e231e960b20d8e5da7dcd4e33585e83bc2253a",
+      "logFile": "cleanup-ios-uninstall.log",
+      "logRawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    },
+    {
+      "step": "cleanup-ios-shutdown",
+      "started": "2026-10-11T00:23:05.550545+09:00",
+      "finished": "2026-10-11T00:23:08.714361+09:00",
+      "exitCode": 0,
+      "runnerSha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+      "resultFile": "cleanup-ios-shutdown.result.json",
+      "resultRawSha256": "263cfc09caf7fd3b7973d0059a067a2877cf24e230352310fd5040153d15cafe",
+      "logFile": "cleanup-ios-shutdown.log",
+      "logRawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "hashScope": "original local raw bytes",
+      "matchesOriginalRawResult": true
+    }
+  ],
+  "notStarted": {
+    "androidBuild": true,
+    "androidInstall": true,
+    "androidLaunch": true,
+    "androidFirstScreen": true,
+    "mattermostFreshClone": true,
+    "mattermostFreshDependencies": true,
+    "minimumFreshDependencies": true
+  },
+  "artifacts": {
+    "appDirectoryExists": true,
+    "primaryExecutableExists": true,
+    "appFileCount": 207,
+    "appFileBytes": 164870716,
+    "appZipFile": "mattermost-ios-simulator.app.zip",
+    "appZipCount": 1,
+    "appZipBytes": 48261208,
+    "appZipSha256": "54f330fad4b08317774c30f556ef29f0296f9a43562b753a9444561e2a7d6890",
+    "apkCount": 0,
+    "screenshotCount": 0,
+    "zipExportOnlyFromAlreadyBuiltApp": true
+  },
+  "freshHandoff": {
+    "configuredCandidateSha": "c2fe3beda22befd2178dce431793c09111ed903e",
+    "actualCheckoutSha": null,
+    "cloneCreated": false,
+    "dependenciesPrepared": false,
+    "handoffComplete": false
+  },
+  "minimumHandoff": {
+    "configuredCandidateSha": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+    "dependenciesPrepared": false,
+    "actualCheckoutVerifiedByThisPacket": false,
+    "handoffComplete": false
+  },
+  "officialRawArchiveCache": {
+    "archives": [
+      {
+        "version": "0.14.1",
+        "sourceUrl": "https://repo1.maven.org/maven2/com/facebook/hermes/hermes-ios/0.14.1/hermes-ios-0.14.1-hermes-ios-debug.tar.gz",
+        "sha256": "07a69538c08ecc1569eb5e5ef1c57bae44ec38ab15b32b8a5291aa4353b90a0f",
+        "sha1": "450a62e73a8884823a4ccea10b9e59c079b82e28",
+        "sizeBytes": 30469283,
+        "originalDestinationAbsentBefore": true,
+        "podDownloadNotStarted": true,
+        "cachePublishedAt": "2026-10-11T00:12:51.456150+09:00",
+        "exclusiveNoOverwritePublication": true,
+        "applied": true,
+        "actualDestinationSha256": "07a69538c08ecc1569eb5e5ef1c57bae44ec38ab15b32b8a5291aa4353b90a0f"
+      },
+      {
+        "version": "0.14.1",
+        "sourceUrl": "https://repo1.maven.org/maven2/com/facebook/hermes/hermes-ios/0.14.1/hermes-ios-0.14.1-hermes-ios-release.tar.gz",
+        "sha256": "af777af183efde76275685216f8ec442cf163223a451a636863bcaf7afda2b0e",
+        "sha1": "43505ecf4537e65641e692f724ec3fe7416cc015",
+        "sizeBytes": 21762801,
+        "originalDestinationAbsentBefore": true,
+        "podDownloadNotStarted": true,
+        "cachePublishedAt": "2026-10-11T00:12:51.490790+09:00",
+        "exclusiveNoOverwritePublication": true,
+        "applied": true,
+        "actualDestinationSha256": "af777af183efde76275685216f8ec442cf163223a451a636863bcaf7afda2b0e"
+      }
+    ],
+    "archivesBytesManuallyCopiedOnly": true,
+    "podsNodeModulesVendorBuildExtractedOutputsManuallyCopied": false,
+    "originalCommandSourceFlagsUnchanged": true,
+    "partialDownloadInterruptedOrOverwritten": false,
+    "cocoaPodsSeparateHermesHttpTransferThisAttempt": "not observed; log records original URL/Installing hermes-engine, no HTTP progress; automatic tool cache behavior not measured",
+    "rawArchiveCount": 2
+  },
+  "cleanup": {
+    "passed": true,
+    "observedAt": "2026-10-11T00:23:23.921279+09:00",
+    "rawSha256": "85db064e839cdd8b2e06334db780dae06cb83f6a03c16c4eb4ac26750ec9ba04",
+    "hashScope": "original local raw bytes",
+    "snapshotReadOnly": true,
+    "ownMetroExitedCode": 1,
+    "iosTerminateExit3FoundNothing": true,
+    "ownIosUninstallExitCode": 0,
+    "ownIosSimulatorShutdownExitCode": 0,
+    "initialIosSimulatorStates": [
+      "Booted",
+      "Booted"
+    ],
+    "ownedIos26SimulatorFinalState": "Shutdown",
+    "existingGuiPreserved": true,
+    "metro8081Listener": false,
+    "adbDevicesPresent": false,
+    "actualNativeEmulatorProcesses": [],
+    "nativeBuildStarted": true,
+    "nativeBuildExitCode": 0,
+    "dedicatedSimulatorBootedByAttempt": true,
+    "androidEmulatorStartedByAttempt": false,
+    "gradleStartedByAttempt": false,
+    "nonownedWatchmanAndFourJavaProcessesPreserved": true,
+    "globalSdkRuntimeAvdPathDefaultSelectionOrPermissionChanged": false,
+    "userAppAvdDataRuntimeDefinitionsDeleted": false
+  },
+  "leaseEvidence": {
+    "originalGrantFile": "root-lease.json",
+    "originalGrantRawSha256": "740c73f5f63f383a245dd100f55205cc8451062e423626546a55f294095b3f0f",
+    "originalGrantStatePreserved": "granted",
+    "returnRequestedFile": "lease-return-requested.json",
+    "returnRequestedRawSha256": "c8c4a89d4a5627384a2c8c282bd27694633a44548d4342787905633445b98e9d",
+    "rootCanonicalState": "RELEASED",
+    "rootMessageReceiptFile": "root-release-message-receipt.json",
+    "rootMessageReceiptRawSha256": "4297ae2a48987c30fbc2fc62264e7fcde6d993d7c78e9b52f310415017ddcacf",
+    "rootCoordinationIsSeparateFromGrantAndReturnRequest": true,
+    "additionalActualAllowed": false
+  },
+  "priorAttemptsPreserved": true,
+  "rawArtifacts": {
+    "localRootPlaceholder": "<LOCAL_VALIDATION_ROOT>/attempt-08-exporouter-debug-16",
+    "published": false,
+    "rootFileCountIncludingManifestAndShaIndex": 128,
+    "officialArchiveCacheFileCount": 2,
+    "inventoryEntryCountIncludingCacheAndShaIndexFile": 130,
+    "checksumIndexEntryCount": 129,
+    "rootFilesInChecksumIndexExcludingShaIndex": 127,
+    "runnerCommandResultCount": 26,
+    "runnerLogCount": 26,
+    "rootLogCount": 26,
+    "additionalNonRunnerLogCount": 0,
+    "rootCountsBySuffix": {
+      ".diff": 3,
+      ".json": 80,
+      ".lock": 2,
+      ".log": 26,
+      ".md": 3,
+      ".py": 12,
+      ".zip": 1,
+      "<no suffix>": 1
+    },
+    "shaIndexSelfHashIncluded": false,
+    "sourceAndDerivedDataRecursivelyIndexed": false,
+    "files": {
+      "PLAN.md": {
+        "sizeBytes": 12035,
+        "sha256": "46e25bb7ec8325365cef9d8f778faf85184930188909debf5ed3a730f32d39b9",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "REPORT.md": {
+        "sizeBytes": 4972,
+        "sha256": "09edc1452c09d766080e79d6009b1e6bcd380a53f6b418180a4f3ff1e6556988",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "actual-start-inputs.json": {
+        "sizeBytes": 2572,
+        "sha256": "cccfacb75f3b5e261405de3d4f1f854d446ff15e417803f66afc65951be08bad",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "audit-v2.py": {
+        "sizeBytes": 11996,
+        "sha256": "a0a030097bd67c85c3bed3f7436ad6a86f8f66229731dbed3078647b9bb2d528",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-actual-hermes-engine.podspec.json": {
+        "sizeBytes": 2746,
+        "sha256": "8b5b8b9bbc07ec3716c612c3102b1b2e55e2cc4dccad5f6e447d79b3345f260c",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-after-bundle.audit-v2.json": {
+        "sizeBytes": 2277,
+        "sha256": "6ab119fca5444e3f76ea3bac0ab5a1e0ca08a71515171e7f794c14347ecc4546",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-after-deployment.audit-v2.json": {
+        "sizeBytes": 2455,
+        "sha256": "e3d3ff27b4de3225e8b981ea38f6d21b59597b5e89fc1532dda3c1622b27b714",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-after-font-android.audit-v2.json": {
+        "sizeBytes": 2283,
+        "sha256": "1c638de981191b3097064a471fa4d3bfdfb24e5277f79ea7a3f32490bddc54ea",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-after-font-assets.audit-v2.json": {
+        "sizeBytes": 2282,
+        "sha256": "dc6e31988f65721475d19ef8920e78d37e4f0f18abb30b0e913d6b427a21c0fa",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-after-generate-assets.audit-v2.json": {
+        "sizeBytes": 2286,
+        "sha256": "79d03a3a94bba31af57ec88a15274dbf2ef34b7ff89c3edf42e4944da0018e2b",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-after-generate-glyph.audit-v2.json": {
+        "sizeBytes": 2285,
+        "sha256": "045779988079c249c09855743b89402169265c21cfabc662ce61f682756a271c",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-after-generated-pods.audit-v2.json": {
+        "sizeBytes": 2459,
+        "sha256": "0a9fe7ee8ab086bc51cbc9601cd26ec3256528e9621d327b958391dd1aa30e32",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-after-hooks.audit-v2.json": {
+        "sizeBytes": 2276,
+        "sha256": "ee65b4ebb7a288a72d0879d67487535eb81cc06306afae4b4e6e2c9de80802a0",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-after-npm-ci.audit-v2.json": {
+        "sizeBytes": 2277,
+        "sha256": "a8a324588cf60c6f34457cc81c8642e46442d6423f7317c1bc5f34d3f22bc806",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-after-patch-package.audit-v2.json": {
+        "sizeBytes": 2284,
+        "sha256": "bbe4fcaac28dc10a0bd1c7990f6544b5d392faf3084507c4507f4ede51467b98",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-after-pod-install.audit-v2.json": {
+        "sizeBytes": 2456,
+        "sha256": "36f711b05f0905de1635535642e32c2ebcd42ad601bf3456afe1a1920ecb88c0",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-after-sentry-install.audit-v2.json": {
+        "sizeBytes": 2285,
+        "sha256": "fffca97a5f510f25a1380bf94f8cc14e7e11a3b7ad13c57805ce7f91c34a2aba",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-bundle-install.log": {
+        "sizeBytes": 3099,
+        "sha256": "c9f303951884495fbb789053689316ec214e09703fc9218db77056ac8f68452b",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-bundle-install.result.json": {
+        "sizeBytes": 2117,
+        "sha256": "b33d8b24200860ff51908a181d8d0cc28663b620f2b9d1bafa2c20f9725853d2",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-checkout.log": {
+        "sizeBytes": 101,
+        "sha256": "be3830ec95d40694769561922b7c0fe21015e44a5f91ae7dc3184890aa78b6b0",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-checkout.result.json": {
+        "sizeBytes": 1767,
+        "sha256": "9d3937ad91f53ba8eaaed7af809c9a607ad3a7e49182ffbddf6d7055e4de0626",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-clone.log": {
+        "sizeBytes": 38,
+        "sha256": "053e4747abd4706c451a751fd0dc5d96418f831cc616485aaec56dd544907f89",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-clone.result.json": {
+        "sizeBytes": 552,
+        "sha256": "0fef2b42aca08dbff48878bfb3149d692ffde69b277ddf6ca8e85349c75d3cc4",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-final-input-hashes.json": {
+        "sizeBytes": 744,
+        "sha256": "c9fa6ce053d13d0a46b6eb74110bfabad648d6458f2f0919cdc64f4717ade54b",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-font-android.log": {
+        "sizeBytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-font-android.result.json": {
+        "sizeBytes": 1925,
+        "sha256": "bef69d1b36f3e1056014caa31958097406dd1e4e72d0fb57f74d0467554fd937",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-font-assets.log": {
+        "sizeBytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-font-assets.result.json": {
+        "sizeBytes": 1903,
+        "sha256": "7513502529ffec40d00a6525b6fd7c15315021cf25099106de830e4013b56ad0",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-gem-actual.log": {
+        "sizeBytes": 40,
+        "sha256": "818905e2fadcfd86a695bf83f508889dead159232bed5954d22652103c389aad",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-gem-actual.result.json": {
+        "sizeBytes": 2247,
+        "sha256": "1230c1f068de4720ba3773222f5f0914d7e3576a85516493631084aa6504295c",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-generate-assets.log": {
+        "sizeBytes": 20281,
+        "sha256": "e817aec836b12165c8b4488cbd48d9a82c1c7bdc32dfc061af25e2a65a168cb2",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-generate-assets.result.json": {
+        "sizeBytes": 1907,
+        "sha256": "2a5a444ba424da551573e8a7d4868852c87d6c4a1f0b8981990d6b3cdb146a59",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-generate-glyph.log": {
+        "sizeBytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-generate-glyph.result.json": {
+        "sizeBytes": 1918,
+        "sha256": "45284bc1e068da228cb1ba78d94ceafbcabcf7f0a0bfc31e2d47da90fa5efa1c",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-generated-pods-apply.log": {
+        "sizeBytes": 15120,
+        "sha256": "388057ee1e3c55838a229d8fb78c246a9193540ff253dac806247f381c7594c4",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-generated-pods-apply.result.json": {
+        "sizeBytes": 1362,
+        "sha256": "9f964baaebcc20da08c720bb68cadf6ca2b6a06ecb6125ea17b7ab439250227b",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-generated-pods-immediate-preapply.audit-v2.json": {
+        "sizeBytes": 2472,
+        "sha256": "626f629a31ae65ab5ac4a53c98199845e4203c1beb107e428f9b0ae4451b2014",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-generated-pods.after.objects.json": {
+        "sizeBytes": 5794474,
+        "sha256": "d9a11788bd7f19350545f17c9ee00f096ca4898d49220b344db08963aa5636a1",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-generated-pods.before.objects.json": {
+        "sizeBytes": 5794471,
+        "sha256": "888dae3602ff4e63f622b6e2f7e0dd02c77cdeb34aeb17bf641e8dc4ff16141a",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-generated-pods.memory-or-applied.diff": {
+        "sizeBytes": 4197,
+        "sha256": "0283f749ff7ff2bc5eef84832a269bd293e5604b6ad08ef10216f02e439a03ed",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-generated-pods.receipt.json": {
+        "sizeBytes": 15120,
+        "sha256": "388057ee1e3c55838a229d8fb78c246a9193540ff253dac806247f381c7594c4",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-generated-pods.verify.json": {
+        "sizeBytes": 155,
+        "sha256": "6058b98ef6c7e5d6bd203a714b551287bf94f42b3a284f4c8154720fc85ad3cd",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-generated-post-build.json": {
+        "sizeBytes": 6126,
+        "sha256": "a26b17c8692f1a206b02c2ae00f1dc9a73c0a03ef49afe4fbbf1b323b70a244a",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-generated-post-metro-failure.json": {
+        "sizeBytes": 6126,
+        "sha256": "d485d73f2446f5d32ed2841578a88059b4b9968fd45928b0e671200439ec2b47",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-initial.audit-v2.json": {
+        "sizeBytes": 2273,
+        "sha256": "bde6dd56aff81f92a67661c87516be1fc17f51a0fb9105008f0fabf8326ebbf3",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-ios-app-ownership.json": {
+        "sizeBytes": 328,
+        "sha256": "f867b71ef75586e9ce1fb8ab0aa343abef177d1c8d1b55b8006cc65298018266",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-ios-boot.log": {
+        "sizeBytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-ios-boot.result.json": {
+        "sizeBytes": 507,
+        "sha256": "2c208398d0591525b834513ee6ca7a09b116ac785501763f47cbb758c84b934c",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-ios-bootstatus.log": {
+        "sizeBytes": 560,
+        "sha256": "148763c6528458492c0439d84dd316a4771eae01313b345993f3e69abf7d24e2",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-ios-bootstatus.result.json": {
+        "sizeBytes": 529,
+        "sha256": "4ffaaaf4669c029b93405d31c1e1f7ebd77fa89c7345a74ef91b4dbcf52b5802",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-ios-build.log": {
+        "sizeBytes": 43152302,
+        "sha256": "c0c2b939adcfd1a44e8ab16c22574f65d1d3ca8650b1095633d00c42c4bda631",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-ios-build.result.json": {
+        "sizeBytes": 2364,
+        "sha256": "340dc7093d2712178ad9b8896662b7c1a07b7a756c5241327c7efea773eb5868",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-ios-existing-apps.log": {
+        "sizeBytes": 40969,
+        "sha256": "0e16718201db3cdd1b67f6f8dedac6948249f24ecd3ebcef73b1491f94c64ddb",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-ios-existing-apps.result.json": {
+        "sizeBytes": 520,
+        "sha256": "2f8c528fa62aebbcb7249f307c6282ddf084a59339c1539e92a4ed86c60e6101",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-ios-install.log": {
+        "sizeBytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-ios-install.result.json": {
+        "sizeBytes": 692,
+        "sha256": "a419a5269ea0bff6c9c57830a828cfc63fb5b639ecdb92cf323b87840744d3ee",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-ios-launch.log": {
+        "sizeBytes": 29,
+        "sha256": "8fffe7c1b6d28f632dbc8c19a33eb6ba733517f59f68d4091f2224ca0d08226d",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-ios-launch.result.json": {
+        "sizeBytes": 540,
+        "sha256": "f04a0e22f3783ecf2ed8d1a4c059a62d64f5e98c1a687d524246f85dbff264a0",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-ios-native-facts.json": {
+        "sizeBytes": 1050,
+        "sha256": "8e14b2e71a852cdde558ef232a3466b7fe4b66e60d6ca0321bb9f340d1a0d669",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-jetify.log": {
+        "sizeBytes": 998,
+        "sha256": "2c7cbd938aeeee8e1260c7e5fca3c21339a108fcbd8e82949e53aafc553266e7",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-jetify.result.json": {
+        "sizeBytes": 1886,
+        "sha256": "bf3196598c17dcfad446e90a3e24dc685c12995ba75cbbf5c7b097eab5e17c2d",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-metro-failure-forensics.json": {
+        "sizeBytes": 4218,
+        "sha256": "240b1ec5654424ccff41105a0e0eba4561b696b3018580a9b3b99838fd2d818d",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-metro.log": {
+        "sizeBytes": 2966,
+        "sha256": "d518efcb5d23c0a6c5ef4fa67fb65590f0dec81240d021260a8f8a767a70b345",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-metro.result.json": {
+        "sizeBytes": 1935,
+        "sha256": "b83729e4a678d60f0646d77aa8df20895e65c40dfe800486aaeb8190093c1832",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-node-bundle-stage.json": {
+        "sizeBytes": 125,
+        "sha256": "c24ecf79f421a235f83ad7f5706b7412173f8354edbf758d482eda92380bb17c",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-npm-ci.log": {
+        "sizeBytes": 4747,
+        "sha256": "9470f254dc4393ed159cf288757926eb4b7dbaced33b1cc9d3d6f8059e369eb6",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-npm-ci.result.json": {
+        "sizeBytes": 1936,
+        "sha256": "3712a6183959df34cd83fd22d9a65fb5993524df006045f5c4f792a01b03da09",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-official-archive-cache-use.json": {
+        "sizeBytes": 2426,
+        "sha256": "c51faa2b2bbc08293496a07268a746e87aa39fbcf5245ca839c383ffab72f66f",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-original-Podfile.lock": {
+        "sizeBytes": 120403,
+        "sha256": "64d1d50255e98c08f7722481629507a568e6f4efbce551344b658fe2d8f3ef1b",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-original-inputs.json": {
+        "sizeBytes": 1421,
+        "sha256": "e1c2a017910212324268074aedc8978d40f8210bf08beed7d8473ac7addb9a9d",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-patch-package.log": {
+        "sizeBytes": 700,
+        "sha256": "41dd2e8fcda5356193a2193d62925c10bd9baae6ce512b0ab2ac2ce1c6ac24c5",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-patch-package.result.json": {
+        "sizeBytes": 1900,
+        "sha256": "0666960673b30c748e48c50bd6bf3d181b093545a4bcadd10217aa3dea560080",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-pod-deployment.log": {
+        "sizeBytes": 45639,
+        "sha256": "abb65f123586410b9dd97971bca57b9a71f704271720ee29670265ab43e4702e",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-pod-deployment.result.json": {
+        "sizeBytes": 2364,
+        "sha256": "305afbbd56ea8284cb830951f993ac16b14f979074dac77e176baf6895634c33",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-pod-install.log": {
+        "sizeBytes": 52784,
+        "sha256": "c3e64ebe41be13ef4d24af5e2572e362dd2476343075accf3d2417717e404415",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-pod-install.result.json": {
+        "sizeBytes": 2341,
+        "sha256": "d476e5885dbf5a8f8979c0bc42f49f9979b761d21b8f8c9d47d53b249b7605e8",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-post-build.audit-v2.json": {
+        "sizeBytes": 2449,
+        "sha256": "37dc9b0d939b49ecfd8180b9ccc275cf39c334efd1c22792c9107ba912a16d79",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-post-metro-failure.audit-v2.json": {
+        "sizeBytes": 2457,
+        "sha256": "e142e2bf614403b41b8324e2f859f85bbb88b22970e5e4248f01c392c457d8f7",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-prepared-Podfile.lock": {
+        "sizeBytes": 120403,
+        "sha256": "a8d27643b80fddb08818cdf2df4eaf5a601debf6c89e4d0ce8661771b4def6d9",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-prepared-stage.json": {
+        "sizeBytes": 133,
+        "sha256": "75cc70802ea7bc284c8c743b7e75630104febf24a6cce6e749e1bdfcd183dcdc",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-resolved-js-versions.json": {
+        "sizeBytes": 114,
+        "sha256": "7a9f987e1b2937a1033698c9e481d5f1ead00266c4f73d4a8607157dcc8c0385",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-sentry-install.log": {
+        "sizeBytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-sentry-install.result.json": {
+        "sizeBytes": 1923,
+        "sha256": "e05190fcb2c5267976e125af71592cb79bd1a94f7bfbbad078e7338c8e68a57e",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-sounds-copy.log": {
+        "sizeBytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-sounds-copy.result.json": {
+        "sizeBytes": 2159,
+        "sha256": "71161a7453c0b3f047dc76a6c32cdc4a9c2e404c4ae3c32717ae2bdf6c66e2ba",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "before-ios-device-preflight.json": {
+        "sizeBytes": 184489,
+        "sha256": "e00341ed32f0ef4d3bc2c0e3b1fe3af06282a3cb727681277fe757ee6ca2e7c0",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "before-ios-metro-preflight.json": {
+        "sizeBytes": 233631,
+        "sha256": "d7e7f87f1cae98ade355ae7e7e34ad94c9c3ae5a4953c86f805590ee13eb55be",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "before-native-preflight.json": {
+        "sizeBytes": 198870,
+        "sha256": "fc332bf1cbc78687a2ded06bf09a295e90c3efc923b87e49c44706e63508af13",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "cleanup-ios-shutdown.log": {
+        "sizeBytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "cleanup-ios-shutdown.result.json": {
+        "sizeBytes": 514,
+        "sha256": "263cfc09caf7fd3b7973d0059a067a2877cf24e230352310fd5040153d15cafe",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "cleanup-ios-terminate.log": {
+        "sizeBytes": 339,
+        "sha256": "9471221f841e918755e75b81c58a20c8cb25ad61875016a6bf7d27fb42b0cfcd",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "cleanup-ios-terminate.result.json": {
+        "sizeBytes": 545,
+        "sha256": "53e8961c030656789bb5d263c4b78a5d697eed1ac9b73f65c5089e949fccba6c",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "cleanup-ios-uninstall.log": {
+        "sizeBytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "cleanup-ios-uninstall.result.json": {
+        "sizeBytes": 545,
+        "sha256": "cd67a4279b9f84ec42adc48ef0e231e960b20d8e5da7dcd4e33585e83bc2253a",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "cleanup-resource-preflight.json": {
+        "sizeBytes": 186489,
+        "sha256": "24a504356c427b9a6d4585095759fac50bb107b77e023efe6385ce3b82f9c5d9",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "cleanup.json": {
+        "sizeBytes": 1149,
+        "sha256": "85db064e839cdd8b2e06334db780dae06cb83f6a03c16c4eb4ac26750ec9ba04",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "generated-memory-proposed.diff": {
+        "sizeBytes": 4197,
+        "sha256": "0283f749ff7ff2bc5eef84832a269bd293e5604b6ad08ef10216f02e439a03ed",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "generated-memory-selfcheck.json": {
+        "sizeBytes": 14608,
+        "sha256": "c27f019ecffa12371ca68d07d5aa5bd6f635694f4d1dbbd0c9168d61d857c1d0",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "generated-memory-selfcheck.py": {
+        "sizeBytes": 7037,
+        "sha256": "c95ae63444b6f7f11f74961598731690b73186331bf1c3a01db0a73dc3f38cd1",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "generated-post-memory-selfcheck.json": {
+        "sizeBytes": 667,
+        "sha256": "8c18551ad8ef672a6e38faeb78b6b7b982c76ced629d66f820c81a8d670d2ff1",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "generated-post-memory-selfcheck.py": {
+        "sizeBytes": 3437,
+        "sha256": "aa9eae5e828e0b6e2a5188d3248c6d8f4080b234aa4747c054de2bdb261974e2",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "generated_pods.py": {
+        "sizeBytes": 19839,
+        "sha256": "a90893485af8e1aff9e0ccd62bdf25b3df5ff1080544b2abd24429f18e3bfa2b",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "generated_post_audit.py": {
+        "sizeBytes": 3853,
+        "sha256": "06a22901ff6cb1a7d67dd791a62d5c3d2b0cc2ffb04aa2aa04a0c84b4ffac8bc",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "helper-change-from-attempt07.diff": {
+        "sizeBytes": 4789,
+        "sha256": "d53c20f4da509fd7c3c916cfec6a262178bc8215d24c18df429719264182b8b8",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "helper-reuse-receipt.json": {
+        "sizeBytes": 3266,
+        "sha256": "837563c55c890ce550373bb528df7ba9fa7b4aeaa2b33d97f55e9b71304a6663",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "independent-helper-review.md": {
+        "sizeBytes": 1914,
+        "sha256": "51a01d152d749076ddea8d1db96ea995dd07907e4ee35baffd712879753b59cb",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "ios-artifact-export-receipt.json": {
+        "sizeBytes": 900,
+        "sha256": "304a1619bcc2f519ed533ba05850e274f38aaf429df59658dbcbb4e751b47546",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "lease-return-requested.json": {
+        "sizeBytes": 334,
+        "sha256": "c8c4a89d4a5627384a2c8c282bd27694633a44548d4342787905633445b98e9d",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "manifest.json": {
+        "sizeBytes": 54523,
+        "sha256": "f9cb28a7f232b0f876880e802ecb3e4472a2b71a53afb88b1caf92c0f16a12d8",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "mattermost-baseline-initial-raw-snapshot.json": {
+        "sizeBytes": 1569800,
+        "sha256": "1cec154858403535ea81cad32cc547daad203983cdc3fdf88ab1c3a81b21c3b6",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "mattermost-ios-simulator.app.zip": {
+        "sizeBytes": 48261208,
+        "sha256": "54f330fad4b08317774c30f556ef29f0296f9a43562b753a9444561e2a7d6890",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "official-archive-cache-receipt.json": {
+        "sizeBytes": 4008,
+        "sha256": "5feccfa91092a67e12aa196d6f16c3b4a9e478c00767c08becd97e2116bd58cc",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "official-archive-cache/hermes-ios-0.14.1-debug.tar.gz": {
+        "sizeBytes": 30469283,
+        "sha256": "07a69538c08ecc1569eb5e5ef1c57bae44ec38ab15b32b8a5291aa4353b90a0f",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "official-archive-cache/hermes-ios-0.14.1-release.tar.gz": {
+        "sizeBytes": 21762801,
+        "sha256": "af777af183efde76275685216f8ec442cf163223a451a636863bcaf7afda2b0e",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "pre-lease-preflight.json": {
+        "sizeBytes": 196111,
+        "sha256": "4adfd03f1a7372c9fabcad9879a21cf9a9d662c8adc2333d5e050e77bd625c36",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "prepare_hooks.py": {
+        "sizeBytes": 1558,
+        "sha256": "a25afc1a98cfc333db9e2e4ac3aaa66f6c6e17f258a04a20695774d82984791b",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "prepare_node_bundle_stage.py": {
+        "sizeBytes": 2448,
+        "sha256": "b09fc3ef1f188e742844c7f8e8621e6febb3af996219648daa2c23d52455ae22",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "prepare_pods_stage.py": {
+        "sizeBytes": 2937,
+        "sha256": "b9d73223413c825f9f982921773698eb9e9dc8c9e30a86c2a57eb7a60ab06e6d",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "prerequisite-memory-selfcheck.json": {
+        "sizeBytes": 1509,
+        "sha256": "f6aa8b25f6499355a3366a16e952f0d27fb9132ff23b11822a65c11409e7bfa4",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "prerequisite-memory-selfcheck.py": {
+        "sizeBytes": 5144,
+        "sha256": "fc3cf7301ba926e7c30debf3d83a856022b4540ca1b24c2e1a0cd7eaac024443",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "preserved-prior-packets.json": {
+        "sizeBytes": 434,
+        "sha256": "a2c6895352b2f244fc6964ad0ab5dc25267910d3d8e6ecefac1b0ef375ff93ae",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "readiness.json": {
+        "sizeBytes": 4271,
+        "sha256": "d552c359e14ec5bf4bc755f9e7541e6f024b6c8c8b0f09f79ccf1cd0e9a5e7d4",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "resource-preflight-memory-selfcheck.json": {
+        "sizeBytes": 1056,
+        "sha256": "4ab41d4089f5775151eea2d0364c3eb6b8039ad6322038868afa3aa325f63429",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "resource-preflight-memory-selfcheck.py": {
+        "sizeBytes": 2283,
+        "sha256": "2976223ceb6f92c77eec4a882c489d940d5d5fbfb002741780211cfe33837317",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "resource_preflight.py": {
+        "sizeBytes": 4385,
+        "sha256": "9fe84c1e5dd16ea83284bbc4a34ce1ddb5cb51a4c851bcb0d42a3df5c5e6a6fe",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "root-lease.json": {
+        "sizeBytes": 2877,
+        "sha256": "740c73f5f63f383a245dd100f55205cc8451062e423626546a55f294095b3f0f",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "root-release-message-receipt.json": {
+        "sizeBytes": 432,
+        "sha256": "4297ae2a48987c30fbc2fc62264e7fcde6d993d7c78e9b52f310415017ddcacf",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "run_step.py": {
+        "sizeBytes": 1436,
+        "sha256": "b84019851f7f28eed996bb631862c216c0f3b4c5b7d79d6a97f3dde797909ecd",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "swift-floor-readonly-facts.json": {
+        "sizeBytes": 2074,
+        "sha256": "b7d403109e6ee4e3f182f10bb09bbccc65c88eec51ad85e2f21f4218390543a7",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "SHA256SUMS": {
+        "sizeBytes": 12573,
+        "sha256": "72b8e335c131ea342325b51d38b9b48a86ff3e52d7613ed5f4e785f71fc5ab1b",
+        "hashScope": "original local raw bytes",
+        "published": false
+      }
+    }
+  },
+  "sourcePacketIntegrity": {
+    "verification": "all 129 SHA256SUMS entries match original bytes: 127 root files plus two raw official archives; SHA256SUMS own hash separately verified; 26 original result step/time/exit/argv/cwd records match raw summary",
+    "verifiedChecksumIndexEntries": 129,
+    "verifiedRunnerCommandResults": 26,
+    "files": {
+      "REPORT.md": {
+        "sizeBytes": 4972,
+        "sha256": "09edc1452c09d766080e79d6009b1e6bcd380a53f6b418180a4f3ff1e6556988",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "manifest.json": {
+        "sizeBytes": 54523,
+        "sha256": "f9cb28a7f232b0f876880e802ecb3e4472a2b71a53afb88b1caf92c0f16a12d8",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "SHA256SUMS": {
+        "sizeBytes": 12573,
+        "sha256": "72b8e335c131ea342325b51d38b9b48a86ff3e52d7613ed5f4e785f71fc5ab1b",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-post-metro-failure.audit-v2.json": {
+        "sizeBytes": 2457,
+        "sha256": "e142e2bf614403b41b8324e2f859f85bbb88b22970e5e4248f01c392c457d8f7",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "baseline-generated-post-metro-failure.json": {
+        "sizeBytes": 6126,
+        "sha256": "d485d73f2446f5d32ed2841578a88059b4b9968fd45928b0e671200439ec2b47",
+        "hashScope": "original local raw bytes",
+        "published": false
+      },
+      "cleanup.json": {
+        "sizeBytes": 1149,
+        "sha256": "85db064e839cdd8b2e06334db780dae06cb83f6a03c16c4eb4ac26750ec9ba04",
+        "hashScope": "original local raw bytes",
+        "published": false
+      }
+    },
+    "publicManifestIsCuratedSummary": true,
+    "originalHashDoesNotIdentifyPublicSanitizedBytes": true
+  },
+  "remaining": [
+    "Metro mandatory permission failure remains; exact cause unknown",
+    "First-screen verification was not started; post-failure launch request did not establish survival",
+    "Android baseline of this prepared input and independent Mattermost/minimum RN fresh preparation not started",
+    "Actual Runstir CLI/GUI, preparation regeneration and shared six-combination release gate remain later scope"
+  ]
+}

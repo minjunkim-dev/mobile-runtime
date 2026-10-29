@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 1,
+  "issue": 212,
+  "observedDate": "2026-10-10",
+  "timezone": "Asia/Seoul",
+  "status": "partial",
+  "runstirUsed": false,
+  "sameResolvedToolTuple": false,
+  "researchSource": "52ca6150685780cca86d5cb7c0b562033b40bd30",
+  "host": {
+    "os": "macOS 27.0.1",
+    "osBuild": "26A434",
+    "architecture": "arm64",
+    "xcode": "27.0",
+    "xcodeBuild": "27A266a",
+    "node": "22.23.2",
+    "npm": "10.9.8",
+    "ruby": "3.4.11p137",
+    "jdkDistribution": "Zulu17.66+19-CA",
+    "java": "17.0.19+10-LTS",
+    "emulator": "37.1.11",
+    "platformTools": "37.0.1",
+    "androidAcceleration": "Hypervisor.Framework OS X Version 27.0, exit 0",
+    "newLicenseConsent": false,
+    "globalToolSelectionChanged": false
+  },
+  "devices": {
+    "ios": {
+      "id": "8C71F44D-7D37-436D-94D3-3D25DCF3FD30",
+      "name": "iPhone 18 Pro",
+      "runtime": "iOS 27.0",
+      "preexisting": true,
+      "signing": "CODE_SIGNING_ALLOWED=NO, Simulator only"
+    },
+    "android": {
+      "avd": "Pixel_10_API_37_Play",
+      "serial": "emulator-5554",
+      "image": "system-images;android-37.0;google_apis_playstore;arm64-v8a",
+      "imageRevision": "6",
+      "fingerprint": "google/sdk_gphone64_arm64/emu64a:17/CE2A.260420.019/15611780:user/release-keys",
+      "avdPreexisting": true,
+      "emulatorBootedByThisRun": true
+    }
+  },
+  "samples": [
+    {
+      "id": "minimal",
+      "template": "@react-native-community/template@0.87.2",
+      "templateSource": "bf0ef330c39d85c3f5bab248b83c7eedbce943da",
+      "generator": "@react-native-community/cli@20.2.0",
+      "generatorCommand": "init RunstirBaselineRN --template <pinned-template-source> --skip-install --directory <new-app-root>",
+      "initialGeneratedSource": "a7b475080bae86f2a2408806233a724061ad7bdb",
+      "executionSource": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+      "sourceBundle": "minimal-source.bundle",
+      "framework": "React Native 0.87.1",
+      "bundler": "2.5.22",
+      "cocoapods": "1.15.2",
+      "xcodeproj": "1.25.1",
+      "gradle": "9.4.1",
+      "agp": "9.2.1",
+      "sdk": {
+        "compile": "37",
+        "target": "36",
+        "buildTools": "37.0.0",
+        "ndk": "27.1.12297006"
+      },
+      "locks": {
+        "package-lock.json": "3478830fc86d9d1ae7cd46ae129eec9c4915b0ec4e2df247e2cb62b136caeee0",
+        "Gemfile.lock": "3679d60340d049c31b74052580c64ab26b3e6fa611f332c1407121dfc3c791eb",
+        "ios/Podfile.lock": "cec099ee896ed83dd780bd8da0a03e840c3ba6a0803f90c0bbfcd04efaf17d56"
+      },
+      "trackedAfterPinnedExecution": "unchanged",
+      "freshCloneExecuted": false,
+      "android": {
+        "module": ":app",
+        "variant": "debug",
+        "appId": "com.runstirbaselinern",
+        "activity": ".MainActivity",
+        "build": "passed",
+        "install": "passed",
+        "launchRequest": "passed",
+        "firstScreen": "passed",
+        "firstScreenEvidence": "minimal-android.png",
+        "artifactSha256": "ea625a29a21df8348c113d817020311059f523c4e4f277505abcf8534623b3d3",
+        "artifact": "android/app/build/outputs/apk/debug/app-debug.apk",
+        "permissionPreparation": "Allowed nearby devices prompt for this newly installed sample"
+      },
+      "ios": {
+        "scheme": "RunstirBaselineRN",
+        "configuration": "Debug",
+        "build": "passed",
+        "install": "passed",
+        "launchRequest": "passed",
+        "firstScreen": "failed",
+        "appId": "org.reactjs.native.example.RunstirBaselineRN",
+        "observedLaunchPids": [
+          55086,
+          57097
+        ],
+        "failure": "EXC_BREAKPOINT SIGTRAP: ___UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption_block_invoke",
+        "artifact": "minimal-ios.app.zip",
+        "artifactSha256": "af040475f573409ec581760345cdde269542a52df956243747d69c6280474ee8",
+        "executableSha256": "1ab65ed945d36b5f7235dd8fcbe20b8cc8e35bfa3d54963d53f4209404f87acc"
+      }
+    },
+    {
+      "id": "bluewallet",
+      "repository": "https://github.com/BlueWallet/BlueWallet",
+      "executionSource": "69adb1555038c8b2385952edd0404d2e1ecd7ca7",
+      "framework": "React Native 0.85.3",
+      "jsPreparation": "npm ci, exit 0",
+      "bundler": "2.6.9",
+      "cocoapods": "1.17.0",
+      "xcodeproj": "1.28.1",
+      "gradle": "9.3.1",
+      "agp": "8.13.2",
+      "sdk": {
+        "compile": "36",
+        "target": "36",
+        "buildTools": "36.0.0",
+        "ndk": "28.2.13676358"
+      },
+      "locks": {
+        "package-lock.json": "d4baeb805376bc178428464867435c1832b4f94ccbb2d2ea4dfd7286a3d8fc07",
+        "Gemfile.lock": "09528bbbbf3141568bbc664e0ee9270c617ac87c937f36a66911edf3fa916814",
+        "ios/Podfile.lock": "01db3c351c647e5e15988227c8851003c0262159c8c11d3e2240a9d13f3b3e4f"
+      },
+      "trackedAfterPinnedExecution": "unchanged",
+      "freshCloneExecuted": false,
+      "android": {
+        "module": ":app",
+        "variant": "debug",
+        "architectures": "arm64-v8a",
+        "appId": "io.bluewallet.bluewallet",
+        "activity": ".MainActivity",
+        "build": "passed",
+        "install": "passed",
+        "launchRequest": "passed",
+        "firstScreen": "passed",
+        "firstScreenEvidence": "bluewallet-android.png",
+        "artifactSha256": "3b18c23f5fb0f376f0fccf62c27e409a2c8e2fcc8ac43c9827ee4b24dcb04218",
+        "artifact": "android/app/build/outputs/apk/debug/app-debug.apk",
+        "observedPid": 4962
+      },
+      "ios": {
+        "scheme": "BlueWallet",
+        "configuration": "Debug",
+        "preparation": "failed",
+        "preparationCommand": "bundle exec pod install --deployment",
+        "exitCode": 1,
+        "failure": "Tracked npm lock lottie 7.5.0 / safe-area 5.10.1 disagrees with Pod lock 7.4.0 / 5.8.1; deployment rejects graph/checksum drift",
+        "build": "not-run",
+        "install": "not-run",
+        "launchRequest": "not-run",
+        "firstScreen": "not-run"
+      }
+    }
+  ],
+  "explicitEnvironment": {
+    "misePrefix": "mise exec node@22.23.2 ruby@3.4.11 (or java@zulu-17.66.19.0)",
+    "sdkRoot": "<existing-android-sdk>",
+    "metroPort": 8081,
+    "watchman": false,
+    "watchmanConfig": "no-watchman-config.cjs",
+    "iosTmpDir": "/tmp",
+    "uiScreenshotsViaTemporaryDir": true
+  },
+  "unverified": [
+    "Successful minimum iOS initial UI",
+    "BlueWallet iOS frozen preparation, build/install/launch/initial UI",
+    "Runstir CLI/GUI validation",
+    "Fresh/clean host or VM execution",
+    "Physical devices, VoiceOver, release gates"
+  ],
+  "publicFiles": {
+    "minimal-source.bundle": "b268d51829abee5daa922d6bf1b75e8e157e390e9959124fae8abdb418de0b38",
+    "minimal-android.png": "a16a8dcdcf07c38e0875dba7040c62ff3247c1d538472ceb8eb22aa372a0bfea",
+    "bluewallet-android.png": "f18908c6cb7d72a3e834e8744c6373bf110d612fcdf8a88209464c44571ff4ad",
+    "execution.txt": "2982eba565a8992191055153b9919c63417ca71a225a9fefc16ff359994e2585",
+    "no-watchman-config.cjs": "805039e7e420ce17a8690d4e68a10168644c8fc4d43e5e72679cf77d733f87d9"
+  },
+  "attemptId": "attempt-01-ios27",
+  "tupleDecision": {
+    "url": "https://github.com/minjunkim-dev/mobile-runtime/issues/212#issuecomment-6092021206",
+    "scope": "Common host/devices, preserve sample-declared versions; baseline-to-Runstir must match each sample tuple",
+    "acrossSampleResolvedDifferencesAllowed": true,
+    "priorCommonPodsQuestion": "Historical pre-decision investigation; not a current blocker"
+  }
+}

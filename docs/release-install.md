@@ -82,7 +82,7 @@ gh workflow run draft-release.yml --repo minjunkim-dev/mobile-runtime --ref main
 ```
 
 workflow는 잠근 의존성으로 macOS arm64 CLI archive·GUI DMG·checksum·`CANDIDATE.json`을 만들고 검증한다.
-현재 workflow는 서명 자격을 준비하거나 서명 입력을 전달하지 않는다. 구조 검증용 unsigned 후보를 만든다.
+workflow는 구조 검증용 unsigned 후보를 만든다.
 GitHub에 `draft=true`, `prerelease=true`인 Release만 생성한다.
 기존 Release와 태그가 있는 버전은 거절한다. 기존 asset을 덮어쓰지 않는다.
 Draft 생성 직전에 입력을 다시 검증한다. 생성 후 같은 태그가 생겼으면 실패로 처리하고 Draft를 공개하지 않는다.
@@ -118,14 +118,15 @@ macOS의 시스템 설정에서 제공하는 보안 승인 절차를 따른다.
 1. 같은 source SHA의 필수 CI를 확인한다. `Draft Release` 또는 로컬 `scripts/package-release.sh <alpha-version> <새-output-directory>`로 후보를 만든다.
 2. 이 저장소는 public이다. `Draft Release` run의 `draft-release` Actions artifact는 7일간 보관하지만 제한 후보 배포 위치로 취급하지 않는다. 제한 후보 배포 위치와 검증자 접근 권한은 별도로 확정한다.
 3. 후보 디렉터리에서 두 `.sha256` 파일을 확인한다. `scripts/verify-candidate.sh <candidate-directory>`로 archive·DMG의 source/version/Core identity와 resource bundle을 확인한다.
-4. 후보 Homebrew formula는 `runstir-candidate.rb`다. 제한 후보 archive URL을 `RUNSTIR_CANDIDATE_URL`에 지정한 뒤 `brew install --formula ./runstir-candidate.rb`를 실행한다. URL의 인증값을 로그나 증거에 넣지 않는다. 후보는 keg-only다. `brew --prefix runstir-candidate` 아래의 `bin/mobile`로 검증한다. 기존 CLI를 link하거나 교체하지 않는다. 로컬 구조 검사는 archive의 절대 `file://` URL을 사용할 수 있다. 이 검사는 AC16의 제한 위치 다운로드·설치 검증을 대체하지 않는다.
-5. Developer ID 서명·공증한 DMG만 Gatekeeper 실행 검증에 사용한다. `Runstir.app`을 검증용 Applications 경로로 복사한다. GUI에 제품 버전과 공식 다운로드 링크가 표시된다. 새 DMG의 앱으로 수동 교체한다. GUI bundle에는 `mobile`이 없고 별도 CLI 경로를 변경하지 않는다.
+4. 후보 Homebrew formula는 `runstir-candidate.rb`다. 제한 위치의 archive는 brew 밖에서 내려받고 `.sha256`을 확인한다. brew는 받은 URL을 로그에 출력하므로 인증값이 있는 URL을 brew에 넘기지 않는다. 내려받은 archive의 절대 `file://` URL을 `HOMEBREW_RUNSTIR_CANDIDATE_URL`에 지정한다. Homebrew는 tap 밖의 formula 파일을 설치하지 않는다. `brew tap-new --no-git <user>/runstir-candidate`로 만든 로컬 tap의 `Formula/`에 formula를 복사한 뒤 `brew install <user>/runstir-candidate/runstir-candidate`를 실행한다. 같은 셸에서 이 변수를 유지한 채 검증하고, 끝나면 `brew uninstall`과 `brew untap`으로 후보와 로컬 tap을 지운다. 후보는 keg-only다. `brew --prefix runstir-candidate` 아래의 `bin/mobile`로 검증한다. 기존 CLI를 link하거나 교체하지 않는다. 이 설치 검사는 AC16의 제한 위치 다운로드·설치 검증을 대체하지 않는다.
+5. `Runstir.app`을 검증용 Applications 경로로 복사한다. GUI에 제품 버전과 공식 다운로드 링크가 표시된다. 새 DMG의 앱으로 수동 교체한다. GUI bundle에는 `mobile`이 없고 별도 CLI 경로를 변경하지 않는다.
 
+Developer ID 서명·공증한 DMG만 Gatekeeper 실행 검증에 사용한다.
 로컬 서명 제작에는 설치된 Developer ID Application 인증서와 기존 `notarytool` keychain profile이 필요하다.
 인증서의 identity 이름을 `RUNSTIR_SIGNING_IDENTITY`에 지정한다. profile 이름을 `RUNSTIR_NOTARY_PROFILE`에 지정한다.
-private key·비밀번호·공증 credential은 이 명령의 인자나 증거에 넣지 않는다. 현재 Draft workflow는 이 로컬 서명 경로를 실행하지 않는다. runner 서명은 별도의 자격 준비·전달·정리 구현과 검토가 필요하다.
+private key·비밀번호·공증 credential은 이 명령의 인자나 증거에 넣지 않는다. 현재 Draft workflow는 이 로컬 서명 경로를 실행하지 않고 unsigned 후보만 싣는다. runner 서명은 별도의 자격 준비·전달·정리 구현과 검토가 필요하다.
 두 입력이 없으면 구조 검증용 unsigned 후보를 만든다. 입력 하나만 있으면 제작을 중단한다.
-서명 경로는 CLI와 GUI의 hardened runtime 서명을 검증한다. CLI zip과 GUI DMG의 공증 승인을 확인한다. DMG에는 ticket을 staple하고 검증한다.
+서명 경로는 CLI와 GUI의 hardened runtime 서명을 검증한다. CLI zip과 GUI DMG의 공증 승인을 확인한다. DMG에는 ticket을 staple하고 검증한다. `verify-candidate.sh`는 `CANDIDATE.json`이 서명 상태를 주장할 때 그 서명을 확인한다.
 실제 자격이 없는 환경에서는 이 서명·공증 경로를 실행 검증했다고 기록하지 않는다.
 
 `CANDIDATE.json`은 artifact SHA-256·source SHA·제품 버전·Core build identity와 서명·공증 상태를 고정한다.

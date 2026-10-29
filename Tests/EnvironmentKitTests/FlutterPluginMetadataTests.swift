@@ -6,6 +6,24 @@ import Testing
 
 @Suite("Flutter plugin preparation evidence")
 struct FlutterPluginMetadataTests {
+    @Test("an empty Flutter section is not a plugin declaration", arguments: ["empty", "null", "tilde", "string", "boolean", "list"], [false, true])
+    func emptyFlutterSection(_ mode: String, _ manual: Bool) async throws {
+        let f = try FlutterFixture()
+        try configure(f, plugins: ["foo"])
+        let value = switch mode {
+        case "empty": ""
+        case "null": "null"
+        case "tilde": "~"
+        case "string": "invalid"
+        case "boolean": "false"
+        default: "[]"
+        }
+        try f.repo.write("packages/foo/pubspec.yaml", "name: foo\nflutter: \(value)\n")
+        try metadata(f, plugins: [])
+        let plan = try await f.inspect(f.runner(), preparedDependencies: manual)
+        expectGenerated(plan, reuse: ["empty", "null", "tilde"].contains(mode))
+    }
+
     @Test("an app with no reachable plugins accepts the official absence of plugin metadata")
     func noPlugins() async throws {
         let f = try FlutterFixture()
@@ -98,6 +116,106 @@ struct FlutterPluginMetadataTests {
         let plan = try await f.inspect(f.runner())
         expectGenerated(plan, reuse: false)
         #expect(plan.checks.contains { $0.id == "ios.flutter.generated" && $0.observed?.contains("legacy or federated") == true })
+        let manual = try await f.inspect(f.runner(), preparedDependencies: true)
+        expectGenerated(manual, reuse: true)
+        #expect(manual.iosPluginDirectories == ["foo": f.repo.url("packages/foo")])
+        #expect(manual.iosPluginMetadata == .bytes(try Data(contentsOf: f.repo.url(".flutter-plugins-dependencies"))))
+    }
+
+    @Test("manual resolver reuse still rejects unsafe or missing generated evidence", arguments: ["absent", "version", "path", "duplicate", "native-number", "shared-number", "graph"])
+    func manualEvidence(_ fault: String) async throws {
+        let f = try FlutterFixture()
+        try configure(f, plugins: ["foo"])
+        try f.repo.write("packages/foo/pubspec.yaml", "name: foo\nflutter:\n  plugin:\n    pluginClass: FixturePlugin\n")
+        var row: [String: Any] = ["name": "foo", "path": f.repo.url("packages/foo").path, "native_build": true]
+        if fault == "path" { row["path"] = f.repo.url("another-package").path }
+        if fault == "native-number" { row["native_build"] = 1 }
+        if fault == "shared-number" { row["shared_darwin_source"] = 0 }
+        let rows = fault == "duplicate" ? [row, row] : [row]
+        try JSONSerialization.data(withJSONObject: ["version": fault == "version" ? "0.0.0" : "3.41.9",
+            "plugins": ["ios": rows, "android": rows]]).write(to: f.repo.url(".flutter-plugins-dependencies"))
+        if fault == "absent" { try FileManager.default.removeItem(at: f.repo.url(".flutter-plugins-dependencies")) }
+        if fault == "graph" { try FileManager.default.removeItem(at: f.repo.url(".dart_tool/package_graph.json")) }
+        let plan = try await f.inspect(f.runner(), preparedDependencies: true)
+        expectGenerated(plan, reuse: false)
+        #expect(plan.iosPluginMetadata == nil)
+    }
+
+    @Test("manual reuse binds generated native directories without claiming resolver completeness")
+    func manualResolverResponsibility() async throws {
+        let f = try FlutterFixture()
+        try configure(f, plugins: ["foo", "bar"])
+        try metadata(f, plugins: ["foo"])
+        let automatic = try await f.inspect(f.runner())
+        expectGenerated(automatic, reuse: false)
+        let manual = try await f.inspect(f.runner(), preparedDependencies: true)
+        expectGenerated(manual, reuse: true)
+        #expect(manual.iosPluginDirectories == ["foo": f.repo.url("packages/foo")])
+    }
+
+    @Test("manual selected implementations retain package identity without requiring app reachability",
+          arguments: ["valid", "missing-graph", "manifest-name", "dependency-mismatch"])
+    func manualSelectedPackageIdentity(_ mode: String) async throws {
+        let f = try FlutterFixture()
+        try configure(f, plugins: ["foo", "bar"])
+        try f.repo.write("pubspec.yaml", manifest(dependencies: ["flutter", "foo"]))
+        try f.repo.write("packages/bar/pubspec.yaml", "name: \(mode == "manifest-name" ? "other" : "bar")\nflutter:\n  plugin:\n    implements: foo\n    platforms:\n      ios:\n        pluginClass: BarPlugin\n")
+        let graphFile = f.repo.url(".dart_tool/package_graph.json")
+        var graph = try #require(JSONSerialization.jsonObject(with: Data(contentsOf: graphFile)) as? [String: Any])
+        var packages = try #require(graph["packages"] as? [[String: Any]])
+        for index in packages.indices {
+            if packages[index]["name"] as? String == "example" { packages[index]["dependencies"] = ["flutter", "foo"] }
+            if packages[index]["name"] as? String == "bar", mode == "dependency-mismatch" {
+                packages[index]["dependencies"] = ["foo"]
+            }
+        }
+        if mode == "missing-graph" { packages.removeAll { $0["name"] as? String == "bar" } }
+        graph["packages"] = packages
+        try JSONSerialization.data(withJSONObject: graph).write(to: graphFile)
+        try metadata(f, plugins: ["bar"])
+        let plan = try await f.inspect(f.runner(), preparedDependencies: true)
+        expectGenerated(plan, reuse: mode == "valid")
+        if mode == "valid" {
+            #expect(plan.iosPluginDirectories == ["bar": f.repo.url("packages/bar")])
+            #expect(plan.iosPluginMetadata == .bytes(try Data(contentsOf: f.repo.url(".flutter-plugins-dependencies"))))
+        } else {
+            #expect(plan.iosPluginDirectories.isEmpty)
+            #expect(plan.iosPluginMetadata == nil)
+        }
+    }
+
+    @Test("manual selected implementations validate their runtime closure without requiring dependency dev packages",
+          arguments: ["valid", "cycle", "missing-child", "child-name", "child-edges", "dependency-dev"])
+    func manualSelectedRuntimeClosure(_ mode: String) async throws {
+        let f = try FlutterFixture()
+        try configure(f, plugins: ["foo", "bar", "child"])
+        try f.repo.write("pubspec.yaml", manifest(dependencies: ["flutter", "foo"]))
+        let dependency = mode == "missing-child" ? "missing" : "child"
+        try f.repo.write("packages/bar/pubspec.yaml", "name: bar\ndependencies:\n  \(dependency): any\nflutter:\n  plugin:\n    implements: foo\n    platforms:\n      ios:\n        pluginClass: BarPlugin\n")
+        try f.repo.write("packages/child/pubspec.yaml", "name: \(mode == "child-name" ? "other" : "child")\n"
+            + (mode == "cycle" ? "dependencies:\n  bar: any\n" : "")
+            + (mode == "dependency-dev" ? "dev_dependencies:\n  missing: any\n" : ""))
+        let graphFile = f.repo.url(".dart_tool/package_graph.json")
+        var graph = try #require(JSONSerialization.jsonObject(with: Data(contentsOf: graphFile)) as? [String: Any])
+        var packages = try #require(graph["packages"] as? [[String: Any]])
+        for index in packages.indices {
+            switch packages[index]["name"] as? String {
+            case "example": packages[index]["dependencies"] = ["flutter", "foo"]
+            case "bar": packages[index]["dependencies"] = [dependency]
+            case "child":
+                packages[index]["dependencies"] = mode == "cycle" ? ["bar"] : mode == "child-edges" ? ["foo"] : []
+                packages[index]["devDependencies"] = mode == "dependency-dev" ? ["missing"] : []
+            default: break
+            }
+        }
+        graph["packages"] = packages
+        try JSONSerialization.data(withJSONObject: graph).write(to: graphFile)
+        try metadata(f, plugins: ["bar"])
+        let plan = try await f.inspect(f.runner(), preparedDependencies: true)
+        let valid = ["valid", "cycle", "dependency-dev"].contains(mode)
+        expectGenerated(plan, reuse: valid)
+        #expect(plan.iosPluginDirectories == (valid ? ["bar": f.repo.url("packages/bar")] : [:]))
+        #expect(plan.iosPluginMetadata == (valid ? .bytes(try Data(contentsOf: f.repo.url(".flutter-plugins-dependencies"))) : nil))
     }
 
     @Test("plugin rows preserve exact identity and native build evidence", arguments: ["native", "path", "duplicate"])

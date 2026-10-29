@@ -43,7 +43,7 @@ struct XcodeSchemeList: Decodable {
         buildTarget: XcodeBuildTarget,
         fileManager: FileManager = .default
     ) -> XcodeBuildTarget {
-        if anchor.framework == .nativeIOS { return buildTarget }
+        if anchor.framework == .nativeIOS || anchor.framework == .flutter { return buildTarget }
         return project(inIOSDirectoryOf: anchor, fileManager: fileManager).map {
             XcodeBuildTarget(kind: .project, url: $0)
         } ?? buildTarget
@@ -64,27 +64,29 @@ struct XcodeSchemeList: Decodable {
     /// Xcode's listing can include a user's unshared schemes. Native projects
     /// expose only shared schemes beside the selected container or its members.
     func schemes(in target: XcodeBuildTarget, anchor: ProjectAnchor) -> [String] {
-        guard anchor.framework == .nativeIOS else { return schemes }
+        guard anchor.framework == .nativeIOS || anchor.framework == .flutter else { return schemes }
         let shared = Set(Self.sharedSchemes(in: target).map { $0.deletingPathExtension().lastPathComponent })
         return schemes.filter { shared.contains($0) }
     }
 
     static func sharedSchemes(in target: XcodeBuildTarget) -> [URL] {
-        var containers = [target.url]
-        if target.kind == .workspace,
-           let data = try? Data(contentsOf: target.url.appendingPathComponent("contents.xcworkspacedata")) {
-            let references = WorkspaceReferences(root: target.url.deletingLastPathComponent())
-            let parser = XMLParser(data: data)
-            parser.delegate = references
-            if parser.parse() {
-                containers += references.projects
-            }
-        }
+        let containers = [target.url] + (target.kind == .workspace ? projects(in: target) : [])
         return containers.flatMap { container in
             let directory = container.appendingPathComponent("xcshareddata/xcschemes")
             return ((try? FileManager.default.contentsOfDirectory(atPath: directory.path)) ?? [])
                 .filter { $0.hasSuffix(".xcscheme") }.map(directory.appendingPathComponent)
         }
+    }
+
+    /// Workspace members may be outside its directory when explicitly referenced.
+    /// Reuse the same references for shared schemes and app-project metadata queries.
+    static func projects(in target: XcodeBuildTarget) -> [URL] {
+        guard target.kind == .workspace,
+              let data = try? Data(contentsOf: target.url.appendingPathComponent("contents.xcworkspacedata")) else { return [] }
+        let references = WorkspaceReferences(root: target.url.deletingLastPathComponent())
+        let parser = XMLParser(data: data)
+        parser.delegate = references
+        return parser.parse() ? references.projects : []
     }
 
     static func runnable(scheme: String, in target: XcodeBuildTarget) -> [String: String]? {

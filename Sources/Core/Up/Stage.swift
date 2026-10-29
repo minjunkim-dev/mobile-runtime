@@ -89,6 +89,7 @@ public struct AndroidBuiltProduct: Sendable, Equatable, Encodable {
     public var device: AndroidDevice?
     public var reverse: AndroidReverse?
     public var appPid: Int32?
+    public var flutterConnection: AndroidFlutterConnection?
     public var rollback: [TeardownItem]?
 
     public init(
@@ -104,7 +105,8 @@ public struct AndroidBuiltProduct: Sendable, Equatable, Encodable {
         device: AndroidDevice? = nil,
         reverse: AndroidReverse? = nil,
         appPid: Int32? = nil,
-        rollback: [TeardownItem]? = nil
+        rollback: [TeardownItem]? = nil,
+        flutterConnection: AndroidFlutterConnection? = nil
     ) {
         self.apkPath = apkPath
         self.module = module
@@ -119,12 +121,29 @@ public struct AndroidBuiltProduct: Sendable, Equatable, Encodable {
         self.reverse = reverse
         self.appPid = appPid
         self.rollback = rollback
+        self.flutterConnection = flutterConnection
     }
 
     private enum CodingKeys: String, CodingKey {
         case module, variant, assembleTask, applicationId, minSdk, targetSdk, abis, launcherActivity
-        case device, reverse, appPid, rollback
+        case device, reverse, appPid, rollback, flutterConnection
     }
+}
+
+/// Encodes ports only. Like iOS, the authenticated URI is reported once, in `operation.developmentServiceURI` (ADR-0044).
+public struct AndroidFlutterConnection: Sendable, Equatable, Encodable {
+    public let hostPort: Int
+    public let devicePort: Int
+    /// The host-forwarded URI whose `getVM` answered as a Dart VM.
+    public let serviceURI: URL?
+
+    public init(hostPort: Int, devicePort: Int, serviceURI: URL? = nil) {
+        self.hostPort = hostPort
+        self.devicePort = devicePort
+        self.serviceURI = serviceURI
+    }
+
+    private enum CodingKeys: String, CodingKey { case hostPort, devicePort }
 }
 
 public struct AndroidDevice: Sendable, Equatable, Encodable {
@@ -182,14 +201,17 @@ public struct MetroProcess: Sendable, Equatable, Encodable {
     public let state: State
     /// Where the detached child's two streams went — the only place its output is.
     public let logPath: String?
+    public let port: Int
 
     public init(
-        state: State, pid: Int32? = nil, listenerPid: Int32? = nil, logPath: String? = nil
+        state: State, pid: Int32? = nil, listenerPid: Int32? = nil, logPath: String? = nil,
+        port: Int = MetroVerdict.port
     ) {
         self.state = state
         self.pid = pid
         self.listenerPid = listenerPid
         self.logPath = logPath
+        self.port = port
     }
 }
 
@@ -225,6 +247,9 @@ public struct UpContext: Sendable {
     /// the pipeline: it is there so whatever runs after `up` can address the process
     /// without going looking for it.
     public var appPid: Int32?
+
+    /// Observed from this Flutter app launch, never inferred from a successful PID.
+    public var developmentServiceURI: String?
 
     /// Android rollback can raise a domain failure to a tool failure. Kept out of
     /// JSON; the item-level evidence is encoded under `result.android.rollback`.

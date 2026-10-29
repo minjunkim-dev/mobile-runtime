@@ -11,22 +11,26 @@ struct WorkflowOptions: ParsableArguments {
     @Option(name: .long, help: "Project folder. Defaults to the current working directory.") var project: String?
     @Option(name: .long, help: "Project app candidate id reported by doctor.") var app: String?
     @Option(name: .long, help: "ios or android. Required for dual-platform apps; no implicit iOS default.") var platform: MobilePlatform?
-    @Option(name: .long, help: "Simulator UDID or avd:<name>. Omit for build or down.") var device: String?
+    @Option(name: .long, help: "Simulator UDID for iOS build/up, or avd:<name> for Android up. Omit for Android build and down.") var device: String?
     @Option(name: .long, help: "iOS scheme. Defaults to mobile.yml or the only app scheme.") var scheme: String?
     @Option(name: .long, help: "iOS build configuration. Defaults to Debug only when it exists.") var configuration: String?
     @Option(name: .long, help: "Android application module. Defaults to mobile.yml or the only module.") var module: String?
     @Option(name: .long, help: "Android debuggable variant. Defaults to mobile.yml, debug, or the only variant.") var variant: String?
+    @Option(name: .long, help: "Flutter Dart entrypoint inside the selected app. Defaults to lib/main.dart.") var entrypoint: String?
+    @Option(name: .long, help: "React Native build/up Metro port (default 8081), or Flutter up VM service port (automatic when omitted). Unsupported workflows stop before changes.") var port: Int?
     @Flag(name: .long, help: "Do not ask questions. Missing selections return candidates without starting changes.") var nonInteractive = false
+    @Flag(name: .long, help: "React Native·Flutter build/up에서 직접 준비한 의존성을 사용합니다. 재설치·lock 정렬 재검증을 생략하며 Flutter plugin resolver를 포함한 의존성 정합성은 사용자가 확인해야 합니다. Flutter의 추적된 내부 source 파일 링크만 검증 후 허용합니다.") var preparedDependencies = false
 
     func run(_ kind: WorkflowKind) async throws {
         bootstrapLogging(verbose: verbose, silent: progressJson)
         let input = WorkflowInput(project: ProjectInspectionInput(
             directory: URL(fileURLWithPath: project ?? FileManager.default.currentDirectoryPath),
             environment: ProcessInfo.processInfo.environment, app: app,
-            platform: platform.flatMap { ProjectPlatform(rawValue: $0.rawValue) }),
-            device: device, scheme: scheme, configuration: configuration, module: module, variant: variant)
+            platform: platform.flatMap { ProjectPlatform(rawValue: $0.rawValue) }, entrypoint: entrypoint),
+            device: device, scheme: scheme, configuration: configuration, module: module, variant: variant, port: port,
+            preparedDependencies: preparedDependencies)
         let structured = progressJson
-        let task = Task {
+        let result = try await cancellingOnSignals {
             await WorkflowExecution.run(kind, input: input) { event in
                 if structured {
                     if let line = try? event.encoded() { writeError(line) }
@@ -37,26 +41,13 @@ struct WorkflowOptions: ParsableArguments {
                 }
             }
         }
-        let oldInterrupt = signal(SIGINT, SIG_IGN)
-        let oldTerminate = signal(SIGTERM, SIG_IGN)
-        let signals = [SIGINT, SIGTERM].map { number in
-            let source = DispatchSource.makeSignalSource(signal: number, queue: .global())
-            source.setEventHandler { task.cancel() }
-            source.resume()
-            return source
-        }
-        defer {
-            for source in signals { source.cancel() }
-            signal(SIGINT, oldInterrupt)
-            signal(SIGTERM, oldTerminate)
-        }
-        let result = await task.value
         if json {
             print(try result.encoded(toolVersion: Tool.version))
         } else if progressJson {
             print("\(kind.rawValue): \(result.operation.state)")
         } else {
             let renderer = HumanReportRenderer(useColor: Terminal.supportsColor, verbose: verbose)
+            if let uri = result.operation.developmentServiceURI { writeError("Flutter VM service: \(uri)") }
             if let report = result.up {
                 UpWriter(command: kind.rawValue, renderer: renderer, standardError: { writeError($0) }).finish(report)
             }
@@ -66,7 +57,7 @@ struct WorkflowOptions: ParsableArguments {
             for candidate in result.operation.selection?.candidates ?? [] where result.operation.requiredInput.contains("--app") {
                 writeError("app: \(candidate.id)")
             }
-            for candidate in result.operation.devices { writeError("device: \(candidate.id) — \(candidate.name) / \(candidate.detail)") }
+            for candidate in result.operation.devices { writeError("device: \(candidate.id) — \(candidate.name) / \(candidate.detail)\(candidate.origin.map { " / " + $0.displayName } ?? "")\(candidate.avdDirectory.map { " / " + $0 } ?? "")") }
             if !result.operation.schemes.isEmpty { writeError("schemes: \(result.operation.schemes.joined(separator: ", "))") }
             if !result.operation.modules.isEmpty { writeError("modules: \(result.operation.modules.joined(separator: ", "))") }
             if !result.operation.variants.isEmpty { writeError("variants: \(result.operation.variants.joined(separator: ", "))") }

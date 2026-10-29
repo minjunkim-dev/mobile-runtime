@@ -23,17 +23,20 @@ public func iOSStages(
     deviceID: String? = nil,
     configuration: String = "Debug",
     buildWithoutDevice: Bool = false,
+    preparedDependencies: Bool = false,
+    metroPort: Int? = nil,
+    flutterPort: Int? = nil,
     note: @escaping @Sendable (String) -> Void
 ) -> [any Stage] {
     var stages: [any Stage] = [
         ValidateStage(
             engine: doctor,
-            checkIDs: IOSWorkflowValidation.checkIDs,
+            checkIDs: IOSWorkflowValidation.checkIDs.union(anchor.framework == .flutter ? ["flutter.declarations", "flutter.sdk", "flutter.workspace", "flutter.entrypoint", "dependencies.flutter", "ios.flutter.generated", "ios.flutter.host", "ios.flutter.project", "flutter.ios-prepared-sdk"] : []),
             promoteToError: IOSWorkflowValidation.promotesToError
         ),
     ]
-    if anchor.framework == .reactNative {
-        stages.append(DependenciesStage(anchor: anchor, runner: projectRunner))
+    if anchor.framework == .reactNative || (anchor.framework == .flutter && preparedDependencies) {
+        stages.append(DependenciesStage(anchor: anchor, runner: projectRunner, preparedDependencies: preparedDependencies))
     }
     if !buildWithoutDevice {
         stages.append(DeviceStage(
@@ -41,15 +44,16 @@ public func iOSStages(
             lookup: lookup,
             runner: hostRunner,
             locator: locator,
-            deviceID: deviceID
+            deviceID: deviceID,
+            bootIfNeeded: workflow == .up
         ))
     }
     if case .up = workflow, anchor.framework == .reactNative {
         // Before build on purpose: Metro warms up while xcodebuild spends its minutes.
-        stages.append(MetroStage(anchor: anchor, runner: projectRunner))
+        stages.append(MetroStage(anchor: anchor, runner: projectRunner, port: metroPort))
     }
     stages.append(BuildStage(config: config, runner: projectRunner, locator: locator,
-                             configuration: configuration, genericDestination: buildWithoutDevice, note: note))
+                             configuration: configuration, genericDestination: buildWithoutDevice, metroPort: metroPort, note: note))
     if case .up = workflow {
         stages.append(InstallStage(
             runner: hostRunner, locator: locator, logs: RunLogs(project: anchor.directory)
@@ -59,7 +63,7 @@ public func iOSStages(
             runner: hostRunner,
             metroRunner: projectRunner,
             locator: locator,
-            readinessWait: readinessWait
+            readinessWait: readinessWait, metroPort: metroPort, flutterPort: flutterPort
         ))
     }
     return stages

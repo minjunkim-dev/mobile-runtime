@@ -75,3 +75,17 @@ These checks prove approval, display, event, exit, and ownership behavior. They 
 not prove host SDK installation, a real mobile build, an app's first screen,
 device accessibility, signing, or a release gate. Provider installation remains
 in #203–#206; broader operation ownership remains in #216.
+
+
+### 가상 기기 출처
+
+승인한 준비가 새 Simulator·AVD 생성을 확인하면 사용자 공용
+`~/Library/Caches/dev.runstir/leases/device-origins.json`에 출처를 기록한다(ADR-0045).
+기기 목록의 `origin`은 `runstir`, `external`, `unknown`이고, Android의
+`avdDirectory`는 이번 목록에서 사용한 AVD 폴더의 실제 경로다. GUI와 CLI 사람용
+출력도 같은 값을 표시한다. 물리 기기에는 가상 기기 출처를 붙이지 않는다.
+
+출처는 표시 정보이며 실행 허가나 정리 권한이 아니다. 기존 기기나 재사용한 기기의
+기록을 역으로 채우지 않는다. 기록이 없으면 외부 기기로 표시하므로 사용자가 이 캐시를
+삭제하면 이전 출처를 복원하지 않는다. 손상된 기록은 덮어쓰지 않고 doctor에서 경고한다.
+생성 후 기록 저장에 실패하면 기기를 보존한 채 준비 결과를 부분 완료로 보고한다.

@@ -1,0 +1,1457 @@
+{
+  "schemaVersion": 1,
+  "requirements": [
+    {
+      "id": "AC01-required-matrix",
+      "gate": "AC01",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared"
+    },
+    {
+      "id": "AC02-required-matrix",
+      "gate": "AC02",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared"
+    },
+    {
+      "id": "AC03-required-matrix",
+      "gate": "AC03",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared"
+    },
+    {
+      "id": "AC04-required-matrix",
+      "gate": "AC04",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared"
+    },
+    {
+      "id": "AC06-required-matrix",
+      "gate": "AC06",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared"
+    },
+    {
+      "id": "AC07-required-matrix",
+      "gate": "AC07",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared"
+    },
+    {
+      "id": "AC08-required-matrix",
+      "gate": "AC08",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared"
+    },
+    {
+      "id": "AC09-required-matrix",
+      "gate": "AC09",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared"
+    },
+    {
+      "id": "AC10-required-matrix",
+      "gate": "AC10",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared"
+    },
+    {
+      "id": "AC11-required-matrix",
+      "gate": "AC11",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared"
+    },
+    {
+      "id": "AC12-required-matrix",
+      "gate": "AC12",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared"
+    },
+    {
+      "id": "AC13-required-matrix",
+      "gate": "AC13",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared"
+    },
+    {
+      "id": "AC14-required-matrix",
+      "gate": "AC14",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared"
+    },
+    {
+      "id": "AC15-required-matrix",
+      "gate": "AC15",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared"
+    },
+    {
+      "id": "AC16-required-matrix",
+      "gate": "AC16",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared"
+    },
+    {
+      "id": "AC17-required-matrix",
+      "gate": "AC17",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared"
+    },
+    {
+      "id": "AC18-required-matrix",
+      "gate": "AC18",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared"
+    },
+    {
+      "id": "AC19-required-matrix",
+      "gate": "AC19",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared"
+    },
+    {
+      "id": "AC05-rn-ios-minimal-CLI",
+      "gate": "AC05",
+      "tupleID": "rn-ios",
+      "sampleID": "minimal",
+      "sampleSHA": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+      "frontend": "CLI"
+    },
+    {
+      "id": "AC05-rn-ios-minimal-GUI",
+      "gate": "AC05",
+      "tupleID": "rn-ios",
+      "sampleID": "minimal",
+      "sampleSHA": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+      "frontend": "GUI"
+    },
+    {
+      "id": "AC05-rn-ios-oss-CLI",
+      "gate": "AC05",
+      "tupleID": "rn-ios",
+      "sampleID": "mattermost",
+      "sampleSHA": "c2fe3beda22befd2178dce431793c09111ed903e",
+      "frontend": "CLI"
+    },
+    {
+      "id": "AC05-rn-ios-oss-GUI",
+      "gate": "AC05",
+      "tupleID": "rn-ios",
+      "sampleID": "mattermost",
+      "sampleSHA": "c2fe3beda22befd2178dce431793c09111ed903e",
+      "frontend": "GUI"
+    },
+    {
+      "id": "AC05-rn-android-minimal-CLI",
+      "gate": "AC05",
+      "tupleID": "rn-android",
+      "sampleID": "minimal",
+      "sampleSHA": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+      "frontend": "CLI"
+    },
+    {
+      "id": "AC05-rn-android-minimal-GUI",
+      "gate": "AC05",
+      "tupleID": "rn-android",
+      "sampleID": "minimal",
+      "sampleSHA": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+      "frontend": "GUI"
+    },
+    {
+      "id": "AC05-rn-android-oss-CLI",
+      "gate": "AC05",
+      "tupleID": "rn-android",
+      "sampleID": "mattermost",
+      "sampleSHA": "c2fe3beda22befd2178dce431793c09111ed903e",
+      "frontend": "CLI"
+    },
+    {
+      "id": "AC05-rn-android-oss-GUI",
+      "gate": "AC05",
+      "tupleID": "rn-android",
+      "sampleID": "mattermost",
+      "sampleSHA": "c2fe3beda22befd2178dce431793c09111ed903e",
+      "frontend": "GUI"
+    },
+    {
+      "id": "AC05-flutter-ios-minimal-CLI",
+      "gate": "AC05",
+      "tupleID": "flutter-ios",
+      "sampleID": "minimal",
+      "sampleSHA": "66732bc18ed28d9eed71336b4a2b018e09ad20b9",
+      "frontend": "CLI"
+    },
+    {
+      "id": "AC05-flutter-ios-minimal-GUI",
+      "gate": "AC05",
+      "tupleID": "flutter-ios",
+      "sampleID": "minimal",
+      "sampleSHA": "66732bc18ed28d9eed71336b4a2b018e09ad20b9",
+      "frontend": "GUI"
+    },
+    {
+      "id": "AC05-flutter-ios-oss-CLI",
+      "gate": "AC05",
+      "tupleID": "flutter-ios",
+      "sampleID": "localsend",
+      "sampleSHA": "61145cf100522363e9658af97137097551c64832",
+      "frontend": "CLI"
+    },
+    {
+      "id": "AC05-flutter-ios-oss-GUI",
+      "gate": "AC05",
+      "tupleID": "flutter-ios",
+      "sampleID": "localsend",
+      "sampleSHA": "61145cf100522363e9658af97137097551c64832",
+      "frontend": "GUI"
+    },
+    {
+      "id": "AC05-flutter-android-minimal-CLI",
+      "gate": "AC05",
+      "tupleID": "flutter-android",
+      "sampleID": "minimal",
+      "sampleSHA": "66732bc18ed28d9eed71336b4a2b018e09ad20b9",
+      "frontend": "CLI"
+    },
+    {
+      "id": "AC05-flutter-android-minimal-GUI",
+      "gate": "AC05",
+      "tupleID": "flutter-android",
+      "sampleID": "minimal",
+      "sampleSHA": "66732bc18ed28d9eed71336b4a2b018e09ad20b9",
+      "frontend": "GUI"
+    },
+    {
+      "id": "AC05-flutter-android-oss-CLI",
+      "gate": "AC05",
+      "tupleID": "flutter-android",
+      "sampleID": "localsend",
+      "sampleSHA": "61145cf100522363e9658af97137097551c64832",
+      "frontend": "CLI"
+    },
+    {
+      "id": "AC05-flutter-android-oss-GUI",
+      "gate": "AC05",
+      "tupleID": "flutter-android",
+      "sampleID": "localsend",
+      "sampleSHA": "61145cf100522363e9658af97137097551c64832",
+      "frontend": "GUI"
+    },
+    {
+      "id": "AC05-native-ios-minimal-CLI",
+      "gate": "AC05",
+      "tupleID": "native-ios",
+      "sampleID": "food-truck",
+      "sampleSHA": "3954a769e99f3cc53297d94f2b960ceb2665b3d6",
+      "frontend": "CLI"
+    },
+    {
+      "id": "AC05-native-ios-minimal-GUI",
+      "gate": "AC05",
+      "tupleID": "native-ios",
+      "sampleID": "food-truck",
+      "sampleSHA": "3954a769e99f3cc53297d94f2b960ceb2665b3d6",
+      "frontend": "GUI"
+    },
+    {
+      "id": "AC05-native-ios-oss-CLI",
+      "gate": "AC05",
+      "tupleID": "native-ios",
+      "sampleID": "netnewswire",
+      "sampleSHA": "aea7795bcc0698ced6f28eba53da886eb6217e64",
+      "frontend": "CLI"
+    },
+    {
+      "id": "AC05-native-ios-oss-GUI",
+      "gate": "AC05",
+      "tupleID": "native-ios",
+      "sampleID": "netnewswire",
+      "sampleSHA": "aea7795bcc0698ced6f28eba53da886eb6217e64",
+      "frontend": "GUI"
+    },
+    {
+      "id": "AC05-native-android-minimal-CLI",
+      "gate": "AC05",
+      "tupleID": "native-android",
+      "sampleID": "todo",
+      "sampleSHA": "ee66e1526b84c026615df032c705842b7d2a521f",
+      "frontend": "CLI"
+    },
+    {
+      "id": "AC05-native-android-minimal-GUI",
+      "gate": "AC05",
+      "tupleID": "native-android",
+      "sampleID": "todo",
+      "sampleSHA": "ee66e1526b84c026615df032c705842b7d2a521f",
+      "frontend": "GUI"
+    },
+    {
+      "id": "AC05-native-android-oss-CLI",
+      "gate": "AC05",
+      "tupleID": "native-android",
+      "sampleID": "nia",
+      "sampleSHA": "a49ed253d75e61a2b6ab80a8da677b57437b08eb",
+      "frontend": "CLI"
+    },
+    {
+      "id": "AC05-native-android-oss-GUI",
+      "gate": "AC05",
+      "tupleID": "native-android",
+      "sampleID": "nia",
+      "sampleSHA": "a49ed253d75e61a2b6ab80a8da677b57437b08eb",
+      "frontend": "GUI"
+    },
+    {
+      "id": "AC15-candidate-input-linkage",
+      "gate": "AC15",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared"
+    },
+    {
+      "id": "AC12-AdHoc-deferred",
+      "gate": "AC12",
+      "tupleID": "package-and-inputs",
+      "sampleID": "physical-AdHoc",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared"
+    }
+  ],
+  "attempts": [
+    {
+      "id": "AC01-required-matrix-q11-initial",
+      "requirementID": "AC01-required-matrix",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC02-required-matrix-q11-initial",
+      "requirementID": "AC02-required-matrix",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC03-required-matrix-q11-initial",
+      "requirementID": "AC03-required-matrix",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC04-required-matrix-q11-initial",
+      "requirementID": "AC04-required-matrix",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC06-required-matrix-q11-initial",
+      "requirementID": "AC06-required-matrix",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC07-required-matrix-q11-initial",
+      "requirementID": "AC07-required-matrix",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC08-required-matrix-q11-initial",
+      "requirementID": "AC08-required-matrix",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC09-required-matrix-q11-initial",
+      "requirementID": "AC09-required-matrix",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC10-required-matrix-q11-initial",
+      "requirementID": "AC10-required-matrix",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC11-required-matrix-q11-initial",
+      "requirementID": "AC11-required-matrix",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC12-required-matrix-q11-initial",
+      "requirementID": "AC12-required-matrix",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC13-required-matrix-q11-initial",
+      "requirementID": "AC13-required-matrix",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC14-required-matrix-q11-initial",
+      "requirementID": "AC14-required-matrix",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC15-required-matrix-q11-initial",
+      "requirementID": "AC15-required-matrix",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC16-required-matrix-q11-initial",
+      "requirementID": "AC16-required-matrix",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC17-required-matrix-q11-initial",
+      "requirementID": "AC17-required-matrix",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC18-required-matrix-q11-initial",
+      "requirementID": "AC18-required-matrix",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC19-required-matrix-q11-initial",
+      "requirementID": "AC19-required-matrix",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC05-rn-ios-minimal-CLI-q11-initial",
+      "requirementID": "AC05-rn-ios-minimal-CLI",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "rn-ios",
+      "sampleID": "minimal",
+      "sampleSHA": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+      "frontend": "CLI",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC05-rn-ios-minimal-GUI-q11-initial",
+      "requirementID": "AC05-rn-ios-minimal-GUI",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "rn-ios",
+      "sampleID": "minimal",
+      "sampleSHA": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+      "frontend": "GUI",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC05-rn-ios-oss-CLI-q11-initial",
+      "requirementID": "AC05-rn-ios-oss-CLI",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "rn-ios",
+      "sampleID": "mattermost",
+      "sampleSHA": "c2fe3beda22befd2178dce431793c09111ed903e",
+      "frontend": "CLI",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC05-rn-ios-oss-GUI-q11-initial",
+      "requirementID": "AC05-rn-ios-oss-GUI",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "rn-ios",
+      "sampleID": "mattermost",
+      "sampleSHA": "c2fe3beda22befd2178dce431793c09111ed903e",
+      "frontend": "GUI",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC05-rn-android-minimal-CLI-q11-initial",
+      "requirementID": "AC05-rn-android-minimal-CLI",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "rn-android",
+      "sampleID": "minimal",
+      "sampleSHA": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+      "frontend": "CLI",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC05-rn-android-minimal-GUI-q11-initial",
+      "requirementID": "AC05-rn-android-minimal-GUI",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "rn-android",
+      "sampleID": "minimal",
+      "sampleSHA": "b62e3a4d5e7cfc05d7d948a5a4e30f0cc6a82bb4",
+      "frontend": "GUI",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC05-rn-android-oss-CLI-q11-initial",
+      "requirementID": "AC05-rn-android-oss-CLI",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "rn-android",
+      "sampleID": "mattermost",
+      "sampleSHA": "c2fe3beda22befd2178dce431793c09111ed903e",
+      "frontend": "CLI",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC05-rn-android-oss-GUI-q11-initial",
+      "requirementID": "AC05-rn-android-oss-GUI",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "rn-android",
+      "sampleID": "mattermost",
+      "sampleSHA": "c2fe3beda22befd2178dce431793c09111ed903e",
+      "frontend": "GUI",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC05-flutter-ios-minimal-CLI-q11-initial",
+      "requirementID": "AC05-flutter-ios-minimal-CLI",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "flutter-ios",
+      "sampleID": "minimal",
+      "sampleSHA": "66732bc18ed28d9eed71336b4a2b018e09ad20b9",
+      "frontend": "CLI",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC05-flutter-ios-minimal-GUI-q11-initial",
+      "requirementID": "AC05-flutter-ios-minimal-GUI",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "flutter-ios",
+      "sampleID": "minimal",
+      "sampleSHA": "66732bc18ed28d9eed71336b4a2b018e09ad20b9",
+      "frontend": "GUI",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC05-flutter-ios-oss-CLI-q11-initial",
+      "requirementID": "AC05-flutter-ios-oss-CLI",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "flutter-ios",
+      "sampleID": "localsend",
+      "sampleSHA": "61145cf100522363e9658af97137097551c64832",
+      "frontend": "CLI",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC05-flutter-ios-oss-GUI-q11-initial",
+      "requirementID": "AC05-flutter-ios-oss-GUI",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "flutter-ios",
+      "sampleID": "localsend",
+      "sampleSHA": "61145cf100522363e9658af97137097551c64832",
+      "frontend": "GUI",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC05-flutter-android-minimal-CLI-q11-initial",
+      "requirementID": "AC05-flutter-android-minimal-CLI",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "flutter-android",
+      "sampleID": "minimal",
+      "sampleSHA": "66732bc18ed28d9eed71336b4a2b018e09ad20b9",
+      "frontend": "CLI",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC05-flutter-android-minimal-GUI-q11-initial",
+      "requirementID": "AC05-flutter-android-minimal-GUI",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "flutter-android",
+      "sampleID": "minimal",
+      "sampleSHA": "66732bc18ed28d9eed71336b4a2b018e09ad20b9",
+      "frontend": "GUI",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC05-flutter-android-oss-CLI-q11-initial",
+      "requirementID": "AC05-flutter-android-oss-CLI",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "flutter-android",
+      "sampleID": "localsend",
+      "sampleSHA": "61145cf100522363e9658af97137097551c64832",
+      "frontend": "CLI",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC05-flutter-android-oss-GUI-q11-initial",
+      "requirementID": "AC05-flutter-android-oss-GUI",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "flutter-android",
+      "sampleID": "localsend",
+      "sampleSHA": "61145cf100522363e9658af97137097551c64832",
+      "frontend": "GUI",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC05-native-ios-minimal-CLI-q11-initial",
+      "requirementID": "AC05-native-ios-minimal-CLI",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "native-ios",
+      "sampleID": "food-truck",
+      "sampleSHA": "3954a769e99f3cc53297d94f2b960ceb2665b3d6",
+      "frontend": "CLI",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC05-native-ios-minimal-GUI-q11-initial",
+      "requirementID": "AC05-native-ios-minimal-GUI",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "native-ios",
+      "sampleID": "food-truck",
+      "sampleSHA": "3954a769e99f3cc53297d94f2b960ceb2665b3d6",
+      "frontend": "GUI",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC05-native-ios-oss-CLI-q11-initial",
+      "requirementID": "AC05-native-ios-oss-CLI",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "native-ios",
+      "sampleID": "netnewswire",
+      "sampleSHA": "aea7795bcc0698ced6f28eba53da886eb6217e64",
+      "frontend": "CLI",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC05-native-ios-oss-GUI-q11-initial",
+      "requirementID": "AC05-native-ios-oss-GUI",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "native-ios",
+      "sampleID": "netnewswire",
+      "sampleSHA": "aea7795bcc0698ced6f28eba53da886eb6217e64",
+      "frontend": "GUI",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC05-native-android-minimal-CLI-q11-initial",
+      "requirementID": "AC05-native-android-minimal-CLI",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "native-android",
+      "sampleID": "todo",
+      "sampleSHA": "ee66e1526b84c026615df032c705842b7d2a521f",
+      "frontend": "CLI",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC05-native-android-minimal-GUI-q11-initial",
+      "requirementID": "AC05-native-android-minimal-GUI",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "native-android",
+      "sampleID": "todo",
+      "sampleSHA": "ee66e1526b84c026615df032c705842b7d2a521f",
+      "frontend": "GUI",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC05-native-android-oss-CLI-q11-initial",
+      "requirementID": "AC05-native-android-oss-CLI",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "native-android",
+      "sampleID": "nia",
+      "sampleSHA": "a49ed253d75e61a2b6ab80a8da677b57437b08eb",
+      "frontend": "CLI",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC05-native-android-oss-GUI-q11-initial",
+      "requirementID": "AC05-native-android-oss-GUI",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "native-android",
+      "sampleID": "nia",
+      "sampleSHA": "a49ed253d75e61a2b6ab80a8da677b57437b08eb",
+      "frontend": "GUI",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    },
+    {
+      "id": "AC15-candidate-input-linkage-q11-initial",
+      "requirementID": "AC15-candidate-input-linkage",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "package-and-inputs",
+      "sampleID": "candidate",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "단일 release build의 새 unsigned alpha.11 artifact와 재사용을 명시한 고정 입력24개를 연결했다. 전체 AC15·fresh clone·실제 게이트 통과를 뜻하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "pass",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [],
+      "supersedes": null
+    },
+    {
+      "id": "AC12-AdHoc-deferred-q11-initial",
+      "requirementID": "AC12-AdHoc-deferred",
+      "candidateID": "b5857f6112624c93e16ee9ac7726d5372c37b4e0379c2f254141873ad9cc784c",
+      "tupleID": "package-and-inputs",
+      "sampleID": "physical-AdHoc",
+      "sampleSHA": "01a243d00e97899d62a8a1c3a7cdc78c508083a3",
+      "frontend": "shared",
+      "evidenceClass": "actual",
+      "expected": "현재 후보와 고정 입력의 해당 실제 게이트 증거를 연결한다.",
+      "observed": "새 alpha.11의 해당 실제 게이트는 아직 판정되지 않았다. 과거 후보/개발/known-good 결과를 승계하지 않는다.",
+      "observedAt": "2026-10-23T23:52:44Z",
+      "executor": "codex-2ce1",
+      "result": "unverified",
+      "evidence": [
+        "package-check",
+        "fixed-inputs",
+        "tools",
+        "source-ci"
+      ],
+      "unverified": [
+        "해당 새 후보 실제 게이트 미검증"
+      ],
+      "supersedes": null
+    }
+  ]
+}

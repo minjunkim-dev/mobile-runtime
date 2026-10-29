@@ -13,12 +13,19 @@ enum Tool {
 }
 
 @main
+enum MobileEntryPoint {
+    static func main() async {
+        FlutterAndroidChildClient.runIfRequested()
+        await Mobile.main()
+    }
+}
+
 struct Mobile: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "mobile",
         abstract: "Reproducible mobile development runtime.",
         version: Tool.version,
-        subcommands: [Doctor.self, Setup.self, Build.self, Up.self, Down.self]
+        subcommands: [Doctor.self, Setup.self, Build.self, Up.self, Down.self, AppCommand.self]
     )
 
     // Bare `mobile` is exploration, not an error: help on stdout, exit 0.
@@ -47,6 +54,15 @@ struct Doctor: AsyncParsableCommand {
     @Option(name: .long, help: "Project app candidate id reported by doctor.")
     var app: String?
 
+    @Option(name: .long, help: "Flutter Dart entrypoint inside the selected app. Defaults to lib/main.dart.")
+    var entrypoint: String?
+
+    @Option(name: .long, help: "Shared iOS app scheme to inspect.")
+    var scheme: String?
+
+    @Option(name: .long, help: "iOS build configuration to inspect. Defaults to Debug when available.")
+    var configuration: String?
+
     @Flag(name: .long, help: "Do not ask for input. Missing selections are returned as candidates.")
     var nonInteractive = false
 
@@ -56,11 +72,16 @@ struct Doctor: AsyncParsableCommand {
         let input = ProjectInspectionInput(
             directory: URL(fileURLWithPath: project ?? FileManager.default.currentDirectoryPath),
             environment: environment, app: app,
-            platform: platform.flatMap { ProjectPlatform(rawValue: $0.rawValue) }
+            platform: platform.flatMap { ProjectPlatform(rawValue: $0.rawValue) }, entrypoint: entrypoint
         )
         let result: EnvironmentInspection
         do {
-            result = try await EnvironmentInspection.run(input: input)
+            result = try await cancellingOnSignals { [scheme, configuration] in
+                try await EnvironmentInspection.run(input: input, scheme: scheme, configuration: configuration)
+            }
+        } catch is CancellationError {
+            // Same exit as a cancelled build/up/down/setup.
+            throw ExitCode(130)
         } catch {
             throw ValidationError("Cannot inspect project folder: \(error.localizedDescription)")
         }

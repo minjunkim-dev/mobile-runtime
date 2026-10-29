@@ -22,12 +22,12 @@ private func settledProject() throws -> FixtureRepo {
     return repo
 }
 
-private func destination(_ repo: FixtureRepo) -> String {
+private func destination(_ repo: FixtureRepo) throws -> String {
     "-project \(repo.url("ios/MyApp.xcodeproj").path) -scheme MyApp -configuration Debug "
-        + "-destination platform=iOS Simulator,id=\(bootedUDID)"
+        + "-destination platform=iOS Simulator,id=\(bootedUDID) -derivedDataPath \(try RunLogs(project: repo.root).derivedDataDirectory.path)"
 }
 
-private func buildCommand(_ repo: FixtureRepo) -> String { "xcodebuild \(destination(repo)) build" }
+private func buildCommand(_ repo: FixtureRepo) throws -> String { "xcodebuild \(try destination(repo)) build" }
 private let installCommand = "xcrun simctl install \(bootedUDID) \(builtApp)"
 private let terminateCommand = "xcrun simctl terminate \(bootedUDID) \(builtBundleID)"
 private let launchCommand = "xcrun simctl launch \(bootedUDID) \(builtBundleID)"
@@ -53,8 +53,8 @@ private func runner(_ repo: FixtureRepo) throws -> FakeProcessRunner {
         "xcodebuild -list -json -project \(repo.url("ios/MyApp.xcodeproj").path)": .ok(
             #"{"project": {"name": "MyApp", "schemes": ["MyApp"]}}"#
         ),
-        buildCommand(repo): .ok("** BUILD SUCCEEDED **\n"),
-        "xcodebuild -showBuildSettings -json \(destination(repo))": .ok(
+        try buildCommand(repo): .ok("** BUILD SUCCEEDED **\n"),
+        "xcodebuild -showBuildSettings -json \(try destination(repo))": .ok(
             try Fixture.text("xcodebuild-showbuildsettings.stdout.json")
         ),
         // install / launch
@@ -68,7 +68,7 @@ private func pipeline(
     _ repo: FixtureRepo,
     _ runner: FakeProcessRunner,
     workflow: IOSWorkflow = .up,
-    projectRunner: FakeProcessRunner? = nil,
+    projectRunner: (any ProcessRunner)? = nil,
     from workingDirectory: URL? = nil
 ) -> UpPipeline {
     let projectRunner = projectRunner ?? runner
@@ -140,10 +140,14 @@ struct IOSUpStagesTests {
         #expect(report.context.appPid == 3538)
     }
 
-    @Test("build is the shared pipeline without Metro, install, or launch")
+    @Test("build selects a shutdown destination without boot, Metro, install, or launch")
     func buildStopsAfterCompilation() async throws {
         let repo = try settledProject()
-        let runner = try runner(repo)
+        var runner = try runner(repo)
+        runner.responses["xcrun simctl list devices -j"] = .ok(
+            try Fixture.text("simctl-list-devices.stdout.json").replacingOccurrences(of: "Booted", with: "Shutdown")
+        )
+        runner.responses["xcrun simctl bootstatus \(bootedUDID) -b"] = .ok("")
 
         let report = await pipeline(repo, runner, workflow: .build).run()
 
@@ -158,8 +162,32 @@ struct IOSUpStagesTests {
         #expect(sent.contains(installCommand) == false)
         #expect(sent.contains(terminateCommand) == false)
         #expect(sent.contains(launchCommand) == false)
+        #expect(!runner.log.all.contains { $0.arguments.contains("bootstatus") || $0.arguments.contains("boot") })
+        #expect(report.context.device?.udid == bootedUDID)
         #expect(runner.log.spawned.isEmpty)
-        #expect(InstallRecord.read(from: RunLogs(project: repo.root)) == nil)
+        #expect(try InstallRecord.read(from: RunLogs(project: repo.root)) == nil)
+    }
+
+    @Test("up still boots its selected shutdown destination before installation and launch")
+    func upBootsShutdownDevice() async throws {
+        let repo = try settledProject()
+        var runner = try runner(repo)
+        runner.responses["xcrun simctl list devices -j"] = .ok(
+            try Fixture.text("simctl-list-devices.stdout.json").replacingOccurrences(of: "Booted", with: "Shutdown")
+        )
+        let boot = "xcrun simctl bootstatus \(bootedUDID) -b"
+        runner.responses[boot] = .ok("")
+
+        let report = await pipeline(repo, runner).run()
+
+        #expect(report.exitCode == 0)
+        #expect(report.context.device?.udid == bootedUDID)
+        #expect(report.context.appPid == 3538)
+        let commands = runner.log.all.map(\.description)
+        #expect(commands.filter { $0 == boot }.count == 1)
+        let bootIndex = try #require(commands.firstIndex(of: boot))
+        #expect(bootIndex < (try #require(commands.firstIndex(of: installCommand))))
+        #expect(bootIndex < (try #require(commands.firstIndex(of: launchCommand))))
     }
 
     @Test("Bundler repair runs after validation before Pods on a fresh checkout")
@@ -197,27 +225,25 @@ struct IOSUpStagesTests {
         var project = FakeProcessRunner(responses: fixtures.responses)
         project.responses["yarn install --frozen-lockfile"] = .ok("")
         project.responses[MetroStatus.command] = .failed(7, "")
-        let listener = (["lsof"] + MetroVerdict.listenerArguments + ["-t"])
-            .joined(separator: " ")
-        project.responses[listener] = .ok("9876\n")
+        let startingProject = MetroStatus.StartingRunner(project, projectRoot: repo.root, listenerPID: 9876)
 
-        let report = await pipeline(repo, host, projectRunner: project).run()
+        let report = await pipeline(repo, host, projectRunner: startingProject).run()
 
         #expect(report.exitCode == 0)
         let hostCommands = host.log.all.map(\.description)
         let projectCommands = project.log.all.map(\.description)
         #expect(projectCommands.contains("yarn install --frozen-lockfile"))
         #expect(projectCommands.contains(MetroStatus.command))
-        #expect(projectCommands.contains(buildCommand(repo)))
+        #expect(projectCommands.contains(try buildCommand(repo)))
         #expect(!hostCommands.contains("yarn install --frozen-lockfile"))
-        #expect(!hostCommands.contains(buildCommand(repo)))
+        #expect(!hostCommands.contains(try buildCommand(repo)))
         #expect(hostCommands.contains(installCommand))
         #expect(hostCommands.contains(launchCommand))
         #expect(!projectCommands.contains { $0.hasPrefix("xcrun simctl") })
         #expect(host.log.spawned.isEmpty)
         #expect(project.log.spawned.first?.command.description == "yarn start")
         #expect(
-            project.log.first(matching: buildCommand(repo))?.environment["DEVELOPER_DIR"]
+            project.log.first(matching: try buildCommand(repo))?.environment["DEVELOPER_DIR"]
                 == developerDirectory
         )
     }
@@ -302,7 +328,7 @@ struct IOSUpStagesTests {
     func domainFailureExitsOne() async throws {
         let repo = try settledProject()
         var runner = try runner(repo)
-        runner.responses[buildCommand(repo)] = .failed(65, "error: no such module 'React'\n")
+        runner.responses[try buildCommand(repo)] = .failed(65, "error: no such module 'React'\n")
 
         let report = await pipeline(repo, runner).run()
 

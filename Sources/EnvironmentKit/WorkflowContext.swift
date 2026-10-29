@@ -22,6 +22,7 @@ public struct WorkflowContext: Sendable {
     /// One opaque actor supplies doctor and the read-only preparation requirements.
     public let androidContext: AndroidDoctorContext?
     public let locator: XcodeLocator
+    let flutter: FlutterPreparation?
 
     public static func make(
         input: ProjectInspectionInput,
@@ -30,7 +31,9 @@ public struct WorkflowContext: Sendable {
         runner: any ProcessRunner,
         includeProjectEnvironment: Bool = true,
         includeRuntimeSDKTools: Bool = true,
+        preparedDependencies: Bool = false,
         projectEnvironmentOverride: ProjectExecutionEnvironment? = nil,
+        projectRunnerOverride: (any ProcessRunner)? = nil,
         selectedConfig: ConfigContext? = nil,
         selectedConfiguration: String? = nil
     ) async -> WorkflowContext {
@@ -40,11 +43,27 @@ public struct WorkflowContext: Sendable {
         // Tier 2 checks compare against.
         let config = selectedConfig ?? ConfigContext.detect(anchor: anchor, workingDirectory: workingDirectory)
         let lookup = anchor.map { MatrixLookup.resolve(anchor: $0, config: config.configuration) }
+        var flutter: FlutterPreparation?
+        var flutterChecks: [any Check] = []
+        if includeProjectEnvironment, projectEnvironmentOverride == nil, let anchor, anchor.framework == .flutter, platform == .ios {
+            do {
+                let prepared = try await FlutterPreparation.inspect(directory: anchor.directory, entrypoint: input.entrypoint,
+                    environment: input.environment, runner: runner, preparedDependencies: preparedDependencies)
+                flutter = prepared
+                flutterChecks = prepared.checks.filter { $0.platform == nil || $0.platform == .ios }.map {
+                    FlutterIOSPreparationCheck(step: $0, root: prepared.workspace?.directory ?? anchor.directory)
+                }
+                if let sdk = prepared.sdk { flutterChecks.append(FlutterIOSSDKCheck(sdk: sdk)) }
+            } catch { flutterChecks = [ToolObservationFailureCheck(error: error)] }
+        }
         var projectEnvironment: ProjectExecutionEnvironment?
         var toolObservationChecks: [any Check] = []
         if includeProjectEnvironment, let anchor {
             if let projectEnvironmentOverride { projectEnvironment = projectEnvironmentOverride }
-            else { projectEnvironment = await ProjectExecutionEnvironment.resolve(anchor: anchor, hostRunner: runner) }
+            else {
+                let selected: any ProcessRunner = flutter.map { FlutterChildRunner(base: runner, environment: $0.activeEnvironment) } ?? runner
+                projectEnvironment = await ProjectExecutionEnvironment.resolve(anchor: anchor, hostRunner: selected)
+            }
             if let current = projectEnvironment, anchor.framework != .flutter {
                 do {
                     let requirements = try await ToolRequirements.resolve(anchor: anchor, platforms: [platform], runner: current.runner)
@@ -59,6 +78,14 @@ public struct WorkflowContext: Sendable {
         } else {
             projectEnvironment = nil
         }
+        let blockedFlutter = platform == .android && anchor?.framework == .flutter
+            && includeProjectEnvironment && projectRunnerOverride == nil
+        if blockedFlutter {
+            projectEnvironment = nil
+            toolObservationChecks.append(FlutterAndroidReadinessCheck())
+        }
+        let projectRunner: any ProcessRunner = blockedFlutter
+            ? FlutterAndroidReadinessCheck() : projectRunnerOverride ?? projectEnvironment?.runner ?? runner
         var paths = [workingDirectory, FileManager.default.temporaryDirectory]
         if let anchor {
             paths.append(anchor.directory)
@@ -112,15 +139,23 @@ public struct WorkflowContext: Sendable {
                 [NativeIOSProjectCheck(anchor: anchor, config: config, lookup: lookup,
                     runner: projectEnvironment?.runner ?? runner, locator: locator,
                     configuration: selectedConfiguration ?? "Debug")]
+            } else if let anchor, anchor.framework == .flutter, let sdk = flutter?.sdk {
+                [FlutterIOSHostCheck(anchor: anchor, config: config, lookup: lookup,
+                    runner: projectEnvironment?.runner ?? runner, locator: locator,
+                    entrypoint: input.entrypoint, sdk: sdk.root, configuration: selectedConfiguration)]
             } else { [] }
-            checks = workspaceChecks + iOSChecks(lookup: lookup, runner: runner, locator: locator)
+            let platformChecks = iOSChecks(lookup: lookup, runner: runner, locator: locator).filter {
+                // The prepared Flutter check grades its measured app deployment target.
+                $0.id != "simulator.runtime" || anchor?.framework != .flutter || flutter?.sdk == nil
+            }
+            checks = flutterChecks + workspaceChecks + platformChecks
                 + configChecks(context: config, lookup: lookup, runner: runner, locator: locator)
                 + projectChecks + nativeChecks
         case .android:
             var android = config.checks()
             if let anchor, let projectEnvironment {
                 let context = AndroidDoctorContext(anchor: anchor, config: config, hostRunner: runner,
-                    projectRunner: projectEnvironment.runner, environment: AndroidEnvironment(values: input.environment))
+                    projectRunner: projectRunner, environment: AndroidEnvironment(values: input.environment))
                 androidContext = context
                 let platformChecks = androidChecks(context: context, includeRuntimeSDKTools: includeRuntimeSDKTools)
                 // The project identity is the first Android fact; the shared tool
@@ -128,19 +163,25 @@ public struct WorkflowContext: Sendable {
                 android.append(platformChecks[0])
                 android.append(contentsOf: projectEnvironment.commonChecks(anchor: anchor, context: config))
                 android.append(contentsOf: platformChecks.dropFirst())
+            } else if let anchor, anchor.framework == .flutter {
+                // Source identity does not require a prepared model or an executable project environment.
+                let refused = FlutterAndroidReadinessCheck()
+                let identity = AndroidDoctorContext(anchor: anchor, config: config, hostRunner: refused,
+                    projectRunner: refused, environment: AndroidEnvironment(values: input.environment))
+                android.append(contentsOf: androidChecks(context: identity, includeRuntimeSDKTools: false).prefix(1))
             }
             checks = workspaceChecks + android
         }
 
         return WorkflowContext(
             anchor: anchor,
-            engine: DoctorEngine(checks: toolObservationChecks + checks),
+            engine: DoctorEngine(checks: toolObservationChecks + checks + [DeviceOriginCheck()]),
             config: config,
             lookup: lookup,
             runner: runner,
-            projectRunner: projectEnvironment?.runner ?? runner,
+            projectRunner: projectRunner,
             androidContext: androidContext,
-            locator: locator
+            locator: locator, flutter: flutter
         )
     }
 }

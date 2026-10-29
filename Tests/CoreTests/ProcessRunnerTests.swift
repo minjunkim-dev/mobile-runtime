@@ -1,14 +1,110 @@
 import Foundation
+import Logging
 import Testing
 import TestSupport
 
 @testable import Core
 
-// Only the two things a fake cannot verify: real timeout behaviour and the
-// non-zero-exit-is-data contract. Everything else is tested through the fake seam.
+// Exercise output delivery, process termination and privacy against real children.
 @Suite("SystemProcessRunner against real subprocesses")
 struct SystemProcessRunnerTests {
     let runner = SystemProcessRunner()
+
+    @Test("argument redaction preserves actual argv, environment and cwd while hiding debug arguments", arguments: [false, true], [false, true])
+    func privateArguments(_ redacted: Bool, _ bytes: Bool) async throws {
+        let messages = Mutable<[String]>([])
+        let logger = Logger(label: "process-privacy") { _ in ProcessLogCapture(messages: messages) }
+        let directory = try temporaryDirectory()
+        let command = ProcessCommand("/bin/sh", ["-c", "printf '%s\\n' \"$1\" \"$MOBILE_TEST_VAR\" \"$PWD\"", "_", "synthetic-auth"],
+            environment: ["MOBILE_TEST_VAR": "kept"], workingDirectory: directory,
+            timeout: .seconds(10), redactArguments: redacted)
+        let runner = SystemProcessRunner(logger: logger, environment: ["PATH": "/usr/bin:/bin"])
+        let result: ProcessResult
+        if bytes { result = try await runner.run(command, onBytes: { _, _ in }) }
+        else { result = try await runner.run(command) }
+        let lines = result.standardOutput.split(whereSeparator: \.isNewline)
+        #expect(result.terminationStatus.isSuccess)
+        #expect(lines.count == 3)
+        #expect(lines.first == "synthetic-auth")
+        #expect(lines.dropFirst().first == "kept")
+        #expect(sameDirectory(String(try #require(lines.last)), directory))
+        #expect(command.timeout == .seconds(10))
+        #expect(command.arguments.last == "synthetic-auth")
+        #expect(command.description.contains("synthetic-auth") == !redacted)
+        #expect(messages.value.contains { $0.contains("ran subprocess") })
+        #expect(messages.value.joined().contains("synthetic-auth") == !redacted)
+    }
+
+    @Test("a sensitive timeout keeps its classification and omits arguments from debug logs")
+    func privateTimeout() async throws {
+        let messages = Mutable<[String]>([])
+        let logger = Logger(label: "process-privacy") { _ in ProcessLogCapture(messages: messages) }
+        let command = ProcessCommand("/bin/sh", ["-c", "exec /bin/sleep 30", "_", "synthetic-auth"],
+            timeout: .milliseconds(100), redactArguments: true)
+        do {
+            _ = try await SystemProcessRunner(logger: logger, environment: ["PATH": "/usr/bin:/bin"]).run(command)
+            Issue.record("the sensitive command must time out")
+        } catch let error as ProcessError {
+            guard case .timedOut(let description, let timeout) = error else {
+                Issue.record("expected timeout")
+                return
+            }
+            #expect(!description.contains("synthetic-auth"))
+            #expect(timeout == .milliseconds(100))
+        }
+        #expect(messages.value.contains { $0.contains("subprocess timed out") })
+        #expect(!messages.value.joined().contains("synthetic-auth"))
+    }
+
+    @Test("a sensitive spawn failure hides private underlying diagnostics from debug logs", arguments: [false, true])
+    func privateSpawnFailure(_ redacted: Bool) async throws {
+        let messages = Mutable<[String]>([])
+        let logger = Logger(label: "process-privacy") { _ in ProcessLogCapture(messages: messages) }
+        let obstruction = try temporaryDirectory().appendingPathComponent("synthetic-auth")
+        try Data("owned fixture obstruction\n".utf8).write(to: obstruction, options: .withoutOverwriting)
+        let command = ProcessCommand("/bin/echo", ["private-argument"],
+            output: .streamed(to: obstruction.appendingPathComponent("out.log")), redactArguments: redacted)
+        do {
+            _ = try await SystemProcessRunner(logger: logger, environment: [:]).run(command)
+            Issue.record("the invalid output path must fail")
+        } catch let error as ProcessError {
+            guard case .spawnFailed(let description, let underlying) = error else {
+                Issue.record("expected spawn failure")
+                return
+            }
+            #expect(description.contains("private-argument") == !redacted)
+            #expect(String(describing: underlying).contains("synthetic-auth"))
+        }
+        #expect(messages.value.contains { $0.contains("subprocess failed") })
+        #expect(messages.value.joined().contains("private-argument") == !redacted)
+        #expect(messages.value.joined().contains("synthetic-auth") == !redacted)
+        #expect(try Data(contentsOf: obstruction) == Data("owned fixture obstruction\n".utf8))
+    }
+
+    @Test("prepared tool and mise wrappers preserve sensitive arguments and logging policy")
+    func privateWrappedArguments() async throws {
+        let repo = try FixtureRepo()
+        let config = try repo.directory("config")
+        let project = try repo.directory("app")
+        let mise = try repo.write("bin/mise", "#!/bin/sh\nshift\nshift\nexec \"$@\"\n")
+        let node = try repo.write("bin/node", "#!/bin/sh\nprintf '%s\\n' \"$1\" \"$MOBILE_TEST_VAR\" \"$PWD\"\n")
+        for file in [mise, node] { try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: file.path) }
+        let messages = Mutable<[String]>([])
+        let logger = Logger(label: "process-privacy") { _ in ProcessLogCapture(messages: messages) }
+        let host = SystemProcessRunner(logger: logger, environment: ["PATH": "/usr/bin:/bin"])
+        let selected = ProjectExecutionEnvironment(directRunner: MiseProcessRunner(base: host,
+            configDirectory: config, executable: mise.path)).activatingTools(["node": node], environment: ["PATH": "/usr/bin:/bin"])
+        let result = try await selected.runner.run(ProcessCommand("node", ["synthetic-auth"],
+            environment: ["MOBILE_TEST_VAR": "kept"], workingDirectory: project, timeout: .seconds(10), redactArguments: true))
+        #expect(result.terminationStatus.isSuccess)
+        let lines = result.standardOutput.split(whereSeparator: \.isNewline)
+        #expect(lines.count == 3)
+        #expect(lines.first == "synthetic-auth")
+        #expect(lines.dropFirst().first == "kept")
+        #expect(sameDirectory(String(try #require(lines.last)), project))
+        #expect(messages.value.contains { $0.contains("ran subprocess") })
+        #expect(!messages.value.joined().contains("synthetic-auth"))
+    }
 
     @Test("non-zero exit is data, not a thrown error")
     func nonZeroExitIsData() async throws {
@@ -20,6 +116,166 @@ struct SystemProcessRunnerTests {
         #expect(result.terminationStatus.isSuccess == false)
         #expect(result.standardOutput == "out\n")
         #expect(result.standardError == "err\n")
+    }
+
+    @Test("raw callbacks deliver both binary streams before the child exits and keep collected results")
+    func bytesBeforeExit() async throws {
+        let directory = try temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let release = directory.appendingPathComponent("release")
+        defer { try? Data().write(to: release) }
+        let observed = Mutable<[Data]>([Data(), Data()])
+        let output = Data([1, 255]) + Data("out".utf8)
+        let error = Data([0, 254]) + Data("err".utf8)
+        let command = ProcessCommand("/bin/sh", ["-c",
+            "printf '\\001\\377out'; printf '\\000\\376err' >&2; while [ ! -f \"$1\" ]; do /bin/sleep 0.01; done; printf tail; exit 7",
+            "_", release.path], timeout: .seconds(5))
+        let result = try await runner.run(command, onBytes: { channel, bytes in
+            let index = switch channel { case .standardOutput: 0; case .standardError: 1 }
+            observed.mutate { streams in
+                streams[index].append(bytes)
+                // The child cannot exit until both live callbacks release it; no consumer task must win the timeout race.
+                if streams == [output, error] {
+                    do { try Data().write(to: release, options: .withoutOverwriting) }
+                    catch { Issue.record(error) }
+                }
+            }
+        })
+        #expect(FileManager.default.fileExists(atPath: release.path))
+        #expect(result.terminationStatus == .exited(7))
+        #expect(result.standardOutput == String(decoding: output + Data("tail".utf8), as: UTF8.self))
+        #expect(result.standardError == String(decoding: error, as: UTF8.self))
+        #expect(observed.value == [output + Data("tail".utf8), error])
+    }
+
+    @Test("existing conformers deliver collected output through the default byte callback")
+    func defaultBytes() async throws {
+        let command = ProcessCommand("fixture")
+        let fake: any ProcessRunner = FakeProcessRunner(responses: ["fixture": .init(
+            status: .exited(3), standardOutput: "out", standardError: "err")])
+        let observed = Mutable<[Data]>([Data(), Data()])
+        let result = try await fake.run(command, onBytes: { channel, bytes in
+            let index = switch channel { case .standardOutput: 0; case .standardError: 1 }
+            observed.mutate { $0[index].append(bytes) }
+        })
+        #expect(result.terminationStatus == .exited(3))
+        #expect(observed.value == [Data("out".utf8), Data("err".utf8)])
+    }
+
+    @Test("byte callbacks preserve cancellation and timeout after delivering both streams", arguments: [false, true])
+    func byteInterruption(_ timeout: Bool) async throws {
+        let observed = Mutable<[Data]>([Data(), Data()])
+        let command = ProcessCommand("/bin/sh", ["-c", "printf out; printf err >&2; exec /bin/sleep 30"],
+            timeout: timeout ? .milliseconds(300) : .seconds(5), redactArguments: true)
+        let task = Task {
+            try await runner.run(command, onBytes: { channel, bytes in
+                let index = switch channel { case .standardOutput: 0; case .standardError: 1 }
+                observed.mutate { $0[index].append(bytes) }
+            })
+        }
+        defer { task.cancel() }
+        if !timeout {
+            let deadline = ContinuousClock.now + .seconds(3)
+            while observed.value.contains(where: \.isEmpty), ContinuousClock.now < deadline {
+                try await Task.sleep(for: .milliseconds(10))
+            }
+            task.cancel()
+        }
+        do {
+            _ = try await task.value
+            Issue.record("the interrupted byte command must not succeed")
+        } catch is CancellationError {
+            #expect(!timeout)
+        } catch let error as ProcessError {
+            guard case .timedOut(let description, let duration) = error else { throw error }
+            #expect(timeout)
+            #expect(duration == .milliseconds(300))
+            #expect(description == "/bin/sh [arguments redacted]")
+        }
+        #expect(observed.value == [Data("out".utf8), Data("err".utf8)])
+    }
+
+    @Test("cancellation and timeout stop owned descendants while preserving an unrelated detached child", .serialized,
+          arguments: ["collected", "bytes", "streamed"], [false, true])
+    func descendantInterruption(_ mode: String, _ timeout: Bool) async throws {
+        let directory = try temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let marker = directory.appendingPathComponent("child.pid")
+        let childToken = "120.\(UInt64.random(in: 1...UInt64.max))"
+        let siblingToken = "120.\(UInt64.random(in: 1...UInt64.max))"
+        let sibling = try await runner.spawnDetached(ProcessCommand("/bin/sleep", [siblingToken]),
+                                                     logFile: directory.appendingPathComponent("sibling.log"))
+        // A cooperative parent must not leave its TERM-ignoring child behind.
+        let script = #"trap 'exit 0' TERM; /bin/sh -c 'trap "" TERM; printf %s "$$" > "$2"; exec /bin/sleep "$1"' runstir-descendant-child "$1" "$2" >/dev/null 2>&1 & child=$!; wait "$child""#
+        let command = ProcessCommand("/bin/sh", ["-c", script, "runstir-descendant-test", childToken, marker.path],
+            timeout: timeout ? .seconds(10) : nil,
+            output: mode == "streamed" ? .streamed(to: directory.appendingPathComponent("command.log")) : .collected)
+        let task = Task {
+            // Exercise readiness after executor congestion exceeds the old five-second setup budget.
+            if mode == "collected", !timeout { try await Task.sleep(for: .seconds(6)) }
+            if mode == "bytes" { return try await runner.run(command, onBytes: { _, _ in }) }
+            return try await runner.run(command)
+        }
+        var child: Int32?
+        func cleanup() async {
+            task.cancel()
+            _ = try? await task.value
+            let observed = child ?? (try? String(contentsOf: marker, encoding: .utf8)).flatMap(Int32.init)
+            for (pid, token, signal) in [(observed, childToken, "-KILL"), (Optional(sibling), siblingToken, "-TERM")] {
+                if let pid, (try? await processMatches(pid, token: token)) == true {
+                    _ = try? await runner.run(ProcessCommand("/bin/kill", [signal, "\(pid)"]))
+                    let stopped = ContinuousClock.now + .seconds(3)
+                    while (try? await processMatches(pid, token: token)) == true, ContinuousClock.now < stopped {
+                        try? await Task.sleep(for: .milliseconds(20))
+                    }
+                    #expect((try? await processMatches(pid, token: token)) == false)
+                }
+            }
+        }
+        do {
+            // Fixture startup shares CI executors with the full suite; interruption keeps its own bounds.
+            let ready = ContinuousClock.now + .seconds(30)
+            while child == nil, ContinuousClock.now < ready {
+                child = (try? String(contentsOf: marker, encoding: .utf8)).flatMap(Int32.init)
+                if child == nil { try await Task.sleep(for: .milliseconds(10)) }
+            }
+            let pid = try #require(child)
+            #expect(try await processMatches(pid, token: childToken))
+            if !timeout { task.cancel() }
+            do {
+                _ = try await task.value
+                Issue.record("the interrupted command must not succeed")
+            } catch is CancellationError {
+                #expect(!timeout)
+            } catch let error as ProcessError {
+                guard case .timedOut = error else { throw error }
+                #expect(timeout)
+            }
+            let stopped = ContinuousClock.now + .seconds(3)
+            while try await processMatches(pid, token: childToken), ContinuousClock.now < stopped {
+                try await Task.sleep(for: .milliseconds(20))
+            }
+            #expect(try await !processMatches(pid, token: childToken))
+            #expect(try await processMatches(sibling, token: siblingToken))
+        } catch {
+            await cleanup()
+            throw error
+        }
+        await cleanup()
+    }
+
+    private func processMatches(_ pid: Int32, token: String) async throws -> Bool {
+        let result = try await runner.run(ProcessCommand("/bin/ps", ["-p", "\(pid)", "-o", "command="]))
+        return result.terminationStatus.isSuccess && result.standardOutput.contains(token)
+    }
+
+    @Test("byte callbacks keep the separate collected output limits", arguments: [false, true])
+    func byteLimits(_ standardError: Bool) async throws {
+        let limit = (standardError ? 1 : 4) * 1024 * 1024
+        let script = "/usr/bin/head -c \(limit + 1) /dev/zero" + (standardError ? " >&2" : "")
+        await #expect(throws: ProcessError.self) {
+            try await runner.run(ProcessCommand("/bin/sh", ["-c", script]), onBytes: { _, _ in })
+        }
     }
 
     @Test("successful exit reports status zero")
@@ -217,5 +473,20 @@ struct SystemProcessRunnerTests {
             .appendingPathComponent("mobile-processrunner-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         return directory
+    }
+}
+
+private struct ProcessLogCapture: LogHandler {
+    let messages: Mutable<[String]>
+    var metadata: Logger.Metadata = [:]
+    var logLevel: Logger.Level = .debug
+
+    subscript(metadataKey key: String) -> Logger.Metadata.Value? {
+        get { metadata[key] }
+        set { metadata[key] = newValue }
+    }
+
+    func log(event: LogEvent) {
+        messages.mutate { $0.append("\(event.message) \(event.metadata ?? [:])") }
     }
 }

@@ -1,0 +1,167 @@
+#if os(macOS)
+import Core
+import EnvironmentKit
+import SwiftUI
+
+struct AppFileView: View {
+    private enum Field: Hashable { case recheck, device, plan, risk, approve }
+    let file: URL
+    let session: GUIOperationSession
+    @State private var result: AppFileResult?
+    @State private var device = ""
+    @State private var events: [WorkflowEvent] = []
+    @State private var executionID: UUID?
+    @State private var downgradeAcknowledged = false
+    @FocusState private var focus: Field?
+    /// Controls stay disabled until the session ends, so focus moves only once the window is idle.
+    @State private var nextFocus: Field?
+    @AccessibilityFocusState private var stateFocused: Bool
+    private var busy: Bool { session.task != nil || !session.acceptsNewOperations }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(file.path).font(.headline).textSelection(.enabled)
+            Text("파일을 확인하고 실행할 기기를 선택하세요. 변경 계획을 승인하면 설치 후 실행을 요청합니다.")
+            Text("소스 빌드와 환경 준비를 자동으로 시작하지 않습니다.").font(.caption)
+            HStack {
+                Button("파일 다시 확인") { execute(inspectOnly: true) }.keyboardShortcut("r")
+                    .focused($focus, equals: .recheck)
+                    .accessibilityHint("파일과 기기 후보를 다시 확인합니다. 설치하지 않습니다.")
+                Picker("실행 기기", selection: $device) {
+                    Text("기기를 선택하세요").tag("")
+                    ForEach(result?.operation.devices ?? [], id: \.id) { candidate in
+                        Text("\(candidate.name) / OS \(candidate.os) / \(candidate.ready ? "준비됨" : candidate.boot == "required" ? "꺼짐 · 승인 후 Runstir가 부팅" : "수동 준비 필요")\(candidate.origin.map { " / " + $0.displayName } ?? "")\(candidate.avdDirectory.map { " / " + $0 } ?? "")").tag(candidate.id)
+                    }
+                }.focused($focus, equals: .device)
+                Button("변경 계획 확인") { execute(planOnly: true) }.disabled(device.isEmpty)
+                    .focused($focus, equals: .plan)
+            }.disabled(busy)
+            if let operation = result?.operation {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 8) {
+                        if let artifact = operation.artifact {
+                            Text(artifact.metadata.name ?? "앱 이름 확인 불가").font(.headline)
+                            Text("\(artifact.metadata.platform.rawValue) · 앱 ID: \(artifact.metadata.appID)")
+                            Text("표시 버전: \(artifact.metadata.version ?? "확인 불가") · 빌드: \(artifact.metadata.build)")
+                            Text("아키텍처: \(artifact.metadata.architectures.joined(separator: ", ")) · 최소 OS: \(artifact.metadata.minimumOS)")
+                            Text("출처: 사용자 선택 파일 · 제작자 신뢰와 안전성은 확인하지 않았습니다.")
+                            Text("\(artifact.contentIdentityAlgorithm): \(artifact.contentIdentity)").font(.caption)
+                            Text(artifact.metadata.signatureCondition)
+                            if let signer = artifact.metadata.signingIdentity { Text("서명 인증서 SHA-256: \(signer)").font(.caption) }
+                        }
+                        if let candidate = operation.devices.first(where: { $0.id == device }), let source = candidate.architectureSource {
+                            Text("기기에서 지원하는 아키텍처: \(candidate.architectures.joined(separator: ", "))")
+                            if candidate.pairing == nil {
+                                Text("런타임: \(candidate.runtimeIdentifier ?? "확인 불가") · 빌드: \(candidate.runtimeBuild ?? "확인 불가") · \(candidate.runtimeAvailable.map { $0 ? "사용 가능" : "사용 불가" } ?? "확인 불가")")
+                            }
+                            Text("근거: \(source). 실제 기기 CPU: 미측정.").font(.caption)
+                        }
+                        ForEach(operation.prerequisites ?? [], id: \.id) { check in
+                            Text("조건 \(check.id): \(GUIText.state(check.state)) / \(check.observed)")
+                            if let action = check.action { Text("수동 조치: \(action)") }
+                        }
+                        if let plan = operation.plan, plan.device.id == device {
+                            Divider()
+                            Text("승인 대상: \(plan.device.name) / \(plan.device.id)").font(.headline)
+                            Text("기존 앱: \(plan.installed.state) · 표시 버전 \(plan.installed.version ?? "확인 불가") · 빌드 \(plan.installed.build ?? "확인 불가")")
+                            Text(plan.replacement ? "같은 앱을 데이터 보존 방식으로 교체합니다. 자동 삭제와 초기화는 하지 않습니다." : "선택한 앱을 설치하고 실행을 요청합니다.")
+                            ForEach(plan.warnings, id: \.self) { Text($0) }
+                            if plan.requiresRiskApproval {
+                                Toggle("이전 또는 비교 불가 빌드의 위험을 확인했습니다. 설치 성공과 데이터 보존은 보장하지 않습니다.", isOn: $downgradeAcknowledged)
+                                    .disabled(session.task != nil).focused($focus, equals: .risk)
+                            }
+                            Text("plan-id: \(plan.id)").font(.caption)
+                            Button(plan.device.boot == "required" ? "승인하고 부팅·설치·실행 요청" : "승인하고 설치·실행 요청") { execute(approval: plan.approval) }
+                                .disabled(busy || (plan.requiresRiskApproval && !downgradeAcknowledged))
+                                .focused($focus, equals: .approve)
+                                .accessibilityHint("plan-id \(plan.id)만 승인합니다. 기존 앱 데이터를 지우지 않습니다.")
+                            Text(plan.device.boot == "required"
+                                ? "실행 직전에 파일·기기를 다시 확인하고 이 기기만 부팅합니다. 부팅 뒤 기존 앱이 있으면 다시 승인받습니다."
+                                : "실행 직전에 파일·기기·기존 앱 상태를 다시 확인합니다.").font(.caption)
+                        }
+                        Divider()
+                        Text("작업 상태: \(GUIText.state(operation.state))").font(.headline)
+                            .accessibilityAddTraits(.isHeader).accessibilityFocused($stateFocused)
+                        if let boot = operation.deviceBoot {
+                            Text("기기 부팅: \(GUIText.state(boot.state)) · \(boot.device)\(boot.handle.map { " · \($0)" } ?? "")")
+                            Text("Runstir가 부팅한 기기는 끄지 않고 그대로 둡니다. 필요 없으면 직접 종료하세요. \(boot.detail)")
+                        }
+                        Text("설치 상태: \(GUIText.state(operation.installation))")
+                        Text("실행 요청: \(GUIText.state(operation.launch))")
+                        Text("앱 실행 상태: \(GUIText.appRunning(operation.running))")
+                        Text("앱 화면은 기기에서 직접 확인하세요.")
+                        Text("개발 서버는 자동으로 시작하거나 연결하지 않습니다. 필요한 경우 별도로 준비하세요.")
+                        if let installed = operation.installed {
+                            Text("현재 설치 상태: \(GUIText.state(installed.state)) · 빌드 \(installed.build ?? "확인 불가")")
+                            if let detail = installed.detail { Text(detail) }
+                        }
+                        if let error = operation.error { Text("\(outcomeLabel(operation.state)): \(error)").foregroundStyle(.red) }
+                        if let conflict = operation.conflict {
+                            Text("충돌: \(conflict.key.rawValue)")
+                            if let owner = conflict.owner { Text("소유 작업: \(owner.command) / \(owner.project)") }
+                        }
+                        if let next = operation.nextAction { Text("다음 단계: \(next)") }
+                        if !operation.completed.isEmpty { Text("완료 단계: \(operation.completed.joined(separator: ", "))") }
+                    }.frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled)
+                }
+            }
+            if session.task != nil {
+                HStack {
+                    ProgressView().controlSize(.small).accessibilityHidden(true)
+                    Button("이 작업 취소") { session.cancel(); announce(session.statusText) }.disabled(session.cancelling)
+                        .accessibilityHint("이 창의 새 단계를 막습니다. 완료한 설치와 다른 창의 작업은 보존합니다.")
+                    Text(session.statusText).accessibilityLabel("작업 상태").accessibilityValue(session.statusText)
+                }
+            }
+            DisclosureGroup("실행 상세") {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 4) {
+                        ForEach(events, id: \.sequence) { event in
+                            Text("\(event.stageId ?? event.kind): \(event.state)\(event.detail.map { " — \($0)" } ?? "")")
+                        }
+                    }.frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled)
+                }.frame(maxHeight: 160)
+            }
+            Spacer(minLength: 0)
+        }.padding(20).task { execute(inspectOnly: true) }
+            .onChange(of: device) { _, _ in downgradeAcknowledged = false }
+            .onChange(of: busy) { _, busy in
+                if !busy, let nextFocus { focus = nextFocus; self.nextFocus = nil }
+            }
+    }
+
+    @MainActor private func execute(inspectOnly: Bool = false, planOnly: Bool = false, approval: String? = nil) {
+        guard !busy else { return }
+        let input = AppFileInput(file: file, environment: ProcessInfo.processInfo.environment,
+            device: device.isEmpty ? nil : device)
+        let generation = UUID()
+        executionID = generation
+        events = []
+        session.progress = "파일과 기기 확인"
+        session.start {
+            let output = await AppFileExecution.run(input: input, inspectOnly: inspectOnly,
+                planOnly: planOnly, approvedPlanID: approval) { event in
+                    Task { @MainActor in
+                        guard executionID == generation else { return }
+                        events.append(event)
+                        if events.count > 100 { events.removeFirst(events.count - 100) }
+                        session.record(event)
+                    }
+                }
+            guard executionID == generation else { return }
+            if result?.operation.plan?.id != output.operation.plan?.id { downgradeAcknowledged = false }
+            result = output
+            let plan = output.operation.plan.flatMap { $0.device.id == device ? $0 : nil }
+            switch output.operation.state {
+            // Only an unexecuted plan earns approval focus; a finished run must not be one key from a repeat.
+            case "planned" where plan != nil, "needs-approval" where plan != nil: nextFocus = plan?.requiresRiskApproval == true ? .risk : .approve
+            case _ where device.isEmpty && !output.operation.devices.isEmpty: nextFocus = .device
+            case "succeeded", "partially-completed": break
+            default: nextFocus = .recheck
+            }
+            stateFocused = true
+            announce("앱 파일 작업: \(GUIText.state(output.operation.state)), 설치 \(GUIText.state(output.operation.installation)), 실행 요청 \(GUIText.state(output.operation.launch))")
+        }
+    }
+}
+#endif

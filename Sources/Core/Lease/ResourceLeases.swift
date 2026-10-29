@@ -12,6 +12,15 @@ public struct ResourceKey: Hashable, Comparable, Codable, Sendable, CustomString
         Self("folder:\(identity.volume):\(identity.file)")
     }
 
+    public static func appFile(_ identity: AppFileIdentity) -> Self {
+        // Stable if a user replaces the bytes at the same path while a task is active.
+        Self("app-file:\(identity.path)")
+    }
+
+    public static func appFileObject(_ identity: AppFileIdentity) -> Self {
+        Self("app-file-object:\(identity.volume):\(identity.file)")
+    }
+
     /// The canonical path stays the same before and after installation creates it.
     public static func destination(_ url: URL) -> Self {
         Self("destination:\(url.resolvingSymlinksInPath().standardizedFileURL.path)")
@@ -182,11 +191,60 @@ public enum ClaimObservation: Sendable, Equatable {
     case unknown(String)
 }
 
+/// A previous reservation bound to the store, device and exact operation replacing it.
+public struct InstallationReservation: Sendable {
+    fileprivate let directory: URL
+    fileprivate let device: ResourceKey
+    fileprivate let owner: LeaseOwner
+    fileprivate let previous: DeviceReservation?
+}
+
 extension ResourceLeases {
+    /// A legacy install record may name a device but cannot prove its folder owner.
+    /// Read the existing reservation book without creating or changing a claim.
+    public func ownsClaim(device: ResourceKey, project: String, appID: String) throws -> Bool {
+        let location = file(device, "claim")
+        do {
+            let root = try FileManager.default.attributesOfItem(atPath: directory.path)
+            let attributes = try FileManager.default.attributesOfItem(atPath: location.path)
+            guard root[.type] as? FileAttributeType == .typeDirectory,
+                  attributes[.type] as? FileAttributeType == .typeRegular,
+                  let size = attributes[.size] as? NSNumber, size.uint64Value <= 1_048_576 else {
+                throw ResourceConflict(key: device, owner: nil, reason: "the previous app claim is redirected or unreadable")
+            }
+        } catch let error as CocoaError where error.code == .fileReadNoSuchFile { return false }
+        guard let saved = try reservation(device: device), let claim = saved.claim else { return false }
+        return saved.owner.project == project && claim.device == device && claim.appID == appID
+    }
+
     /// Call while holding `device`, before changes. A failed final record leaves this
     /// owner's unconfirmed reservation in place so another project cannot take over.
     public func reserve(device: ResourceKey, owner: LeaseOwner) throws {
         try write(DeviceReservation(owner: owner, claim: nil), device: device)
+    }
+
+    /// Hold the device lease through installation and any subsequent restoration.
+    public func reserveForInstallation(device: ResourceKey, owner: LeaseOwner) throws -> InstallationReservation {
+        let previous = try reservation(device: device)
+        if let previous, previous.owner.project != owner.project {
+            throw ResourceConflict(key: device, owner: previous.owner, reason: "another project's reservation was preserved")
+        }
+        try reserve(device: device, owner: owner)
+        return InstallationReservation(directory: directory, device: device, owner: owner, previous: previous)
+    }
+
+    /// Only a verified no-change rejection permits restoring the state before this install.
+    public func restoreAfterRejectedInstallation(_ saved: InstallationReservation) throws {
+        guard directory == saved.directory else {
+            throw ResourceConflict(key: saved.device, owner: nil, reason: "the reservation belongs to a different store")
+        }
+        let current = try reservation(device: saved.device)
+        guard current?.owner == saved.owner, current?.claim == nil else {
+            throw ResourceConflict(key: saved.device, owner: current?.owner,
+                reason: "the installation reservation changed and was preserved")
+        }
+        if let previous = saved.previous { try write(previous, device: saved.device) }
+        else { try FileManager.default.removeItem(at: file(saved.device, "claim")) }
     }
 
     public func record(_ claim: ResourceClaim) throws {
@@ -253,7 +311,7 @@ extension ResourceLeases {
     }
 }
 
-private struct DeviceReservation: Codable {
+fileprivate struct DeviceReservation: Codable, Sendable {
     let owner: LeaseOwner
     let claim: ResourceClaim?
 }

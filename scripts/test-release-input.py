@@ -79,7 +79,7 @@ class ReleaseInputTests(unittest.TestCase):
 
     def test_candidate_rejects_mixed_source_version_and_core_build(self):
         candidate = {"productVersion": "1.0.0-alpha.1", "sourceSHA": SHA,
-                     "coreBuildIdentity": "b" * 64,
+                     "coreBuildIdentity": "b" * 64, "distributionReady": False,
                      "signing": "unsigned", "notarization": "not-requested"}
         build = {"releaseVersion": "1.0.0-alpha.1", "toolVersion": "1.0.0-alpha.1",
                  "sourceRevision": SHA, "coreBuildIdentity": "b" * 64}
@@ -92,21 +92,23 @@ class ReleaseInputTests(unittest.TestCase):
 
     def test_candidate_requires_an_exact_core_build_digest(self):
         for digest in [None, "", "unknown", "b" * 63]:
-            with self.subTest(digest=digest), self.assertRaises(ValueError):
+            with self.subTest(digest=digest), self.assertRaisesRegex(ValueError, "Core build digest"):
                 release_input.validate_candidate(
                     {"productVersion": "1.0.0-alpha.1", "sourceSHA": SHA,
                      "coreBuildIdentity": digest, "signing": "unsigned",
-                     "notarization": "not-requested"}, {}, {}
+                     "notarization": "not-requested", "distributionReady": False}, {}, {}
                 )
 
     def test_candidate_rejects_missing_unknown_and_inconsistent_signing_state(self):
         candidate = {"productVersion": "1.0.0-alpha.1", "sourceSHA": SHA,
-                     "coreBuildIdentity": "b" * 64}
+                     "coreBuildIdentity": "b" * 64, "distributionReady": False}
         build = {"releaseVersion": "1.0.0-alpha.1", "toolVersion": "1.0.0-alpha.1",
                  "sourceRevision": SHA, "coreBuildIdentity": "b" * 64}
         states = [{}, {"signing": "unknown", "notarization": "accepted"},
                   {"signing": "unsigned", "notarization": "accepted"},
-                  {"signing": "developer-id", "notarization": "not-requested"}]
+                  {"signing": "developer-id", "notarization": "not-requested"},
+                  {"signing": "unsigned", "notarization": "not-requested", "distributionReady": True},
+                  {"signing": "unsigned", "notarization": "not-requested", "distributionReady": None}]
         for state in states:
             with self.subTest(state=state), self.assertRaises(ValueError):
                 release_input.validate_candidate({**candidate, **state}, build, build)
@@ -149,7 +151,7 @@ class ReleaseInputTests(unittest.TestCase):
                 artifacts[kind] = {"file": name, "sha256": hashlib.sha256(kind.encode()).hexdigest()}
             manifest = {"productVersion": "1.0.0-alpha.1", "sourceSHA": SHA,
                         "signing": "unsigned", "notarization": "not-requested",
-                        "artifacts": artifacts}
+                        "distributionReady": False, "artifacts": artifacts}
             release_input.validate_candidate_artifacts(manifest, root)
             with self.assertRaises(ValueError):
                 release_input.validate_candidate_artifacts({**manifest, "signing": "unknown"}, root)
@@ -173,7 +175,8 @@ class ReleaseInputTests(unittest.TestCase):
                 )
                 (root / "CANDIDATE.json").write_text(
                     '{"productVersion":"1.0.0-alpha.1","sourceSHA":"' + SHA + '",'
-                    '"signing":"unsigned","notarization":"not-requested","artifacts":{}}'
+                    '"signing":"unsigned","notarization":"not-requested",'
+                    '"distributionReady":false,"artifacts":{}}'
                 )
                 env = os.environ.copy()
                 env.pop("PYTHONPATH", None)
@@ -285,7 +288,7 @@ class ReleaseInputTests(unittest.TestCase):
             formula.write_text("# fixture\n")
             candidate = {"productVersion": version, "sourceSHA": SHA,
                          "coreBuildIdentity": "b" * 64, "signing": "unsigned",
-                         "notarization": "not-requested", "artifacts": {
+                         "notarization": "not-requested", "distributionReady": False, "artifacts": {
                              kind: {"file": path.name,
                                     "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
                              for kind, path in [("cli", archive), ("gui", dmg), ("homebrew", formula)]}}

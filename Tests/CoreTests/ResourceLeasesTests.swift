@@ -5,13 +5,49 @@ import Testing
 
 @Suite("shared resource leases")
 struct ResourceLeasesTests {
+    // Released with this test's suite instance, so no lease directory outlives the test.
+    private let scratch = try! FixtureRepo()
+
     private func store() -> ResourceLeases {
-        ResourceLeases(directory: FileManager.default.temporaryDirectory
-            .appendingPathComponent("runstir-leases-\(UUID().uuidString)"))
+        ResourceLeases(directory: scratch.url("leases-\(UUID().uuidString)"))
     }
 
     private func owner(_ id: String, project: String = "/work/a") -> LeaseOwner {
         LeaseOwner(operationId: id, command: "up", project: project)
+    }
+
+    @Test("legacy ownership confirmation is exact and never changes the reservation book",
+        arguments: ["owned", "foreign", "wrong-app", "reserved", "absent"])
+    func readOnlyOwnership(_ mode: String) throws {
+        let leases = store()
+        let device = ResourceKey.device(.ios, "A")
+        let savedOwner = owner("old", project: mode == "foreign" ? "/other" : "/mine")
+        if mode == "reserved" { try leases.reserve(device: device, owner: savedOwner) }
+        else if mode != "absent" {
+            try leases.record(ResourceClaim(device: device, platform: .ios, handle: "A",
+                appID: mode == "wrong-app" ? "other.app" : "mine.app", owner: savedOwner))
+        }
+        let file = leases.file(device, "claim")
+        let before = try? Data(contentsOf: file)
+        #expect(try leases.ownsClaim(device: device, project: "/mine", appID: "mine.app") == (mode == "owned"))
+        #expect((try? Data(contentsOf: file)) == before)
+        if mode == "absent" { #expect(!FileManager.default.fileExists(atPath: leases.directory.path)) }
+    }
+
+    @Test("a redirected or oversized legacy claim cannot confirm ownership", arguments: ["symlink", "oversized", "malformed"])
+    func unconfirmedLegacyClaim(_ mode: String) throws {
+        let leases = store()
+        let device = ResourceKey.device(.ios, "A")
+        try FileManager.default.createDirectory(at: leases.directory, withIntermediateDirectories: true)
+        let file = leases.file(device, "claim")
+        if mode == "symlink" {
+            let target = leases.directory.appendingPathComponent("preserved")
+            try Data("keep".utf8).write(to: target)
+            try FileManager.default.createSymbolicLink(at: file, withDestinationURL: target)
+        } else { try Data(repeating: 32, count: mode == "oversized" ? 1_048_577 : 1).write(to: file) }
+        let before = try Data(contentsOf: file)
+        #expect(throws: (any Error).self) { try leases.ownsClaim(device: device, project: "/mine", appID: "mine.app") }
+        #expect(try Data(contentsOf: file) == before)
     }
 
     @Test("a held key reports its owning operation and releases only the keys this operation took")
@@ -99,6 +135,77 @@ struct ResourceLeasesTests {
         #expect(conflict.reason.contains("unconfirmed"))
         #expect(calls.value == 0)
         #expect(FileManager.default.fileExists(atPath: leases.file(device, "claim").path))
+    }
+
+    @Test("rejected installation restores the previous reservation including legacy claims",
+          arguments: ["absent", "reserved", "claimed", "legacy"])
+    func restoreRejectedInstallation(_ mode: String) async throws {
+        let leases = store()
+        let device = ResourceKey.device(.ios, "A")
+        let prior = owner("prior")
+        let claim = ResourceClaim(device: device, platform: .ios, handle: "A", appID: "com.first", owner: prior)
+        if mode == "reserved" { try leases.reserve(device: device, owner: prior) }
+        else if mode != "absent" {
+            try leases.record(claim)
+            if mode == "legacy" { try JSONEncoder().encode(claim).write(to: leases.file(device, "claim")) }
+        }
+        let lease = try leases.acquire([device], owner: owner("install"))
+        defer { lease.release() }
+        let saved = try leases.reserveForInstallation(device: device, owner: owner("install"))
+        try leases.restoreAfterRejectedInstallation(saved)
+        if mode == "absent" {
+            #expect(!FileManager.default.fileExists(atPath: leases.file(device, "claim").path))
+        } else {
+            let conflict = try await #require(throws: ResourceConflict.self) {
+                try await leases.check(device: device, project: "/other") { observed in
+                    #expect(mode != "reserved")
+                    #expect(observed == claim)
+                    return .running("pid 7")
+                }
+            }
+            #expect(conflict.owner == prior)
+            #expect(try leases.ownsClaim(device: device, project: prior.project, appID: claim.appID) == (mode != "reserved"))
+        }
+    }
+
+    @Test("restoration preserves changed, confirmed, unreadable or missing records and another store",
+          arguments: ["other-operation", "confirmed", "malformed", "missing", "other-store"])
+    func preserveChangedReservation(_ mode: String) throws {
+        let leases = store()
+        let device = ResourceKey.device(.ios, "A")
+        let current = owner("install")
+        let lease = try leases.acquire([device], owner: current)
+        defer { lease.release() }
+        let saved = try leases.reserveForInstallation(device: device, owner: current)
+        let file = leases.file(device, "claim")
+        switch mode {
+        case "other-operation": try leases.reserve(device: device, owner: owner("other-operation"))
+        case "confirmed": try leases.record(ResourceClaim(device: device, platform: .ios, handle: "A", appID: "com.first", owner: current))
+        case "malformed": try Data("unreadable reservation".utf8).write(to: file)
+        case "missing": try FileManager.default.removeItem(at: file)
+        default: break
+        }
+        let before = try? Data(contentsOf: file)
+        #expect(throws: ResourceConflict.self) {
+            try (mode == "other-store" ? store() : leases).restoreAfterRejectedInstallation(saved)
+        }
+        #expect((try? Data(contentsOf: file)) == before)
+    }
+
+    @Test("a restoration write failure leaves the current unconfirmed reservation intact")
+    func failedRestorationWrite() throws {
+        let leases = store()
+        let device = ResourceKey.device(.ios, "A")
+        try leases.record(ResourceClaim(device: device, platform: .ios, handle: "A", appID: "com.first", owner: owner("prior")))
+        let lease = try leases.acquire([device], owner: owner("install"))
+        defer { lease.release() }
+        let saved = try leases.reserveForInstallation(device: device, owner: owner("install"))
+        let file = leases.file(device, "claim")
+        let before = try Data(contentsOf: file)
+        try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: leases.directory.path)
+        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: leases.directory.path) }
+        #expect(throws: (any Error).self) { try leases.restoreAfterRejectedInstallation(saved) }
+        #expect(try Data(contentsOf: file) == before)
     }
 
     @Test("a final app record replaces the reservation and supports fresh observation")
