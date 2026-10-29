@@ -92,11 +92,11 @@ class ReleaseInputTests(unittest.TestCase):
 
     def test_candidate_requires_an_exact_core_build_digest(self):
         for digest in [None, "", "unknown", "b" * 63]:
-            with self.subTest(digest=digest), self.assertRaises(ValueError):
+            with self.subTest(digest=digest), self.assertRaisesRegex(ValueError, "Core build digest"):
                 release_input.validate_candidate(
                     {"productVersion": "1.0.0-alpha.1", "sourceSHA": SHA,
                      "coreBuildIdentity": digest, "signing": "unsigned",
-                     "notarization": "not-requested"}, {}, {}
+                     "notarization": "not-requested", "distributionReady": False}, {}, {}
                 )
 
     def test_candidate_rejects_missing_unknown_and_inconsistent_signing_state(self):
