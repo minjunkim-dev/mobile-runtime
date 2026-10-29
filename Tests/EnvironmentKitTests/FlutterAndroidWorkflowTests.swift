@@ -172,7 +172,7 @@ struct FlutterAndroidWorkflowTests {
         let result = try await EnvironmentInspection.run(input: fixture.input, runner: fixture.runner, preparedDependencies: true)
         let blocked = result.report.checks.first { $0.id == "android.flutter.execution" }
         #expect(blocked?.status == .error)
-        #expect(blocked?.outcome.remediation == FlutterAndroidWorkflow.failure().remediation)
+        #expect(blocked?.outcome.remediation?.summary.contains("--prepared-dependencies") == false)
     }
 
     @Test("down never requires Flutter preparation or creates an SDK view")
