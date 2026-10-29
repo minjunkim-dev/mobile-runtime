@@ -38,7 +38,7 @@ jobs:
       - name: Validate inputs, main ancestry, CI and unused version
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python3 scripts/validate-release-input.py "$RELEASE_VERSION" "$SOURCE_SHA"
+        run: python3 -I scripts/validate-release-input.py "$RELEASE_VERSION" "$SOURCE_SHA"
       - name: Checkout the verified source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -77,22 +77,40 @@ jobs:
           path: release
       - name: Verify transferred checksum
         working-directory: release
-        run: sha256sum --check "runstir-$RELEASE_VERSION-macos-arm64.tar.gz.sha256"
+        run: |
+          sha256sum --check "runstir-$RELEASE_VERSION-macos-arm64.tar.gz.sha256"
+          sha256sum --check "Runstir-$RELEASE_VERSION-macos-arm64.dmg.sha256"
+          python3 -I - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import runpy
+          validation = runpy.run_path("../scripts/validate-release-input.py")
+          candidate = json.loads(Path("CANDIDATE.json").read_text())
+          validation["validate_requested_candidate"](
+              candidate, os.environ["RELEASE_VERSION"], os.environ["SOURCE_SHA"])
+          validation["validate_candidate_artifacts"](candidate, Path("."))
+          PY
       - name: Create an unpublished pre-release draft
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          python3 scripts/validate-release-input.py "$RELEASE_VERSION" "$SOURCE_SHA"
+          python3 -I scripts/validate-release-input.py "$RELEASE_VERSION" "$SOURCE_SHA"
           cat > "$RUNNER_TEMP/notes.md" <<EOF
           Source SHA: $SOURCE_SHA
           Workflow: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
 
           공개하지 않은 검증 대기 draft다. 실제 배포 archive를 내려받아 ADR-0019의 실행 검증을 완료한 뒤 공개를 판단한다.
+          CLI와 GUI 후보는 CANDIDATE.json의 같은 source/version/Core build를 사용한다.
+          서명·공증 상태를 CANDIDATE.json에서 확인한다. unsigned 후보는 Gatekeeper/공개 게이트를 통과하지 않았다.
           This draft does not establish device compatibility or release readiness.
           EOF
           gh release create "v$RELEASE_VERSION" \
             "release/runstir-$RELEASE_VERSION-macos-arm64.tar.gz" \
             "release/runstir-$RELEASE_VERSION-macos-arm64.tar.gz.sha256" \
+            "release/Runstir-$RELEASE_VERSION-macos-arm64.dmg" \
+            "release/Runstir-$RELEASE_VERSION-macos-arm64.dmg.sha256" \
+            "release/CANDIDATE.json" "release/runstir-candidate.rb" \
             --repo "$GH_REPO" --target "$SOURCE_SHA" \
             --draft --prerelease --title "Runstir $RELEASE_VERSION (검증 대기)" \
             --notes-file "$RUNNER_TEMP/notes.md"
