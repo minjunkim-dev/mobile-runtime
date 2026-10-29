@@ -90,6 +90,9 @@ jobs:
           validation["validate_requested_candidate"](
               candidate, os.environ["RELEASE_VERSION"], os.environ["SOURCE_SHA"])
           validation["validate_candidate_artifacts"](candidate, Path("."))
+          # This job verifies no signature, so it only carries unsigned candidates.
+          if candidate["signing"] != "unsigned":
+              raise SystemExit("draft release accepts only unsigned candidates")
           PY
       - name: Create an unpublished pre-release draft
         env:

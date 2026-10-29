@@ -10,7 +10,7 @@ scratch=$(mktemp -d)
 mounted=false
 cleanup() {
   if [[ $mounted == true ]]; then
-    hdiutil detach -quiet "$scratch/mount"
+    hdiutil detach -quiet "$scratch/mount" || hdiutil detach -quiet -force "$scratch/mount" || return
   fi
   rm -rf "$scratch"
 }
@@ -66,7 +66,7 @@ plist = plistlib.loads((app / 'Contents/Info.plist').read_bytes())
 if (plist.get('RunstirProductVersion') != manifest['productVersion']
         or plist['CFBundleShortVersionString'] != manifest['productVersion'].split('-')[0]):
     raise SystemExit('GUI bundle version differs from candidate')
-if (app / 'Contents/MacOS/mobile').exists():
+if (app / 'Contents/MacOS/mobile').is_symlink() or (app / 'Contents/MacOS/mobile').exists():
     raise SystemExit('GUI must work independently of the CLI')
 if not (cli / 'mobile').is_file() or not os.access(cli / 'mobile', os.X_OK):
     raise SystemExit('Missing CLI executable')

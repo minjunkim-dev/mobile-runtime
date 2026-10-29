@@ -150,7 +150,7 @@ archive = manifest['artifacts']['cli']
 (output / 'runstir-candidate.rb').write_text(f'''class RunstirCandidate < Formula
   desc "Restricted Runstir validation candidate"
   homepage "https://github.com/minjunkim-dev/mobile-runtime"
-  url ENV.fetch("RUNSTIR_CANDIDATE_URL")
+  url ENV.fetch("HOMEBREW_RUNSTIR_CANDIDATE_URL")
   version "{version}"
   sha256 "{archive['sha256']}"
   license "Apache-2.0"

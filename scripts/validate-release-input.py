@@ -60,6 +60,8 @@ def validate_candidate_signing(candidate):
         ("unsigned", "not-requested"), ("developer-id", "accepted")
     ):
         raise ValueError("candidate requires an explicit, consistent signing and notarization state")
+    if candidate.get("signing") == "unsigned" and candidate.get("distributionReady") is not False:
+        raise ValueError("an unsigned candidate cannot be distribution-ready")
 
 
 def validate_candidate_archive(members, version):
