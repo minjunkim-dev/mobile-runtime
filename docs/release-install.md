@@ -20,7 +20,7 @@ macOS Apple Silicon(arm64)용 CLI다. CLI 명령어는 `mobile`이다.
 
 formula는 배포 archive의 SHA-256을 고정한다. 실행 파일과 두 resource bundle을 함께 설치한다.
 Node·Ruby·JDK·Xcode·Android SDK는 프로젝트별 버전이 다르므로 formula 의존성으로 설치하지 않는다.
-현재 배포는 CLI다. DMG 설치는 GUI를 제공할 때 추가한다.
+기존 공개 배포는 CLI다. 공동 CLI·GUI 후보는 아래 제한 검증 경로를 사용한다.
 
 ## archive 설치
 
@@ -81,7 +81,8 @@ gh workflow run draft-release.yml --repo minjunkim-dev/mobile-runtime --ref main
   -f version=0.1.0-alpha.5 -f source_sha=<full-40-character-main-SHA>
 ```
 
-workflow는 잠근 의존성으로 macOS arm64 archive와 checksum을 만들고 검증한다.
+workflow는 잠근 의존성으로 macOS arm64 CLI archive·GUI DMG·checksum·`CANDIDATE.json`을 만들고 검증한다.
+workflow는 구조 검증용 unsigned 후보를 만든다.
 GitHub에 `draft=true`, `prerelease=true`인 Release만 생성한다.
 기존 Release와 태그가 있는 버전은 거절한다. 기존 asset을 덮어쓰지 않는다.
 Draft 생성 직전에 입력을 다시 검증한다. 생성 후 같은 태그가 생겼으면 실패로 처리하고 Draft를 공개하지 않는다.
@@ -98,8 +99,10 @@ archive smoke와 CI는 그 실행 검증을 대체하지 않는다. 공개는 �
 
 ### 배포 파일의 근거
 
-`BUILD.json`에 release version, source SHA, 내부 CLI version, 빌드 도구와 의존성을 기록한다.
-현재 archive와 formula의 release version은 `0.1.0-alpha.4`다. 내부 CLI version은 `0.1.0`이다.
+`BUILD.json`에 release version, source SHA, CLI version, 빌드 도구·의존성·Core object digest를 기록한다.
+새 후보는 disposable source의 공유 버전 상수만 입력 버전으로 고정한 뒤 CLI와 GUI를 한 번에 빌드한다.
+`sourceRevision`과 `sourceSHA`는 `git archive`의 입력 commit이다. 제품 버전은 복사본의 `Sources/Core/ProductVersion.swift`에 적용한 version stamp 입력이다.
+CLI·GUI·Core는 이 입력 commit과 제품 버전을 공유한다. 기존 공개 `0.1.0-alpha.4`의 내부 CLI version은 `0.1.0`이다.
 
 Package.swift의 macOS 최소 버전 선언은 14다. 첫 실행 검증 범위는 macOS 27.0.1 arm64다.
 릴리스 노트의 BlueWallet iOS·FreeKiosk Android 검증 조합을 확인한다.
@@ -109,6 +112,24 @@ Package.swift의 macOS 최소 버전 선언은 14다. 첫 실행 검증 범위�
 macOS가 다운로드한 실행 파일을 차단하면 checksum을 먼저 확인한다.
 macOS의 시스템 설정에서 제공하는 보안 승인 절차를 따른다.
 보안 정책을 바꾸거나 quarantine 속성을 일괄 삭제하지 않는다.
+
+### 제한 CLI·GUI 후보
+
+1. 같은 source SHA의 필수 CI를 확인한다. `Draft Release` 또는 로컬 `scripts/package-release.sh <alpha-version> <새-output-directory>`로 후보를 만든다.
+2. 이 저장소는 public이다. `Draft Release` run의 `draft-release` Actions artifact는 7일간 보관하지만 제한 후보 배포 위치로 취급하지 않는다. 제한 후보 배포 위치와 검증자 접근 권한은 별도로 확정한다.
+3. 후보 디렉터리에서 두 `.sha256` 파일을 확인한다. `scripts/verify-candidate.sh <candidate-directory>`로 archive·DMG의 source/version/Core identity와 resource bundle을 확인한다.
+4. 후보 Homebrew formula는 `runstir-candidate.rb`다. 제한 위치의 archive는 brew 밖에서 내려받고 `.sha256`을 확인한다. brew는 받은 URL을 로그에 출력하므로 인증값이 있는 URL을 brew에 넘기지 않는다. 내려받은 archive의 절대 `file://` URL을 `HOMEBREW_RUNSTIR_CANDIDATE_URL`에 지정한다. Homebrew는 tap 밖의 formula 파일을 설치하지 않는다. `brew tap-new --no-git <user>/runstir-candidate`로 만든 로컬 tap의 `Formula/`에 formula를 복사한 뒤 `brew install <user>/runstir-candidate/runstir-candidate`를 실행한다. 같은 셸에서 이 변수를 유지한 채 검증하고, 끝나면 `brew uninstall`과 `brew untap`으로 후보와 로컬 tap을 지운다. 후보는 keg-only다. `brew --prefix runstir-candidate` 아래의 `bin/mobile`로 검증한다. 기존 CLI를 link하거나 교체하지 않는다. 이 설치 검사는 AC16의 제한 위치 다운로드·설치 검증을 대체하지 않는다.
+5. `Runstir.app`을 검증용 Applications 경로로 복사한다. GUI에 제품 버전과 공식 다운로드 링크가 표시된다. 새 DMG의 앱으로 수동 교체한다. GUI bundle에는 `mobile`이 없고 별도 CLI 경로를 변경하지 않는다.
+
+제작기는 unsigned 후보만 만든다. Developer ID 서명·공증 제작과 Gatekeeper 실행 검증은 기능 게이트 뒤 #222의 최종 후보에서 추가한다. `verify-candidate.sh`는 `CANDIDATE.json`이 서명 상태를 주장할 때만 그 서명을 확인한다.
+
+`CANDIDATE.json`은 artifact SHA-256·source SHA·제품 버전·Core build identity와 서명·공증 상태를 고정한다.
+`ciRun`은 후보를 제작한 Actions workflow의 `GITHUB_RUN_ID`다. 로컬 제작에서는 `null`이다.
+같은 source의 필수 `CI` run URL과 최종 head는 별도 검증 근거에 기록한다.
+PR CI의 source SHA는 합성 merge commit일 수 있다. `CANDIDATE.json`의 `sourceSHA`를 확인한다. PR head와 같다고 추정하지 않는다.
+`distributionReady`는 자동으로 참이 되지 않는다. 실제 다운로드·설치·CLI 없는 GUI·Gatekeeper·후보 간 수동 업데이트는 AC16의 별도 실제 검증이다.
+CLI·GUI의 실제 실행, 알려진 성공 표본, tuple, 화면 증거를 같은 후보에 연결한다. 기능이 바뀌면 새 버전의 후보와 증거를 만든다.
+후보 제작은 공식 제품 공개를 수행하지 않는다.
 
 ## 제거
 

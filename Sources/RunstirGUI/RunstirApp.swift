@@ -27,6 +27,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         let menu = NSMenu()
         let appMenu = NSMenu()
+        appMenu.addItem(withTitle: "Runstir 정보", action: #selector(showAbout), keyEquivalent: "").target = self
+        appMenu.addItem(.separator())
         appMenu.addItem(withTitle: "프로젝트 열기…", action: #selector(openProject), keyEquivalent: "o").target = self
         appMenu.addItem(withTitle: "앱 파일 열기…", action: #selector(openAppFile), keyEquivalent: "O").target = self
         // The key window receives performClose, so Cmd-W reaches the same close sheet as the title bar.
@@ -40,6 +42,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         let window = makeWindow(title: "Runstir")
         window.contentView = NSHostingView(rootView: VStack(spacing: 16) {
             Text("Runstir").font(.largeTitle)
+            Text("버전 \(runstirProductVersion)")
+            Link("공식 다운로드", destination: URL(string: "https://github.com/minjunkim-dev/mobile-runtime/releases")!)
+            Text("업데이트하려면 새 DMG의 Runstir.app으로 교체하세요. 별도 CLI는 유지됩니다.")
+                .font(.caption)
             Text("프로젝트의 iOS·Android 환경을 확인하세요.")
             Button("프로젝트 열기…") { self.openProject() }.keyboardShortcut("o")
             Button("앱 파일 열기…") { self.openAppFile() }
@@ -47,6 +53,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         welcome = window
         window.makeKeyAndOrderFront(nil)
         NSApplication.shared.activate(ignoringOtherApps: true)
+    }
+
+    @objc func showAbout() {
+        NSApplication.shared.orderFrontStandardAboutPanel(options: [.applicationVersion: runstirProductVersion])
     }
 
     @objc func openProject() {

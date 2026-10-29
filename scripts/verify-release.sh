@@ -31,13 +31,13 @@ for platform in ios android; do
   "$mobile" doctor --platform "$platform" --json > "$result" || status=$?
   # Host requirements can fail outside a project; a tool failure cannot pass this smoke.
   test "$status" -le 1
-  python3 - "$result" "$package/BUILD.json" <<'PY'
+  python3 -I - "$result" "$package/BUILD.json" <<'PY'
 import json
 import sys
 from pathlib import Path
 result, metadata = (json.loads(Path(path).read_text()) for path in sys.argv[1:])
-assert result['toolVersion'] == metadata['toolVersion']
-assert result['command'] == 'doctor'
+if result['toolVersion'] != metadata['toolVersion'] or result['command'] != 'doctor':
+    raise SystemExit('Archive doctor JSON differs from release metadata')
 PY
 done
 echo 'Archive smoke passed outside the build directory (iOS + Android).'

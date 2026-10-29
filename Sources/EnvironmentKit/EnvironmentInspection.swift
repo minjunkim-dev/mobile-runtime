@@ -104,7 +104,8 @@ public struct EnvironmentInspection: Sendable {
                 return try await finish(selection: try FlutterIOSWorkflow.selection(selection, workspace: flutter.workspace), report: report, context: context)
             } catch is CancellationError { throw CancellationError() }
             catch {
-                let outcome = try await FlutterAndroidReadinessCheck().run()
+                let outcome = try await FlutterAndroidReadinessCheck(remediation: preparedDependencies
+                    ? FlutterAndroidWorkflow.failure().remediation : FlutterAndroidWorkflow.unpreparedInspectionRemediation).run()
                 return Self(selection: selection, report: DoctorReport(checks: [CheckResult(
                     id: "android.flutter.execution", category: "Flutter Android", title: "Protected Flutter Android execution",
                     outcome: outcome)], toolFailures: error is DomainError ? [] : [String(describing: error)]))
