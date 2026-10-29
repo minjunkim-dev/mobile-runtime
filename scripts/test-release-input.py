@@ -216,6 +216,8 @@ class ReleaseInputTests(unittest.TestCase):
                 marker = root / "preflight-reached"
                 env = {**os.environ, "PATH": str(tools) + os.pathsep + os.environ["PATH"],
                        "PACKAGE_PREFLIGHT_REACHED": str(marker), "TMPDIR": str(root)}
+                env.pop("RUNSTIR_SIGNING_IDENTITY", None)
+                env.pop("RUNSTIR_NOTARY_PROFILE", None)
                 result = subprocess.run(
                     ["bash", str(scripts / package.name), "1.0.0-alpha.1", str(output)],
                     env=env, capture_output=True, text=True, timeout=15,

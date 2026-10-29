@@ -23,6 +23,11 @@ for file in "$archive" "$archive.sha256" "$dmg" "$dmg.sha256" "$output/CANDIDATE
   test ! -e "$file"
   test ! -L "$file"
 done
+if [[ -n ${RUNSTIR_SIGNING_IDENTITY:-} || -n ${RUNSTIR_NOTARY_PROFILE:-} ]]; then
+  : "${RUNSTIR_SIGNING_IDENTITY:?Provide a Developer ID Application identity}"
+  : "${RUNSTIR_NOTARY_PROFILE:?Provide an existing notarytool keychain profile}"
+  [[ $RUNSTIR_SIGNING_IDENTITY == 'Developer ID Application: '* ]]
+fi
 scratch=$(mktemp -d)
 trap 'rm -rf "$scratch"' EXIT
 revision=$(git rev-parse HEAD)
@@ -120,11 +125,31 @@ cp -R "$stage/mobile_Core.bundle" "$stage/mobile_AndroidKit.bundle" "$app/Conten
 cp "$stage/BUILD.json" "$stage/LICENSE" "$stage/THIRD_PARTY_NOTICES.md" "$app/Contents/Resources/"
 cp docs/release-install.md "$scratch/disk/INSTALL.md"
 ln -s /Applications "$scratch/disk/Applications"
+signed=false
+if [[ -n ${RUNSTIR_SIGNING_IDENTITY:-} ]]; then
+  codesign --force --options runtime --timestamp --sign "$RUNSTIR_SIGNING_IDENTITY" "$stage/mobile"
+  codesign --force --options runtime --timestamp --sign "$RUNSTIR_SIGNING_IDENTITY" "$app"
+  codesign --verify --strict "$stage/mobile"
+  codesign --verify --deep --strict "$app"
+  ditto -c -k --keepParent "$stage" "$scratch/cli-notary.zip"
+  xcrun notarytool submit "$scratch/cli-notary.zip" --keychain-profile "$RUNSTIR_NOTARY_PROFILE" \
+    --wait --output-format json > "$scratch/cli-notary.json"
+  python3 -I -c 'import json,sys; sys.exit(json.load(open(sys.argv[1]))["status"] != "Accepted")' "$scratch/cli-notary.json"
+  signed=true
+fi
 hdiutil create -quiet -fs HFS+ -volname Runstir -srcfolder "$scratch/disk" "$dmg"
+if [[ $signed == true ]]; then
+  codesign --timestamp --sign "$RUNSTIR_SIGNING_IDENTITY" "$dmg"
+  xcrun notarytool submit "$dmg" --keychain-profile "$RUNSTIR_NOTARY_PROFILE" \
+    --wait --output-format json > "$scratch/gui-notary.json"
+  python3 -I -c 'import json,sys; sys.exit(json.load(open(sys.argv[1]))["status"] != "Accepted")' "$scratch/gui-notary.json"
+  xcrun stapler staple "$dmg"
+  xcrun stapler validate "$dmg"
+fi
 COPYFILE_DISABLE=1 tar -czf "$archive" -C "$scratch" "$name"
 (cd "$output" && shasum -a 256 "$name.tar.gz" > "$name.tar.gz.sha256")
 (cd "$output" && shasum -a 256 "$(basename "$dmg")" > "$(basename "$dmg").sha256")
-python3 -I - "$stage/BUILD.json" "$output" <<'PY'
+python3 -I - "$stage/BUILD.json" "$output" "$signed" <<'PY'
 import hashlib
 import json
 import os
@@ -134,12 +159,13 @@ import sys
 build = json.loads(Path(sys.argv[1]).read_text())
 output = Path(sys.argv[2])
 version = build['releaseVersion']
+signed = sys.argv[3] == 'true'
 manifest = {
     'schemaVersion': 1, 'productVersion': version, 'sourceSHA': build['sourceRevision'],
     'coreBuildIdentity': build['coreBuildIdentity'],
     'ciRun': os.environ.get('GITHUB_RUN_ID'),
-    # Developer ID signing and notarization stay with the final #222 candidate.
-    'signing': 'unsigned', 'notarization': 'not-requested',
+    'signing': 'developer-id' if signed else 'unsigned',
+    'notarization': 'accepted' if signed else 'not-requested',
     'distributionReady': False,
     'artifacts': {kind: {'file': name, 'sha256': hashlib.sha256((output / name).read_bytes()).hexdigest()}
                   for kind, name in [('cli', f'runstir-{version}-macos-arm64.tar.gz'),
