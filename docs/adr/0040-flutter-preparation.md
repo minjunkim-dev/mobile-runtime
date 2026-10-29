@@ -155,13 +155,16 @@ ownership을 무시하는 volume(`Owners: Disabled`)에서는 이 보장이 약�
 
 ### SDK 변경 감지 (#344, 2026-10-29 사용자 결정)
 
-원본 SDK와 private copy의 내용은 view 준비 중에 한 번씩만 해시한다. 원본은 snapshot 1회, copy는 파일별 clone 확인과 snapshot 비교 1회다.
+원본 SDK와 private copy의 전체 내용은 view 준비 중에 한 번씩만 해시한다. clone한 copy는 snapshot 비교에서 한 번 읽는다. 다른 volume의 byte copy는 복사하면서 원본을 한 번 더 읽는다. SDK fingerprint의 몇 개 파일은 기존대로 다시 읽는다.
 해시 전에 각 트리의 metadata snapshot을 남긴다. 파일·link는 device·inode·uid·mode·link 수·size·mtime·ctime(ns)을, directory는 device·inode·uid·mode를 기록한다. 항목 추가·삭제는 경로 목록으로 비교한다.
-view 준비를 마치기 전과 이후의 모든 보호 검사(host 명령 앞뒤, Gradle 앞뒤, Dart child 시작)는 이 metadata를 비교한다. 3.9 GB SDK를 다시 읽지 않는다.
-내용 쓰기·교체·권한 변경·hard link 추가는 ctime을 바꾼다. 권한 없는 프로세스는 ctime을 되돌릴 수 없다. 해시 중에 바뀐 파일도 metadata 비교에서 드러난다.
-한계: sandbox 밖의 같은 UID 프로세스가 공유 쓰기 mmap으로 바꾼 byte는 writeback 전까지 ctime에 나타나지 않는다. 그 사이의 보호 검사는 이 변경을 놓친다. root 권한이나 시스템 시계 조작은 원래 이 경계 밖이다.
-기존 검사도 시점 표본이었다. 검사 사이에 바꿨다 되돌린 변경은 원래 감지하지 못했다. 사용자는 이 한계를 보고 실행 비용 대신 metadata 비교를 선택했다(Gradle 전 약 270초, setup 742초 측정).
-source·lockfile·생성 metadata 같은 보호 입력은 계속 내용으로 비교한다.
+그 뒤의 모든 보호 검사(view 준비 중 재확인, host 명령 앞뒤, Gradle 앞뒤, Dart child 시작)는 이 metadata를 비교한다. 3.9 GB SDK를 다시 읽지 않는다.
+APFS에서는 내용 쓰기·교체·권한·xattr 변경과 hard link 추가가 ctime을 ns 단위로 바꾼다. 권한 없는 프로세스는 ctime을 되돌릴 수 없다. 해시 중에 바뀐 파일도 metadata 비교에서 드러난다.
+APFS가 아닌 volume(exFAT·네트워크·HFS+ 등)에서는 같은 크기로 다시 쓰고 시각을 되돌린 파일을 metadata로 구분할 수 없다. 그 트리는 기존처럼 검사마다 내용을 비교한다.
+한계: sandbox 밖의 같은 UID 프로세스가 공유 쓰기 mmap으로 바꾼 byte는 그 프로세스가 `msync`·`munmap`하거나 끝나기 전까지 mtime·ctime에 나타나지 않는다(APFS에서 확인). 매핑을 유지하는 동안의 보호 검사는 이 변경을 놓친다. root 권한이나 시스템 시계 조작은 원래 이 경계 밖이다.
+기존 검사도 시점 표본이었다. 검사 사이에 바꿨다 되돌린 변경은 원래 감지하지 못했다. 사용자는 이 한계를 보고 실행 비용 대신 metadata 비교를 선택했다. 변경 전 alpha.14 측정에서 이 재해시가 Gradle 전 약 270초, setup 742초 대부분을 차지했다.
+반대로 `touch`처럼 내용이 같아도 ctime이 바뀌는 외부 조작은 이제 변경으로 판정한다. 보호 입력을 보존하고 다시 실행한다.
+예외로 원본 SDK의 `bin/cache/lockfile`·`engine.stamp`·`engine.realm`은 내용과 identity로 비교한다. 같은 SDK로 IDE나 터미널에서 `flutter`를 실행하면 `Cache.lock()`과 `update_engine_version.sh`가 매번 이 파일들을 같은 내용으로 다시 써서 ctime을 바꾸기 때문이다.
+source·lockfile·생성 metadata 같은 다른 보호 입력은 계속 내용으로 비교한다.
 
 이 실행 구조의 테스트는 실제 앱 Build·Up·Down·첫 화면 검증을 대신하지 않는다.
 
