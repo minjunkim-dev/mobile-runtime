@@ -1623,8 +1623,8 @@
       "candidateID": "be9251f8488e34acb0072b106c4fd2843c1ad8a82581a911b5082dc00106f54a",
       "evidenceClass": "actual",
       "expected": "같은 고정 tuple의 별도 fresh clone에서 doctor·준비·독립 build·up·올바른 첫 화면·getVM·down과 원본 보존을 확인한다.",
-      "observed": "Flutter Demo Home Page, counter 0. getVM이 VM을 반환했고 down 뒤 VM 서비스 포트가 닫혔다. 추적 source·index·flags가 보존됐다. build는 설치·실행하지 않았다.",
-      "observedAt": "2026-10-30T15:58:29Z",
+      "observed": "Flutter Demo Home Page, counter 0. getVM이 VM을 반환했고 down이 앱 중지를 보고했다. 추적 source·index·flags가 보존됐다. build는 설치·실행하지 않았다.",
+      "observedAt": "2026-10-30T08:48:58Z",
       "executor": "claude-flutter-alpha15",
       "result": "pass",
       "evidence": [
@@ -1683,9 +1683,25 @@
         "f226-raw-e2a66889ffdd71aa",
         "f226-raw-117bb4c13a25f3b7",
         "f226-raw-deb9f8948db624a0",
-        "f226-raw-53b4577c6b9c8bab"
+        "f226-raw-53b4577c6b9c8bab",
+        "f226-raw-8d6300b8262b699f",
+        "f226-raw-5a0b7e12e184912b",
+        "f226-raw-443d3226e831229b",
+        "f226-raw-d740e1363dc5e00e",
+        "f226-raw-953249c8742c9b1a",
+        "f226-raw-7d763ab70ff45eb1",
+        "f226-raw-afa3b568a1234d5b",
+        "f226-raw-0f916277cb615d42",
+        "f226-raw-1e52d2e937888c33",
+        "f226-raw-2b6f404c79a36902",
+        "f226-raw-32fc943cf9c5ce87",
+        "f226-raw-b1e5b6edbf12d92f",
+        "f226-raw-4466fafb4f651564",
+        "f226-raw-ab3cb5759b6a6d2b"
       ],
-      "unverified": [],
+      "unverified": [
+        "down 뒤 VM 서비스 포트 닫힘은 실행자가 lsof로 확인했으나 수집 파일로 남기지 않음"
+      ],
       "supersedes": "AC05-flutter-ios-minimal-CLI-alpha15-initial"
     },
     {
@@ -1698,8 +1714,8 @@
       "candidateID": "be9251f8488e34acb0072b106c4fd2843c1ad8a82581a911b5082dc00106f54a",
       "evidenceClass": "actual",
       "expected": "같은 고정 tuple의 별도 fresh clone에서 doctor·준비·독립 build·up·올바른 첫 화면·getVM·down과 원본 보존을 확인한다.",
-      "observed": "LocalSend 받기 탭. getVM이 VM을 반환했고 down 뒤 VM 서비스 포트가 닫혔다. 추적 source·index·flags가 보존됐다. build는 설치·실행하지 않았다. Runstir build는 LocalSend Rust(cargokit) 단계에서 pub.dev에 닿지 못해 멈췄고(빌드 네트워크 차단), 원래 cargokit 스크립트로 사람이 build tool을 준비한 뒤 다시 빌드했다.",
-      "observedAt": "2026-10-30T15:58:29Z",
+      "observed": "LocalSend 받기 탭. getVM이 VM을 반환했고 down이 앱 중지를 보고했다. 추적 source·index·flags가 보존됐다. build는 설치·실행하지 않았다. Runstir build는 LocalSend Rust(cargokit) 단계에서 pub.dev에 닿지 못해 멈췄고(빌드 네트워크 차단), 원래 cargokit 스크립트로 사람이 build tool을 준비한 뒤 다시 빌드했다.",
+      "observedAt": "2026-10-30T08:49:17Z",
       "executor": "claude-flutter-alpha15",
       "result": "pass",
       "evidence": [
@@ -1768,9 +1784,25 @@
         "f226-raw-d8cc8740bdb3ff99",
         "f226-raw-70937430394d5d0a",
         "f226-raw-8a96e7dc3338505b",
-        "f226-raw-af0827b93b0691a4"
+        "f226-raw-af0827b93b0691a4",
+        "f226-raw-7fb73179f69f894d",
+        "f226-raw-066a23c214213f18",
+        "f226-raw-272dd2c85a1dd89e",
+        "f226-raw-94da38bfb8e18827",
+        "f226-raw-8cf74ebb19a1cfa1",
+        "f226-raw-08d9991fc8ea6948",
+        "f226-raw-a3c5e4f600c02b00",
+        "f226-raw-3aa1fd7c7b2e1e26",
+        "f226-raw-8e49682cf36740ba",
+        "f226-raw-3bbeeaa7d7182864",
+        "f226-raw-a3794f7671dcee2f",
+        "f226-raw-c9ee45a35b22962c",
+        "f226-raw-c92e3d2217553187",
+        "f226-raw-f664b7b6f8820dff"
       ],
-      "unverified": [],
+      "unverified": [
+        "down 뒤 VM 서비스 포트 닫힘은 실행자가 lsof로 확인했으나 수집 파일로 남기지 않음"
+      ],
       "supersedes": "AC05-flutter-ios-oss-CLI-alpha15-initial"
     },
     {
@@ -1784,7 +1816,7 @@
       "evidenceClass": "actual",
       "expected": "GUI 준비·build·up·down을 실행한다.",
       "observed": "첫 GUI 승인으로 Java만 설치된 뒤 사용자가 중단했고 그 사이 호스트가 macOS 27.2로 바뀌었다. 새 GUI로 다시 실행했다.",
-      "observedAt": "2026-10-30T15:58:29Z",
+      "observedAt": "2026-10-30T15:38:49Z",
       "executor": "claude-flutter-alpha15",
       "result": "inconclusive",
       "evidence": [
@@ -1803,8 +1835,8 @@
       "candidateID": "be9251f8488e34acb0072b106c4fd2843c1ad8a82581a911b5082dc00106f54a",
       "evidenceClass": "actual",
       "expected": "같은 고정 tuple의 별도 fresh clone에서 doctor·준비·독립 build·up·올바른 첫 화면·getVM·down과 원본 보존을 확인한다.",
-      "observed": "Flutter Demo Home Page, counter 0. getVM이 VM을 반환했고 down 뒤 VM 서비스 포트가 닫혔다. 추적 source·index·flags가 보존됐다. build는 설치·실행하지 않았다. 호스트가 macOS 27.2로 바뀐 뒤 실행했다. Xcode 27.1·iOS 27.0 runtime·대상 Simulator는 같았다.",
-      "observedAt": "2026-10-30T15:58:29Z",
+      "observed": "Flutter Demo Home Page, counter 0. getVM이 VM을 반환했고 down이 앱 중지를 보고했다. 추적 source·index·flags가 보존됐다. build는 설치·실행하지 않았다. 호스트가 macOS 27.2로 바뀐 뒤 실행했다. Xcode 27.1·iOS 27.0 runtime·대상 Simulator는 같았다.",
+      "observedAt": "2026-10-30T15:44:02Z",
       "executor": "claude-flutter-alpha15",
       "result": "pass",
       "evidence": [
@@ -1840,9 +1872,25 @@
         "f226-raw-13a4b1e897fab80c",
         "f226-raw-71683155bf18920a",
         "f226-raw-c6dedee62fb1a362",
-        "f226-raw-6836fba695c17913"
+        "f226-raw-6836fba695c17913",
+        "f226-raw-8d6300b8262b699f",
+        "f226-raw-5a0b7e12e184912b",
+        "f226-raw-443d3226e831229b",
+        "f226-raw-d740e1363dc5e00e",
+        "f226-raw-953249c8742c9b1a",
+        "f226-raw-7d763ab70ff45eb1",
+        "f226-raw-afa3b568a1234d5b",
+        "f226-raw-0f916277cb615d42",
+        "f226-raw-1e52d2e937888c33",
+        "f226-raw-2b6f404c79a36902",
+        "f226-raw-32fc943cf9c5ce87",
+        "f226-raw-b1e5b6edbf12d92f",
+        "f226-raw-4466fafb4f651564",
+        "f226-raw-ab3cb5759b6a6d2b"
       ],
-      "unverified": [],
+      "unverified": [
+        "down 뒤 VM 서비스 포트 닫힘은 실행자가 lsof로 확인했으나 수집 파일로 남기지 않음"
+      ],
       "supersedes": "flutter-ios-minimal-GUI-interrupted-01"
     },
     {
@@ -1855,8 +1903,8 @@
       "candidateID": "be9251f8488e34acb0072b106c4fd2843c1ad8a82581a911b5082dc00106f54a",
       "evidenceClass": "actual",
       "expected": "같은 고정 tuple의 별도 fresh clone에서 doctor·준비·독립 build·up·올바른 첫 화면·getVM·down과 원본 보존을 확인한다.",
-      "observed": "LocalSend 받기 탭. getVM이 VM을 반환했고 down 뒤 VM 서비스 포트가 닫혔다. 추적 source·index·flags가 보존됐다. build는 설치·실행하지 않았다. GUI build도 같은 cargokit 단계에서 멈췄고 같은 사람 준비 뒤 다시 빌드했다. 이 경로의 build 직후 미설치 여부는 따로 기록하지 못했다(이전 경로가 Simulator를 켜 둠).",
-      "observedAt": "2026-10-30T15:58:29Z",
+      "observed": "LocalSend 받기 탭. getVM이 VM을 반환했고 down이 앱 중지를 보고했다. 추적 source·index·flags가 보존됐다. GUI build도 같은 cargokit 단계에서 멈췄고 같은 사람 준비 뒤 다시 빌드했다.",
+      "observedAt": "2026-10-30T15:53:02Z",
       "executor": "claude-flutter-alpha15",
       "result": "pass",
       "evidence": [
@@ -1897,9 +1945,26 @@
         "f226-raw-13a4b1e897fab80c",
         "f226-raw-71683155bf18920a",
         "f226-raw-c6dedee62fb1a362",
-        "f226-raw-6836fba695c17913"
+        "f226-raw-6836fba695c17913",
+        "f226-raw-7fb73179f69f894d",
+        "f226-raw-066a23c214213f18",
+        "f226-raw-272dd2c85a1dd89e",
+        "f226-raw-94da38bfb8e18827",
+        "f226-raw-8cf74ebb19a1cfa1",
+        "f226-raw-08d9991fc8ea6948",
+        "f226-raw-a3c5e4f600c02b00",
+        "f226-raw-3aa1fd7c7b2e1e26",
+        "f226-raw-8e49682cf36740ba",
+        "f226-raw-3bbeeaa7d7182864",
+        "f226-raw-a3794f7671dcee2f",
+        "f226-raw-c9ee45a35b22962c",
+        "f226-raw-c92e3d2217553187",
+        "f226-raw-f664b7b6f8820dff"
       ],
-      "unverified": [],
+      "unverified": [
+        "down 뒤 VM 서비스 포트 닫힘은 실행자가 lsof로 확인했으나 수집 파일로 남기지 않음",
+        "GUI build 직후 미설치 미관측(이전 경로가 Simulator를 켜 둠)"
+      ],
       "supersedes": "AC05-flutter-ios-oss-GUI-alpha15-initial"
     },
     {
@@ -1912,8 +1977,8 @@
       "candidateID": "be9251f8488e34acb0072b106c4fd2843c1ad8a82581a911b5082dc00106f54a",
       "evidenceClass": "actual",
       "expected": "같은 고정 tuple의 별도 fresh clone에서 doctor·준비·독립 build·up·올바른 첫 화면·getVM·down과 원본 보존을 확인한다.",
-      "observed": "Flutter Demo Home Page, counter 0. getVM이 VM을 반환했고 down 뒤 VM 서비스 포트가 닫혔다. 추적 source·index·flags가 보존됐다. build는 설치·실행하지 않았다.",
-      "observedAt": "2026-10-30T15:58:29Z",
+      "observed": "Flutter Demo Home Page, counter 0. getVM이 VM을 반환했고 down이 앱 중지와 adb forward 해제를 보고했다. 추적 source·index·flags가 보존됐다. build는 설치·실행하지 않았다.",
+      "observedAt": "2026-10-30T08:52:20Z",
       "executor": "claude-flutter-alpha15",
       "result": "pass",
       "evidence": [
@@ -1976,9 +2041,24 @@
         "f226-raw-3991adab6355cb9e",
         "f226-raw-7e8fc18373c36082",
         "f226-raw-07a95db01dd734f8",
-        "f226-raw-ba3bad73840d12eb"
+        "f226-raw-ba3bad73840d12eb",
+        "f226-raw-7344aa9404b42307",
+        "f226-raw-41d3f87d8281f21a",
+        "f226-raw-5bbb4a7e890c9744",
+        "f226-raw-db4def653cc3e193",
+        "f226-raw-25c1fbc31a0fda50",
+        "f226-raw-1bce7f371da91a4b",
+        "f226-raw-15c666ac484293c2",
+        "f226-raw-afa0f46326992804",
+        "f226-raw-2f04283b65955abc",
+        "f226-raw-b1e45550b7fd080e",
+        "f226-raw-03d1c3fec085a786",
+        "f226-raw-de98b4bf79d52485",
+        "f226-raw-d131f8c826165b3a"
       ],
-      "unverified": [],
+      "unverified": [
+        "down 뒤 VM 서비스 포트 닫힘은 실행자가 lsof로 확인했으나 수집 파일로 남기지 않음"
+      ],
       "supersedes": "AC05-flutter-android-minimal-CLI-alpha15-initial"
     },
     {
@@ -1992,7 +2072,7 @@
       "evidenceClass": "actual",
       "expected": "CLI up이 소유 Emulator에서 앱을 시작한다.",
       "observed": "새 HOME에 Emulator console 인증 정보 사본이 없어 AVD identity가 비었고, alpha.14가 남긴 lease를 확인할 수 없어 제품이 변경 없이 거부했다. 수집 조건 누락이며 사본을 둔 뒤 재시도했다.",
-      "observedAt": "2026-10-30T15:58:29Z",
+      "observedAt": "2026-10-30T08:11:15Z",
       "executor": "claude-flutter-alpha15",
       "result": "inconclusive",
       "evidence": [
@@ -2013,8 +2093,8 @@
       "candidateID": "be9251f8488e34acb0072b106c4fd2843c1ad8a82581a911b5082dc00106f54a",
       "evidenceClass": "actual",
       "expected": "같은 고정 tuple의 별도 fresh clone에서 doctor·준비·독립 build·up·올바른 첫 화면·getVM·down과 원본 보존을 확인한다.",
-      "observed": "LocalSend Receive 탭. getVM이 VM을 반환했고 down 뒤 VM 서비스 포트가 닫혔다. 추적 source·index·flags가 보존됐다. build는 설치·실행하지 않았다.",
-      "observedAt": "2026-10-30T15:58:29Z",
+      "observed": "LocalSend Receive 탭. getVM이 VM을 반환했고 down이 앱 중지와 adb forward 해제를 보고했다. 추적 source·index·flags가 보존됐다. build는 설치·실행하지 않았다.",
+      "observedAt": "2026-10-30T08:52:39Z",
       "executor": "claude-flutter-alpha15",
       "result": "pass",
       "evidence": [
@@ -2071,9 +2151,23 @@
         "f226-raw-a6fac626258b0461",
         "f226-raw-1148c3edba9bd5b4",
         "f226-raw-c1156f29a1a3ffa2",
-        "f226-raw-a1d0dd4cbb7258e6"
+        "f226-raw-a1d0dd4cbb7258e6",
+        "f226-raw-a2d5b110bc863cd1",
+        "f226-raw-b6810c7d59e7b150",
+        "f226-raw-1e7c6cf89f045489",
+        "f226-raw-9112a8ce404875e3",
+        "f226-raw-0016214b5f387b5f",
+        "f226-raw-09b9d05a662e130a",
+        "f226-raw-e3eaa53403d9437f",
+        "f226-raw-f864f99bc01084ee",
+        "f226-raw-736fcad6a33a106f",
+        "f226-raw-b6c2d56f0f01afbb",
+        "f226-raw-c0abd41c4770479c",
+        "f226-raw-1e95f0417f652ef2"
       ],
-      "unverified": [],
+      "unverified": [
+        "down 뒤 VM 서비스 포트 닫힘은 실행자가 lsof로 확인했으나 수집 파일로 남기지 않음"
+      ],
       "supersedes": "flutter-android-oss-CLI-console-precondition-01"
     },
     {
@@ -2086,8 +2180,8 @@
       "candidateID": "be9251f8488e34acb0072b106c4fd2843c1ad8a82581a911b5082dc00106f54a",
       "evidenceClass": "actual",
       "expected": "같은 고정 tuple의 별도 fresh clone에서 doctor·준비·독립 build·up·올바른 첫 화면·getVM·down과 원본 보존을 확인한다.",
-      "observed": "Flutter Demo Home Page, counter 0. getVM이 VM을 반환했고 down 뒤 VM 서비스 포트가 닫혔다. 추적 source·index·flags가 보존됐다. build는 설치·실행하지 않았다. GUI build 뒤 기기 선택 칸이 비고 비활성화되는 결함은 #353으로 분리했다. 실행은 숨은 선택값으로 정상 진행됐다.",
-      "observedAt": "2026-10-30T15:58:29Z",
+      "observed": "Flutter Demo Home Page, counter 0. getVM이 VM을 반환했고 down이 앱 중지와 adb forward 해제를 보고했다. 추적 source·index·flags가 보존됐다. build는 설치·실행하지 않았다. GUI build 뒤 기기 선택 칸이 비고 비활성화되는 결함은 #353으로 분리했다. 실행은 숨은 선택값으로 정상 진행됐다.",
+      "observedAt": "2026-10-30T09:45:57Z",
       "executor": "claude-flutter-alpha15",
       "result": "pass",
       "evidence": [
@@ -2120,9 +2214,24 @@
         "f226-raw-9596efb0b846f1da",
         "f226-raw-ff0354f38c60b022",
         "f226-raw-5de8936a5a733bea",
-        "f226-raw-4a61ee12bb120b07"
+        "f226-raw-4a61ee12bb120b07",
+        "f226-raw-7344aa9404b42307",
+        "f226-raw-41d3f87d8281f21a",
+        "f226-raw-5bbb4a7e890c9744",
+        "f226-raw-db4def653cc3e193",
+        "f226-raw-25c1fbc31a0fda50",
+        "f226-raw-1bce7f371da91a4b",
+        "f226-raw-15c666ac484293c2",
+        "f226-raw-afa0f46326992804",
+        "f226-raw-2f04283b65955abc",
+        "f226-raw-b1e45550b7fd080e",
+        "f226-raw-03d1c3fec085a786",
+        "f226-raw-de98b4bf79d52485",
+        "f226-raw-d131f8c826165b3a"
       ],
-      "unverified": [],
+      "unverified": [
+        "down 뒤 VM 서비스 포트 닫힘은 실행자가 lsof로 확인했으나 수집 파일로 남기지 않음"
+      ],
       "supersedes": "AC05-flutter-android-minimal-GUI-alpha15-initial"
     },
     {
@@ -2136,7 +2245,7 @@
       "evidenceClass": "actual",
       "expected": "GUI 환경 확인·기기 목록·up을 실제 GUI로 실행한다.",
       "observed": "첫 GUI 제어 요청을 사용자가 거부해 프로젝트를 열지 않았다. 제품 결과가 아니다.",
-      "observedAt": "2026-10-30T15:58:29Z",
+      "observedAt": "2026-10-30T08:02:55Z",
       "executor": "claude-flutter-alpha15",
       "result": "inconclusive",
       "evidence": [
@@ -2155,8 +2264,8 @@
       "candidateID": "be9251f8488e34acb0072b106c4fd2843c1ad8a82581a911b5082dc00106f54a",
       "evidenceClass": "actual",
       "expected": "같은 고정 tuple의 별도 fresh clone에서 doctor·준비·독립 build·up·올바른 첫 화면·getVM·down과 원본 보존을 확인한다.",
-      "observed": "LocalSend Receive 탭. getVM이 VM을 반환했고 down 뒤 VM 서비스 포트가 닫혔다. 추적 source·index·flags가 보존됐다. build는 설치·실행하지 않았다. #346 수정 확인: 미리 준비한 의존성 선택을 켜자 GUI 환경 확인 오류 0개, 기기 목록 채움. build 뒤 기기 선택 칸 결함은 #353으로 분리했다.",
-      "observedAt": "2026-10-30T15:58:29Z",
+      "observed": "LocalSend Receive 탭. getVM이 VM을 반환했고 down이 앱 중지와 adb forward 해제를 보고했다. 추적 source·index·flags가 보존됐다. build는 설치·실행하지 않았다. #346 수정 확인: 미리 준비한 의존성 선택을 켜자 GUI 환경 확인 오류 0개, 기기 목록 채움. build 뒤 기기 선택 칸 결함은 #353으로 분리했다.",
+      "observedAt": "2026-10-30T09:37:39Z",
       "executor": "claude-flutter-alpha15",
       "result": "pass",
       "evidence": [
@@ -2195,9 +2304,23 @@
         "f226-raw-9596efb0b846f1da",
         "f226-raw-ff0354f38c60b022",
         "f226-raw-5de8936a5a733bea",
-        "f226-raw-4a61ee12bb120b07"
+        "f226-raw-4a61ee12bb120b07",
+        "f226-raw-a2d5b110bc863cd1",
+        "f226-raw-b6810c7d59e7b150",
+        "f226-raw-1e7c6cf89f045489",
+        "f226-raw-9112a8ce404875e3",
+        "f226-raw-0016214b5f387b5f",
+        "f226-raw-09b9d05a662e130a",
+        "f226-raw-e3eaa53403d9437f",
+        "f226-raw-f864f99bc01084ee",
+        "f226-raw-736fcad6a33a106f",
+        "f226-raw-b6c2d56f0f01afbb",
+        "f226-raw-c0abd41c4770479c",
+        "f226-raw-1e95f0417f652ef2"
       ],
-      "unverified": [],
+      "unverified": [
+        "down 뒤 VM 서비스 포트 닫힘은 실행자가 lsof로 확인했으나 수집 파일로 남기지 않음"
+      ],
       "supersedes": "flutter-android-oss-GUI-approval-blocked-01"
     },
     {
@@ -2211,7 +2334,7 @@
       "evidenceClass": "actual",
       "expected": "확정된 Flutter 범위에서 AC02의 실행·부분 완료·수동 준비·실패 경계를 증거로 구분한다.",
       "observed": "각 fresh clone의 setup 계획을 승인했다. 새 HOME에는 Java가 먼저 설치되고 도구가 바뀌어 새 계획을 요구한 뒤, locked Dart 정렬만 완료하고 Android 생성 입력·Simulator runtime 등 수동 항목이 남아 부분 완료로 끝났다. CLI와 GUI 결과가 같았다. 도구 없는 VM clone에서는 Mise·Temurin·Flutter SDK를 실제 설치했고 반복 계획은 도구를 다시 설치하지 않았다.",
-      "observedAt": "2026-10-30T15:58:29Z",
+      "observedAt": "2026-10-30T15:43:52Z",
       "executor": "claude-flutter-alpha15",
       "result": "pass",
       "evidence": [
@@ -2317,7 +2440,7 @@
       "evidenceClass": "actual",
       "expected": "확정된 Flutter 범위에서 AC02의 실행·부분 완료·수동 준비·실패 경계를 증거로 구분한다.",
       "observed": "비어 있는 HOME에서 정확한 Flutter SDK를 실제 설치했고, 설치된 SDK는 다시 계획할 때 설치 단계 없이 재사용됐으며 SDK 메타데이터 fingerprint가 바뀌지 않았다. LocalSend setup은 locked 정렬 뒤 Android·Pods·생성 입력 수동 항목을 남겼고, Rust Cargokit build tool은 빌드가 네트워크를 막으므로 사람이 원래 스크립트로 준비했다.",
-      "observedAt": "2026-10-30T15:58:29Z",
+      "observedAt": "2026-10-30T15:53:02Z",
       "executor": "claude-flutter-alpha15",
       "result": "pass",
       "evidence": [
@@ -2491,7 +2614,7 @@
       "evidenceClass": "actual",
       "expected": "실제 위험 경계를 관측한다.",
       "observed": "수집기 한계를 보존한다: 첫 취소의 비공개 폴더 검색이 사용자 임시 폴더를 빠뜨렸고, 한 번은 zsh 인수 결합으로 up이 64로 시작되지 않았다. 두 경우 모두 재시도했다.",
-      "observedAt": "2026-10-30T15:58:29Z",
+      "observedAt": "2026-10-30T08:40:10Z",
       "executor": "claude-flutter-alpha15",
       "result": "inconclusive",
       "evidence": [
@@ -2511,8 +2634,8 @@
       "candidateID": "be9251f8488e34acb0072b106c4fd2843c1ad8a82581a911b5082dc00106f54a",
       "evidenceClass": "actual",
       "expected": "확정된 Flutter 범위에서 AC03의 실행·부분 완료·수동 준비·실패 경계를 증거로 구분한다.",
-      "observed": "Gradle 진입 10초 뒤 SIGINT는 1.4초 만에 130/cancelled였고 관측한 자식이 모두 사라졌으며 비공개 실행 폴더가 지워지고 같은 입력 재빌드가 성공했다. pub workspace 멤버의 stray lock은 Android·iOS 모두 migration으로 계획되고 build·up이 단계 시작 전에 거부됐으며 lock이 보존됐다. 계획 뒤 pubspec 변경은 옛 승인을 거부했고, validate 시작 시 Gradle 입력 변경은 Gradle 전에 중단됐다.",
-      "observedAt": "2026-10-30T15:58:29Z",
+      "observed": "Gradle 진입 10초 뒤 SIGINT는 1.4초 만에 130/cancelled였고 관측한 자식이 모두 사라졌으며 비공개 실행 폴더가 지워지고 같은 입력 재빌드가 성공했다. pub workspace 멤버의 stray lock은 Android·iOS 모두 migration으로 계획되고 build·up이 단계 시작 전에 거부됐으며 lock이 보존됐다. 계획 뒤 pubspec 변경은 옛 승인을 거부했고, validate 시작 시 Gradle 입력 변경은 Gradle 전에 중단됐다. 이 두 경계에서 제품은 바뀐 입력을 되돌리지 않았고 수집기가 나중에 복원했다.",
+      "observedAt": "2026-10-30T08:43:08Z",
       "executor": "claude-flutter-alpha15",
       "result": "pass",
       "evidence": [
@@ -2630,7 +2753,7 @@
       "evidenceClass": "actual",
       "expected": "설치 재사용을 관측한다.",
       "observed": "첫 재사용 관측기는 설치 뒤에도 flutter.sdk 단계가 남는다고 잘못 가정해 실패했다. 제품은 설치된 SDK에 단계를 만들지 않으며 sdk-reuse-02로 다시 관측했다.",
-      "observedAt": "2026-10-30T15:58:29Z",
+      "observedAt": "2026-10-30T08:37:35Z",
       "executor": "claude-flutter-alpha15",
       "result": "inconclusive",
       "evidence": [
@@ -2650,7 +2773,7 @@
       "evidenceClass": "actual",
       "expected": "확정된 Flutter 범위에서 AC03의 실행·부분 완료·수동 준비·실패 경계를 증거로 구분한다.",
       "observed": "실제 SDK 다운로드 중 SIGINT는 130/cancelled, curl 종료는 1/failed였고 미완료 설치와 scratch가 남지 않았다. .fvmrc bytes 변경은 옛 승인을 거부했다. 다른 clone의 같은 설치 대상 요청은 보유 작업을 표시하며 거부됐고 생산자는 SDK 하나를 끝까지 설치했다. 모든 경계에서 source가 보존됐다.",
-      "observedAt": "2026-10-30T15:58:29Z",
+      "observedAt": "2026-10-30T08:37:40Z",
       "executor": "claude-flutter-alpha15",
       "result": "pass",
       "evidence": [
@@ -2714,7 +2837,7 @@
       "evidenceClass": "actual",
       "expected": "확정된 Flutter 범위에서 AC06의 실행·부분 완료·수동 준비·실패 경계를 증거로 구분한다.",
       "observed": "보존한 도구 없는 기준 VM의 새 clone에서 후보 CLI가 doctor·setup으로 Mise·Temurin·Flutter SDK를 설치하고 수동 항목을 남긴 부분 완료를 확인했다. 원 기준 VM metadata는 바뀌지 않았다. guest의 kern.hv_support가 0이라 Android 실행은 실제 Mac 호스트 결과로만 판단한다. 실제 Mac의 기존 환경에서는 8개 경로를 반복 실행했다.",
-      "observedAt": "2026-10-30T15:58:29Z",
+      "observedAt": "2026-10-30T08:50:22Z",
       "executor": "claude-flutter-alpha15",
       "result": "pass",
       "evidence": [
@@ -2751,7 +2874,9 @@
         "f226-raw-d51990feb917af22",
         "f226-raw-640a40b78af1cfd7"
       ],
-      "unverified": [],
+      "unverified": [
+        "VM guest 안 후보 실행 파일 checksum은 실행자가 확인했으나 수집 파일로 남기지 않음(전송 archive SHA는 manifest와 같음)"
+      ],
       "supersedes": null
     },
     {
@@ -2764,8 +2889,8 @@
       "candidateID": "be9251f8488e34acb0072b106c4fd2843c1ad8a82581a911b5082dc00106f54a",
       "evidenceClass": "actual",
       "expected": "확정된 Flutter 범위에서 AC04의 실행·부분 완료·수동 준비·실패 경계를 증거로 구분한다.",
-      "observed": "같은 source·도구·기기 profile에서 CLI와 GUI가 같은 준비 계획 항목과 부분 완료, 독립 build, up, 첫 화면, down 결과를 냈다. build는 설치·실행·도구 provisioning을 하지 않았다. iOS GUI는 macOS 27.2에서 실행해 CLI와 OS가 다르다.",
-      "observedAt": "2026-10-30T15:58:29Z",
+      "observed": "같은 source·도구·기기 profile에서 CLI와 GUI가 같은 준비 계획 항목과 부분 완료, 독립 build, up, 첫 화면, down 결과를 냈다. build는 도구 provisioning을 하지 않았다. iOS GUI는 macOS 27.2에서 실행해 CLI와 OS가 다르다.",
+      "observedAt": "2026-10-30T15:44:02Z",
       "executor": "claude-flutter-alpha15",
       "result": "pass",
       "evidence": [
@@ -2862,8 +2987,8 @@
       "candidateID": "be9251f8488e34acb0072b106c4fd2843c1ad8a82581a911b5082dc00106f54a",
       "evidenceClass": "actual",
       "expected": "확정된 Flutter 범위에서 AC04의 실행·부분 완료·수동 준비·실패 경계를 증거로 구분한다.",
-      "observed": "같은 source·도구·기기 profile에서 CLI와 GUI가 같은 준비 계획 항목과 부분 완료, 독립 build, up, 첫 화면, down 결과를 냈다. build는 설치·실행·도구 provisioning을 하지 않았다. GUI의 Android build 뒤 기기 선택 칸이 비는 결함은 #353으로 분리했다.",
-      "observedAt": "2026-10-30T15:58:29Z",
+      "observed": "같은 source·도구·기기 profile에서 CLI와 GUI가 같은 준비 계획 항목과 부분 완료, 독립 build, up, 첫 화면, down 결과를 냈다. build는 도구 provisioning을 하지 않았다. GUI의 Android build 뒤 기기 선택 칸이 비는 결함은 #353으로 분리했다.",
+      "observedAt": "2026-10-30T09:45:57Z",
       "executor": "claude-flutter-alpha15",
       "result": "pass",
       "evidence": [
@@ -2961,8 +3086,8 @@
       "candidateID": "be9251f8488e34acb0072b106c4fd2843c1ad8a82581a911b5082dc00106f54a",
       "evidenceClass": "actual",
       "expected": "확정된 Flutter 범위에서 AC04의 실행·부분 완료·수동 준비·실패 경계를 증거로 구분한다.",
-      "observed": "같은 source·도구·기기 profile에서 CLI와 GUI가 같은 준비 계획 항목과 부분 완료, 독립 build, up, 첫 화면, down 결과를 냈다. build는 설치·실행·도구 provisioning을 하지 않았다. iOS GUI는 macOS 27.2에서 실행해 CLI와 OS가 다르다.",
-      "observedAt": "2026-10-30T15:58:29Z",
+      "observed": "같은 source·도구·기기 profile에서 CLI와 GUI가 같은 준비 계획 항목과 부분 완료, 독립 build, up, 첫 화면, down 결과를 냈다. build는 도구 provisioning을 하지 않았다. iOS GUI는 macOS 27.2에서 실행해 CLI와 OS가 다르다.",
+      "observedAt": "2026-10-30T15:53:02Z",
       "executor": "claude-flutter-alpha15",
       "result": "pass",
       "evidence": [
@@ -3061,7 +3186,9 @@
         "f226-raw-c6dedee62fb1a362",
         "f226-raw-6836fba695c17913"
       ],
-      "unverified": [],
+      "unverified": [
+        "input 3 GUI build 직후 미설치 미관측"
+      ],
       "supersedes": null
     },
     {
@@ -3074,8 +3201,8 @@
       "candidateID": "be9251f8488e34acb0072b106c4fd2843c1ad8a82581a911b5082dc00106f54a",
       "evidenceClass": "actual",
       "expected": "확정된 Flutter 범위에서 AC04의 실행·부분 완료·수동 준비·실패 경계를 증거로 구분한다.",
-      "observed": "같은 source·도구·기기 profile에서 CLI와 GUI가 같은 준비 계획 항목과 부분 완료, 독립 build, up, 첫 화면, down 결과를 냈다. build는 설치·실행·도구 provisioning을 하지 않았다. GUI의 Android build 뒤 기기 선택 칸이 비는 결함은 #353으로 분리했다.",
-      "observedAt": "2026-10-30T15:58:29Z",
+      "observed": "같은 source·도구·기기 profile에서 CLI와 GUI가 같은 준비 계획 항목과 부분 완료, 독립 build, up, 첫 화면, down 결과를 냈다. build는 도구 provisioning을 하지 않았다. GUI의 Android build 뒤 기기 선택 칸이 비는 결함은 #353으로 분리했다.",
+      "observedAt": "2026-10-30T09:37:39Z",
       "executor": "claude-flutter-alpha15",
       "result": "pass",
       "evidence": [
