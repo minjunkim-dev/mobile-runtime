@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "actual",
+  "candidate": {
+    "schemaVersion": 1,
+    "productVersion": "0.1.0-alpha.15",
+    "sourceSHA": "a2cb48c23835f2f03d2dfb8655c9bd4b625bab09",
+    "coreBuildIdentity": "bf807301aa668bcdc79b7f12c035418d0d174af68362b1621ef51b5783cbd9f6",
+    "ciRun": null,
+    "signing": "unsigned",
+    "notarization": "not-requested",
+    "distributionReady": false,
+    "artifacts": {
+      "cli": {
+        "file": "runstir-0.1.0-alpha.15-macos-arm64.tar.gz",
+        "sha256": "d3481b344e76aa66e574fbf1a675973200080ab08a0c444153b3a1645e7e8644"
+      },
+      "gui": {
+        "file": "Runstir-0.1.0-alpha.15-macos-arm64.dmg",
+        "sha256": "3dba8b3868a4f6df277edea581adf7c23230db4c6a9ecaecd23836e7a96d4759"
+      },
+      "homebrew": {
+        "file": "runstir-candidate.rb",
+        "sha256": "bbd8652f6ff6ce18be3b6ffbc2b18da819ee7b2fbd9842021a528177f7b0463e"
+      }
+    }
+  },
+  "candidateRef": "candidate",
+  "originIndexes": [
+    "origin-index",
+    "r226-origin-index"
+  ],
+  "documents": {
+    "tuples": {
+      "path": "tuples.json",
+      "sha256": "33550d8bb7e1ec5da1fd0cde1882e5aa7e36e616eae0238154aa30c20da091bf"
+    },
+    "results": {
+      "path": "results.json",
+      "sha256": "001ef4f7c214cb1cda71e360704fb46a0d045066c4bc061ec6f256e69803ecc5"
+    },
+    "restrictedIndex": {
+      "path": "restricted-index.json",
+      "sha256": "b31002675cb652cf2cbfd98b702ca5fc16579409ff176844c9ff9b5d5b187bde"
+    },
+    "report": {
+      "path": "report.md",
+      "sha256": "bc0723ba0b6ddf3a544c22c3bd1aa6ca22d44fc7182444941275bb7aef12af03"
+    }
+  },
+  "sourceCI": {
+    "evidence": "source-ci",
+    "runID": 40892947080
+  },
+  "priorResults": [
+    {
+      "path": "results-initial.json",
+      "sha256": "54a132b4588aaa13ef784963157f698be7f2fd77e450e96388257550da088fd1"
+    }
+  ],
+  "publicReview": {
+    "reviewer": "claude-flutter-alpha15",
+    "status": "reviewed",
+    "scope": "text-only"
+  }
+}
