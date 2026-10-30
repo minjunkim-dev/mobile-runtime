@@ -29,13 +29,13 @@ AC02는 준비·재사용·부분 완료·수동 준비, AC03은 취소·실패�
 
 이 정본은 #226의 Flutter 범위 17개 요구를 pass로 기록합니다(AC05 경로 8개, AC02·AC03 각 2개, AC04 4개, AC06 1개). 기존 후보·입력 연결 pass 1개를 포함한 현재 결과는 pass 18개, unverified 35개입니다. 다른 프레임워크·공통 게이트의 미검증과 unsigned 배포 제한으로 공동 출시 판정은 blocked입니다. #224의 최초 결과와 이번 판정 불가 이력을 보존하며 AC15·AC17 전체 완료로 확대하지 않습니다.
 
-## 재수집 (2026-10-31)
+## 재수집 (2026-10-31 KST)
 
-#354 병합 뒤, 첫 정본에서 미검증으로 남긴 세 항목을 같은 alpha.15와 같은 입력으로 다시 실행해 수집했습니다. 호스트는 macOS 27.2입니다.
+#354 병합 뒤, 첫 정본에서 미검증으로 남긴 세 항목을 같은 alpha.15로 다시 실행해 수집했습니다. 첫 실행의 fresh clone과 준비를 재사용했으므로 doctor·setup 근거는 첫 실행의 것입니다. 호스트는 macOS 27.2입니다.
 
-- 8개 경로 모두 up, getVM=VM, 올바른 첫 화면, down을 다시 확인했고, down 직후 수집기가 해당 VM 서비스 포트의 LISTEN이 없고 TCP 연결이 거부되는 것을 기록했습니다.
+- 8개 경로 모두 up, getVM=VM, 올바른 첫 화면, down을 다시 확인했고, down 직후 수집기가 해당 VM 서비스 포트의 LISTEN이 없고 TCP 연결이 거부되는 것을 기록했습니다. GUI 경로는 build 완료 화면, iOS의 xcodebuild 활동 로그, 경로 기록을 봉인했습니다. 종료 결과 화면은 input 7만 캡처했고 나머지는 앱 미실행과 포트 닫힘으로 down을 확인했습니다.
 - input 3(LocalSend iOS GUI)은 build 전후 앱 번들의 컨테이너 inode·Info.plist 시각·실행 파일 SHA가 같았고, up 뒤에는 컨테이너와 Info.plist 시각이 바뀌었습니다. build가 설치하지 않았음을 직접 관측했습니다. input 2·6·7 GUI도 build 전후 설치 상태가 같았습니다.
-- 도구 없는 VM clone 안의 후보 실행 파일은 하나이고 SHA-256이 고정값과 같았으며, 전송 archive SHA도 manifest와 같았습니다. 같은 실행 파일로 doctor를 다시 실행했고 원 기준 VM metadata는 바뀌지 않았습니다.
+- 도구 없는 VM clone 안에서 저장한 스크립트로 계산한 후보 실행 파일은 하나이고 SHA-256이 고정값과 같았으며, 전송 archive SHA도 manifest와 같았습니다. 실행 파일 ctime은 첫 전송 직후라 이후 다시 복사하지 않았습니다. 같은 실행 파일로 doctor를 다시 실행했고 원 기준 VM metadata는 바뀌지 않았습니다.
 - LocalSend iOS CLI의 첫 재실행은 호스트 재시작으로 Cargokit build tool이 사라져 같은 사람 준비 경계에서 멈췄고, 다시 준비한 뒤 통과했습니다.
 - input 7 down 직후 Android가 앱 자체의 JobScheduler 작업으로 화면 없는 프로세스를 다시 띄운 것을 ActivityManager 로그로 기록했습니다. Runstir가 실행한 앱 프로세스는 force-stop으로 종료됐고 VM 서비스 포트는 닫혔습니다.
 
