@@ -28,7 +28,8 @@
   "candidateRef": "candidate",
   "originIndexes": [
     "origin-index",
-    "r226-origin-index"
+    "r226-origin-index",
+    "r226b-origin-index"
   ],
   "documents": {
     "tuples": {
@@ -37,15 +38,15 @@
     },
     "results": {
       "path": "results.json",
-      "sha256": "8a81a4ebaa023aab0448c3828f540ab5b7b0380d1381bcda119dd0ba9e0637cb"
+      "sha256": "632022bb8b26b0ed24c12f82da8a7287b5795046d70fabdef47058ba99d99c33"
     },
     "restrictedIndex": {
       "path": "restricted-index.json",
-      "sha256": "839209e87c593034e50421fa8f390df7a3f56bbfcd92368734641670f52f7e82"
+      "sha256": "3c471586b5623c66b5bbc145dcd7f8e2a38fea0ead0b4567c5270fdfa2abde11"
     },
     "report": {
       "path": "report.md",
-      "sha256": "34ac65c50bafebfd81b49df00743d229672bcc9c95de7edd267b72003ed82565"
+      "sha256": "eb56d8e00a43507c27df098cdf82e351847ba0390f660d229f6b7bd350a1e85a"
     }
   },
   "sourceCI": {
@@ -56,6 +57,10 @@
     {
       "path": "results-initial.json",
       "sha256": "54a132b4588aaa13ef784963157f698be7f2fd77e450e96388257550da088fd1"
+    },
+    {
+      "path": "results-r1.json",
+      "sha256": "8a81a4ebaa023aab0448c3828f540ab5b7b0380d1381bcda119dd0ba9e0637cb"
     }
   ],
   "publicReview": {
