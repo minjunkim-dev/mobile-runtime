@@ -571,12 +571,14 @@ struct InspectionView: View {
             app: app.isEmpty ? nil : app, platform: ProjectPlatform(rawValue: platform),
                                            entrypoint: entrypoint.isEmpty ? nil : entrypoint)
         let trust = repositoryTrusted
+        let module = module.isEmpty ? nil : module
+        let variant = variant.isEmpty ? nil : variant
         let generation = UUID()
         executionID = generation
         events = []; session.progress = "준비 조건 확인"
         session.start {
             let output = await PreparationExecution.run(input: input, planOnly: approvedPlanID == nil,
-                approvedPlanID: approvedPlanID, trustRepository: trust) { event in
+                approvedPlanID: approvedPlanID, trustRepository: trust, module: module, variant: variant) { event in
                 Task { @MainActor in
                     guard executionID == generation else { return }
                     events.append(event)
