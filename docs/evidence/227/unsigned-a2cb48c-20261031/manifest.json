@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "actual",
+  "candidate": {
+    "schemaVersion": 1,
+    "productVersion": "0.1.0-alpha.15",
+    "sourceSHA": "a2cb48c23835f2f03d2dfb8655c9bd4b625bab09",
+    "coreBuildIdentity": "bf807301aa668bcdc79b7f12c035418d0d174af68362b1621ef51b5783cbd9f6",
+    "ciRun": null,
+    "signing": "unsigned",
+    "notarization": "not-requested",
+    "distributionReady": false,
+    "artifacts": {
+      "cli": {
+        "file": "runstir-0.1.0-alpha.15-macos-arm64.tar.gz",
+        "sha256": "d3481b344e76aa66e574fbf1a675973200080ab08a0c444153b3a1645e7e8644"
+      },
+      "gui": {
+        "file": "Runstir-0.1.0-alpha.15-macos-arm64.dmg",
+        "sha256": "3dba8b3868a4f6df277edea581adf7c23230db4c6a9ecaecd23836e7a96d4759"
+      },
+      "homebrew": {
+        "file": "runstir-candidate.rb",
+        "sha256": "bbd8652f6ff6ce18be3b6ffbc2b18da819ee7b2fbd9842021a528177f7b0463e"
+      }
+    }
+  },
+  "candidateRef": "candidate",
+  "originIndexes": [
+    "origin-index",
+    "r226-origin-index",
+    "r226b-origin-index",
+    "r227-origin-index"
+  ],
+  "documents": {
+    "tuples": {
+      "path": "tuples.json",
+      "sha256": "f6a2783b7dd7b3f7e76e79423e9a82c3a9afd134843adcb23466d408f2c33346"
+    },
+    "results": {
+      "path": "results.json",
+      "sha256": "b3ea99d41e11e20efb00def458f5d9872905411d35f0358e509b9df37bded170"
+    },
+    "restrictedIndex": {
+      "path": "restricted-index.json",
+      "sha256": "8680f95704eb12816bc0b164e5002aa83862a90c47a642229cae03b1314025cf"
+    },
+    "report": {
+      "path": "report.md",
+      "sha256": "3b452629a607786e0663469f071ee9459341c018309e556537eccdfd7f058c41"
+    }
+  },
+  "sourceCI": {
+    "evidence": "source-ci",
+    "runID": 40892947080
+  },
+  "priorResults": [
+    {
+      "path": "results-226.json",
+      "sha256": "632022bb8b26b0ed24c12f82da8a7287b5795046d70fabdef47058ba99d99c33"
+    }
+  ],
+  "publicReview": {
+    "reviewer": "claude-native-ios-alpha15",
+    "status": "reviewed",
+    "scope": "text-only"
+  }
+}
