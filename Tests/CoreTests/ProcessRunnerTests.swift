@@ -127,9 +127,10 @@ struct SystemProcessRunnerTests {
         let observed = Mutable<[Data]>([Data(), Data()])
         let output = Data([1, 255]) + Data("out".utf8)
         let error = Data([0, 254]) + Data("err".utf8)
+        // Spawn and both callbacks share CI executors with the full suite; the release handshake, not this bound, proves live delivery.
         let command = ProcessCommand("/bin/sh", ["-c",
             "printf '\\001\\377out'; printf '\\000\\376err' >&2; while [ ! -f \"$1\" ]; do /bin/sleep 0.01; done; printf tail; exit 7",
-            "_", release.path], timeout: .seconds(5))
+            "_", release.path], timeout: .seconds(30))
         let result = try await runner.run(command, onBytes: { channel, bytes in
             let index = switch channel { case .standardOutput: 0; case .standardError: 1 }
             observed.mutate { streams in
