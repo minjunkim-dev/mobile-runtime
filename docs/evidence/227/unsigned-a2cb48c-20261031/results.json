@@ -4451,7 +4451,7 @@
       "candidateID": "be9251f8488e34acb0072b106c4fd2843c1ad8a82581a911b5082dc00106f54a",
       "evidenceClass": "actual",
       "expected": "같은 고정 tuple의 별도 fresh clone에서 doctor·준비 계획·독립 build·up·올바른 첫 화면·down과 원본 보존을 확인한다.",
-      "observed": "NetNewsWire의 Feeds·Smart Feeds 첫 화면(OS 알림 권한 요청이 겹침, 권한은 선택하지 않음). up이 succeeded로 앱 PID를 보고했고 down 뒤 그 PID와 launchd 항목이 사라졌다. 추적 source·index·flags가 보존됐다. doctor와 up의 최상위 status는 simulator.runtime unknown 때문에 unknown이다(#357). 새 clone의 첫 build는 생성 파일 SecretKey가 없어 실패했고, 자격 변수 없이 원래 updateSecrets.sh로 사람이 준비한 뒤 다시 빌드했다.",
+      "observed": "NetNewsWire의 Feeds·Smart Feeds 첫 화면(OS 알림 권한 요청이 겹침, 권한은 선택하지 않음). up이 succeeded로 앱 PID를 보고했고 down 뒤 그 PID와 launchd 항목이 사라졌다. 추적 source·index·flags가 보존됐다. doctor와 up의 최상위 status는 simulator.runtime unknown 때문에 unknown이다(#357). 새 clone의 첫 build는 프로젝트 script가 build 중 만든 SecretKey.swift를 컴파일 입력에 넣지 못해 실패했고, 사람이 자격 변수 없이 원래 updateSecrets.sh를 다시 실행한 뒤 다시 빌드했다.",
       "observedAt": "2026-10-31T10:56:56Z",
       "executor": "claude-native-ios-alpha15",
       "result": "pass",
@@ -4722,7 +4722,7 @@
       "candidateID": "be9251f8488e34acb0072b106c4fd2843c1ad8a82581a911b5082dc00106f54a",
       "evidenceClass": "actual",
       "expected": "확정된 네이티브 iOS 범위에서 AC02의 실행·부분 완료·수동 준비·실패 경계를 증거로 구분한다.",
-      "observed": "setup 계획은 Food Truck과 같은 수동 항목을 냈다. 저장소 생성 파일 SecretKey는 Runstir가 만들지 않으며, 첫 build 실패 뒤 사람이 원래 updateSecrets.sh를 서비스 자격 변수 없이 실행해 준비했다. 원본 기준선도 같은 명시 준비를 썼다.",
+      "observed": "setup 계획은 Food Truck과 같은 수동 항목을 냈다. 무시 대상 생성 파일 SecretKey.swift는 실패한 첫 build 중 프로젝트 자체 script가 만들었고 컴파일 입력에는 늦게 들어갔다. 사람이 원래 updateSecrets.sh를 서비스 자격 변수 없이 다시 실행한 뒤 다시 빌드해 통과했다. 원본 기준선은 build 전에 같은 script를 실행했다.",
       "observedAt": "2026-10-31T11:09:02Z",
       "executor": "claude-native-ios-alpha15",
       "result": "pass",
@@ -4756,7 +4756,9 @@
         "f227-raw-73fdf567e080a468",
         "f227-raw-b377e14607e87072"
       ],
-      "unverified": [],
+      "unverified": [
+        "updateSecrets.sh 재실행 없이 같은 clone의 재빌드만으로 통과하는지는 확인하지 않음(#210에서는 재시도가 성공)"
+      ],
       "supersedes": null
     },
     {
@@ -4815,7 +4817,7 @@
       "candidateID": "be9251f8488e34acb0072b106c4fd2843c1ad8a82581a911b5082dc00106f54a",
       "evidenceClass": "actual",
       "expected": "확정된 네이티브 iOS 범위에서 AC03의 실행·부분 완료·수동 준비·실패 경계를 증거로 구분한다.",
-      "observed": "CLI up의 xcodebuild 중 SIGINT는 130/cancelled였고 xcodebuild·SWBBuildService 자식이 남지 않았으며 같은 입력의 up이 다시 성공했다. GUI build 중 작업 취소는 빌드 취소됨으로 끝났고 xcodebuild가 사라졌다. 새 clone의 SecretKey 미생성 build 실패는 실패로 보존했고, 제품은 생성 파일을 만들거나 source를 바꾸지 않았다.",
+      "observed": "CLI up의 xcodebuild 중 SIGINT는 130/cancelled였고 xcodebuild·SWBBuildService 자식이 남지 않았으며 같은 입력의 up이 다시 성공했다. GUI build 중 작업 취소는 빌드 취소됨으로 끝났고 xcodebuild가 사라졌다. 새 clone의 SecretKey build 실패는 실패로 보존했다. 실패한 build에서 프로젝트 script가 무시 대상 생성 파일을 만들었고 추적 source·index·flags는 바뀌지 않았다.",
       "observedAt": "2026-10-31T11:12:05Z",
       "executor": "claude-native-ios-alpha15",
       "result": "pass",
@@ -4862,7 +4864,7 @@
       "candidateID": "be9251f8488e34acb0072b106c4fd2843c1ad8a82581a911b5082dc00106f54a",
       "evidenceClass": "actual",
       "expected": "확정된 네이티브 iOS 범위에서 AC04의 실행·부분 완료·수동 준비·실패 경계를 증거로 구분한다.",
-      "observed": "같은 source·Xcode·runtime에서 CLI와 GUI가 같은 doctor 항목, 같은 준비 계획, 독립 build, up, 첫 화면, down 결과를 냈다. build는 Simulator를 켜거나 앱을 설치하지 않았고 도구 provisioning도 없었다. CLI build 직후와 GUI build 직후 대상 Simulator는 꺼진 채였다.",
+      "observed": "같은 source·Xcode·runtime에서 CLI와 GUI가 같은 doctor 항목, 같은 준비 계획, 독립 build, up, 첫 화면, down 결과를 냈다. build는 Simulator를 켜거나 앱을 설치하지 않았고 도구 provisioning도 없었다. CLI build는 boot를 요청하지 않았다고 보고했고 이어진 up의 기기 단계가 이미 켜짐으로 건너뛰지 않았다. GUI build 직후 대상 Simulator는 꺼진 채였다.",
       "observedAt": "2026-10-31T11:06:37Z",
       "executor": "claude-native-ios-alpha15",
       "result": "pass",
@@ -5049,7 +5051,7 @@
       "candidateID": "be9251f8488e34acb0072b106c4fd2843c1ad8a82581a911b5082dc00106f54a",
       "evidenceClass": "actual",
       "expected": "확정된 네이티브 iOS 범위에서 AC06의 실행·부분 완료·수동 준비·실패 경계를 증거로 구분한다.",
-      "observed": "보존한 도구 없는 기준 VM의 clone에서 upstream을 새로 clone해 후보 CLI로 doctor·setup·build·up·down을 실행했다. 결과는 호스트와 같았고 setup은 아무것도 설치하지 않았으며 guest Simulator에서 Food Truck 첫 화면과 down을 확인했다. 원 기준 VM metadata는 바뀌지 않았다. 실제 Mac 기존 환경에서는 4개 경로와 반복 up을 실행했다.",
+      "observed": "#226이 보존한 도구 없는 기준 VM에서 만든 clone VM 안에서 upstream을 새로 clone해 후보 CLI로 doctor·setup·build·up·down을 실행했다. 결과는 호스트와 같았고 setup은 아무것도 설치하지 않았으며 guest Simulator에서 Food Truck 첫 화면과 down을 확인했다. 원 기준 VM metadata는 바뀌지 않았다. 실제 Mac 기존 환경에서는 4개 경로와 반복 up을 실행했다.",
       "observedAt": "2026-10-31T11:17:49Z",
       "executor": "claude-native-ios-alpha15",
       "result": "pass",
