@@ -94,7 +94,7 @@
       "id": "native-ios",
       "candidateID": "be9251f8488e34acb0072b106c4fd2843c1ad8a82581a911b5082dc00106f54a",
       "inputs": {
-        "host": "macOS27.0.1/26A434 arm64; actual host Android HVF, not Tart nested virtualization",
+        "host": "macOS 27.2 26B123 arm64 for the alpha.15 native iOS runs; #224 froze the tuple on macOS 27.0.1 26A434 with the same Xcode and runtime",
         "minimalSample": "food-truck",
         "minimalSource": "3954a769e99f3cc53297d94f2b960ceb2665b3d6",
         "ossSample": "netnewswire",

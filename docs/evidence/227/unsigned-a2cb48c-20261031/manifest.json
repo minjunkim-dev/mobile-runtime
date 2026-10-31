@@ -35,7 +35,7 @@
   "documents": {
     "tuples": {
       "path": "tuples.json",
-      "sha256": "869d381aa5cc83f9f7531731e28d793a5346b3853546e212d981c2f1427a5e0d"
+      "sha256": "f6a2783b7dd7b3f7e76e79423e9a82c3a9afd134843adcb23466d408f2c33346"
     },
     "results": {
       "path": "results.json",
@@ -43,7 +43,7 @@
     },
     "restrictedIndex": {
       "path": "restricted-index.json",
-      "sha256": "59398224a17def18e5cb3ecd60dba3ca98c0c7617f7c44caec6284e4aa7a041f"
+      "sha256": "8680f95704eb12816bc0b164e5002aa83862a90c47a642229cae03b1314025cf"
     },
     "report": {
       "path": "report.md",
