@@ -29,6 +29,17 @@ struct AndroidEmulatorSetupTests {
         #expect(try String(contentsOf: fixture.sdk.repo.url("sdk/keep"), encoding: .utf8) == "original SDK file")
     }
 
+    @Test("a Runstir stage under cmdline-tools is not discovered as the AVD manager")
+    func stageIsNotTool() async throws {
+        let fixture = try await EmulatorSetupFixture()
+        let stage = fixture.sdk.repo.url("sdk/cmdline-tools/.runstir-stage-fixture")
+        try FileManager.default.copyItem(at: fixture.sdk.repo.url("sdk/cmdline-tools/23.0"), to: stage)
+        let plan = await PreparationExecution.run(input: fixture.sdk.input, planOnly: true, runner: fixture.runner)
+        let encoded = try plan.encoded(toolVersion: "fixture")
+        #expect(encoded.contains("cmdline-tools/23.0/bin/avdmanager"), Comment(rawValue: encoded))
+        #expect(!encoded.contains(".runstir-stage"), Comment(rawValue: encoded))
+    }
+
     @Test("changed device profile rejects old approval without creating an AVD")
     func changedProfile() async throws {
         let fixture = try await EmulatorSetupFixture()
