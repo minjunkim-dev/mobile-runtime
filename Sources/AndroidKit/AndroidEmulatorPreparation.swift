@@ -116,7 +116,8 @@ public struct AndroidEmulatorEnvironment: Sendable {
             }
         }
         let tools = sdk.appendingPathComponent("cmdline-tools")
-        let manager = (try? FileManager.default.contentsOfDirectory(at: tools, includingPropertiesForKeys: nil))?
+        // Skips Runstir's own hidden install stages, which hold a complete tool copy until commit.
+        let manager = (try? FileManager.default.contentsOfDirectory(at: tools, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles]))?
             .sorted { $0.lastPathComponent < $1.lastPathComponent }
             .map { tools.appendingPathComponent($0.lastPathComponent, isDirectory: true).appendingPathComponent("bin/avdmanager") }
             .first { FileManager.default.isExecutableFile(atPath: $0.path)
