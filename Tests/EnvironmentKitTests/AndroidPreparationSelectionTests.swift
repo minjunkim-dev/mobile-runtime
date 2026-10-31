@@ -67,6 +67,31 @@ struct AndroidPreparationSelectionTests {
         #expect(runner.downloads.isEmpty)
     }
 
+    @Test("an unknown variant of an existing module fails before any change")
+    func unknownVariant() async throws {
+        let fixture = try await Self.multiModule()
+        let runner = fixture.runner()
+        let plan = try #require(await PreparationExecution.run(input: fixture.input, planOnly: true,
+            module: ":app", variant: "demoDebug", runner: runner).plan)
+        let result = await PreparationExecution.run(input: fixture.input, approvedPlanID: plan.id,
+            module: ":app", variant: "missingDebug", runner: runner)
+        #expect(result.operation.state == "failed")
+        #expect(result.operation.error?.hasPrefix("android.variant names missingDebug, runnable debuggable variants: demoDebug, prodDebug") == true)
+        #expect(result.operation.completed.isEmpty)
+        #expect(runner.downloads.isEmpty)
+    }
+
+    @Test("a failed Gradle model probe stays a plan item rather than a selection failure")
+    func modelFailureKeepsPlan() async throws {
+        let fixture = try await Self.multiModule()
+        fixture.modelJSON = "not a model"
+        let result = await PreparationExecution.run(input: fixture.input, planOnly: true,
+            module: ":app", variant: "demoDebug", runner: fixture.runner())
+        let diagnostic = try result.encoded(toolVersion: "fixture")
+        #expect(result.operation.state == "needs-approval", Comment(rawValue: diagnostic))
+        #expect(result.plan?.steps.contains { $0.id == "android.android.target" } == true, Comment(rawValue: diagnostic))
+    }
+
     @Test("an iOS-only setup rejects Android selectors like build and up")
     func iosOnlyRejection() async throws {
         let repo = try FixtureRepo()

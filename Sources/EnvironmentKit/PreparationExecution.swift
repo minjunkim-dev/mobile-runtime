@@ -529,11 +529,13 @@ public enum PreparationExecution {
             contexts[platform] = context
             let report = await context.engine.run()
             if platform == .android, explicitTarget,
-               let target = report.checks.first(where: { $0.id == "android.target" }), target.status == .error {
+               report.checks.contains(where: { $0.id == "android.target" && $0.status == .error }),
+               let error = try await context.androidContext?.targetSelectionError() {
                 // An explicit selection that names no evaluated target stops like build and up.
+                // A failed model probe stays a plan item.
                 value.selection = ProjectSelection(directory: selection.directory, candidates: selection.candidates,
                     selected: selection.selected, platform: selection.platform, requiredInput: selection.requiredInput,
-                    error: target.outcome.observed ?? "Android target selection failed")
+                    error: error)
                 return value
             }
             var sdkPreparation: AndroidSDKPreparation?
