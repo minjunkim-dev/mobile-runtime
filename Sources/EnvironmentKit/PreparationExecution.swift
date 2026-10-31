@@ -317,6 +317,16 @@ public enum PreparationExecution {
             }
             try Task.checkCancellation()
             let after = try await inspect(input, runner: host, module: module, variant: variant, flutterFactory: flutterFactory, note: note)
+            // Completed tools can make a model evaluable that now rejects the selection; no plan is not success.
+            if let error = after.selection?.error {
+                result.selection = after.selection
+                result.exitCode = 1
+                result.operation.state = result.operation.completed.isEmpty ? "failed" : "partial"
+                result.operation.error = error
+                result.operation.nextAction = "Preserve completed resources. Correct the Android module or variant, then inspect again."
+                result.operation.remaining.removeAll { result.operation.completed.contains($0) }
+                return finish(result, events)
+            }
             result.plan = after.plan
             result.operation.manual = after.plan?.steps.filter { $0.kind != "align" && $0.kind != "install" } ?? []
             result.operation.remaining = after.plan?.steps.filter {
