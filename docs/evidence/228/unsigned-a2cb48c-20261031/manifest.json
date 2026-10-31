@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "actual",
+  "candidate": {
+    "schemaVersion": 1,
+    "productVersion": "0.1.0-alpha.15",
+    "sourceSHA": "a2cb48c23835f2f03d2dfb8655c9bd4b625bab09",
+    "coreBuildIdentity": "bf807301aa668bcdc79b7f12c035418d0d174af68362b1621ef51b5783cbd9f6",
+    "ciRun": null,
+    "signing": "unsigned",
+    "notarization": "not-requested",
+    "distributionReady": false,
+    "artifacts": {
+      "cli": {
+        "file": "runstir-0.1.0-alpha.15-macos-arm64.tar.gz",
+        "sha256": "d3481b344e76aa66e574fbf1a675973200080ab08a0c444153b3a1645e7e8644"
+      },
+      "gui": {
+        "file": "Runstir-0.1.0-alpha.15-macos-arm64.dmg",
+        "sha256": "3dba8b3868a4f6df277edea581adf7c23230db4c6a9ecaecd23836e7a96d4759"
+      },
+      "homebrew": {
+        "file": "runstir-candidate.rb",
+        "sha256": "bbd8652f6ff6ce18be3b6ffbc2b18da819ee7b2fbd9842021a528177f7b0463e"
+      }
+    }
+  },
+  "candidateRef": "candidate",
+  "originIndexes": [
+    "origin-index",
+    "r226-origin-index",
+    "r226b-origin-index",
+    "r227-origin-index",
+    "r228-origin-index"
+  ],
+  "documents": {
+    "tuples": {
+      "path": "tuples.json",
+      "sha256": "b05e2aa3e7e39b70e839a6cd74b43d4d6e9cdca0ec491e344b5a92faf9d314b6"
+    },
+    "results": {
+      "path": "results.json",
+      "sha256": "78023718d6d15af96643b8ef59bfb587ea2e5278751916fc4363435ae1d6c740"
+    },
+    "restrictedIndex": {
+      "path": "restricted-index.json",
+      "sha256": "7ca5b5c340ecdadfd957eec6e799a72bc2e09255c9611bd56b44dd483c76f756"
+    },
+    "report": {
+      "path": "report.md",
+      "sha256": "acaa739cb7e366a0424e5adcb4e2b3cce47c4cb902a931ac5274e60279cbd7a3"
+    }
+  },
+  "sourceCI": {
+    "evidence": "source-ci",
+    "runID": 40892947080
+  },
+  "priorResults": [
+    {
+      "path": "results-227.json",
+      "sha256": "b3ea99d41e11e20efb00def458f5d9872905411d35f0358e509b9df37bded170"
+    }
+  ],
+  "publicReview": {
+    "reviewer": "claude-native-android-alpha15",
+    "status": "reviewed",
+    "scope": "text-only"
+  }
+}
