@@ -10,6 +10,8 @@ struct Setup: AsyncParsableCommand {
     @Option(name: .long, help: "Detected app candidate id.") var app: String?
     @Option(name: .long, help: "Existing Dart entrypoint relative to the selected Flutter app. Defaults to lib/main.dart.") var entrypoint: String?
     @Option(name: .long, help: "Execution platform hint. RN and Flutter setup still cover both platforms.") var platform: MobilePlatform?
+    @Option(name: .long, help: "Android application module. Defaults to mobile.yml or the only module.") var module: String?
+    @Option(name: .long, help: "Android debuggable variant. Defaults to mobile.yml, debug, or the only variant.") var variant: String?
     @Flag(name: .long, help: "Inspect and return the change plan without making changes.") var plan = false
     @Option(name: .long, help: "Approve exactly the current plan-id. Conditions are rechecked before changes.") var approve: String?
     @Flag(name: .long, help: "Separately trust repository dependency scripts. Does not accept licenses or grant administrator permission.") var trustRepository = false
@@ -31,7 +33,7 @@ struct Setup: AsyncParsableCommand {
         var approved = approve
         var trusted = trustRepository
         if !plan, approved == nil, !nonInteractive, !json, !progressJson, isatty(FileHandle.standardInput.fileDescriptor) == 1 {
-            let proposed = try await cancellingOnSignals { await PreparationExecution.run(input: input, planOnly: true) }
+            let proposed = try await cancellingOnSignals { await PreparationExecution.run(input: input, planOnly: true, module: module, variant: variant) }
             writeError(try proposed.encoded(toolVersion: Tool.version))
             if let id = proposed.plan?.id {
                 writeError("Type this exact plan-id to approve, or press Return to stop: \(id)")
@@ -48,7 +50,8 @@ struct Setup: AsyncParsableCommand {
         let trust = trusted
         let structured = progressJson
         let result = try await cancellingOnSignals {
-            await PreparationExecution.run(input: input, planOnly: plan, approvedPlanID: approvedID, trustRepository: trust) { event in
+            await PreparationExecution.run(input: input, planOnly: plan, approvedPlanID: approvedID, trustRepository: trust,
+                module: module, variant: variant) { event in
                 if structured {
                     if let line = try? event.encoded() { writeError(line) }
                 } else {

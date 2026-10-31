@@ -5,6 +5,11 @@ inspects React Native iOS and Android together. `--platform` does not narrow the
 preparation plan. A Flutter `pubspec.yaml` produces both platform states and an
 explicit pending-provider step. Flutter provisioning is not implemented here.
 
+`--module` and `--variant` (and the GUI module/variant fields) select the Android
+target ahead of `mobile.yml`, as `build` and `up` do. They apply only to the
+Android plan; setup without an Android platform rejects them. A selection that
+names no evaluated module or variant fails before any change.
+
 ## Approval and execution
 
 1. Run `mobile setup --project PATH --plan --json`.
@@ -18,7 +23,8 @@ reuse states, change commands, and destination presence. GUI selection and the
 plan button do not install dependencies. Its trust checkbox is separate from its
 current-plan approval button. Licenses and administrator permissions stay manual.
 
-The plan ID covers declarations, selected app identity, measured tool conditions and executable paths,
+The plan ID covers declarations, selected app identity, the effective Android
+module and variant (explicit, else `mobile.yml`), measured tool conditions and executable paths,
 commands, destinations, and installed-resource presence. It excludes operation
 IDs, clocks, logs, private environment files, and the process environment. A
 private source snapshot detects unexpected modifications during dependency
