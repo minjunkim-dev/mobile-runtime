@@ -280,7 +280,7 @@ public enum WorkflowExecution {
                                 try leases.releaseAfterTeardown(device: device, project: owner.project)
                                 if claimed { items.append(.stopped("android.claim", "released the app claim on \(device)")) }
                             } else if claimed {
-                                items.append(.unknown("android.claim", "the app claim on \(device) was preserved because this down did not observe the owned app stop. Start the AVD, then run mobile down --platform android again."))
+                                items.append(.unknown("android.claim", "the app claim on \(device) was preserved because this down did not force-stop the owned app and observe it stopped. Run mobile down --platform android again to observe the app and settle the claim; start the AVD first if it is off."))
                             }
                         } catch {
                             items.append(.unknown("android.claim", "the app claim on \(device) was preserved"))
