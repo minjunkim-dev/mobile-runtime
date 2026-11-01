@@ -182,9 +182,37 @@ struct NativeAndroidWorkflowTests {
         let claim = try #require(down.down?.items.first { $0.id == "android.claim" })
         #expect(claim.status == .unknown)
         #expect(claim.detail?.contains("preserved") == true)
+        // The reused Emulator leaves no recorded device, so the next down settles the claim as a leftover one.
+        #expect(claim.detail?.contains("left no recorded device") == true, Comment(rawValue: claim.detail ?? ""))
         await #expect(throws: ResourceConflict.self) {
             try await fixture.leases.check(device: .device(.android, "avd:Pixel"), project: "/next-project") { _ in .running("pid 8123") }
         }
+        try fixture.assertPreserved()
+    }
+
+    @Test("a preserved claim does not promise that the next down observes an app whose record was cleared")
+    func uninstalledAppClaimMessage() async throws {
+        let fixture = try NativeAndroidFixture()
+        let up = await WorkflowExecution.run(.up, input: fixture.workflowInput, runner: try fixture.runner(), leases: fixture.leases)
+        #expect(up.exitCode == 0, Comment(rawValue: up.up?.failure?.message ?? ""))
+        // The app was uninstalled, so down clears its record; an owned Emulator that does not stop keeps the device.
+        let store = AndroidActiveRunStore(project: fixture.project, logs: RunLogs(project: fixture.project))
+        var record = try #require(try store.read())
+        var device = try #require(record.device)
+        device.state = .started
+        device.launcherPID = 4242
+        record.device = device
+        try store.write(record)
+        var cleanup = try fixture.runner()
+        cleanup.responses["adb -s emulator-5554 shell pm path \(NativeAndroidFixture.appID)"] = .failed(1, "")
+        cleanup.responses["adb -s emulator-5554 emu kill"] = .failed(1, "error: could not connect")
+        let down = await WorkflowExecution.run(.down, input: fixture.workflowInput, runner: cleanup, leases: fixture.leases)
+        #expect(down.down?.items.contains { $0.id == "android.app" && $0.status == .skipped } == true)
+        let claim = try #require(down.down?.items.first { $0.id == "android.claim" })
+        #expect(claim.status == .unknown)
+        #expect(claim.detail?.contains("to observe the app") == false, Comment(rawValue: claim.detail ?? ""))
+        #expect(claim.detail?.contains("settle the android.emulator item and run mobile down --platform android again") == true,
+                Comment(rawValue: claim.detail ?? ""))
         try fixture.assertPreserved()
     }
 
