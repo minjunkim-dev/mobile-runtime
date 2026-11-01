@@ -327,7 +327,7 @@ extension AndroidDoctorContext {
     }
 }
 
-enum AndroidTargetSelector {
+public enum AndroidTargetSelector {
     static func resolve(
         model: AndroidGradleModel,
         config: ConfigContext,
@@ -416,7 +416,8 @@ enum AndroidTargetSelector {
         return .selected(module, variant, source)
     }
 
-    private static func normalizeModule(_ value: String) -> String {
+    /// Gradle paths and mobile.yml may omit the leading colon; both name the same module.
+    public static func normalizeModule(_ value: String) -> String {
         value.hasPrefix(":") ? value : ":\(value)"
     }
 
