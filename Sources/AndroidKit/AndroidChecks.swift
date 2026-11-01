@@ -315,6 +315,18 @@ enum AndroidTargetResolution {
     case error(observed: String, required: String, remediation: Remediation, source: CheckSource)
 }
 
+extension AndroidDoctorContext {
+    /// What an explicit selection fails with against the evaluated model. nil when the model
+    /// is unavailable or failed: that is a probe outcome, not a selection error.
+    public func targetSelectionError() async throws -> String? {
+        if case .invalid = config.parse { return nil }
+        guard case .model(let model) = try await model(),
+              case .error(let observed, _, _, _) = AndroidTargetSelector.resolve(model: model,
+                  configuration: config.configuration, configFile: config.display(anchorConfigFile(anchor))) else { return nil }
+        return observed
+    }
+}
+
 enum AndroidTargetSelector {
     static func resolve(
         model: AndroidGradleModel,

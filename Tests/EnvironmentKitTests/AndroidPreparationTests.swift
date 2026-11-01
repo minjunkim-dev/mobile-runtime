@@ -210,6 +210,8 @@ final class SDKFixture: @unchecked Sendable {
     let modelCommand: String
     let artifacts: [String: Data]
     let repository: String
+    /// Replaces the single-module Gradle model the runner reports.
+    var modelJSON: String?
     static let licenseText = "Synthetic test license; not an Android license"
     static var licenseHash: String { Insecure.SHA1.hash(data: Data(licenseText.utf8)).map { String(format: "%02x", $0) }.joined() }
 
@@ -302,7 +304,7 @@ final class SDKPreparationRunner: ProcessRunner, @unchecked Sendable {
             let changed = metadataChangesAfter.map { count >= $0 } ?? false
             return ProcessResult(terminationStatus: .exited(0), standardOutput: repository + (changed ? "\n" : ""), standardError: "")
         }
-        let model = #"{"gradleVersion":"8.13","daemonJavaVersion":"17.0.12","daemonJavaVendor":"Fixture","daemonJavaHome":"/private-jdk-home","modules":[{"path":":app","agpVersion":"8.13.2","compileSdk":"36","buildToolsVersion":"35.0.0","minSdk":"24","targetSdk":"36","ndkVersion":null,"cmakeVersion":null,"nativeBuildConfigured":false,"abiFilters":["arm64-v8a"],"variants":[{"name":"debug","debuggable":true,"assembleTask":":app:assembleDebug","installTask":":app:installDebug","compileSdk":"36","minSdk":"24","targetSdk":"36","applicationId":"dev.fixture","abiFilters":["arm64-v8a"]}]}]}"#
+        let model = fixture.modelJSON ?? #"{"gradleVersion":"8.13","daemonJavaVersion":"17.0.12","daemonJavaVendor":"Fixture","daemonJavaHome":"/private-jdk-home","modules":[{"path":":app","agpVersion":"8.13.2","compileSdk":"36","buildToolsVersion":"35.0.0","minSdk":"24","targetSdk":"36","ndkVersion":null,"cmakeVersion":null,"nativeBuildConfigured":false,"abiFilters":["arm64-v8a"],"variants":[{"name":"debug","debuggable":true,"assembleTask":":app:assembleDebug","installTask":":app:installDebug","compileSdk":"36","minSdk":"24","targetSdk":"36","applicationId":"dev.fixture","abiFilters":["arm64-v8a"]}]}]}"#
         return try await FakeProcessRunner(responses: [
             AndroidSDKRepository.command.description: .ok(repository),
             fixture.modelCommand: .ok(AndroidGradleModelProbe.marker + model),
