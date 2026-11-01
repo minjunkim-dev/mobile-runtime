@@ -450,6 +450,12 @@ struct AndroidDoctorTests {
         #expect(try await source(declared, declared.config).origin == "evaluated Gradle model; mobile.yml android.variant=debugOptimized")
         #expect(try await source(declared, declared.config.selecting(variant: "debug")).origin
             == "evaluated Gradle model; explicit android.variant=debug")
+        // The same module spelled without the colon is still mobile.yml's choice.
+        let spelled = try scenario(variants: variants)
+        try spelled.repo.write("mobile.yml", "android:\n  module: app\n")
+        let spelledConfig = ConfigContext.detect(anchor: spelled.anchor, workingDirectory: spelled.repo.root)
+        #expect(try await source(spelled, spelledConfig.selecting(module: ":app")).origin
+            == "evaluated Gradle model; mobile.yml android.module=:app")
         // Choosing what mobile.yml already declares overrides nothing; plan identity depends on this text.
         #expect(try await source(declared, declared.config.selecting(variant: "debugOptimized")).origin
             == "evaluated Gradle model; mobile.yml android.variant=debugOptimized")

@@ -336,16 +336,14 @@ enum AndroidTargetSelector {
         let configuration = config.configuration
         let moduleSelector = configuration?.androidModule.map(normalizeModule)
         // A value equal to mobile.yml's is the file's even when also chosen: plan identity includes this text.
-        func origin(_ key: String, _ value: String?, declared: String?, shown: String?) -> String? {
-            guard let value, let shown else { return nil }
-            if value == declared { return "mobile.yml \(key)=\(shown)" }
-            return config.explicitKeys.contains(key) ? "explicit \(key)=\(shown)" : nil
+        func origin(_ key: String, _ value: String?, declared: String?) -> String? {
+            guard let value else { return nil }
+            if value == declared { return "mobile.yml \(key)=\(value)" }
+            return config.explicitKeys.contains(key) ? "explicit \(key)=\(value)" : nil
         }
         let selectors = [
-            origin(MobileConfig.Key.androidModule, configuration?.androidModule,
-                   declared: config.declared?.androidModule, shown: moduleSelector),
-            origin(MobileConfig.Key.androidVariant, configuration?.androidVariant,
-                   declared: config.declared?.androidVariant, shown: configuration?.androidVariant),
+            origin(MobileConfig.Key.androidModule, moduleSelector, declared: config.declared?.androidModule.map(normalizeModule)),
+            origin(MobileConfig.Key.androidVariant, configuration?.androidVariant, declared: config.declared?.androidVariant),
         ].compactMap { $0 }
         let source = CheckSource(
             tier: selectors.isEmpty ? 1 : 3,

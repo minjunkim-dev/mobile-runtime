@@ -113,6 +113,23 @@ struct NativeAndroidWorkflowTests {
         try fixture.assertPreserved()
     }
 
+    @Test("build names mobile.yml for declared selectors and an explicit choice only where it overrides one")
+    func buildSelectionOrigin() async throws {
+        let fixture = try NativeAndroidFixture()
+        // Declared without the colon: the pinned :app is still mobile.yml's module.
+        try fixture.repo.write("project/mobile.yml", "android:\n  module: app\n  variant: stagingDebug\n")
+        let declared = await WorkflowExecution.run(.build, input: fixture.workflowInput,
+            runner: try fixture.runner(variants: ["stagingDebug", "prodDebug"], builtVariant: "stagingDebug"), leases: fixture.leases)
+        #expect(declared.exitCode == 0, Comment(rawValue: declared.up?.failure?.message ?? ""))
+        #expect(declared.up?.context.validation?.checks.first { $0.id == "android.target" }?.outcome.source.origin
+            == "evaluated Gradle model; mobile.yml android.module=:app; mobile.yml android.variant=stagingDebug")
+        let overridden = await WorkflowExecution.run(.build, input: WorkflowInput(project: fixture.input, variant: "prodDebug"),
+            runner: try fixture.runner(variants: ["stagingDebug", "prodDebug"], builtVariant: "prodDebug"), leases: fixture.leases)
+        #expect(overridden.exitCode == 0, Comment(rawValue: overridden.up?.failure?.message ?? ""))
+        #expect(overridden.up?.context.validation?.checks.first { $0.id == "android.target" }?.outcome.source.origin
+            == "evaluated Gradle model; mobile.yml android.module=:app; explicit android.variant=prodDebug")
+    }
+
     @Test("native up and down retain app ownership and preserve a reused Emulator without Metro")
     func upAndDown() async throws {
         let fixture = try NativeAndroidFixture()

@@ -126,11 +126,11 @@ struct AndroidPreparationSelectionTests {
         #expect(runner.log.all.isEmpty)
     }
 
-    /// Now in Android's shape: two application modules, and flavored debug variants in :app.
     private static func targetOrigin(_ plan: PreparationPlan?) -> String? {
         plan?.platforms.flatMap(\.checks).first { $0.id == "android.android.target" }?.source.origin
     }
 
+    /// Now in Android's shape: two application modules, and flavored debug variants in :app.
     private static func multiModule() async throws -> SDKFixture {
         let fixture = try await SDKFixture()
         func module(_ path: String, _ variants: [String]) -> String {
