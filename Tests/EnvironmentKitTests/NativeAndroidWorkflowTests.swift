@@ -183,6 +183,26 @@ struct NativeAndroidWorkflowTests {
         try fixture.assertPreserved()
     }
 
+    @Test("stopping the run's app keeps a claim that names another app on the device")
+    func otherAppClaimSurvivesAppStop() async throws {
+        let fixture = try NativeAndroidFixture()
+        let up = await WorkflowExecution.run(.up, input: fixture.workflowInput, runner: try fixture.runner(), leases: fixture.leases)
+        #expect(up.exitCode == 0, Comment(rawValue: up.up?.failure?.message ?? ""))
+        // An earlier run of this project claimed another app; this run's claim write never landed.
+        let project = try FolderIdentity(directory: fixture.project).path
+        let left = try #require(try fixture.leases.claims(project: project, platform: .android).first)
+        try fixture.leases.record(ResourceClaim(device: left.device, platform: .android, handle: left.handle,
+            appID: "dev.earlier.app", owner: left.owner))
+        var cleanup = try fixture.runner()
+        cleanup.responses["adb -s emulator-5554 shell pidof \(NativeAndroidFixture.appID)"] = .failed(1, "")
+        let down = await WorkflowExecution.run(.down, input: fixture.workflowInput, runner: cleanup, leases: fixture.leases)
+        #expect(down.down?.items.contains { $0.id == "android.app" && $0.status == .stopped } == true)
+        let claim = try #require(down.down?.items.first { $0.id == "android.claim" })
+        #expect(claim.status == .unknown)
+        #expect(try fixture.leases.claim(device: left.device, project: project)?.appID == "dev.earlier.app")
+        try fixture.assertPreserved()
+    }
+
     @Test("an oversized claim is reported as preserved rather than passed over")
     func unreadableClaim() async throws {
         let fixture = try NativeAndroidFixture()

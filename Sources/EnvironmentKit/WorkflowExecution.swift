@@ -272,10 +272,13 @@ public enum WorkflowExecution {
                     if let device {
                         let runtimeStopped = report.items.contains { $0.id == "android.emulator"
                             && ($0.status == .stopped || $0.ownedRuntimeStopped == true) }
-                        // An observed force-stop ends the run's claim even on a preserved Emulator.
-                        let appStopped = report.items.contains { $0.id == "android.app" && $0.status == .stopped }
                         do {
-                            let claimed = try leases.claim(device: device, project: owner.project) != nil
+                            let claim = try leases.claim(device: device, project: owner.project)
+                            let claimed = claim != nil
+                            // An observed force-stop ends the run's claim even on a preserved Emulator,
+                            // but only when the stopped app is the one the claim names.
+                            let appStopped = report.items.contains { $0.id == "android.app" && $0.status == .stopped
+                                && $0.detail == claim?.appID }
                             if report.status == .pass && runtimeStopped || claimed && appStopped {
                                 try leases.releaseAfterTeardown(device: device, project: owner.project)
                                 if claimed { items.append(.stopped("android.claim", "released the app claim on \(device)")) }
