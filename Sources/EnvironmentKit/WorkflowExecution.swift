@@ -289,7 +289,7 @@ public enum WorkflowExecution {
                                     : "A later mobile down --platform android releases it once it stops this run's Emulator or, after the run's record is cleared, observes \(claim.appID) stopped."
                                 items.append(.unknown("android.claim", "the app claim on \(device) names \(claim.appID), not \(stoppedApp) that this down stopped, so it was preserved. \(settle)"))
                             } else if claimed {
-                                items.append(.unknown("android.claim", "the app claim on \(device) was preserved because this down did not force-stop the owned app and observe it stopped. Run mobile down --platform android again to observe the app and settle the claim; start the AVD first if it is off."))
+                                items.append(.unknown("android.claim", "the app claim on \(device) was preserved because this down did not force-stop the owned app and observe it stopped. Run mobile down --platform android again; a down releases it once it observes the claimed app stopped or stops this run's Emulator. Start the AVD first if it is off."))
                             }
                         } catch {
                             items.append(.unknown("android.claim", "the app claim on \(device) was preserved"))
