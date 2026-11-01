@@ -426,6 +426,35 @@ struct AndroidDoctorTests {
         #expect(target.outcome.observed?.contains(":app debugOptimized —") == true)
     }
 
+    @Test("android.target names whether each selected value came from mobile.yml or an explicit choice")
+    func targetSelectionOrigin() async throws {
+        let variants = #"[{"name":"debug","debuggable":true,"assembleTask":":app:assembleDebug","installTask":":app:installDebug"},{"name":"debugOptimized","debuggable":true,"assembleTask":":app:assembleDebugOptimized","installTask":":app:installDebugOptimized"}]"#
+        func source(_ scenario: AndroidScenario, _ config: ConfigContext) async throws -> CheckSource {
+            let checks = androidChecks(anchor: scenario.anchor, config: config, hostRunner: scenario.runner,
+                                       projectRunner: scenario.runner, environment: scenario.environment)
+            let report = await DoctorEngine(checks: checks).run(only: ["android.target"])
+            let target = try #require(report.checks.first { $0.id == "android.target" })
+            #expect(target.status == .pass)
+            return target.outcome.source
+        }
+
+        let bare = try scenario(variants: variants)
+        #expect(try await source(bare, bare.config) == CheckSource(tier: 1, origin: "evaluated Gradle model"))
+        #expect(try await source(bare, bare.config.selecting(module: "app", variant: "debugOptimized")).origin
+            == "evaluated Gradle model; explicit android.module=:app; explicit android.variant=debugOptimized")
+        // A value mobile resolved and pinned for the run is neither declared nor chosen.
+        #expect(try await source(bare, bare.config.selecting(module: ":app", variant: "debug", explicit: false))
+            == CheckSource(tier: 1, origin: "evaluated Gradle model"))
+
+        let declared = try scenario(variants: variants, mobileVariant: "debugOptimized")
+        #expect(try await source(declared, declared.config).origin == "evaluated Gradle model; mobile.yml android.variant=debugOptimized")
+        #expect(try await source(declared, declared.config.selecting(variant: "debug")).origin
+            == "evaluated Gradle model; explicit android.variant=debug")
+        // Choosing what mobile.yml already declares overrides nothing; plan identity depends on this text.
+        #expect(try await source(declared, declared.config.selecting(variant: "debugOptimized")).origin
+            == "evaluated Gradle model; mobile.yml android.variant=debugOptimized")
+    }
+
     @Test("conflicting sdk.dir and ANDROID_HOME is an error instead of choosing one")
     func sdkRootConflict() async throws {
         let scenario = try scenario(
