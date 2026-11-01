@@ -149,6 +149,12 @@ struct ResourceLeasesTests {
         #expect(remediation.summary.contains("mobile down --platform android"))
         #expect(remediation.command == "mobile up --platform android")
         #expect(!remediation.summary.contains("owning operation"))
+        // An app-file installation names no project to run up in.
+        try leases.reserve(device: device, owner: LeaseOwner(operationId: "app", command: "app run /x.apk", project: "app-file:/x.apk:app:dev.x"))
+        let appFile = try await #require(throws: ResourceConflict.self) {
+            try await leases.check(device: device, project: "/work/second") { _ in .stopped }
+        }
+        #expect(appFile.next == nil)
     }
 
     @Test("an unconfirmed reservation blocks other projects without observing an unknown app")

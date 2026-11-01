@@ -332,7 +332,7 @@ extension ResourceLeases {
         guard let claim = reservation.claim else {
             let owner = reservation.owner
             // That operation has ended without a claim; a finished up records one that its down settles (#373).
-            let next = device.rawValue.hasPrefix("device:\(ProjectPlatform.android.rawValue):") ? Remediation(
+            let next = owner.command == "up" && device.rawValue.hasPrefix("device:\(ProjectPlatform.android.rawValue):") ? Remediation(
                 summary: "Run mobile up --platform android on this AVD in \(owner.project) so its result is recorded, then run mobile down --platform android there and check again. Nothing was switched, stopped, queued or removed.",
                 command: "mobile up --platform android") : nil
             throw ResourceConflict(key: device, owner: owner,
