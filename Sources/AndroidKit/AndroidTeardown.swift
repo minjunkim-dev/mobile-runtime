@@ -237,8 +237,8 @@ struct AndroidCleanup: Sendable {
                     observed: after.standardOutput.lastLines(4)
                 )
             )
-        case .unknown:
-            return .unknown("android.app", "app absence could not be confirmed after force-stop")
+        case .unknown(let observed):
+            return .unknown("android.app", "app absence could not be confirmed after force-stop: \(observed)")
         }
     }
 

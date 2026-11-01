@@ -277,17 +277,17 @@ public enum WorkflowExecution {
                             let claimed = claim != nil
                             // An observed force-stop ends the run's claim even on a preserved Emulator,
                             // but only when the stopped app is the one the claim names.
-                            let appStopped = report.items.contains { $0.id == "android.app" && $0.status == .stopped
-                                && $0.detail == claim?.appID }
+                            let stoppedApp = report.items.first { $0.id == "android.app" && $0.status == .stopped }?.detail
+                            let appStopped = stoppedApp != nil && stoppedApp == claim?.appID
                             if report.status == .pass && runtimeStopped || claimed && appStopped {
                                 try leases.releaseAfterTeardown(device: device, project: owner.project)
                                 if claimed { items.append(.stopped("android.claim", "released the app claim on \(device)")) }
-                            } else if let claim, let stopped = report.items.first(where: { $0.id == "android.app" && $0.status == .stopped })?.detail {
+                            } else if let claim, let stoppedApp {
                                 // Only a down without a recorded device settles this claim as a leftover one (#361).
                                 let settle = try androidTeardownDeviceKey(anchor: anchor) == nil
-                                    ? "This down left no recorded device, so running mobile down --platform android again observes \(claim.appID) and settles the claim."
-                                    : "It stays until a mobile down --platform android that no longer records \(device) observes \(claim.appID) stopped."
-                                items.append(.unknown("android.claim", "the app claim on \(device) names \(claim.appID), not \(stopped) that this down stopped, so it was preserved. \(settle)"))
+                                    ? "This down left no recorded device, so running mobile down --platform android again observes \(claim.appID) and settles the claim; start the AVD first if it is off."
+                                    : "A later mobile down --platform android releases it once it stops this run's Emulator or, after the run's record is cleared, observes \(claim.appID) stopped."
+                                items.append(.unknown("android.claim", "the app claim on \(device) names \(claim.appID), not \(stoppedApp) that this down stopped, so it was preserved. \(settle)"))
                             } else if claimed {
                                 items.append(.unknown("android.claim", "the app claim on \(device) was preserved because this down did not force-stop the owned app and observe it stopped. Run mobile down --platform android again to observe the app and settle the claim; start the AVD first if it is off."))
                             }
