@@ -136,6 +136,34 @@ struct ResourceLeasesTests {
         #expect(!remediation.summary.contains("owning operation"))
     }
 
+    @Test("an Android reservation without a claim points at its owner's up and down, not at an operation")
+    func androidReservationRemediation() async throws {
+        let leases = store()
+        let device = ResourceKey.device(.android, "avd:Pixel")
+        try leases.reserve(device: device, owner: owner("first", project: "/work/first"))
+        let conflict = try await #require(throws: ResourceConflict.self) {
+            try await leases.check(device: device, project: "/work/second") { _ in .stopped }
+        }
+        let remediation = conflict.domainError.remediation
+        #expect(remediation.summary.contains("/work/first"))
+        #expect(remediation.summary.contains("mobile down --platform android"))
+        #expect(remediation.command == "mobile up --platform android --device 'avd:Pixel'")
+        #expect(remediation.summary.contains(remediation.command ?? "missing"))
+        #expect(!remediation.summary.contains("owning operation"))
+        let quoted = ResourceKey.device(.android, "avd:Bob's Pixel")
+        try leases.reserve(device: quoted, owner: owner("first", project: "/work/first"))
+        let pasted = try await #require(throws: ResourceConflict.self) {
+            try await leases.check(device: quoted, project: "/work/second") { _ in .stopped }
+        }
+        #expect(pasted.next?.command == "mobile up --platform android --device 'avd:Bob'\"'\"'s Pixel'")
+        // An app-file installation names no project to run up in.
+        try leases.reserve(device: device, owner: LeaseOwner(operationId: "app", command: "app run /x.apk", project: "app-file:/x.apk:app:dev.x"))
+        let appFile = try await #require(throws: ResourceConflict.self) {
+            try await leases.check(device: device, project: "/work/second") { _ in .stopped }
+        }
+        #expect(appFile.next == nil)
+    }
+
     @Test("an unconfirmed reservation blocks other projects without observing an unknown app")
     func unconfirmedReservation() async throws {
         let leases = store()

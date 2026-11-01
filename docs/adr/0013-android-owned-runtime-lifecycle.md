@@ -17,3 +17,7 @@ SDK root 선언 누락과 선언 간 충돌은 사용자 환경의 도메인 실
 ## 남은 앱 claim 정리 (#361, 2026-11-01)
 
 claim은 이 프로젝트의 Runstir 실행이 그 기기에 남긴 앱을 뜻한다. `down`이 그 앱의 force-stop과 중지를 관측하면 실행은 끝난다. Emulator를 보존해도 그 기기의 claim을 해제한다. 중지를 관측하지 못하면 claim을 보존하고 `android.claim` 항목에 이유를 남긴다. 그 뒤 OS나 앱 자신이 프로세스를 다시 띄워도 Runstir 실행이 아니다. 재시작을 막거나 감시하지 않는다. active run 기록이 없어도 claim 파일은 소유 기록이다. 소유 프로젝트의 `down`은 기기 lease를 잡고 claim의 앱을 관측한다. 중지됐으면 claim을 해제한다. 실행 중이면 AVD와 serial 대응을 확인한 뒤 그 application ID만 force-stop하고, 중지를 관측하면 해제한다. 관측할 수 없으면 claim을 보존하고 AVD를 켠 뒤 다시 `down`하라고 안내한다. 다른 프로젝트의 claim과 claim 없는 reservation은 바꾸지 않는다. 다른 프로젝트의 `up`이 남은 claim 때문에 거부되면 owner 프로젝트와 `mobile down --platform android`를 안내한다. 기록이 없을 때 세계를 재추론하지 않는다는 원칙과 충돌하지 않는다. claim 파일 자체가 기록이다.
+
+## 기기에 닿지 않은 up의 reservation (#373, 2026-11-02)
+
+`up`은 단계 전에 기기 reservation을 쓴다. 이때 그 기기에 있던 이 프로젝트의 reservation을 대체한다. `up`이 빌드된 제품 없이 끝나면 fail-fast pipeline이 런타임 단계를 하나도 실행하지 않은 것이다. 이때 `up`은 대체한 reservation을 되돌린다. 이전 claim이 있으면 다시 쓰고, 없으면 파일을 지운다. 빌드 중 취소와 빌드 실패가 여기에 해당한다. 기기에 닿은 뒤의 실패와 강제 종료가 남긴 claim 없는 reservation은 그대로 보존한다. 소유 프로젝트의 `down`은 여전히 그것을 바꾸지 않는다. 다른 프로젝트의 Android `up`이 이 reservation 때문에 거부되면 owner 프로젝트에서 그 AVD를 지정한 `mobile up --platform android --device <AVD>`을 다시 실행해 결과를 기록하고 `mobile down --platform android`을 실행하라고 안내한다. iOS reservation은 바꾸지 않는다.
