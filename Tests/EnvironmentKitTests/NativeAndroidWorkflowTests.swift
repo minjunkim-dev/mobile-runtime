@@ -127,6 +127,83 @@ struct NativeAndroidWorkflowTests {
         #expect(down.down?.items.contains { $0.id == "android.emulator" && $0.status == .skipped } == true)
         #expect(cleanup.log.spawned.isEmpty)
         #expect(!cleanup.log.all.contains { ["./gradlew", "java", "npm", "node", "kill", "lsof"].contains($0.executable) || $0.arguments.contains("reverse") || $0.arguments.contains("uninstall") })
+        // A preserved Emulator does not keep the claim of an app down confirmed stopped (#361).
+        #expect(down.down?.items.contains { $0.id == "android.claim" && $0.status == .stopped } == true)
+        try await fixture.leases.check(device: .device(.android, "avd:Pixel"), project: "/next-project") { _ in
+            Issue.record("a confirmed app stop must release the claim on a preserved Emulator")
+            return .running("the app restarted itself")
+        }
+        try fixture.assertPreserved()
+    }
+
+    @Test("an unconfirmed app stop preserves the claim and says why")
+    func unconfirmedAppStopPreservesClaim() async throws {
+        let fixture = try NativeAndroidFixture()
+        let up = await WorkflowExecution.run(.up, input: fixture.workflowInput, runner: try fixture.runner(), leases: fixture.leases)
+        #expect(up.exitCode == 0, Comment(rawValue: up.up?.failure?.message ?? ""))
+        // The fixture's pidof keeps answering 8123 after force-stop.
+        let down = await WorkflowExecution.run(.down, input: fixture.workflowInput, runner: try fixture.runner(), leases: fixture.leases)
+        #expect(down.exitCode == 1)
+        #expect(down.down?.items.contains { $0.id == "android.app" && $0.status == .failed } == true)
+        let claim = try #require(down.down?.items.first { $0.id == "android.claim" })
+        #expect(claim.status == .unknown)
+        #expect(claim.detail?.contains("preserved") == true)
+        await #expect(throws: ResourceConflict.self) {
+            try await fixture.leases.check(device: .device(.android, "avd:Pixel"), project: "/next-project") { _ in .running("pid 8123") }
+        }
+        try fixture.assertPreserved()
+    }
+
+    @Test("down without an active run settles only this project's leftover app claim", arguments: LeftoverClaimCase.allCases)
+    fileprivate func leftoverClaim(_ scenario: LeftoverClaimCase) async throws {
+        let fixture = try NativeAndroidFixture()
+        let up = await WorkflowExecution.run(.up, input: fixture.workflowInput, runner: try fixture.runner(), leases: fixture.leases)
+        #expect(up.exitCode == 0, Comment(rawValue: up.up?.failure?.message ?? ""))
+        // What an earlier down left: no active run, but the app claim stayed.
+        let store = AndroidActiveRunStore(project: fixture.project, logs: RunLogs(project: fixture.project))
+        try FileManager.default.removeItem(at: store.file)
+        let project = try FolderIdentity(directory: fixture.project).path
+        let other = ResourceKey.device(.android, "avd:Other")
+        try fixture.leases.record(ResourceClaim(device: other, platform: .android, handle: "emulator-5556", appID: "dev.other",
+            owner: LeaseOwner(operationId: "other", command: "up", project: "/other-project")))
+        let reserved = ResourceKey.device(.android, "avd:Reserved")
+        try fixture.leases.reserve(device: reserved, owner: LeaseOwner(operationId: "unconfirmed", command: "up", project: project))
+
+        var responses = try fixture.runner()
+        switch scenario {
+        case .stopped: responses.responses["adb -s emulator-5554 shell pidof \(NativeAndroidFixture.appID)"] = .failed(1, "")
+        case .running: break
+        case .unobservable: responses.responses["adb -s emulator-5554 emu avd name"] = .failed(1, "error: device offline")
+        }
+        let runner = ForceStopRunner(base: responses)
+        let down = await WorkflowExecution.run(.down, input: fixture.workflowInput, runner: runner, leases: fixture.leases)
+        let claim = try #require(down.down?.items.first { $0.id == "android.claim" })
+        let key = ResourceKey.device(.android, "avd:Pixel")
+        let forceStop = "adb -s emulator-5554 shell am force-stop \(NativeAndroidFixture.appID)"
+        if scenario == .unobservable {
+            #expect(down.down?.status == .unknown)
+            #expect(claim.status == .unknown)
+            #expect(claim.detail?.contains("mobile down --platform android") == true)
+            await #expect(throws: ResourceConflict.self) {
+                try await fixture.leases.check(device: key, project: "/next-project") { _ in .unknown("still offline") }
+            }
+        } else {
+            #expect(down.exitCode == 0, Comment(rawValue: claim.detail ?? ""))
+            #expect(claim.status == .stopped)
+            try await fixture.leases.check(device: key, project: "/next-project") { _ in
+                Issue.record("a confirmed stop must release this project's leftover claim")
+                return .running("pid 8123")
+            }
+        }
+        #expect(responses.log.all.contains { $0.description == forceStop } == (scenario == .running))
+        #expect(!responses.log.all.contains { $0.arguments.contains("uninstall") || $0.arguments.contains("clear") || $0.arguments.contains("kill") })
+        // Another project's claim and an unconfirmed reservation are never touched.
+        await #expect(throws: ResourceConflict.self) {
+            try await fixture.leases.check(device: other, project: "/next-project") { _ in .running("pid 1") }
+        }
+        await #expect(throws: ResourceConflict.self) {
+            try await fixture.leases.check(device: reserved, project: "/next-project") { _ in .stopped }
+        }
         try fixture.assertPreserved()
     }
 
@@ -321,6 +398,32 @@ struct NativeAndroidWorkflowTests {
 
 private enum AlreadyStoppedRuntimeCase: CaseIterable, Sendable {
     case ownedAbsent, reused, missingPID, missingSerial, permissionDenied, queryFailure
+}
+
+private enum LeftoverClaimCase: CaseIterable, Sendable {
+    case stopped, running, unobservable
+}
+
+/// The app's pid answers until Runstir force-stops it.
+private actor ForceStopRunner: ProcessRunner {
+    let base: FakeProcessRunner
+    private var forceStopped = false
+
+    init(base: FakeProcessRunner) { self.base = base }
+
+    func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+        var runner = base
+        if forceStopped, command.description == "adb -s emulator-5554 shell pidof \(NativeAndroidFixture.appID)" {
+            runner.responses[command.description] = .failed(1, "")
+        }
+        let result = try await runner.run(command, onLine: onLine)
+        if command.description == "adb -s emulator-5554 shell am force-stop \(NativeAndroidFixture.appID)" { forceStopped = true }
+        return result
+    }
+
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+        try await base.spawnDetached(command, logFile: logFile)
+    }
 }
 
 private actor OwnedEmulatorCleanupRunner: ProcessRunner {

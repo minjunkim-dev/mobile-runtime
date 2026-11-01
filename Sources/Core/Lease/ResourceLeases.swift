@@ -72,17 +72,20 @@ public struct ResourceConflict: Error, Codable, Sendable, Equatable {
     /// nil when the owner cannot be confirmed. The resource is preserved either way.
     public let owner: LeaseOwner?
     public let reason: String
+    /// Set when no live operation owns the resource, such as an app a finished run left.
+    public let next: Remediation?
 
-    public init(key: ResourceKey, owner: LeaseOwner?, reason: String) {
+    public init(key: ResourceKey, owner: LeaseOwner?, reason: String, next: Remediation? = nil) {
         self.key = key
         self.owner = owner
         self.reason = reason
+        self.next = next
     }
 
     public var domainError: DomainError {
         DomainError(
             summary: "\(key) is in use: \(reason)",
-            remediation: Remediation(summary: "Select another resource or explicitly stop the owning operation, then check again. Nothing was switched, stopped, queued or removed.")
+            remediation: next ?? Remediation(summary: "Select another resource or explicitly stop the owning operation, then check again. Nothing was switched, stopped, queued or removed.")
         )
     }
 }
@@ -271,7 +274,12 @@ extension ResourceLeases {
         guard FileManager.default.fileExists(atPath: file.path) else { return nil }
         let unreadable = ResourceConflict(key: device, owner: nil,
             reason: "a previous run's claim on this device is unreadable or inconsistent: \(file.path)")
-        guard let data = try? Data(contentsOf: file) else { throw unreadable }
+        guard let data = try? Data(contentsOf: file), let reservation = Self.decode(data),
+              reservation.claim.map({ $0.device == device }) ?? true else { throw unreadable }
+        return reservation
+    }
+
+    private static func decode(_ data: Data) -> DeviceReservation? {
         let reservation: DeviceReservation
         // Existing installations wrote ResourceClaim directly rather than a reservation.
         if let claim = try? JSONDecoder().decode(ResourceClaim.self, from: data) {
@@ -279,12 +287,33 @@ extension ResourceLeases {
         } else if let saved = try? JSONDecoder().decode(DeviceReservation.self, from: data) {
             reservation = saved
         } else {
-            throw unreadable
+            return nil
         }
-        if let claim = reservation.claim {
-            guard claim.device == device, claim.owner == reservation.owner else { throw unreadable }
-        }
+        if let claim = reservation.claim, claim.owner != reservation.owner { return nil }
         return reservation
+    }
+
+    /// App claims this project's finished runs left, for a `down` with no active run to name
+    /// their devices. A redirected, oversized, unreadable or misplaced file names no owner and
+    /// is left alone; reservations without a claim are never listed.
+    public func claims(project: String, platform: ProjectPlatform) throws -> [ResourceClaim] {
+        let names: [String]
+        do {
+            guard try FileManager.default.attributesOfItem(atPath: directory.path)[.type] as? FileAttributeType == .typeDirectory else {
+                throw ResourceConflict(key: .destination(directory), owner: nil, reason: "the app claim directory is redirected")
+            }
+            names = try FileManager.default.contentsOfDirectory(atPath: directory.path)
+        } catch let error as CocoaError where error.code == .fileReadNoSuchFile { return [] }
+        return names.filter { $0.hasSuffix(".claim") }.sorted().compactMap { name in
+            let location = directory.appendingPathComponent(name)
+            guard let attributes = try? FileManager.default.attributesOfItem(atPath: location.path),
+                  attributes[.type] as? FileAttributeType == .typeRegular,
+                  let size = attributes[.size] as? NSNumber, size.uint64Value <= 1_048_576,
+                  let data = try? Data(contentsOf: location), let claim = Self.decode(data)?.claim,
+                  claim.owner.project == project, claim.platform == platform,
+                  file(claim.device, "claim") == location else { return nil }
+            return claim
+        }
     }
 
     /// Call while holding `device`. Another project's claim is observed again; only an
@@ -300,13 +329,17 @@ extension ResourceLeases {
                 reason: "the result of \(owner.command) operation \(owner.operationId) for \(owner.project) is unconfirmed; its device reservation stays at \(file.path)")
         }
         let leftBehind = "\(claim.appID) from \(claim.owner.project) (\(claim.owner.command) operation \(claim.owner.operationId))"
+        // That operation has ended; the owner's Android down settles its claim (#361).
+        let next = claim.platform == .android ? Remediation(
+            summary: "Start this AVD if it is off, run mobile down --platform android in \(claim.owner.project) to stop \(claim.appID) and release its claim, then check again. Nothing was switched, stopped, queued or removed.",
+            command: "mobile down --platform android") : nil
         switch try await observe(claim) {
         case .stopped:
             try? FileManager.default.removeItem(at: file)
         case .running(let detail):
-            throw ResourceConflict(key: claim.app, owner: claim.owner, reason: "\(leftBehind) is still running on this device after its run finished: \(detail)")
+            throw ResourceConflict(key: claim.app, owner: claim.owner, reason: "\(leftBehind) is still running on this device after its run finished: \(detail)", next: next)
         case .unknown(let detail):
-            throw ResourceConflict(key: claim.app, owner: claim.owner, reason: "\(leftBehind) may still be running; it could not be observed: \(detail). The claim stays at \(file.path)")
+            throw ResourceConflict(key: claim.app, owner: claim.owner, reason: "\(leftBehind) may still be running; it could not be observed: \(detail). The claim stays at \(file.path)", next: next)
         }
     }
 }

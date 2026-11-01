@@ -217,7 +217,10 @@ public enum WorkflowExecution {
             operation.port = flutterPort ?? metroPort
             let recordedAndroid = kind == .down && platform == .android
                 ? try androidTeardownResourceKeys(anchor: anchor) : []
-            let resources = (device.map { [$0] } ?? []) + recordedAndroid + (flutterReentry?.resourceKeys ?? [])
+            // Without an active run, this project's app claims still name their devices (#361).
+            let leftoverClaims = kind == .down && platform == .android && device == nil
+                ? try leases.claims(project: owner.project, platform: .android) : []
+            let resources = (device.map { [$0] } ?? []) + leftoverClaims.map(\.device) + recordedAndroid + (flutterReentry?.resourceKeys ?? [])
                 + (kind == .build ? [] : [metroPort, recordedPort].compactMap { $0 }.map(ResourceKey.port))
             let resourceLease = try leases.acquire(resources + (flutterPort.map { [.port($0)] } ?? []), owner: owner)
             defer { resourceLease.release() }
@@ -258,17 +261,41 @@ public enum WorkflowExecution {
                 started("down")
                 down = await androidTeardown(anchor: anchor, config: config, runner: runner, projectRunner: runner,
                                              environment: AndroidEnvironment(values: input.project.environment))
-                if let device, let report = down, report.status == .pass,
-                    report.items.contains(where: { $0.id == "android.emulator"
-                        && ($0.status == .stopped || $0.ownedRuntimeStopped == true) }) {
-                    do {
-                        try leases.releaseAfterTeardown(device: device, project: owner.project)
-                    } catch {
+                if let report = down {
+                    var items = report.items
+                    var toolFailures = report.toolFailures
+                    let unconfirmed: (Error) -> Void = { error in
                         let detail = "The device claim cleanup could not be confirmed: \(error)"
                         operation.remaining.append(detail)
-                        down = TeardownReport(items: report.items, toolFailures: report.toolFailures + [detail],
-                            failure: report.failure, blockedIsFailure: report.blockedIsFailure, cancelled: report.cancelled)
+                        toolFailures.append(detail)
                     }
+                    if let device {
+                        let claimed = (try? leases.claims(project: owner.project, platform: .android))?
+                            .contains { $0.device == device } == true
+                        let runtimeStopped = report.items.contains { $0.id == "android.emulator"
+                            && ($0.status == .stopped || $0.ownedRuntimeStopped == true) }
+                        // An observed force-stop ends the run's claim even on a preserved Emulator.
+                        let appStopped = report.items.contains { $0.id == "android.app" && $0.status == .stopped }
+                        if report.status == .pass && (runtimeStopped || claimed && appStopped) {
+                            do {
+                                try leases.releaseAfterTeardown(device: device, project: owner.project)
+                                if claimed { items.append(.stopped("android.claim", "released the app claim on \(device)")) }
+                            } catch { unconfirmed(error) }
+                        } else if claimed {
+                            items.append(.unknown("android.claim", "the app claim on \(device) was preserved because this down did not observe the owned app stop. Start the AVD, then run mobile down --platform android again."))
+                        }
+                    }
+                    for claim in leftoverClaims {
+                        do {
+                            items.append(try await androidLeftoverClaimCleanup(claim, leases: leases, project: owner.project,
+                                anchor: anchor, config: config, runner: runner, environment: AndroidEnvironment(values: input.project.environment)))
+                        } catch let error where !(error is CancellationError) {
+                            items.append(.unknown("android.claim", "the \(claim.appID) claim on \(claim.device) was preserved"))
+                            unconfirmed(error)
+                        }
+                    }
+                    down = TeardownReport(items: items, toolFailures: toolFailures, failure: report.failure,
+                        blockedIsFailure: report.blockedIsFailure, cancelled: report.cancelled)
                 }
             case (.up, .android):
                 up = await runAndroidUp(anchor: anchor, doctor: wiring.engine, config: config,
