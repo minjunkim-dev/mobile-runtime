@@ -287,7 +287,7 @@ public enum WorkflowExecution {
                             unconfirmed(error)
                         }
                     }
-                    for claim in leftoverClaims {
+                    for claim in leftoverClaims where !report.cancelled {
                         do {
                             items.append(try await androidLeftoverClaimCleanup(claim, leases: leases, project: owner.project,
                                 anchor: anchor, config: config, runner: runner, environment: AndroidEnvironment(values: input.project.environment)))
