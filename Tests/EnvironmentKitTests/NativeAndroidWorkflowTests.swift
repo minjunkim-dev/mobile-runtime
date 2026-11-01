@@ -573,6 +573,22 @@ struct NativeAndroidWorkflowTests {
         try fixture.assertPreserved()
     }
 
+    @Test("an up stopped after reaching the device keeps its reservation and names the owner's up and down")
+    func touchedDeviceKeepsReservation() async throws {
+        let fixture = try NativeAndroidFixture()
+        let key = ResourceKey.device(.android, "avd:Pixel")
+        var runner = try fixture.runner()
+        runner.failures["adb -s emulator-5554 shell getprop sys.boot_completed"] = CancellationError()
+        let cancelled = await WorkflowExecution.run(.up, input: fixture.workflowInput, runner: runner, leases: fixture.leases)
+        #expect(cancelled.exitCode == 130)
+        #expect(cancelled.up?.stages.first { $0.id == "android.device" }?.status == .failed)
+        let conflict = try await #require(throws: ResourceConflict.self) {
+            try await fixture.leases.check(device: key, project: "/next-project") { _ in .stopped }
+        }
+        #expect(conflict.next?.command == "mobile up --platform android")
+        try fixture.assertPreserved()
+    }
+
     @Test("native install failure preserves existing devices and installed packages")
     func installFailure() async throws {
         let fixture = try NativeAndroidFixture()
