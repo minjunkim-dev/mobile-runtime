@@ -13,7 +13,7 @@
 
 main의 `scripts/package-release.sh`로 한 번의 disposable release build를 실행해 CLI·GUI와 Core 객체 48개를 만들었다. 제작기는 빌드 폴더를 지운 뒤 archive smoke와 `scripts/verify-candidate.sh`를 실행했고 모두 통과했다. 두 배포 파일의 BUILD metadata와 resource bytes가 일치하고 GUI bundle에는 CLI가 없다. DMG는 읽기 전용으로 마운트해 앱을 복사한 뒤 분리했다. formula는 구문만 검사했으며 실제 Homebrew 설치는 하지 않았다. `CANDIDATE.json`의 `ciRun`은 로컬 제작이라 `null`이다.
 
-Source main CI [41312082987](https://github.com/minjunkim-dev/mobile-runtime/actions/runs/41312082987)와 CodeQL [41312082996](https://github.com/minjunkim-dev/mobile-runtime/actions/runs/41312082996)은 exact SHA의 모든 job이 첫 시도에서 성공했다. alpha.15 source 이후 병합된 제품 변경은 다음과 같다. 각 PR 본문의 별도 컨텍스트 리뷰 기록과 최종 head의 필수 CI 성공을 제한 원본 `source-prs`에 보존했다. 같은 기간의 증거 문서(#352·#354·#355·#359·#363)와 테스트 대기 시간만 바꾼 #356은 배포 파일에 들어가지 않으므로 표에서 뺐다. #370(down 뒤 `pidof` 해석 통일)은 아직 열려 있어 이 후보에 들어가지 않았다(사용자 결정).
+Source main CI [41312082987](https://github.com/minjunkim-dev/mobile-runtime/actions/runs/41312082987)와 CodeQL [41312082996](https://github.com/minjunkim-dev/mobile-runtime/actions/runs/41312082996)은 exact SHA의 모든 job이 첫 시도에서 성공했다. alpha.15 source 이후 병합된 제품 변경은 다음과 같다. 각 PR 본문의 별도 컨텍스트 리뷰 기록과 최종 head의 필수 CI 성공을 제한 원본 `source-prs`에 보존했다. 같은 기간의 증거 문서(#352·#354·#355·#359·#363)와 테스트 대기 시간만 바꾼 #356은 배포 파일에 들어가지 않으므로 표에서 뺐다. #370(down 뒤 `pidof` 해석 통일)은 후보 제작 시점에 열려 있어 사용자 결정으로 넣지 않았다. 이후 PR #371·#372로 main에 병합됐으며 다음 후보에서 확인한다.
 
 | PR | 제목 | merge |
 | --- | --- | --- |
