@@ -3,6 +3,7 @@ import EnvironmentKit
 import Foundation
 import TestSupport
 import Testing
+@testable import AndroidKit
 
 @Suite("Android module and variant selection in preparation")
 struct AndroidPreparationSelectionTests {
@@ -92,6 +93,21 @@ struct AndroidPreparationSelectionTests {
         #expect(result.plan?.steps.contains { $0.id == "android.android.target" } == true, Comment(rawValue: diagnostic))
     }
 
+    @Test("a selection the final recheck rejects after approved installs is not reported as success")
+    func finalRecheckRejection() async throws {
+        let fixture = try await Self.multiModule()
+        let runner = RejectingAfterInstallRunner(base: fixture.runner(), fixture: fixture)
+        let plan = try #require(await PreparationExecution.run(input: fixture.input, planOnly: true,
+            module: ":app", variant: "demoDebug", runner: runner).plan)
+        let result = await PreparationExecution.run(input: fixture.input, approvedPlanID: plan.id,
+            module: ":app", variant: "demoDebug", runner: runner)
+        let diagnostic = try result.encoded(toolVersion: "fixture")
+        #expect(result.operation.completed.count == 2, Comment(rawValue: diagnostic))
+        #expect(result.exitCode == 1)
+        #expect(result.operation.state == "partial")
+        #expect(result.operation.error?.hasPrefix("android.variant names demoDebug") == true, Comment(rawValue: diagnostic))
+    }
+
     @Test("an iOS-only setup rejects Android selectors like build and up")
     func iosOnlyRejection() async throws {
         let repo = try FixtureRepo()
@@ -123,5 +139,26 @@ struct AndroidPreparationSelectionTests {
         try fixture.repo.write("project/settings.gradle.kts", "include(\":app\", \":app-nia-catalog\")")
         try fixture.repo.write("project/app-nia-catalog/build.gradle.kts", "plugins { id(\"com.android.application\") }")
         return fixture
+    }
+}
+
+/// Once both approved SDK packages exist, the evaluated model drops :app demoDebug.
+private struct RejectingAfterInstallRunner: ProcessRunner {
+    let base: SDKPreparationRunner
+    let fixture: SDKFixture
+
+    func run(_ command: ProcessCommand, onLine: (@Sendable (String) -> Void)?) async throws -> ProcessResult {
+        let installed = ["sdk/build-tools/35.0.0", "sdk/platforms/android-36"].allSatisfy {
+            FileManager.default.fileExists(atPath: fixture.repo.url($0).path)
+        }
+        guard installed, command.description == fixture.modelCommand, let model = fixture.modelJSON else {
+            return try await base.run(command, onLine: onLine)
+        }
+        let rejecting = model.replacingOccurrences(of: #"{"name":"demoDebug""#, with: #"{"name":"stagingDebug""#)
+        return ProcessResult(terminationStatus: .exited(0), standardOutput: AndroidGradleModelProbe.marker + rejecting, standardError: "")
+    }
+
+    func spawnDetached(_ command: ProcessCommand, logFile: URL) async throws -> Int32 {
+        try await base.spawnDetached(command, logFile: logFile)
     }
 }
