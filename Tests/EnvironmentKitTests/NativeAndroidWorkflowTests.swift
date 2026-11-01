@@ -162,18 +162,23 @@ struct NativeAndroidWorkflowTests {
         try fixture.assertPreserved()
     }
 
-    @Test("an unconfirmed app stop preserves the claim and says why", arguments: [false, true])
-    func unconfirmedAppStopPreservesClaim(adbError: Bool) async throws {
+    @Test("an unconfirmed app stop preserves the claim and says why", arguments: UnconfirmedStopCase.allCases)
+    fileprivate func unconfirmedAppStopPreservesClaim(_ scenario: UnconfirmedStopCase) async throws {
         let fixture = try NativeAndroidFixture()
         let up = await WorkflowExecution.run(.up, input: fixture.workflowInput, runner: try fixture.runner(), leases: fixture.leases)
         #expect(up.exitCode == 0, Comment(rawValue: up.up?.failure?.message ?? ""))
-        // Either pidof keeps answering 8123 after force-stop, or it fails without proving absence.
+        // pidof keeps answering 8123 after force-stop, fails without proving absence, or exits 0 silently (#370).
         var cleanup = try fixture.runner()
-        if adbError { cleanup.responses["adb -s emulator-5554 shell pidof \(NativeAndroidFixture.appID)"] = .failed(1, "error: closed") }
+        let pidof = "adb -s emulator-5554 shell pidof \(NativeAndroidFixture.appID)"
+        switch scenario {
+        case .stillRunning: break
+        case .adbError: cleanup.responses[pidof] = .failed(1, "error: closed")
+        case .silentSuccess: cleanup.responses[pidof] = .ok("")
+        }
         let down = await WorkflowExecution.run(.down, input: fixture.workflowInput, runner: cleanup, leases: fixture.leases)
         let app = try #require(down.down?.items.first { $0.id == "android.app" })
-        #expect(app.status == (adbError ? .unknown : .failed))
-        #expect(down.exitCode == (adbError ? 0 : 1))
+        #expect(app.status == (scenario == .stillRunning ? .failed : .unknown))
+        #expect(down.exitCode == (scenario == .stillRunning ? 1 : 0))
         let claim = try #require(down.down?.items.first { $0.id == "android.claim" })
         #expect(claim.status == .unknown)
         #expect(claim.detail?.contains("preserved") == true)
@@ -183,11 +188,21 @@ struct NativeAndroidWorkflowTests {
         try fixture.assertPreserved()
     }
 
-    @Test("stopping the run's app keeps a claim that names another app on the device")
-    func otherAppClaimSurvivesAppStop() async throws {
+    @Test("stopping the run's app keeps a claim that names another app on the device", arguments: [false, true])
+    func otherAppClaimSurvivesAppStop(emulatorKept: Bool) async throws {
         let fixture = try NativeAndroidFixture()
         let up = await WorkflowExecution.run(.up, input: fixture.workflowInput, runner: try fixture.runner(), leases: fixture.leases)
         #expect(up.exitCode == 0, Comment(rawValue: up.up?.failure?.message ?? ""))
+        if emulatorKept {
+            // An owned Emulator that does not stop keeps the run's recorded device.
+            let store = AndroidActiveRunStore(project: fixture.project, logs: RunLogs(project: fixture.project))
+            var record = try #require(try store.read())
+            var device = try #require(record.device)
+            device.state = .started
+            device.launcherPID = 4242
+            record.device = device
+            try store.write(record)
+        }
         // An earlier run of this project claimed another app; this run's claim write never landed.
         let project = try FolderIdentity(directory: fixture.project).path
         let left = try #require(try fixture.leases.claims(project: project, platform: .android).first)
@@ -195,11 +210,21 @@ struct NativeAndroidWorkflowTests {
             appID: "dev.earlier.app", owner: left.owner))
         var cleanup = try fixture.runner()
         cleanup.responses["adb -s emulator-5554 shell pidof \(NativeAndroidFixture.appID)"] = .failed(1, "")
+        if emulatorKept { cleanup.responses["adb -s emulator-5554 emu kill"] = .failed(1, "error: could not connect") }
         let down = await WorkflowExecution.run(.down, input: fixture.workflowInput, runner: cleanup, leases: fixture.leases)
         #expect(down.down?.items.contains { $0.id == "android.app" && $0.status == .stopped } == true)
         let claim = try #require(down.down?.items.first { $0.id == "android.claim" })
         #expect(claim.status == .unknown)
+        #expect(claim.detail?.contains("names dev.earlier.app, not \(NativeAndroidFixture.appID)") == true, Comment(rawValue: claim.detail ?? ""))
+        #expect(claim.detail?.contains("left no recorded device") == !emulatorKept, Comment(rawValue: claim.detail ?? ""))
         #expect(try fixture.leases.claim(device: left.device, project: project)?.appID == "dev.earlier.app")
+        guard !emulatorKept else { return try fixture.assertPreserved() }
+        // The message promises that another down settles it through the leftover-claim path.
+        cleanup.responses["adb -s emulator-5554 shell pidof dev.earlier.app"] = .failed(1, "")
+        let again = await WorkflowExecution.run(.down, input: fixture.workflowInput, runner: cleanup, leases: fixture.leases)
+        let settled = try #require(again.down?.items.first { $0.id == "android.claim" })
+        #expect(settled.status == .stopped, Comment(rawValue: settled.detail ?? ""))
+        #expect(try fixture.leases.claim(device: left.device, project: project) == nil)
         try fixture.assertPreserved()
     }
 
@@ -528,6 +553,10 @@ struct NativeAndroidWorkflowTests {
 
 private enum AlreadyStoppedRuntimeCase: CaseIterable, Sendable {
     case ownedAbsent, reused, missingPID, missingSerial, permissionDenied, queryFailure
+}
+
+private enum UnconfirmedStopCase: CaseIterable, Sendable {
+    case stillRunning, adbError, silentSuccess
 }
 
 private enum LeftoverClaimCase: CaseIterable, Sendable {

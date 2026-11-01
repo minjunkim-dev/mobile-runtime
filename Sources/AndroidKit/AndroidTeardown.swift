@@ -226,15 +226,10 @@ struct AndroidCleanup: Sendable {
         let after = try await runner.run(adb(
             ["-s", app.serial, "shell", "pidof", app.applicationId], sdk: sdk
         ))
-        if !after.terminationStatus.isSuccess {
-            // Only pidof's silent exit 1 confirms absence; anything else releases nothing.
-            guard after.terminationStatus == .exited(1),
-                  after.combinedOutput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-                return .unknown("android.app", "app absence could not be confirmed after force-stop")
-            }
+        switch androidPidofObservation(after, serial: app.serial, applicationId: app.applicationId) {
+        case .stopped:
             return .stopped("android.app", app.applicationId)
-        }
-        guard after.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+        case .running:
             return .failed(
                 "android.app",
                 cleanupFailure(
@@ -242,8 +237,9 @@ struct AndroidCleanup: Sendable {
                     observed: after.standardOutput.lastLines(4)
                 )
             )
+        case .unknown:
+            return .unknown("android.app", "app absence could not be confirmed after force-stop")
         }
-        return .stopped("android.app", app.applicationId)
     }
 
     private func cleanReverse(
