@@ -634,20 +634,33 @@ public func androidLeftoverClaimCleanup(
     guard try leases.ownsClaim(device: claim.device, project: project, appID: claim.appID) else {
         return .skipped(id, "\(subject) changed before down held its device")
     }
+    let context = AndroidDoctorContext(anchor: anchor, config: config, hostRunner: runner,
+                                       projectRunner: runner, environment: environment)
+    guard case .resolved(let sdk, _) = context.sdkRoot() else {
+        return .unknown(id, "\(subject) was preserved: the Android SDK root is unresolved")
+    }
+    // A restarted AVD may come back on another serial than the one the claim recorded.
+    var serial = claim.handle
+    let devices = try await runner.run(context.toolCommand("adb", ["devices"], sdk: sdk))
+    for line in devices.standardOutput.split(whereSeparator: \.isNewline) {
+        let fields = line.split(whereSeparator: \.isWhitespace)
+        guard fields.count >= 2, fields[0].hasPrefix("emulator-"), fields[1] == "device" else { continue }
+        let name = try await runner.run(context.toolCommand("adb", ["-s", String(fields[0]), "emu", "avd", "name"], sdk: sdk))
+        if name.terminationStatus.isSuccess,
+           androidAVDName(from: name.standardOutput).map({ ResourceKey.device(.android, "avd:\($0)") }) == claim.device {
+            serial = String(fields[0])
+            break
+        }
+    }
     let observe = {
-        try await androidAppObservation(serial: claim.handle, applicationId: claim.appID, expectedDevice: claim.device,
+        try await androidAppObservation(serial: serial, applicationId: claim.appID, expectedDevice: claim.device,
             anchor: anchor, config: config, runner: runner, environment: environment)
     }
     var observed = try await observe()
     if case .running = observed {
         // The observation just confirmed that the serial still names the claimed AVD.
-        let context = AndroidDoctorContext(anchor: anchor, config: config, hostRunner: runner,
-                                           projectRunner: runner, environment: environment)
-        guard case .resolved(let sdk, _) = context.sdkRoot() else {
-            return .unknown(id, "\(subject) was preserved: the Android SDK root is unresolved")
-        }
         let stopped = try await runner.run(context.toolCommand("adb",
-            ["-s", claim.handle, "shell", "am", "force-stop", claim.appID], sdk: sdk))
+            ["-s", serial, "shell", "am", "force-stop", claim.appID], sdk: sdk))
         guard stopped.terminationStatus.isSuccess else {
             return .failed(id, DomainError(summary: "\(claim.appID) did not stop; \(subject) was preserved",
                 observed: stopped.combinedOutput.lastLines(8), remediation: retry))

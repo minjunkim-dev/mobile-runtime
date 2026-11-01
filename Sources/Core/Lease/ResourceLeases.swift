@@ -206,18 +206,27 @@ extension ResourceLeases {
     /// A legacy install record may name a device but cannot prove its folder owner.
     /// Read the existing reservation book without creating or changing a claim.
     public func ownsClaim(device: ResourceKey, project: String, appID: String) throws -> Bool {
-        let location = file(device, "claim")
+        try claim(device: device, project: project)?.appID == appID
+    }
+
+    /// This project's app claim on `device`, if any. Another project's claim and a
+    /// reservation without a claim are nil; a redirected or unreadable claim throws.
+    public func claim(device: ResourceKey, project: String) throws -> ResourceClaim? {
         do {
-            let root = try FileManager.default.attributesOfItem(atPath: directory.path)
-            let attributes = try FileManager.default.attributesOfItem(atPath: location.path)
-            guard root[.type] as? FileAttributeType == .typeDirectory,
-                  attributes[.type] as? FileAttributeType == .typeRegular,
-                  let size = attributes[.size] as? NSNumber, size.uint64Value <= 1_048_576 else {
+            guard try FileManager.default.attributesOfItem(atPath: directory.path)[.type] as? FileAttributeType == .typeDirectory,
+                  try regularClaimFile(file(device, "claim")) else {
                 throw ResourceConflict(key: device, owner: nil, reason: "the previous app claim is redirected or unreadable")
             }
-        } catch let error as CocoaError where error.code == .fileReadNoSuchFile { return false }
-        guard let saved = try reservation(device: device), let claim = saved.claim else { return false }
-        return saved.owner.project == project && claim.device == device && claim.appID == appID
+        } catch let error as CocoaError where error.code == .fileReadNoSuchFile { return nil }
+        guard let saved = try reservation(device: device), let claim = saved.claim,
+              saved.owner.project == project, claim.device == device else { return nil }
+        return claim
+    }
+
+    private func regularClaimFile(_ location: URL) throws -> Bool {
+        let attributes = try FileManager.default.attributesOfItem(atPath: location.path)
+        return attributes[.type] as? FileAttributeType == .typeRegular
+            && (attributes[.size] as? NSNumber).map { $0.uint64Value <= 1_048_576 } == true
     }
 
     /// Call while holding `device`, before changes. A failed final record leaves this
@@ -306,10 +315,7 @@ extension ResourceLeases {
         } catch let error as CocoaError where error.code == .fileReadNoSuchFile { return [] }
         return names.filter { $0.hasSuffix(".claim") }.sorted().compactMap { name in
             let location = directory.appendingPathComponent(name)
-            guard let attributes = try? FileManager.default.attributesOfItem(atPath: location.path),
-                  attributes[.type] as? FileAttributeType == .typeRegular,
-                  let size = attributes[.size] as? NSNumber, size.uint64Value <= 1_048_576,
-                  let data = try? Data(contentsOf: location), let claim = Self.decode(data)?.claim,
+            guard (try? regularClaimFile(location)) == true, let data = try? Data(contentsOf: location), let claim = Self.decode(data)?.claim,
                   claim.owner.project == project, claim.platform == platform,
                   file(claim.device, "claim") == location else { return nil }
             return claim

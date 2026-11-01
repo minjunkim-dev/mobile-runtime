@@ -270,19 +270,21 @@ public enum WorkflowExecution {
                         toolFailures.append(detail)
                     }
                     if let device {
-                        let claimed = (try? leases.claims(project: owner.project, platform: .android))?
-                            .contains { $0.device == device } == true
                         let runtimeStopped = report.items.contains { $0.id == "android.emulator"
                             && ($0.status == .stopped || $0.ownedRuntimeStopped == true) }
                         // An observed force-stop ends the run's claim even on a preserved Emulator.
                         let appStopped = report.items.contains { $0.id == "android.app" && $0.status == .stopped }
-                        if report.status == .pass && (runtimeStopped || claimed && appStopped) {
-                            do {
+                        do {
+                            let claimed = try leases.claim(device: device, project: owner.project) != nil
+                            if report.status == .pass && runtimeStopped || claimed && appStopped {
                                 try leases.releaseAfterTeardown(device: device, project: owner.project)
                                 if claimed { items.append(.stopped("android.claim", "released the app claim on \(device)")) }
-                            } catch { unconfirmed(error) }
-                        } else if claimed {
-                            items.append(.unknown("android.claim", "the app claim on \(device) was preserved because this down did not observe the owned app stop. Start the AVD, then run mobile down --platform android again."))
+                            } else if claimed {
+                                items.append(.unknown("android.claim", "the app claim on \(device) was preserved because this down did not observe the owned app stop. Start the AVD, then run mobile down --platform android again."))
+                            }
+                        } catch {
+                            items.append(.unknown("android.claim", "the app claim on \(device) was preserved"))
+                            unconfirmed(error)
                         }
                     }
                     for claim in leftoverClaims {

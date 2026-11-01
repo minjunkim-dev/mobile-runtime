@@ -154,6 +154,25 @@ struct NativeAndroidWorkflowTests {
         try fixture.assertPreserved()
     }
 
+    @Test("an oversized claim is reported as preserved rather than passed over")
+    func unreadableClaim() async throws {
+        let fixture = try NativeAndroidFixture()
+        let up = await WorkflowExecution.run(.up, input: fixture.workflowInput, runner: try fixture.runner(), leases: fixture.leases)
+        #expect(up.exitCode == 0, Comment(rawValue: up.up?.failure?.message ?? ""))
+        let directory = fixture.repo.url("leases")
+        let name = try #require(try FileManager.default.contentsOfDirectory(atPath: directory.path).first { $0.hasSuffix(".claim") })
+        let location = directory.appendingPathComponent(name)
+        // Still valid JSON, but past the size a claim may have.
+        let oversized = try Data(contentsOf: location) + Data(repeating: 0x20, count: 1_048_577)
+        try oversized.write(to: location)
+        var cleanup = try fixture.runner()
+        cleanup.responses["adb -s emulator-5554 shell pidof \(NativeAndroidFixture.appID)"] = .failed(1, "")
+        let down = await WorkflowExecution.run(.down, input: fixture.workflowInput, runner: cleanup, leases: fixture.leases)
+        #expect(down.exitCode == 2)
+        #expect(down.down?.items.contains { $0.id == "android.claim" && $0.status == .unknown } == true)
+        #expect(try Data(contentsOf: location) == oversized)
+    }
+
     @Test("down without an active run settles only this project's leftover app claim", arguments: LeftoverClaimCase.allCases)
     fileprivate func leftoverClaim(_ scenario: LeftoverClaimCase) async throws {
         let fixture = try NativeAndroidFixture()
@@ -166,19 +185,25 @@ struct NativeAndroidWorkflowTests {
         let other = ResourceKey.device(.android, "avd:Other")
         try fixture.leases.record(ResourceClaim(device: other, platform: .android, handle: "emulator-5556", appID: "dev.other",
             owner: LeaseOwner(operationId: "other", command: "up", project: "/other-project")))
+        let key = ResourceKey.device(.android, "avd:Pixel")
+        if scenario == .movedSerial {
+            // The AVD restarted on emulator-5554, but the claim recorded another serial.
+            let left = try #require(try fixture.leases.claims(project: project, platform: .android).first)
+            try fixture.leases.record(ResourceClaim(device: key, platform: .android, handle: "emulator-5556",
+                appID: left.appID, owner: left.owner))
+        }
         let reserved = ResourceKey.device(.android, "avd:Reserved")
         try fixture.leases.reserve(device: reserved, owner: LeaseOwner(operationId: "unconfirmed", command: "up", project: project))
 
         var responses = try fixture.runner()
         switch scenario {
-        case .stopped: responses.responses["adb -s emulator-5554 shell pidof \(NativeAndroidFixture.appID)"] = .failed(1, "")
+        case .stopped, .movedSerial: responses.responses["adb -s emulator-5554 shell pidof \(NativeAndroidFixture.appID)"] = .failed(1, "")
         case .running: break
         case .unobservable: responses.responses["adb -s emulator-5554 emu avd name"] = .failed(1, "error: device offline")
         }
         let runner = ForceStopRunner(base: responses)
         let down = await WorkflowExecution.run(.down, input: fixture.workflowInput, runner: runner, leases: fixture.leases)
         let claim = try #require(down.down?.items.first { $0.id == "android.claim" })
-        let key = ResourceKey.device(.android, "avd:Pixel")
         let forceStop = "adb -s emulator-5554 shell am force-stop \(NativeAndroidFixture.appID)"
         if scenario == .unobservable {
             #expect(down.down?.status == .unknown)
@@ -401,7 +426,7 @@ private enum AlreadyStoppedRuntimeCase: CaseIterable, Sendable {
 }
 
 private enum LeftoverClaimCase: CaseIterable, Sendable {
-    case stopped, running, unobservable
+    case stopped, running, unobservable, movedSerial
 }
 
 /// The app's pid answers until Runstir force-stops it.
