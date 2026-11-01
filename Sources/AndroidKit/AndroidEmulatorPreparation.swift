@@ -66,7 +66,7 @@ public struct AndroidEmulatorEnvironment: Sendable {
         guard case .resolved(let sdk, _) = context.sdkRoot(), let home = context.environment.avdHome,
               case .model(let model) = try await context.model(),
               case .selected(let module, let variant, let source) = AndroidTargetSelector.resolve(model: model,
-                configuration: context.config.configuration, configFile: context.anchor.directory.appendingPathComponent(MobileConfig.fileName).path),
+                config: context.config, configFile: context.anchor.directory.appendingPathComponent(MobileConfig.fileName).path),
               let text = variant.minSdk ?? module.minSdk, let minimum = Int(text), minimum > 0 else {
             throw failure("Exact SDK root, AVD home, selected Gradle target and minSdk are required before Emulator preparation.")
         }

@@ -449,7 +449,7 @@ public enum WorkflowExecution {
             operation.variant = target.variant
             operation.requiredInput += target.requiredInput
             if let error = target.selectionError { throw error }
-            config = config.selecting(module: target.module, variant: target.variant)
+            config = config.selecting(module: target.module, variant: target.variant, explicit: false)
             if kind == .up {
                 operation.devices = try await androidWorkflowDevices(anchor: anchor, config: config, runner: runner,
                     environment: AndroidEnvironment(values: input.project.environment))

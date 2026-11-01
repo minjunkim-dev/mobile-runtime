@@ -322,7 +322,7 @@ extension AndroidDoctorContext {
         if case .invalid = config.parse { return nil }
         guard case .model(let model) = try await model(),
               case .error(let observed, _, _, _) = AndroidTargetSelector.resolve(model: model,
-                  configuration: config.configuration, configFile: config.display(anchorConfigFile(anchor))) else { return nil }
+                  config: config, configFile: config.display(anchorConfigFile(anchor))) else { return nil }
         return observed
     }
 }
@@ -330,17 +330,24 @@ extension AndroidDoctorContext {
 enum AndroidTargetSelector {
     static func resolve(
         model: AndroidGradleModel,
-        configuration: MobileConfig?,
+        config: ConfigContext,
         configFile: String
     ) -> AndroidTargetResolution {
+        let configuration = config.configuration
         let moduleSelector = configuration?.androidModule.map(normalizeModule)
+        // A value equal to mobile.yml's is the file's even when also chosen: plan identity includes this text.
+        func origin(_ key: String, _ value: String?, declared: String?) -> String? {
+            guard let value else { return nil }
+            if value == declared { return "mobile.yml \(key)=\(value)" }
+            return config.explicitKeys.contains(key) ? "explicit \(key)=\(value)" : nil
+        }
+        let selectors = [
+            origin(MobileConfig.Key.androidModule, moduleSelector, declared: config.declared?.androidModule.map(normalizeModule)),
+            origin(MobileConfig.Key.androidVariant, configuration?.androidVariant, declared: config.declared?.androidVariant),
+        ].compactMap { $0 }
         let source = CheckSource(
-            tier: moduleSelector == nil && configuration?.androidVariant == nil ? 1 : 3,
-            origin: [
-                "evaluated Gradle model",
-                moduleSelector.map { "mobile.yml android.module=\($0)" },
-                configuration?.androidVariant.map { "mobile.yml android.variant=\($0)" },
-            ].compactMap { $0 }.joined(separator: "; ")
+            tier: selectors.isEmpty ? 1 : 3,
+            origin: (["evaluated Gradle model"] + selectors).joined(separator: "; ")
         )
 
         let module: AndroidGradleModel.Module
@@ -459,7 +466,7 @@ private struct AndroidTargetCheck: Check {
 
         let file = context.config.display(anchorConfigFile(context.anchor))
         switch AndroidTargetSelector.resolve(
-            model: model, configuration: context.config.configuration, configFile: file
+            model: model, config: context.config, configFile: file
         ) {
         case .selected(let module, let variant, let source):
             return .pass(
@@ -488,7 +495,7 @@ private struct AndroidGradleCompatibilityCheck: Check {
             case .model(let model) = try await context.model(),
             case .selected(let module, let variant, _) = AndroidTargetSelector.resolve(
                 model: model,
-                configuration: context.config.configuration,
+                config: context.config,
                 configFile: context.config.display(anchorConfigFile(context.anchor))
             )
         else {
@@ -549,7 +556,7 @@ private struct AndroidSDKCheck: Check {
         guard case .model(let model) = try await context.model(),
             case .selected(let module, let variant, _) = AndroidTargetSelector.resolve(
                 model: model,
-                configuration: context.config.configuration,
+                config: context.config,
                 configFile: context.config.display(anchorConfigFile(context.anchor))
             )
         else {
@@ -682,7 +689,7 @@ private struct AndroidAVDCheck: Check {
             case .model(let model) = try await context.model(),
             case .selected(let module, let variant, _) = AndroidTargetSelector.resolve(
                 model: model,
-                configuration: context.config.configuration,
+                config: context.config,
                 configFile: context.config.display(anchorConfigFile(context.anchor))
             ),
             let minSDKText = variant.minSdk ?? module.minSdk, let minSDK = Int(minSDKText)

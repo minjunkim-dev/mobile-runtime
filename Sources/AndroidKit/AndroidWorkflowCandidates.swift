@@ -38,7 +38,7 @@ public struct AndroidWorkflowTarget: Sendable {
             throw DomainError(summary: reason, remediation: Remediation(summary: "Prepare the declared Gradle inputs. Run mobile doctor --platform android and follow its setup instructions."))
         }
         let modules = model.modules.map(\.path).sorted()
-        switch AndroidTargetSelector.resolve(model: model, configuration: config.configuration,
+        switch AndroidTargetSelector.resolve(model: model, config: config,
                                              configFile: config.display(anchor.directory.appendingPathComponent(MobileConfig.fileName))) {
         case .selected(let module, let variant, _):
             return Self(module: module.path, variant: variant.name, modules: modules,
