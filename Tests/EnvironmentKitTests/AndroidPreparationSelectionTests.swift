@@ -43,6 +43,21 @@ struct AndroidPreparationSelectionTests {
         #expect(Self.targetOrigin(other) == "evaluated Gradle model; mobile.yml android.module=:app; explicit android.variant=prodDebug")
     }
 
+    @Test("a module written without its leading colon is the same plan identity")
+    func moduleSpellingIdentity() async throws {
+        let fixture = try await Self.multiModule()
+        try fixture.repo.write("project/mobile.yml", "android:\n  module: app\n  variant: demoDebug\n")
+        let runner = fixture.runner()
+        let declared = try #require(await PreparationExecution.run(input: fixture.input, planOnly: true, runner: runner).plan)
+        let explicit = try #require(await PreparationExecution.run(input: fixture.input, planOnly: true,
+            module: ":app", variant: "demoDebug", runner: runner).plan)
+        #expect(declared.androidModule == ":app")
+        #expect(declared.id == explicit.id)
+        // The config check reports the file, not the explicit selection layered over it.
+        let syntax = explicit.platforms.flatMap(\.checks).first { $0.id == "android.config.syntax" }
+        #expect(syntax?.observed == "mobile.yml declares android.module: app, android.variant: demoDebug")
+    }
+
     @Test("a plan-id approved under another selection is rejected before any change")
     func staleSelectionApproval() async throws {
         let fixture = try await Self.multiModule()

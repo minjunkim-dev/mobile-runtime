@@ -71,7 +71,8 @@ public struct ConfigSyntaxCheck: Check {
             )
         }
 
-        let declarations = context.configuration?.declarations ?? []
+        // What the file says, not a CLI or GUI selection layered on top of it.
+        let declarations = context.declared?.declarations ?? []
         return .pass(
             observed: declarations.isEmpty
                 ? "\(MobileConfig.fileName) declares nothing"
