@@ -288,6 +288,35 @@ struct NativeAndroidWorkflowTests {
         try fixture.assertPreserved()
     }
 
+    @Test("a down cancelled during leftover claim cleanup keeps its report and every claim")
+    func cancelledLeftoverCleanupKeepsReport() async throws {
+        let fixture = try NativeAndroidFixture()
+        let up = await WorkflowExecution.run(.up, input: fixture.workflowInput, runner: try fixture.runner(), leases: fixture.leases)
+        #expect(up.exitCode == 0, Comment(rawValue: up.up?.failure?.message ?? ""))
+        let store = AndroidActiveRunStore(project: fixture.project, logs: RunLogs(project: fixture.project))
+        try FileManager.default.removeItem(at: store.file)
+        let project = try FolderIdentity(directory: fixture.project).path
+        let first = try #require(try fixture.leases.claims(project: project, platform: .android).first)
+        let second = ResourceKey.device(.android, "avd:Second")
+        try fixture.leases.record(ResourceClaim(device: second, platform: .android, handle: "emulator-5556",
+            appID: first.appID, owner: first.owner))
+
+        var runner = try fixture.runner()
+        runner.failures["adb devices"] = CancellationError()
+        let down = await WorkflowExecution.run(.down, input: fixture.workflowInput, runner: runner, leases: fixture.leases)
+        #expect(down.exitCode == 130)
+        let items = try #require(down.down?.items)
+        // The teardown's own items survive the cancellation.
+        #expect(items.contains { $0.id == "android.app" })
+        let claims = items.filter { $0.id == "android.claim" }
+        #expect(claims.count == 2)
+        #expect(claims.allSatisfy { $0.status == .unknown && $0.detail?.contains("cancelled") == true })
+        #expect(!runner.log.all.contains { $0.arguments.contains("force-stop") })
+        #expect(try fixture.leases.claim(device: first.device, project: project) != nil)
+        #expect(try fixture.leases.claim(device: second, project: project) != nil)
+        try fixture.assertPreserved()
+    }
+
     @Test("successful owned Emulator down clears its claim before another project observes an offline device")
     func ownedEmulatorDownReleasesClaim() async throws {
         let fixture = try NativeAndroidFixture()
