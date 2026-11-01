@@ -548,6 +548,31 @@ struct NativeAndroidWorkflowTests {
         try fixture.assertPreserved()
     }
 
+    @Test("an up that stops before touching the device restores the reservation it replaced", arguments: [false, true])
+    func untouchedDeviceRestoresReservation(earlierClaim: Bool) async throws {
+        let fixture = try NativeAndroidFixture()
+        let key = ResourceKey.device(.android, "avd:Pixel")
+        let project = try FolderIdentity(directory: fixture.project).path
+        if earlierClaim {
+            let up = await WorkflowExecution.run(.up, input: fixture.workflowInput, runner: try fixture.runner(), leases: fixture.leases)
+            #expect(up.exitCode == 0, Comment(rawValue: up.up?.failure?.message ?? ""))
+        }
+        var runner = try fixture.runner()
+        runner.failures[fixture.assemble("debug")] = CancellationError()
+        let cancelled = await WorkflowExecution.run(.up, input: fixture.workflowInput, runner: runner, leases: fixture.leases)
+        #expect(cancelled.exitCode == 130)
+        if earlierClaim {
+            #expect(try fixture.leases.claim(device: key, project: project)?.appID == NativeAndroidFixture.appID)
+        } else {
+            // A build cancelled before any runtime stage leaves nothing for another project to wait on (#373).
+            try await fixture.leases.check(device: key, project: "/next-project") { _ in
+                Issue.record("no app claim was recorded")
+                return .running("")
+            }
+        }
+        try fixture.assertPreserved()
+    }
+
     @Test("native install failure preserves existing devices and installed packages")
     func installFailure() async throws {
         let fixture = try NativeAndroidFixture()

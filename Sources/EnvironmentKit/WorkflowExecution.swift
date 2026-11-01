@@ -247,7 +247,8 @@ public enum WorkflowExecution {
                     }
                 }
             }
-            if kind == .up, let device { try leases.reserve(device: device, owner: owner) }
+            var reservation: InstallationReservation?
+            if kind == .up, let device { reservation = try leases.reserveForInstallation(device: device, owner: owner) }
 
             let started: @Sendable (String) -> Void = { events.send("stage", stage: $0, state: "running") }
             let finished: @Sendable (StageResult) -> Void = { events.send("stage", stage: $0.id, state: $0.status.rawValue, detail: $0.detail) }
@@ -360,6 +361,14 @@ public enum WorkflowExecution {
                 operation.developmentServiceURI = report.context.developmentServiceURI
                 if report.failure != nil && report.context.product != nil && kind == .up {
                     operation.remaining.append("The recorded Flutter app may remain installed or running. Run mobile down --platform ios for this project.")
+                }
+            }
+            // Without a built product no runtime stage ran, so the device is as this up found it (#373).
+            if platform == .android, let reservation, let report = up, report.context.androidProduct == nil {
+                do {
+                    try leases.restoreAfterRejectedInstallation(reservation)
+                } catch {
+                    operation.remaining.append("The device reservation was preserved: \(error)")
                 }
             }
             // The app outlives this lease, even after a later stage failed. The next run observes it again.
