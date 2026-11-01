@@ -108,6 +108,11 @@ public func androidAppObservation(serial: String, applicationId: String, expecte
     } catch let error where !(error is CancellationError) {
         return .unknown("adb could not be run: \(error)")
     }
+    return androidPidofObservation(result, serial: serial, applicationId: applicationId)
+}
+
+/// Reads one `adb shell pidof` answer. Only pidof's silent exit 1 proves the app is absent.
+func androidPidofObservation(_ result: ProcessResult, serial: String, applicationId: String) -> ClaimObservation {
     let pid = result.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines)
     if result.terminationStatus.isSuccess, !pid.isEmpty { return .running("\(applicationId) pid \(pid) on \(serial)") }
     let said = result.combinedOutput.trimmingCharacters(in: .whitespacesAndNewlines)
