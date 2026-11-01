@@ -117,7 +117,7 @@ public struct AndroidBuildStage: Stage {
         let variant: AndroidGradleModel.Module.Variant
         switch AndroidTargetSelector.resolve(
             model: model,
-            configuration: config.configuration,
+            config: config,
             configFile: config.display(anchor.directory.appendingPathComponent(MobileConfig.fileName))
         ) {
         case .selected(let selectedModule, let selectedVariant, _):

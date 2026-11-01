@@ -16,6 +16,10 @@ public struct ConfigContext: Sendable {
     public let strayFile: URL?
     /// nil when there is no `file` to read.
     public let parse: MobileConfigParse?
+    /// What mobile.yml itself declares. `selecting` replaces `parse`, so this keeps where a value came from.
+    public let declared: MobileConfig?
+    /// Android target keys a person chose for this run (a CLI option or a GUI field).
+    public let explicitKeys: Set<String>
 
     /// Where the command was run. Paths in a verdict are written relative to it when
     /// they sit underneath — a pasteable line should not carry the reader's whole home
@@ -28,7 +32,9 @@ public struct ConfigContext: Sendable {
         file: URL?,
         misspelledFile: URL?,
         strayFile: URL?,
-        parse: MobileConfigParse?
+        parse: MobileConfigParse?,
+        declared: MobileConfig? = nil,
+        explicitKeys: Set<String> = []
     ) {
         self.anchor = anchor
         self.workingDirectory = workingDirectory
@@ -36,6 +42,8 @@ public struct ConfigContext: Sendable {
         self.misspelledFile = misspelledFile
         self.strayFile = strayFile
         self.parse = parse
+        self.declared = declared
+        self.explicitKeys = explicitKeys
     }
 
     public var anchorDirectory: URL? { anchor?.directory }
@@ -59,8 +67,9 @@ public struct ConfigContext: Sendable {
         return config
     }
 
+    /// `explicit: false` pins values mobile resolved itself, so they are not reported as anyone's choice.
     public func selecting(scheme: String? = nil, module: String? = nil, variant: String? = nil,
-                          avd: String? = nil, clearDevice: Bool = false) -> ConfigContext {
+                          avd: String? = nil, clearDevice: Bool = false, explicit: Bool = true) -> ConfigContext {
         if case .invalid = parse { return self }
         let previous = configuration ?? MobileConfig()
         let unknownKeys: [String]
@@ -71,9 +80,12 @@ public struct ConfigContext: Sendable {
                                     androidVariant: variant ?? previous.androidVariant,
                                     androidLauncherActivity: previous.androidLauncherActivity,
                                     androidAVD: avd ?? previous.androidAVD)
+        let chosen = explicit ? [(MobileConfig.Key.androidModule, module), (MobileConfig.Key.androidVariant, variant)]
+            .filter { $0.1 != nil }.map(\.0) : []
         return ConfigContext(anchor: anchor, workingDirectory: workingDirectory, file: file,
                              misspelledFile: misspelledFile, strayFile: strayFile,
-                             parse: .parsed(selected, unknownKeys: unknownKeys))
+                             parse: .parsed(selected, unknownKeys: unknownKeys),
+                             declared: declared, explicitKeys: explicitKeys.union(chosen))
     }
 
     /// The Check exists only when a file does. A project with no mobile.yml gets no
@@ -101,18 +113,20 @@ public struct ConfigContext: Sendable {
             : existing(working, MobileConfig.fileName, fileManager)
                 ?? existing(working, MobileConfig.misspelledFileName, fileManager)
 
+        let parse = file.map { url -> MobileConfigParse in
+            guard let data = fileManager.contents(atPath: url.path) else {
+                return .invalid("\(MobileConfig.fileName) could not be read")
+            }
+            return MobileConfig.parse(String(decoding: data, as: UTF8.self))
+        }
         return ConfigContext(
             anchor: anchor,
             workingDirectory: working,
             file: file,
             misspelledFile: misspelled,
             strayFile: stray,
-            parse: file.map { url in
-                guard let data = fileManager.contents(atPath: url.path) else {
-                    return .invalid("\(MobileConfig.fileName) could not be read")
-                }
-                return MobileConfig.parse(String(decoding: data, as: UTF8.self))
-            }
+            parse: parse,
+            declared: { if case .parsed(let config, _) = parse { config } else { nil } }()
         )
     }
 

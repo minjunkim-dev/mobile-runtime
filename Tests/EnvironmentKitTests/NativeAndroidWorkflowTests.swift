@@ -20,6 +20,8 @@ struct NativeAndroidWorkflowTests {
             module: ":app", variant: "stagingDebug", includeTargets: true)
         #expect(selected.targets?.module == ":app")
         #expect(selected.targets?.variant == "stagingDebug")
+        #expect(selected.report.checks.first { $0.id == "android.target" }?.outcome.source.origin
+            == "evaluated Gradle model; explicit android.module=:app; explicit android.variant=stagingDebug")
         #expect(selected.targets?.devices.map(\.id) == ["avd:Pixel"])
         #expect(runner.log.spawned.isEmpty)
         #expect(!runner.log.all.contains { command in
@@ -68,6 +70,9 @@ struct NativeAndroidWorkflowTests {
         #expect(result.exitCode == 0, Comment(rawValue: result.up?.failure?.message ?? ""))
         #expect(result.operation.module == ":app")
         #expect(result.operation.variant == "debug")
+        // The pinned resolution is nobody's choice, so build reports the same source doctor does.
+        #expect(result.up?.context.validation?.checks.first { $0.id == "android.target" }?.outcome.source
+            == CheckSource(tier: 1, origin: "evaluated Gradle model"))
         #expect(result.up?.context.androidProduct?.applicationId == NativeAndroidFixture.appID)
         #expect(result.up?.context.androidProduct?.abis == [])
         #expect(result.operation.completed == ["validate", "android.build"])
@@ -101,9 +106,28 @@ struct NativeAndroidWorkflowTests {
             input: WorkflowInput(project: fixture.input, variant: "stagingDebug"), runner: runner, leases: fixture.leases)
         #expect(selected.exitCode == 0, Comment(rawValue: selected.up?.failure?.message ?? ""))
         #expect(selected.up?.context.androidProduct?.variant == "stagingDebug")
+        #expect(selected.up?.context.validation?.checks.first { $0.id == "android.target" }?.outcome.source.origin
+            == "evaluated Gradle model; explicit android.variant=stagingDebug")
         #expect(runner.log.all.contains { $0.arguments.first == ":app:assembleStagingDebug" })
         #expect(!runner.log.all.contains { $0.arguments.first == ":app:assembleProdDebug" })
         try fixture.assertPreserved()
+    }
+
+    @Test("build names mobile.yml for declared selectors and an explicit choice only where it overrides one")
+    func buildSelectionOrigin() async throws {
+        let fixture = try NativeAndroidFixture()
+        // Declared without the colon: the pinned :app is still mobile.yml's module.
+        try fixture.repo.write("project/mobile.yml", "android:\n  module: app\n  variant: stagingDebug\n")
+        let declared = await WorkflowExecution.run(.build, input: fixture.workflowInput,
+            runner: try fixture.runner(variants: ["stagingDebug", "prodDebug"], builtVariant: "stagingDebug"), leases: fixture.leases)
+        #expect(declared.exitCode == 0, Comment(rawValue: declared.up?.failure?.message ?? ""))
+        #expect(declared.up?.context.validation?.checks.first { $0.id == "android.target" }?.outcome.source.origin
+            == "evaluated Gradle model; mobile.yml android.module=:app; mobile.yml android.variant=stagingDebug")
+        let overridden = await WorkflowExecution.run(.build, input: WorkflowInput(project: fixture.input, variant: "prodDebug"),
+            runner: try fixture.runner(variants: ["stagingDebug", "prodDebug"], builtVariant: "prodDebug"), leases: fixture.leases)
+        #expect(overridden.exitCode == 0, Comment(rawValue: overridden.up?.failure?.message ?? ""))
+        #expect(overridden.up?.context.validation?.checks.first { $0.id == "android.target" }?.outcome.source.origin
+            == "evaluated Gradle model; mobile.yml android.module=:app; explicit android.variant=prodDebug")
     }
 
     @Test("native up and down retain app ownership and preserve a reused Emulator without Metro")
@@ -118,6 +142,8 @@ struct NativeAndroidWorkflowTests {
         #expect(up.up?.context.androidProduct?.device?.state == .reused)
         #expect(up.up?.context.androidProduct?.appPid == 8123)
         #expect(up.up?.context.metro == nil)
+        #expect(up.up?.context.validation?.checks.first { $0.id == "android.target" }?.outcome.source
+            == CheckSource(tier: 1, origin: "evaluated Gradle model"))
         #expect(up.operation.completed == ["validate", "android.build", "android.device", "android.install", "android.launch"])
         var cleanup = try fixture.runner()
         cleanup.responses["adb -s emulator-5554 shell pidof \(NativeAndroidFixture.appID)"] = .failed(1, "")

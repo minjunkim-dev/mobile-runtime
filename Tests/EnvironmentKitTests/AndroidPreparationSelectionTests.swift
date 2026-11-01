@@ -18,6 +18,7 @@ struct AndroidPreparationSelectionTests {
         let diagnostic = try selected.encoded(toolVersion: "fixture")
         #expect(selected.exitCode == 0, Comment(rawValue: diagnostic))
         #expect(selected.plan?.steps.contains { $0.id == "android.android.target" } == false, Comment(rawValue: diagnostic))
+        #expect(Self.targetOrigin(selected.plan) == "evaluated Gradle model; explicit android.module=:app; explicit android.variant=demoDebug")
         // The base fixture's own manual items (JDK, unpublished archives) remain; the selection adds none.
         let single = try await SDKFixture()
         let baseline = await PreparationExecution.run(input: single.input, planOnly: true, runner: single.runner())
@@ -37,6 +38,9 @@ struct AndroidPreparationSelectionTests {
             module: ":app", variant: "prodDebug", runner: runner).plan)
         #expect(declared.id == same.id)
         #expect(declared.id != other.id)
+        #expect(Self.targetOrigin(declared) == "evaluated Gradle model; mobile.yml android.module=:app; mobile.yml android.variant=demoDebug")
+        #expect(Self.targetOrigin(same) == Self.targetOrigin(declared))
+        #expect(Self.targetOrigin(other) == "evaluated Gradle model; mobile.yml android.module=:app; explicit android.variant=prodDebug")
     }
 
     @Test("a plan-id approved under another selection is rejected before any change")
@@ -120,6 +124,10 @@ struct AndroidPreparationSelectionTests {
         #expect(result.operation.error == "--module and --variant apply only to Android.")
         #expect(result.plan == nil)
         #expect(runner.log.all.isEmpty)
+    }
+
+    private static func targetOrigin(_ plan: PreparationPlan?) -> String? {
+        plan?.platforms.flatMap(\.checks).first { $0.id == "android.android.target" }?.source.origin
     }
 
     /// Now in Android's shape: two application modules, and flavored debug variants in :app.
