@@ -119,6 +119,23 @@ struct ResourceLeasesTests {
         #expect(calls.value == 0)
     }
 
+    @Test("an Android app left by a finished run points at its owner's down, not at an operation", arguments: [true, false])
+    func androidLeftoverRemediation(running: Bool) async throws {
+        let leases = store()
+        let device = ResourceKey.device(.android, "avd:Pixel")
+        let first = owner("first", project: "/work/first")
+        try leases.record(ResourceClaim(device: device, platform: .android, handle: "emulator-5554", appID: "dev.first", owner: first))
+        let conflict = try await #require(throws: ResourceConflict.self) {
+            try await leases.check(device: device, project: "/work/second") { _ in
+                running ? .running("pid 7") : .unknown("the Emulator is offline")
+            }
+        }
+        let remediation = conflict.domainError.remediation
+        #expect(remediation.summary.contains("/work/first"))
+        #expect(remediation.command == "mobile down --platform android")
+        #expect(!remediation.summary.contains("owning operation"))
+    }
+
     @Test("an unconfirmed reservation blocks other projects without observing an unknown app")
     func unconfirmedReservation() async throws {
         let leases = store()

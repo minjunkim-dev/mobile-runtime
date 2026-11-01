@@ -226,9 +226,15 @@ struct AndroidCleanup: Sendable {
         let after = try await runner.run(adb(
             ["-s", app.serial, "shell", "pidof", app.applicationId], sdk: sdk
         ))
-        guard !after.terminationStatus.isSuccess
-            || after.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        else {
+        if !after.terminationStatus.isSuccess {
+            // Only pidof's silent exit 1 confirms absence; anything else releases nothing.
+            guard after.terminationStatus == .exited(1),
+                  after.combinedOutput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                return .unknown("android.app", "app absence could not be confirmed after force-stop")
+            }
+            return .stopped("android.app", app.applicationId)
+        }
+        guard after.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return .failed(
                 "android.app",
                 cleanupFailure(
@@ -614,6 +620,69 @@ public func androidTeardownResourceKeys(anchor: ProjectAnchor, logs: RunLogs? = 
     var keys = active.device.map { [ResourceKey.device(.android, "avd:\($0.avd)")] } ?? []
     if let forward = active.forward { keys.append(.port(forward.hostPort)) }
     return keys
+}
+
+/// Settles an app claim this project's earlier run left after its active run was cleared
+/// (ADR-0013, #361). Call under the claim's device lease. Only the claimed application is
+/// force-stopped; uninstall, clear-data and Emulator shutdown stay out of reach.
+public func androidLeftoverClaimCleanup(
+    _ claim: ResourceClaim,
+    leases: ResourceLeases,
+    project: String,
+    anchor: ProjectAnchor,
+    config: ConfigContext,
+    runner: any ProcessRunner,
+    environment: AndroidEnvironment
+) async throws -> TeardownItem {
+    let id = "android.claim"
+    let subject = "the \(claim.appID) claim on \(claim.device)"
+    let retry = Remediation(summary: "The claim was preserved for a retry.", command: "mobile down --platform android")
+    guard try leases.ownsClaim(device: claim.device, project: project, appID: claim.appID) else {
+        return .skipped(id, "\(subject) changed before down held its device")
+    }
+    let context = AndroidDoctorContext(anchor: anchor, config: config, hostRunner: runner,
+                                       projectRunner: runner, environment: environment)
+    guard case .resolved(let sdk, _) = context.sdkRoot() else {
+        return .unknown(id, "\(subject) was preserved: the Android SDK root is unresolved")
+    }
+    // A restarted AVD may come back on another serial than the one the claim recorded.
+    var serial = claim.handle
+    let devices = try await runner.run(context.toolCommand("adb", ["devices"], sdk: sdk))
+    for line in devices.standardOutput.split(whereSeparator: \.isNewline) {
+        let fields = line.split(whereSeparator: \.isWhitespace)
+        guard fields.count >= 2, fields[0].hasPrefix("emulator-"), fields[1] == "device" else { continue }
+        let name = try await runner.run(context.toolCommand("adb", ["-s", String(fields[0]), "emu", "avd", "name"], sdk: sdk))
+        if name.terminationStatus.isSuccess,
+           androidAVDName(from: name.standardOutput).map({ ResourceKey.device(.android, "avd:\($0)") }) == claim.device {
+            serial = String(fields[0])
+            break
+        }
+    }
+    let observe = {
+        try await androidAppObservation(serial: serial, applicationId: claim.appID, expectedDevice: claim.device,
+            anchor: anchor, config: config, runner: runner, environment: environment)
+    }
+    var observed = try await observe()
+    if case .running = observed {
+        // The observation just confirmed that the serial still names the claimed AVD.
+        let stopped = try await runner.run(context.toolCommand("adb",
+            ["-s", serial, "shell", "am", "force-stop", claim.appID], sdk: sdk))
+        guard stopped.terminationStatus.isSuccess else {
+            return .failed(id, DomainError(summary: "\(claim.appID) did not stop; \(subject) was preserved",
+                observed: stopped.combinedOutput.lastLines(8), remediation: retry))
+        }
+        observed = try await observe()
+    }
+    switch observed {
+    case .stopped:
+        try leases.releaseAfterTeardown(device: claim.device, project: project)
+        return .stopped(id, "released \(subject)")
+    case .running(let detail):
+        return .failed(id, DomainError(summary: "\(claim.appID) is still running after force-stop; \(subject) was preserved",
+            observed: detail, remediation: retry))
+    case .unknown(let detail):
+        return .unknown(id, "\(subject) was preserved: \(detail). Start the AVD, then run mobile down --platform android again.")
+    }
 }
 
 public func androidTeardown(

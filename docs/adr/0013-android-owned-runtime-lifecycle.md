@@ -13,3 +13,7 @@ Android provider는 프로젝트·플랫폼별 활성 실행 기록에 Emulator,
 ## SDK root 실패 분류 (#265, 2026-10-15)
 
 SDK root 선언 누락과 선언 간 충돌은 사용자 환경의 도메인 실패다. `up`·Android rollback·`down`은 같은 원인과 remediation을 보고하며 exit 1을 사용한다. SDK root를 정하지 못해 소유권을 관측하지 못한 정리 항목은 `unknown`으로 남긴다. 해당 자원과 소유 기록을 보존한다. SDK root 없이도 안전하게 확인할 수 있는 자원은 기존 best-effort 정리를 계속한다. 실제 도구 실행·기록 장애가 함께 있으면 exit 2를 유지한다. 취소는 exit 130을 유지한다. rollback은 원래 `up` 실패를 보존하며 종료 코드만 기존 우선순위에 따라 올릴 수 있다.
+
+## 남은 앱 claim 정리 (#361, 2026-11-01)
+
+claim은 이 프로젝트의 Runstir 실행이 그 기기에 남긴 앱을 뜻한다. `down`이 그 앱의 force-stop과 중지를 관측하면 실행은 끝난다. Emulator를 보존해도 그 기기의 claim을 해제한다. 중지를 관측하지 못하면 claim을 보존하고 `android.claim` 항목에 이유를 남긴다. 그 뒤 OS나 앱 자신이 프로세스를 다시 띄워도 Runstir 실행이 아니다. 재시작을 막거나 감시하지 않는다. active run 기록이 없어도 claim 파일은 소유 기록이다. 소유 프로젝트의 `down`은 기기 lease를 잡고 claim의 앱을 관측한다. 중지됐으면 claim을 해제한다. 실행 중이면 AVD와 serial 대응을 확인한 뒤 그 application ID만 force-stop하고, 중지를 관측하면 해제한다. 관측할 수 없으면 claim을 보존하고 AVD를 켠 뒤 다시 `down`하라고 안내한다. 다른 프로젝트의 claim과 claim 없는 reservation은 바꾸지 않는다. 다른 프로젝트의 `up`이 남은 claim 때문에 거부되면 owner 프로젝트와 `mobile down --platform android`를 안내한다. 기록이 없을 때 세계를 재추론하지 않는다는 원칙과 충돌하지 않는다. claim 파일 자체가 기록이다.
