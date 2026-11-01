@@ -286,7 +286,7 @@ public enum WorkflowExecution {
                                 // Only a down without a recorded device settles this claim as a leftover one (#361).
                                 let settle = try androidTeardownDeviceKey(anchor: anchor) == nil
                                     ? "This down left no recorded device, so running mobile down --platform android again observes \(claim.appID) and settles the claim; start the AVD first if it is off."
-                                    : "A later mobile down --platform android releases it once it observes \(claim.appID) stopped, or passes with this run's Emulator stopped."
+                                    : "This down kept this run's recorded Emulator, so settle the android.emulator item and run mobile down --platform android again."
                                 let why = stoppedApp.map { "it names \(claim.appID), not \($0) that this down stopped" }
                                     ?? "this down did not force-stop the owned app and observe it stopped"
                                 items.append(.unknown("android.claim", "the app claim on \(device) was preserved because \(why). \(settle)"))

@@ -211,7 +211,7 @@ struct NativeAndroidWorkflowTests {
         let claim = try #require(down.down?.items.first { $0.id == "android.claim" })
         #expect(claim.status == .unknown)
         #expect(claim.detail?.contains("to observe the app") == false, Comment(rawValue: claim.detail ?? ""))
-        #expect(claim.detail?.contains("once it observes \(NativeAndroidFixture.appID) stopped, or passes with this run's Emulator stopped") == true,
+        #expect(claim.detail?.contains("settle the android.emulator item and run mobile down --platform android again") == true,
                 Comment(rawValue: claim.detail ?? ""))
         try fixture.assertPreserved()
     }
