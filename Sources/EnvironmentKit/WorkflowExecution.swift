@@ -287,17 +287,27 @@ public enum WorkflowExecution {
                             unconfirmed(error)
                         }
                     }
-                    for claim in leftoverClaims where !report.cancelled {
+                    var cancelled = report.cancelled
+                    for claim in leftoverClaims {
+                        let subject = "the \(claim.appID) claim on \(claim.device)"
+                        guard !cancelled else {
+                            items.append(.unknown("android.claim", "\(subject) was preserved: cancelled before cleanup"))
+                            continue
+                        }
                         do {
                             items.append(try await androidLeftoverClaimCleanup(claim, leases: leases, project: owner.project,
                                 anchor: anchor, config: config, runner: runner, environment: AndroidEnvironment(values: input.project.environment)))
-                        } catch let error where !(error is CancellationError) {
-                            items.append(.unknown("android.claim", "the \(claim.appID) claim on \(claim.device) was preserved"))
+                        } catch is CancellationError {
+                            // Keep what this down already settled in its report.
+                            cancelled = true
+                            items.append(.unknown("android.claim", "\(subject) was preserved: cancelled before cleanup completed"))
+                        } catch {
+                            items.append(.unknown("android.claim", "\(subject) was preserved"))
                             unconfirmed(error)
                         }
                     }
                     down = TeardownReport(items: items, toolFailures: toolFailures, failure: report.failure,
-                        blockedIsFailure: report.blockedIsFailure, cancelled: report.cancelled)
+                        blockedIsFailure: report.blockedIsFailure, cancelled: cancelled)
                 }
             case (.up, .android):
                 up = await runAndroidUp(anchor: anchor, doctor: wiring.engine, config: config,

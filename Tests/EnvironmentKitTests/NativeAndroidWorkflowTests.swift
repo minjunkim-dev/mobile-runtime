@@ -261,6 +261,33 @@ struct NativeAndroidWorkflowTests {
         try fixture.assertPreserved()
     }
 
+    @Test("a cancelled down reports a leftover app claim as preserved without observing its app")
+    func cancelledDownPreservesLeftoverClaim() async throws {
+        let fixture = try NativeAndroidFixture()
+        let up = await WorkflowExecution.run(.up, input: fixture.workflowInput, runner: try fixture.runner(), leases: fixture.leases)
+        #expect(up.exitCode == 0, Comment(rawValue: up.up?.failure?.message ?? ""))
+        // Only an owned Metro is left on the active run; the device record went with an earlier down.
+        let store = AndroidActiveRunStore(project: fixture.project, logs: RunLogs(project: fixture.project))
+        var record = try #require(try store.read())
+        record.device = nil
+        record.app = nil
+        record.reverse = nil
+        record.metro = AndroidActiveRun.Metro(state: .spawned, startPID: 4242)
+        try store.write(record)
+
+        var runner = try fixture.runner()
+        runner.failures["kill -0 4242"] = CancellationError()
+        let down = await WorkflowExecution.run(.down, input: fixture.workflowInput, runner: runner, leases: fixture.leases)
+        #expect(down.exitCode == 130)
+        let claim = try #require(down.down?.items.first { $0.id == "android.claim" })
+        #expect(claim.status == .unknown)
+        #expect(claim.detail?.contains("cancelled") == true)
+        #expect(!runner.log.all.contains { $0.arguments.contains("pidof") || $0.arguments.contains("force-stop") })
+        let project = try FolderIdentity(directory: fixture.project).path
+        #expect(try fixture.leases.claim(device: .device(.android, "avd:Pixel"), project: project) != nil)
+        try fixture.assertPreserved()
+    }
+
     @Test("successful owned Emulator down clears its claim before another project observes an offline device")
     func ownedEmulatorDownReleasesClaim() async throws {
         let fixture = try NativeAndroidFixture()
