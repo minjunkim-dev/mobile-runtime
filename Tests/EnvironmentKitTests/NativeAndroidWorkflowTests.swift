@@ -162,15 +162,18 @@ struct NativeAndroidWorkflowTests {
         try fixture.assertPreserved()
     }
 
-    @Test("an unconfirmed app stop preserves the claim and says why")
-    func unconfirmedAppStopPreservesClaim() async throws {
+    @Test("an unconfirmed app stop preserves the claim and says why", arguments: [false, true])
+    func unconfirmedAppStopPreservesClaim(adbError: Bool) async throws {
         let fixture = try NativeAndroidFixture()
         let up = await WorkflowExecution.run(.up, input: fixture.workflowInput, runner: try fixture.runner(), leases: fixture.leases)
         #expect(up.exitCode == 0, Comment(rawValue: up.up?.failure?.message ?? ""))
-        // The fixture's pidof keeps answering 8123 after force-stop.
-        let down = await WorkflowExecution.run(.down, input: fixture.workflowInput, runner: try fixture.runner(), leases: fixture.leases)
-        #expect(down.exitCode == 1)
-        #expect(down.down?.items.contains { $0.id == "android.app" && $0.status == .failed } == true)
+        // Either pidof keeps answering 8123 after force-stop, or it fails without proving absence.
+        var cleanup = try fixture.runner()
+        if adbError { cleanup.responses["adb -s emulator-5554 shell pidof \(NativeAndroidFixture.appID)"] = .failed(1, "error: closed") }
+        let down = await WorkflowExecution.run(.down, input: fixture.workflowInput, runner: cleanup, leases: fixture.leases)
+        let app = try #require(down.down?.items.first { $0.id == "android.app" })
+        #expect(app.status == (adbError ? .unknown : .failed))
+        #expect(down.exitCode == (adbError ? 0 : 1))
         let claim = try #require(down.down?.items.first { $0.id == "android.claim" })
         #expect(claim.status == .unknown)
         #expect(claim.detail?.contains("preserved") == true)

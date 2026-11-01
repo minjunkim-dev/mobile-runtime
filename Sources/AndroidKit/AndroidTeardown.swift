@@ -226,9 +226,15 @@ struct AndroidCleanup: Sendable {
         let after = try await runner.run(adb(
             ["-s", app.serial, "shell", "pidof", app.applicationId], sdk: sdk
         ))
-        guard !after.terminationStatus.isSuccess
-            || after.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        else {
+        if !after.terminationStatus.isSuccess {
+            // Only pidof's silent exit 1 confirms absence; anything else releases nothing.
+            guard after.terminationStatus == .exited(1),
+                  after.combinedOutput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                return .unknown("android.app", "app absence could not be confirmed after force-stop")
+            }
+            return .stopped("android.app", app.applicationId)
+        }
+        guard after.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return .failed(
                 "android.app",
                 cleanupFailure(
