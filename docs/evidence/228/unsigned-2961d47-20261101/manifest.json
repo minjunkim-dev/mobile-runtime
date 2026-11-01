@@ -37,7 +37,7 @@
     },
     "results": {
       "path": "results.json",
-      "sha256": "da260efac400170358962546e4436011c54c1dc3295ac877446b130d942f6e1e"
+      "sha256": "dc3cd430d85dc1e097935456fe21a99c2d440ce949ef9b01b38adfcf9c9828d9"
     },
     "restrictedIndex": {
       "path": "restricted-index.json",

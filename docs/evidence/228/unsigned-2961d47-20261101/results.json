@@ -1700,7 +1700,7 @@
       "candidateID": "b3b699aa016349afba9ada38c14f80ae4a2263d137b7eeaa95f384880bcfb9d1",
       "evidenceClass": "actual",
       "expected": "같은 고정 tuple의 별도 fresh clone에서 doctor·준비 계획·독립 build·up·올바른 첫 화면·down과 원본 보존을 확인한다.",
-      "observed": "Now in Android :app/demoDebug의 For you 관심 주제 첫 화면(MainActivity 포커스). up이 succeeded로 앱 PID를 보고했고 down이 android.app stopped·android.claim stopped와 기존 Emulator 보존을 보고했으며 down 뒤 PID 부재를 관측했다. 추적 source·index·flags가 보존됐다. doctor와 up의 최상위 status는 빌드 전 ABI 미확정(android.avd unknown) 때문에 unknown이다. 소유 AVD는 -no-window 선부팅 조건이며 제품 cold boot 증거가 아니다. 기본 doctor는 모듈 둘(:app, :app-nia-catalog)로 warning이었다. setup·build·up에 --module :app --variant demoDebug를 주었고 setup 계획이 target을 explicit 근거의 reuse로 해석했다(#362·#366). down 뒤 5초간 PID가 다시 나타나지 않았고 claim 파일이 남지 않았다.",
+      "observed": "Now in Android :app/demoDebug의 For you 관심 주제 첫 화면(MainActivity 포커스). up이 succeeded로 앱 PID를 보고했고 down이 android.app stopped·android.claim stopped와 기존 Emulator 보존을 보고했으며 down 뒤 PID 부재를 관측했다. 추적 source·index·flags가 보존됐다. up의 최상위 status는 빌드 전 ABI 미확정(android.avd unknown) 때문에 unknown이다. 소유 AVD는 -no-window 선부팅 조건이며 제품 cold boot 증거가 아니다. CLI doctor에는 모듈·변형 선택 옵션이 없어 기본 doctor만 실행했고, 모듈 둘(:app, :app-nia-catalog)로 최상위 status가 warning이었다. setup·build·up에 --module :app --variant demoDebug를 주었고 setup 계획이 target을 explicit 근거의 reuse로 해석했다(#362·#366). down 뒤 5초간 PID가 다시 나타나지 않았고 claim 파일이 남지 않았다.",
       "observedAt": "2026-11-01T15:05:24Z",
       "executor": "claude-native-android-alpha16",
       "result": "pass",
@@ -2319,7 +2319,7 @@
       "candidateID": "b3b699aa016349afba9ada38c14f80ae4a2263d137b7eeaa95f384880bcfb9d1",
       "evidenceClass": "actual",
       "expected": "확정된 네이티브 Android 범위에서 AC04의 실행·부분 완료·수동 준비·실패 경계를 증거로 구분한다.",
-      "observed": "같은 source·JDK·SDK·AVD 조건에서 CLI와 GUI가 같은 doctor 항목(오류 0·확인 불가 1), 독립 build, up, 첫 화면, down 결과를 냈다. GUI build 전후 Emulator의 설치 identity가 같았고 실행 뒤 바뀌어 build가 설치하지 않았다. build/up에서 도구 provisioning은 없었다. CLI는 --module/--variant, GUI는 선택 칸으로 같은 :app/demoDebug를 골랐고 두 준비 계획 모두 같은 explicit 근거로 target을 reuse로 해석했다.",
+      "observed": "같은 source·JDK·SDK·AVD 조건에서 CLI와 GUI가 같은 독립 build, up, 첫 화면, down 결과를 냈다. 선택 전 기본 doctor는 CLI·GUI 모두 모듈 선택을 요구했다. CLI doctor에는 모듈·변형 선택 옵션이 없어 기본 doctor(target warning 1·확인 불가 4)만 실행했고, GUI는 :app/demoDebug 선택 뒤 오류 0·주의 0·확인 불가 1이었다. GUI build 전후 Emulator의 설치 identity가 같았고 실행 뒤 바뀌어 build가 설치하지 않았다. build/up에서 도구 provisioning은 없었다. CLI는 --module/--variant, GUI는 선택 칸으로 같은 :app/demoDebug를 골랐고 두 준비 계획 모두 같은 explicit 근거로 target을 reuse로 해석했다.",
       "observedAt": "2026-11-01T15:05:23Z",
       "executor": "claude-native-android-alpha16",
       "result": "pass",
@@ -2432,7 +2432,9 @@
         "f228-raw-b4ef916ce15c6488",
         "f228-raw-a6a6732641249e21"
       ],
-      "unverified": [],
+      "unverified": [
+        "같은 :app/demoDebug 선택의 CLI doctor 결과는 관측하지 않아 선택 뒤 doctor 항목의 CLI·GUI 일치는 비교하지 못함(CLI doctor에 모듈·변형 선택 옵션 없음)"
+      ],
       "supersedes": null
     },
     {
