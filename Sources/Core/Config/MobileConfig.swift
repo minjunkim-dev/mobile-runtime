@@ -27,6 +27,11 @@ public struct MobileConfig: Sendable, Equatable {
     public let androidLauncherActivity: String?
     public let androidAVD: String?
 
+    /// mobile.yml and selectors may write a Gradle project path without its leading colon.
+    public static func normalizedAndroidModule(_ value: String) -> String {
+        value.hasPrefix(":") ? value : ":\(value)"
+    }
+
     public init(
         device: String? = nil,
         scheme: String? = nil,

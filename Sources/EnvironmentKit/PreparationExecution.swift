@@ -812,7 +812,7 @@ public enum PreparationExecution {
         var plan = PreparationPlan(id: "", project: project, app: app, projectKind: kind,
                                    platforms: platforms, steps: steps.sorted { $0.id < $1.id }, files: files, installed: installed)
         plan.androidRequirements = androidRequirements
-        plan.androidModule = androidTarget?.module.map(AndroidTargetSelector.normalizeModule)
+        plan.androidModule = androidTarget?.module.map(MobileConfig.normalizedAndroidModule)
         plan.androidVariant = androidTarget?.variant
         plan.resources = resources.isEmpty ? nil : resources
         plan.androidResources = androidResources.isEmpty ? nil : androidResources

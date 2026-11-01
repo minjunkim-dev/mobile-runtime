@@ -327,14 +327,14 @@ extension AndroidDoctorContext {
     }
 }
 
-public enum AndroidTargetSelector {
+enum AndroidTargetSelector {
     static func resolve(
         model: AndroidGradleModel,
         config: ConfigContext,
         configFile: String
     ) -> AndroidTargetResolution {
         let configuration = config.configuration
-        let moduleSelector = configuration?.androidModule.map(normalizeModule)
+        let moduleSelector = configuration?.androidModule.map(MobileConfig.normalizedAndroidModule)
         // A value equal to mobile.yml's is the file's even when also chosen: plan identity includes this text.
         func origin(_ key: String, _ value: String?, declared: String?) -> String? {
             guard let value else { return nil }
@@ -342,7 +342,7 @@ public enum AndroidTargetSelector {
             return config.explicitKeys.contains(key) ? "explicit \(key)=\(value)" : nil
         }
         let selectors = [
-            origin(MobileConfig.Key.androidModule, moduleSelector, declared: config.declared?.androidModule.map(normalizeModule)),
+            origin(MobileConfig.Key.androidModule, moduleSelector, declared: config.declared?.androidModule.map(MobileConfig.normalizedAndroidModule)),
             origin(MobileConfig.Key.androidVariant, configuration?.androidVariant, declared: config.declared?.androidVariant),
         ].compactMap { $0 }
         let source = CheckSource(
@@ -352,7 +352,7 @@ public enum AndroidTargetSelector {
 
         let module: AndroidGradleModel.Module
         if let moduleSelector {
-            guard let selected = model.modules.first(where: { normalizeModule($0.path) == moduleSelector }) else {
+            guard let selected = model.modules.first(where: { MobileConfig.normalizedAndroidModule($0.path) == moduleSelector }) else {
                 return .error(
                     observed: "android.module names \(moduleSelector), available application modules: \(names(model.modules.map(\.path)))",
                     required: "an evaluated com.android.application module",
@@ -414,11 +414,6 @@ public enum AndroidTargetSelector {
             )
         }
         return .selected(module, variant, source)
-    }
-
-    /// Gradle paths and mobile.yml may omit the leading colon; both name the same module.
-    public static func normalizeModule(_ value: String) -> String {
-        value.hasPrefix(":") ? value : ":\(value)"
     }
 
     private static func names(_ values: [String]) -> String {
