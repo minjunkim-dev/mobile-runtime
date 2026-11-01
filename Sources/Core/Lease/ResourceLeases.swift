@@ -332,9 +332,15 @@ extension ResourceLeases {
         guard let claim = reservation.claim else {
             let owner = reservation.owner
             // That operation has ended without a claim; a finished up records one that its down settles (#373).
-            let next = owner.command == "up" && device.rawValue.hasPrefix("device:\(ProjectPlatform.android.rawValue):") ? Remediation(
-                summary: "Run mobile up --platform android on this AVD in \(owner.project) so its result is recorded, then run mobile down --platform android there and check again. Nothing was switched, stopped, queued or removed.",
-                command: "mobile up --platform android") : nil
+            let android = "device:\(ProjectPlatform.android.rawValue):"
+            var next: Remediation?
+            if owner.command == "up", device.rawValue.hasPrefix(android) {
+                // Name the reserved AVD: a bare up may need --device or select another one.
+                let up = "mobile up --platform android --device \(shellArgument(String(device.rawValue.dropFirst(android.count))))"
+                next = Remediation(
+                    summary: "Run \(up) in \(owner.project) so its result is recorded, then run mobile down --platform android there and check again. Nothing was switched, stopped, queued or removed.",
+                    command: up)
+            }
             throw ResourceConflict(key: device, owner: owner,
                 reason: "the result of \(owner.command) operation \(owner.operationId) for \(owner.project) is unconfirmed; its device reservation stays at \(file.path)",
                 next: next)

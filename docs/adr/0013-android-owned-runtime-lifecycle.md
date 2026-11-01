@@ -20,4 +20,4 @@ claim은 이 프로젝트의 Runstir 실행이 그 기기에 남긴 앱을 뜻�
 
 ## 기기에 닿지 않은 up의 reservation (#373, 2026-11-02)
 
-`up`은 단계 전에 기기 reservation을 쓴다. 이때 그 기기에 있던 이 프로젝트의 reservation을 대체한다. `up`이 빌드된 제품 없이 끝나면 fail-fast pipeline이 런타임 단계를 하나도 실행하지 않은 것이다. 이때 `up`은 대체한 reservation을 되돌린다. 이전 claim이 있으면 다시 쓰고, 없으면 파일을 지운다. 빌드 중 취소와 빌드 실패가 여기에 해당한다. 기기에 닿은 뒤의 실패와 강제 종료가 남긴 claim 없는 reservation은 그대로 보존한다. 소유 프로젝트의 `down`은 여전히 그것을 바꾸지 않는다. 다른 프로젝트의 Android `up`이 이 reservation 때문에 거부되면 owner 프로젝트에서 그 AVD로 `mobile up --platform android`을 다시 실행해 결과를 기록하고 `mobile down --platform android`을 실행하라고 안내한다. iOS reservation은 바꾸지 않는다.
+`up`은 단계 전에 기기 reservation을 쓴다. 이때 그 기기에 있던 이 프로젝트의 reservation을 대체한다. `up`이 빌드된 제품 없이 끝나면 fail-fast pipeline이 런타임 단계를 하나도 실행하지 않은 것이다. 이때 `up`은 대체한 reservation을 되돌린다. 이전 claim이 있으면 다시 쓰고, 없으면 파일을 지운다. 빌드 중 취소와 빌드 실패가 여기에 해당한다. 기기에 닿은 뒤의 실패와 강제 종료가 남긴 claim 없는 reservation은 그대로 보존한다. 소유 프로젝트의 `down`은 여전히 그것을 바꾸지 않는다. 다른 프로젝트의 Android `up`이 이 reservation 때문에 거부되면 owner 프로젝트에서 그 AVD를 지정한 `mobile up --platform android --device <AVD>`을 다시 실행해 결과를 기록하고 `mobile down --platform android`을 실행하라고 안내한다. iOS reservation은 바꾸지 않는다.

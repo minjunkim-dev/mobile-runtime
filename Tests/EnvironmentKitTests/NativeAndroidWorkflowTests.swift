@@ -585,7 +585,7 @@ struct NativeAndroidWorkflowTests {
         let conflict = try await #require(throws: ResourceConflict.self) {
             try await fixture.leases.check(device: key, project: "/next-project") { _ in .stopped }
         }
-        #expect(conflict.next?.command == "mobile up --platform android")
+        #expect(conflict.next?.command == "mobile up --platform android --device 'avd:Pixel'")
         try fixture.assertPreserved()
     }
 
