@@ -182,6 +182,8 @@ struct NativeAndroidWorkflowTests {
         let claim = try #require(down.down?.items.first { $0.id == "android.claim" })
         #expect(claim.status == .unknown)
         #expect(claim.detail?.contains("preserved") == true)
+        // The reused Emulator leaves no recorded device, so the next down settles the claim as a leftover one.
+        #expect(claim.detail?.contains("left no recorded device") == true, Comment(rawValue: claim.detail ?? ""))
         await #expect(throws: ResourceConflict.self) {
             try await fixture.leases.check(device: .device(.android, "avd:Pixel"), project: "/next-project") { _ in .running("pid 8123") }
         }
@@ -209,7 +211,7 @@ struct NativeAndroidWorkflowTests {
         let claim = try #require(down.down?.items.first { $0.id == "android.claim" })
         #expect(claim.status == .unknown)
         #expect(claim.detail?.contains("to observe the app") == false, Comment(rawValue: claim.detail ?? ""))
-        #expect(claim.detail?.contains("once it observes the claimed app stopped or stops this run's Emulator") == true,
+        #expect(claim.detail?.contains("once it observes \(NativeAndroidFixture.appID) stopped, or passes with this run's Emulator stopped") == true,
                 Comment(rawValue: claim.detail ?? ""))
         try fixture.assertPreserved()
     }
