@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "actual",
+  "candidate": {
+    "schemaVersion": 1,
+    "productVersion": "0.1.0-alpha.17",
+    "sourceSHA": "595210e8d3e6249b879388005a318543c0ce778a",
+    "coreBuildIdentity": "5ec808d5845c4a6605f2f2f3867d4c3b6ffa864f593a6aeeab56a0ffd8b869ad",
+    "ciRun": null,
+    "signing": "unsigned",
+    "notarization": "not-requested",
+    "distributionReady": false,
+    "artifacts": {
+      "cli": {
+        "file": "runstir-0.1.0-alpha.17-macos-arm64.tar.gz",
+        "sha256": "7c28933038fef1e2f8100b655753d1dd76f8e516c76a8d4588259a71e6a1f509"
+      },
+      "gui": {
+        "file": "Runstir-0.1.0-alpha.17-macos-arm64.dmg",
+        "sha256": "9e243ffa3dbe0b66da705bc3d2d4eb54e8f0843ea8fb27aafe02e34d78710732"
+      },
+      "homebrew": {
+        "file": "runstir-candidate.rb",
+        "sha256": "e6521f9f79be7e827b1f147bfc2756978bfe6a26b668c2fe23c1a62076a74a69"
+      }
+    }
+  },
+  "candidateRef": "candidate",
+  "originIndexes": [
+    "origin-index"
+  ],
+  "documents": {
+    "tuples": {
+      "path": "tuples.json",
+      "sha256": "45503427cada470540517b10650ff3da6613b42590a5154d6b777d0bfab4f533"
+    },
+    "results": {
+      "path": "results.json",
+      "sha256": "93dbfafe3be12f357bf1bd6d25832484565da780e18fcdec5e3730b00f403fdc"
+    },
+    "restrictedIndex": {
+      "path": "restricted-index.json",
+      "sha256": "d5dac9ca4f3e4d448a4e0e9832279f9f51ff5c517b99e2c341e94cdcd5c4f99f"
+    },
+    "report": {
+      "path": "report.md",
+      "sha256": "7026b4b831ebb7effe909de0d36fa0e131af70d4e9c8a7cf1f0cc24942d6dece"
+    }
+  },
+  "sourceCI": {
+    "evidence": "source-ci",
+    "runID": 41441316045
+  },
+  "priorResults": [],
+  "publicReview": {
+    "reviewer": "claude-alpha17",
+    "status": "reviewed",
+    "scope": "text-only"
+  }
+}
