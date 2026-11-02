@@ -33,6 +33,7 @@ Runstir는 native iOS 프로젝트 설정과 서명을 자동 변경하지 않�
 Simulator build는 서명을 비활성화한다.
 실기기 실행과 signing/provisioning 자동 준비는 이 흐름의 범위에 없다.
 down은 앱을 삭제하거나 Simulator를 종료하지 않는다.
+`overrides.iosRuntime`과 Podfile의 `platform :ios`가 없으면 doctor의 `simulator.runtime`은 선택한 scheme에서 측정한 deployment target으로 판정한다.
 확인할 수 없는 doctor 결과는 `unknown`으로 남는다.
 
 CLI와 GUI는 같은 EnvironmentKit 계약을 호출한다.

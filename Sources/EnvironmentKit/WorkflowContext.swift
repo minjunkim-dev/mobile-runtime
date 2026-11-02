@@ -135,10 +135,17 @@ public struct WorkflowContext: Sendable {
             } else {
                 [any Check]()
             }
-            let nativeChecks: [any Check] = if let anchor, anchor.framework == .nativeIOS {
-                [NativeIOSProjectCheck(anchor: anchor, config: config, lookup: lookup,
+            let measurement: NativeIOSSchemeMeasurement? = if let anchor, anchor.framework == .nativeIOS {
+                NativeIOSSchemeMeasurement(anchor: anchor, config: config, lookup: lookup,
                     runner: projectEnvironment?.runner ?? runner, locator: locator,
-                    configuration: selectedConfiguration ?? "Debug")]
+                    configuration: selectedConfiguration ?? "Debug")
+            } else { nil }
+            let nativeProject = if let anchor, let measurement {
+                NativeIOSProjectCheck(anchor: anchor, config: config, measurement: measurement,
+                    runner: projectEnvironment?.runner ?? runner, locator: locator)
+            } else { nil as NativeIOSProjectCheck? }
+            let nativeChecks: [any Check] = if let nativeProject {
+                [nativeProject]
             } else if let anchor, anchor.framework == .flutter, let sdk = flutter?.sdk {
                 [FlutterIOSHostCheck(anchor: anchor, config: config, lookup: lookup,
                     runner: projectEnvironment?.runner ?? runner, locator: locator,
@@ -147,6 +154,11 @@ public struct WorkflowContext: Sendable {
             let platformChecks = iOSChecks(lookup: lookup, runner: runner, locator: locator).filter {
                 // The prepared Flutter check grades its measured app deployment target.
                 $0.id != "simulator.runtime" || anchor?.framework != .flutter || flutter?.sdk == nil
+            }.map { check -> any Check in
+                // Without a declared native target, the selected scheme's measurement is the requirement.
+                guard check.id == "simulator.runtime", let measurement, let nativeProject,
+                      case .unavailable = lookup?.runtime else { return check }
+                return SimulatorRuntimeCheck(measurement: measurement, project: nativeProject, runner: runner, locator: locator)
             }
             checks = flutterChecks + workspaceChecks + platformChecks
                 + configChecks(context: config, lookup: lookup, runner: runner, locator: locator)
