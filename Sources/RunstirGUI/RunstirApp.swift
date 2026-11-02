@@ -474,13 +474,7 @@ struct InspectionView: View {
                 result = inspection
                 targets = inspection.targets
                 devices = inspection.targets?.devices ?? []
-                if !device.isEmpty && !devices.contains(where: { $0.id == device }) { device = "" }
-                if let targets = inspection.targets {
-                    if !scheme.isEmpty && !targets.schemes.contains(scheme) { scheme = "" }
-                    if !configuration.isEmpty && !targets.configurations.contains(configuration) { configuration = "" }
-                    if !module.isEmpty && !targets.modules.contains(module) { module = "" }
-                    if !variant.isEmpty && !targets.variants.contains(variant) { variant = "" }
-                }
+                pruneSelections()
                 nextFocus = field(for: inspection.selection.requiredInput + (inspection.targets?.requiredInput ?? [])) ?? .recheck
                 resultFocus = .inspection
                 announce(inspectionSummary(inspection))
@@ -508,6 +502,16 @@ struct InspectionView: View {
         let fields: [String: Field] = ["--app": .app, "--platform": .platform, "--device": .device, "--scheme": .scheme,
             "--configuration": .configuration, "--entrypoint": .entrypoint, "--port": .port, "--module": .module, "--variant": .variant, "--trust-repository": .trust]
         return input.lazy.compactMap { fields[$0] }.first
+    }
+
+    /// A choice the current lists no longer offer would run hidden behind an empty picker.
+    @MainActor private func pruneSelections() {
+        if !device.isEmpty && !devices.contains(where: { $0.id == device }) { device = "" }
+        guard let targets else { return }
+        if !scheme.isEmpty && !targets.schemes.contains(scheme) { scheme = "" }
+        if !configuration.isEmpty && !targets.configurations.contains(configuration) { configuration = "" }
+        if !module.isEmpty && !targets.modules.contains(module) { module = "" }
+        if !variant.isEmpty && !targets.variants.contains(variant) { variant = "" }
     }
 
     @MainActor private func cancel() {
@@ -555,10 +559,9 @@ struct InspectionView: View {
             }
             workflow = output
             if kind != .down {
-                let refreshed = WorkflowOperation.guiTargets(targets, after: output.operation)
-                targets = refreshed
-                devices = refreshed.devices
-                if !device.isEmpty && !devices.contains(where: { $0.id == device }) { device = "" }
+                targets = WorkflowOperation.guiTargets(targets, after: output.operation)
+                devices = targets?.devices ?? []
+                pruneSelections()
             }
             switch output.operation.state {
             case "needs-selection": nextFocus = field(for: output.operation.requiredInput) ?? .recheck

@@ -58,6 +58,33 @@ struct GUIWorkflowTargetsTests {
         #expect(targets.devices.map(\.id) == ["avd:Pixel"])
     }
 
+    @Test("candidates a workflow loaded clear an earlier discovery failure")
+    func loadedCandidatesClearDiscoveryFailure() {
+        var inspected = WorkflowOperation(id: "inspect", kind: .build, state: "ready")
+        inspected.nextAction = "xcodebuild -list timed out."
+        var build = WorkflowOperation(id: "build", kind: .build, state: "succeeded")
+        build.schemes = ["App"]
+
+        let targets = WorkflowOperation.guiTargets(inspected, after: build)
+
+        #expect(targets.nextAction == nil)
+        #expect(targets.schemes == ["App"])
+    }
+
+    @Test("without an inspection, only the loaded lists are taken and not the workflow's next step")
+    func noInspection() {
+        var build = WorkflowOperation(id: "build", kind: .build, state: "failed")
+        build.modules = ["app"]
+        build.module = "app"
+        build.nextAction = "Check the failed tool and its logs."
+
+        let targets = WorkflowOperation.guiTargets(nil, after: build)
+
+        #expect(targets.modules == ["app"])
+        #expect(targets.module == "app")
+        #expect(targets.nextAction == nil)
+    }
+
     @Test("devices a workflow loaded replace the inspected list")
     func loadedDevicesReplace() {
         var inspected = WorkflowOperation(id: "inspect", kind: .up, state: "ready")
