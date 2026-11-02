@@ -1,0 +1,113 @@
+import Core
+import EnvironmentKit
+import Testing
+
+@Suite("GUI selection lists after a workflow")
+struct GUIWorkflowTargetsTests {
+    private let emulator = RuntimeDeviceCandidate(id: "avd:Pixel", name: "Pixel", detail: "Android 15")
+
+    @Test("an Android build keeps the inspected devices it does not load")
+    func androidBuildKeepsDevices() {
+        var inspected = WorkflowOperation(id: "inspect", kind: .up, state: "ready")
+        inspected.devices = [emulator]
+        inspected.modules = ["app"]
+        inspected.module = "app"
+        var build = WorkflowOperation(id: "build", kind: .build, state: "succeeded")
+        build.modules = ["app", "wear"]
+        build.module = "wear"
+
+        let targets = WorkflowOperation.guiTargets(inspected, after: build)
+
+        #expect(targets.devices.map(\.id) == ["avd:Pixel"])
+        #expect(targets.modules == ["app", "wear"])
+        #expect(targets.module == "wear")
+    }
+
+    @Test("a failed or cancelled build's next step is not shown as a selection failure", arguments: ["failed", "cancelled"])
+    func workflowNextActionStaysInWorkflow(state: String) {
+        var inspected = WorkflowOperation(id: "inspect", kind: .build, state: "ready")
+        inspected.schemes = ["App"]
+        inspected.scheme = "App"
+        var build = WorkflowOperation(id: "build", kind: .build, state: state)
+        build.schemes = ["App"]
+        build.scheme = "App"
+        build.nextAction = "Inspect completed stages and run down for any remaining runtime resources."
+
+        let targets = WorkflowOperation.guiTargets(inspected, after: build)
+
+        #expect(targets.nextAction == nil)
+        #expect(targets.schemes == ["App"])
+    }
+
+    @Test("a workflow that stopped before loading candidates keeps every inspected list")
+    func earlyFailureKeepsLists() {
+        var inspected = WorkflowOperation(id: "inspect", kind: .up, state: "ready")
+        inspected.schemes = ["App"]
+        inspected.scheme = "App"
+        inspected.configurations = ["Debug"]
+        inspected.configuration = "Debug"
+        inspected.devices = [emulator]
+        let failed = WorkflowOperation(id: "up", kind: .up, state: "failed")
+
+        let targets = WorkflowOperation.guiTargets(inspected, after: failed)
+
+        #expect(targets.schemes == ["App"])
+        #expect(targets.scheme == "App")
+        #expect(targets.configurations == ["Debug"])
+        #expect(targets.configuration == "Debug")
+        #expect(targets.devices.map(\.id) == ["avd:Pixel"])
+    }
+
+    @Test("devices a workflow loaded clear an earlier discovery failure")
+    func loadedDevicesClearDiscoveryFailure() {
+        var inspected = WorkflowOperation(id: "inspect", kind: .up, state: "failed")
+        inspected.modules = ["app"]
+        inspected.nextAction = "Could not list Android AVD identities. Run mobile doctor --platform android."
+        var up = WorkflowOperation(id: "up", kind: .up, state: "succeeded")
+        up.modules = ["app"]
+        up.devices = [emulator]
+
+        let targets = WorkflowOperation.guiTargets(inspected, after: up)
+
+        #expect(targets.nextAction == nil)
+        #expect(targets.devices.map(\.id) == ["avd:Pixel"])
+    }
+
+    @Test("an Android build keeps a device discovery failure it did not retry")
+    func androidBuildKeepsDeviceDiscoveryFailure() {
+        var inspected = WorkflowOperation(id: "inspect", kind: .up, state: "failed")
+        inspected.modules = ["app"]
+        inspected.nextAction = "Could not list Android AVD identities. Run mobile doctor --platform android."
+        var build = WorkflowOperation(id: "build", kind: .build, state: "succeeded")
+        build.modules = ["app"]
+
+        let targets = WorkflowOperation.guiTargets(inspected, after: build)
+
+        #expect(targets.nextAction == inspected.nextAction)
+        #expect(targets.modules == ["app"])
+    }
+
+    @Test("without an inspection, only the loaded lists are taken and not the workflow's next step")
+    func noInspection() {
+        var build = WorkflowOperation(id: "build", kind: .build, state: "failed")
+        build.modules = ["app"]
+        build.module = "app"
+        build.nextAction = "Check the failed tool and its logs."
+
+        let targets = WorkflowOperation.guiTargets(nil, after: build)
+
+        #expect(targets.modules == ["app"])
+        #expect(targets.module == "app")
+        #expect(targets.nextAction == nil)
+    }
+
+    @Test("devices a workflow loaded replace the inspected list")
+    func loadedDevicesReplace() {
+        var inspected = WorkflowOperation(id: "inspect", kind: .up, state: "ready")
+        inspected.devices = [emulator]
+        var up = WorkflowOperation(id: "up", kind: .up, state: "succeeded")
+        up.devices = [RuntimeDeviceCandidate(id: "avd:Tablet", name: "Tablet", detail: "Android 15")]
+
+        #expect(WorkflowOperation.guiTargets(inspected, after: up).devices.map(\.id) == ["avd:Tablet"])
+    }
+}
