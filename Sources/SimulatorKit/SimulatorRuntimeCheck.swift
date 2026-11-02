@@ -10,7 +10,7 @@ public struct SimulatorRuntimeCheck: Check {
     public let id = "simulator.runtime"
     public let category = "iOS Simulator"
     public let title = "An iOS runtime this project can run on is installed and available"
-    public let dependsOn = ["simulator.daemon"]
+    public let dependsOn: [String]
 
     /// The recovery routine for a runtime the system unmounted from under Xcode.
     private static let remount = Remediation(
@@ -20,23 +20,45 @@ public struct SimulatorRuntimeCheck: Check {
             + "xcrun simctl runtime scan-and-mount"
     )
 
-    private let lookup: MatrixLookup
+    private let requirement: @Sendable () async throws -> RequirementLookup
     private let runner: any ProcessRunner
     private let locator: XcodeLocator
 
     public init(lookup: MatrixLookup, runner: any ProcessRunner, locator: XcodeLocator) {
-        self.lookup = lookup
+        self.init(requirement: lookup.runtime, runner: runner, locator: locator)
+    }
+
+    init(requirement: RequirementLookup, runner: any ProcessRunner, locator: XcodeLocator) {
+        self.dependsOn = ["simulator.daemon"]
+        self.requirement = { requirement }
+        self.runner = runner
+        self.locator = locator
+    }
+
+    /// Grades the deployment target the selected native scheme measures. A scheme
+    /// Xcode cannot resolve is `project.native-ios`'s error; here it stays unknown.
+    /// - Parameter project: the measuring Check, whose prerequisites gate the measurement here too.
+    public init(measurement: NativeIOSSchemeMeasurement, project: NativeIOSProjectCheck,
+                runner: any ProcessRunner, locator: XcodeLocator) {
+        self.dependsOn = Array(Set(["simulator.daemon"] + project.dependsOn)).sorted()
+        self.requirement = {
+            do { return try await measurement.runtime() } catch is DomainError {
+                return .unavailable(reason: "The selected scheme's deployment target could not be measured. Resolve project.native-ios first.",
+                    source: measurement.source)
+            }
+        }
         self.runner = runner
         self.locator = locator
     }
 
     public func run() async throws -> CheckOutcome {
+        let requirement = try await requirement()
         let minimum: MinimumVersion
-        switch lookup.runtime {
+        switch requirement {
         case .requirement(let version, _): minimum = version
         case .unavailable(let reason, let source): return .unknown(reason: reason, source: source)
         }
-        let source = lookup.runtime.source
+        let source = requirement.source
         let required = "an iOS \(minimum) or newer simulator runtime, available"
 
         let result = try await runner.run(

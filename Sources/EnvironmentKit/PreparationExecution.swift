@@ -603,18 +603,6 @@ public enum PreparationExecution {
             }
             if platform == .ios, !pendingTools, nativeReady {
                 let iosPreparation = try await IOSPreparation.inspect(context: context, input: input)
-                // Native deployment is measured by the provider. Replace only the
-                // Matrix-only unknown when that provider confirms an exact runtime.
-                if anchor.framework == .nativeIOS, let lookup = context.lookup,
-                   case .unavailable(let reason, let source) = lookup.runtime,
-                   report.checks.contains(where: { $0.id == "simulator.runtime" && $0.status == .unknown
-                       && $0.outcome.reason == reason && $0.outcome.source == source }),
-                   let runtime = iosPreparation.checks.first(where: { $0.id == "ios.runtime" && $0.kind == "reuse" }),
-                   iosPreparation.resources.contains(where: { $0.kind == .runtime && $0.origin == .reused
-                       && $0.runtimeIdentifier == runtime.target && $0.isAvailable == true
-                       && $0.architecture == "arm64" && $0.runtimeBuild != nil && $0.version != nil }) {
-                    checks.removeAll { $0.id == "ios.simulator.runtime" }
-                }
                 checks += iosPreparation.checks
                 sdkInstalled.merge(iosPreparation.installed) { _, new in new }
                 value.installationActions.merge(iosPreparation.actions) { _, new in new }

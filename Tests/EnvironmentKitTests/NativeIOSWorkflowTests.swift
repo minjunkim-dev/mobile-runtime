@@ -215,6 +215,8 @@ struct NativeIOSWorkflowTests {
         let result = await WorkflowExecution.run(.up, input: input(repo, device: "A"), runner: runner, leases: leases)
         #expect(result.exitCode == 0, Comment(rawValue: result.up?.failure?.message ?? ""))
         #expect(result.up?.stages.map(\.id) == ["validate", "device", "build", "install", "launch"])
+        // The measured scheme grades the runtime, so validate no longer counts it as needing attention.
+        #expect(result.up?.context.validation?.checks.first { $0.id == "simulator.runtime" }?.status == .pass)
         #expect(result.up?.context.appPid == 3538)
         #expect(result.operation.device == "A")
         #expect(runner.log.spawned.isEmpty)
