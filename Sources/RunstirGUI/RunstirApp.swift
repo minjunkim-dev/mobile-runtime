@@ -554,7 +554,12 @@ struct InspectionView: View {
                 }
             }
             workflow = output
-            if kind != .down { targets = output.operation; devices = output.operation.devices }
+            if kind != .down {
+                let refreshed = WorkflowOperation.guiTargets(targets, after: output.operation)
+                targets = refreshed
+                devices = refreshed.devices
+                if !device.isEmpty && !devices.contains(where: { $0.id == device }) { device = "" }
+            }
             switch output.operation.state {
             case "needs-selection": nextFocus = field(for: output.operation.requiredInput) ?? .recheck
             case "succeeded": break
