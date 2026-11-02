@@ -7,11 +7,8 @@ extension WorkflowOperation {
         // An empty list means not loaded: Android build loads no devices, and early failures load nothing.
         // Execution validates any kept choice again.
         var targets = current ?? WorkflowOperation(id: workflow.id, kind: workflow.kind, state: workflow.state)
-        // Loaded project candidates mean discovery worked, so an earlier discovery failure is stale.
-        if !(workflow.schemes + workflow.configurations + workflow.modules + workflow.variants).isEmpty {
-            targets.nextAction = nil
-        }
-        if !workflow.devices.isEmpty { targets.devices = workflow.devices }
+        // Devices load last, so only loaded devices show every discovery step the inspection ran worked again.
+        if !workflow.devices.isEmpty { targets.devices = workflow.devices; targets.nextAction = nil }
         if !workflow.schemes.isEmpty { targets.schemes = workflow.schemes; targets.scheme = workflow.scheme }
         if !workflow.configurations.isEmpty {
             targets.configurations = workflow.configurations

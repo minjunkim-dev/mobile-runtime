@@ -58,17 +58,33 @@ struct GUIWorkflowTargetsTests {
         #expect(targets.devices.map(\.id) == ["avd:Pixel"])
     }
 
-    @Test("candidates a workflow loaded clear an earlier discovery failure")
-    func loadedCandidatesClearDiscoveryFailure() {
-        var inspected = WorkflowOperation(id: "inspect", kind: .build, state: "ready")
-        inspected.nextAction = "xcodebuild -list timed out."
+    @Test("devices a workflow loaded clear an earlier discovery failure")
+    func loadedDevicesClearDiscoveryFailure() {
+        var inspected = WorkflowOperation(id: "inspect", kind: .up, state: "failed")
+        inspected.modules = ["app"]
+        inspected.nextAction = "Could not list Android AVD identities. Run mobile doctor --platform android."
+        var up = WorkflowOperation(id: "up", kind: .up, state: "succeeded")
+        up.modules = ["app"]
+        up.devices = [emulator]
+
+        let targets = WorkflowOperation.guiTargets(inspected, after: up)
+
+        #expect(targets.nextAction == nil)
+        #expect(targets.devices.map(\.id) == ["avd:Pixel"])
+    }
+
+    @Test("an Android build keeps a device discovery failure it did not retry")
+    func androidBuildKeepsDeviceDiscoveryFailure() {
+        var inspected = WorkflowOperation(id: "inspect", kind: .up, state: "failed")
+        inspected.modules = ["app"]
+        inspected.nextAction = "Could not list Android AVD identities. Run mobile doctor --platform android."
         var build = WorkflowOperation(id: "build", kind: .build, state: "succeeded")
-        build.schemes = ["App"]
+        build.modules = ["app"]
 
         let targets = WorkflowOperation.guiTargets(inspected, after: build)
 
-        #expect(targets.nextAction == nil)
-        #expect(targets.schemes == ["App"])
+        #expect(targets.nextAction == inspected.nextAction)
+        #expect(targets.modules == ["app"])
     }
 
     @Test("without an inspection, only the loaded lists are taken and not the workflow's next step")
