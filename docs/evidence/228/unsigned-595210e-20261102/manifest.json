@@ -37,15 +37,15 @@
     },
     "results": {
       "path": "results.json",
-      "sha256": "2ee691bc50e3d33fe22728dc9fb71e9c5a9f4b061042d4ac3bdc216c21c9069d"
+      "sha256": "25090b7be4b98ba8b0d10eda118c99333b3275746bc42193292e1cdb9d12e8b6"
     },
     "restrictedIndex": {
       "path": "restricted-index.json",
-      "sha256": "c475e463ea2a2c8e5544927934f47a1274c0047de2cdd40a95d07236bb13d0c7"
+      "sha256": "6ba6af93ffe6b1b3a9ace7179597fbc903acaf120e01f9c790f17288112afc01"
     },
     "report": {
       "path": "report.md",
-      "sha256": "3e9a4fa46b4e93409ec858c80eaaa683433cd81d08786be55f70bfd34476cdbe"
+      "sha256": "9ff995844a9380a633018c70184828d68b8eda30ff8ce39b744f30d109a48c08"
     }
   },
   "sourceCI": {
