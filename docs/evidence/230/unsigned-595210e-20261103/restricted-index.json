@@ -2043,8 +2043,8 @@
     {
       "id": "f230-raw-443819080f561f61",
       "path": "r230/assemble-evidence.py",
-      "bytes": 13464,
-      "sha256": "a10a21ddae669d13e36fde2d487a53c5743f4eea84b6fafd778d43ef9a1c6cea"
+      "bytes": 14784,
+      "sha256": "37e81f24dc727a9f6c0afd70fe571055d5443d6555eefecbe282dac57c936621"
     },
     {
       "id": "f230-raw-5cd9de33c3e9f9bf",
@@ -2061,14 +2061,14 @@
     {
       "id": "f230-cleanup",
       "path": "r230/cleanup.json",
-      "bytes": 870,
-      "sha256": "a8440f5a8a92c7b0660604f3b3639fff9c086bde2d13cb887c68af34827f2230"
+      "bytes": 1554,
+      "sha256": "a271afced67db69a99b0967195692fa447a0d2ead915b1c3806b740844d8385f"
     },
     {
       "id": "f230-raw-f199baca22327ccc",
       "path": "r230/collector-errors/NOTES.txt",
-      "bytes": 169,
-      "sha256": "249229158000224a9bfb5bbe2a34e6b10fd8dce1cdc52191a2523eb6cb03096d"
+      "bytes": 307,
+      "sha256": "dd385bd266306bfd3e0c46eadaea30d750c882f458e2c37eedd656ea74a63737"
     },
     {
       "id": "f230-raw-bb01e359721800fa",
@@ -2169,8 +2169,8 @@
     {
       "id": "f230-raw-a7cd7ffea3d25702",
       "path": "r230/gui/ios-gui-food-truck/owner.json",
-      "bytes": 479,
-      "sha256": "ce561a5ff86664d454c0a97a3c298d6cfb977e0df0c39c4a63aa8d22187fea06"
+      "bytes": 481,
+      "sha256": "5ea22d43f482c719c44fa33cb59e6d4c944eb386455861d0d675d3146f1fb037"
     },
     {
       "id": "f230-raw-75ad27cf817a3228",
@@ -2187,6 +2187,18 @@
     {
       "id": "f230-raw-ca5c9b96738e510e",
       "path": "r230/safe/f230-raw-ca5c9b96738e510e.raw",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "f230-raw-6fc2abb9cd517a72",
+      "path": "r230/gui/ios-gui-food-truck-02-session1/owner.json",
+      "bytes": 479,
+      "sha256": "ce561a5ff86664d454c0a97a3c298d6cfb977e0df0c39c4a63aa8d22187fea06"
+    },
+    {
+      "id": "f230-raw-bf6c5d315420b419",
+      "path": "r230/safe/f230-raw-bf6c5d315420b419.raw",
       "bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
@@ -2285,6 +2297,60 @@
       "path": "r230/gui-obs/screens/05-quit-dialog-zoom.jpg",
       "bytes": 53947,
       "sha256": "d44a94d19021745b031db956025fb0d58b56d279096506e3f60323e316fbfa79"
+    },
+    {
+      "id": "f230-raw-05386235295a53bd",
+      "path": "r230/gui-obs/session2/06-nnw-build-started.jpg",
+      "bytes": 37673,
+      "sha256": "32e66a56073555496b94d1086a7893532e9bdabd7b4e08eb4c3c287719409a9f"
+    },
+    {
+      "id": "f230-raw-0c2d6851e6e14fbc",
+      "path": "r230/gui-obs/session2/07-nnw-build-done.jpg",
+      "bytes": 85700,
+      "sha256": "1f46e0e49e563a34e1a67ba0f254a052cdefd2ef9dcf47eda04d0e591c616da1"
+    },
+    {
+      "id": "f230-raw-b7d6a003c94fd7f6",
+      "path": "r230/gui-obs/session2/08-ft-build-done.jpg",
+      "bytes": 83589,
+      "sha256": "5450029284f4d96d371d18ac3ee2a91c6e5dada6cb8cfecd913e9ca4fb68405b"
+    },
+    {
+      "id": "f230-raw-f3e0177a8f35940d",
+      "path": "r230/gui-obs/session2/09-nnw-up-cancelled.jpg",
+      "bytes": 95387,
+      "sha256": "5732aa18d5ff0eb744417249f26107e30d2efe1fa9cd43dcbb373c48ea41e257"
+    },
+    {
+      "id": "f230-raw-412c2194c2fccc8d",
+      "path": "r230/gui-obs/session2/build-logs-session2.txt",
+      "bytes": 131,
+      "sha256": "b21a648987fb529c48e10b9fc6852524cc9d78b119d0d8db8ee4e7aa0cc4a92b"
+    },
+    {
+      "id": "f230-raw-afae3ca10c815883",
+      "path": "r230/gui-obs/session2/nnw-cancel-residue-watch.txt",
+      "bytes": 1670,
+      "sha256": "d20a732312737c7cfe4316f969bcb974d1ffa308998c0802ef71ebf4ca3f79d2"
+    },
+    {
+      "id": "f230-raw-84b2a85108e783c5",
+      "path": "r230/gui-obs/session2/nnw-up-before-cancel-procs.txt",
+      "bytes": 399,
+      "sha256": "3cee79710bd574cbe89dfaafc580f99b34f603668eb8a736101cf549577e5e49"
+    },
+    {
+      "id": "f230-raw-faedef8a4f434f47",
+      "path": "r230/gui-obs/session2/nnw-up-before-cancel.txt",
+      "bytes": 161,
+      "sha256": "507a4acc494d9be3f33e110c57fa0151db03253777e061d3cb2698b42af43ef5"
+    },
+    {
+      "id": "f230-raw-98b076797fa214f9",
+      "path": "r230/gui-obs/session2/parallel-build-watch.txt",
+      "bytes": 6581,
+      "sha256": "7ec283227e829496e8ddf2121ce83aadbd4a11ca82a4199c4eae743cd21e8da7"
     },
     {
       "id": "f230-raw-0222606e4ab0c37a",
@@ -2629,6 +2695,36 @@
       "sha256": "cce263328568f9fe1c137d3b069b8a9b7cd4a110c863ee2ef0e6b7fa9fffa723"
     },
     {
+      "id": "f230-raw-17b2d1d5df1c6493",
+      "path": "r230/runs/down-nnw-gui-project/exit.json",
+      "bytes": 75,
+      "sha256": "06e668ab030ffc6252491d6df21462bc89111cba27a10ed7f0b7158d5c131067"
+    },
+    {
+      "id": "f230-raw-37e28b1b81972abd",
+      "path": "r230/runs/down-nnw-gui-project/owner.json",
+      "bytes": 475,
+      "sha256": "9422fc4e6bdd80607e25266eeaa5635494b86048ad423aa7c73c5cebad542c08"
+    },
+    {
+      "id": "f230-raw-a560827f5a009e9a",
+      "path": "r230/runs/down-nnw-gui-project/pid",
+      "bytes": 5,
+      "sha256": "18fe33abb82a61382ec79741cb369805962c35381fef3517a0467b2c36a8af8c"
+    },
+    {
+      "id": "f230-raw-8d52646c3adee42c",
+      "path": "r230/runs/down-nnw-gui-project/stderr",
+      "bytes": 14,
+      "sha256": "e52aeb4f479163849e216a8f9e4d42a67db798e6dd1d7f07d896fb6e2457f058"
+    },
+    {
+      "id": "f230-raw-914b3b07a52af896",
+      "path": "r230/runs/down-nnw-gui-project/stdout",
+      "bytes": 1830,
+      "sha256": "59268b44ce22e0141030cf8b248bb594700ffe4b37b26dd8dd097118b0427ca8"
+    },
+    {
       "id": "f230-raw-712f72745f120419",
       "path": "r230/runs/probe-list-3.err",
       "bytes": 29,
@@ -2715,8 +2811,8 @@
     {
       "id": "r230-origin-index",
       "path": "R230-ORIGIN-INDEX.json",
-      "bytes": 80613,
-      "sha256": "0aeb0c78d6f16e86ebe55a46ae226d0d8efc0796e95737a18cfa70e99934519c"
+      "bytes": 83600,
+      "sha256": "8e56207bb7f745eb68ca6d77a899f3ec51aa432e7a73b43917dbf15abf8a391a"
     }
   ]
 }
