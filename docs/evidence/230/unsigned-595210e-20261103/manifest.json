@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "actual",
+  "candidate": {
+    "schemaVersion": 1,
+    "productVersion": "0.1.0-alpha.17",
+    "sourceSHA": "595210e8d3e6249b879388005a318543c0ce778a",
+    "coreBuildIdentity": "5ec808d5845c4a6605f2f2f3867d4c3b6ffa864f593a6aeeab56a0ffd8b869ad",
+    "ciRun": null,
+    "signing": "unsigned",
+    "notarization": "not-requested",
+    "distributionReady": false,
+    "artifacts": {
+      "cli": {
+        "file": "runstir-0.1.0-alpha.17-macos-arm64.tar.gz",
+        "sha256": "7c28933038fef1e2f8100b655753d1dd76f8e516c76a8d4588259a71e6a1f509"
+      },
+      "gui": {
+        "file": "Runstir-0.1.0-alpha.17-macos-arm64.dmg",
+        "sha256": "9e243ffa3dbe0b66da705bc3d2d4eb54e8f0843ea8fb27aafe02e34d78710732"
+      },
+      "homebrew": {
+        "file": "runstir-candidate.rb",
+        "sha256": "e6521f9f79be7e827b1f147bfc2756978bfe6a26b668c2fe23c1a62076a74a69"
+      }
+    }
+  },
+  "candidateRef": "candidate",
+  "originIndexes": [
+    "origin-index",
+    "r228-origin-index",
+    "r230-origin-index"
+  ],
+  "documents": {
+    "tuples": {
+      "path": "tuples.json",
+      "sha256": "ac017273413039c0bc59a5be71094472ac516b90a88b5c315371428741d7d110"
+    },
+    "results": {
+      "path": "results.json",
+      "sha256": "3b2ee46e1c5345c02ce579082e5d36f7b3be85fb12278783e89b30b98b3dc76c"
+    },
+    "restrictedIndex": {
+      "path": "restricted-index.json",
+      "sha256": "24d276afbf12757efe40aaa5234f6227125507be67e07e6184aaa13c9499d88d"
+    },
+    "report": {
+      "path": "report.md",
+      "sha256": "261e9d0f7fdfe30ca3ed4557428d65b49db5d6088da5f1f08f128ab18faa48a0"
+    }
+  },
+  "sourceCI": {
+    "evidence": "source-ci",
+    "runID": 41441316045
+  },
+  "priorResults": [
+    {
+      "path": "results-224.json",
+      "sha256": "93dbfafe3be12f357bf1bd6d25832484565da780e18fcdec5e3730b00f403fdc"
+    },
+    {
+      "path": "results-228.json",
+      "sha256": "25090b7be4b98ba8b0d10eda118c99333b3275746bc42193292e1cdb9d12e8b6"
+    }
+  ],
+  "publicReview": {
+    "reviewer": "claude-parallel-gui-alpha17",
+    "status": "reviewed",
+    "scope": "text-only"
+  }
+}
