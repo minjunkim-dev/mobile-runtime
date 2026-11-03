@@ -31,6 +31,9 @@ public struct WorkflowResult: Sendable {
     public let operation: WorkflowOperation
     public let up: UpReport?
     public let down: TeardownReport?
+    /// Whether this run read the device candidates, so an empty list means none rather than not read.
+    /// Only the GUI uses it; the public document leaves it out.
+    public let devicesLoaded: Bool
 
     public var exitCode: Int32 { operation.state == "cancelled" ? 130 : up?.exitCode ?? down?.exitCode ?? 1 }
 
@@ -65,6 +68,7 @@ public enum WorkflowExecution {
         events.send("started", state: "running")
         var up: UpReport?
         var down: TeardownReport?
+        var devicesLoaded = false
 
         do {
             try Task.checkCancellation()
@@ -161,7 +165,8 @@ public enum WorkflowExecution {
                 }
 
                 config = try await selectTargets(input: input, kind: kind, anchor: anchor, platform: platform,
-                    config: config, wiring: wiring, runner: runner, operation: &operation)
+                    config: config, wiring: wiring, runner: runner, operation: &operation,
+                    devicesLoaded: &devicesLoaded)
                 if !operation.requiredInput.isEmpty {
                     operation.state = "needs-selection"
                     throw selectionFailure("Select \(operation.requiredInput.joined(separator: ", ")) before starting changes.")
@@ -424,13 +429,14 @@ public enum WorkflowExecution {
                 .map { "\($0.id): \($0.detail ?? $0.status.rawValue)" }
         }
         events.send(code == 130 ? "cancelled" : "finished", state: operation.state, detail: operation.nextAction)
-        return WorkflowResult(operation: operation, up: up, down: down)
+        return WorkflowResult(operation: operation, up: up, down: down, devicesLoaded: devicesLoaded)
     }
 
     /// Read-only candidates are shared by inspection and execution; execution validates them again.
     static func selectTargets(input: WorkflowInput, kind: WorkflowKind, anchor: ProjectAnchor,
                               platform: ProjectPlatform, config original: ConfigContext, wiring: WorkflowContext,
-                              runner: any ProcessRunner, operation: inout WorkflowOperation) async throws -> ConfigContext {
+                              runner: any ProcessRunner, operation: inout WorkflowOperation,
+                              devicesLoaded: inout Bool) async throws -> ConfigContext {
         var config = original
         if platform == .ios {
             let needsDevice = kind == .up || anchor.framework == .flutter || input.device != nil
@@ -441,6 +447,7 @@ public enum WorkflowExecution {
             operation.schemes = choices.schemes
             operation.configurations = choices.configurations
             operation.devices = choices.devices
+            devicesLoaded = needsDevice
             operation.scheme = config.configuration?.scheme ?? (choices.schemes.count == 1 ? choices.schemes.first : nil)
             if let scheme = operation.scheme, !choices.schemes.contains(scheme) {
                 throw selectionFailure("Unknown scheme: \(scheme). Select a listed scheme.")
@@ -481,6 +488,7 @@ public enum WorkflowExecution {
             if kind == .up {
                 operation.devices = try await androidWorkflowDevices(anchor: anchor, config: config, runner: runner,
                     environment: AndroidEnvironment(values: input.project.environment))
+                devicesLoaded = true
                 operation.device = input.device ?? config.configuration?.androidAVD.map { "avd:\($0)" }
                 if operation.device == nil && operation.devices.count == 1 { operation.device = operation.devices.first?.id }
                 try selectDevice(&operation)

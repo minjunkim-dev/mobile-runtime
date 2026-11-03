@@ -16,7 +16,7 @@ struct GUIWorkflowTargetsTests {
         build.modules = ["app", "wear"]
         build.module = "wear"
 
-        let targets = WorkflowOperation.guiTargets(inspected, after: build)
+        let targets = WorkflowOperation.guiTargets(inspected, after: build, devicesLoaded: false)
 
         #expect(targets.devices.map(\.id) == ["avd:Pixel"])
         #expect(targets.modules == ["app", "wear"])
@@ -33,13 +33,13 @@ struct GUIWorkflowTargetsTests {
         build.scheme = "App"
         build.nextAction = "Inspect completed stages and run down for any remaining runtime resources."
 
-        let targets = WorkflowOperation.guiTargets(inspected, after: build)
+        let targets = WorkflowOperation.guiTargets(inspected, after: build, devicesLoaded: false)
 
         #expect(targets.nextAction == nil)
         #expect(targets.schemes == ["App"])
     }
 
-    @Test("a workflow that stopped before loading candidates keeps every inspected list")
+    @Test("a workflow that stopped before loading candidates, or failed to read them, keeps every inspected list")
     func earlyFailureKeepsLists() {
         var inspected = WorkflowOperation(id: "inspect", kind: .up, state: "ready")
         inspected.schemes = ["App"]
@@ -49,7 +49,7 @@ struct GUIWorkflowTargetsTests {
         inspected.devices = [emulator]
         let failed = WorkflowOperation(id: "up", kind: .up, state: "failed")
 
-        let targets = WorkflowOperation.guiTargets(inspected, after: failed)
+        let targets = WorkflowOperation.guiTargets(inspected, after: failed, devicesLoaded: false)
 
         #expect(targets.schemes == ["App"])
         #expect(targets.scheme == "App")
@@ -67,7 +67,7 @@ struct GUIWorkflowTargetsTests {
         up.modules = ["app"]
         up.devices = [emulator]
 
-        let targets = WorkflowOperation.guiTargets(inspected, after: up)
+        let targets = WorkflowOperation.guiTargets(inspected, after: up, devicesLoaded: true)
 
         #expect(targets.nextAction == nil)
         #expect(targets.devices.map(\.id) == ["avd:Pixel"])
@@ -81,7 +81,7 @@ struct GUIWorkflowTargetsTests {
         var build = WorkflowOperation(id: "build", kind: .build, state: "succeeded")
         build.modules = ["app"]
 
-        let targets = WorkflowOperation.guiTargets(inspected, after: build)
+        let targets = WorkflowOperation.guiTargets(inspected, after: build, devicesLoaded: false)
 
         #expect(targets.nextAction == inspected.nextAction)
         #expect(targets.modules == ["app"])
@@ -94,7 +94,7 @@ struct GUIWorkflowTargetsTests {
         build.module = "app"
         build.nextAction = "Check the failed tool and its logs."
 
-        let targets = WorkflowOperation.guiTargets(nil, after: build)
+        let targets = WorkflowOperation.guiTargets(nil, after: build, devicesLoaded: false)
 
         #expect(targets.modules == ["app"])
         #expect(targets.module == "app")
@@ -108,6 +108,22 @@ struct GUIWorkflowTargetsTests {
         var up = WorkflowOperation(id: "up", kind: .up, state: "succeeded")
         up.devices = [RuntimeDeviceCandidate(id: "avd:Tablet", name: "Tablet", detail: "Android 15")]
 
-        #expect(WorkflowOperation.guiTargets(inspected, after: up).devices.map(\.id) == ["avd:Tablet"])
+        #expect(WorkflowOperation.guiTargets(inspected, after: up, devicesLoaded: true).devices.map(\.id) == ["avd:Tablet"])
+    }
+
+    @Test("devices a workflow read as none empty the inspected list (#378)")
+    func loadedNoDevicesEmpty() {
+        var inspected = WorkflowOperation(id: "inspect", kind: .up, state: "ready")
+        inspected.devices = [emulator]
+        inspected.modules = ["app"]
+        var up = WorkflowOperation(id: "up", kind: .up, state: "failed")
+        up.modules = ["app"]
+        up.nextAction = "Unknown or unavailable device identity: avd:Pixel. Refresh the candidates."
+
+        let targets = WorkflowOperation.guiTargets(inspected, after: up, devicesLoaded: true)
+
+        #expect(targets.devices.isEmpty)
+        #expect(targets.modules == ["app"])
+        #expect(targets.nextAction == nil)
     }
 }

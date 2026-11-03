@@ -417,6 +417,24 @@ struct NativeIOSWorkflowTests {
         #expect(!runner.log.all.contains { $0.arguments.contains("build") || $0.arguments.contains("install") })
     }
 
+    @Test("only a Simulator list the workflow read tells the GUI to replace its devices", arguments: DeviceReadCase.allCases)
+    func devicesLoaded(_ scenario: DeviceReadCase) async throws {
+        let repo = try project()
+        var runner = try runner(repo)
+        try addUpResponses(&runner, repo)
+        if scenario == .readNone { runner.responses["xcrun simctl list devices -j"] = .ok(#"{"devices":{}}"#) }
+        if scenario == .readFailed { runner.responses["xcrun simctl list devices -j"] = .failed(1, "CoreSimulatorService unavailable") }
+        let result = await WorkflowExecution.run(scenario == .build ? .build : .up,
+            input: input(repo, device: scenario == .build ? nil : "A"), runner: runner, leases: temporaryLeases())
+        #expect(result.devicesLoaded == (scenario == .readNone || scenario == .readOne))
+        #expect(result.operation.devices.map(\.id) == (scenario == .readOne ? ["A"] : []))
+        if scenario == .readNone {
+            #expect(result.operation.nextAction?.contains("Unknown or unavailable device identity: A") == true)
+        }
+    }
+
+    enum DeviceReadCase: CaseIterable { case readNone, readOne, readFailed, build }
+
     @Test("a selected workspace uses shared schemes from its nested group members")
     func nativeWorkspace() async throws {
         let repo = try FixtureRepo()

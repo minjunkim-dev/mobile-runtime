@@ -81,6 +81,29 @@ struct NativeAndroidWorkflowTests {
         try fixture.assertPreserved()
     }
 
+    @Test("only a device list the workflow read tells the GUI to replace its devices", arguments: DeviceReadCase.allCases)
+    func devicesLoaded(_ scenario: DeviceReadCase) async throws {
+        let fixture = try NativeAndroidFixture()
+        var runner = try fixture.runner()
+        if scenario == .readNone { runner.responses["emulator -list-avds"] = .ok("") }
+        if scenario == .readFailed { runner.responses["emulator -list-avds"] = .failed(1, "emulator crashed") }
+        let result = await WorkflowExecution.run(scenario == .build ? .build : .up,
+            input: WorkflowInput(project: fixture.input, device: scenario == .build ? nil : "avd:Pixel"),
+            runner: runner, leases: fixture.leases)
+        #expect(result.devicesLoaded == (scenario == .readNone || scenario == .readOne))
+        #expect(result.operation.devices.map(\.id) == (scenario == .readOne ? ["avd:Pixel"] : []))
+        if scenario == .readNone {
+            #expect(result.operation.state == "failed")
+            #expect(result.operation.nextAction?.contains("Unknown or unavailable device identity: avd:Pixel") == true)
+        }
+        // The signal stays out of the public document: its operation is exactly the encoded operation.
+        let document = try #require(try JSONSerialization.jsonObject(with: Data(result.encoded(toolVersion: "test").utf8)) as? [String: Any])
+        let operation = try JSONSerialization.jsonObject(with: JSONEncoder().encode(result.operation))
+        #expect((document["operation"] as? NSDictionary) == (operation as? NSDictionary))
+    }
+
+    enum DeviceReadCase: CaseIterable { case readNone, readOne, readFailed, build }
+
     @Test("native shared build does not require or probe absent runtime SDK tools")
     func buildWithoutRuntimeTools() async throws {
         let fixture = try NativeAndroidFixture()

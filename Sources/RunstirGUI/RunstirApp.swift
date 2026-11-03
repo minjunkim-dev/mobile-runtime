@@ -555,7 +555,7 @@ struct InspectionView: View {
             }
             workflow = output
             if kind != .down {
-                targets = WorkflowOperation.guiTargets(targets, after: output.operation)
+                targets = WorkflowOperation.guiTargets(targets, after: output.operation, devicesLoaded: output.devicesLoaded)
                 devices = targets?.devices ?? []
                 // Clearing a project target would refresh and hide this result; execution already rejects an unlisted one.
                 if !device.isEmpty && !devices.contains(where: { $0.id == device }) { device = "" }

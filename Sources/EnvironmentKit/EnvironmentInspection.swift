@@ -73,11 +73,12 @@ public struct EnvironmentInspection: Sendable {
             }
             var targets = WorkflowOperation(id: UUID().uuidString, kind: .up, state: "ready")
             targets.selection = selection
+            var devicesLoaded = false
             do {
                 _ = try await WorkflowExecution.selectTargets(input: WorkflowInput(project: input,
                     scheme: scheme, configuration: configuration, module: module, variant: variant),
                     kind: .up, anchor: anchor, platform: platform, config: config, wiring: context,
-                    runner: runner, operation: &targets)
+                    runner: runner, operation: &targets, devicesLoaded: &devicesLoaded)
                 if !targets.requiredInput.isEmpty { targets.state = "needs-selection" }
             } catch is CancellationError { throw CancellationError() }
             catch let error as DomainError {
