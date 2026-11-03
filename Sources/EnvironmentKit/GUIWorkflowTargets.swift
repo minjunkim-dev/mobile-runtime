@@ -2,13 +2,15 @@ import Core
 
 extension WorkflowOperation {
     /// The window's selection lists after a build or up. Lists the workflow did not load keep the
-    /// inspected candidates, and its next step is not a target-discovery failure.
-    public static func guiTargets(_ current: WorkflowOperation?, after workflow: WorkflowOperation) -> WorkflowOperation {
-        // An empty list means not loaded: Android build loads no devices, and early failures load nothing.
+    /// inspected candidates, and its next step is not a target-discovery failure. `devicesLoaded`
+    /// tells devices read as none from devices not read, which the public JSON does not.
+    public static func guiTargets(_ current: WorkflowOperation?, after workflow: WorkflowOperation,
+                                  devicesLoaded: Bool) -> WorkflowOperation {
+        // An empty build-target list means not loaded: early failures load nothing.
         // Execution validates any kept choice again.
         var targets = current ?? WorkflowOperation(id: workflow.id, kind: workflow.kind, state: workflow.state)
         // Devices load last, so only loaded devices show every discovery step the inspection ran worked again.
-        if !workflow.devices.isEmpty { targets.devices = workflow.devices; targets.nextAction = nil }
+        if devicesLoaded { targets.devices = workflow.devices; targets.nextAction = nil }
         if !workflow.schemes.isEmpty { targets.schemes = workflow.schemes; targets.scheme = workflow.scheme }
         if !workflow.configurations.isEmpty {
             targets.configurations = workflow.configurations
