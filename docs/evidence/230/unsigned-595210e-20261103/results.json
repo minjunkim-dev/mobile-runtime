@@ -2492,7 +2492,7 @@
       "candidateID": "5b987003fb2b89a2c7bf75087512d135c0d9b63f47a38dd0b4a518ce4e7b532e",
       "evidenceClass": "actual",
       "expected": "#230 범위에서 AC07의 실제 병렬·취소·접근성 동작을 관측해 다른 작업과 완료 자원 보존을 확인한다.",
-      "observed": "두 번째 GUI 실행에서 독립 repo 두 개(Food Truck·NetNewsWire)를 Cmd+O로 각각 창으로 열고 서로 다른 소유 Simulator(Native_iOS_2ce1·native-flutter-gui_2ce1)를 고른 뒤 빌드를 연달아 눌렀다. 2초 간격 프로세스 기록에서 두 프로젝트의 xcodebuild가 04:25:11Z~04:25:57Z에 함께 돌았고, 두 창 모두 \"빌드: 완료\"와 BUILD SUCCEEDED(13:25:55·13:26:37 KST)로 끝났으며 빌드 뒤에도 기기·Scheme 선택이 유지됐다. 빌드 로그는 프로젝트 폴더 identity마다 따로 생겼다. 첫 GUI 실행에서는 Food Truck 실행(up) 완료 뒤 NetNewsWire 작업을 시작해 동시 진행이 아니었다. 같은 repo의 두 worktree(ft-wt1·ft-wt2)는 CLI build를 같은 시각에 시작해 서로 다른 Simulator 대상으로 130초·139초에 모두 succeeded였다. 고정 입력 여섯과 두 worktree의 추적 source·index·flags가 보존됐다.",
+      "observed": "두 번째 GUI 실행에서 독립 repo 두 개(Food Truck·NetNewsWire)를 Cmd+O로 각각 창으로 열고 서로 다른 소유 Simulator(Native_iOS_2ce1·native-flutter-gui_2ce1)를 고른 뒤 빌드를 연달아 눌렀다. 2초 간격 프로세스 기록에서 두 빌드 작업의 xcodebuild가 04:25:11Z~04:25:57Z에 함께 돌았고(실제 컴파일 구간은 Food Truck 04:25:48Z~04:25:55Z 동안 NetNewsWire 설정 조회와 겹친 정도로 일부만 겹침), 두 창 모두 \"빌드: 완료\"와 BUILD SUCCEEDED(13:25:55·13:26:37 KST)로 끝났으며 빌드 뒤에도 기기·Scheme 선택이 유지됐다. 빌드 로그는 프로젝트 폴더 identity마다 따로 생겼다. 첫 GUI 실행에서는 Food Truck 실행(up) 완료 뒤 NetNewsWire 작업을 시작해 동시 진행이 아니었다. 같은 repo의 두 worktree(ft-wt1·ft-wt2)는 CLI build를 같은 시각에 시작해 서로 다른 Simulator 대상으로 130초·139초에 모두 succeeded였다. 고정 입력 여섯과 두 worktree의 추적 source·index·flags가 보존됐다.",
       "observedAt": "2026-11-03T04:31:43Z",
       "executor": "claude-parallel-gui-alpha17",
       "result": "pass",

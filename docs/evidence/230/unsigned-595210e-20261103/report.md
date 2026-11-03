@@ -4,14 +4,14 @@ alpha.17 공동 후보로 #230의 병렬 실행·취소·접근성 게이트를 
 
 | 기준 | 관측 | 결과 |
 | --- | --- | --- |
-| AC07 창·worktree | 한 GUI에서 독립 repo 두 창의 빌드가 함께 돌고 둘 다 완료. 같은 repo 두 worktree의 CLI build 동시 성공. 빌드 로그가 폴더 identity별로 분리. 경로 별칭·일반 폴더는 미기록 | pass(미검증 항목 있음) |
+| AC07 창·worktree | 한 GUI에서 독립 repo 두 창의 빌드 작업이 함께 진행되고(컴파일은 일부만 겹침) 둘 다 완료. 같은 repo 두 worktree의 CLI build 동시 성공. 빌드 로그가 폴더 identity별로 분리. 경로 별칭·일반 폴더는 미기록 | pass(미검증 항목 있음) |
 | AC08 교차 충돌 | GUI가 실행한 앱이 있는 기기로 보낸 다른 clone의 CLI up이 변경 전 거부, 소유 프로젝트·operation·PID 표시 | pass |
 | AC10 창 닫기·개별 취소 | 완료 창 닫기 뒤 앱 유지, 작업 중 창 닫기 대화상자, 빌드 작업 취소와 실행(up) 취소 뒤 자식·프로젝트 경로 프로세스 부재, 선택 유지, 다른 앱 유지 | pass |
 | AC10 전체 종료 | 작업 계속은 두 작업 유지. 모두 취소 후 종료는 GUI 종료와 xcodebuild 정리, 그러나 actool이 최대 약 108초 남음 | inconclusive |
 | AC11 키보드·VoiceOver | 키보드로 프로젝트 열기·메뉴 선택·대화상자 기본 버튼. Tab 포커스와 실제 낭독은 미수집 | unverified |
 | #228 GUI 4행 | 다른 프로젝트 Emulator 점유로 Android GUI 미실행 | unverified |
 
-**독립 repo 두 창.** 두 번째 GUI 실행에서 Cmd+O와 폴더 경로 입력으로 Food Truck과 NetNewsWire를 각각 창으로 열고, Scheme(Food Truck, NetNewsWire-iOS)과 서로 다른 소유 Simulator(Runstir224_Native_iOS_2ce1, Runstir224_native-flutter-gui_2ce1)를 골랐습니다. 두 창의 빌드를 연달아 누르자 2초 간격 프로세스 기록에서 두 프로젝트의 xcodebuild가 04:25:11Z부터 04:25:57Z까지 함께 돌았습니다. 두 창 모두 "빌드: 완료"였고 빌드 로그는 각각 BUILD SUCCEEDED(13:25:55, 13:26:37 KST)로 끝났습니다. 빌드 뒤에도 두 창의 기기·Scheme 선택이 그대로였습니다. 첫 GUI 실행에서는 Food Truck 실행(up)이 끝나 Simulator에 Truck 첫 화면이 뜬 뒤 NetNewsWire 작업을 시작해, 그 회차는 동시 진행이 아니었습니다. 네 프로젝트의 빌드 로그는 프로젝트 폴더 identity마다 따로 생겼습니다. 경로 별칭(ft-alias, ft-wt1로 가는 symlink)을 열었을 때 기존 ft-wt1 창이 앞으로 오는 것을 수집 도구 화면에서 보았지만 원시 기록을 남기지 않았고, 재확인은 사용자 화면 사용과 겹쳐 중단해 미검증으로 둡니다. 일반 폴더(ft-plain)는 실행하지 않았습니다.
+**독립 repo 두 창.** 두 번째 GUI 실행에서 Cmd+O와 폴더 경로 입력으로 Food Truck과 NetNewsWire를 각각 창으로 열고, Scheme(Food Truck, NetNewsWire-iOS)과 서로 다른 소유 Simulator(Runstir224_Native_iOS_2ce1, Runstir224_native-flutter-gui_2ce1)를 골랐습니다. 두 창의 빌드를 연달아 누르자 2초 간격 프로세스 기록에서 두 빌드 작업의 xcodebuild가 04:25:11Z부터 04:25:57Z까지 함께 돌았습니다. 실제 컴파일 구간은 일부만 겹쳤습니다(Food Truck 컴파일 04:25:48Z~04:25:55Z 동안 NetNewsWire는 설정 조회 단계, NetNewsWire 컴파일 04:26:04Z~04:26:37Z는 단독). 두 프로젝트의 xcodebuild 목록·설정 조회가 여러 번 반복된 것도 기록에 있으며 원인은 판정하지 않았습니다. 두 창 모두 "빌드: 완료"였고 빌드 로그는 각각 BUILD SUCCEEDED(13:25:55, 13:26:37 KST)로 끝났습니다. 빌드 뒤에도 두 창의 기기·Scheme 선택이 그대로였습니다. 첫 GUI 실행에서는 Food Truck 실행(up)이 끝나 Simulator에 Truck 첫 화면이 뜬 뒤 NetNewsWire 작업을 시작해, 그 회차는 동시 진행이 아니었습니다. 네 프로젝트의 빌드 로그는 프로젝트 폴더 identity마다 따로 생겼습니다. 경로 별칭(ft-alias, ft-wt1로 가는 symlink)을 열었을 때 기존 ft-wt1 창이 앞으로 오는 것을 수집 도구 화면에서 보았지만 원시 기록을 남기지 않았고, 재확인은 사용자 화면 사용과 겹쳐 중단해 미검증으로 둡니다. 일반 폴더(ft-plain)는 실행하지 않았습니다.
 
 **같은 repo 두 worktree.** 새 local clone ft-wt1과 그 git worktree ft-wt2에서 CLI build를 같은 시각에 시작해 서로 다른 Simulator 대상으로 130초·139초에 모두 succeeded였습니다(validate·device·build 완료).
 
