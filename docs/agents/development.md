@@ -2,10 +2,12 @@
 
 이 프로젝트는 GitHub `minjunkim-dev/mobile-runtime`의 기존 Issue·라벨·도메인 설정을 유지한다. 작업 전 [이슈 추적](issue-tracker.md)·[라벨](triage-labels.md)·[도메인 읽기](domain.md)를 확인한다. 관련 용어집·ADR과 티켓의 확정 완료 조건을 읽는다. 없는 도메인 문서는 필요가 생길 때 만든다.
 
+프로필은 `AGENTS.md`의 `프로필: 1인`이다. 공통 GitHub 기준이 더하는 리뷰 관문·문 판정·`main` 경계는 repo-baseline `POLICY.md`와 `docs/development-workflow.md`를 따른다. 적용한 커밋과 Actions 이벤트 정책의 전제 조건은 [저장소 설정](../REPOSITORY_SETUP.md)에 있다. 제품 검증과 이 저장소의 CI는 이 문서와 [리뷰 절차](review.md)를 따른다.
+
 ## 설정 확인
 
 현재 런타임이 선택한 설치 manifest에서 Matt Pocock의 공식 스킬 원문을 찾는다. 목록에 없어도 manifest의 `skills` 경로를 확인한다. 미설치·미확인을 구분한다. 설치·서버 기능 활성화를 자동 실행하지 않는다.
-기존 tracker·라벨 매핑·도메인 문서·AGENTS 연결이 유효하면 재설정하지 않는다. 누락·변경이 있으면 `mattpocock-skills:setup-matt-pocock-skills` 원문의 조사·초안·확인 절차로 보완한다. 이 프로젝트의 canonical 지침은 root `AGENTS.md`다. 도구별 중복 지침·shim·symlink를 만들지 않는다. 자동 로딩을 확인할 수 없는 도구는 작업 시작 때 AGENTS와 위 문서를 명시적으로 읽는다.
+기존 tracker·라벨 매핑·도메인 문서·AGENTS 연결이 유효하면 재설정하지 않는다. 누락·변경이 있으면 `mattpocock-skills:setup-matt-pocock-skills` 원문의 조사·초안·확인 절차로 보완한다. 이 프로젝트의 canonical 지침은 root `AGENTS.md`다. 도구별 중복 지침·shim·symlink를 만들지 않는다. repo-baseline이 `.github/repo-baseline.json`에 해시로 복사하는 `matt-code-review` 사본은 지침 파일이 아니라 이 규칙의 예외다. 자동 로딩을 확인할 수 없는 도구는 작업 시작 때 AGENTS와 위 문서를 명시적으로 읽는다.
 
 ## 작업 크기에 맞는 진입
 
