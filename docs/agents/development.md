@@ -2,6 +2,8 @@
 
 이 프로젝트는 GitHub `minjunkim-dev/mobile-runtime`의 기존 Issue·라벨·도메인 설정을 유지한다. 작업 전 [이슈 추적](issue-tracker.md)·[라벨](triage-labels.md)·[도메인 읽기](domain.md)를 확인한다. 관련 용어집·ADR과 티켓의 확정 완료 조건을 읽는다. 없는 도메인 문서는 필요가 생길 때 만든다.
 
+프로필은 `AGENTS.md`의 `프로필: 1인`이다. 공통 GitHub 기준이 더하는 리뷰 관문·문 판정·`main` 경계는 repo-baseline `POLICY.md`와 `docs/development-workflow.md`를 따른다. 적용한 커밋과 Actions 이벤트 정책의 전제 조건은 [저장소 설정](../REPOSITORY_SETUP.md)에 있다. 제품 검증과 이 저장소의 CI는 이 문서와 [리뷰 절차](review.md)를 따른다.
+
 ## 설정 확인
 
 현재 런타임이 선택한 설치 manifest에서 Matt Pocock의 공식 스킬 원문을 찾는다. 목록에 없어도 manifest의 `skills` 경로를 확인한다. 미설치·미확인을 구분한다. 설치·서버 기능 활성화를 자동 실행하지 않는다.

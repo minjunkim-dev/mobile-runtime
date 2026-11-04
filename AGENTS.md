@@ -1,5 +1,7 @@
 # Runstir
 
+프로필: 1인
+
 Reproducible mobile development runtime. North Star: `git clone → mobile up`.
 
 Status: iOS React Native MVP implemented. Private iOS internal-alpha execution
