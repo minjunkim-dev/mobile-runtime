@@ -60,7 +60,7 @@ Summary에는 변경 흐름을 보여주는 작은 도식을 둔다. Evidence에
 되돌리기 어려운 데이터 변경, 외부 대량 발송, 파괴적인 정리, 권한 확대는 one-way로 처리한다.
 많은 프로젝트의 실행 동작이나 공개 계약을 바꾸는 변경은 broad로 처리한다.
 diff 크기로 위험을 결정하지 않는다. 정책상 사람이 승인할 변경은 `ready-for-human`으로 표시한다.
-현재 GitHub 보호 설정은 `CI`만 강제한다. 위 사람 승인과 독립 리뷰는 에이전트 절차다. 서버가 자동으로 강제한다고 주장하지 않는다.
+현재 GitHub 보호 설정은 `CI`만 강제한다. `Review status` workflow가 저장소에 있어도, 필수 체크로 등록되기 전에는 그 job이 병합을 막지 않는다. 한쪽 문 승인 댓글 형식은 repo-baseline `POLICY.md` §10이다. 위 사람 승인과 독립 리뷰는 에이전트 절차다. 서버가 자동으로 강제한다고 주장하지 않는다.
 병합 직전에 GitHub API로 head·base와 검사 결과를 다시 확인한다.
 최종 head SHA를 확인하고 `gh pr merge <PR> --repo <OWNER/REPO> --squash --match-head-commit <SHA>`로 병합한다.
 `--admin`으로 보호를 우회하지 않는다.
