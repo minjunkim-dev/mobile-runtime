@@ -254,6 +254,7 @@ public struct SystemProcessRunner: ProcessRunner {
         let environment = Subprocess.Environment.custom(values)
 
         let invocation = Self.invocation(command)
+        let owned = OwnedDescendants()
         let work = Task { () async throws -> ProcessResult in
             let executable: Subprocess.Executable = invocation.executable.hasPrefix("/")
                 ? .path(.init(invocation.executable)) : .name(invocation.executable)
@@ -264,9 +265,10 @@ public struct SystemProcessRunner: ProcessRunner {
                     arguments: Arguments(invocation.arguments),
                     environment: environment,
                     platformOptions: Self.commandPlatformOptions,
+                    input: .none,
                     output: .string(limit: Self.outputLimit),
                     error: .string(limit: Self.errorLimit)
-                )
+                ) { execution in owned.adopt(rootPID: execution.processIdentifier.value) }
                 return ProcessResult(
                     terminationStatus: Self.translate(result.terminationStatus),
                     standardOutput: Self.collected(result.standardOutput),
@@ -283,6 +285,7 @@ public struct SystemProcessRunner: ProcessRunner {
                     output: .sequence,
                     error: .sequence
                 ) { execution in
+                    owned.adopt(rootPID: execution.processIdentifier.value)
                     async let output = Self.collect(execution.standardOutput, channel: .standardOutput,
                         limit: Self.outputLimit, onBytes: onBytes)
                     async let error = Self.collect(execution.standardError, channel: .standardError,
@@ -307,6 +310,7 @@ public struct SystemProcessRunner: ProcessRunner {
                     output: .sequence,
                     error: .sequence
                 ) { execution in
+                    owned.adopt(rootPID: execution.processIdentifier.value)
                     try await withThrowingTaskGroup(of: Void.self) { group in
                         group.addTask { try await Self.pump(execution.standardOutput, channel: .standardOutput, into: sink, onBytes: onBytes) }
                         group.addTask { try await Self.pump(execution.standardError, channel: .standardError, into: sink, onBytes: onBytes) }
@@ -321,14 +325,20 @@ public struct SystemProcessRunner: ProcessRunner {
             }
         }
 
-        // Cancellation tears down this command's owned group, including tool children.
-        // The deadline still needs its own flag to retain the timeout classification.
+        // Cancellation tears down this command's owned group, including tool children, and
+        // then whatever left the group: the tree is read before the kill, while its lineage
+        // still exists (see `OwnedDescendants`). The deadline still needs its own flag to
+        // retain the timeout classification.
         let expired = Flag()
+        func interrupt() {
+            owned.capture()
+            work.cancel()
+        }
         let deadline: Task<Void, any Error>? = command.timeout.map { timeout in
             Task {
                 try await Task.sleep(for: timeout)
                 expired.raise()
-                work.cancel()
+                interrupt()
             }
         }
         defer { deadline?.cancel() }
@@ -350,10 +360,29 @@ public struct SystemProcessRunner: ProcessRunner {
             return .timedOut(command: command.description, timeout: timeout)
         }
 
+        let finished: Result<ProcessResult, any Error>
         do {
-            let result = try await withTaskCancellationHandler {
+            finished = .success(try await withTaskCancellationHandler {
                 try await work.value
-            } onCancel: { work.cancel() }
+            } onCancel: { interrupt() })
+        } catch {
+            finished = .failure(error)
+        }
+        // The command is gone; what its captured tree still holds is killed and awaited here,
+        // so the caller is told it stopped only once nothing it started is still running.
+        let survivors = await owned.settle()
+        if !survivors.isEmpty {
+            logger.warning(
+                "processes started by the command outlived its cancellation",
+                metadata: [
+                    "command": .string(command.description),
+                    "processes": .string(survivors.map(\.description).joined(separator: ",")),
+                ]
+            )
+        }
+
+        do {
+            let result = try finished.get()
             try Task.checkCancellation()
             // The deadline kills the child, so a killed process that also raced to
             // the finish line still counts as a real result.
