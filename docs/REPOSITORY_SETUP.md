@@ -26,7 +26,7 @@ PR의 source-only 검사는 codeql.yml blob과 `codeql_main_source.sha`를 비�
 | 병합 | Squash만, PR title/body, 작업 브랜치 자동 삭제·업데이트 제안 On |
 | Allow auto-merge | On. 일괄 예약 없음. 검증 후 exact-head 직접 병합 |
 | main 보호 | PR 필수·strict·관리자 적용·선형 이력·대화 해결 On |
-| 승인 | GitHub 0명. 한쪽 문/broad 최종 head는 사람 승인 |
+| 승인 | GitHub 0명. 되돌리기 어려움/broad 최종 head는 사람 승인 |
 | 필수 체크 | 기존 `CI`, GitHub Actions App `15368` |
 | force push·main 삭제 | Off |
 | Actions | GitHub 공식만, 전체 SHA 필수, 기본 token read, PR 생성·승인 Off |
@@ -64,11 +64,11 @@ Copilot MCP tools·PR 승인과 추가 자동 AI 리뷰를 켜지 않는다. Cha
 
 ## 공통 기준 갱신과 설정 관측 기록
 
-적용 원본은 `minjunkim-dev/repo-baseline`의 main `e8c5224e33d8ebe3aa915fd741702ee75c77ecc2`다. 복사본의 경로·생태계를 유지하며 원본 도구로 갱신했다. 기존 테스트 대상 경로는 `scripts/source-only/`다. `scripts/test_workflow_policy.py`만 원본과 같은 `scripts/`에 둔다. 그 테스트가 자기 위치의 부모를 저장소 루트로 읽기 때문이다. Dependabot `ecosystems`는 빈 목록이다. `.claude/settings.json`은 적용 시점의 원본 템플릿과 바이트가 같다. 해시 manifest에는 없다. 기존 파일을 합치지 않았다. `templates/review-status.yml`은 별도 파일 `.github/workflows/review-status.yml`로 다시 복사했다. `templates/pr-policy.yml`은 `.github/workflows/pr-policy.yml`로 복사했다. 둘 다 해시 대상이 아니고 pin은 템플릿과 같다. 다른 workflow와 합치지 않았다. `review-status.yml`의 이벤트는 `pull_request_target`과 `issue_comment`뿐이다. `pr-policy.yml`은 `pull_request`만 쓴다. `.github/workflow-policy.json`은 원본 저장소 파일을 복사하지 않는다. `require_agents_md`는 기본값 true다. `reject_claude_md`는 false다. `CLAUDE.md`는 `@AGENTS.md` 한 줄이라 지우지 않는다. `feature_flags`는 false다. 이 저장소에 flag 레지스트리가 없다. 봇 브랜치 접두사는 기본값 `claude`·`codex`·`dependabot`이다. `cursor`는 더하지 않는다. 로컬 스킬 설정과 일상 작업 진입은 [개발 절차](agents/development.md), 자체 리뷰와 사용자 요청 회고는 [리뷰 절차](agents/review.md)를 따른다. 공통 기준이 더하는 `main` 경계는 원본 [개발 절차](https://github.com/minjunkim-dev/repo-baseline/blob/e8c5224e33d8ebe3aa915fd741702ee75c77ecc2/docs/development-workflow.md)를 따른다.
+적용 원본은 `minjunkim-dev/repo-baseline`의 main `c6405a09a7d06af943cb08db5b600fe0f655b0a2`다. 복사본의 경로·생태계를 유지하며 원본 도구로 갱신했다. 기존 테스트 대상 경로는 `scripts/source-only/`다. `scripts/test_workflow_policy.py`만 원본과 같은 `scripts/`에 둔다. 그 테스트가 자기 위치의 부모를 저장소 루트로 읽기 때문이다. Dependabot `ecosystems`는 빈 목록이다. `.claude/settings.json`은 적용 시점의 원본 템플릿과 바이트가 같다. 해시 manifest에는 없다. 기존 파일을 합치지 않았다. `templates/review-status.yml`은 별도 파일 `.github/workflows/review-status.yml`로 다시 복사했다. `templates/pr-policy.yml`은 `.github/workflows/pr-policy.yml`로 다시 복사했다. 둘 다 해시 대상이 아니고 pin은 템플릿과 같다. 다른 workflow와 합치지 않았다. 두 workflow의 `branches`는 `main`이다. `review-status.yml`의 이벤트는 `pull_request_target`과 `issue_comment`뿐이다. `pr-policy.yml`은 `pull_request`만 쓴다. `Door:` 값은 `되돌리기 쉬움` 또는 `되돌리기 어려움`이다. 옛 `양쪽 문`·`한쪽 문`과 옛 `한쪽 문 승인: <sha>`는 deprecated로 계속 인정한다. `.github/workflow-policy.json`은 원본 저장소 파일을 복사하지 않는다. `require_agents_md`는 기본값 true다. `reject_claude_md`는 false다. `CLAUDE.md`는 `@AGENTS.md` 한 줄이라 지우지 않는다. `feature_flags`는 false다. 이 저장소에 flag 레지스트리가 없다. 봇 브랜치 접두사는 기본값 `claude`·`codex`·`dependabot`이다. `cursor`는 더하지 않는다. 로컬 스킬 설정과 일상 작업 진입은 [개발 절차](agents/development.md), 자체 리뷰와 사용자 요청 회고는 [리뷰 절차](agents/review.md)를 따른다. 공통 기준이 더하는 `main` 경계는 원본 [개발 절차](https://github.com/minjunkim-dev/repo-baseline/blob/c6405a09a7d06af943cb08db5b600fe0f655b0a2/docs/development-workflow.md)를 따른다.
 
-기존 기준선의 설명용 `exceptions` 배열은 내용을 보존해 `observations`로 옮겼다. 관측 기록은 API 감사 항목을 제외하지 않는다. 실제 기능 미지원·비해당을 감사 범위에서 제외하려면 원본의 [설정 기준선 형식](https://github.com/minjunkim-dev/repo-baseline/blob/e8c5224e33d8ebe3aa915fd741702ee75c77ecc2/docs/github-settings-profile.md)에 맞는 `exceptions` 객체와 사유·근거가 필요하다. 예외가 있으면 exit 0이어도 결과는 전체 PASS가 아닌 LIMITED다. 미선언 403·404·누락·권한 오류는 계속 실패한다.
+기존 기준선의 설명용 `exceptions` 배열은 내용을 보존해 `observations`로 옮겼다. 관측 기록은 API 감사 항목을 제외하지 않는다. 실제 기능 미지원·비해당을 감사 범위에서 제외하려면 원본의 [설정 기준선 형식](https://github.com/minjunkim-dev/repo-baseline/blob/c6405a09a7d06af943cb08db5b600fe0f655b0a2/docs/github-settings-profile.md)에 맞는 `exceptions` 객체와 사유·근거가 필요하다. 예외가 있으면 exit 0이어도 결과는 전체 PASS가 아닌 LIMITED다. 미선언 403·404·누락·권한 오류는 계속 실패한다.
 
-`Review status`는 이미 기본 브랜치에 있다. 이번 갱신은 그 파일을 템플릿으로 다시 복사한다. 이벤트는 `pull_request_target`과 `issue_comment` 그대로다. 댓글 재실행 job에 `checks: write`가 더해진다. Actions 이벤트 정책은 만들거나 고치지 않는다. 목록 조회가 실패하면 정책이 없는 것으로 보지 않는다. 필수 체크 `Review status`는 등록하지 않는다.
+`Review status`는 이미 기본 브랜치에 있다. 이번 갱신은 그 파일과 PR policy workflow를 템플릿으로 다시 복사한다. `pull_request_target`과 `pull_request`는 `branches: [main]`만 본다. 검사기는 PR base가 저장소 기본 브랜치가 아니거나 이벤트 base SHA가 그 브랜치 위에 없으면 실패한다. 실패 이름은 `review/base-branch`다. 사이드 base의 소유자 댓글은 체크를 게시하지 않는다. 이벤트 종류는 그대로다. 댓글 재실행 job의 `actions: write`와 `checks: write`는 이전 적용에서 이미 있다. Actions 이벤트 정책은 만들거나 고치지 않는다. 목록 조회가 실패하면 정책이 없는 것으로 보지 않는다. 필수 체크 `Review status`는 등록하지 않는다.
 
 이번 갱신은 `.github/repository-settings.json`의 서버 기대값·권한·필수 체크·CodeQL·배포를 바꾸지 않는다. `actions: write`와 `checks: write`는 Review status의 댓글 재실행 job에만 있다. PR policy workflow의 권한은 `contents: read`다. 과거 실행 기록을 현재 검증 결과로 바꾸지 않는다.
 
