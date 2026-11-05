@@ -49,19 +49,20 @@ source-only 테스트는 `test_*.py`를 자동 탐색한다. AST 검사는 정�
 ## PR 본문과 병합
 
 `.github/pull_request_template.md`의 Summary, Evidence, Merge Danger, Author, Review evidence를 사용한다.
-`Door:`는 `양쪽 문` 또는 `한쪽 문`만 쓴다. Author는 `Author: <tool> / <model>`이다.
+`Door:`는 `되돌리기 쉬움` 또는 `되돌리기 어려움`만 쓴다. 필드 이름은 `Door:`다. 옛 `양쪽 문`·`한쪽 문`은 deprecated이고, 재적용된 검사기가 같은 의미로 받는다. Author는 `Author: <tool> / <model>`이다.
+이 저장소의 검사기가 기본 브랜치에 다시 적용되기 전(이 PR 자신 포함)에는 본문 `Door:`와 소유자 승인 댓글에 옛 형식 `양쪽 문`/`한쪽 문`, `한쪽 문 승인: <sha>`를 쓴다.
 Summary에는 변경 흐름을 보여주는 작은 도식을 둔다. Evidence에는 실제 명령과 결과를 둔다.
 문서 변경이면 기존 규칙과 새 규칙을 비교한다. 실행하지 않은 검사를 성공으로 기록하지 않는다.
 
 | 위험 | 병합 조건 |
 | --- | --- |
-| 양쪽 문 / narrow | 티켓 검증과 독립 리뷰 완료. 최종 head의 필수 `CI` 성공. 에이전트가 병합한다. |
-| 한쪽 문 또는 broad | 위 검증 완료. 사람이 최종 head와 영향 범위를 승인한 뒤 병합한다. |
+| 되돌리기 쉬움 / narrow | 티켓 검증과 독립 리뷰 완료. 최종 head의 필수 `CI` 성공. 에이전트가 병합한다. |
+| 되돌리기 어려움 또는 broad | 위 검증 완료. 사람이 최종 head와 영향 범위를 승인한 뒤 병합한다. |
 
-되돌리기 어려운 데이터 변경, 외부 대량 발송, 파괴적인 정리, 권한 확대는 한쪽 문으로 처리한다.
+되돌리기 어려운 데이터 변경, 외부 대량 발송, 파괴적인 정리, 권한 확대는 되돌리기 어려움으로 처리한다.
 많은 프로젝트의 실행 동작이나 공개 계약을 바꾸는 변경은 broad로 처리한다.
 diff 크기로 위험을 결정하지 않는다. 정책상 사람이 승인할 변경은 `ready-for-human`으로 표시한다.
-현재 GitHub 보호 설정은 `CI`만 강제한다. `Review status` workflow가 저장소에 있어도, 필수 체크로 등록되기 전에는 그 job이 병합을 막지 않는다. 한쪽 문 승인 댓글 형식은 repo-baseline `POLICY.md` §10이다. 위 사람 승인과 독립 리뷰는 에이전트 절차다. 서버가 자동으로 강제한다고 주장하지 않는다.
+현재 GitHub 보호 설정은 `CI`만 강제한다. `Review status` workflow가 저장소에 있어도, 필수 체크로 등록되기 전에는 그 job이 병합을 막지 않는다. 되돌리기 어려움 승인 댓글은 `되돌리기 어려움 승인: <head sha>`다. 옛 `한쪽 문 승인: <sha>`는 deprecated로 계속 인정한다. 형식은 repo-baseline `POLICY.md` §10이다. 위 사람 승인과 독립 리뷰는 에이전트 절차다. 서버가 자동으로 강제한다고 주장하지 않는다.
 병합 직전에 GitHub API로 head·base와 검사 결과를 다시 확인한다.
 최종 head SHA를 확인하고 `gh pr merge <PR> --repo <OWNER/REPO> --squash --match-head-commit <SHA>`로 병합한다.
 `--admin`으로 보호를 우회하지 않는다.
