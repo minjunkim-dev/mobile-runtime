@@ -48,16 +48,17 @@ source-only 테스트는 `test_*.py`를 자동 탐색한다. AST 검사는 정�
 
 ## PR 본문과 병합
 
-`.github/pull_request_template.md`의 Summary, Evidence, Merge Danger를 사용한다.
+`.github/pull_request_template.md`의 Summary, Evidence, Merge Danger, Author, Review evidence를 사용한다.
+`Door:`는 `양쪽 문` 또는 `한쪽 문`만 쓴다. Author는 `Author: <tool> / <model>`이다.
 Summary에는 변경 흐름을 보여주는 작은 도식을 둔다. Evidence에는 실제 명령과 결과를 둔다.
 문서 변경이면 기존 규칙과 새 규칙을 비교한다. 실행하지 않은 검사를 성공으로 기록하지 않는다.
 
 | 위험 | 병합 조건 |
 | --- | --- |
-| two-way / narrow | 티켓 검증과 독립 리뷰 완료. 최종 head의 필수 `CI` 성공. 에이전트가 병합한다. |
-| one-way 또는 broad | 위 검증 완료. 사람이 최종 head와 영향 범위를 승인한 뒤 병합한다. |
+| 양쪽 문 / narrow | 티켓 검증과 독립 리뷰 완료. 최종 head의 필수 `CI` 성공. 에이전트가 병합한다. |
+| 한쪽 문 또는 broad | 위 검증 완료. 사람이 최종 head와 영향 범위를 승인한 뒤 병합한다. |
 
-되돌리기 어려운 데이터 변경, 외부 대량 발송, 파괴적인 정리, 권한 확대는 one-way로 처리한다.
+되돌리기 어려운 데이터 변경, 외부 대량 발송, 파괴적인 정리, 권한 확대는 한쪽 문으로 처리한다.
 많은 프로젝트의 실행 동작이나 공개 계약을 바꾸는 변경은 broad로 처리한다.
 diff 크기로 위험을 결정하지 않는다. 정책상 사람이 승인할 변경은 `ready-for-human`으로 표시한다.
 현재 GitHub 보호 설정은 `CI`만 강제한다. `Review status` workflow가 저장소에 있어도, 필수 체크로 등록되기 전에는 그 job이 병합을 막지 않는다. 한쪽 문 승인 댓글 형식은 repo-baseline `POLICY.md` §10이다. 위 사람 승인과 독립 리뷰는 에이전트 절차다. 서버가 자동으로 강제한다고 주장하지 않는다.
