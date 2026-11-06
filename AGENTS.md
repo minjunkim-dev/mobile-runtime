@@ -35,7 +35,7 @@ Single-context — `CONTEXT.md` and `docs/adr/` at the repo root. See `docs/agen
 
 Follow `docs/agents/review.md` for independent review, direct fixes, final-head verification, and merge risk. Reviewers read `docs/coding-standards.md`; do not inline the standards here.
 
-The agent merges its own easy-to-reverse pull request (`Door: 되돌리기 쉬움`) after the ticket's verification, independent review, and required `CI` check pass on the final head. Hard-to-reverse (`Door: 되돌리기 어려움`) or broad-impact changes require human approval of that final head. Green CI does not replace measurements required by the ticket. 이 저장소의 검사기가 기본 브랜치에 다시 적용되기 전(이 PR 자신 포함)에는 본문 `Door:`와 소유자 승인 댓글에 옛 형식 `양쪽 문`/`한쪽 문`, `한쪽 문 승인: <sha>`를 쓴다.
+The agent merges its own easy-to-reverse pull request (`Door: 되돌리기 쉬움`) after the ticket's verification, independent review, and the required checks on the final head. `.github/repository-settings.json` records `CI` and `Review status` (`app_id` 15368, `strict: true`). Until the owner applies that record from a Mac, the enforced check is `CI`. After the apply, every pull request except a Dependabot version-only pull request also needs an owner-posted `review/independent` status, and `review/security` when the diff touches the trust boundary. The agent does not post those statuses. Hard-to-reverse (`Door: 되돌리기 어려움`) or broad-impact changes require human approval of that final head. Green CI does not replace measurements required by the ticket. `Door:` 값은 `되돌리기 쉬움` 또는 `되돌리기 어려움`이다. 옛 `양쪽 문`/`한쪽 문`과 `한쪽 문 승인: <sha>`는 deprecated이고 검사기가 같은 의미로 받는다.
 
 ### 작업 진입
 
