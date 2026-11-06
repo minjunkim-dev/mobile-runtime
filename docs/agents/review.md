@@ -19,7 +19,7 @@ CI 성공은 티켓의 실제 측정이나 독립 리뷰를 대체하지 않는�
 
 ## CI
 
-필수 check 이름은 `CI`다. 모든 하위 job이 성공해야 `CI`가 성공한다.
+필수 check 이름 `CI`는 `.github/workflows/ci.yml`의 집계 job이다. 모든 하위 job이 성공해야 `CI`가 성공한다. `Review status`는 그 하위 job이 아니다. `.github/repository-settings.json`이 `CI`와 `Review status`를 필수 체크로 기록한다.
 
 | 검사 | 확인하는 것 | 확인하지 않는 것 |
 | --- | --- | --- |
@@ -49,27 +49,26 @@ source-only 테스트는 `test_*.py`를 자동 탐색한다. AST 검사는 정�
 ## PR 본문과 병합
 
 `.github/pull_request_template.md`의 Summary, Evidence, Merge Danger, Author, Review evidence를 사용한다.
-`Door:`는 `되돌리기 쉬움` 또는 `되돌리기 어려움`만 쓴다. 필드 이름은 `Door:`다. 옛 `양쪽 문`·`한쪽 문`은 deprecated이고, 재적용된 검사기가 같은 의미로 받는다. Author는 `Author: <tool> / <model>`이다.
-이 저장소의 검사기가 기본 브랜치에 다시 적용되기 전(이 PR 자신 포함)에는 본문 `Door:`와 소유자 승인 댓글에 옛 형식 `양쪽 문`/`한쪽 문`, `한쪽 문 승인: <sha>`를 쓴다.
+`Door:`는 `되돌리기 쉬움` 또는 `되돌리기 어려움`만 쓴다. 필드 이름은 `Door:`다. 옛 `양쪽 문`·`한쪽 문`은 deprecated이고, 기본 브랜치의 검사기가 같은 의미로 받는다. Author는 `Author: <tool> / <model>`이다. 승인 댓글의 현행 접두사는 `되돌리기 어려움 승인: <head sha>`다. 옛 `한쪽 문 승인: <sha>`도 같은 의미다.
 Summary에는 변경 흐름을 보여주는 작은 도식을 둔다. Evidence에는 실제 명령과 결과를 둔다.
 문서 변경이면 기존 규칙과 새 규칙을 비교한다. 실행하지 않은 검사를 성공으로 기록하지 않는다.
 
 | 위험 | 병합 조건 |
 | --- | --- |
-| 되돌리기 쉬움 / narrow | 티켓 검증과 독립 리뷰 완료. 최종 head의 필수 `CI` 성공. 에이전트가 병합한다. |
-| 되돌리기 어려움 또는 broad | 위 검증 완료. 사람이 최종 head와 영향 범위를 승인한 뒤 병합한다. |
+| 되돌리기 쉬움 / narrow | 티켓 검증과 독립 리뷰 완료. 최종 head의 필수 체크 성공. 기대값이 서버에 적용되기 전에는 필수 체크가 `CI`이고 에이전트가 병합한다. 적용된 뒤에는 Dependabot 버전 전용 PR을 뺀 PR에 소유자의 `review/independent` success가 있어야 병합한다. |
+| 되돌리기 어려움 또는 broad | 위 검증 완료. 사람이 최종 head와 영향 범위를 승인한 뒤 병합한다. 승인 댓글은 `되돌리기 어려움 승인: <head sha>`다. 편집한 댓글은 무효다. |
 
 되돌리기 어려운 데이터 변경, 외부 대량 발송, 파괴적인 정리, 권한 확대는 되돌리기 어려움으로 처리한다.
 많은 프로젝트의 실행 동작이나 공개 계약을 바꾸는 변경은 broad로 처리한다.
 diff 크기로 위험을 결정하지 않는다. 정책상 사람이 승인할 변경은 `ready-for-human`으로 표시한다.
-현재 GitHub 보호 설정은 `CI`만 강제한다. `Review status` workflow가 저장소에 있어도, 필수 체크로 등록되기 전에는 그 job이 병합을 막지 않는다. 되돌리기 어려움 승인 댓글은 `되돌리기 어려움 승인: <head sha>`다. 옛 `한쪽 문 승인: <sha>`는 deprecated로 계속 인정한다. 형식은 repo-baseline `POLICY.md` §10이다. 위 사람 승인과 독립 리뷰는 에이전트 절차다. 서버가 자동으로 강제한다고 주장하지 않는다.
+`.github/repository-settings.json`은 `CI`와 `Review status`를 필수 체크로 기록한다. `strict`는 true다. `app_id`는 15368이다. `Review status`의 context는 `.github/workflows/review-status.yml` job 이름과 같다. 이 기록의 PR은 branch protection을 쓰지 않는다. 병합 뒤 소유자가 Mac에서 적용한다. 적용되면 Dependabot 버전 전용 PR을 뺀 모든 PR(되돌리기 쉬움 포함)에 소유자가 올리는 `review/independent`가 필요하다. 신뢰 경계 경로면 `review/security`도 필요하다. status는 소유자만 올린다는 규칙이다. 에이전트가 status를 올리는 것은 금지지만 GitHub가 기술적으로 막지는 않는다. 1인 프로필에서 검사기는 `creator.login`이 저장소 소유자이거나 `STATUS_ACTORS`(지금은 비어 있음)인 status만 success로 센다. 적용 전에 서버 보호가 강제하는 체크는 `CI`다. 되돌리기 어려움 승인 댓글은 `되돌리기 어려움 승인: <head sha>`다. 옛 `한쪽 문 승인: <sha>`는 deprecated로 계속 인정한다. 편집한 댓글은 승인이 아니다. 형식은 repo-baseline `POLICY.md` §10이다. 위 사람 승인과 독립 리뷰는 에이전트 절차다. 기대값 파일만으로 서버가 그 승인을 강제한다고 적지 않는다.
 병합 직전에 GitHub API로 head·base와 검사 결과를 다시 확인한다.
 최종 head SHA를 확인하고 `gh pr merge <PR> --repo <OWNER/REPO> --squash --match-head-commit <SHA>`로 병합한다.
 `--admin`으로 보호를 우회하지 않는다.
 리뷰 이후 커밋이나 base가 바뀌면 영향받는 검증을 갱신한다.
 사용자가 병합을 금지한 작업은 검증 후에도 PR을 열어 둔다.
 저장소 `Allow auto-merge`는 On으로 둔다. 모든 PR에 자동 병합을 예약하지 않는다.
-기본 흐름은 최종 검증 후 직접 병합이다. GitHub 자동 병합 예약은 독립 리뷰 결과를 대상 SHA의 필수 체크로 연결한 뒤 별도 구성한다.
+기본 흐름은 최종 검증 후 직접 병합이다. `Review status`가 필수로 적용된 뒤에는 Dependabot 버전 전용 PR을 뺀 되돌리기 쉬움도 소유자의 `review/independent`가 success이기 전에 병합되지 않는다. GitHub 자동 병합 예약은 그 status가 success인 뒤에만 한다. 되돌리기 어려움과 외부 리뷰 대상 PR은 예약하지 않는다.
 
 ## 로컬 보안 리뷰
 
