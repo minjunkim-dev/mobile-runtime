@@ -92,11 +92,6 @@
     "codeql_workflow": {
       "path": ".github/workflows/codeql.yml",
       "state": "active"
-    },
-    "codeql_main_source": {
-      "path": ".github/workflows/codeql.yml",
-      "type": "file",
-      "sha": "e291fab085846f289e3ebffd4bd1240031f40031"
     }
   },
   "observations": [
