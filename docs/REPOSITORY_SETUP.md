@@ -13,7 +13,7 @@ python3 <repo-baseline>/tools/apply_github_settings.py <이 저장소 경로>   
 python3 <repo-baseline>/tools/apply_github_settings.py <이 저장소 경로> --apply  # 계획을 승인한 뒤
 ```
 
-결과는 `PASS`(0)·`LIMITED`(0)·`DRIFT`(1)·`UNVERIFIED`(2)다. 도구가 쓰지 않는 항목(공개 여부, ruleset, CodeQL workflow와 main의 `codeql.yml` blob)은 `MANUAL`로 보고한다.
+계획 모드는 다른 값을 `DIFF`·`PLAN`으로 보여 주고, 차이나 `MANUAL`이 없으면 0, 있으면 1로 끝난다. `--apply`는 쓴 뒤 다시 감사해 `PASS`·`LIMITED`(0) 또는 `DRIFT after apply`(1)를 낸다. `MANUAL`이 남아도 1이다. 조회·쓰기 실패는 `FAILED`(2)다. 도구가 쓰지 않는 항목(공개 여부, ruleset, CodeQL workflow와 main의 `codeql.yml` blob, 기준선이 관리하지 않는 보호 설정)은 `MANUAL`로 보고한다.
 Dependabot이 `.github/workflows/codeql.yml`만 바꾸면 `codeql_main_source.sha`가 `MANUAL` drift로 보인다. 기준선 SHA를 main의 `git hash-object .github/workflows/codeql.yml` 값으로 갱신한다. PR CI는 이 drift를 검사하지 않는다.
 기본 Actions token에 관리 권한을 추가하지 않는다.
 
