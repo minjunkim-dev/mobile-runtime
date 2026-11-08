@@ -14,6 +14,7 @@ python3 <repo-baseline>/tools/apply_github_settings.py <이 저장소 경로> --
 ```
 
 계획 모드는 다른 값을 `DIFF`·`PLAN`으로 보여 주고, 차이나 `MANUAL`이 없으면 0, 있으면 1로 끝난다. `--apply`는 쓴 뒤 다시 감사해 `PASS`·`LIMITED`(0) 또는 `DRIFT after apply`(1)를 낸다. `MANUAL`이 남아도 1이다. 조회·쓰기 실패는 `FAILED`(2)다. 도구가 쓰지 않는 항목(공개 여부, ruleset, CodeQL workflow, 기준선이 관리하지 않는 보호 설정)은 `MANUAL`로 보고한다.
+CodeQL workflow는 경로와 active 상태만 본다. 분석 job이 빠져도 `No writes needed`가 나올 수 있으니 스캔 범위의 증거로 쓰지 않는다.
 기본 Actions token에 관리 권한을 추가하지 않는다.
 
 ## 공통 정책
