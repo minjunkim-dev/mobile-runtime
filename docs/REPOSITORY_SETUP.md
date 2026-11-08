@@ -6,28 +6,26 @@ GitHub 품질 운영은 1인 개발 기준이다. 로컬 절차는 [리뷰 문�
 ## 기준선과 서버 검증
 
 [repository-settings.json](../.github/repository-settings.json)은 기대값이다. GitHub가 자동 적용하는 파일이 아니다.
-관리 설정 조회 권한이 있는 로컬 `gh` 인증으로 다음을 실행한다.
+감사와 적용은 소유자가 자기 기기에서 [repo-baseline](https://github.com/minjunkim-dev/repo-baseline)의 `tools/apply_github_settings.py`로 한다. 에이전트는 실행하지 않는다.
 
 ```sh
-python3 scripts/check_github_settings.py
+python3 <repo-baseline>/tools/apply_github_settings.py <이 저장소 경로>          # 계획만(GET)
+python3 <repo-baseline>/tools/apply_github_settings.py <이 저장소 경로> --apply  # 계획을 승인한 뒤
 ```
 
-도구는 GET만 수행한다. repository ID·owner/name·자료형·필수 항목·체크 이름과 App ID·main CodeQL workflow blob을 확인한다.
-exit 0은 일치, 1은 drift, 2는 조회 실패·자료 오류·미확인이다. 불완전한 기준선은 API 조회 전에 중단한다.
-main에 workflow가 없으면 감사는 통과하지 않는다. PR 파일과 main 반영을 구분한다.
-PR의 source-only 검사는 codeql.yml blob과 `codeql_main_source.sha`를 비교한다. Dependabot이 codeql.yml만 바꾸면 이 검사가 실패한다. 기준선 SHA를 `git hash-object .github/workflows/codeql.yml` 값으로 갱신한다.
-공통 검사기(`check_github_settings.py`·`check_repo_baseline.py`·`check_review_status.py`·`rerun_review_status.py`·`workflow_policy.py`·`pr_author.py`)와 테스트는 `minjunkim-dev/repo-baseline`에서 복사한다. 이 저장소에서 직접 고치지 않는다. 원본을 고친 뒤 `tools/apply_baseline.py`로 다시 적용한다. 복사본이 `.github/repo-baseline.json`의 해시와 다르면 `python3 scripts/check_repo_baseline.py`가 실패한다. CodeQL 단계들이 서로 다른 `github/codeql-action` commit을 쓰는 것도 거부한다. `check_review_status.py`는 기본 브랜치의 [Review status workflow](../.github/workflows/review-status.yml)가 실행한다. PR 제목·브랜치·본문 절은 [PR policy workflow](../.github/workflows/pr-policy.yml)가 실행한다. PR CI의 source-only 테스트는 리뷰 검사기의 동작을 합성 fixture로 확인하고, `scripts/test_workflow_policy.py`는 그 파일이 저장소 루트를 기준으로 읽으므로 `scripts/`에서 실행한다.
-기본 Actions token에 관리 권한을 추가하지 않는다. 오류·누락·drift 경로는 기존 source-only 검사에서 검증한다.
+계획 모드는 다른 값을 `DIFF`·`PLAN`으로 보여 주고, 차이나 `MANUAL`이 없으면 0, 있으면 1로 끝난다. `--apply`는 쓴 뒤 다시 감사해 `PASS`·`LIMITED`(0) 또는 `DRIFT after apply`(1)를 낸다. `MANUAL`이 남아도 1이다. 조회·쓰기 실패는 `FAILED`(2)다. 도구가 쓰지 않는 항목(공개 여부, ruleset, CodeQL workflow와 main의 `codeql.yml` blob, 기준선이 관리하지 않는 보호 설정)은 `MANUAL`로 보고한다.
+Dependabot이 `.github/workflows/codeql.yml`만 바꾸면 `codeql_main_source.sha`가 `MANUAL` drift로 보인다. 기준선 SHA를 main의 `git hash-object .github/workflows/codeql.yml` 값으로 갱신한다. PR CI는 이 drift를 검사하지 않는다.
+기본 Actions token에 관리 권한을 추가하지 않는다.
 
 ## 공통 정책
 
 | 항목 | 기준 |
 | --- | --- |
 | 병합 | Squash만, PR title/body, 작업 브랜치 자동 삭제·업데이트 제안 On |
-| Allow auto-merge | On. 일괄 예약 없음. 검증 후 exact-head 직접 병합 |
+| Allow auto-merge | Off. 병합은 사람이 최종 head를 읽고 한다 |
 | main 보호 | PR 필수·strict·관리자 적용·선형 이력·대화 해결 On |
-| 승인 | GitHub 0명. 되돌리기 어려움/broad 최종 head는 사람 승인 |
-| 필수 체크 | 기대값 `CI`, `Review status`. 둘 다 GitHub Actions App `15368`. `strict`는 true. 서버에 적용되기 전 보호가 강제하는 체크는 `CI`다. 적용 뒤 Dependabot 버전 전용 PR을 뺀 모든 PR에 소유자의 `review/independent`가 필요하다 |
+| 승인 | GitHub 0명. 병합은 사람만 한다. 되돌리기 어려움은 사람이 diff를 읽은 head에서 병합 |
+| 필수 체크 | `CI`(GitHub Actions App `15368`). `strict`는 true |
 | force push·main 삭제 | Off |
 | Actions | GitHub 공식만, 전체 SHA 필수, 기본 token read, PR 생성·승인 Off |
 | fork | 모든 외부 기여자 승인. Secret과 쓰기 token 분리 |
@@ -64,13 +62,9 @@ Copilot MCP tools·PR 승인과 추가 자동 AI 리뷰를 켜지 않는다. Cha
 
 ## 공통 기준 갱신과 설정 관측 기록
 
-적용 원본은 `minjunkim-dev/repo-baseline`의 main `9a3920b942695257772f25083e8a4fde5d4e3208`다. 복사본의 경로·생태계를 유지하며 `tools/apply_baseline.py`로 갱신했다. 기존 테스트 대상 경로는 `scripts/source-only/`다. `scripts/test_workflow_policy.py`만 원본과 같은 `scripts/`에 둔다. 그 테스트가 자기 위치의 부모를 저장소 루트로 읽기 때문이다. Dependabot `ecosystems`는 빈 목록이다. `.claude/settings.json`은 적용 시점의 원본 템플릿과 바이트가 같다. 해시 manifest에는 없다. 기존 파일을 합치지 않았다. `templates/review-status.yml`은 별도 파일 `.github/workflows/review-status.yml`로 다시 복사했다. `templates/pr-policy.yml`은 `.github/workflows/pr-policy.yml`과 바이트가 같다. 둘 다 해시 대상이 아니고 pin은 템플릿과 같다. 다른 workflow와 합치지 않았다. 두 workflow의 `branches`는 `main`이다. `review-status.yml`의 이벤트는 `pull_request_target`과 `issue_comment`뿐이다. `pr-policy.yml`은 `pull_request`만 쓴다. `Door:` 값은 `되돌리기 쉬움` 또는 `되돌리기 어려움`이다. 옛 `양쪽 문`·`한쪽 문`과 옛 `한쪽 문 승인: <sha>`는 deprecated로 계속 인정한다. 1인 프로필에서 `review/independent`와 `review/security`는 `creator.login`이 저장소 소유자이거나 `scripts/check_review_status.py`의 `STATUS_ACTORS`에 있을 때만 success다. `STATUS_ACTORS`는 비어 있다. 다른 작성자의 status는 실패다. 승인 댓글은 `updated_at`이 `created_at`과 같은 문자열이고 GraphQL `lastEditedAt`이 null이며 `includesCreatedEdit`가 아닐 때만 인정한다. 편집한 댓글은 무효이고 새 댓글을 단다. 이어받기 해시는 diff와 바뀐 파일의 변경 후 blob id다. `.github/workflow-policy.json`은 원본 저장소 파일을 복사하지 않는다. `require_agents_md`는 기본값 true다. `reject_claude_md`는 false다. `CLAUDE.md`는 `@AGENTS.md` 한 줄이라 지우지 않는다. `feature_flags`는 false다. 이 저장소에 flag 레지스트리가 없다. 봇 브랜치 접두사는 기본값 `claude`·`codex`·`dependabot`이다. `cursor`는 더하지 않는다. 로컬 스킬 설정과 일상 작업 진입은 [개발 절차](agents/development.md), 자체 리뷰와 사용자 요청 회고는 [리뷰 절차](agents/review.md)를 따른다. 공통 기준이 더하는 `main` 경계는 원본 [개발 절차](https://github.com/minjunkim-dev/repo-baseline/blob/9a3920b942695257772f25083e8a4fde5d4e3208/docs/development-workflow.md)를 따른다.
+2026-11-08에 repo-baseline main `513ac5d`의 코어 + GitHub 프로필로 옮겼다([repo-baseline#71](https://github.com/minjunkim-dev/repo-baseline/issues/71)). 해시 복사 manifest(`.github/repo-baseline.json`)와 복사한 검사기, `Review status`·`PR policy` workflow, `.github/workflow-policy.json`, vendored `matt-code-review`를 지웠다. 리뷰 기준은 루트 `REVIEW.md`, 에이전트 권한은 `.claude/settings.json`이다. 그 전 적용 원본은 `9a3920b`였다.
 
-기존 기준선의 설명용 `exceptions` 배열은 내용을 보존해 `observations`로 옮겼다. 관측 기록은 API 감사 항목을 제외하지 않는다. 실제 기능 미지원·비해당을 감사 범위에서 제외하려면 원본의 [설정 기준선 형식](https://github.com/minjunkim-dev/repo-baseline/blob/9a3920b942695257772f25083e8a4fde5d4e3208/docs/github-settings-profile.md)에 맞는 `exceptions` 객체와 사유·근거가 필요하다. 예외가 있으면 exit 0이어도 결과는 전체 PASS가 아닌 LIMITED다. 미선언 403·404·누락·권한 오류는 계속 실패한다.
-
-`Review status`는 기본 브랜치에 있다. 이번 갱신은 `templates/review-status.yml`을 다시 복사한다. 주석은 편집된 소유자 댓글도 재실행되고, 검사기가 그 댓글을 승인으로 세지 않는다고 적는다. 댓글 재실행 step은 `COMMENT_ACTION`을 넘긴다. `pull_request_target`과 `pull_request`는 `branches: [main]`만 본다. 검사기는 PR base가 저장소 기본 브랜치가 아니거나 이벤트 base SHA가 그 브랜치 위에 없으면 실패한다. 실패 이름은 `review/base-branch`다. 사이드 base의 소유자 댓글은 체크를 게시하지 않는다. 이벤트 종류는 그대로다. 댓글 재실행 job의 `actions: write`와 `checks: write`는 이전 적용에서 이미 있다. Actions 이벤트 정책은 만들거나 고치지 않는다. 목록 조회가 실패하면 정책이 없는 것으로 보지 않는다. job 이름 `Review status`는 기본 브랜치 workflow에서 이미 성공했다(run `42016041442`). `.github/repository-settings.json`의 `required_status_checks.checks`에 `{"context": "Review status", "app_id": 15368}`을 더했다. `strict`는 true다. 기존 `CI`는 그대로다. context는 `.github/workflows/review-status.yml`의 job `name`과 같다. 이 파일은 기대값이다. 이 변경은 branch protection을 쓰지 않는다. 병합 뒤 소유자가 Mac에서 원본 `tools/apply_github_settings.py`로 적용한다. 적용되면 Dependabot 버전 전용 PR을 뺀 모든 PR(되돌리기 쉬움 포함)에 소유자가 올리는 `review/independent`가 필요하다. 신뢰 경계에 걸리면 `review/security`도 필요하다. status는 소유자만 올린다는 규칙이다. 에이전트가 status를 올리는 것은 금지지만 GitHub가 기술적으로 막지는 않는다. 카나리 결과는 [repo-baseline Issue #32](https://github.com/minjunkim-dev/repo-baseline/issues/32) 댓글에 있다.
-
-이번 갱신은 `.github/repository-settings.json`의 필수 체크 기대값에 `Review status`를 더한다. 권한·CodeQL·배포·`strict`·기존 `CI`는 그대로다. 서버의 branch protection은 이 파일 변경으로 바뀌지 않는다. `actions: write`와 `checks: write`는 Review status의 댓글 재실행 job에만 있다. PR policy workflow의 권한은 `contents: read`다. 과거 실행 기록을 현재 검증 결과로 바꾸지 않는다.
+기존 기준선의 설명용 `exceptions` 배열은 `observations`로 옮겨 보존했다. 관측 기록은 감사 항목을 제외하지 않는다. 실제 미지원·비해당을 감사에서 빼려면 repo-baseline `templates/github/README.md`의 `exceptions` 형식과 사유·근거가 필요하다.
 
 ## 과거 Bugbot 확인 기록
 

@@ -2,12 +2,12 @@
 
 이 프로젝트는 GitHub `minjunkim-dev/mobile-runtime`의 기존 Issue·라벨·도메인 설정을 유지한다. 작업 전 [이슈 추적](issue-tracker.md)·[라벨](triage-labels.md)·[도메인 읽기](domain.md)를 확인한다. 관련 용어집·ADR과 티켓의 확정 완료 조건을 읽는다. 없는 도메인 문서는 필요가 생길 때 만든다.
 
-프로필은 `AGENTS.md`의 `프로필: 1인`이다. 공통 GitHub 기준이 더하는 리뷰 관문·문 판정·`main` 경계는 repo-baseline `POLICY.md`와 `docs/development-workflow.md`를 따른다. 적용한 커밋과 Actions 이벤트 정책의 전제 조건은 [저장소 설정](../REPOSITORY_SETUP.md)에 있다. 제품 검증과 이 저장소의 CI는 이 문서와 [리뷰 절차](review.md)를 따른다.
+프로필은 `AGENTS.md`의 `프로필: 1인`이다. 트렁크·Door 판정·병합·`main` 경계는 repo-baseline `POLICY.md`를 따른다. 적용한 커밋은 [저장소 설정](../REPOSITORY_SETUP.md)에 있다. 제품 검증과 이 저장소의 CI는 이 문서와 [리뷰 절차](review.md)를 따른다.
 
 ## 설정 확인
 
 현재 런타임이 선택한 설치 manifest에서 Matt Pocock의 공식 스킬 원문을 찾는다. 목록에 없어도 manifest의 `skills` 경로를 확인한다. 미설치·미확인을 구분한다. 설치·서버 기능 활성화를 자동 실행하지 않는다.
-기존 tracker·라벨 매핑·도메인 문서·AGENTS 연결이 유효하면 재설정하지 않는다. 누락·변경이 있으면 `mattpocock-skills:setup-matt-pocock-skills` 원문의 조사·초안·확인 절차로 보완한다. 이 프로젝트의 canonical 지침은 root `AGENTS.md`다. 도구별 중복 지침·shim·symlink를 만들지 않는다. 이미 있는 `CLAUDE.md`는 `@AGENTS.md` 한 줄이고 내용은 복제하지 않는다. 공통 PR 검사의 기본값은 그 파일도 거부하고, 없는 feature flag 파일을 요구한다. `.github/workflow-policy.json`은 `reject_claude_md`와 `feature_flags`만 끈다. `require_agents_md`는 켜 둔다. repo-baseline이 `.github/repo-baseline.json`에 해시로 복사하는 `matt-code-review` 사본은 지침 파일이 아니라 이 규칙의 예외다. 자동 로딩을 확인할 수 없는 도구는 작업 시작 때 AGENTS와 위 문서를 명시적으로 읽는다.
+기존 tracker·라벨 매핑·도메인 문서·AGENTS 연결이 유효하면 재설정하지 않는다. 누락·변경이 있으면 `mattpocock-skills:setup-matt-pocock-skills` 원문의 조사·초안·확인 절차로 보완한다. 이 프로젝트의 canonical 지침은 root `AGENTS.md`다. 도구별 중복 지침·shim·symlink를 만들지 않는다. 이미 있는 `CLAUDE.md`는 `@AGENTS.md` 한 줄이고 내용은 복제하지 않는다. 자동 로딩을 확인할 수 없는 도구는 작업 시작 때 AGENTS와 위 문서를 명시적으로 읽는다.
 
 ## 작업 크기에 맞는 진입
 
@@ -22,7 +22,7 @@
 1. tracker의 실제 선행 티켓·현재 담당자·착수 기록을 확인한다. 선행 작업이 모두 완료된 티켓만 선택한다. `ready-for-agent` 라벨만으로 차단 관계를 무시하지 않는다.
 2. `implement-spec`는 하나의 통합 브랜치에서 명세 전체를 완성한다. 여러 맥락이 필요한 기능에서만 사용하며, 오래 유지하는 별도 dev 브랜치로 만들지 않는다. 병렬 구현은 티켓별 브랜치·worktree·파일 소유권을 분리하고 시작 기준과 보고 전 통합 tip을 맞춘다. 런타임에 하위 에이전트가 없으면 같은 의존성 순서로 직렬 실행하고 차이를 기록한다.
 3. 각 작업을 관련 검사 후 통합하고 새로 준비된 티켓을 선택한다. 넓은 기계적 변경은 expand → migrate → contract로 나눈다. 중간 검증이 불가능하면 최종 통합·검증 티켓을 명시한다.
-4. 최종 전체 diff에서 명세 완료 조건·회귀·작업 간 연결을 검사한다. [자체 리뷰](review.md)의 별도 Standards·Spec·필요한 Security와 다른 모델 리뷰, 직접 수정·재검증을 완료한다.
-5. 프로젝트의 기존 필수 CI·위험별 승인·병합 조건을 따른다. 통합 브랜치 검증과 main 반영을 구분한다. tracker의 완료 관례로 티켓을 닫고, 부모 명세는 전체 완료 조건을 확인한 뒤 승인된 범위에서만 종료한다. 작업용 worktree를 정리한다.
+4. 최종 전체 diff에서 명세 완료 조건·회귀·작업 간 연결을 검사한다. [자체 리뷰](review.md)대로 별도 컨텍스트에서 `REVIEW.md` 리뷰(신뢰 경계면 보안 리뷰 포함)와 직접 수정·재검증을 완료한다.
+5. 필수 CI 성공 뒤 병합은 사람이 한다. 통합 브랜치 검증과 main 반영을 구분한다. tracker의 완료 관례로 티켓을 닫고, 부모 명세는 전체 완료 조건을 확인한 뒤 승인된 범위에서만 종료한다. 작업용 worktree를 정리한다.
 
 공식 원문은 [검토한 Matt Pocock 스킬 버전](https://github.com/mattpocock/skills/tree/5beb35b040e3de97e54fa9e386d7e42d15c295c2/skills/engineering)을 기준으로 연결했다. 실행은 실제 설치 버전의 원문을 확인한다. 이 문서를 추가한 사실을 제품 기능 구현·실제 스킬 실행으로 보고하지 않는다.
