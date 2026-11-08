@@ -15,3 +15,11 @@ spike/**/Dummy.app/
 
 # graft's local graph cache — regenerable, not committed (run `graft build`).
 /graft/
+
+# repo-baseline 코어: 비밀값은 커밋하지 않는다.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
