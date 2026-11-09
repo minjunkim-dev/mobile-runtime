@@ -28,7 +28,7 @@ CI 전체(`.github/workflows/ci.yml`)는 위에 더해 `scripts/verify-*-input.p
 | `docs/REPOSITORY_SETUP.md` | GitHub 설정 기대값과 감사 방법 |
 | `REVIEW.md` | 리뷰 기준. 리뷰할 때만 읽는다. 상세 규칙은 `docs/coding-standards.md` |
 
-이 파일이 에이전트 공통 지침이다. 도구별 지침 파일을 따로 두지 않는다(`CLAUDE.md`는 `@AGENTS.md` 한 줄). 이슈는 GitHub Issues(`minjunkim-dev/mobile-runtime`)를 `gh`로 다룬다.
+이 파일이 에이전트 공통 지침이다. 도구별 지침 파일을 따로 두지 않는다. Claude Code는 `CLAUDE.md`가 없으면 이 파일을 읽으므로 `CLAUDE.md`·`.claude/CLAUDE.md`·`CLAUDE.local.md`를 만들지 않는다. 하나라도 있으면 Claude Code가 이 파일을 읽지 않는다. 이슈는 GitHub Issues(`minjunkim-dev/mobile-runtime`)를 `gh`로 다룬다.
 
 ## 작업 방식
 
