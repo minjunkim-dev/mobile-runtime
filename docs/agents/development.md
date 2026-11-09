@@ -7,7 +7,7 @@
 ## 설정 확인
 
 현재 런타임이 선택한 설치 manifest에서 Matt Pocock의 공식 스킬 원문을 찾는다. 목록에 없어도 manifest의 `skills` 경로를 확인한다. 미설치·미확인을 구분한다. 설치·서버 기능 활성화를 자동 실행하지 않는다.
-기존 tracker·라벨 매핑·도메인 문서·AGENTS 연결이 유효하면 재설정하지 않는다. 누락·변경이 있으면 `mattpocock-skills:setup-matt-pocock-skills` 원문의 조사·초안·확인 절차로 보완한다. 이 프로젝트의 canonical 지침은 root `AGENTS.md`다. 도구별 중복 지침·shim·symlink를 만들지 않는다. 이미 있는 `CLAUDE.md`는 `@AGENTS.md` 한 줄이고 내용은 복제하지 않는다. 자동 로딩을 확인할 수 없는 도구는 작업 시작 때 AGENTS와 위 문서를 명시적으로 읽는다.
+기존 tracker·라벨 매핑·도메인 문서·AGENTS 연결이 유효하면 재설정하지 않는다. 누락·변경이 있으면 `mattpocock-skills:setup-matt-pocock-skills` 원문의 조사·초안·확인 절차로 보완한다. 이 프로젝트의 canonical 지침은 root `AGENTS.md`다. 도구별 중복 지침·shim·symlink를 만들지 않는다. 자동 로딩을 확인할 수 없는 도구는 작업 시작 때 AGENTS와 위 문서를 명시적으로 읽는다.
 
 ## 작업 크기에 맞는 진입
 
