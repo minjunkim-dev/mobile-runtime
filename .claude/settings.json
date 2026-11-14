@@ -19,7 +19,6 @@
       "Read(**/.env)",
       "Read(**/.env.*)",
       "Read(!.env.example)",
-      "Bash(gh pr merge *)",
       "Bash(git push * main)",
       "Bash(git push * *:main)",
       "Bash(git push * +main)",
@@ -27,10 +26,11 @@
       "Bash(gh api *protection*)",
       "Bash(gh api *rulesets*)",
       "Bash(gh repo edit *)",
-      "Bash(gh pr merge)",
       "Bash(git push)"
     ],
     "ask": [
+      "Bash(gh pr merge *)",
+      "Bash(gh pr merge)",
       "Bash(gh api *)"
     ]
   }
