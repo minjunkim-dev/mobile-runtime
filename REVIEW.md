@@ -1,7 +1,7 @@
 # 리뷰 기준
 
 리뷰 에이전트가 읽는 파일이다. 구현 에이전트에게 상시 주입하지 않는다.
-리뷰는 구현과 다른 컨텍스트에서 한다. 입력은 변경분(diff), 이 파일, 확정된 완료 기준이다.
+리뷰는 구현과 다른 컨텍스트에서 한다. 입력은 변경분(diff), 이 파일, PR 본문 Summary의 완료 기준이다.
 상세 규칙은 [코딩 규칙](docs/coding-standards.md)에 있다. 도메인 용어는 `CONTEXT.md`, 결정은 관련 `docs/adr/`를 따른다.
 
 ## 실패로 보는 것
@@ -13,8 +13,15 @@
 | 실행 | ProcessRunner를 거치지 않거나 명령 인자를 문자열로 조합한다. 종료 상태·취소를 잃는다. plan approval과 repository trust를 섞는다. 실행 직전 조건·lease 검사를 생략한다. 실행이 소유하지 않은 자원·사용자 데이터를 정리한다 |
 | 근거 | 알 수 없는 결과를 성공으로 바꾼다(doctor `unknown`, 검증 `inconclusive`, source-only `UNKNOWN`을 써야 한다). MODEL-ONLY·CI·archive 근거를 실제 기기·지원 범위·actual readiness로 올린다. 토큰·key bytes·개인 경로를 로그·공개 근거에 남긴다 |
 | CI·패키징 | token에 필요 없는 쓰기·Secret을 준다. Secret 환경에서 PR 코드를 실행한다. 외부 Action을 SHA로 고정하지 않는다. 하위 검사 실패·취소·누락이 집계 `CI` 성공으로 숨는다. Draft가 main 밖 SHA를 쓰거나 기존 Release·태그·asset을 덮어쓴다 |
+| 범위 | 완료 기준과 관계없는 파일이나 동작을 바꾼다. 검사가 통과해도 실패다 |
 | 문서 | 사실과 다르다. 명령이 실제로 동작하지 않는다. 실행하지 않은 검사를 성공으로 적는다 |
 | 설정 | 사용자를 잘못된 곳으로 보낸다. 권한을 넓힌다 |
+
+## 코딩 기준
+
+판단이 필요한 작성 규칙만 적는다. 금지 API, import 모양, 파일 위치처럼 기계로 가릴 수 있는 규칙은 린트·검사로 만든다. 리뷰어는 이 기준을 diff가 건드린 줄에만 적용하고, 확실하면 직접 고친다. 어긴 곳은 P2다.
+
+- 아직 없음. 생기면 `YYYY-MM-DD 규칙` 형식으로 한 줄씩 더한다. 사용자가 승인한 것만 넣는다.
 
 ## 변경 영역별로 더 읽을 것
 
@@ -37,13 +44,13 @@
 - 이 PR이 만들지 않은 기존 문제(필요하면 "기존 문제"로 따로 표시한다).
 - `docs/evidence/**`의 기록된 출력, `Tests/**/Fixtures/**`의 캡처 fixture, `Package.resolved`의 해시 줄, `licenses/`.
 
-## 신뢰 경계
+## 민감한 파일
 
-Door가 되돌리기 어려움이거나 아래를 건드리면 별도 컨텍스트의 보안 리뷰를 더한다. 확실한 문제는 최종 head에서 고치고 다시 검증한다. 보안 리뷰 통과를 실제 실행 안전성의 증거로 쓰지 않는다.
+되돌리기 어려움이거나 아래를 건드리면 별도 컨텍스트의 보안 리뷰를 더한다. 확실한 문제는 최종 head에서 고치고 다시 검증한다. 보안 리뷰 통과를 실제 실행 안전성의 증거로 쓰지 않는다.
 
 - `.github/workflows/**`, `.github/repository-settings.json`, `.github/dependabot.yml`
 - 의존성: `Package.swift`, `Package.resolved`
-- 에이전트 권한: `.claude/settings.json`
+- 에이전트 설정 폴더: `.claude/`·`.agents/`·`.codex/`·`.cursor/` 같은 폴더와 그 안의 모든 파일(하위 폴더에 있는 것 포함), `.mcp.json`
 - 배포: `Formula/`, `packaging/`, `scripts/package-release.sh`, `scripts/validate-release-input.py`, `scripts/verify-release*.sh`·`.py`
 - 승인·trust·lease·정리: `Sources/Core/Lease/`, `Sources/Core/Down/`, `Sources/*/*Teardown.swift`, 외부 명령 실행·파일 삭제·경로 검증을 바꾸는 코드
 

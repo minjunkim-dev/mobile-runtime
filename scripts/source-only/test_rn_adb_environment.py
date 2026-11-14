@@ -89,6 +89,31 @@ class EnvironmentModelTests(unittest.TestCase):
             with self.subTest(binary=binary), self.assertRaises(ValueError):
                 self.receipt(binary=binary)
 
+    def test_model_id_accepts_length_boundaries(self):
+        valid = {'min': 'model://' + 'x', 'max': 'model://' + 'x' * 120}
+        for label, value in valid.items():
+            for field in ('run_id', 'call_id'):
+                with self.subTest(field=field, label=label):
+                    self.assertEqual(len(value), 9 if label == 'min' else 128)
+                    args = {'run_id': 'model://run', 'call_id': 'model://call'}
+                    args[field] = value
+                    r = model_receipt(args['run_id'], args['call_id'], 'devices-client',
+                                      {'path': 'model://adb', 'sha256': 'a' * 64, 'size': 1})
+                    self.assertEqual(r['modelVerdict'], 'MODEL_UNKNOWN')
+
+    def test_model_id_rejects_out_of_bounds_and_wrong_type(self):
+        invalid = ['model://', 'model://' + 'x' * 121, 'modelx://run', 'MODEL://run',
+                   '/model://run', None, b'model://run']
+        for value in invalid:
+            for field in ('run_id', 'call_id'):
+                with self.subTest(field=field, value=value):
+                    args = {'run_id': 'model://run', 'call_id': 'model://call'}
+                    args[field] = value
+                    with self.assertRaises(ValueError) as cm:
+                        model_receipt(args['run_id'], args['call_id'], 'devices-client',
+                                      {'path': 'model://adb', 'sha256': 'a' * 64, 'size': 1})
+                    self.assertEqual(str(cm.exception), 'MODEL_ID_REQUIRED')
+
     def test_input_and_output_are_isolated(self):
         values = declaration()
         binary = {'path': 'model://adb', 'sha256': 'a' * 64, 'size': 1}
