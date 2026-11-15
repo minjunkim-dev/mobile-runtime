@@ -24,11 +24,17 @@ CI 전체(`.github/workflows/ci.yml`)는 위에 더해 `scripts/verify-*-input.p
 | `Tests/` | Swift 테스트와 fixture |
 | `scripts/` | 패키징·검증 스크립트. `scripts/source-only/`는 합성 테스트 |
 | `CONTEXT.md`, `docs/adr/` | 도메인 용어와 결정. [도메인 읽기](docs/agents/domain.md) |
-| `docs/agents/` | [개발 절차](docs/agents/development.md)(작업 진입), [리뷰 절차](docs/agents/review.md)(CI·병합), [이슈 추적](docs/agents/issue-tracker.md), [라벨](docs/agents/triage-labels.md) |
+| `docs/agents/` | [개발 절차](docs/agents/development.md)(작업 진입), [리뷰 절차](docs/agents/review.md)(CI·병합), [office 절차](docs/agents/office.md)(코드 작업 넘기기), [이슈 추적](docs/agents/issue-tracker.md), [라벨](docs/agents/triage-labels.md) |
 | `docs/REPOSITORY_SETUP.md` | GitHub 설정 기대값과 감사 방법 |
 | `REVIEW.md` | 리뷰 기준. 리뷰할 때만 읽는다. 상세 규칙은 `docs/coding-standards.md` |
 
 이 파일이 에이전트 공통 지침이다. 도구별 지침 파일을 따로 두지 않는다. Claude Code는 `CLAUDE.md`가 없으면 이 파일을 읽으므로 `CLAUDE.md`·`.claude/CLAUDE.md`·`CLAUDE.local.md`를 만들지 않는다. 기본 설정에서는 하나라도 있으면 Claude Code가 이 파일을 읽지 않는다. 이슈는 GitHub Issues(`minjunkim-dev/mobile-runtime`)를 `gh`로 다룬다.
+
+- 코드를 바꾸는 작업은 repo-office 파이프라인으로 돌린다. 코드를 바꾸는 작업은 브랜치 type `feat`, `fix`, `refactor`, `perf`, `test`, `revert`의 작업이다.
+  - 에이전트는 이 저장소에서 직접 구현하지 않는다. 떠 있는 leader 세션에 과제를 넘기고 멈춘다. 사람이 이 대화에서 작업을 시켰으면 그 말이 넘겨도 된다는 허락이다. 따로 묻지 않는다. 넘기는 법은 [office 절차](docs/agents/office.md#과제-넘기기)에 있다.
+  - leader 세션은 사람이 repo-office 체크아웃에서 hc 터미널 `office-leader`로 하나만 띄운다. leader는 방향 선택과 설계 승인을 사람에게 묻는다. 병합은 사람이 한다.
+  - 이 규칙은 [개발 절차](docs/agents/development.md)의 `implement`보다 먼저다. office 과제의 브랜치는 `office/<과제>`다.
+  - 예외: 문서·설정 작업(`docs`, `build`, `ci`, `chore`), 이미 열린 PR의 리뷰 수정과 CI 실패 수정, 사람이 여기서 하라고 한 작업.
 
 ## 작업 방식
 
