@@ -1,6 +1,6 @@
 # GitHub 저장소 설정
 
-대상은 `minjunkim-dev/mobile-runtime` / repository ID `1332714423` / public / `main`이다.
+대상은 `minjunkim-labs/mobile-runtime` / repository ID `1332714423` / public / `main`이다.
 GitHub 품질 운영은 1인 개발 기준이다. 로컬 절차는 [리뷰 문서](agents/review.md)를 따른다.
 
 ## 기준선과 서버 검증
