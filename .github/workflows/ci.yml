@@ -184,3 +184,17 @@ jobs:
           for result in "$HYGIENE_RESULT" "$MACOS_RESULT" "$PACKAGE_RESULT" "$LINUX_RESULT"; do
             test "$result" = success
           done
+
+  # 필수 체크 계약(repo-baseline templates/github/README.md): 판정 job 하나, 이름 `ci`.
+  # 위 `CI`는 옛 필수 체크이자 release 근거가 찾는 이름이라 그대로 둔다.
+  gate:
+    name: ci
+    if: always()
+    needs: [repository-hygiene, macos-swift-tests, macos-release-package, linux-core-compile, ci]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: every job succeeded
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: for r in $RESULTS; do [ "$r" = success ] || { echo "a job ended with $r"; exit 1; }; done
