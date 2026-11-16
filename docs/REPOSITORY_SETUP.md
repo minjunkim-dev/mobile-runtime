@@ -1,6 +1,6 @@
 # GitHub 저장소 설정
 
-대상은 `minjunkim-dev/mobile-runtime` / repository ID `1332714423` / public / `main`이다.
+대상은 `minjunkim-labs/mobile-runtime` / repository ID `1332714423` / public / `main`이다.
 GitHub 품질 운영은 1인 개발 기준이다. 로컬 절차는 [리뷰 문서](agents/review.md)를 따른다.
 
 ## 기준선과 서버 검증
@@ -22,10 +22,11 @@ CodeQL workflow는 경로와 active 상태만 본다. 분석 job이 빠져도 `N
 | 항목 | 기준 |
 | --- | --- |
 | 병합 | Squash만, PR title/body, 작업 브랜치 자동 삭제·업데이트 제안 On |
-| Allow auto-merge | Off. 병합은 사람이 최종 head를 읽고 한다 |
+| Allow auto-merge | Off. 병합은 리뷰한 head SHA를 지정해 머지 큐에 넣는다 |
 | main 보호 | PR 필수·strict·관리자 적용·선형 이력·대화 해결 On |
-| 승인 | GitHub 0명. 병합은 사람만 한다. 되돌리기 어려움은 사람이 diff를 읽은 head에서 병합 |
+| 승인 | GitHub 0명. 병합은 `AGENTS.md`의 병합 줄을 따른다. 되돌리기 어려움은 사람이 diff를 읽은 head에서 병합 |
 | 필수 체크 | `CI`(GitHub Actions App `15368`). `strict`는 true |
+| 머지 큐 | ruleset `merge-queue`: `main`, squash, `ALLGREEN`. `CI`는 `merge_group`에서도 돈다 |
 | force push·main 삭제 | Off |
 | Actions | GitHub 공식만, 전체 SHA 필수, 기본 token read, PR 생성·승인 Off |
 | fork | 모든 외부 기여자 승인. Secret과 쓰기 token 분리 |
@@ -65,6 +66,8 @@ Copilot MCP tools·PR 승인과 추가 자동 AI 리뷰를 켜지 않는다. Cha
 2026-11-08에 repo-baseline main `513ac5d`의 코어 + GitHub 프로필로 옮겼다([repo-baseline#71](https://github.com/minjunkim-dev/repo-baseline/issues/71)). 해시 복사 manifest(`.github/repo-baseline.json`)와 복사한 검사기, `Review status`·`PR policy` workflow, `.github/workflow-policy.json`, vendored `matt-code-review`를 지웠다. 리뷰 기준은 루트 `REVIEW.md`, 에이전트 권한은 `.claude/settings.json`이다. 그 전 적용 원본은 `9a3920b`였다.
 
 2026-11-15에 repo-baseline main `47a21a3`으로 판을 올렸다(`docs/start.md` 「판 올리기」, `CHANGELOG.md`의 `513ac5d` 뒤 항목). `AGENTS.md`·`REVIEW.md`는 바뀐 줄만 합쳤다. PR 양식의 `Door:`·`신뢰 경계:` 줄은 `되돌리기:`·`민감한 파일:`이 됐다. 이 저장소에는 PR 본문 검사기가 없으므로 검사기는 복사하지 않았다.
+
+2026-11-16에 저장소를 `minjunkim-dev`에서 조직 `minjunkim-labs`로 옮기고 repo-baseline `8551f36`의 머지 큐를 받았다. 머지 큐 ruleset은 조직이 소유한 공개 저장소에서만 쓸 수 있다. `repository-settings.json`에 `merge-queue` ruleset을, `ci.yml`에 `merge_group`을 더했다. 옮긴 뒤 꺼진 secret scanning·push protection은 이 PR이 병합된 뒤 소유자가 `apply_github_settings.py --apply`로 다시 켠다.
 
 기존 기준선의 설명용 `exceptions` 배열은 `observations`로 옮겨 보존했다. 관측 기록은 감사 항목을 제외하지 않는다. 실제 미지원·비해당을 감사에서 빼려면 repo-baseline `templates/github/README.md`의 `exceptions` 형식과 사유·근거가 필요하다.
 
