@@ -12,7 +12,7 @@
 | 검증 | 테스트가 호출자 interface가 아니라 구현 상수·소스 문자열을 단언한다. fake가 실패·취소·부분 완료를 표현하지 못한다. 버그 수정에 수정 전 실패하는 검사가 없다. 기존 검사를 약화·skip해서 통과시켰다 |
 | 실행 | ProcessRunner를 거치지 않거나 명령 인자를 문자열로 조합한다. 종료 상태·취소를 잃는다. plan approval과 repository trust를 섞는다. 실행 직전 조건·lease 검사를 생략한다. 실행이 소유하지 않은 자원·사용자 데이터를 정리한다 |
 | 근거 | 알 수 없는 결과를 성공으로 바꾼다(doctor `unknown`, 검증 `inconclusive`, source-only `UNKNOWN`을 써야 한다). MODEL-ONLY·CI·archive 근거를 실제 기기·지원 범위·actual readiness로 올린다. 토큰·key bytes·개인 경로를 로그·공개 근거에 남긴다 |
-| CI·패키징 | token에 필요 없는 쓰기·Secret을 준다. Secret 환경에서 PR 코드를 실행한다. 외부 Action을 SHA로 고정하지 않는다. 하위 검사 실패·취소·누락이 집계 `CI` 성공으로 숨는다. Draft가 main 밖 SHA를 쓰거나 기존 Release·태그·asset을 덮어쓴다 |
+| CI·패키징 | token에 필요 없는 쓰기·Secret을 준다. Secret 환경에서 PR 코드를 실행한다. 외부 Action을 SHA로 고정하지 않는다. 하위 검사 실패·취소·누락이 판정 job `ci`·`CI` 성공으로 숨는다. Draft가 main 밖 SHA를 쓰거나 기존 Release·태그·asset을 덮어쓴다 |
 | 범위 | 완료 기준과 관계없는 파일이나 동작을 바꾼다. 검사가 통과해도 실패다 |
 | 문서 | 사실과 다르다. 명령이 실제로 동작하지 않는다. 실행하지 않은 검사를 성공으로 적는다 |
 | 설정 | 사용자를 잘못된 곳으로 보낸다. 권한을 넓힌다 |
