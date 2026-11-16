@@ -52,8 +52,8 @@ source-only 테스트는 `test_*.py`를 자동 탐색한다. AST 검사는 정�
 Summary에는 변경 흐름을 보여주는 작은 도식을 둔다. Evidence에는 실제 명령과 결과를 둔다.
 문서 변경이면 기존 규칙과 새 규칙을 비교한다. 실행하지 않은 검사를 성공으로 기록하지 않는다.
 
-- 병합은 사람만 한다. 에이전트는 `gh pr merge`를 실행하지 않는다. 자동 병합은 쓰지 않는다(`allow_auto_merge: false`).
-- 되돌리기 어려운 데이터 변경, 외부 대량 발송, 파괴적인 정리, 권한 확대, 민감한 파일(`REVIEW.md`) 경로는 되돌리기 어려움으로 처리한다. 사람이 최종 head와 영향 범위를 읽고 그 head에서 병합한다. 그 뒤 push가 있으면 다시 읽는다. 병합할 때 `gh pr merge <PR> --squash --match-head-commit <읽은 SHA>`처럼 읽은 head를 지정한다.
+- 병합 조건은 `AGENTS.md` 「하지 않는 것」의 병합 줄을 따른다. 병합은 리뷰한 head SHA를 지정해 PR을 머지 큐에 넣는 것이다(repo-baseline `POLICY.md` §5의 `enqueuePullRequest`). `gh pr merge`와 큐 우회는 쓰지 않는다. 자동 병합은 쓰지 않는다(`allow_auto_merge: false`). 큐가 base와 합친 결과에서 필수 `CI`를 다시 돌리므로 PR 브랜치에 base를 합치지 않는다.
+- 되돌리기 어려운 데이터 변경, 외부 대량 발송, 파괴적인 정리, 권한 확대, 민감한 파일(`REVIEW.md`) 경로는 되돌리기 어려움으로 처리한다. 사람이 최종 head와 영향 범위를 읽고 그 head에서 병합한다. 그 뒤 push가 있으면 다시 읽는다. 병합할 때 읽은 head SHA를 `expectedHeadOid`로 지정해 머지 큐에 넣는다.
 - 많은 프로젝트의 실행 동작이나 공개 계약을 바꾸는 변경은 broad로 PR에 적는다. diff 크기로 위험을 결정하지 않는다.
 - 사람 판단이 필요한 PR은 `ready-for-human`으로 표시한다.
 - 리뷰 이후 커밋이나 base가 바뀌면 영향받는 검증을 갱신한다.

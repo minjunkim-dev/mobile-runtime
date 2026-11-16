@@ -4,6 +4,8 @@ on:
   pull_request:
     branches:
       - main
+  # 머지 큐는 base와 합친 결과를 여기서 검사한다. 없으면 큐에 넣은 PR이 병합되지 않는다.
+  merge_group:
   push:
     branches:
       - main
