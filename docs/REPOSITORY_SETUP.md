@@ -6,7 +6,7 @@ GitHub 품질 운영은 1인 개발 기준이다. 로컬 절차는 [리뷰 문�
 ## 기준선과 서버 검증
 
 [repository-settings.json](../.github/repository-settings.json)은 기대값이다. GitHub가 자동 적용하는 파일이 아니다.
-감사와 적용은 소유자가 자기 기기에서 [repo-baseline](https://github.com/minjunkim-dev/repo-baseline)의 `tools/apply_github_settings.py`로 한다. 에이전트는 실행하지 않는다.
+감사와 적용은 소유자가 자기 기기에서 [repo-baseline](https://github.com/minjunkim-labs/repo-baseline)의 `tools/apply_github_settings.py`로 한다. 에이전트는 실행하지 않는다.
 
 ```sh
 python3 <repo-baseline>/tools/apply_github_settings.py <이 저장소 경로>          # 계획만(GET)
@@ -63,7 +63,7 @@ Copilot MCP tools·PR 승인과 추가 자동 AI 리뷰를 켜지 않는다. Cha
 
 ## 공통 기준 갱신과 설정 관측 기록
 
-2026-11-08에 repo-baseline main `513ac5d`의 코어 + GitHub 프로필로 옮겼다([repo-baseline#71](https://github.com/minjunkim-dev/repo-baseline/issues/71)). 해시 복사 manifest(`.github/repo-baseline.json`)와 복사한 검사기, `Review status`·`PR policy` workflow, `.github/workflow-policy.json`, vendored `matt-code-review`를 지웠다. 리뷰 기준은 루트 `REVIEW.md`, 에이전트 권한은 `.claude/settings.json`이다. 그 전 적용 원본은 `9a3920b`였다.
+2026-11-08에 repo-baseline main `513ac5d`의 코어 + GitHub 프로필로 옮겼다([repo-baseline#71](https://github.com/minjunkim-labs/repo-baseline/issues/71)). 해시 복사 manifest(`.github/repo-baseline.json`)와 복사한 검사기, `Review status`·`PR policy` workflow, `.github/workflow-policy.json`, vendored `matt-code-review`를 지웠다. 리뷰 기준은 루트 `REVIEW.md`, 에이전트 권한은 `.claude/settings.json`이다. 그 전 적용 원본은 `9a3920b`였다.
 
 2026-11-15에 repo-baseline main `47a21a3`으로 판을 올렸다(`docs/start.md` 「판 올리기」, `CHANGELOG.md`의 `513ac5d` 뒤 항목). `AGENTS.md`·`REVIEW.md`는 바뀐 줄만 합쳤다. PR 양식의 `Door:`·`신뢰 경계:` 줄은 `되돌리기:`·`민감한 파일:`이 됐다. 이 저장소에는 PR 본문 검사기가 없으므로 검사기는 복사하지 않았다.
 
