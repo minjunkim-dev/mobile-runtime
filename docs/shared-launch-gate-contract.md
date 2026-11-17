@@ -1,10 +1,10 @@
 # Runstir CLI·GUI 공동 1.0.0 출시 게이트와 명세 인계 계약
 
 상태: 2026-10-09 사용자 승인. 출시 조건의 설계 계약이다. 제품 구현·실제 검증·배포 완료를 뜻하지 않는다.
-정본: [결정: CLI·GUI 공동 1.0.0의 출시 게이트와 명세 인계의 답](https://github.com/minjunkim-dev/mobile-runtime/issues/193#issuecomment-6080634681).
+정본: [결정: CLI·GUI 공동 1.0.0의 출시 게이트와 명세 인계의 답](https://github.com/minjunkim-labs/mobile-runtime/issues/193#issuecomment-6080634681).
 기준 main: `ac513e57c7961a794d7704e62d0dfb529bdf380b`.
 선행 계약: [공통 CLI](./cli-expansion-common-contract.md), [준비](./cli-expansion-preparation-contract.md), [지원·검증](./cli-expansion-support-contract.md), [GUI](./gui-workflow-contract.md), [직접 설치](./local-app-installation-contract.md).
-구현 순서 정본: [결정: CLI 확장의 구현 순서와 출시 단위의 답](https://github.com/minjunkim-dev/mobile-runtime/issues/184#issuecomment-6078886890).
+구현 순서 정본: [결정: CLI 확장의 구현 순서와 출시 단위의 답](https://github.com/minjunkim-labs/mobile-runtime/issues/184#issuecomment-6078886890).
 
 2026-10-09 사용자가 Q1~Q4와 Q5~Q7의 추천안을 각각 승인했다. 정책 질문을 모두 해결했다.
 
@@ -84,8 +84,8 @@ Q1~Q7의 미결정 정책 가지는 없다. 구체 버전·표본·API·검증 �
 
 ## 승인 이력
 
-- [첫 질문 Q1~Q4](https://github.com/minjunkim-dev/mobile-runtime/issues/193#issuecomment-6080528625)
-- [Q1~Q4 승인과 마지막 질문 Q5~Q7](https://github.com/minjunkim-dev/mobile-runtime/issues/193#issuecomment-6080569571)
-- 마지막 Q5~Q7에 사용자가 이 대화에서 “추천대로.”라고 답했다. [정본 답](https://github.com/minjunkim-dev/mobile-runtime/issues/193#issuecomment-6080634681)에 승인과 전체 계약을 기록했다.
+- [첫 질문 Q1~Q4](https://github.com/minjunkim-labs/mobile-runtime/issues/193#issuecomment-6080528625)
+- [Q1~Q4 승인과 마지막 질문 Q5~Q7](https://github.com/minjunkim-labs/mobile-runtime/issues/193#issuecomment-6080569571)
+- 마지막 Q5~Q7에 사용자가 이 대화에서 “추천대로.”라고 답했다. [정본 답](https://github.com/minjunkim-labs/mobile-runtime/issues/193#issuecomment-6080634681)에 승인과 전체 계약을 기록했다.
 
 기존 [ADR-0012](./adr/0012-separate-validation-observations-from-support.md)의 관측/지원 구분과 [ADR-0018](./adr/0018-use-one-xcode-27-go-sample.md)의 과거 고정 게이트, [ADR-0019](./adr/0019-first-external-pre-release.md)의 첫 alpha 배포 범위를 유지한다. 이 문서는 새 공동 1.0.0의 실제 통과를 선언하지 않는다.

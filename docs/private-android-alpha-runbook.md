@@ -223,9 +223,9 @@ SDK absolute path·홈 경로, complete logs·raw JSON·raw diff, screenshot, �
 - 표본: FreeKiosk — https://github.com/RushB-fr/freekiosk (MIT)
 - Project full SHA: `0c89e035dccdaf1a1c840a030eca30e10f23783a`
 - `mobile` full SHA: `c6b1d19ccb67827ccfdeef1665f448b095ffc258`
-- Known-good baseline: [#126](https://github.com/minjunkim-dev/mobile-runtime/issues/126)
+- Known-good baseline: [#126](https://github.com/minjunkim-labs/mobile-runtime/issues/126)
   (`mobile` 없이 native build·install·launch·초기 UI 통과, tracked clean)
-- 실행 증거: [#127](https://github.com/minjunkim-dev/mobile-runtime/issues/127)
+- 실행 증거: [#127](https://github.com/minjunkim-labs/mobile-runtime/issues/127)
 - Host: macOS `27.0.1` (`26A434`), arm64
 - Tuple: RN/RNGP `0.82.0`, Node `22.23.1`, npm `10.9.8`, Homebrew OpenJDK
   `21.0.12.1`(`JAVA_HOME`), Gradle `8.13`, AGP `8.12.0`, Kotlin `2.1.20`
@@ -241,7 +241,7 @@ SDK absolute path·홈 경로, complete logs·raw JSON·raw diff, screenshot, �
 
 | Step | Result | Sanitized summary |
 | --- | --- | --- |
-| Repository gates | PASS | `swift build` exit 0, `swift test` 55 suites / 468 tests / 0 failures, Linux Core exit 0, [원격 `CI`](https://github.com/minjunkim-dev/mobile-runtime/actions/runs/37385154392) success |
+| Repository gates | PASS | `swift build` exit 0, `swift test` 55 suites / 468 tests / 0 failures, Linux Core exit 0, [원격 `CI`](https://github.com/minjunkim-labs/mobile-runtime/actions/runs/37385154392) success |
 | `doctor --json` | PASS (exit 0) | status pass, 10/10 checks pass, required error·unknown 0 |
 | `build --json` | PASS (exit 0) | validate, dependencies, android.build pass (53s) |
 | `up --json` | PASS (exit 0) | 8/8 stages pass (55s); owned Emulator와 Metro 시작 |
@@ -263,10 +263,10 @@ SDK absolute path·홈 경로, complete logs·raw JSON·raw diff, screenshot, �
 
 | Alpha blocker | 증상 | 수정 |
 | --- | --- | --- |
-| [#143](https://github.com/minjunkim-dev/mobile-runtime/issues/143) | 4자리 Java 버전 `21.0.12.1`을 해석하지 못해 `android.jdk` error | PR #144: Java 관측 전용 parser |
-| [#146](https://github.com/minjunkim-dev/mobile-runtime/issues/146) | RN 0.82의 `debug`·`debugOptimized` 때문에 `android.target` 선택에 `mobile.yml` 필요 | PR #147: `debug` 자동 선택 ([ADR-0015](adr/0015-default-android-debug-variant.md)) |
-| [#145](https://github.com/minjunkim-dev/mobile-runtime/issues/145) | CMake 버전 미지정 표본에서 `android.sdk` unknown | PR #148: AGP 기본 CMake Tier 2 표와 `cmake.dir` 예외 ([근거](research/agp-default-cmake.md)) |
-| [#149](https://github.com/minjunkim-dev/mobile-runtime/issues/149) | `up`이 `node_modules`를 재설치한 직후 Metro bundle 500, 앱 crash | PR #150: 재설치 뒤 Metro 시작 전에 watchman watch 초기화 |
+| [#143](https://github.com/minjunkim-labs/mobile-runtime/issues/143) | 4자리 Java 버전 `21.0.12.1`을 해석하지 못해 `android.jdk` error | PR #144: Java 관측 전용 parser |
+| [#146](https://github.com/minjunkim-labs/mobile-runtime/issues/146) | RN 0.82의 `debug`·`debugOptimized` 때문에 `android.target` 선택에 `mobile.yml` 필요 | PR #147: `debug` 자동 선택 ([ADR-0015](adr/0015-default-android-debug-variant.md)) |
+| [#145](https://github.com/minjunkim-labs/mobile-runtime/issues/145) | CMake 버전 미지정 표본에서 `android.sdk` unknown | PR #148: AGP 기본 CMake Tier 2 표와 `cmake.dir` 예외 ([근거](research/agp-default-cmake.md)) |
+| [#149](https://github.com/minjunkim-labs/mobile-runtime/issues/149) | `up`이 `node_modules`를 재설치한 직후 Metro bundle 500, 앱 crash | PR #150: 재설치 뒤 Metro 시작 전에 watchman watch 초기화 |
 
 - #149의 1차 수정(`--reset-cache`)은 3회 중 2회 실패해 폐기했다. 원인은 watchman
   recrawl 중 불완전한 파일 목록이었다. 최종 수정은 build→up 3회 반복에서 3/3 통과했다.
@@ -279,7 +279,7 @@ SDK absolute path·홈 경로, complete logs·raw JSON·raw diff, screenshot, �
 - 첫 실행의 위치 권한 dialog와 전체화면 안내는 앱 고유 동작이다.
 - Dev LogBox toast는 초기 UI 이후 앱 고유 기능 문제다.
 - `dependencies`가 매 `build`·`up`마다 `npm ci`를 실행한다(약 7~60s). 이는
-  [#74](https://github.com/minjunkim-dev/mobile-runtime/issues/74)의 lockfile 정렬
+  [#74](https://github.com/minjunkim-labs/mobile-runtime/issues/74)의 lockfile 정렬
   결정에 따른 동작이다. 동작에는 영향이 없으므로 비용으로 수용한다.
 
 ### 6.4 이전 후보 smoke (참고)

@@ -1,7 +1,7 @@
 # Runstir 승인형 환경 준비 계약
 
 상태: 2026-10-09 질문 1~13 사용자 승인. 승인형 환경 준비의 변경과 복구 정책을 확정했다.
-티켓: [결정: 승인형 환경 준비의 변경과 복구 계약](https://github.com/minjunkim-dev/mobile-runtime/issues/182).
+티켓: [결정: 승인형 환경 준비의 변경과 복구 계약](https://github.com/minjunkim-labs/mobile-runtime/issues/182).
 기준 source: `1a4ff6dc3815ab6c25df81eaef8ca37acaefe21e`.
 제품 코드, 설치 또는 복구 동작을 구현·검증한 문서가 아니다.
 
@@ -43,15 +43,15 @@ Flutter·React Native의 준비 범위는 iOS·Android 양쪽이다. 특정 앱 
 
 ## 후속 결정과 명세의 경계
 
-이 티켓의 변경·승인·복구 정책에는 남은 질문이 없다. 세부 CLI 옵션·JSON 필드·모듈 경계는 후속 `/to-spec`에서 구체화한다. 지원 버전과 검증 조합은 [결정: 지원 경계와 새 Mac 검증 기준](https://github.com/minjunkim-dev/mobile-runtime/issues/183)에서 정한다. 구현 순서와 검증용 출시 단위는 [결정: CLI 확장의 구현 순서와 출시 단위](https://github.com/minjunkim-dev/mobile-runtime/issues/184)에서 정한다.
+이 티켓의 변경·승인·복구 정책에는 남은 질문이 없다. 세부 CLI 옵션·JSON 필드·모듈 경계는 후속 `/to-spec`에서 구체화한다. 지원 버전과 검증 조합은 [결정: 지원 경계와 새 Mac 검증 기준](https://github.com/minjunkim-labs/mobile-runtime/issues/183)에서 정한다. 구현 순서와 검증용 출시 단위는 [결정: CLI 확장의 구현 순서와 출시 단위](https://github.com/minjunkim-labs/mobile-runtime/issues/184)에서 정한다.
 
 이 계약의 확정은 CLI 지도 전체 완료나 첫 정식 1.0.0 출시 준비 완료를 뜻하지 않는다. CLI·GUI 공동 출시 게이트와 GUI·로컬 앱 파일 설치의 상세 계약은 확장 지도에서 정한다.
 
 ## 조사 근거
 
-- [조사: macOS 승인형 도구 설치의 자동화 경계](https://github.com/minjunkim-dev/mobile-runtime/issues/178).
-- [조사: Flutter·네이티브 프로젝트의 정본과 실행 경로](https://github.com/minjunkim-dev/mobile-runtime/issues/179).
-- [조사: Simulator·Emulator 준비와 생성의 자동화 경계](https://github.com/minjunkim-dev/mobile-runtime/issues/180).
-- [조사: 연결 실기기의 준비와 앱 실행 계약](https://github.com/minjunkim-dev/mobile-runtime/issues/185).
+- [조사: macOS 승인형 도구 설치의 자동화 경계](https://github.com/minjunkim-labs/mobile-runtime/issues/178).
+- [조사: Flutter·네이티브 프로젝트의 정본과 실행 경로](https://github.com/minjunkim-labs/mobile-runtime/issues/179).
+- [조사: Simulator·Emulator 준비와 생성의 자동화 경계](https://github.com/minjunkim-labs/mobile-runtime/issues/180).
+- [조사: 연결 실기기의 준비와 앱 실행 계약](https://github.com/minjunkim-labs/mobile-runtime/issues/185).
 
 설치 도구 전체의 안전한 다운로드 재개·원자적 rollback은 조사에서 확인하지 못했다. 이번 정책은 상태 재검사와 완료 자원 보존을 요구하며, 도구가 지원하지 않는 복구를 약속하지 않는다.

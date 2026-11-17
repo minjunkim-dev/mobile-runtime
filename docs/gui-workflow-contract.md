@@ -1,7 +1,7 @@
 # Runstir GUI 사용자 흐름과 CLI 공유 계약
 
 상태: 2026-10-09 사용자 승인. GUI와 병렬 실행의 설계 계약이다. 제품 구현이나 실행 검증 완료를 뜻하지 않는다.
-정본: [결정: 후속 GUI의 사용자 흐름과 CLI 공유 경계의 답](https://github.com/minjunkim-dev/mobile-runtime/issues/188#issuecomment-6079320131).
+정본: [결정: 후속 GUI의 사용자 흐름과 CLI 공유 경계의 답](https://github.com/minjunkim-labs/mobile-runtime/issues/188#issuecomment-6079320131).
 구현 비교 기준: main `4808151b6f2d7cc50ae2d493146d653b7b694c4a`.
 선행 계약: [공통 CLI 계약](./cli-expansion-common-contract.md), [준비 계약](./cli-expansion-preparation-contract.md), [지원·검증 계약](./cli-expansion-support-contract.md).
 
@@ -15,7 +15,7 @@
 
 Flutter·React Native의 환경 준비는 iOS와 Android를 모두 포함한다. 앱 실행에서는 플랫폼과 해당 실행 기기를 선택한다. 준비 완료·부분 완료·앱 실행 완료를 구분한다. 여러 후보와 수동 단계는 기존 공통 CLI·준비·지원 계약을 따른다.
 
-로컬 앱 파일은 `파일 확인 → 실행 기기 선택 → 설치·실행`으로 안내한다. 지원 형식·교체·데이터 보존·중복 설치의 상세는 [결정: 로컬 앱 목록·버전 선택과 설치 파일 직접 실행](https://github.com/minjunkim-dev/mobile-runtime/issues/189)에서 정한다. 이 티켓이 해당 계약을 대신하지 않는다.
+로컬 앱 파일은 `파일 확인 → 실행 기기 선택 → 설치·실행`으로 안내한다. 지원 형식·교체·데이터 보존·중복 설치의 상세는 [결정: 로컬 앱 목록·버전 선택과 설치 파일 직접 실행](https://github.com/minjunkim-labs/mobile-runtime/issues/189)에서 정한다. 이 티켓이 해당 계약을 대신하지 않는다.
 
 ## 2. 서로 다른 프로젝트와 각 프로젝트의 워크트리
 
@@ -73,14 +73,14 @@ CLI의 Homebrew 설치 경로를 유지한다. GUI용 Homebrew cask는 첫 출�
 4. 기본 흐름의 키보드 조작·포커스·VoiceOver 이름·상태·승인·실패 안내를 실제로 검증한다.
 5. 같은 입력의 CLI와 GUI에서 검사·변경 계획·후보·결과·충돌 판정이 일치하는지 확인한다. 로컬 앱 파일 설치 검증은 후속 설치 계약을 연결한다.
 
-CI·문서·디자인만으로 실제 배포·앱 실행·접근성 성공을 대신하지 않는다. 무제한 병렬 성능이나 모든 실기기의 검증은 약속하지 않는다. 구체 fixture·측정·증거 보관과 공동 출시 판정은 명세 및 [결정: CLI·GUI 공동 1.0.0의 출시 게이트와 명세 인계](https://github.com/minjunkim-dev/mobile-runtime/issues/193)에서 정한다.
+CI·문서·디자인만으로 실제 배포·앱 실행·접근성 성공을 대신하지 않는다. 무제한 병렬 성능이나 모든 실기기의 검증은 약속하지 않는다. 구체 fixture·측정·증거 보관과 공동 출시 판정은 명세 및 [결정: CLI·GUI 공동 1.0.0의 출시 게이트와 명세 인계](https://github.com/minjunkim-labs/mobile-runtime/issues/193)에서 정한다.
 
 ## 승인 이력과 인계
 
-- [첫 Q1~Q4 승인](https://github.com/minjunkim-dev/mobile-runtime/issues/188#issuecomment-6079081012)
-- [Q5~Q7 승인과 Q2 재검토](https://github.com/minjunkim-dev/mobile-runtime/issues/188#issuecomment-6079209338)
-- [Q2 병렬 수정 승인](https://github.com/minjunkim-dev/mobile-runtime/issues/188#issuecomment-6079252971)
-- [Q8~Q9 승인·각 프로젝트의 워크트리 지원·Q10 질문](https://github.com/minjunkim-dev/mobile-runtime/issues/188#issuecomment-6079287295)
+- [첫 Q1~Q4 승인](https://github.com/minjunkim-labs/mobile-runtime/issues/188#issuecomment-6079081012)
+- [Q5~Q7 승인과 Q2 재검토](https://github.com/minjunkim-labs/mobile-runtime/issues/188#issuecomment-6079209338)
+- [Q2 병렬 수정 승인](https://github.com/minjunkim-labs/mobile-runtime/issues/188#issuecomment-6079252971)
+- [Q8~Q9 승인·각 프로젝트의 워크트리 지원·Q10 질문](https://github.com/minjunkim-labs/mobile-runtime/issues/188#issuecomment-6079287295)
 - Q10에는 사용자가 이번 대화에서 “추천대로”라고 답했다.
 
 GUI 결정 안에 남은 제품 정책 질문은 없다. 별도 파일 설치 계약, 세부 명세, 실제 구현·검증과 공동 출시 판정은 후속 작업이다. 새로운 계획 티켓을 중복 생성하지 않는다. 지도에 남은 확장 후보의 fog를 그대로 보존한다.

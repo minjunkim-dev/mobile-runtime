@@ -1,6 +1,6 @@
 # 소스 없는 Simulator·Emulator 앱 파일 실행
 
-관련 구현 티켓은 [#218](https://github.com/minjunkim-dev/mobile-runtime/issues/218)이다.
+관련 구현 티켓은 [#218](https://github.com/minjunkim-labs/mobile-runtime/issues/218)이다.
 수용 기준은 [로컬 앱 설치 계약](./local-app-installation-contract.md)을 따른다.
 이 문서는 명령과 구현 경계, 아래의 범위별 개발 검증 상태를 설명한다.
 
@@ -12,11 +12,11 @@
 
 | 입력·대상 | 구현 범위 | 실제 개발 검증과 남은 조건 |
 | --- | --- | --- |
-| Simulator `.app` | 설치된 iOS Simulator 선택·승인·설치·실행 | CLI·GUI 설치/실행과 표본 교체·취소·충돌 검증. [#218](https://github.com/minjunkim-dev/mobile-runtime/issues/218) |
-| 단일 `.apk`·Android Emulator | 설치된 AVD 또는 실행 중인 Emulator 선택·승인·설치·실행 | CLI·GUI 설치/실행과 표본 교체·이전 버전 거부·취소·연결 해제 검증. [#218](https://github.com/minjunkim-dev/mobile-runtime/issues/218) |
-| Development `.app`·iOS 실기기 | 서명/profile·대상 조건 검사 후 설치·실행 | iPhone 13/iOS 27.0.1의 전용 테스트 앱으로 CLI·GUI 설치/실행·표본 교체·취소를 확인. 공통 설치 흐름의 연결 해제도 확인. [#219 실제 기록](https://github.com/minjunkim-dev/mobile-runtime/issues/219#issuecomment-6339741143) |
-| Development `.ipa`·iOS 실기기 | 안전 추출 후 같은 실기기 설치 경로 | 같은 대표 기기에서 CLI·GUI 설치/실행·플랫폼 거부·취소·연결 해제를 확인. [#220](https://github.com/minjunkim-dev/mobile-runtime/issues/220) |
-| Ad Hoc `.app`·`.ipa`·iOS 실기기 | 조건 검사와 설치 경로 구현 | 실제 설치 미검증. 필요한 유료 Apple 계정·profile을 준비하는 마지막 단계까지 보류. Development 결과로 대체하지 않음. [#219](https://github.com/minjunkim-dev/mobile-runtime/issues/219), [#220](https://github.com/minjunkim-dev/mobile-runtime/issues/220) |
+| Simulator `.app` | 설치된 iOS Simulator 선택·승인·설치·실행 | CLI·GUI 설치/실행과 표본 교체·취소·충돌 검증. [#218](https://github.com/minjunkim-labs/mobile-runtime/issues/218) |
+| 단일 `.apk`·Android Emulator | 설치된 AVD 또는 실행 중인 Emulator 선택·승인·설치·실행 | CLI·GUI 설치/실행과 표본 교체·이전 버전 거부·취소·연결 해제 검증. [#218](https://github.com/minjunkim-labs/mobile-runtime/issues/218) |
+| Development `.app`·iOS 실기기 | 서명/profile·대상 조건 검사 후 설치·실행 | iPhone 13/iOS 27.0.1의 전용 테스트 앱으로 CLI·GUI 설치/실행·표본 교체·취소를 확인. 공통 설치 흐름의 연결 해제도 확인. [#219 실제 기록](https://github.com/minjunkim-labs/mobile-runtime/issues/219#issuecomment-6339741143) |
+| Development `.ipa`·iOS 실기기 | 안전 추출 후 같은 실기기 설치 경로 | 같은 대표 기기에서 CLI·GUI 설치/실행·플랫폼 거부·취소·연결 해제를 확인. [#220](https://github.com/minjunkim-labs/mobile-runtime/issues/220) |
+| Ad Hoc `.app`·`.ipa`·iOS 실기기 | 조건 검사와 설치 경로 구현 | 실제 설치 미검증. 필요한 유료 Apple 계정·profile을 준비하는 마지막 단계까지 보류. Development 결과로 대체하지 않음. [#219](https://github.com/minjunkim-labs/mobile-runtime/issues/219), [#220](https://github.com/minjunkim-labs/mobile-runtime/issues/220) |
 | `.apk`·Android 실기기 | 현재 직접 파일 실행 후보는 Emulator/AVD로 제한 | **미검증**. USB/RSA 승인·설치·연결 해제는 실제 기기 확보 후 후속 검증. Emulator나 클라우드 APK 결과로 대신하지 않음. |
 
 위 실기기 결과는 앱 파일 직접 설치의 대표 표본이다. React Native·Flutter·네이티브
@@ -25,9 +25,9 @@
 유료 Apple 멤버십이나 Runstir 배포 서명·공증 준비를 기다리지 않는다.
 
 설치 거부 뒤 미확정 device reservation이 다른 파일 경로의 실행을 막는
-[#220 후속](https://github.com/minjunkim-dev/mobile-runtime/issues/220#issuecomment-6346658355)은
+[#220 후속](https://github.com/minjunkim-labs/mobile-runtime/issues/220#issuecomment-6346658355)은
 미해결이다. 재관측만으로 설치 rollback을 보장하거나 예약을 강제로 지우지 않는다.
-최종 공동 후보의 직접 설치·지원 표시 증거는 [#229](https://github.com/minjunkim-dev/mobile-runtime/issues/229)에서
+최종 공동 후보의 직접 설치·지원 표시 증거는 [#229](https://github.com/minjunkim-labs/mobile-runtime/issues/229)에서
 별도 기록한다. 이 표는 명세 AC19의 Android 실기기 미검증 표시와 대표 iOS 결과를 연결한다.
 
 ## 입력과 명령
@@ -189,7 +189,7 @@ GUI도 두 경우에 위험 확인을 요구한다. 비교 불가를 안전한 u
 
 ## iOS 실기기 `.app`
 
-관련 구현 티켓은 [#219](https://github.com/minjunkim-dev/mobile-runtime/issues/219)다.
+관련 구현 티켓은 [#219](https://github.com/minjunkim-labs/mobile-runtime/issues/219)다.
 Info.plist의 `CFBundleSupportedPlatforms`가 `iPhoneOS`인 `.app`은 실기기 provider로 보낸다.
 명령·계획·승인·파일 lease·작업 전용 사본·교체/이전 빌드·충돌·결과 형식은 위 경로와 같다.
 
@@ -240,7 +240,7 @@ Runstir는 기기 등록·profile 생성·재서명·계정 입력·pairing 변�
 
 ## IPA
 
-관련 구현 티켓은 [#220](https://github.com/minjunkim-dev/mobile-runtime/issues/220)이다.
+관련 구현 티켓은 [#220](https://github.com/minjunkim-labs/mobile-runtime/issues/220)이다.
 `.ipa`는 실기기 provider만 쓴다. 명령은 위 `.app`과 같다. 내용 식별값은 IPA 파일 바이트의 `sha256`이다.
 
 ```sh

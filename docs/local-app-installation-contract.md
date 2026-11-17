@@ -1,7 +1,7 @@
 # Runstir 로컬 앱 설치·목록 계약
 
 상태: 2026-10-09 사용자 승인. 직접 설치와 2차 목록·이력의 설계 계약이다.
-정본: [결정: 로컬 앱 목록·버전 선택과 설치 파일 직접 실행의 답](https://github.com/minjunkim-dev/mobile-runtime/issues/189#issuecomment-6080134494).
+정본: [결정: 로컬 앱 목록·버전 선택과 설치 파일 직접 실행의 답](https://github.com/minjunkim-labs/mobile-runtime/issues/189#issuecomment-6080134494).
 문서 작성 기준: main `7b009337cded75e1d6ed2f6f92a4e074cd9792e1`.
 선행 계약: [공통 CLI 계약](./cli-expansion-common-contract.md), [준비 계약](./cli-expansion-preparation-contract.md), [지원·검증 계약](./cli-expansion-support-contract.md), [GUI 계약](./gui-workflow-contract.md).
 
@@ -85,13 +85,13 @@ Simulator·Emulator 직접 파일 경로의 명령·승인·파일 식별·결�
 
 ## 10. 승인 이력과 인계
 
-- Q1~Q4 승인과 실기기 검증 보완: https://github.com/minjunkim-dev/mobile-runtime/issues/189#issuecomment-6079972165
-- Q5 승인과 Android 기기 부재 재검토: https://github.com/minjunkim-dev/mobile-runtime/issues/189#issuecomment-6080004653
-- Q6 승인과 Q7~Q9 질문: https://github.com/minjunkim-dev/mobile-runtime/issues/189#issuecomment-6080041680
-- Q7~Q9 승인과 Q10~Q11 질문: https://github.com/minjunkim-dev/mobile-runtime/issues/189#issuecomment-6080086260
+- Q1~Q4 승인과 실기기 검증 보완: https://github.com/minjunkim-labs/mobile-runtime/issues/189#issuecomment-6079972165
+- Q5 승인과 Android 기기 부재 재검토: https://github.com/minjunkim-labs/mobile-runtime/issues/189#issuecomment-6080004653
+- Q6 승인과 Q7~Q9 질문: https://github.com/minjunkim-labs/mobile-runtime/issues/189#issuecomment-6080041680
+- Q7~Q9 승인과 Q10~Q11 질문: https://github.com/minjunkim-labs/mobile-runtime/issues/189#issuecomment-6080086260
 - 마지막 Q10~Q11에 사용자가 이번 대화에서 “추천대로”라고 답했다.
 
-이 티켓의 정책 질문은 모두 해결했다. 다음 첫 출시 결정은 [결정: CLI·GUI 공동 1.0.0의 출시 게이트와 명세 인계](https://github.com/minjunkim-dev/mobile-runtime/issues/193)다. 이 문서는 그 HITL 결정을 대신하지 않는다. 전체 확장 지도에는 2차 편의와 선택적 팀용 범위의 결정이 남아 있다.
+이 티켓의 정책 질문은 모두 해결했다. 다음 첫 출시 결정은 [결정: CLI·GUI 공동 1.0.0의 출시 게이트와 명세 인계](https://github.com/minjunkim-labs/mobile-runtime/issues/193)다. 이 문서는 그 HITL 결정을 대신하지 않는다. 전체 확장 지도에는 2차 편의와 선택적 팀용 범위의 결정이 남아 있다.
 
 CLI 명령·입력·Core API·JSON/progress·잠금·파일 식별·DB·fixture·검증 표본의 구체값은 후속 명세에서 정한다. 제품 구현·SDK 설치·기기 실행·공개 배포는 별도 작업이다. CONTEXT.md에는 승인한 용어만 기록한다. 문서 병합을 제품 구현이나 실제 검증의 증거로 사용하지 않는다.
 

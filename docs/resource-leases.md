@@ -39,7 +39,7 @@ change.
 The Metro port after a finished run stays under `MetroVerdict`, which already
 observes the occupant's project root.
 
-## Evidence ([#216](https://github.com/minjunkim-dev/mobile-runtime/issues/216))
+## Evidence ([#216](https://github.com/minjunkim-labs/mobile-runtime/issues/216))
 
 | Spec row | Automated | Real execution |
 |----------|-----------|----------------|
