@@ -11,6 +11,12 @@ macOS Apple Silicon(arm64)용 CLI다. CLI 명령어는 `mobile`이다.
    brew tap minjunkim-dev/runstir https://github.com/minjunkim-labs/mobile-runtime
    ```
 
+   조직으로 옮기기 전 주소로 이미 tap했고 Homebrew가 아직 remote를 바꾸지 않았다면, 위 명령은 `remote mismatch`로 끝난다. 그때는 다음 명령으로 tap의 remote를 바꾼다.
+
+   ```sh
+   brew tap --custom-remote minjunkim-dev/runstir https://github.com/minjunkim-labs/mobile-runtime
+   ```
+
 2. Runstir를 설치한다.
 
    ```sh
