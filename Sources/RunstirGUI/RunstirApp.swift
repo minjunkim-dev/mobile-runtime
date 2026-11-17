@@ -43,7 +43,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         window.contentView = NSHostingView(rootView: VStack(spacing: 16) {
             Text("Runstir").font(.largeTitle)
             Text("버전 \(runstirProductVersion)")
-            Link("공식 다운로드", destination: URL(string: "https://github.com/minjunkim-dev/mobile-runtime/releases")!)
+            Link("공식 다운로드", destination: URL(string: "https://github.com/minjunkim-labs/mobile-runtime/releases")!)
             Text("업데이트하려면 새 DMG의 Runstir.app으로 교체하세요. 별도 CLI는 유지됩니다.")
                 .font(.caption)
             Text("프로젝트의 iOS·Android 환경을 확인하세요.")

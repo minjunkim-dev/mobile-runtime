@@ -149,7 +149,7 @@ runpy.run_path('scripts/validate-release-input.py')['validate_candidate'](manife
 archive = manifest['artifacts']['cli']
 (output / 'runstir-candidate.rb').write_text(f'''class RunstirCandidate < Formula
   desc "Restricted Runstir validation candidate"
-  homepage "https://github.com/minjunkim-dev/mobile-runtime"
+  homepage "https://github.com/minjunkim-labs/mobile-runtime"
   url ENV.fetch("HOMEBREW_RUNSTIR_CANDIDATE_URL")
   version "{version}"
   sha256 "{archive['sha256']}"
