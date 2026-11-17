@@ -72,7 +72,7 @@ macOS runner 동시 실행 슬롯은 계정 전체가 공유한다. 실제 Simul
 - SimulatorKit의 simctl 호출·해석·`device`·`install`·`launch`·app teardown을 크게 바꾼 PR의 병합 전
 
 ```sh
-gh workflow run simulator-smoke.yml --repo minjunkim-dev/mobile-runtime --ref <branch>
+gh workflow run simulator-smoke.yml --repo minjunkim-labs/mobile-runtime --ref <branch>
 ```
 
 실행 URL·head SHA·결과와 step summary의 Xcode·runtime·부팅된 기기 목록을 해당 PR이나 릴리스 티켓에 기록한다.

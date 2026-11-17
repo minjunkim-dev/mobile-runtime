@@ -1,6 +1,6 @@
 # Issue tracker: GitHub
 
-Issues and specs for this repo live as GitHub issues on `minjunkim-dev/mobile-runtime`. Use the `gh` CLI for all operations.
+Issues and specs for this repo live as GitHub issues on `minjunkim-labs/mobile-runtime`. Use the `gh` CLI for all operations.
 
 ## Conventions
 

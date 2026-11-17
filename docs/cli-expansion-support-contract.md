@@ -1,7 +1,7 @@
 # Runstir 지원 경계와 새 Mac 검증 기준
 
 상태: 2026-10-09 질문 1~8 사용자 승인. 지원 경계와 새 Mac 검증 정책을 확정했다.
-티켓: [결정: 지원 경계와 새 Mac 검증 기준](https://github.com/minjunkim-dev/mobile-runtime/issues/183).
+티켓: [결정: 지원 경계와 새 Mac 검증 기준](https://github.com/minjunkim-labs/mobile-runtime/issues/183).
 제품 코드·도구 설치·앱 실행을 구현하거나 검증한 문서가 아니다.
 
 ## 첫 질문에서 확정한 정책
@@ -42,4 +42,4 @@
 
 이 티켓의 지원·검증 정책에는 남은 질문이 없다. 정확한 Flutter·React Native·Android 도구와 macOS 요구사항, 표본 SHA 및 기기/런타임 후보는 공식 자료와 프로젝트 선언을 조사해 별도로 고정한다. 그 후보는 실제 baseline과 Runstir 실행 전까지 검증된 지원 조합이 아니다. 지원 범위의 구체 값은 조사 근거와 누적된 실행 증거로 정한다.
 
-검증 절차·실패 시나리오·표시 및 입력 계약의 세부 명세는 후속 `/to-spec`에서 구체화한다. 구현 순서와 출시 단위는 [결정: CLI 확장의 구현 순서와 출시 단위](https://github.com/minjunkim-dev/mobile-runtime/issues/184)에서 정한다. 이 정책 확정은 CLI 지도 전체 완료나 첫 정식 1.0.0 출시 준비 완료를 뜻하지 않는다.
+검증 절차·실패 시나리오·표시 및 입력 계약의 세부 명세는 후속 `/to-spec`에서 구체화한다. 구현 순서와 출시 단위는 [결정: CLI 확장의 구현 순서와 출시 단위](https://github.com/minjunkim-labs/mobile-runtime/issues/184)에서 정한다. 이 정책 확정은 CLI 지도 전체 완료나 첫 정식 1.0.0 출시 준비 완료를 뜻하지 않는다.

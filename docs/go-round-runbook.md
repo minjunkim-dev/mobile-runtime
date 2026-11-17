@@ -1,6 +1,6 @@
 # Xcode 27 Go round
 
-기준은 [ADR-0018](adr/0018-use-one-xcode-27-go-sample.md)에 고정했다. 실행 ticket은 [#160](https://github.com/minjunkim-dev/mobile-runtime/issues/160)이다. 입력은 실행 전에 기록했다. 기존 세 프로젝트와 BlueWallet 조사 실행의 성공을 합산하지 않는다.
+기준은 [ADR-0018](adr/0018-use-one-xcode-27-go-sample.md)에 고정했다. 실행 ticket은 [#160](https://github.com/minjunkim-labs/mobile-runtime/issues/160)이다. 입력은 실행 전에 기록했다. 기존 세 프로젝트와 BlueWallet 조사 실행의 성공을 합산하지 않는다.
 
 ## 입력과 절차
 
@@ -80,7 +80,7 @@ Go 앱은 `mobile up`으로 실행한다. 화면 검증 도구로 앱을 재빌�
 
 npm은 승인 목록 밖의 install script 7개와 `react-native-screens` patch 버전 차이를 경고했다. 설치는 exit 0이었다. 선언된 patch를 그대로 적용했다. 승인 목록과 patch 파일을 바꾸지 않았다. 초기 UI 이후의 앱 기능은 검증하지 않았다.
 
-고정 mobile source의 [CI run 37557571056](https://github.com/minjunkim-dev/mobile-runtime/actions/runs/37557571056)은 성공했다. 문서 PR의 최종 head CI도 merge 전에 확인한다. raw 로그, screenshot, host 경로, simulator UDID, 환경값은 공개 문서에 넣지 않는다.
+고정 mobile source의 [CI run 37557571056](https://github.com/minjunkim-labs/mobile-runtime/actions/runs/37557571056)은 성공했다. 문서 PR의 최종 head CI도 merge 전에 확인한다. raw 로그, screenshot, host 경로, simulator UDID, 환경값은 공개 문서에 넣지 않는다.
 
 ## 판정 범위
 

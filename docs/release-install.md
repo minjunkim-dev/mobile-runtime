@@ -8,7 +8,7 @@ macOS Apple Silicon(arm64)용 CLI다. CLI 명령어는 `mobile`이다.
 1. 기존 GitHub 저장소를 tap으로 등록한다.
 
    ```sh
-   brew tap minjunkim-dev/runstir https://github.com/minjunkim-dev/mobile-runtime
+   brew tap minjunkim-dev/runstir https://github.com/minjunkim-labs/mobile-runtime
    ```
 
 2. Runstir를 설치한다.
@@ -77,7 +77,7 @@ workflow는 `main`에서 수동 실행한다. 버전은 `v` 없는 alpha 형식�
 source SHA는 `main`에 포함된 전체 40자리 SHA다. 해당 SHA의 `main` push CI가 성공해야 한다.
 
 ```sh
-gh workflow run draft-release.yml --repo minjunkim-dev/mobile-runtime --ref main \
+gh workflow run draft-release.yml --repo minjunkim-labs/mobile-runtime --ref main \
   -f version=0.1.0-alpha.5 -f source_sha=<full-40-character-main-SHA>
 ```
 

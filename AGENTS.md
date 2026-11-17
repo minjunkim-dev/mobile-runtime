@@ -3,7 +3,7 @@
 프로필: 1인
 
 재현 가능한 모바일 개발 런타임(`mobile` CLI와 macOS GUI). North Star: `git clone → mobile up`.
-현재 상태: iOS React Native MVP 구현. 비공개 iOS internal-alpha는 [issue #83](https://github.com/minjunkim-dev/mobile-runtime/issues/83)이 정하고, 닫힌 [decision map #79](https://github.com/minjunkim-dev/mobile-runtime/issues/79)를 잇는다. [MVP 맵 #1](https://github.com/minjunkim-dev/mobile-runtime/issues/1)은 닫힌 과거 기록이다. 현재 결정은 `CONTEXT.md`와 `docs/adr/`에 있다.
+현재 상태: iOS React Native MVP 구현. 비공개 iOS internal-alpha는 [issue #83](https://github.com/minjunkim-labs/mobile-runtime/issues/83)이 정하고, 닫힌 [decision map #79](https://github.com/minjunkim-labs/mobile-runtime/issues/79)를 잇는다. [MVP 맵 #1](https://github.com/minjunkim-labs/mobile-runtime/issues/1)은 닫힌 과거 기록이다. 현재 결정은 `CONTEXT.md`와 `docs/adr/`에 있다.
 
 ## 명령
 
@@ -28,7 +28,7 @@ CI 전체(`.github/workflows/ci.yml`)는 위에 더해 `scripts/verify-*-input.p
 | `docs/REPOSITORY_SETUP.md` | GitHub 설정 기대값과 감사 방법 |
 | `REVIEW.md` | 리뷰 기준. 리뷰할 때만 읽는다. 상세 규칙은 `docs/coding-standards.md` |
 
-이 파일이 에이전트 공통 지침이다. 도구별 지침 파일을 따로 두지 않는다. Claude Code는 `CLAUDE.md`가 없으면 이 파일을 읽으므로 `CLAUDE.md`·`.claude/CLAUDE.md`·`CLAUDE.local.md`를 만들지 않는다. 기본 설정에서는 하나라도 있으면 Claude Code가 이 파일을 읽지 않는다. 이슈는 GitHub Issues(`minjunkim-dev/mobile-runtime`)를 `gh`로 다룬다.
+이 파일이 에이전트 공통 지침이다. 도구별 지침 파일을 따로 두지 않는다. Claude Code는 `CLAUDE.md`가 없으면 이 파일을 읽으므로 `CLAUDE.md`·`.claude/CLAUDE.md`·`CLAUDE.local.md`를 만들지 않는다. 기본 설정에서는 하나라도 있으면 Claude Code가 이 파일을 읽지 않는다. 이슈는 GitHub Issues(`minjunkim-labs/mobile-runtime`)를 `gh`로 다룬다.
 
 - repo-office 파이프라인은 선택이다. 이 저장소는 여러 사람이 쓰고, office는 그것을 띄운 사람의 컴퓨터에만 있다.
   - 사람이 이 대화에서 office나 leader로 돌리라고 할 때만 떠 있는 leader 세션에 과제를 넘기고 멈춘다. 그 말이 넘겨도 된다는 허락이다. 따로 묻지 않는다. 넘기는 법은 [office 절차](docs/agents/office.md#과제-넘기기)에 있다.

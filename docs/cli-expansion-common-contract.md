@@ -1,7 +1,7 @@
 # Runstir CLI 확장 공통 계약
 
 상태: 2026-10-09 사용자 최종 승인. 제품 구현과 GUI 구현을 뜻하지 않는다.
-티켓: [결정: 프로젝트 탐지와 공통 CLI 계약](https://github.com/minjunkim-dev/mobile-runtime/issues/181).
+티켓: [결정: 프로젝트 탐지와 공통 CLI 계약](https://github.com/minjunkim-labs/mobile-runtime/issues/181).
 기준 source: `1a4ff6dc3815ab6c25df81eaef8ca37acaefe21e`.
 
 ## 사용자와 확정한 방향
@@ -21,7 +21,7 @@ CLI와 향후 GUI는 같은 입력·선택 후보·검사·실행 결과 계약�
 | `up` | 플랫폼과 실행 기기 선택을 확보하고 앱을 빌드·설치·실행한다. 필요한 framework 개발 연결도 해당 실행 경로에서 처리한다. |
 | `down` | 해당 프로젝트의 실행 기록과 플랫폼별 자원 소유권 계약에 따라 실행 자원을 정리한다. 도구·SDK 제거 및 기기 초기화 명령으로 사용하지 않는다. |
 
-환경 준비의 명령 이름, 승인 단위, 설치·중단·복구와 실기기 수동 단계는 [결정: 승인형 환경 준비의 변경과 복구 계약](https://github.com/minjunkim-dev/mobile-runtime/issues/182)에서 정한다. 현재 ADR-0009를 이 초안만으로 변경하지 않는다.
+환경 준비의 명령 이름, 승인 단위, 설치·중단·복구와 실기기 수동 단계는 [결정: 승인형 환경 준비의 변경과 복구 계약](https://github.com/minjunkim-labs/mobile-runtime/issues/182)에서 정한다. 현재 ADR-0009를 이 초안만으로 변경하지 않는다.
 
 ## 탐지와 선택
 
@@ -48,9 +48,9 @@ CLI와 향후 GUI는 같은 입력·선택 후보·검사·실행 결과 계약�
 
 ### 현재 코드의 재사용 경계
 
-현재 코드에는 `DoctorEngine.run`의 `DoctorReport`, `UpPipeline.run`의 `UpReport`와 단계 완료 `StageResult`, 플랫폼별 build/up/down factory가 있다. 이 결과와 실행 경로를 출발점으로 삼는다. [DoctorEngine](https://github.com/minjunkim-dev/mobile-runtime/blob/1a4ff6dc3815ab6c25df81eaef8ca37acaefe21e/Sources/Core/Doctor/DoctorEngine.swift), [UpPipeline](https://github.com/minjunkim-dev/mobile-runtime/blob/1a4ff6dc3815ab6c25df81eaef8ca37acaefe21e/Sources/Core/Up/UpPipeline.swift).
+현재 코드에는 `DoctorEngine.run`의 `DoctorReport`, `UpPipeline.run`의 `UpReport`와 단계 완료 `StageResult`, 플랫폼별 build/up/down factory가 있다. 이 결과와 실행 경로를 출발점으로 삼는다. [DoctorEngine](https://github.com/minjunkim-labs/mobile-runtime/blob/1a4ff6dc3815ab6c25df81eaef8ca37acaefe21e/Sources/Core/Doctor/DoctorEngine.swift), [UpPipeline](https://github.com/minjunkim-labs/mobile-runtime/blob/1a4ff6dc3815ab6c25df81eaef8ca37acaefe21e/Sources/Core/Up/UpPipeline.swift).
 
-기기 후보 목록과 선택기는 공개 입력·응답 계약으로 분리되지 않았다. CLI의 `Wiring.bootstrap`은 cwd·process environment를 읽고 logging을 준비한다. 진행 note는 문자열 callback이며 Core의 `UpWriter`도 터미널 출력 객체다. 따라서 현재 Core 전체가 GUI 입력과 선택에 바로 대응한다고 간주하지 않는다. 실제 후보 조회·선택·실행 준비와 표현의 경계는 후속 명세에서 필요한 범위만 분리한다. [Wiring](https://github.com/minjunkim-dev/mobile-runtime/blob/1a4ff6dc3815ab6c25df81eaef8ca37acaefe21e/Sources/mobile/Wiring.swift), [iOS DeviceStage](https://github.com/minjunkim-dev/mobile-runtime/blob/1a4ff6dc3815ab6c25df81eaef8ca37acaefe21e/Sources/SimulatorKit/DeviceStage.swift), [Android 선택 경로](https://github.com/minjunkim-dev/mobile-runtime/blob/1a4ff6dc3815ab6c25df81eaef8ca37acaefe21e/Sources/AndroidKit/AndroidUpStages.swift), [UpWriter](https://github.com/minjunkim-dev/mobile-runtime/blob/1a4ff6dc3815ab6c25df81eaef8ca37acaefe21e/Sources/Core/Up/UpOutput.swift).
+기기 후보 목록과 선택기는 공개 입력·응답 계약으로 분리되지 않았다. CLI의 `Wiring.bootstrap`은 cwd·process environment를 읽고 logging을 준비한다. 진행 note는 문자열 callback이며 Core의 `UpWriter`도 터미널 출력 객체다. 따라서 현재 Core 전체가 GUI 입력과 선택에 바로 대응한다고 간주하지 않는다. 실제 후보 조회·선택·실행 준비와 표현의 경계는 후속 명세에서 필요한 범위만 분리한다. [Wiring](https://github.com/minjunkim-labs/mobile-runtime/blob/1a4ff6dc3815ab6c25df81eaef8ca37acaefe21e/Sources/mobile/Wiring.swift), [iOS DeviceStage](https://github.com/minjunkim-labs/mobile-runtime/blob/1a4ff6dc3815ab6c25df81eaef8ca37acaefe21e/Sources/SimulatorKit/DeviceStage.swift), [Android 선택 경로](https://github.com/minjunkim-labs/mobile-runtime/blob/1a4ff6dc3815ab6c25df81eaef8ca37acaefe21e/Sources/AndroidKit/AndroidUpStages.swift), [UpWriter](https://github.com/minjunkim-labs/mobile-runtime/blob/1a4ff6dc3815ab6c25df81eaef8ca37acaefe21e/Sources/Core/Up/UpOutput.swift).
 
 ## 공개 계약과 호환성
 
