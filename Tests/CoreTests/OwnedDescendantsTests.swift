@@ -44,7 +44,8 @@ struct OwnedDescendantsTests {
         owned.adopt(rootPID: 100)
 
         owned.capture()
-        #expect(Set(fake.signals(SIGSTOP)) == [100, 101])
+        // Never the root: swift-subprocess traps when the process it waits on reports a stop.
+        #expect(fake.signals(SIGSTOP) == [101])
         fake.exit(100) // the group kill reaches only the root
 
         #expect(await owned.settle(limit: .milliseconds(200)).isEmpty)
@@ -92,6 +93,6 @@ struct OwnedDescendantsTests {
         owned.adopt(rootPID: 100)
 
         owned.capture()
-        #expect(fake.signals(SIGSTOP) == [100])
+        #expect(fake.signals(SIGSTOP).isEmpty)
     }
 }

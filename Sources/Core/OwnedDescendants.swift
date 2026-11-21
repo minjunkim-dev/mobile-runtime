@@ -87,9 +87,10 @@ final class OwnedDescendants: @unchecked Sendable {
 
     /// Before the group is killed. A frozen process cannot fork, so the loop ends with every
     /// descendant held in place instead of racing a tool that is still starting its next one.
+    /// The command's own process is never frozen: swift-subprocess waits on it and traps on a
+    /// stopped status (`Unexpected exit status: 5`), and the group kill reaches it anyway.
     func capture() {
         guard let root = lock.withLock({ root }) else { return }
-        send(SIGSTOP, to: root)
         var frozen: Set<ProcessIdentity> = [root]
         for _ in 0..<Self.capturePasses {
             let found = descendants(of: root).subtracting(frozen)
@@ -97,8 +98,8 @@ final class OwnedDescendants: @unchecked Sendable {
             for identity in found { send(SIGSTOP, to: identity) }
             frozen.formUnion(found)
         }
-        // The command's own process is in the set so a group kill that did not land cannot
-        // leave it stopped for good. Once reaped its pid no longer matches and it is skipped.
+        // The command's own process is in the set in case the group kill did not land. Once
+        // reaped its pid no longer matches and it is skipped.
         lock.withLock { owned.formUnion(frozen) }
     }
 
