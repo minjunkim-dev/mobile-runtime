@@ -1,7 +1,4 @@
 import Foundation
-#if canImport(Darwin)
-import Darwin
-#endif
 
 /// A process told apart from a later one that reuses its pid: the start time is part of
 /// who it is, so a signal meant for this process never reaches a stranger.
