@@ -10,6 +10,8 @@ struct OwnedDescendantsTests {
         private let lock = NSLock()
         private var live: [Int32: ProcessEntry] = [:]
         private var sent: [(pid: Int32, signal: Int32)] = []
+        /// Pids a SIGKILL does not remove, like a process stuck in an uninterruptible wait.
+        var unkillable: Set<Int32> = []
 
         func start(_ pid: Int32, at started: UInt64, parent: Int32) {
             lock.withLock { live[pid] = ProcessEntry(identity: ProcessIdentity(pid: pid, started: started), parent: parent) }
@@ -26,7 +28,7 @@ struct OwnedDescendantsTests {
                 signal: { pid, number in
                     self.lock.withLock {
                         self.sent.append((pid, number))
-                        if number == SIGKILL { self.live.removeValue(forKey: pid) }
+                        if number == SIGKILL, !self.unkillable.contains(pid) { self.live.removeValue(forKey: pid) }
                     }
                 }
             )
@@ -47,6 +49,21 @@ struct OwnedDescendantsTests {
 
         #expect(await owned.settle(limit: .milliseconds(200)).isEmpty)
         #expect(fake.signals(SIGKILL) == [101])
+    }
+
+    @Test("a captured descendant that outlives the limit is reported instead of waited for")
+    func reportsSurvivor() async {
+        let fake = FakeTable()
+        fake.start(100, at: 10, parent: 1)
+        fake.start(101, at: 20, parent: 100)
+        fake.unkillable = [101]
+        let owned = OwnedDescendants(table: fake.table)
+        owned.adopt(rootPID: 100)
+
+        owned.capture()
+        fake.exit(100)
+
+        #expect(await owned.settle(limit: .milliseconds(100)) == [ProcessIdentity(pid: 101, started: 20)])
     }
 
     @Test("a pid reused by another process after capture is never signalled")
