@@ -90,9 +90,11 @@ final class OwnedDescendants: @unchecked Sendable {
     }
 
     /// Before the group is killed. A frozen process cannot fork, so the loop ends with every
-    /// descendant held in place instead of racing a tool that is still starting its next one.
-    /// The command's own process is never frozen: swift-subprocess waits on it and traps on a
-    /// stopped status (`Unexpected exit status: 5`), and the group kill reaches it anyway.
+    /// descendant of the command's own process held in place instead of racing a tool that is
+    /// still starting its next one. The command's own process is never frozen: swift-subprocess
+    /// waits on it and traps on a stopped status (`Unexpected exit status: 5`), and the group kill
+    /// reaches it anyway. Until that kill it can still fork, and a child it starts after the last
+    /// pass that also leaves the group is not captured.
     ///
     /// Held under the lock throughout: the command can exit on its own while its tree is being
     /// frozen, and `settle` must then wait for what this pass stops rather than leave it stopped.
