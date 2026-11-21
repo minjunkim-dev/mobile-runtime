@@ -39,8 +39,12 @@ struct ProcessTable: Sendable {
         },
         children: { pid in
             var buffer = [pid_t](repeating: 0, count: 512)
-            let count = proc_listchildpids(pid, &buffer, Int32(buffer.count * MemoryLayout<pid_t>.size))
-            return Array(buffer.prefix(max(0, Int(count))))
+            while true {
+                let count = Int(proc_listchildpids(pid, &buffer, Int32(buffer.count * MemoryLayout<pid_t>.size)))
+                // A full buffer may have cut the list short.
+                if count < buffer.count { return Array(buffer.prefix(max(0, count))) }
+                buffer = [pid_t](repeating: 0, count: buffer.count * 2)
+            }
         },
         signal: { pid, number in _ = kill(pid, number) }
     )
