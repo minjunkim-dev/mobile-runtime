@@ -196,9 +196,23 @@ struct SystemProcessRunnerTests {
         #expect(observed.value == [Data("out".utf8), Data("err".utf8)])
     }
 
-    @Test("cancellation and timeout stop owned descendants while preserving an unrelated detached child", .serialized,
-          arguments: ["collected", "bytes", "streamed"], [false, true])
-    func descendantInterruption(_ mode: String, _ timeout: Bool) async throws {
+    /// How the TERM-ignoring child ends up relative to the command's process group. Xcode's build service
+    /// puts every tool in a group of its own, and a daemonizing tool starts a session: neither is reached by
+    /// the group kill, and once the parent dies the tool's lineage is gone (#382).
+    /// The pid marker is written only after the move, so the test never interrupts a child still in the group.
+    private static let childPlacement: [String: String] = [
+        "same group": "",
+        "own group": "setpgrp(0, 0) or die;",
+        "own session": "use POSIX qw(setsid); setsid() or die;",
+    ].mapValues { $0 + #" open(my $marker, ">", shift) or die; print $marker $$; close $marker or die; exec @ARGV"# }
+
+    private static let interruptions = ["collected", "bytes", "streamed"].flatMap { mode in
+        [false, true].flatMap { timeout in childPlacement.keys.sorted().map { (mode, timeout, $0) } }
+    }
+
+    @Test("cancellation and timeout stop owned descendants wherever they went, while preserving an unrelated detached child", .serialized,
+          arguments: interruptions)
+    func descendantInterruption(_ mode: String, _ timeout: Bool, _ placement: String) async throws {
         let directory = try temporaryDirectory()
         defer { try? FileManager.default.removeItem(at: directory) }
         let marker = directory.appendingPathComponent("child.pid")
@@ -207,8 +221,9 @@ struct SystemProcessRunnerTests {
         let sibling = try await runner.spawnDetached(ProcessCommand("/bin/sleep", [siblingToken]),
                                                      logFile: directory.appendingPathComponent("sibling.log"))
         // A cooperative parent must not leave its TERM-ignoring child behind.
-        let script = #"trap 'exit 0' TERM; /bin/sh -c 'trap "" TERM; printf %s "$$" > "$2"; exec /bin/sleep "$1"' runstir-descendant-child "$1" "$2" >/dev/null 2>&1 & child=$!; wait "$child""#
-        let command = ProcessCommand("/bin/sh", ["-c", script, "runstir-descendant-test", childToken, marker.path],
+        let script = #"trap 'exit 0' TERM; /bin/sh -c 'trap "" TERM; exec /usr/bin/perl -e "$3" "$2" /bin/sleep "$1"' runstir-descendant-child "$1" "$2" "$3" >/dev/null 2>&1 & child=$!; wait "$child""#
+        let command = ProcessCommand("/bin/sh", ["-c", script, "runstir-descendant-test", childToken, marker.path,
+                                                  try #require(Self.childPlacement[placement])],
             timeout: timeout ? .seconds(10) : nil,
             output: mode == "streamed" ? .streamed(to: directory.appendingPathComponent("command.log")) : .collected)
         let task = Task {
