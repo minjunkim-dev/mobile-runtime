@@ -330,7 +330,7 @@ public struct SystemProcessRunner: ProcessRunner {
         // still exists (see `OwnedDescendants`). The deadline still needs its own flag to
         // retain the timeout classification.
         let expired = Flag()
-        func interrupt() {
+        @Sendable func interrupt() {
             owned.capture()
             work.cancel()
         }
