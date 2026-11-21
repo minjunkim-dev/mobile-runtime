@@ -93,18 +93,24 @@ final class OwnedDescendants: @unchecked Sendable {
     /// descendant held in place instead of racing a tool that is still starting its next one.
     /// The command's own process is never frozen: swift-subprocess waits on it and traps on a
     /// stopped status (`Unexpected exit status: 5`), and the group kill reaches it anyway.
+    ///
+    /// Held under the lock throughout: the command can exit on its own while its tree is being
+    /// frozen, and `settle` must then wait for what this pass stops rather than leave it stopped.
+    /// A capture that starts after `settle` finds the command already reaped and stops nothing.
     func capture() {
-        guard let root = lock.withLock({ root }) else { return }
-        var frozen: Set<ProcessIdentity> = [root]
-        for _ in 0..<Self.capturePasses {
-            let found = descendants(of: root).subtracting(frozen)
-            if found.isEmpty { break }
-            for identity in found { send(SIGSTOP, to: identity) }
-            frozen.formUnion(found)
+        lock.withLock {
+            guard let root else { return }
+            var frozen: Set<ProcessIdentity> = [root]
+            for _ in 0..<Self.capturePasses {
+                let found = descendants(of: root).subtracting(frozen)
+                if found.isEmpty { break }
+                for identity in found { send(SIGSTOP, to: identity) }
+                frozen.formUnion(found)
+            }
+            // The command's own process is in the set in case the group kill did not land.
+            // Once reaped its pid no longer matches and it is skipped.
+            owned.formUnion(frozen)
         }
-        // The command's own process is in the set in case the group kill did not land. Once
-        // reaped its pid no longer matches and it is skipped.
-        lock.withLock { owned.formUnion(frozen) }
     }
 
     /// After the group is gone: kills everything captured that is still the same process and
